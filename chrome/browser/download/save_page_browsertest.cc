@@ -778,5 +778,29 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   EXPECT_LE(kFileSizeMin, actual_file_size);
 }
 
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SavePageBrowserTest_NonMHTML) {
+#if defined(OS_CHROMEOS)
+  SavePackageFilePickerChromeOS::SetShouldPromptUser(false);
+#else
+  SavePackageFilePicker::SetShouldPromptUser(false);
+#endif
+  GURL url("data:text/plain,foo");
+  ui_test_utils::NavigateToURL(browser(), url);
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  SavePackageFinishedObserver observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      loop_runner->QuitClosure());
+  chrome::SavePage(browser());
+  loop_runner->Run();
+  base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
+      GetDownloadManager())->DownloadPath();
+  base::FilePath filename = download_dir.AppendASCII("dataurl.txt");
+  EXPECT_TRUE(file_util::PathExists(filename));
+  std::string contents;
+  EXPECT_TRUE(file_util::ReadFileToString(filename, &contents));
+  EXPECT_EQ("foo", contents);
+}
+
 }  // namespace
 

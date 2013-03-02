@@ -27,6 +27,7 @@ bool g_should_prompt_for_filename = true;
 // Trampoline callback between SubstituteDriveDownloadPath() and |callback|.
 void ContinueSettingUpDriveDownload(
     const content::SavePackagePathPickedCallback& callback,
+    bool is_html,
     Profile* profile,
     const base::FilePath& drive_path,
     const base::FilePath& drive_tmp_download_path) {
@@ -34,7 +35,10 @@ void ContinueSettingUpDriveDownload(
     return;
 
   callback.Run(
-      drive_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
+      drive_tmp_download_path,
+      (is_html ?
+       content::SAVE_PAGE_TYPE_AS_MHTML :
+       content::SAVE_PAGE_TYPE_AS_ONLY_HTML),
       base::Bind(&drive::DriveDownloadHandler::SetDownloadParams,
                  base::Unretained(
                      drive::DriveDownloadHandler::GetForProfile(profile)),
@@ -46,9 +50,14 @@ void ContinueSettingUpDriveDownload(
 SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
     content::WebContents* web_contents,
     const base::FilePath& suggested_path,
+    bool is_html,
     const content::SavePackagePathPickedCallback& callback)
     : content::WebContentsObserver(web_contents),
-      callback_(callback) {
+      callback_(callback),
+      is_html_(is_html) {
+  base::FilePath suggested_path_copy(is_html_ ?
+                                     suggested_path.ReplaceExtension("mhtml") :
+                                     suggested_path);
   if (g_should_prompt_for_filename) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
@@ -57,14 +66,14 @@ SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
     select_file_dialog_->SelectFile(
         ui::SelectFileDialog::SELECT_SAVEAS_FILE,
         string16(),
-        suggested_path.ReplaceExtension("mhtml"),
+        suggested_path_copy,
         &file_types,
         0,
-        "mhtml",
+        suggested_path_copy.Extension(),
         platform_util::GetTopLevel(web_contents->GetView()->GetNativeView()),
         NULL);
   } else {
-    FileSelected(suggested_path.ReplaceExtension("mhtml"), 0, NULL);
+    FileSelected(suggested_path_copy, 0, NULL);
   }
 }
 
@@ -112,10 +121,14 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
         SubstituteDriveDownloadPath(selected_path, NULL,
                                     base::Bind(&ContinueSettingUpDriveDownload,
                                                callback_,
+                                               is_html_,
                                                profile,
                                                selected_path));
   } else {
-    callback_.Run(selected_path, content::SAVE_PAGE_TYPE_AS_MHTML,
+    callback_.Run(selected_path,
+                  (is_html_ ?
+                   content::SAVE_PAGE_TYPE_AS_MHTML :
+                   content::SAVE_PAGE_TYPE_AS_ONLY_HTML),
                   content::SavePackageDownloadCreatedCallback());
   }
   delete this;

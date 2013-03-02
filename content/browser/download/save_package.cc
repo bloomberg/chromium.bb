@@ -305,6 +305,7 @@ bool SavePackage::Init(
     web_contents()->GenerateMHTML(saved_main_file_path_, base::Bind(
         &SavePackage::OnMHTMLGenerated, this));
   } else {
+    DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_) << save_type_;
     wait_state_ = NET_FILES;
     SaveFileCreateInfo::SaveFileSource save_source = page_url_.SchemeIsFile() ?
         SaveFileCreateInfo::SAVE_FILE_FROM_FILE :
@@ -1361,6 +1362,9 @@ void SavePackage::OnPathPicked(
     const base::FilePath& final_name,
     SavePageType type,
     const SavePackageDownloadCreatedCallback& download_created_callback) {
+  DCHECK((type == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
+         (type == SAVE_PAGE_TYPE_AS_MHTML) ||
+         (type == SAVE_PAGE_TYPE_AS_COMPLETE_HTML)) << type;
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made

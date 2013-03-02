@@ -435,10 +435,19 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
     const content::SavePackagePathPickedCallback& callback) {
   // Deletes itself.
 #if defined(OS_CHROMEOS)
-  new SavePackageFilePickerChromeOS(web_contents, suggested_path, callback);
+  new SavePackageFilePickerChromeOS(
+      web_contents,
+      suggested_path,
+      can_save_as_complete,
+      callback);
 #else
-  new SavePackageFilePicker(web_contents, suggested_path, default_extension,
-      can_save_as_complete, download_prefs_.get(), callback);
+  new SavePackageFilePicker(
+      web_contents,
+      suggested_path,
+      default_extension,
+      can_save_as_complete,
+      download_prefs_.get(),
+      callback);
 #endif
 }
 
