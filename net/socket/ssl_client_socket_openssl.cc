@@ -644,6 +644,9 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   if (ssl_config_.version_fallback)
     ssl_info->connection_status |= SSL_CONNECTION_VERSION_FALLBACK;
 
+  ssl_info->handshake_type = SSL_session_reused(ssl_) ?
+      SSLInfo::HANDSHAKE_RESUME : SSLInfo::HANDSHAKE_FULL;
+
   DVLOG(3) << "Encoded connection status: cipher suite = "
       << SSLConnectionStatusToCipherSuite(ssl_info->connection_status)
       << " version = "
