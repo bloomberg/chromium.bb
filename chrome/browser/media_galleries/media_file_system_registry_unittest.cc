@@ -235,16 +235,6 @@ void CheckGalleryInfo(const MediaFileSystemInfo& info,
   EXPECT_EQ(path, fsid_path);
 }
 
-class TestMediaStorageUtil : public MediaStorageUtil {
- public:
-  static void SetTestingMode();
-
-  static bool GetDeviceInfoFromPathTestFunction(const base::FilePath& path,
-                                                std::string* device_id,
-                                                string16* device_name,
-                                                base::FilePath* relative_path);
-};
-
 class MockProfileSharedRenderProcessHostFactory
     : public content::RenderProcessHostFactory {
  public:
@@ -422,29 +412,6 @@ bool MediaFileSystemInfoComparator(const MediaFileSystemInfo& a,
                                    const MediaFileSystemInfo& b) {
   CHECK_NE(a.name, b.name);  // Name must be unique.
   return a.name < b.name;
-}
-
-//////////////////////////
-// TestMediaStorageUtil //
-//////////////////////////
-
-// static
-void TestMediaStorageUtil::SetTestingMode() {
-  SetGetDeviceInfoFromPathFunctionForTesting(
-      &GetDeviceInfoFromPathTestFunction);
-}
-
-// static
-bool TestMediaStorageUtil::GetDeviceInfoFromPathTestFunction(
-    const base::FilePath& path, std::string* device_id, string16* device_name,
-    base::FilePath* relative_path) {
-  if (device_id)
-    *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-  if (device_name)
-    *device_name = path.BaseName().LossyDisplayName();
-  if (relative_path)
-    *relative_path = base::FilePath();
-  return true;
 }
 
 ///////////////////////////////////////////////
@@ -788,7 +755,6 @@ void MediaFileSystemRegistryTest::SetUp() {
   DeleteContents();
   SetRenderProcessHostFactory(&rph_factory_);
 
-  TestMediaStorageUtil::SetTestingMode();
   test_file_system_context_ = new TestMediaFileSystemContext(
       g_browser_process->media_file_system_registry());
   (new extensions::BackgroundManifestHandler)->Register();

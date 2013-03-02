@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace chrome {
 
@@ -69,14 +70,12 @@ class MediaStorageUtil {
   static void FilterAttachedDevices(DeviceIdSet* devices,
                                     const base::Closure& done);
 
-  // Given |path|, fill in |device_id|, |device_name|, and |relative_path|
+  // Given |path|, fill in |device_info|, and |relative_path|
   // (from the root of the device) if they are not NULL.
-  // TODO(gbillock): This needs to have an outparam of type
-  // RemovableStorageNotifications::StorageInfo.
-  static bool GetDeviceInfoFromPath(const base::FilePath& path,
-                                    std::string* device_id,
-                                    string16* device_name,
-                                    base::FilePath* relative_path);
+  static bool GetDeviceInfoFromPath(
+      const base::FilePath& path,
+      StorageMonitor::StorageInfo* device_info,
+      base::FilePath* relative_path);
 
   // Get a base::FilePath for the given |device_id|.  If the device isn't a mass
   // storage type, the base::FilePath will be empty.  This does not check that
@@ -89,16 +88,6 @@ class MediaStorageUtil {
   static void RecordDeviceInfoHistogram(bool mass_storage,
                                         const std::string& device_uuid,
                                         const string16& device_name);
-
- protected:
-  typedef bool (*GetDeviceInfoFromPathFunction)(const base::FilePath& path,
-                                                std::string* device_id,
-                                                string16* device_name,
-                                                base::FilePath* relative_path);
-
-  // Set the implementation of GetDeviceInfoFromPath for testing.
-  static void SetGetDeviceInfoFromPathFunctionForTesting(
-      GetDeviceInfoFromPathFunction function);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaStorageUtil);

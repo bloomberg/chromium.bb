@@ -4,6 +4,8 @@
 
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 
+#include "chrome/browser/storage_monitor/media_storage_util.h"
+
 namespace chrome {
 namespace test {
 
@@ -21,7 +23,16 @@ TestStorageMonitor::CreateForBrowserTests() {
 bool TestStorageMonitor::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
-  return false;
+  if (!path.IsAbsolute())
+    return false;
+
+  if (device_info) {
+    device_info->device_id = MediaStorageUtil::MakeDeviceId(
+        MediaStorageUtil::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+    device_info->name = path.BaseName().LossyDisplayName();
+    device_info->location = path.value();
+  }
+  return true;
 }
 
 uint64 TestStorageMonitor::GetStorageSize(

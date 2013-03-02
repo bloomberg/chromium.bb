@@ -561,9 +561,9 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   for (size_t i = 0; i < existing_devices.size(); i++) {
     if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
       continue;
-    // TODO(gbillock): add volume metadata from StorageInfo
     preferences->AddGalleryWithName(existing_devices[i].device_id,
-                                    existing_devices[i].name, base::FilePath(),
+                                    existing_devices[i].name,
+                                    base::FilePath(),
                                     false /*not user added*/);
   }
   return preferences;

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/utf_string_conversions.h"
 
 namespace chrome {
 namespace test {
@@ -34,29 +35,36 @@ std::vector<base::FilePath> FakeGetAttachedDevices() {
 
 // Gets the details of the mass storage device specified by the |device_path|.
 // |device_path| inputs of 'A:\' - 'Z:\' are valid. 'N:\' is not removable.
+// 'C:\' is not removable (so that auto-added paths are correctly handled).
 bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
                                  string16* device_location,
                                  std::string* unique_id,
                                  string16* name,
                                  bool* removable,
                                  uint64* total_size_in_bytes) {
-  if (device_path.value().length() != 3 || device_path.value()[0] < L'A' ||
-      device_path.value()[0] > L'Z') {
+  // Truncate to root path.
+  base::FilePath path(device_path);
+  if (device_path.value().length() > 3) {
+    path = base::FilePath(device_path.value().substr(0, 3));
+  }
+  if (path.value()[0] < L'A' || path.value()[0] > L'Z') {
     return false;
   }
 
   if (device_location)
-    *device_location = device_path.value();
+    *device_location = path.value();
   if (total_size_in_bytes)
     *total_size_in_bytes = 1000000;
   if (unique_id) {
     *unique_id = "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
-    (*unique_id)[11] = device_path.value()[0];
+    (*unique_id)[11] = path.value()[0];
   }
   if (name)
-    *name = device_path.Append(L" Drive").LossyDisplayName();
-  if (removable)
-    *removable = device_path.value()[0] != L'N';
+    *name = path.Append(L" Drive").LossyDisplayName();
+  if (removable) {
+    *removable = (path.value() != ASCIIToUTF16("N:\\") &&
+                  path.value() != ASCIIToUTF16("C:\\"));
+  }
   return true;
 }
 

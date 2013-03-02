@@ -47,10 +47,6 @@ const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 const char kMacImageCapture[] = "ic:";
 
-static bool (*g_test_get_device_info_from_path_function)(  // NOLINT
-    const base::FilePath& path, std::string* device_id, string16* device_name,
-    base::FilePath* relative_path) = NULL;
-
 void ValidatePathOnFileThread(
     const base::FilePath& path,
     const MediaStorageUtil::BoolCallback& callback) {
@@ -255,63 +251,48 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
 }
 
 // TODO(kmadhusu) Write unit tests for GetDeviceInfoFromPath().
-bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
-                                             std::string* device_id,
-                                             string16* device_name,
-                                             base::FilePath* relative_path) {
+bool MediaStorageUtil::GetDeviceInfoFromPath(
+      const base::FilePath& path,
+      StorageMonitor::StorageInfo* device_info,
+      base::FilePath* relative_path) {
   if (!path.IsAbsolute())
     return false;
 
-  // TODO(gbillock): Eliminate this in favor of a mock storage notifications.
-  if (g_test_get_device_info_from_path_function) {
-    return g_test_get_device_info_from_path_function(path, device_id,
-                                                     device_name,
-                                                     relative_path);
-  }
-
-  // TODO(gbillock): rationalize this sequence into call(s) to
-  // StorageMonitor and delegate name construction as well.
-
   bool found_device = false;
-  StorageMonitor::StorageInfo device_info;
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+  StorageMonitor::StorageInfo info;
   StorageMonitor* monitor = StorageMonitor::GetInstance();
-  found_device = monitor->GetStorageInfoForPath(path, &device_info);
-#endif
+  found_device = monitor->GetStorageInfoForPath(path, &info);
 
+// TODO(gbillock): Move this upstream into the RemovableStorageNotifications
+// implementation to handle in its GetDeviceInfoForPath call.
 #if defined(OS_LINUX)
   if (!found_device) {
     MediaTransferProtocolDeviceObserverLinux* mtp_manager =
         MediaTransferProtocolDeviceObserverLinux::GetInstance();
-    found_device = mtp_manager->GetStorageInfoForPath(path, &device_info);
+    found_device = mtp_manager->GetStorageInfoForPath(path, &info);
   }
 #endif
 
-  if (found_device && IsRemovableDevice(device_info.device_id)) {
-    if (device_id)
-      *device_id = device_info.device_id;
-
+  if (found_device && IsRemovableDevice(info.device_id)) {
     base::FilePath sub_folder_path;
-    if ((device_name || relative_path) &&
-        (path.value() != device_info.location)) {
-      base::FilePath device_path(device_info.location);
+    if (path.value() != info.location) {
+      base::FilePath device_path(info.location);
       bool success = device_path.AppendRelativePath(path, &sub_folder_path);
       DCHECK(success);
     }
 
-    if (device_name) {
-// OS_LINUX implies OS_CHROMEOS
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-      *device_name = GetDisplayNameForDevice(
-          monitor->GetStorageSize(device_info.location),
-          GetDisplayNameForSubFolder(device_info.name, sub_folder_path));
-#else
-      *device_name = device_info.name;
+// TODO(gbillock): Don't do this. Leave for clients to do.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)  // Implies OS_CHROMEOS
+    info.name = GetDisplayNameForDevice(
+        monitor->GetStorageSize(info.location),
+        GetDisplayNameForSubFolder(info.name, sub_folder_path));
 #endif
-    }
 
+    if (device_info)
+      *device_info = info;
     if (relative_path)
       *relative_path = sub_folder_path;
+
     return true;
   }
 
@@ -321,10 +302,14 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
     return false;
 #endif
 
-  if (device_id)
-    *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-  if (device_name)
-    *device_name = path.BaseName().LossyDisplayName();
+  // Handle non-removable devices. Note: this is just overwriting
+  // good values from RemovableStorageNotifications.
+  // TODO(gbillock): Make sure return values from that class are definitive,
+  // and don't do this here.
+  info.device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+  info.name = path.BaseName().LossyDisplayName();
+  if (device_info)
+    *device_info = info;
   if (relative_path)
     *relative_path = base::FilePath();
   return true;
@@ -378,12 +363,6 @@ void MediaStorageUtil::RecordDeviceInfoHistogram(bool mass_storage,
   }
   UMA_HISTOGRAM_ENUMERATION("MediaDeviceNotifications.DeviceInfo", event,
                             DEVICE_INFO_BUCKET_BOUNDARY);
-}
-
-// static
-void MediaStorageUtil::SetGetDeviceInfoFromPathFunctionForTesting(
-    GetDeviceInfoFromPathFunction function) {
-  g_test_get_device_info_from_path_function = function;
 }
 
 }  // namespace chrome
