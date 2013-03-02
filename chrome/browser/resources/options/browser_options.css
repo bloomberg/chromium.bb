@@ -72,6 +72,13 @@ html[dir=rtl] #account-picture-wrapper {
   min-height: 0;
 }
 
+#profiles-list .profile-name {
+  -webkit-box-flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #profiles-list > * {
   height: 40px;
 }

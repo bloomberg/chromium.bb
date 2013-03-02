@@ -58,6 +58,7 @@ cr.define('options.browser_options', function() {
       this.contentElement.appendChild(iconEl);
 
       var nameEl = this.ownerDocument.createElement('div');
+      nameEl.className = 'profile-name';
       if (profileInfo.isCurrentProfile)
         nameEl.classList.add('profile-item-current');
       this.contentElement.appendChild(nameEl);
