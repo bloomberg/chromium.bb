@@ -38,8 +38,15 @@ const base::FilePath::CharType kDataPath[] =
 #endif
 }
 
+// TODO(jschuh): Get Pepper Flash supported on Win64 build. crbug.com/179716
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_PepperFlashCheck DISABLED_PepperFlashCheck
+#else
+#define MAYBE_PepperFlashCheck PepperFlashCheck
+#endif
+
 // TODO(viettrungluu): Separate out into two separate tests; use a test fixture.
-TEST(ComponentInstallerTest, PepperFlashCheck) {
+TEST(ComponentInstallerTest, MAYBE_PepperFlashCheck) {
   MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
