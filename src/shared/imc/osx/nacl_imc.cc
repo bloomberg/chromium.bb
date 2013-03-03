@@ -96,11 +96,12 @@ struct Header {
  * GetRights() returns the number of file descriptors copied into fdv.
  */
 static size_t GetRights(struct msghdr* msg, int* fdv) {
+  struct cmsghdr* cmsg;
+  size_t count = 0;
   if (msg->msg_controllen == 0) {
     return 0;
   }
-  size_t count = 0;
-  for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(msg);
+  for (cmsg = CMSG_FIRSTHDR(msg);
        cmsg != 0;
        cmsg = CMSG_NXTHDR(msg, cmsg)) {
     if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
@@ -137,9 +138,9 @@ static bool SkipFile(int handle, size_t length) {
  * the time.
  */
 static bool IgnoreSIGPIPE() {
+  struct sigaction sa;
   sigset_t mask;
   sigemptyset(&mask);
-  struct sigaction sa;
   sa.sa_handler = SIG_IGN;
   sa.sa_mask = mask;
   sa.sa_flags = 0;
@@ -169,6 +170,9 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
 int NaClSocketPair(NaClHandle pair[2]) {
   int result = socketpair(AF_UNIX, SOCK_STREAM, 0, pair);
   if (result == 0) {
+#if SIGPIPE_FIX
+    int nosigpipe = 1;
+#endif
 #if SIGPIPE_ALT_FIX
     if (!IgnoreSIGPIPE()) {
       close(pair[0]);
@@ -177,7 +181,6 @@ int NaClSocketPair(NaClHandle pair[2]) {
     }
 #endif
 #if SIGPIPE_FIX
-    int nosigpipe = 1;
     if (0 != setsockopt(pair[0], SOL_SOCKET, SO_NOSIGPIPE,
                         &nosigpipe, sizeof nosigpipe) ||
         0 != setsockopt(pair[1], SOL_SOCKET, SO_NOSIGPIPE,
@@ -201,8 +204,9 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   struct iovec vec[kIovLengthMax + 1];
   unsigned char buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
   Header header = { 0, 0 };
-
-  (void) flags;  /* BUG(shiki): unused parameter */
+  int result;
+  size_t i;
+  UNREFERENCED_PARAMETER(flags);
 
   assert(CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))
          <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
@@ -240,10 +244,11 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   msg.msg_iov = vec;
   msg.msg_iovlen = 1 + message->iov_length;
   if (0 < message->handle_count && message->handles != NULL) {
+    struct cmsghdr *cmsg;
     int size = message->handle_count * sizeof(int);
     msg.msg_control = buf;
     msg.msg_controllen = CMSG_SPACE(size);
-    struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg = CMSG_FIRSTHDR(&msg);
     cmsg->cmsg_level = SOL_SOCKET;
     cmsg->cmsg_type = SCM_RIGHTS;
     cmsg->cmsg_len = CMSG_LEN(size);
@@ -260,12 +265,12 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
    * Send data with the header atomically. Note to send file descriptors we need
    * to send at least one byte of data.
    */
-  for (size_t i = 0; i < message->iov_length; ++i) {
+  for (i = 0; i < message->iov_length; ++i) {
     header.message_bytes += message->iov[i].length;
   }
   vec[0].iov_base = &header;
   vec[0].iov_len = sizeof header;
-  int result = sendmsg(handle, &msg, 0);
+  result = sendmsg(handle, &msg, 0);
   if (result == -1) {
     return -1;
   }
@@ -281,6 +286,13 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   struct msghdr msg;
   struct iovec vec[kIovLengthMax];
   unsigned char buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
+  struct Header header;
+  struct iovec header_vec = { &header, sizeof header };
+  int count;
+  int retry_count;
+  size_t handle_count = 0;
+  size_t buffer_bytes = 0;
+  size_t i;
 
   assert(CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))
          <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
@@ -313,8 +325,6 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
 
   message->flags = 0;
   /* Receive the header of the message and handles first. */
-  Header header;
-  struct iovec header_vec = { &header, sizeof header };
   msg.msg_iov = &header_vec;
   msg.msg_iovlen = 1;
   msg.msg_name = 0;
@@ -327,8 +337,6 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     msg.msg_controllen = 0;
   }
   msg.msg_flags = 0;
-  int count;
-  int retry_count;
   for (retry_count = 0; retry_count < kRecvMsgRetries; ++retry_count) {
     if (0 != (count = recvmsg(handle, &msg,
                               (flags & NACL_DONT_WAIT) ? MSG_DONTWAIT : 0))) {
@@ -339,7 +347,6 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     printf("OSX_BLEMISH_HEURISTIC: retry_count = %d, count = %d\n",
            retry_count, count);
   }
-  size_t handle_count = 0;
   if (0 < count) {
     handle_count = GetRights(&msg, message->handles);
   }
@@ -385,8 +392,6 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   memmove(vec, message->iov, sizeof(NaClIOVec) * message->iov_length);
   msg.msg_iov = vec;
   msg.msg_iovlen = message->iov_length;
-  size_t buffer_bytes = 0;
-  size_t i;
   for (i = 0; i < message->iov_length; ++i) {
     buffer_bytes += vec[i].iov_len;
     if (header.message_bytes <= buffer_bytes) {

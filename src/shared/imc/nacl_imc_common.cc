@@ -27,9 +27,10 @@
 int NaClMessageSizeIsValid(const NaClMessageHeader *message) {
   size_t cur_bytes = 0;
   static size_t const kMax = static_cast<size_t>(~static_cast<uint32_t>(0));
+  size_t ix;
   /* we assume that sizeof(uint32_t) <= sizeof(size_t) */
 
-  for (size_t ix = 0; ix < message->iov_length; ++ix) {
+  for (ix = 0; ix < message->iov_length; ++ix) {
     if (kMax - cur_bytes < message->iov[ix].length) {
       return 0;
     }

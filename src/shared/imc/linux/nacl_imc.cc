@@ -28,8 +28,9 @@
  * GetRights() returns the number of file descriptors copied into fdv.
  */
 static size_t GetRights(struct msghdr* msg, int* fdv) {
+  struct cmsghdr* cmsg;
   size_t count = 0;
-  for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(msg);
+  for (cmsg = CMSG_FIRSTHDR(msg);
        cmsg != 0;
        cmsg = CMSG_NXTHDR(msg, cmsg)) {
     if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
@@ -113,10 +114,11 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   msg.msg_namelen = 0;
 
   if (0 < message->handle_count && message->handles != NULL) {
+    struct cmsghdr* cmsg;
     int size = message->handle_count * sizeof(int);
     msg.msg_control = buf;
     msg.msg_controllen = CMSG_SPACE(size);
-    struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg = CMSG_FIRSTHDR(&msg);
     cmsg->cmsg_level = SOL_SOCKET;
     cmsg->cmsg_type = SCM_RIGHTS;
     cmsg->cmsg_len = CMSG_LEN(size);
@@ -135,6 +137,7 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
                         int flags) {
   struct msghdr msg;
   unsigned char buf[CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))];
+  int count;
 
   if (NACL_HANDLE_COUNT_MAX < message->handle_count) {
     errno = EMSGSIZE;
@@ -162,7 +165,7 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   }
   msg.msg_flags = 0;
   message->flags = 0;
-  int count = recvmsg(handle, &msg, (flags & NACL_DONT_WAIT) ? MSG_DONTWAIT : 0);
+  count = recvmsg(handle, &msg, (flags & NACL_DONT_WAIT) ? MSG_DONTWAIT : 0);
   if (0 <= count) {
     message->handle_count = GetRights(&msg, message->handles);
     if (msg.msg_flags & MSG_TRUNC) {

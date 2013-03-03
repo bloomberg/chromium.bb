@@ -198,8 +198,8 @@ NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
 
 int NaClSocketPair(NaClHandle pair[2]) {
   static Atomic32 socket_pair_count;
-
   char name[kPipePathMax];
+
   do {
     sprintf_s(name, kPipePathMax, "%s%u.%lu",
               kPipePrefix, GetCurrentProcessId(),
@@ -252,6 +252,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
                      int flags) {
   ControlHeader header = { kEchoRequest, GetCurrentProcessId(), 0, 0 };
   uint64_t remote_handles[NACL_HANDLE_COUNT_MAX];
+  uint32_t i;
 
   if (NACL_HANDLE_COUNT_MAX < message->handle_count) {
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -262,6 +263,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
     return -1;
   }
   if (0 < message->handle_count && message->handles) {
+    HANDLE target;
     /*
      * TODO(shiki): On Windows Vista, we can use GetNamedPipeClientProcessId()
      * and GetNamedPipeServerProcessId() and probably we can remove
@@ -272,14 +274,13 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
         header.command != kEchoResponse) {
       return -1;
     }
-    HANDLE target;
     if (g_broker_duplicate_handle_func == NULL) {
       target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
       if (target == NULL) {
         return -1;
       }
     }
-    for (uint32_t i = 0; i < message->handle_count; ++i) {
+    for (i = 0; i < message->handle_count; ++i) {
       HANDLE temp_remote_handle;
       bool success;
       if (g_broker_duplicate_handle_func != NULL) {
@@ -316,7 +317,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   }
   header.command = kMessage;
   header.handle_count = message->handle_count;
-  for (uint32_t i = 0; i < message->iov_length; ++i) {
+  for (i = 0; i < message->iov_length; ++i) {
     if (UINT32_MAX - header.message_length < message->iov[i].length) {
       return -1;
     }
@@ -325,7 +326,7 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
   if (WriteAll(handle, &header, sizeof header) != sizeof header) {
     return -1;
   }
-  for (uint32_t i = 0; i < message->iov_length; ++i) {
+  for (i = 0; i < message->iov_length; ++i) {
     if (WriteAll(handle, message->iov[i].base, message->iov[i].length) !=
         message->iov[i].length) {
       return -1;
@@ -344,6 +345,10 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
 int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
                        const NaClSocketAddress* name) {
   NaClHandle handle;
+  char pipe_name[kPipePathMax];
+  int timeout_ms;
+  int result;
+
   if (NACL_HANDLE_COUNT_MAX < message->handle_count) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return -1;
@@ -352,11 +357,10 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
     SetLastError(ERROR_INVALID_PARAMETER);
     return -1;
   }
-  char pipe_name[kPipePathMax];
   if (!GetSocketName(name, pipe_name)) {
     return -1;
   }
-  int timeout_ms = 10;
+  timeout_ms = 10;
   for (;;) {
     handle = CreateFileW(ASCIIToWide(pipe_name).c_str(),
                          GENERIC_READ | GENERIC_WRITE,
@@ -409,7 +413,7 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
       timeout_ms = kDefaultTimeoutMilliSeconds;
     }
   }
-  int result = NaClSendDatagram(handle, message, flags);
+  result = NaClSendDatagram(handle, message, flags);
   CloseHandle(handle);
   return result;
 }
@@ -419,6 +423,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   ControlHeader header;
   int result = -1;
   bool dontPeek = false;
+  uint32_t i;
  Repeat:
   if ((flags & NACL_DONT_WAIT) && !dontPeek) {
     DWORD len;
@@ -489,7 +494,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
       uint32_t total_message_bytes = header.message_length;
       size_t count = 0;
       message->flags = 0;
-      for (size_t i = 0;
+      for (i = 0;
            i < message->iov_length && count < header.message_length;
            ++i) {
         NaClIOVec* iov = &message->iov[i];
@@ -508,15 +513,15 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
         message->flags |= NACL_MESSAGE_TRUNCATED;
       }
       if (0 < message->handle_count && message->handles) {
+        uint64_t received_handles[NACL_HANDLE_COUNT_MAX];
         message->handle_count = std::min(message->handle_count,
                                          header.handle_count);
-        uint64_t received_handles[NACL_HANDLE_COUNT_MAX];
         if (ReadAll(handle, received_handles,
                     message->handle_count * sizeof(uint64_t)) !=
             message->handle_count * sizeof(uint64_t)) {
           break;
         }
-        for (uint32_t i = 0; i < message->handle_count; ++i) {
+        for (i = 0; i < message->handle_count; ++i) {
           message->handles[i] = reinterpret_cast<HANDLE>(received_handles[i]);
         }
       } else {
@@ -545,6 +550,7 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
 
 int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
                         int flags) {
+  DWORD state;
   if (!NaClMessageSizeIsValid(message)) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return -1;
@@ -554,7 +560,6 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
    * If handle is a bound socket, it is a named pipe in non-blocking mode.
    * Set is_bound_socket to true if handle has been created by BoundSocket().
    */
-  DWORD state;
   if (!GetNamedPipeHandleState(handle, &state, NULL, NULL, NULL, NULL, NULL)) {
     return -1;
   }
@@ -576,19 +581,20 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     }
     switch (GetLastError()) {
     case ERROR_PIPE_LISTENING: {
+      /* Set handle to blocking mode */
+      DWORD mode = PIPE_READMODE_BYTE | PIPE_WAIT;
       if (flags & NACL_DONT_WAIT) {
         return -1;
       }
-      /* Set handle to blocking mode */
-      DWORD mode = PIPE_READMODE_BYTE | PIPE_WAIT;
       SetNamedPipeHandleState(handle, &mode, NULL, NULL);
       break;
     }
     case ERROR_PIPE_CONNECTED: {
       /* Set handle to blocking mode */
       DWORD mode = PIPE_READMODE_BYTE | PIPE_WAIT;
+      int result;
       SetNamedPipeHandleState(handle, &mode, NULL, NULL);
-      int result = ReceiveDatagram(handle, message, flags, true);
+      result = ReceiveDatagram(handle, message, flags, true);
       FlushFileBuffers(handle);
       /* Set handle back to non-blocking mode. */
       mode = PIPE_READMODE_BYTE | PIPE_NOWAIT;

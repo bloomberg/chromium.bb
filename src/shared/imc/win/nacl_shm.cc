@@ -25,11 +25,12 @@ void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
 }
 
 NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
+  NaClHandle memory;
   if (length % NACL_MAP_PAGESIZE) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return NACL_INVALID_HANDLE;
   }
-  NaClHandle memory = CreateFileMapping(
+  memory = CreateFileMapping(
       INVALID_HANDLE_VALUE,
       NULL,
       executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE,
@@ -55,6 +56,8 @@ void* NaClMap(struct NaClDescEffector* effp,
     FILE_MAP_WRITE | FILE_MAP_EXECUTE,
     FILE_MAP_ALL_ACCESS | FILE_MAP_EXECUTE
   };
+  DWORD desired_access;
+  size_t chunk_offset;
 
   if (prot == NACL_ABI_PROT_NONE) {
     /*
@@ -74,23 +77,24 @@ void* NaClMap(struct NaClDescEffector* effp,
   }
 
   /* Convert prot to the desired access type for MapViewOfFileEx(). */
-  DWORD desired_access = prot_to_access[prot & 0x7];
+  desired_access = prot_to_access[prot & 0x7];
   if (flags & NACL_MAP_PRIVATE) {
     desired_access = FILE_MAP_COPY;
   }
 
   CHECK((flags & NACL_MAP_FIXED) != 0);
-  for (size_t chunk_offset = 0;
+  for (chunk_offset = 0;
        chunk_offset < length;
        chunk_offset += NACL_MAP_PAGESIZE) {
     uintptr_t chunk_addr = (uintptr_t) start + chunk_offset;
+    void* mapped;
 
     (*effp->vtbl->UnmapMemory)(effp, chunk_addr, NACL_MAP_PAGESIZE);
 
-    void* mapped = MapViewOfFileEx(memory, desired_access,
-                                   0, (off_t) (offset + chunk_offset),
-                                   NACL_MAP_PAGESIZE,
-                                   (void*) chunk_addr);
+    mapped = MapViewOfFileEx(memory, desired_access,
+                             0, (off_t) (offset + chunk_offset),
+                             NACL_MAP_PAGESIZE,
+                             (void*) chunk_addr);
     if (mapped != (void*) chunk_addr) {
       NaClLog(LOG_FATAL, "nacl::Map: MapViewOfFileEx() failed, error %d\n",
               GetLastError());

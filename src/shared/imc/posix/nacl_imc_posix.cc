@@ -80,6 +80,7 @@ int NaClWouldBlock(void) {
 
 int NaClGetLastErrorString(char* buffer, size_t length) {
 #if NACL_LINUX && !NACL_ANDROID
+  char* message;
   /*
    * Note some Linux distributions provide only GNU version of strerror_r().
    */
@@ -87,7 +88,7 @@ int NaClGetLastErrorString(char* buffer, size_t length) {
     errno = ERANGE;
     return -1;
   }
-  char* message = strerror_r(errno, buffer, length);
+  message = strerror_r(errno, buffer, length);
   if (message != buffer) {
     size_t message_bytes = strlen(message) + 1;
     length = std::min(message_bytes, length);
@@ -104,16 +105,16 @@ int NaClGetLastErrorString(char* buffer, size_t length) {
 static Atomic32 memory_object_count = 0;
 
 static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
+  char name[PATH_MAX];
   if (0 == length) {
     return -1;
   }
 
-  char name[PATH_MAX];
   for (;;) {
+    int m;
     snprintf(name, sizeof name, "%s-%u.%u", prefix,
              getpid(),
              static_cast<uint32_t>(AtomicIncrement(&memory_object_count, 1)));
-    int m;
     if (use_temp) {
       m = open(name, O_RDWR | O_CREAT | O_EXCL, 0);
     } else {
@@ -147,10 +148,11 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
 #endif
 
 NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
+  int fd;
+
   if (0 == length) {
     return -1;
   }
-  int fd;
 
   if (g_create_memory_object_func != NULL) {
     fd = g_create_memory_object_func(length, executable);
@@ -196,8 +198,6 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
 void* NaClMap(struct NaClDescEffector* effp,
               void* start, size_t length, int prot, int flags,
               NaClHandle memory, off_t offset) {
-  UNREFERENCED_PARAMETER(effp);
-
   static const int kPosixProt[] = {
     PROT_NONE,
     PROT_READ,
@@ -208,8 +208,9 @@ void* NaClMap(struct NaClDescEffector* effp,
     PROT_WRITE | PROT_EXEC,
     PROT_READ | PROT_WRITE | PROT_EXEC
   };
-
   int adjusted = 0;
+  UNREFERENCED_PARAMETER(effp);
+
   if (flags & NACL_MAP_SHARED) {
     adjusted |= MAP_SHARED;
   }

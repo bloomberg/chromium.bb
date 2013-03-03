@@ -27,12 +27,13 @@ int NaClWouldBlock() {
 }
 
 int NaClGetLastErrorString(char* buffer, size_t length) {
+  char* message;
   /* Note newlib provides only GNU version of strerror_r(). */
   if (buffer == NULL || length == 0) {
     errno = ERANGE;
     return -1;
   }
-  char* message = strerror_r(errno, buffer, length);
+  message = strerror_r(errno, buffer, length);
   if (message != buffer) {
     size_t message_bytes = strlen(message) + 1;
     length = std::min(message_bytes, length);
@@ -91,8 +92,8 @@ void* NaClMap(struct NaClDescEffector* effp,
     PROT_WRITE,
     PROT_READ | PROT_WRITE
   };
-
   int adjusted = 0;
+
   if (flags & NACL_MAP_SHARED) {
     adjusted |= MAP_SHARED;
   }
