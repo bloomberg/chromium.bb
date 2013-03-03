@@ -57,7 +57,7 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
       found_reload = true;
     if (view->id() == VIEW_ID_APP_MENU)
       found_app_menu = true;
-    if (view->id() == VIEW_ID_LOCATION_BAR || view->id() == VIEW_ID_OMNIBOX)
+    if (view->id() == VIEW_ID_OMNIBOX)
       found_location_bar = true;
     if (ids.size() > 100)
       GTEST_FAIL() << "Tabbed 100 times, still haven't cycled back!";

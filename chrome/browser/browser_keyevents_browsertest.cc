@@ -27,6 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 using content::DomOperationNotificationDetails;
 using content::NavigationController;
@@ -638,11 +639,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   // TODO(isherman): This is an experimental change to help diagnose
   // http://crbug.com/55713
   content::RunAllPendingInMessageLoop();
-#if defined(USE_AURA)
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
-#else
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
-#endif
   // No element should be focused, as Alt+D was handled by the browser.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
 

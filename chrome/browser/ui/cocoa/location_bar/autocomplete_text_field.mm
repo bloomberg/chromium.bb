@@ -408,7 +408,7 @@
 }
 
 - (ViewID)viewID {
-  return VIEW_ID_LOCATION_BAR;
+  return VIEW_ID_OMNIBOX;
 }
 
 @end

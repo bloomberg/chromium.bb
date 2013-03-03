@@ -76,6 +76,7 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -190,7 +191,8 @@ LocationBarView::LocationBarView(Browser* browser,
       show_focus_rect_(false),
       template_url_service_(NULL),
       animation_offset_(0) {
-  set_id(VIEW_ID_LOCATION_BAR);
+  if (!views::Textfield::IsViewsTextfieldEnabled())
+    set_id(VIEW_ID_OMNIBOX);
 
   if (mode_ == NORMAL) {
     background_painter_.reset(

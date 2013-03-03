@@ -36,13 +36,7 @@ class ActionBoxTest : public InProcessBrowserTest,
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     chrome::FocusLocationBar(browser());
-    // Use Textfield's view id on pure views. See crbug.com/71144.
-    ViewID location_bar_focus_view_id = VIEW_ID_LOCATION_BAR;
-#if defined(USE_AURA)
-    location_bar_focus_view_id = VIEW_ID_OMNIBOX;
-#endif
-    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                             location_bar_focus_view_id));
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

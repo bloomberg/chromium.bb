@@ -280,7 +280,7 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(forward_->widget(), VIEW_ID_FORWARD_BUTTON);
   ViewIDUtil::SetID(reload_->widget(), VIEW_ID_RELOAD_BUTTON);
   ViewIDUtil::SetID(home_->widget(), VIEW_ID_HOME_BUTTON);
-  ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_LOCATION_BAR);
+  ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_OMNIBOX);
   ViewIDUtil::SetID(wrench_menu_button_->widget(), VIEW_ID_APP_MENU);
 }
 

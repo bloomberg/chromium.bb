@@ -43,13 +43,7 @@ void Checkpoint(const char* message, const base::TimeTicks& start_time) {
 
 class FindInPageTest : public InProcessBrowserTest {
  public:
-  FindInPageTest() :
-#if defined(USE_AURA)
-      location_bar_focus_view_id_(VIEW_ID_OMNIBOX)
-#else
-      location_bar_focus_view_id_(VIEW_ID_LOCATION_BAR)
-#endif
-  {
+  FindInPageTest() {
     FindBarHost::disable_animations_during_testing_ = true;
   }
 
@@ -64,8 +58,6 @@ class FindInPageTest : public InProcessBrowserTest {
         browser()->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindSelectedText();
   }
-
-  ViewID location_bar_focus_view_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FindInPageTest);
@@ -104,10 +96,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
 
   // Click on the location bar so that Find box loses focus.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
-                                                     VIEW_ID_LOCATION_BAR));
+                                                     VIEW_ID_OMNIBOX));
   // Check the location bar is focused.
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
   // This used to crash until bug 1303709 was fixed.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -129,8 +120,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
   // Focus the location bar, open and close the find-in-page, focus should
   // return to the location bar.
   chrome::FocusLocationBar(browser());
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   // Ensure the creation of the find bar controller.
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
@@ -138,8 +128,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelectionOnPage,
       FindBarController::kKeepResultsInFindBox);
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
   // Focus the location bar, find something on the page, close the find box,
   // focus should go to the page.
@@ -159,16 +148,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
   // the location bar (same as before, just checking that http://crbug.com/23599
   // is fixed).
   chrome::FocusLocationBar(browser());
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   browser()->GetFindBarController()->Show();
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelectionOnPage,
       FindBarController::kKeepResultsInFindBox);
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
 // Fails often on Win, CrOS. http://crbug.com/145476, http://crbug.com/128724
@@ -217,8 +204,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
 
   // Set focus away from the Find bar (to the Location bar).
   chrome::FocusLocationBar(browser());
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
   // Select tab A. Find bar should get focus.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
@@ -228,8 +214,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
 
   // Select tab B. Location bar should get focus.
   browser()->tab_strip_model()->ActivateTabAt(1, true);
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           location_bar_focus_view_id_));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
 // Flaky on XP: http://crbug.com/152100
