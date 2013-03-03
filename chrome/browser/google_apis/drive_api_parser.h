@@ -31,6 +31,10 @@ class RepeatedMessageConverter;
 
 namespace google_apis {
 
+class AccountMetadata;
+class AppIcon;
+class InstalledApp;
+
 // About resource represents the account information about the current user.
 // https://developers.google.com/drive/v2/reference/about
 class AboutResource {
@@ -106,6 +110,11 @@ class DriveAppIcon {
   // Creates drive app icon instance from parsed JSON.
   static scoped_ptr<DriveAppIcon> CreateFrom(const base::Value& value);
 
+  // Creates drive app icon instance from parsed Icon.
+  // This method is designed to migrate GData WAPI to Drive API v2.
+  // TODO(hidehiko): Remove this method once the migration is completed.
+  static scoped_ptr<DriveAppIcon> CreateFromAppIcon(const AppIcon& app_icon);
+
   // Category of the icon.
   IconCategory category() const { return category_; }
 
@@ -159,6 +168,12 @@ class AppResource {
 
   // Creates app resource from parsed JSON.
   static scoped_ptr<AppResource> CreateFrom(const base::Value& value);
+
+  // Creates app resource from parsed InstalledApp.
+  // This method is designed to migrate GData WAPI to Drive API v2.
+  // TODO(hidehiko): Remove this method once the migration is completed.
+  static scoped_ptr<AppResource> CreateFromInstalledApp(
+      const InstalledApp& installed_app);
 
   // Returns application ID, which is 12-digit decimals (e.g. "123456780123").
   const std::string& application_id() const { return application_id_; }
@@ -299,6 +314,12 @@ class AppList {
 
   // Creates app list from parsed JSON.
   static scoped_ptr<AppList> CreateFrom(const base::Value& value);
+
+  // Creates app list from parsed AccountMetadata.
+  // This method is designed to migrate GData WAPI to Drive API v2.
+  // TODO(hidehiko): Remove this method once the migration is completed.
+  static scoped_ptr<AppList> CreateFromAccountMetadata(
+      const AccountMetadata& account_metadata);
 
   // ETag for this resource.
   const std::string& etag() const { return etag_; }

@@ -776,6 +776,9 @@ class InstalledApp {
   void set_links(ScopedVector<Link>* links) {
     links_.swap(*links);
   }
+  void set_app_icons(ScopedVector<AppIcon>* app_icons) {
+    app_icons_.swap(*app_icons);
+  }
 
  private:
   // Extracts "$t" value from the dictionary |value| and returns it in |result|.

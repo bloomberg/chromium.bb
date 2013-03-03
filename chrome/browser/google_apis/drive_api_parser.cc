@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
 
 using base::Value;
@@ -164,6 +165,16 @@ bool IsResourceKindExpected(const base::Value& value,
       kind == expected_kind;
 }
 
+ScopedVector<std::string> CopyScopedVectorString(
+    const ScopedVector<std::string>& source) {
+  ScopedVector<std::string> result;
+  result.reserve(source.size());
+  for (size_t i = 0; i < source.size(); ++i) {
+    result.push_back(new std::string(*source[i]));
+  }
+  return result.Pass();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +252,32 @@ scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(const base::Value& value) {
   return resource.Pass();
 }
 
+// static
+scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFromAppIcon(
+    const AppIcon& app_icon) {
+  scoped_ptr<DriveAppIcon> resource(new DriveAppIcon);
+  switch (app_icon.category()) {
+    case AppIcon::ICON_UNKNOWN:
+      resource->set_category(DriveAppIcon::UNKNOWN);
+      break;
+    case AppIcon::ICON_DOCUMENT:
+      resource->set_category(DriveAppIcon::DOCUMENT);
+      break;
+    case AppIcon::ICON_APPLICATION:
+      resource->set_category(DriveAppIcon::APPLICATION);
+      break;
+    case AppIcon::ICON_SHARED_DOCUMENT:
+      resource->set_category(DriveAppIcon::SHARED_DOCUMENT);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  resource->set_icon_side_length(app_icon.icon_side_length());
+  resource->set_icon_url(app_icon.GetIconURL());
+  return resource.Pass();
+}
+
 bool DriveAppIcon::Parse(const base::Value& value) {
   base::JSONValueConverter<DriveAppIcon> converter;
   if (!converter.Convert(value, this)) {
@@ -309,6 +346,54 @@ scoped_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
   return resource.Pass();
 }
 
+// static
+scoped_ptr<AppResource> AppResource::CreateFromInstalledApp(
+    const InstalledApp& installed_app) {
+  scoped_ptr<AppResource> resource(new AppResource);
+  resource->set_application_id(installed_app.app_id());
+  resource->set_name(installed_app.app_name());
+  resource->set_object_type(installed_app.object_type());
+  resource->set_supports_create(installed_app.supports_create());
+  resource->set_product_url(installed_app.GetProductUrl());
+
+  {
+    ScopedVector<std::string> primary_mimetypes(
+        CopyScopedVectorString(installed_app.primary_mimetypes()));
+    resource->set_primary_mimetypes(&primary_mimetypes);
+  }
+  {
+    ScopedVector<std::string> secondary_mimetypes(
+        CopyScopedVectorString(installed_app.secondary_mimetypes()));
+    resource->set_secondary_mimetypes(&secondary_mimetypes);
+  }
+  {
+    ScopedVector<std::string> primary_file_extensions(
+        CopyScopedVectorString(installed_app.primary_extensions()));
+    resource->set_primary_file_extensions(&primary_file_extensions);
+  }
+  {
+    ScopedVector<std::string> secondary_file_extensions(
+        CopyScopedVectorString(installed_app.secondary_extensions()));
+    resource->set_secondary_file_extensions(&secondary_file_extensions);
+  }
+
+  {
+    const ScopedVector<AppIcon>& app_icons = installed_app.app_icons();
+    ScopedVector<DriveAppIcon> icons;
+    icons.reserve(app_icons.size());
+    for (size_t i = 0; i < app_icons.size(); ++i) {
+      icons.push_back(DriveAppIcon::CreateFromAppIcon(*app_icons[i]).release());
+    }
+    resource->set_icons(&icons);
+  }
+
+  // supports_import, installed and authorized are not supported in
+  // InstalledApp.
+
+  return resource.Pass();
+}
+
+
 bool AppResource::Parse(const base::Value& value) {
   base::JSONValueConverter<AppResource> converter;
   if (!converter.Convert(value, this)) {
@@ -340,6 +425,26 @@ scoped_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
     LOG(ERROR) << "Unable to create: Invalid AppList JSON!";
     return scoped_ptr<AppList>(NULL);
   }
+  return resource.Pass();
+}
+
+// static
+scoped_ptr<AppList> AppList::CreateFromAccountMetadata(
+    const AccountMetadata& account_metadata) {
+  scoped_ptr<AppList> resource(new AppList);
+
+  const ScopedVector<InstalledApp>& installed_apps =
+      account_metadata.installed_apps();
+  ScopedVector<AppResource> app_resources;
+  app_resources.reserve(installed_apps.size());
+  for (size_t i = 0; i < installed_apps.size(); ++i) {
+    app_resources.push_back(
+        AppResource::CreateFromInstalledApp(*installed_apps[i]).release());
+  }
+  resource->set_items(&app_resources);
+
+  // etag is not supported in AccountMetadata.
+
   return resource.Pass();
 }
 

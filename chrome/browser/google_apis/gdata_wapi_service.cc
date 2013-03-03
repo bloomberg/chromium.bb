@@ -13,6 +13,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
@@ -118,6 +119,21 @@ void ExtractOpenLinkAndRun(const std::string app_id,
   }
 
   callback.Run(error, open_link);
+}
+
+void ParseAppListAndRun(
+    const GetAppListCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<AccountMetadata> account_metadata) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<AppList> app_list;
+  if (account_metadata) {
+    app_list = AppList::CreateFromAccountMetadata(*account_metadata);
+  }
+
+  callback.Run(error, app_list.Pass());
 }
 
 // OAuth2 scopes for the documents API.
@@ -274,8 +290,13 @@ void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new GetAccountMetadataOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          base::Bind(&ParseAppListAndRun, callback),
+          true));  // Include installed apps.
 }
 
 void GDataWapiService::DownloadFile(
