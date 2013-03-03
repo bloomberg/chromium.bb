@@ -1165,7 +1165,8 @@
             'base/simd/yuv_to_rgb_table.h',
           ],
           'conditions': [
-            [ 'OS!="win" or target_arch=="ia32" or MSVS_VERSION>="2012"', {
+            # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
+            [ 'OS!="win" or target_arch=="ia32"', {
               'sources': [
                 'base/simd/filter_yuv_mmx.cc',
               ],
