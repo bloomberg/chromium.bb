@@ -113,7 +113,9 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
-    : framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)) {
+    : framer_(kQuicVersion1,
+              QuicDecrypter::Create(kNULL),
+              QuicEncrypter::Create(kNULL)) {
 }
 
 SimpleQuicFramer::~SimpleQuicFramer() {

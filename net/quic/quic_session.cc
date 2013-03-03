@@ -140,13 +140,13 @@ void QuicSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
 bool QuicSession::OnCanWrite() {
   // We latch this here rather than doing a traditional loop, because streams
   // may be modifying the list as we loop.
-  int remaining_writes = write_blocked_streams_.size();
+  int remaining_writes = write_blocked_streams_.NumObjects();
 
   while (!connection_->HasQueuedData() &&
          remaining_writes > 0) {
-    DCHECK(!write_blocked_streams_.empty());
-    ReliableQuicStream* stream = GetStream(write_blocked_streams_.front());
-    write_blocked_streams_.pop_front();
+    DCHECK(!write_blocked_streams_.IsEmpty());
+    ReliableQuicStream* stream =
+        GetStream(write_blocked_streams_.GetNextBlockedObject());
     if (stream != NULL) {
       // If the stream can't write all bytes, it'll re-add itself to the blocked
       // list.
@@ -155,7 +155,7 @@ bool QuicSession::OnCanWrite() {
     --remaining_writes;
   }
 
-  return write_blocked_streams_.empty();
+  return write_blocked_streams_.IsEmpty();
 }
 
 QuicConsumedData QuicSession::WriteData(QuicStreamId id,
@@ -295,7 +295,7 @@ size_t QuicSession::GetNumOpenStreams() const {
 }
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id) {
-  write_blocked_streams_.push_back(id);
+  write_blocked_streams_.AddBlockedObject(id);
 }
 
 void QuicSession::PostProcessAfterData() {

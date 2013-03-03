@@ -10,14 +10,6 @@
 namespace net {
 
 // static
-size_t QuicUtils::StreamFramePacketOverhead(int num_frames) {
-  // TODO(jar): Use sizeof(some name).
-  return kPacketHeaderSize +
-         (kFrameTypeSize +
-          kMinStreamFrameLength) * num_frames;
-}
-
-// static
 uint128 QuicUtils::FNV1a_128_Hash(const char* data, int len) {
   // The following two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/

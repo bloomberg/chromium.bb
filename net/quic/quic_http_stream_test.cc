@@ -116,7 +116,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
         guid_(2),
-        framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
+        framer_(kQuicVersion1,
+                QuicDecrypter::Create(kNULL),
+                QuicEncrypter::Create(kNULL)),
         creator_(guid_, &framer_, &random_) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));

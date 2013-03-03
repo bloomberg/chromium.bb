@@ -58,7 +58,9 @@ class QuicConnectionHelperTest : public ::testing::Test {
 
   QuicConnectionHelperTest()
       : guid_(2),
-        framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
+        framer_(kQuicVersion1,
+                QuicDecrypter::Create(kNULL),
+                QuicEncrypter::Create(kNULL)),
         creator_(guid_, &framer_, QuicRandom::GetInstance()),
         net_log_(BoundNetLog()),
         frame_(1, false, 0, kData) {

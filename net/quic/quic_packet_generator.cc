@@ -73,9 +73,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   size_t total_bytes_consumed = 0;
   bool fin_consumed = false;
 
-  // Make sure any queued data gets sent before new data.
-  //  SendQueuedData();
-
   while (delegate_->CanWrite(false)) {
     // TODO(rch) figure out FEC.
     // packet_creator_.MaybeStartFEC();

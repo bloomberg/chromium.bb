@@ -45,6 +45,10 @@ QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator);
 
+// Returns the length of the QuicPacket that will be created if it contains
+// a stream frame that has |payload| bytes.
+size_t GetPacketLengthForOneStream(bool include_version, size_t payload);
+
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
   MockFramerVisitor();
@@ -131,9 +135,9 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
       const QuicConnectionCloseFrame& frame) OVERRIDE;
   virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) OVERRIDE;
 
-  size_t frame_count() { return frame_count_; }
+  size_t frame_count() const { return frame_count_; }
   QuicPacketHeader* header() { return &header_; }
-  const std::vector<QuicStreamFrame>* stream_frames() {
+  const std::vector<QuicStreamFrame>* stream_frames() const {
     return &stream_frames_;
   }
   QuicAckFrame* ack() { return ack_.get(); }

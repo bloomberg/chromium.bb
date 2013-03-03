@@ -33,6 +33,37 @@ namespace test {
 const QuicPacketSequenceNumber kEpoch = GG_UINT64_C(1) << 48;
 const QuicPacketSequenceNumber kMask = kEpoch - 1;
 
+// Index into the guid offset in the header.
+const size_t kGuidOffset = 0;
+// Index into the flags offset in the header.
+const size_t kPublicFlagsOffset = kQuicGuidSize;
+// Index into the version string in the header. (if present).
+const size_t kVersionOffset = kPublicFlagsOffset + kPublicFlagsSize;
+
+// Index into the sequence number offset in the header.
+size_t GetSequenceNumberOffset(bool include_version) {
+  return kPublicFlagsOffset + kPublicFlagsSize +
+      (include_version ? kQuicVersionSize : 0);
+}
+
+// Index into the private flags offset in the data packet header.
+size_t GetPrivateFlagsOffset(bool include_version) {
+  return GetSequenceNumberOffset(include_version) + kSequenceNumberSize;
+}
+
+// Index into the fec group offset in the header.
+size_t GetFecGroupOffset(bool include_version) {
+  return GetPrivateFlagsOffset(include_version) + kPrivateFlagsSize;
+}
+
+// Index into the nonce proof of the public reset packet.
+const size_t kPublicResetPacketNonceProofOffset =
+                                                          kPublicFlagsOffset +
+                                                          kPublicFlagsSize;
+// Index into the rejected sequence number of the public reset packet.
+const size_t kPublicResetPacketRejectedSequenceNumberOffset =
+    kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;
+
 class QuicFramerPeer {
  public:
   static QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
@@ -59,7 +90,7 @@ class TestEncrypter : public QuicEncrypter {
   }
   virtual QuicData* Encrypt(QuicPacketSequenceNumber sequence_number,
                             StringPiece associated_data,
-                            StringPiece plaintext) OVERRIDE{
+                            StringPiece plaintext) OVERRIDE {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     plaintext_ = plaintext.as_string();
@@ -68,7 +99,7 @@ class TestEncrypter : public QuicEncrypter {
   virtual size_t GetKeySize() const OVERRIDE {
     return 0;
   }
-  virtual size_t GetNoncePrefixSize() const OVERRIDE{
+  virtual size_t GetNoncePrefixSize() const OVERRIDE {
     return 0;
   }
   virtual size_t GetMaxPlaintextSize(size_t ciphertext_size) const OVERRIDE {
@@ -93,7 +124,7 @@ class TestDecrypter : public QuicDecrypter {
   }
   virtual QuicData* Decrypt(QuicPacketSequenceNumber sequence_number,
                             StringPiece associated_data,
-                            StringPiece ciphertext) OVERRIDE{
+                            StringPiece ciphertext) OVERRIDE {
     sequence_number_ = sequence_number;
     associated_data_ = associated_data.as_string();
     ciphertext_ = ciphertext.as_string();
@@ -215,39 +246,36 @@ class QuicFramerTest : public ::testing::Test {
   QuicFramerTest()
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
-        framer_(decrypter_, encrypter_) {
+        framer_(kQuicVersion1, decrypter_, encrypter_) {
     framer_.set_visitor(&visitor_);
     framer_.set_entropy_calculator(&entropy_calculator_);
   }
 
   bool CheckEncryption(QuicPacketSequenceNumber sequence_number,
-                       StringPiece packet) {
+                       QuicPacket* packet) {
     if (sequence_number != encrypter_->sequence_number_) {
       LOG(ERROR) << "Encrypted incorrect packet sequence number.  expected "
                  << sequence_number << " actual: "
                  << encrypter_->sequence_number_;
       return false;
     }
-    StringPiece associated_data(
-        packet.substr(kStartOfHashData,
-                      kStartOfEncryptedData - kStartOfHashData));
-    if (associated_data != encrypter_->associated_data_) {
+    if (packet->AssociatedData() != encrypter_->associated_data_) {
       LOG(ERROR) << "Encrypted incorrect associated data.  expected "
-                 << associated_data << " actual: "
+                 << packet->AssociatedData() << " actual: "
                  << encrypter_->associated_data_;
       return false;
     }
-    StringPiece plaintext(packet.substr(kStartOfEncryptedData));
-    if (plaintext != encrypter_->plaintext_) {
+    if (packet->Plaintext() != encrypter_->plaintext_) {
       LOG(ERROR) << "Encrypted incorrect plaintext data.  expected "
-                 << plaintext << " actual: "
+                 << packet->Plaintext() << " actual: "
                  << encrypter_->plaintext_;
       return false;
     }
     return true;
   }
 
-  bool CheckDecryption(StringPiece packet) {
+  bool CheckDecryption(const QuicEncryptedPacket& encrypted,
+                       bool includes_version) {
     if (visitor_.header_->packet_sequence_number !=
         decrypter_->sequence_number_) {
       LOG(ERROR) << "Decrypted incorrect packet sequence number.  expected "
@@ -255,16 +283,16 @@ class QuicFramerTest : public ::testing::Test {
                  << decrypter_->sequence_number_;
       return false;
     }
-    StringPiece associated_data(
-        packet.substr(kStartOfHashData,
-                      kStartOfEncryptedData - kStartOfHashData));
-    if (associated_data != decrypter_->associated_data_) {
+    if (QuicFramer::GetAssociatedDataFromEncryptedPacket(
+            encrypted, includes_version) != decrypter_->associated_data_) {
       LOG(ERROR) << "Decrypted incorrect associated data.  expected "
-                 << associated_data << " actual: "
-                 << decrypter_->associated_data_;
+                 << QuicFramer::GetAssociatedDataFromEncryptedPacket(
+                     encrypted, includes_version)
+                 << " actual: " << decrypter_->associated_data_;
       return false;
     }
-    StringPiece ciphertext(packet.substr(kStartOfEncryptedData));
+    StringPiece ciphertext(encrypted.AsStringPiece().substr(
+        GetStartOfEncryptedData(includes_version)));
     if (ciphertext != decrypter_->ciphertext_) {
       LOG(ERROR) << "Decrypted incorrect chipertext data.  expected "
                  << ciphertext << " actual: "
@@ -437,7 +465,8 @@ TEST_F(QuicFramerTest, LargePacket) {
     0xFF
   };
 
-  memset(packet + kPacketHeaderSize, 0, kMaxPacketSize - kPacketHeaderSize + 1);
+  memset(packet + GetPacketHeaderSize(!kIncludeVersion), 0,
+         kMaxPacketSize - GetPacketHeaderSize(!kIncludeVersion) + 1);
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
@@ -483,15 +512,15 @@ TEST_F(QuicFramerTest, PacketHeader) {
   EXPECT_EQ(0x00u, visitor_.header_->fec_group);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < kPacketHeaderSize; ++i) {
+  for (size_t i = 0; i < GetPacketHeaderSize(!kIncludeVersion); ++i) {
     string expected_error;
     if (i < kPublicFlagsOffset) {
       expected_error = "Unable to read GUID.";
-    } else if (i < kSequenceNumberOffset) {
+    } else if (i < GetSequenceNumberOffset(!kIncludeVersion)) {
       expected_error = "Unable to read public flags.";
-    } else if (i < kPrivateFlagsOffset) {
+    } else if (i < GetPrivateFlagsOffset(!kIncludeVersion)) {
       expected_error = "Unable to read sequence number.";
-    } else if (i < kFecGroupOffset) {
+    } else if (i < GetFecGroupOffset(!kIncludeVersion)) {
       expected_error = "Unable to read private flags.";
     } else {
       expected_error = "Unable to read first fec protected packet offset.";
@@ -499,6 +528,62 @@ TEST_F(QuicFramerTest, PacketHeader) {
     CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
   }
 }
+
+TEST_F(QuicFramerTest, PacketHeaderWithVersionFlag) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (version)
+    0x01,
+    // version tag
+    'Q', '1', '.', '0',
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+    // first fec protected packet offset
+    0xFF,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_FALSE(framer_.ProcessPacket(encrypted));
+  EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
+  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
+  EXPECT_TRUE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(kQuicVersion1, visitor_.header_->public_header.version);
+  EXPECT_FALSE(visitor_.header_->fec_flag);
+  EXPECT_FALSE(visitor_.header_->entropy_flag);
+  EXPECT_FALSE(visitor_.header_->fec_entropy_flag);
+  EXPECT_EQ(0, visitor_.header_->entropy_hash);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.header_->packet_sequence_number);
+  EXPECT_EQ(0x00u, visitor_.header_->fec_group);
+
+  // Now test framing boundaries
+  for (size_t i = 0; i < GetPacketHeaderSize(kIncludeVersion); ++i) {
+    string expected_error;
+    if (i < kPublicFlagsOffset) {
+      expected_error = "Unable to read GUID.";
+    } else if (i < kVersionOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i <  GetSequenceNumberOffset(kIncludeVersion)) {
+      expected_error = "Unable to read protocol version.";
+    } else if (i < GetPrivateFlagsOffset(kIncludeVersion)) {
+      expected_error = "Unable to read sequence number.";
+    } else if (i < GetFecGroupOffset(kIncludeVersion)) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
+    }
+    CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
 
 TEST_F(QuicFramerTest, InvalidPublicFlag) {
   unsigned char packet[] = {
@@ -611,20 +696,13 @@ TEST_F(QuicFramerTest, PaddingFrame) {
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   ASSERT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
-
-  // Now test framing boundaries
-  for (size_t i = 0; i < 1; ++i) {
-    string expected_error;
-    if (i < 1) {
-      expected_error = "Unable to read frame type.";
-    }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_FRAME_DATA);
-  }
+  // A packet with no frames is not acceptable.
+  CheckProcessingFails(packet, GetPacketHeaderSize(!kIncludeVersion),
+                       "Unable to read frame type.", QUIC_INVALID_FRAME_DATA);
 }
 
 TEST_F(QuicFramerTest, StreamFrame) {
@@ -664,7 +742,7 @@ TEST_F(QuicFramerTest, StreamFrame) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -676,21 +754,96 @@ TEST_F(QuicFramerTest, StreamFrame) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 28; ++i) {
+  for (size_t i = 0; i < QuicFramer::GetMinStreamFrameSize(); ++i) {
     string expected_error;
-    if (i < 1) {
+    if (i < kQuicFrameTypeSize) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 5) {
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize) {
       expected_error = "Unable to read stream_id.";
-    } else if (i < 6) {
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize +
+               kQuicStreamFinSize) {
       expected_error = "Unable to read fin.";
-    } else if (i < 14) {
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize +
+               kQuicStreamFinSize + kQuicStreamOffsetSize) {
       expected_error = "Unable to read offset.";
-    } else if (i < 28) {
+    } else {
       expected_error = "Unable to read frame data.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_FRAME_DATA);
+  }
+}
+
+TEST_F(QuicFramerTest, StreamFrameWithVersion) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (version)
+    0x01,
+    // version tag
+    'Q', '1', '.', '0',
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame type (stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // fin
+    0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length
+    0x0c, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(visitor_.header_.get()->public_header.version_flag);
+  EXPECT_EQ(kQuicVersion1, visitor_.header_.get()->public_header.version);
+  EXPECT_TRUE(CheckDecryption(encrypted, kIncludeVersion));
+
+  ASSERT_EQ(1u, visitor_.stream_frames_.size());
+  EXPECT_EQ(0u, visitor_.ack_frames_.size());
+  EXPECT_EQ(static_cast<uint64>(0x01020304),
+            visitor_.stream_frames_[0]->stream_id);
+  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
+  EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
+            visitor_.stream_frames_[0]->offset);
+  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+
+  // Now test framing boundaries
+  for (size_t i = 0; i < QuicFramer::GetMinStreamFrameSize(); ++i) {
+    string expected_error;
+    if (i < kQuicFrameTypeSize) {
+      expected_error = "Unable to read frame type.";
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize) {
+      expected_error = "Unable to read stream_id.";
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize +
+               kQuicStreamFinSize) {
+      expected_error = "Unable to read fin.";
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize +
+               kQuicStreamFinSize + kQuicStreamOffsetSize) {
+      expected_error = "Unable to read offset.";
+    } else {
+      expected_error = "Unable to read frame data.";
+    }
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(kIncludeVersion),
+                         expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -733,7 +886,7 @@ TEST_F(QuicFramerTest, RejectPacket) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   ASSERT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -835,12 +988,13 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
   EXPECT_EQ(GG_UINT64_C(0x341256789ABA),
             visitor_.header_->fec_group);
-  EXPECT_EQ(string(AsChars(packet) + kStartOfFecProtectedData,
-                   arraysize(packet) - kStartOfFecProtectedData),
-            visitor_.fec_protected_payload_);
+  EXPECT_EQ(
+      string(AsChars(packet) + GetStartOfFecProtectedData(!kIncludeVersion),
+             arraysize(packet) - GetStartOfFecProtectedData(!kIncludeVersion)),
+      visitor_.fec_protected_payload_);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -890,7 +1044,7 @@ TEST_F(QuicFramerTest, AckFrame) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -904,26 +1058,38 @@ TEST_F(QuicFramerTest, AckFrame) {
   EXPECT_EQ(GG_UINT64_C(0x0123456789ABE), *missing_iter);
   EXPECT_EQ(GG_UINT64_C(0x0123456789AA0), frame.sent_info.least_unacked);
 
+  const size_t kSentEntropyOffset = kQuicFrameTypeSize;
+  const size_t kLeastUnackedOffset = kSentEntropyOffset + kQuicEntropyHashSize;
+  const size_t kReceivedEntropyOffset = kLeastUnackedOffset +
+      kSequenceNumberSize;
+  const size_t kLargestObservedOffset = kReceivedEntropyOffset +
+      kQuicEntropyHashSize;
+  const size_t kNumMissingPacketOffset = kLargestObservedOffset +
+      kSequenceNumberSize;
+  const size_t kMissingPacketsOffset = kNumMissingPacketOffset +
+      kNumberOfMissingPacketsSize;
   // Now test framing boundaries
-  for (size_t i = 0; i < 22; ++i) {
+  const size_t missing_packets_size = 1 * kSequenceNumberSize;
+  for (size_t i = 0;
+       i < QuicFramer::GetMinAckFrameSize() + missing_packets_size; ++i) {
     string expected_error;
-    if (i < 1) {
+    if (i < kSentEntropyOffset) {
       expected_error = "Unable to read frame type.";
-    } else if (i < 2) {
+    } else if (i < kLeastUnackedOffset) {
       expected_error = "Unable to read entropy hash for sent packets.";
-    } else if (i < 8) {
+    } else if (i < kReceivedEntropyOffset) {
       expected_error = "Unable to read least unacked.";
-    } else if (i < 9) {
+    } else if (i < kLargestObservedOffset) {
       expected_error = "Unable to read entropy hash for received packets.";
-    } else if (i < 15) {
+    } else if (i < kNumMissingPacketOffset) {
       expected_error = "Unable to read largest observed.";
-    } else if (i < 16) {
+    } else if (i < kMissingPacketsOffset) {
       expected_error = "Unable to read num missing packets.";
     } else {
       expected_error = "Unable to read sequence number in missing packets.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -957,7 +1123,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.congestion_feedback_frames_.size());
@@ -980,8 +1146,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
     } else if (i < 6) {
       expected_error = "Unable to read receive window.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1029,7 +1195,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.congestion_feedback_frames_.size());
@@ -1077,8 +1243,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     } else if (i < 31) {
       expected_error = "Unable to read time delta in received packets.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1110,7 +1276,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.congestion_feedback_frames_.size());
@@ -1130,8 +1296,8 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
     } else if (i < 6) {
       expected_error = "Unable to read bitrate.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_FRAME_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1159,7 +1325,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
   EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
 }
 
@@ -1199,7 +1365,7 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(GG_UINT64_C(0x01020304), visitor_.rst_stream_frame_.stream_id);
   EXPECT_EQ(0x05060708, visitor_.rst_stream_frame_.error_code);
@@ -1208,15 +1374,16 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
   // Now test framing boundaries
   for (size_t i = 2; i < 24; ++i) {
     string expected_error;
-    if (i < 5) {
+    if (i < kQuicFrameTypeSize + kQuicStreamIdSize) {
       expected_error = "Unable to read stream_id.";
-    } else if (i < 9) {
+    } else if (i < kQuicFrameTypeSize + kQuicStreamIdSize +
+               kQuicErrorCodeSize) {
       expected_error = "Unable to read rst stream error code.";
-    } else if (i < 24) {
+    } else {
       expected_error = "Unable to read rst stream error details.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_RST_STREAM_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_RST_STREAM_DATA);
   }
 }
 
@@ -1271,7 +1438,7 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
 
@@ -1290,15 +1457,17 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
   EXPECT_EQ(GG_UINT64_C(0x0123456789ABE), *missing_iter);
 
   // Now test framing boundaries
-  for (size_t i = 2; i < 20; ++i) {
+  for (size_t i = kQuicFrameTypeSize;
+       i < QuicFramer::GetMinConnectionCloseFrameSize() -
+           QuicFramer::GetMinAckFrameSize(); ++i) {
     string expected_error;
-    if (i < 5) {
+    if (i < kQuicFrameTypeSize + kQuicErrorCodeSize) {
       expected_error = "Unable to read connection close error code.";
-    } else if (i < 20) {
+    } else {
       expected_error = "Unable to read connection close error details.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_CONNECTION_CLOSE_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_CONNECTION_CLOSE_DATA);
   }
 }
 
@@ -1337,25 +1506,28 @@ TEST_F(QuicFramerTest, GoAwayFrame) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(GG_UINT64_C(0x01020304),
             visitor_.goaway_frame_.last_good_stream_id);
   EXPECT_EQ(0x05060708, visitor_.goaway_frame_.error_code);
   EXPECT_EQ("because I can", visitor_.goaway_frame_.reason_phrase);
 
+  const size_t reason_size = arraysize("because I can") - 1;
   // Now test framing boundaries
-  for (size_t i = 2; i < 24; ++i) {
+  for (size_t i = kQuicFrameTypeSize;
+       i < QuicFramer::GetMinGoAwayFrameSize() + reason_size; ++i) {
     string expected_error;
-    if (i < 5) {
+    if (i < kQuicFrameTypeSize + kQuicErrorCodeSize) {
       expected_error = "Unable to read go away error code.";
-    } else if (i < 9) {
+    } else if (i < kQuicFrameTypeSize + kQuicErrorCodeSize +
+               kQuicStreamIdSize) {
       expected_error = "Unable to read last good stream id.";
-    } else if (i < 24) {
+    } else {
       expected_error = "Unable to read goaway reason.";
     }
-    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
-                         QUIC_INVALID_GOAWAY_DATA);
+    CheckProcessingFails(packet, i + GetPacketHeaderSize(!kIncludeVersion),
+                         expected_error, QUIC_INVALID_GOAWAY_DATA);
   }
 }
 
@@ -1388,7 +1560,7 @@ TEST_F(QuicFramerTest, PublicResetPacket) {
             visitor_.public_reset_packet_->rejected_sequence_number);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < kPublicResetPacketSize; ++i) {
+  for (size_t i = 0; i < GetPublicResetPacketSize(); ++i) {
     string expected_error;
     if (i < kPublicFlagsOffset) {
       expected_error = "Unable to read GUID.";
@@ -1430,7 +1602,7 @@ TEST_F(QuicFramerTest, FecPacket) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -1474,9 +1646,8 @@ TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
     0x00,
   };
 
-  //  unsigned char packet[kMaxPacketSize];
-  memset(packet + kPacketHeaderSize + 1, 0x00,
-         kMaxPacketSize - kPacketHeaderSize - 1);
+  memset(packet + GetPacketHeaderSize(!kIncludeVersion) + 1, 0x00,
+         kMaxPacketSize - GetPacketHeaderSize(!kIncludeVersion) - 1);
 
   scoped_ptr<QuicPacket> data(
       framer_.ConstructFrameDataPacket(header, frames).packet);
@@ -1546,6 +1717,69 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
                                       data->data(), data->length(),
                                       AsChars(packet), arraysize(packet));
 }
+
+TEST_F(QuicFramerTest, ConstructStreamFramePacketWithVersionFlag) {
+  QuicPacketHeader header;
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = true;
+  header.fec_flag = false;
+  header.entropy_flag = true;
+  header.fec_entropy_flag = false;
+  header.packet_sequence_number = GG_UINT64_C(0x77123456789ABC);
+  header.fec_group = 0;
+
+  QuicStreamFrame stream_frame;
+  stream_frame.stream_id = 0x01020304;
+  stream_frame.fin = true;
+  stream_frame.offset = GG_UINT64_C(0xBA98FEDC32107654);
+  stream_frame.data = "hello world!";
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&stream_frame));
+
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (version)
+    0x01,
+    // version tag
+    'Q', '1', '.', '0',
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags (entropy)
+    0x02,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame type (stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // fin
+    0x01,
+    // offset
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    // data length
+    0x0c, 0x00,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+
+  scoped_ptr<QuicPacket> data(
+      framer_.ConstructFrameDataPacket(header, frames).packet);
+  ASSERT_TRUE(data != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
 
 TEST_F(QuicFramerTest, ConstructAckFramePacket) {
   QuicPacketHeader header;
@@ -2101,13 +2335,48 @@ TEST_F(QuicFramerTest, EncryptPacket) {
   };
 
   scoped_ptr<QuicPacket> raw(
-      QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false));
+      QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false,
+                                !kIncludeVersion));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.EncryptPacket(sequence_number, *raw));
 
   ASSERT_TRUE(encrypted.get() != NULL);
-  EXPECT_TRUE(CheckEncryption(sequence_number,
-                              StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
+}
+
+TEST_F(QuicFramerTest, EncryptPacketWithVersionFlag) {
+  QuicPacketSequenceNumber sequence_number = GG_UINT64_C(0x123456789ABC);
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags (version)
+    0x01,
+    // version tag
+    'Q', '.', '1', '0',
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x01,
+    // first fec protected packet offset
+    0x01,
+
+    // redundancy
+    'a',  'b',  'c',  'd',
+    'e',  'f',  'g',  'h',
+    'i',  'j',  'k',  'l',
+    'm',  'n',  'o',  'p',
+  };
+
+  scoped_ptr<QuicPacket> raw(
+      QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false,
+                                kIncludeVersion));
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer_.EncryptPacket(sequence_number, *raw));
+
+  ASSERT_TRUE(encrypted.get() != NULL);
+  EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
 }
 
 // TODO(rch): re-enable after https://codereview.chromium.org/11820005/

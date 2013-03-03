@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/blocked_list.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_packet_creator.h"
@@ -168,7 +169,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   base::hash_set<QuicStreamId> implicitly_created_streams_;
 
   // A list of streams which need to write more data.
-  std::list<QuicStreamId> write_blocked_streams_;
+  BlockedList<QuicStreamId> write_blocked_streams_;
 
   QuicStreamId largest_peer_created_stream_id_;
 
@@ -176,6 +177,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool goaway_received_;
   // Whether a GoAway has been sent.
   bool goaway_sent_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };
 
 }  // namespace net

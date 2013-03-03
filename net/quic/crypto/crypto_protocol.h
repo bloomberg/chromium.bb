@@ -65,14 +65,6 @@ struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   CryptoTagValueMap tag_value_map;
 };
 
-// Crypto tags are written to the wire with a big-endian
-// representation of the name of the tag.  For example
-// the client hello tag (CHLO) will be written as the
-// following 4 bytes: 'C' 'H' 'L' 'O'.  Since it is
-// stored in memory as a little endian uint32, we need
-// to reverse the order of the bytes.
-#define MAKE_TAG(a, b, c, d) (d << 24) + (c << 16) + (b << 8) + a
-
 const CryptoTag kCHLO = MAKE_TAG('C', 'H', 'L', 'O');  // Client hello
 const CryptoTag kSHLO = MAKE_TAG('S', 'H', 'L', 'O');  // Server hello
 const CryptoTag kSCFG = MAKE_TAG('S', 'H', 'L', 'O');  // Server config

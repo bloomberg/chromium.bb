@@ -104,7 +104,9 @@ TEST_F(QuicClientSessionTest, Logging) {
 
   // TODO(rch): Add some helper methods to simplify packet creation in tests.
   // Receive a packet, and verify that it was logged.
-  QuicFramer framer(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL));
+  QuicFramer framer(kQuicVersion1,
+                    QuicDecrypter::Create(kNULL),
+                    QuicEncrypter::Create(kNULL));
   QuicRstStreamFrame frame;
   frame.stream_id = 2;
   frame.error_code = QUIC_CONNECTION_TIMED_OUT;

@@ -26,7 +26,9 @@ namespace {
 class QuicPacketCreatorTest : public ::testing::Test {
  protected:
   QuicPacketCreatorTest()
-      : framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
+      : framer_(kQuicVersion1,
+                QuicDecrypter::Create(kNULL),
+                QuicEncrypter::Create(kNULL)),
         id_(1),
         sequence_number_(0),
         guid_(2),
@@ -189,8 +191,8 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
 TEST_F(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   // A string larger than fits into a frame.
   size_t ciphertext_size = NullEncrypter().GetCiphertextSize(1);
-  creator_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
+  creator_.options()->max_packet_length = ciphertext_size +
+      QuicPacketCreator::StreamFramePacketOverhead(1, !kIncludeVersion);
   QuicFrame frame;
   size_t consumed = creator_.CreateStreamFrame(1u, "test", 0u, true, &frame);
   EXPECT_EQ(1u, consumed);
@@ -202,7 +204,8 @@ TEST_F(QuicPacketCreatorTest, AddFrameAndSerialize) {
   const size_t max_plaintext_size =
       framer_.GetMaxPlaintextSize(creator_.options()->max_packet_length);
   EXPECT_FALSE(creator_.HasPendingFrames());
-  EXPECT_EQ(max_plaintext_size - kPacketHeaderSize, creator_.BytesFree());
+  EXPECT_EQ(max_plaintext_size - GetPacketHeaderSize(!kIncludeVersion),
+            creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
   QuicAckFrame ack_frame;
@@ -240,7 +243,8 @@ TEST_F(QuicPacketCreatorTest, AddFrameAndSerialize) {
   delete serialized.retransmittable_frames;
 
   EXPECT_FALSE(creator_.HasPendingFrames());
-  EXPECT_EQ(max_plaintext_size - kPacketHeaderSize, creator_.BytesFree());
+  EXPECT_EQ(max_plaintext_size - GetPacketHeaderSize(!kIncludeVersion),
+            creator_.BytesFree());
 }
 
 }  // namespace

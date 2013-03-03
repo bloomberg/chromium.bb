@@ -96,7 +96,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) OVERRIDE {
-    QuicFramer framer(QuicDecrypter::Create(kNULL),
+    QuicFramer framer(kQuicVersion1,
+                      QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);
@@ -151,13 +152,15 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
 
   QuicPacketHeader* header() { return &header_; }
 
-  size_t frame_count() { return frame_count_; }
+  size_t frame_count() const { return frame_count_; }
 
   QuicAckFrame* ack() { return ack_.get(); }
 
   QuicCongestionFeedbackFrame* feedback() { return feedback_.get(); }
 
-  const vector<QuicStreamFrame>* stream_frames() { return &stream_frames_; }
+  const vector<QuicStreamFrame>* stream_frames() const {
+    return &stream_frames_;
+  }
 
   void set_blocked(bool blocked) { blocked_ = blocked; }
 
@@ -216,7 +219,9 @@ class QuicConnectionTest : public ::testing::Test {
  protected:
   QuicConnectionTest()
       : guid_(42),
-        framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
+        framer_(kQuicVersion1,
+                QuicDecrypter::Create(kNULL),
+                QuicEncrypter::Create(kNULL)),
         creator_(guid_, &framer_, QuicRandom::GetInstance()),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
@@ -338,8 +343,9 @@ class QuicConnectionTest : public ::testing::Test {
     // redundancy is either equal to that payload or the xor of that payload
     // with itself, depending on the number of packets.
     if (((number - min_protected_packet) % 2) == 0) {
-      for (size_t i = kStartOfFecProtectedData; i < data_packet->length();
-           ++i) {
+      for (size_t i = GetStartOfFecProtectedData(
+               header_.public_header.version_flag);
+           i < data_packet->length(); ++i) {
         data_packet->mutable_data()[i] ^= data_packet->data()[i];
       }
     }
@@ -723,9 +729,8 @@ TEST_F(QuicConnectionTest, BasicSending) {
 
 TEST_F(QuicConnectionTest, FECSending) {
   // Limit to one byte per packet.
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(1);
   connection_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
+      GetPacketLengthForOneStream(!kIncludeVersion, 1);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -738,9 +743,8 @@ TEST_F(QuicConnectionTest, FECSending) {
 
 TEST_F(QuicConnectionTest, FECQueueing) {
   // Limit to one byte per packet.
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(1);
   connection_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
+      GetPacketLengthForOneStream(!kIncludeVersion, 1);
   // And send FEC every two packets.
   connection_.options()->max_packets_per_fec_group = 2;
 
@@ -1325,9 +1329,8 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenSend) {
 }
 
 TEST_F(QuicConnectionTest, SendSchedulerDelayThenRetransmit) {
-  EXPECT_CALL(*send_algorithm_,
-              TimeUntilSend(_, !kIsRetransmission)).WillRepeatedly(
-                  testing::Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, !kIsRetransmission))
+      .WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, !kIsRetransmission));
   connection_.SendStreamData(1, "foo", 0, !kFin);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -1421,9 +1424,8 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenOnCanWrite) {
 
 TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // Limit to one byte per packet.
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(1);
   connection_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
+      GetPacketLengthForOneStream(!kIncludeVersion, 1);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, !kIsRetransmission)).WillOnce(
@@ -1435,9 +1437,8 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
 
 TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
   // Limit to one byte per packet.
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(1);
   connection_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
+      GetPacketLengthForOneStream(!kIncludeVersion, 1);
 
   // Queue the first packet.
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(17);

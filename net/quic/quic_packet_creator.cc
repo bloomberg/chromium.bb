@@ -26,7 +26,8 @@ QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
       random_generator_(random_generator),
       sequence_number_(0),
       fec_group_number_(0),
-      packet_size_(kPacketHeaderSize) {
+      // TODO(satyashekhar): Fix this when versioning is implemented.
+      packet_size_(GetPacketHeaderSize(!kIncludeVersion)) {
   framer_->set_fec_builder(this);
 }
 
@@ -55,7 +56,14 @@ void QuicPacketCreator::MaybeStartFEC() {
 }
 
 bool QuicPacketCreator::HasRoomForStreamFrame() const {
-  return (BytesFree() > kFrameTypeSize + kMinStreamFrameLength);
+  return BytesFree() > QuicFramer::GetMinStreamFrameSize();
+}
+
+// static
+size_t QuicPacketCreator::StreamFramePacketOverhead(int num_frames,
+                                                    bool include_version) {
+  return GetPacketHeaderSize(include_version) +
+      QuicFramer::GetMinStreamFrameSize() * num_frames;
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
@@ -64,14 +72,14 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             bool fin,
                                             QuicFrame* frame) {
   DCHECK_GT(options_.max_packet_length,
-            QuicUtils::StreamFramePacketOverhead(1));
+            StreamFramePacketOverhead(1, kIncludeVersion));
   DCHECK(HasRoomForStreamFrame());
 
   const size_t free_bytes = BytesFree();
   size_t bytes_consumed = 0;
 
   if (data.size() != 0) {
-    size_t max_data_len = free_bytes - kFrameTypeSize - kMinStreamFrameLength;
+    size_t max_data_len = free_bytes - QuicFramer::GetMinStreamFrameSize();
     bytes_consumed = min<size_t>(max_data_len, data.size());
 
     bool set_fin = fin && bytes_consumed == data.size();  // Last frame.
@@ -126,7 +134,8 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   SerializedPacket serialized = framer_->ConstructFrameDataPacket(
       header, queued_frames_, packet_size_);
   queued_frames_.clear();
-  packet_size_ = kPacketHeaderSize;
+  // TODO(satyamshekhar) Fix this versioning is implemented.
+  packet_size_ = GetPacketHeaderSize(false);
   serialized.retransmittable_frames = queued_retransmittable_frames_.release();
   return serialized;
 }
@@ -195,10 +204,10 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     }
     if (frame.type == STREAM_FRAME) {
       queued_frames_.push_back(
-        queued_retransmittable_frames_->AddStreamFrame(frame.stream_frame));
+          queued_retransmittable_frames_->AddStreamFrame(frame.stream_frame));
     } else {
       queued_frames_.push_back(
-        queued_retransmittable_frames_->AddNonStreamFrame(frame));
+          queued_retransmittable_frames_->AddNonStreamFrame(frame));
     }
   } else {
     queued_frames_.push_back(frame);

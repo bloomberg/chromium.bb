@@ -13,6 +13,26 @@ using std::string;
 
 namespace net {
 
+size_t GetPacketHeaderSize(bool include_version) {
+  return kQuicGuidSize + kPublicFlagsSize +
+      (include_version ? kQuicVersionSize : 0) + kPrivateFlagsSize +
+      kSequenceNumberSize + kFecGroupSize;
+}
+
+size_t GetPublicResetPacketSize() {
+  return kQuicGuidSize + kPublicFlagsSize + kPublicResetNonceSize +
+      kSequenceNumberSize;
+}
+
+size_t GetStartOfFecProtectedData(bool include_version) {
+  return GetPacketHeaderSize(include_version);
+}
+
+size_t GetStartOfEncryptedData(bool include_version) {
+  return  GetPacketHeaderSize(include_version) - kPrivateFlagsSize -
+      kFecGroupSize;
+}
+
 QuicStreamFrame::QuicStreamFrame() {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
@@ -72,8 +92,8 @@ QuicAckFrame::QuicAckFrame(QuicPacketSequenceNumber largest_observed,
 }
 
 ostream& operator<<(ostream& os, const SentPacketInfo& sent_info) {
-  os << "entropy_hash: " << static_cast<int>(sent_info.entropy_hash);
-  os << " least_unacked: " << sent_info.least_unacked;
+  os << "entropy_hash: " << static_cast<int>(sent_info.entropy_hash)
+     << " least_unacked: " << sent_info.least_unacked;
   return os;
 }
 
@@ -149,9 +169,9 @@ CongestionFeedbackMessageInterArrival::
 QuicGoAwayFrame::QuicGoAwayFrame(QuicErrorCode error_code,
                                  QuicStreamId last_good_stream_id,
                                  const string& reason)
-     : error_code(error_code),
-       last_good_stream_id(last_good_stream_id),
-       reason_phrase(reason) {
+    : error_code(error_code),
+      last_good_stream_id(last_good_stream_id),
+      reason_phrase(reason) {
   DCHECK_LE(error_code, numeric_limits<uint8>::max());
 }
 
@@ -171,6 +191,28 @@ QuicData::~QuicData() {
   if (owns_buffer_) {
     delete [] const_cast<char*>(buffer_);
   }
+}
+
+StringPiece QuicPacket::FecProtectedData() const {
+  const size_t start_of_fec = GetStartOfFecProtectedData(includes_version_);
+  return StringPiece(data() + start_of_fec, length() - start_of_fec);
+}
+
+StringPiece QuicPacket::AssociatedData() const {
+  return StringPiece(data() + kStartOfHashData,
+                     GetStartOfEncryptedData(includes_version_) -
+                     kStartOfHashData);
+}
+
+StringPiece QuicPacket::BeforePlaintext() const {
+  return StringPiece(data(), GetStartOfEncryptedData(includes_version_));
+}
+
+StringPiece QuicPacket::Plaintext() const {
+  const size_t start_of_encrypted_data =
+      GetStartOfEncryptedData(includes_version_);
+  return StringPiece(data() + start_of_encrypted_data,
+                     length() - start_of_encrypted_data);
 }
 
 RetransmittableFrames::RetransmittableFrames() {}

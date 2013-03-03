@@ -8,8 +8,10 @@
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_utils.h"
+#include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_packet_creator.h"
 
 using std::max;
 using std::min;
@@ -245,7 +247,8 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
     const CryptoHandshakeMessage& message) {
   CryptoFramer crypto_framer;
   scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
-  QuicFramer quic_framer(QuicDecrypter::Create(kNULL),
+  QuicFramer quic_framer(kQuicVersion1,
+                         QuicDecrypter::Create(kNULL),
                          QuicEncrypter::Create(kNULL));
 
   QuicPacketHeader header;
@@ -299,6 +302,11 @@ QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
   server_config.AddTestingConfig(random_generator, clock);
   server_config.ProcessClientHello(dummy_client_hello, nonce, &server_hello);
   return ConstructPacketFromHandshakeMessage(guid, server_hello);
+}
+
+size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {
+  return NullEncrypter().GetCiphertextSize(payload) +
+      QuicPacketCreator::StreamFramePacketOverhead(1, include_version);
 }
 
 QuicPacketEntropyHash TestEntropyCalculator::ReceivedEntropyHash(

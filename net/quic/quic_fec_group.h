@@ -88,6 +88,8 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   char payload_parity_[kMaxPacketSize];
   size_t payload_parity_len_;
   bool entropy_parity_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicFecGroup);
 };
 
 }  // namespace net

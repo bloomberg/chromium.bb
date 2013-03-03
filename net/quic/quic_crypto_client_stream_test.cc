@@ -83,7 +83,8 @@ class TestMockHelper : public MockHelper  {
 
 void TestMockHelper::CheckClientHelloPacket(
     const QuicEncryptedPacket& packet) {
-  QuicFramer quic_framer(QuicDecrypter::Create(kNULL),
+  QuicFramer quic_framer(kQuicVersion1,
+                         QuicDecrypter::Create(kNULL),
                          QuicEncrypter::Create(kNULL));
   TestQuicVisitor quic_visitor;
   quic_framer.set_visitor(&quic_visitor);

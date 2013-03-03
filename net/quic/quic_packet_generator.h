@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 //
 // Responsible for generating packets on behalf of a QuicConnection.
-// Packets are serialized just-in-time.  Control frame are queued.
-// Ack and Feedback frames will requested from the Connection
+// Packets are serialized just-in-time.  Control frames are queued.
+// Ack and Feedback frames will be requested from the Connection
 // just-in-time.  When a packet needs to be sent, the Generator
-// wills serialized a packet pass it to  QuicConnection::SendOrQueuePacket()
+// will serialized a packet and pass it to QuicConnection::SendOrQueuePacket()
 //
 // The Generator's mode of operation is controlled by two conditions:
 //
@@ -14,7 +14,7 @@
 //
 // If the Delegate is not writable, then no operations will cause
 // a packet to be serialized.  In particular:
-// * SetShouldSendAck will simply record that an ack is to be send.
+// * SetShouldSendAck will simply record that an ack is to be sent.
 // * AddControlFram will enqueue the control frame.
 // * ConsumeData will do nothing.
 //
@@ -43,10 +43,10 @@
 // an FEC packet will be sent after each write call completes.
 //
 // TODO(rch): This behavior should probably be tuned.  When not in batch
-// mode we, should probably set a timer so that several independent
+// mode, we should probably set a timer so that several independent
 // operations can be grouped into the same FEC group.
 //
-// When an FEC packet is generate, it will be send to the Delegate,
+// When an FEC packet is generated, it will be send to the Delegate,
 // even if the Delegate has become unwritable after handling the
 // data packet immediately proceeding the FEC packet.
 
@@ -89,8 +89,6 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   bool HasQueuedData() const;
 
  private:
-  // Must be called when the connection is writable
-  // and not blocked by the congestion manager.
   void SendQueuedData();
 
   bool HasPendingData() const;
@@ -106,6 +104,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   scoped_ptr<QuicAckFrame> pending_ack_frame_;
   scoped_ptr<QuicCongestionFeedbackFrame> pending_feedback_frame_;
   bool should_send_feedback_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };
 
 }  // namespace net

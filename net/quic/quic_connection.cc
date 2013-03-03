@@ -41,8 +41,10 @@ const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 // 16 - Min ack frame size.
 // 16 - Crypto hash for integrity. Not a static value. Use
 // QuicEncrypter::GetMaxPlaintextSize.
-const QuicPacketSequenceNumber kMaxUnackedPackets =
-    (kMaxPacketSize - kPacketHeaderSize - 16 - 16) / kSequenceNumberSize;
+size_t GetMaxUnackedPackets(bool include_version)  {
+  return (kMaxPacketSize - GetPacketHeaderSize(include_version) - 16 - 16) /
+      kSequenceNumberSize;
+}
 
 // We want to make sure if we get a large nack packet, we don't queue up too
 // many packets at once.  10 is arbitrary.
@@ -79,7 +81,9 @@ QuicConnection::QuicConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper)
     : helper_(helper),
-      framer_(QuicDecrypter::Create(kNULL), QuicEncrypter::Create(kNULL)),
+      framer_(kQuicVersion1,
+              QuicDecrypter::Create(kNULL),
+              QuicEncrypter::Create(kNULL)),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
       guid_(guid),
@@ -221,7 +225,8 @@ void QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
   // peer_largest_observed_packet. Fix either by resetting it in
   // MaybeRetransmitPacketForRTO or keeping an explicit flag for ack truncation.
   received_truncated_ack_ =
-      incoming_ack.received_info.missing_packets.size() >= kMaxUnackedPackets;
+      incoming_ack.received_info.missing_packets.size() >=
+      GetMaxUnackedPackets(last_header_.public_header.version_flag);
 
   UpdatePacketInformationReceivedByPeer(incoming_ack);
   UpdatePacketInformationSentByPeer(incoming_ack);
@@ -276,7 +281,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   // We can't have too many unacked packets, or our ack frames go over
   // kMaxPacketSize.
   DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
-            kMaxUnackedPackets);
+            GetMaxUnackedPackets(last_header_.public_header.version_flag));
 
   if (incoming_ack.sent_info.least_unacked < peer_least_packet_awaiting_ack_) {
     DLOG(ERROR) << "Client sent low least_unacked: "
@@ -790,16 +795,16 @@ bool QuicConnection::OnSerializedPacket(
            unacked_packets_.rbegin()->first <
                serialized_packet.sequence_number);
     unacked_packets_.insert(
-      make_pair(serialized_packet.sequence_number,
-                serialized_packet.retransmittable_frames));
+        make_pair(serialized_packet.sequence_number,
+                  serialized_packet.retransmittable_frames));
     // All unacked packets might be retransmitted.
     retransmission_map_.insert(
         make_pair(serialized_packet.sequence_number,
                   RetransmissionInfo(serialized_packet.sequence_number)));
   }
   return SendOrQueuePacket(serialized_packet.sequence_number,
-                    serialized_packet.packet,
-                    serialized_packet.entropy_hash);
+                           serialized_packet.packet,
+                           serialized_packet.entropy_hash);
 }
 
 bool QuicConnection::SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,

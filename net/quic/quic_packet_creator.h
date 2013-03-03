@@ -57,6 +57,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // and there is not already an FEC group open.
   void MaybeStartFEC();
 
+  // The overhead the framing will add for a packet with num_frames frames.
+  static size_t StreamFramePacketOverhead(int num_frames, bool include_version);
+
   bool HasRoomForStreamFrame() const;
 
   // Converts a raw payload to a frame which fits into the currently open
@@ -72,7 +75,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // Serializes all frames into a single packet. All frames must fit into a
   // single packet. Also, sets the entropy hash of the serialized packet to a
   // random bool and returns that value as a member of SerializedPacket.
-  // Never returns an RetransmittableFrames in SerializedPacket
+  // Never returns a RetransmittableFrames in SerializedPacket.
   SerializedPacket SerializeAllFrames(const QuicFrames& frames);
 
   // Returns true if there are frames pending to be serialized.
@@ -139,6 +142,8 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   size_t packet_size_;
   QuicFrames queued_frames_;
   scoped_ptr<RetransmittableFrames> queued_retransmittable_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicPacketCreator);
 };
 
 }  // namespace net

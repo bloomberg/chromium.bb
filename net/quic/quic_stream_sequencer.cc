@@ -158,8 +158,8 @@ bool QuicStreamSequencer::IsDuplicate(const QuicStreamFrame& frame) const {
   // or we have stored the frame in our map.
   // TODO(pwestin): Is it possible that a new frame contain more data even if
   // the offset is the same?
-  return (frame.offset < num_bytes_consumed_ ||
-      frames_.find(frame.offset) != frames_.end());
+  return frame.offset < num_bytes_consumed_ ||
+      frames_.find(frame.offset) != frames_.end();
 }
 
 void QuicStreamSequencer::FlushBufferedFrames() {
