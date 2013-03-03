@@ -140,8 +140,6 @@ bool GLRenderer::initialize()
     if (m_capabilities.usingGpuMemoryManager)
         m_context->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
-    m_capabilities.usingDiscardBackbuffer = extensions.count("GL_CHROMIUM_discard_backbuffer");
-
     m_capabilities.usingEglImage = extensions.count("GL_OES_EGL_image_external");
 
     m_capabilities.maxTextureSize = m_resourceProvider->maxTextureSize();
@@ -257,7 +255,7 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
         // can leave the window at the wrong size if we never draw and the proper
         // viewport size is never set.
         m_isViewportChanged = false;
-        m_context->reshape(viewportWidth(), viewportHeight());
+        m_outputSurface->Reshape(gfx::Size(viewportWidth(), viewportHeight()));
     }
 
     makeContextCurrent();
@@ -1216,8 +1214,6 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
     if (settings().compositorFrameMessage) {
         CompositorFrame compositor_frame;
         compositor_frame.metadata = m_client->makeCompositorFrameMetadata();
-        compositor_frame.gl_frame_data.reset(new GLFrameData());
-        // FIXME: Fill in GLFrameData when we implement swapping with it.
         m_outputSurface->SendFrameToParentCompositor(&compositor_frame);
     }
 }
@@ -1343,11 +1339,9 @@ bool GLRenderer::swapBuffers()
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)
         m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
         int flippedYPosOfRectBottom = viewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
-        m_context->postSubBufferCHROMIUM(m_swapBufferRect.x(), flippedYPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height());
+        m_outputSurface->PostSubBuffer(gfx::Rect(m_swapBufferRect.x(), flippedYPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height()));
     } else {
-        // Note that currently this has the same effect as swapBuffers; we should
-        // consider exposing a different entry point on WebGraphicsContext3D.
-        m_context->prepareTexture();
+        m_outputSurface->SwapBuffers();
     }
 
     m_swapBufferRect = gfx::Rect();
@@ -1361,6 +1355,10 @@ bool GLRenderer::swapBuffers()
     m_resourceProvider->setReadLockFence(new SimpleSwapFence());
 
     return true;
+}
+
+void GLRenderer::receiveCompositorFrameAck(const CompositorFrameAck& ack) {
+    onSwapBuffersComplete();
 }
 
 void GLRenderer::onSwapBuffersComplete()
@@ -1427,10 +1425,8 @@ void GLRenderer::discardBackbuffer()
     if (m_isBackbufferDiscarded)
         return;
 
-    if (!m_capabilities.usingDiscardBackbuffer)
-        return;
+    m_outputSurface->DiscardBackbuffer();
 
-    m_context->discardBackbufferCHROMIUM();
     m_isBackbufferDiscarded = true;
 
     // Damage tracker needs a full reset every time framebuffer is discarded.
@@ -1442,10 +1438,7 @@ void GLRenderer::ensureBackbuffer()
     if (!m_isBackbufferDiscarded)
         return;
 
-    if (!m_capabilities.usingDiscardBackbuffer)
-        return;
-
-    m_context->ensureBackbufferCHROMIUM();
+    m_outputSurface->EnsureBackbuffer();
     m_isBackbufferDiscarded = false;
 }
 
@@ -1549,7 +1542,7 @@ bool GLRenderer::useScopedTexture(DrawingFrame& frame, const ScopedResource* tex
 void GLRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
-    GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
+    m_outputSurface->BindFramebuffer();
 }
 
 bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& framebufferRect)

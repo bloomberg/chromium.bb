@@ -27,6 +27,8 @@ using testing::AtLeast;
 using testing::Expectation;
 using testing::InSequence;
 using testing::Mock;
+using testing::Return;
+using testing::StrictMock;
 
 namespace cc {
 namespace {
@@ -692,6 +694,138 @@ TEST(GLRendererTest2, scissorTestWhenClearing) {
 
     renderer.decideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
     renderer.drawFrame(mockClient.renderPassesInDrawOrder());
+}
+
+class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
+public:
+    // Specifically override methods even if they are unused (used in conjunction with StrictMock).
+    // We need to make sure that GLRenderer does not issue framebuffer-related GL calls directly. Instead these
+    // are supposed to go through the OutputSurface abstraction.
+    MOCK_METHOD0(ensureBackbufferCHROMIUM, void());
+    MOCK_METHOD0(discardBackbufferCHROMIUM, void());
+    MOCK_METHOD2(bindFramebuffer, void(WGC3Denum target, WebGLId framebuffer));
+    MOCK_METHOD0(prepareTexture, void());
+    MOCK_METHOD2(reshape, void(int width, int height));
+    MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
+
+    virtual WebString getString(WebKit::WGC3Denum name)
+    {
+        if (name == GL_EXTENSIONS)
+            return WebString("GL_CHROMIUM_post_sub_buffer GL_CHROMIUM_discard_backbuffer");
+        return WebString();
+    }
+};
+
+class MockOutputSurface : public OutputSurface {
+ public:
+    MockOutputSurface()
+        : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(new StrictMock<OutputSurfaceMockContext>)) { }
+    virtual ~MockOutputSurface() { }
+
+    MOCK_METHOD1(SendFrameToParentCompositor, void(CompositorFrame* frame));
+    MOCK_METHOD0(EnsureBackbuffer, void());
+    MOCK_METHOD0(DiscardBackbuffer, void());
+    MOCK_METHOD1(Reshape, void(gfx::Size size));
+    MOCK_METHOD0(BindFramebuffer, void());
+    MOCK_METHOD1(PostSubBuffer, void(gfx::Rect rect));
+    MOCK_METHOD0(SwapBuffers, void());
+};
+
+class MockOutputSurfaceTest : public testing::Test,
+                              public FakeRendererClient {
+protected:
+    MockOutputSurfaceTest()
+        : m_resourceProvider(ResourceProvider::create(&m_outputSurface))
+        , m_renderer(this, &m_outputSurface, m_resourceProvider.get())
+    {
+    }
+
+    virtual void SetUp()
+    {
+        EXPECT_TRUE(m_renderer.initialize());
+    }
+
+    void swapBuffers()
+    {
+        m_renderer.swapBuffers();
+    }
+
+    void drawFrame()
+    {
+        gfx::Rect viewportRect(deviceViewportSize());
+        ScopedPtrVector<RenderPass>& renderPasses = renderPassesInDrawOrder();
+        renderPasses.clear();
+
+        RenderPass::Id renderPassId(1, 0);
+        TestRenderPass* renderPass = addRenderPass(renderPasses, renderPassId, viewportRect, gfx::Transform());
+        addQuad(renderPass, viewportRect, SK_ColorGREEN);
+
+        EXPECT_CALL(m_outputSurface, EnsureBackbuffer())
+            .WillRepeatedly(Return());
+
+        EXPECT_CALL(m_outputSurface, Reshape(_))
+            .Times(1);
+
+        EXPECT_CALL(m_outputSurface, BindFramebuffer())
+            .Times(1);
+
+        EXPECT_CALL(*context(), drawElements(_, _, _, _))
+            .Times(1);
+
+        m_renderer.decideRenderPassAllocationsForFrame(renderPassesInDrawOrder());
+        m_renderer.drawFrame(renderPassesInDrawOrder());
+    }
+
+    OutputSurfaceMockContext* context() { return static_cast<OutputSurfaceMockContext*>(m_outputSurface.context3d()); }
+
+    StrictMock<MockOutputSurface> m_outputSurface;
+    scoped_ptr<ResourceProvider> m_resourceProvider;
+    FakeRendererGL m_renderer;
+};
+
+TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap)
+{
+    drawFrame();
+
+    EXPECT_CALL(m_outputSurface, SwapBuffers())
+        .Times(1);
+    m_renderer.swapBuffers();
+}
+
+class MockOutputSurfaceTestWithPartialSwap : public MockOutputSurfaceTest {
+public:
+    virtual const LayerTreeSettings& settings() const OVERRIDE
+    {
+        static LayerTreeSettings fakeSettings;
+        fakeSettings.partialSwapEnabled = true;
+        return fakeSettings;
+    }
+};
+
+TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap)
+{
+    drawFrame();
+
+    EXPECT_CALL(m_outputSurface, PostSubBuffer(_))
+        .Times(1);
+    m_renderer.swapBuffers();
+}
+
+class MockOutputSurfaceTestWithSendCompositorFrame : public MockOutputSurfaceTest {
+public:
+    virtual const LayerTreeSettings& settings() const OVERRIDE
+    {
+        static LayerTreeSettings fakeSettings;
+        fakeSettings.compositorFrameMessage = true;
+        return fakeSettings;
+    }
+};
+
+TEST_F(MockOutputSurfaceTestWithSendCompositorFrame, DrawFrame)
+{
+    EXPECT_CALL(m_outputSurface, SendFrameToParentCompositor(_))
+        .Times(1);
+    drawFrame();
 }
 
 }  // namespace

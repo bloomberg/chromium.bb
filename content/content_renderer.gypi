@@ -104,6 +104,8 @@
     'renderer/gpu/input_event_filter.h',
     'renderer/gpu/gpu_benchmarking_extension.cc',
     'renderer/gpu/gpu_benchmarking_extension.h',
+    'renderer/gpu/mailbox_output_surface.cc',
+    'renderer/gpu/mailbox_output_surface.h',
     'renderer/gpu/stream_texture_host_android.cc',
     'renderer/gpu/stream_texture_host_android.h',
     'renderer/gpu/render_widget_compositor.cc',

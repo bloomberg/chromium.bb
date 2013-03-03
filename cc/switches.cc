@@ -90,6 +90,11 @@ const char kUseCheapnessEstimator[] = "use-cheapness-estimator";
 const char kLowResolutionContentsScaleFactor[] =
     "low-resolution-contents-scale-factor";
 
+// Causes the compositor to render to textures which are then sent to the parent
+// through the texture mailbox mechanism.
+// Requires --enable-compositor-frame-message.
+const char kCompositeToMailbox[] = "composite-to-mailbox";
+
 bool IsImplSidePaintingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

@@ -23,6 +23,10 @@ class ForwardingMessageFilter;
 class Message;
 }
 
+namespace cc {
+class CompositorFrameAck;
+}
+
 namespace content {
 
 // This class can be created only on the main thread, but then becomes pinned
@@ -46,6 +50,9 @@ class CompositorOutputSurface
   // TODO(epenner): This seems out of place here and would be a better fit
   // int CompositorThread after it is fully refactored (http://crbug/170828)
   virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) OVERRIDE;
+
+ protected:
+  virtual void OnSwapAck(const cc::CompositorFrameAck& ack);
 
  private:
   class CompositorOutputSurfaceProxy :

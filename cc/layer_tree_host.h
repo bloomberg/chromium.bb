@@ -68,7 +68,6 @@ struct CC_EXPORT RendererCapabilities {
     bool usingSetVisibility;
     bool usingSwapCompleteCallback;
     bool usingGpuMemoryManager;
-    bool usingDiscardBackbuffer;
     bool usingEglImage;
     bool allowPartialTextureUpdates;
     bool usingOffscreenContext3d;

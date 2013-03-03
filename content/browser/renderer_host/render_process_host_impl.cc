@@ -881,6 +881,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTraceAllRenderedFrames,
     cc::switches::kTraceOverdraw,
     cc::switches::kUseCheapnessEstimator,
+    cc::switches::kCompositeToMailbox,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

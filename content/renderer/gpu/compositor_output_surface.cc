@@ -6,6 +6,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "cc/compositor_frame.h"
+#include "cc/compositor_frame_ack.h"
 #include "cc/output_surface_client.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
@@ -37,7 +38,11 @@ namespace content {
 IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
     base::TaskRunner* target_task_runner)
 {
-  uint32 messages_to_filter[] = {ViewMsg_UpdateVSyncParameters::ID};
+  uint32 messages_to_filter[] = {
+    ViewMsg_UpdateVSyncParameters::ID,
+    ViewMsg_SwapCompositorFrameAck::ID
+  };
+
   return new IPC::ForwardingMessageFilter(
       messages_to_filter, arraysize(messages_to_filter),
       target_task_runner);
@@ -97,6 +102,7 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
     return;
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters, OnUpdateVSyncParameters);
+    IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
   IPC_END_MESSAGE_MAP()
 }
 
@@ -105,6 +111,10 @@ void CompositorOutputSurface::OnUpdateVSyncParameters(
   DCHECK(CalledOnValidThread());
   DCHECK(client_);
   client_->OnVSyncParametersChanged(timebase, interval);
+}
+
+void CompositorOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
+  client_->OnSendFrameToParentCompositorAck(ack);
 }
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {

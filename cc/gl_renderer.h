@@ -45,6 +45,8 @@ public:
 
     virtual void viewportChanged() OVERRIDE;
 
+    virtual void receiveCompositorFrameAck(const CompositorFrameAck& ack) OVERRIDE;
+
     // waits for rendering to finish
     virtual void finish() OVERRIDE;
 

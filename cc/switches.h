@@ -40,6 +40,7 @@ CC_EXPORT extern const char kTraceAllRenderedFrames[];
 CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
 CC_EXPORT extern const char kUseCheapnessEstimator[];
 CC_EXPORT extern const char kLowResolutionContentsScaleFactor[];
+CC_EXPORT extern const char kCompositeToMailbox[];
 
 CC_EXPORT bool IsImplSidePaintingEnabled();
 

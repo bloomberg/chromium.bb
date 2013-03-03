@@ -83,6 +83,7 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/compositor_software_output_device_gl_adapter.h"
 #include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
@@ -2043,8 +2044,15 @@ scoped_ptr<cc::OutputSurface> RenderViewImpl::CreateOutputSurface() {
           new CompositorOutputSurface(routing_id(), NULL,
               new CompositorSoftwareOutputDeviceGLAdapter(context)));
   } else {
-      return scoped_ptr<cc::OutputSurface>(
-          new CompositorOutputSurface(routing_id(), context, NULL));
+      bool composite_to_mailbox =
+          command_line.HasSwitch(cc::switches::kCompositeToMailbox);
+      DCHECK(!composite_to_mailbox || command_line.HasSwitch(
+          cc::switches::kEnableCompositorFrameMessage));
+      // No swap throttling yet when compositing on the main thread.
+      DCHECK(!composite_to_mailbox || is_threaded_compositing_enabled_);
+      return scoped_ptr<cc::OutputSurface>(composite_to_mailbox ?
+          new MailboxOutputSurface(routing_id(), context, NULL) :
+              new CompositorOutputSurface(routing_id(), context, NULL));
   }
 }
 
