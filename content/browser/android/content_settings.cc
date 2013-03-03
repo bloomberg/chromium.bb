@@ -86,6 +86,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mUseWideViewport", "Z");
     load_with_overview_mode =
         GetFieldID(env, clazz, "mLoadWithOverviewMode", "Z");
+    media_playback_requires_user_gesture =
+        GetFieldID(env, clazz, "mMediaPlaybackRequiresUserGesture", "Z");
   }
 
   // Field ids
@@ -113,6 +115,7 @@ struct ContentSettings::FieldIds {
   jfieldID database_enabled;
   jfieldID use_wide_viewport;
   jfieldID load_with_overview_mode;
+  jfieldID media_playback_requires_user_gesture;
 };
 
 ContentSettings::ContentSettings(JNIEnv* env,
@@ -283,6 +286,12 @@ void ContentSettings::SyncFromNativeImpl() {
       obj,
       field_ids_->load_with_overview_mode,
       prefs.initialize_at_minimum_page_scale);
+
+  env->SetBooleanField(
+      obj,
+      field_ids_->media_playback_requires_user_gesture,
+      prefs.user_gesture_required_for_media_playback);
+
   CheckException(env);
 }
 
@@ -400,6 +409,9 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.initialize_at_minimum_page_scale = env->GetBooleanField(
       obj, field_ids_->load_with_overview_mode);
+
+  prefs.user_gesture_required_for_media_playback = env->GetBooleanField(
+      obj, field_ids_->media_playback_requires_user_gesture);
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }

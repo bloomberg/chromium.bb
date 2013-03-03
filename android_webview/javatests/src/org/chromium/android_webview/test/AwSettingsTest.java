@@ -6,7 +6,9 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.os.Build;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 import android.webkit.WebSettings;
 
 import org.apache.http.Header;
@@ -16,6 +18,8 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
+import org.chromium.android_webview.test.util.JavascriptEventObserver;
+import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
@@ -2447,6 +2451,66 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
         assertEquals(defaultScale, getScaleOnUiThread(awContents));
+    }
+
+    /**
+     * Run video test.
+     * @param requiredUserGesture the settings of MediaPlaybackRequiresUserGesture.
+     * @param waitTime time for waiting event happen, -1 means forever.
+     * @return true if the event happened,
+     * @throws Throwable throw exception if timeout.
+     */
+    private boolean runVideoTest(final boolean requiredUserGesture, long waitTime)
+            throws Throwable {
+        final JavascriptEventObserver observer = new JavascriptEventObserver();
+        TestAwContentsClient client = new TestAwContentsClient();
+        final AwContents awContents = createAwTestContainerViewOnMainSync(client).getAwContents();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                ContentSettings contentSettings =
+                        awContents.getContentViewCore().getContentSettings();
+                contentSettings.setJavaScriptEnabled(true);
+                contentSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
+                observer.register(awContents.getContentViewCore(), "javaObserver");
+            }
+        });
+        VideoTestWebServer webServer = new VideoTestWebServer();
+        try {
+            String data = "<html><head><script>" +
+                "addEventListener('DOMContentLoaded', function() { " +
+                "  document.getElementById('video').addEventListener('play', function() { " +
+                "    javaObserver.notifyJava(); " +
+                "  }, false); " +
+                "}, false); " +
+                "</script></head><body>" +
+                "<video id='video' autoplay control src='" +
+                webServer.getOnePixelOneFrameWebmURL() + "' /> </body></html>";
+            loadDataAsync(awContents, data, "text/html", false);
+            if (waitTime == -1) {
+                observer.waitForEvent();
+                return true;
+            }
+            else {
+                return observer.waitForEvent(waitTime);
+            }
+        } finally {
+            if (webServer != null && webServer.getTestWebServer() != null)
+                webServer.getTestWebServer().shutdown();
+        }
+    }
+
+    @LargeTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testMediaPlaybackWithoutUserGesture() throws Throwable {
+        assertTrue(runVideoTest(false, -1));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testMediaPlaybackWithUserGesture() throws Throwable {
+        // Wait for 5 second to see if video played.
+        assertFalse(runVideoTest(true, 5000));
     }
 
     static class ViewPair {
