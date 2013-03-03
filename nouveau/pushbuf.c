@@ -524,7 +524,7 @@ pushbuf_validate(struct nouveau_pushbuf *push, bool retry)
 		}
 	}
 
-	return 0;
+	return ret;
 }
 
 int
