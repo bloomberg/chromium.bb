@@ -99,6 +99,7 @@ struct nouveau_device_priv {
 	uint32_t *client;
 	int nr_client;
 	bool have_bo_usage;
+	int gart_limit_percent, vram_limit_percent;
 };
 
 static inline struct nouveau_device_priv *
