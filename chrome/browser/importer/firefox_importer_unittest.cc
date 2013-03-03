@@ -28,10 +28,18 @@
 #include "content/public/common/password_form.h"
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007
-#if defined(OS_MACOSX)
-#define MAYBE(x) DISABLED_##x
+// TODO(jschuh): Disabled on Win64 build. http://crbug.com/179688
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
+#define MAYBE_IMPORTER(x) DISABLED_##x
 #else
-#define MAYBE(x) x
+#define MAYBE_IMPORTER(x) x
+#endif
+
+// TODO(jschuh): Disabled on Win64 build. http://crbug.com/179688
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_NSS(x) DISABLED_##x
+#else
+#define MAYBE_NSS(x) x
 #endif
 
 namespace {
@@ -428,7 +436,7 @@ class FirefoxProfileImporterTest : public ImporterTest {
   base::FilePath app_path_;
 };
 
-TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox2Importer)) {
+TEST_F(FirefoxProfileImporterTest, MAYBE_IMPORTER(Firefox2Importer)) {
   base::FilePath data_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
   data_path = data_path.AppendASCII("firefox2_profile");
@@ -470,13 +478,13 @@ TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox2Importer)) {
   loop->Run();
 }
 
-TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox30Importer)) {
+TEST_F(FirefoxProfileImporterTest, MAYBE_IMPORTER(Firefox30Importer)) {
   scoped_refptr<Firefox3Observer> observer(new Firefox3Observer());
   Firefox3xImporterTest("firefox3_profile", observer.get(), observer.get(),
                         true);
 }
 
-TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox35Importer)) {
+TEST_F(FirefoxProfileImporterTest, MAYBE_IMPORTER(Firefox35Importer)) {
   bool import_search_engines = false;
   scoped_refptr<Firefox3Observer> observer(
       new Firefox3Observer(import_search_engines));
@@ -487,7 +495,7 @@ TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox35Importer)) {
 // The following 2 tests require the use of the NSSDecryptor, on OSX this needs
 // to run in a separate process, so we use a proxy object so we can share the
 // same test between platforms.
-TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
+TEST(FirefoxImporterTest, MAYBE_NSS(Firefox2NSS3Decryptor)) {
   base::FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
 #ifdef OS_MACOSX
@@ -512,7 +520,7 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
                               "OQ5ZFmhb8BAiFo1Z+fUvaIQ=="));
 }
 
-TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
+TEST(FirefoxImporterTest, MAYBE_NSS(Firefox3NSS3Decryptor)) {
   base::FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
 #ifdef OS_MACOSX
