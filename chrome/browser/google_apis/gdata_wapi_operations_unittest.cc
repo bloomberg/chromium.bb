@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -105,7 +107,7 @@ class GDataWapiOperationsTest : public testing::Test {
         base::Bind(&GDataWapiOperationsTest::HandleResourceFeedRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleMetadataFeedRequest,
+        base::Bind(&GDataWapiOperationsTest::HandleMetadataRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
         base::Bind(&GDataWapiOperationsTest::HandleCreateSessionRequest,
@@ -190,7 +192,7 @@ class GDataWapiOperationsTest : public testing::Test {
   }
 
   // Handles a request for fetching a metadata feed.
-  scoped_ptr<test_server::HttpResponse> HandleMetadataFeedRequest(
+  scoped_ptr<test_server::HttpResponse> HandleMetadataRequest(
       const test_server::HttpRequest& request) {
     http_request_ = request;
 
@@ -198,8 +200,28 @@ class GDataWapiOperationsTest : public testing::Test {
     if (absolute_url.path() != "/feeds/metadata/default")
       return scoped_ptr<test_server::HttpResponse>();
 
-    return test_util::CreateHttpResponseFromFile(
-        test_util::GetTestFilePath("gdata/account_metadata.json"));
+    scoped_ptr<test_server::HttpResponse> result(
+        test_util::CreateHttpResponseFromFile(
+            test_util::GetTestFilePath("gdata/account_metadata.json")));
+    if (absolute_url.query().find("include-installed-apps=true") ==
+        string::npos) {
+      // Exclude the list of installed apps.
+      scoped_ptr<base::Value> parsed_content(
+          base::JSONReader::Read(result->content(), base::JSON_PARSE_RFC));
+      CHECK(parsed_content);
+
+      // Remove the install apps node.
+      base::DictionaryValue* dictionary_value;
+      CHECK(parsed_content->GetAsDictionary(&dictionary_value));
+      dictionary_value->Remove("entry.docs$installedApp", NULL);
+
+      // Write back it as the content of the result.
+      std::string content;
+      base::JSONWriter::Write(parsed_content.get(), &content);
+      result->set_content(content);
+    }
+
+    return result.Pass();
   }
 
   // Handles a request for creating a session for uploading.
@@ -484,7 +506,8 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
       request_context_getter_.get(),
       *url_generator_,
       base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallbackAndQuit,
-                 &result_code, &result_data));
+                 &result_code, &result_data),
+      true);  // Include installed apps.
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -509,6 +532,43 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
   // Sanity check for installed apps.
   EXPECT_EQ(expected->installed_apps().size(),
             result_data->installed_apps().size());
+}
+
+TEST_F(GDataWapiOperationsTest,
+       GetAccountMetadataOperationWithoutInstalledApps) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<AccountMetadata> result_data;
+
+  GetAccountMetadataOperation* operation = new GetAccountMetadataOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallbackAndQuit,
+                 &result_code, &result_data),
+      false);  // Exclude installed apps.
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/feeds/metadata/default?v=3&alt=json",
+            http_request_.relative_url);
+
+  scoped_ptr<AccountMetadata> expected(
+      AccountMetadata::CreateFrom(
+          *test_util::LoadJSONFile("gdata/account_metadata.json")));
+
+  ASSERT_TRUE(result_data.get());
+  EXPECT_EQ(expected->largest_changestamp(),
+            result_data->largest_changestamp());
+  EXPECT_EQ(expected->quota_bytes_total(),
+            result_data->quota_bytes_total());
+  EXPECT_EQ(expected->quota_bytes_used(),
+            result_data->quota_bytes_used());
+
+  // Installed apps shouldn't be included.
+  EXPECT_EQ(0U, result_data->installed_apps().size());
 }
 
 TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {

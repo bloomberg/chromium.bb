@@ -31,12 +31,6 @@ TEST_F(GDataWapiUrlGeneratorTest, AddInitiateUploadUrlParams) {
                 GURL("http://www.example.com")).spec());
 }
 
-TEST_F(GDataWapiUrlGeneratorTest, AddMetadataUrlParams) {
-  EXPECT_EQ("http://www.example.com/?v=3&alt=json&include-installed-apps=true",
-            GDataWapiUrlGenerator::AddMetadataUrlParams(
-                GURL("http://www.example.com")).spec());
-}
-
 TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
   EXPECT_EQ("http://www.example.com/?v=3&alt=json&showfolders=true"
             "&max-results=100"
@@ -215,10 +209,16 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListRootUrl) {
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateAccountMetadataUrl) {
+  // Include installed apps.
   EXPECT_EQ(
       "https://docs.google.com/feeds/metadata/default"
       "?v=3&alt=json&include-installed-apps=true",
-      url_generator_.GenerateAccountMetadataUrl().spec());
+      url_generator_.GenerateAccountMetadataUrl(true).spec());
+
+  // Exclude installed apps.
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/metadata/default?v=3&alt=json",
+      url_generator_.GenerateAccountMetadataUrl(false).spec());
 }
 
 }  // namespace google_apis

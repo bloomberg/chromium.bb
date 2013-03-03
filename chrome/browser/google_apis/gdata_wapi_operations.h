@@ -108,12 +108,15 @@ class GetResourceEntryOperation : public GetDataOperation {
 // This class performs the operation for fetching account metadata.
 class GetAccountMetadataOperation : public GetDataOperation {
  public:
+  // If |include_installed_apps| is set to true, the result should include
+  // the list of installed third party applications.
   // |callback| must not be null.
   GetAccountMetadataOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
-      const GetAccountMetadataCallback& callback);
+      const GetAccountMetadataCallback& callback,
+      bool include_installed_apps);
   virtual ~GetAccountMetadataOperation();
 
  protected:
@@ -122,6 +125,8 @@ class GetAccountMetadataOperation : public GetDataOperation {
 
  private:
   const GDataWapiUrlGenerator url_generator_;
+  const bool include_installed_apps_;
+
   DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataOperation);
 };
 

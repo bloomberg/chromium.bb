@@ -257,7 +257,8 @@ void GDataWapiService::GetAccountMetadata(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          callback));
+          callback,
+          true));  // Include installed apps.
 }
 
 void GDataWapiService::GetAboutResource(

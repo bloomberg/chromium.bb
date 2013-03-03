@@ -31,10 +31,6 @@ class GDataWapiUrlGenerator {
   // url params (as AddStandardUrlParams above does).
   static GURL AddInitiateUploadUrlParams(const GURL& url);
 
-  // Adds additional parameters to metadata feed to include installed 3rd
-  // party applications.
-  static GURL AddMetadataUrlParams(const GURL& url);
-
   // Adds additional parameters for API version, output content type and to
   // show folders in the feed are added to document feed URLs.
   // Optionally, adds start-index=... parameter if |changestamp| is non-zero,
@@ -120,7 +116,9 @@ class GDataWapiUrlGenerator {
   GURL GenerateResourceListRootUrl() const;
 
   // Generates a URL for getting the account metadata feed.
-  GURL GenerateAccountMetadataUrl() const;
+  // If |include_installed_apps| is set to true, the response will include the
+  // list of installed third party applications.
+  GURL GenerateAccountMetadataUrl(bool include_installed_apps) const;
 
  private:
   const GURL base_url_;

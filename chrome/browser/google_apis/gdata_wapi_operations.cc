@@ -133,17 +133,19 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
-    const GetAccountMetadataCallback& callback)
+    const GetAccountMetadataCallback& callback,
+    bool include_installed_apps)
     : GetDataOperation(registry, url_request_context_getter,
                        base::Bind(&ParseAccounetMetadataAndRun, callback)),
-      url_generator_(url_generator) {
+      url_generator_(url_generator),
+      include_installed_apps_(include_installed_apps) {
   DCHECK(!callback.is_null());
 }
 
 GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
 
 GURL GetAccountMetadataOperation::GetURL() const {
-  return url_generator_.GenerateAccountMetadataUrl();
+  return url_generator_.GenerateAccountMetadataUrl(include_installed_apps_);
 }
 
 //=========================== DeleteResourceOperation ==========================

@@ -88,14 +88,6 @@ GURL GDataWapiUrlGenerator::AddInitiateUploadUrlParams(const GURL& url) {
 }
 
 // static
-GURL GDataWapiUrlGenerator::AddMetadataUrlParams(const GURL& url) {
-  GURL result = AddStandardUrlParams(url);
-  result = net::AppendOrReplaceQueryParameter(
-      result, "include-installed-apps", "true");
-  return result;
-}
-
-// static
 GURL GDataWapiUrlGenerator::AddFeedUrlParams(
     const GURL& url,
     int num_items_to_fetch,
@@ -221,8 +213,14 @@ GURL GDataWapiUrlGenerator::GenerateResourceListRootUrl() const {
   return AddStandardUrlParams(base_url_.Resolve(kResourceListRootURL));
 }
 
-GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl() const {
-  return AddMetadataUrlParams(base_url_.Resolve(kAccountMetadataURL));
+GURL GDataWapiUrlGenerator::GenerateAccountMetadataUrl(
+    bool include_installed_apps) const {
+  GURL result = AddStandardUrlParams(base_url_.Resolve(kAccountMetadataURL));
+  if (include_installed_apps) {
+    result = net::AppendOrReplaceQueryParameter(
+        result, "include-installed-apps", "true");
+  }
+  return result;
 }
 
 }  // namespace google_apis
