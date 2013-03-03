@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the Permissions API.
+// Custom bindings for the Permissions API.
 
-var binding = require('binding').Binding.create('permissions');
-
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var lastError = require('lastError');
 
-// These custom binding are only necessary because it is not currently
+// These custom bindings are only necessary because it is not currently
 // possible to have a union of types as the type of the items in an array.
 // Once that is fixed, this entire file should go away.
 // See,
 // https://code.google.com/p/chromium/issues/detail?id=162044
 // https://code.google.com/p/chromium/issues/detail?id=162042
 // TODO(bryeung): delete this file.
-binding.registerCustomHook(function(api) {
+chromeHidden.registerCustomHook('permissions', function(api) {
   var apiFunctions = api.apiFunctions;
-  var permissions = api.compiledApi;
 
   function maybeConvertToObject(str) {
     var parts = str.split('|');
@@ -82,14 +80,12 @@ binding.registerCustomHook(function(api) {
   // dispatchToListener call happens after argument validation, which works
   // around the problem that Permissions.permissions is supposed to be a list
   // of strings.
-  permissions.onAdded.dispatchToListener = function(callback, args) {
+  chrome.permissions.onAdded.dispatchToListener = function(callback, args) {
     for (var i = 0; i < args[0].permissions.length; i += 1) {
       args[0].permissions[i] = maybeConvertToObject(args[0].permissions[i]);
     }
     chrome.Event.prototype.dispatchToListener(callback, args);
   };
-  permissions.onRemoved.dispatchToListener =
-      permissions.onAdded.dispatchToListener;
+  chrome.permissions.onRemoved.dispatchToListener =
+      chrome.permissions.onAdded.dispatchToListener;
 });
-
-exports.binding = binding.generate();

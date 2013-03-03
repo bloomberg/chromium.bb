@@ -12,17 +12,14 @@
 
 namespace extensions {
 
-I18NCustomBindings::I18NCustomBindings(Dispatcher* dispatcher,
-                                       v8::Handle<v8::Context> context)
-    : ChromeV8Extension(dispatcher, context) {
+I18NCustomBindings::I18NCustomBindings()
+    : ChromeV8Extension(NULL) {
   RouteStaticFunction("GetL10nMessage", &GetL10nMessage);
 }
 
 // static
 v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     const v8::Arguments& args) {
-  I18NCustomBindings* self = GetFromArguments<I18NCustomBindings>(args);
-
   if (args.Length() != 3 || !args[0]->IsString()) {
     NOTREACHED() << "Bad arguments";
     return v8::Undefined();
@@ -41,7 +38,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
   if (!l10n_messages) {
     // Get the current RenderView so that we can send a routed IPC message
     // from the correct source.
-    content::RenderView* renderview = self->GetRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 

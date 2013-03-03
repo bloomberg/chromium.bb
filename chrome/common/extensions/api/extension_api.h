@@ -88,10 +88,8 @@ class ExtensionAPI : public FeatureProvider {
   // Gets the APIs available to |context| given an |extension| and |url|. The
   // extension or URL may not be relevant to all contexts, and may be left
   // NULL/empty.
-  std::set<std::string> GetAPIsForContext(
+  scoped_ptr<std::set<std::string> > GetAPIsForContext(
       Feature::Context context, const Extension* extension, const GURL& url);
-
-  std::set<std::string> GetAllAPINames();
 
   // Gets a Feature object describing the API with the specified |full_name|.
   // This can be either an API namespace (like history, or
@@ -160,8 +158,7 @@ class ExtensionAPI : public FeatureProvider {
 
   // Map from each API that hasn't been loaded yet to the schema which defines
   // it. Note that there may be multiple APIs per schema.
-  typedef std::map<std::string, base::StringPiece> UnloadedSchemaMap;
-  UnloadedSchemaMap unloaded_schemas_;
+  std::map<std::string, base::StringPiece> unloaded_schemas_;
 
   // Schemas for each namespace.
   typedef std::map<std::string, linked_ptr<const DictionaryValue> > SchemaMap;

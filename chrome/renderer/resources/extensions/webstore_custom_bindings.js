@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the webstore API.
+// Custom bindings for the webstore API.
 
 var webstoreNatives = requireNative('webstore');
 
@@ -49,14 +49,14 @@ var chromeWebstore = {
   }
 };
 
-// Called by webstore_binding.cc.
+// Called by webstore_bindings.cc.
 var chromeHiddenWebstore = {
   onInstallResponse: function(installId, success, error) {
     installer.onInstallResponse(installId, success, error);
   }
 };
 
-// These must match the names in InstallWebstorebinding in
+// These must match the names in InstallWebstoreBindings in
 // chrome/renderer/extensions/dispatcher.cc.
 exports.chromeWebstore = chromeWebstore;
 exports.chromeHiddenWebstore = chromeHiddenWebstore;

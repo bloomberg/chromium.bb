@@ -2,20 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// test_custom_bindings.js
+// extension_apitest.js
 // mini-framework for ExtensionApiTest browser tests
 
-var binding = require('binding').Binding.create('test');
+  chrome.test = chrome.test || {};
 
-var chrome = requireNative('chrome').GetChrome();
-var GetExtensionAPIDefinition =
-    requireNative('apiDefinitions').GetExtensionAPIDefinition;
-
-binding.registerCustomHook(function(api) {
-  var chromeTest = api.compiledApi;
-  var apiFunctions = api.apiFunctions;
-
-  chromeTest.tests = chromeTest.tests || [];
+  chrome.test.tests = chrome.test.tests || [];
 
   var currentTest = null;
   var lastTest = null;
@@ -32,14 +24,14 @@ binding.registerCustomHook(function(api) {
   function testDone() {
     // Use setTimeout here to allow previous test contexts to be
     // eligible for garbage collection.
-    setTimeout(chromeTest.runNextTest, 0);
+    setTimeout(chrome.test.runNextTest, 0);
   }
 
   function allTestsDone() {
     if (testsFailed == 0) {
-      chromeTest.notifyPass();
+      chrome.test.notifyPass();
     } else {
-      chromeTest.notifyFail('Failed ' + testsFailed + ' of ' +
+      chrome.test.notifyFail('Failed ' + testsFailed + ' of ' +
                              testCount + ' tests');
     }
 
@@ -50,28 +42,28 @@ binding.registerCustomHook(function(api) {
 
   var pendingCallbacks = 0;
 
-  apiFunctions.setHandleRequest('callbackAdded', function() {
+  chrome.test.callbackAdded = function() {
     pendingCallbacks++;
 
     var called = false;
     return function() {
-      chromeTest.assertFalse(called, 'callback has already been run');
+      chrome.test.assertFalse(called, 'callback has already been run');
       called = true;
 
       pendingCallbacks--;
       if (pendingCallbacks == 0) {
-        chromeTest.succeed();
+        chrome.test.succeed();
       }
     };
-  });
+  };
 
-  apiFunctions.setHandleRequest('runNextTest', function() {
+  chrome.test.runNextTest = function() {
     // There may have been callbacks which were interrupted by failure
     // exceptions.
     pendingCallbacks = 0;
 
     lastTest = currentTest;
-    currentTest = chromeTest.tests.shift();
+    currentTest = chrome.test.tests.shift();
 
     if (!currentTest) {
       allTestsDone();
@@ -79,19 +71,19 @@ binding.registerCustomHook(function(api) {
     }
 
     try {
-      chromeTest.log("( RUN      ) " + testName(currentTest));
+      chrome.test.log("( RUN      ) " + testName(currentTest));
       currentTest.call();
     } catch (e) {
       if (e !== failureException)
-        chromeTest.fail('uncaught exception: ' + e);
+        chrome.test.fail('uncaught exception: ' + e);
     }
-  });
+  };
 
-  apiFunctions.setHandleRequest('fail', function(message) {
-    chromeTest.log("(  FAILED  ) " + testName(currentTest));
+  chrome.test.fail = function(message) {
+    chrome.test.log("(  FAILED  ) " + testName(currentTest));
 
     var stack = {};
-    Error.captureStackTrace(stack, chromeTest.fail);
+    Error.captureStackTrace(stack, chrome.test.fail);
 
     if (!message)
       message = "FAIL (no message)";
@@ -103,24 +95,23 @@ binding.registerCustomHook(function(api) {
 
     // Interrupt the rest of the test.
     throw failureException;
-  });
+  };
 
-  apiFunctions.setHandleRequest('succeed', function() {
+  chrome.test.succeed = function() {
     console.log("[SUCCESS] " + testName(currentTest));
-    chromeTest.log("(  SUCCESS )");
+    chrome.test.log("(  SUCCESS )");
     testDone();
-  });
+  };
 
-  apiFunctions.setHandleRequest('assertTrue', function(test, message) {
-    chromeTest.assertBool(test, true, message);
-  });
+  chrome.test.assertTrue = function(test, message) {
+    chrome.test.assertBool(test, true, message);
+  };
 
-  apiFunctions.setHandleRequest('assertFalse', function(test, message) {
-    chromeTest.assertBool(test, false, message);
-  });
+  chrome.test.assertFalse = function(test, message) {
+    chrome.test.assertBool(test, false, message);
+  };
 
-  apiFunctions.setHandleRequest('assertBool',
-                                function(test, expected, message) {
+  chrome.test.assertBool = function(test, expected, message) {
     if (test !== expected) {
       if (typeof(test) == "string") {
         if (message)
@@ -128,11 +119,11 @@ binding.registerCustomHook(function(api) {
         else
           message = test;
       }
-      chromeTest.fail(message);
+      chrome.test.fail(message);
     }
-  });
+  };
 
-  apiFunctions.setHandleRequest('checkDeepEq', function(expected, actual) {
+  chrome.test.checkDeepEq = function (expected, actual) {
     if ((expected === null) != (actual === null))
       return false;
 
@@ -155,7 +146,7 @@ binding.registerCustomHook(function(api) {
       var eq = true;
       switch (typeof(expected[p])) {
         case 'object':
-          eq = chromeTest.checkDeepEq(expected[p], actual[p]);
+          eq = chrome.test.checkDeepEq(expected[p], actual[p]);
           break;
         case 'function':
           eq = (typeof(actual[p]) != 'undefined' &&
@@ -170,45 +161,44 @@ binding.registerCustomHook(function(api) {
         return false;
     }
     return true;
-  });
+  };
 
-  apiFunctions.setHandleRequest('assertEq',
-                                function(expected, actual, message) {
+  chrome.test.assertEq = function(expected, actual, message) {
     var error_msg = "API Test Error in " + testName(currentTest);
     if (message)
       error_msg += ": " + message;
     if (typeof(expected) == 'object') {
-      if (!chromeTest.checkDeepEq(expected, actual)) {
-        chromeTest.fail(error_msg +
+      if (!chrome.test.checkDeepEq(expected, actual)) {
+        chrome.test.fail(error_msg +
                          "\nActual: " + JSON.stringify(actual) +
                          "\nExpected: " + JSON.stringify(expected));
       }
       return;
     }
     if (expected != actual) {
-      chromeTest.fail(error_msg +
+      chrome.test.fail(error_msg +
                        "\nActual: " + actual + "\nExpected: " + expected);
     }
     if (typeof(expected) != typeof(actual)) {
-      chromeTest.fail(error_msg +
+      chrome.test.fail(error_msg +
                        " (type mismatch)\nActual Type: " + typeof(actual) +
                        "\nExpected Type:" + typeof(expected));
     }
-  });
+  };
 
-  apiFunctions.setHandleRequest('assertNoLastError', function() {
+  chrome.test.assertNoLastError = function() {
     if (chrome.runtime.lastError != undefined) {
-      chromeTest.fail("lastError.message == " +
+      chrome.test.fail("lastError.message == " +
                        chrome.runtime.lastError.message);
     }
-  });
+  };
 
-  apiFunctions.setHandleRequest('assertLastError', function(expectedError) {
-    chromeTest.assertEq(typeof(expectedError), 'string');
-    chromeTest.assertTrue(chrome.runtime.lastError != undefined,
+  chrome.test.assertLastError = function(expectedError) {
+    chrome.test.assertEq(typeof(expectedError), 'string');
+    chrome.test.assertTrue(chrome.runtime.lastError != undefined,
         "No lastError, but expected " + expectedError);
-    chromeTest.assertEq(expectedError, chrome.runtime.lastError.message);
-  });
+    chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
+  }
 
   function safeFunctionApply(func, args) {
     try {
@@ -216,23 +206,23 @@ binding.registerCustomHook(function(api) {
         func.apply(null, args);
     } catch (e) {
       var msg = "uncaught exception " + e;
-      chromeTest.fail(msg);
+      chrome.test.fail(msg);
     }
   };
 
   // Wrapper for generating test functions, that takes care of calling
   // assertNoLastError() and (optionally) succeed() for you.
-  apiFunctions.setHandleRequest('callback', function(func, expectedError) {
+  chrome.test.callback = function(func, expectedError) {
     if (func) {
-      chromeTest.assertEq(typeof(func), 'function');
+      chrome.test.assertEq(typeof(func), 'function');
     }
-    var callbackCompleted = chromeTest.callbackAdded();
+    var callbackCompleted = chrome.test.callbackAdded();
 
     return function() {
       if (expectedError == null) {
-        chromeTest.assertNoLastError();
+        chrome.test.assertNoLastError();
       } else {
-        chromeTest.assertLastError(expectedError);
+        chrome.test.assertLastError(expectedError);
       }
 
       if (func) {
@@ -241,20 +231,20 @@ binding.registerCustomHook(function(api) {
 
       callbackCompleted();
     };
-  });
+  };
 
-  apiFunctions.setHandleRequest('listenOnce', function(event, func) {
-    var callbackCompleted = chromeTest.callbackAdded();
+  chrome.test.listenOnce = function(event, func) {
+    var callbackCompleted = chrome.test.callbackAdded();
     var listener = function() {
       event.removeListener(listener);
       safeFunctionApply(func, arguments);
       callbackCompleted();
     };
     event.addListener(listener);
-  });
+  };
 
-  apiFunctions.setHandleRequest('listenForever', function(event, func) {
-    var callbackCompleted = chromeTest.callbackAdded();
+  chrome.test.listenForever = function(event, func) {
+    var callbackCompleted = chrome.test.callbackAdded();
 
     var listener = function() {
       safeFunctionApply(func, arguments);
@@ -267,25 +257,18 @@ binding.registerCustomHook(function(api) {
 
     event.addListener(listener);
     return done;
-  });
+  };
 
-  apiFunctions.setHandleRequest('callbackPass', function(func) {
-    return chromeTest.callback(func);
-  });
+  chrome.test.callbackPass = function(func) {
+    return chrome.test.callback(func);
+  };
 
-  apiFunctions.setHandleRequest('callbackFail', function(expectedError, func) {
-    return chromeTest.callback(func, expectedError);
-  });
+  chrome.test.callbackFail = function(expectedError, func) {
+    return chrome.test.callback(func, expectedError);
+  };
 
-  apiFunctions.setHandleRequest('runTests', function(tests) {
-    chromeTest.tests = tests;
-    testCount = chromeTest.tests.length;
-    chromeTest.runNextTest();
-  });
-
-  apiFunctions.setHandleRequest('getApiDefinitions', function(apiNames) {
-    return GetExtensionAPIDefinition();
-  });
-});
-
-exports.binding = binding.generate();
+  chrome.test.runTests = function(tests) {
+    chrome.test.tests = tests;
+    testCount = chrome.test.tests.length;
+    chrome.test.runNextTest();
+  };

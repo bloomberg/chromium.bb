@@ -36,10 +36,6 @@ class ChromeV8Context {
                   Feature::Context context_type);
   ~ChromeV8Context();
 
-  // Clears the WebFrame for this contexts and invalidates the associated
-  // ModuleSystem.
-  void Invalidate();
-
   v8::Handle<v8::Context> v8_context() const {
     return v8_context_;
   }
@@ -50,6 +46,9 @@ class ChromeV8Context {
 
   WebKit::WebFrame* web_frame() const {
     return web_frame_;
+  }
+  void clear_web_frame() {
+    web_frame_ = NULL;
   }
 
   Feature::Context context_type() const {
@@ -101,8 +100,6 @@ class ChromeV8Context {
   // APIs are available, returns an empty set.
   const std::set<std::string>& GetAvailableExtensionAPIs();
 
-  Feature::Availability GetAvailability(const std::string& api_name);
-
   // Returns a string description of the type of context this is.
   std::string GetContextTypeDescription();
 
@@ -131,8 +128,7 @@ class ChromeV8Context {
   scoped_ptr<ModuleSystem> module_system_;
 
   // The extension APIs available to this context.
-  std::set<std::string> available_extension_apis_;
-  bool available_extension_apis_initialized_;
+  scoped_ptr<std::set<std::string> > available_extension_apis_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };

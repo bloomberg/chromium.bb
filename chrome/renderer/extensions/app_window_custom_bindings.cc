@@ -49,9 +49,8 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
   Dispatcher* dispatcher_;
 };
 
-AppWindowCustomBindings::AppWindowCustomBindings(
-    Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context) : ChromeV8Extension(dispatcher, context) {
+AppWindowCustomBindings::AppWindowCustomBindings(Dispatcher* dispatcher)
+    : ChromeV8Extension(dispatcher) {
   RouteFunction("GetView",
       base::Bind(&AppWindowCustomBindings::GetView,
                  base::Unretained(this)));
@@ -159,7 +158,7 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
   // need to make sure the security origin is set up before returning the DOM
   // reference. A better way to do this would be to have the browser pass the
   // opener through so opener_id is set in RenderViewImpl's constructor.
-  content::RenderView* render_view = GetRenderView();
+  content::RenderView* render_view = GetCurrentRenderView();
   if (!render_view)
     return v8::Undefined();
   WebKit::WebFrame* opener = render_view->GetWebView()->mainFrame();

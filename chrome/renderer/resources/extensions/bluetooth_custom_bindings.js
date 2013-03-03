@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the Bluetooth API.
-
-var binding = require('binding').Binding.create('bluetooth');
+// Custom bindings for the Bluetooth API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var chrome = requireNative('chrome').GetChrome();
 var sendRequest = require('sendRequest').sendRequest;
 var lastError = require('lastError');
 
-// Use custom binding to create an undocumented event listener that will
+// Use custom bindings to create an undocumented event listener that will
 // receive events about device discovery and call the event listener that was
 // provided with the request to begin discovery.
-binding.registerCustomHook(function(api) {
+chromeHidden.registerCustomHook('bluetooth', function(api) {
   var apiFunctions = api.apiFunctions;
 
   chromeHidden.bluetooth = {};
@@ -157,5 +154,3 @@ binding.registerCustomHook(function(api) {
         return args;
       });
 });
-
-exports.binding = binding.generate();

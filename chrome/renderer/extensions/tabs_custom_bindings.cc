@@ -13,9 +13,8 @@
 
 namespace extensions {
 
-TabsCustomBindings::TabsCustomBindings(Dispatcher* dispatcher,
-                                       v8::Handle<v8::Context> context)
-    : ChromeV8Extension(dispatcher, context) {
+TabsCustomBindings::TabsCustomBindings()
+    : ChromeV8Extension(NULL) {
   RouteStaticFunction("OpenChannelToTab", &OpenChannelToTab);
 }
 
@@ -24,8 +23,7 @@ v8::Handle<v8::Value> TabsCustomBindings::OpenChannelToTab(
     const v8::Arguments& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  TabsCustomBindings* self = GetFromArguments<TabsCustomBindings>(args);
-  content::RenderView* renderview = self->GetRenderView();
+  content::RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return v8::Undefined();
 

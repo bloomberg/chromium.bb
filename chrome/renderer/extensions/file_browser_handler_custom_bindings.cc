@@ -13,19 +13,9 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
-namespace extensions {
+namespace {
 
-FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
-    v8::Handle<v8::Context> context)
-    : ChromeV8Extension(NULL, context) {
-  RouteFunction(
-      "GetExternalFileEntry",
-      base::Bind(&FileBrowserHandlerCustomBindings::GetExternalFileEntry,
-                 base::Unretained(this)));
-}
-
-v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
-    const v8::Arguments& args) {
+v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args) {
   // TODO(zelidrag): Make this magic work on other platforms when file browser
   // matures enough on ChromeOS.
 #if defined(OS_CHROMEOS)
@@ -43,8 +33,7 @@ v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
             v8::String::New("fileFullPath"))));
     bool is_directory =
         file_def->Get(v8::String::New("fileIsDirectory"))->ToBoolean()->Value();
-    WebKit::WebFrame* webframe =
-        WebKit::WebFrame::frameForContext(v8_context());
+    WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
     return webframe->createFileEntry(
         WebKit::WebFileSystem::TypeExternal,
         WebKit::WebString::fromUTF8(file_system_name.c_str()),
@@ -55,5 +44,15 @@ v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
     return v8::Undefined();
 #endif
 }
+
+}  // namespace
+
+namespace extensions {
+
+FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings()
+    : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetExternalFileEntry", &GetExternalFileEntry);
+}
+
 
 }  // namespace extensions

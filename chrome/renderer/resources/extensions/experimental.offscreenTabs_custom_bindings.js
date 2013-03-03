@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the experimental offscreenTabs API.
+// Custom bindings for the experimental offscreenTabs API.
 
-var binding = require('binding').Binding.create('experimental.offscreenTabs');
+(function() {
 
-binding.registerCustomHook(
+native function GetChromeHidden();
+
+GetChromeHidden().registerCustomHook(
     'experimental.offscreenTabs', function(api) {
   var apiFunctions = api.apiFunctions;
 
@@ -58,4 +60,4 @@ binding.registerCustomHook(
       function() { return validate(arguments, mouseEventFilter); });
 });
 
-exports.binding = binding.generate();
+})();

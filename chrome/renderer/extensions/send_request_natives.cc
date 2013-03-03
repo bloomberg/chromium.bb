@@ -13,11 +13,8 @@ using content::V8ValueConverter;
 namespace extensions {
 
 SendRequestNatives::SendRequestNatives(Dispatcher* dispatcher,
-                                       RequestSender* request_sender,
-                                       ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      request_sender_(request_sender),
-      context_(context) {
+                                       RequestSender* request_sender)
+    : ChromeV8Extension(dispatcher), request_sender_(request_sender) {
   RouteFunction("GetNextRequestId",
                 base::Bind(&SendRequestNatives::GetNextRequestId,
                            base::Unretained(this)));
@@ -45,21 +42,21 @@ v8::Handle<v8::Value> SendRequestNatives::StartRequest(
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
   // See http://crbug.com/149880. The context menus APIs relies on this, but
-  // we shouldn't really be doing it (e.g. for the sake of the storage API).
+  // we shouln't really be doing it (e.g. for the sake of the storage API).
   converter->SetFunctionAllowed(true);
 
   if (!preserve_null_in_objects)
     converter->SetStripNullFromObjects(true);
 
-  scoped_ptr<Value> value_args(converter->FromV8Value(args[1], v8_context()));
+  scoped_ptr<Value> value_args(
+      converter->FromV8Value(args[1], v8::Context::GetCurrent()));
   if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
     NOTREACHED() << "Unable to convert args passed to StartRequest";
     return v8::Undefined();
   }
 
-  request_sender_->StartRequest(
-      context_, name, request_id, has_callback, for_io_thread,
-      static_cast<ListValue*>(value_args.get()));
+  request_sender_->StartRequest(name, request_id, has_callback, for_io_thread,
+                                static_cast<ListValue*>(value_args.get()));
   return v8::Undefined();
 }
 

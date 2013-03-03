@@ -20,9 +20,7 @@ class RequestSender;
 // Functions exposed to extension JS to implement the setIcon extension API.
 class SetIconNatives : public ChromeV8Extension {
  public:
-  SetIconNatives(Dispatcher* dispatcher,
-                 RequestSender* request_sender,
-                 ChromeV8Context* context);
+  SetIconNatives(Dispatcher* dispatcher, RequestSender* request_sender);
 
  private:
   bool ConvertImageDataToBitmapValue(const v8::Local<v8::Object> image_data,
@@ -30,10 +28,7 @@ class SetIconNatives : public ChromeV8Extension {
   bool ConvertImageDataSetToBitmapValueSet(const v8::Arguments& args,
                                            DictionaryValue* bitmap_value);
   v8::Handle<v8::Value> SetIconCommon(const v8::Arguments& args);
-
   RequestSender* request_sender_;
-
-  ChromeV8Context* context_;
 
   DISALLOW_COPY_AND_ASSIGN(SetIconNatives);
 };
