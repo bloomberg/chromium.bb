@@ -164,6 +164,16 @@ class Member(object):
     for property_name in ('OPTIONAL', 'nodoc', 'nocompile', 'nodart'):
       if self.node.GetProperty(property_name):
         properties[property_name.lower()] = True
+    for option_name, sanitizer in [
+        ('maxListeners', int),
+        ('supportsFilters', lambda s: s == 'true'),
+        ('supportsListeners', lambda s: s == 'true'),
+        ('supportsRules', lambda s: s == 'true')]:
+      if self.node.GetProperty(option_name):
+        if 'options' not in properties:
+          properties['options'] = {}
+        properties['options'][option_name] = sanitizer(self.node.GetProperty(
+          option_name))
     is_function = False
     parameter_comments = OrderedDict()
     for node in self.node.children:

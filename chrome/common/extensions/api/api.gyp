@@ -37,6 +37,7 @@
           'dial.idl',
           'downloads.idl',
           'echo_private.json',
+          'downloads_internal.idl',
           'events.json',
           'experimental_accessibility.json',
           'experimental_app.json',

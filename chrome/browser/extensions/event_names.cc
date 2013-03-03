@@ -53,6 +53,7 @@ const char kOnDialError[] = "dial.onError";
 const char kOnDownloadCreated[] = "downloads.onCreated";
 const char kOnDownloadChanged[] = "downloads.onChanged";
 const char kOnDownloadErased[] = "downloads.onErased";
+const char kOnDownloadDeterminingFilename[] = "downloads.onDeterminingFilename";
 
 const char kOnSettingsChanged[] = "storage.onChanged";
 

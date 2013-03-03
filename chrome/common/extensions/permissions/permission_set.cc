@@ -511,6 +511,10 @@ std::set<std::string> PermissionSet::GetDistinctHosts(
 }
 
 void PermissionSet::InitImplicitPermissions() {
+  // The downloads permission implies the internal version as well.
+  if (apis_.find(APIPermission::kDownloads) != apis_.end())
+    apis_.insert(APIPermission::kDownloadsInternal);
+
   // The webRequest permission implies the internal version as well.
   if (apis_.find(APIPermission::kWebRequest) != apis_.end())
     apis_.insert(APIPermission::kWebRequestInternal);

@@ -67,6 +67,7 @@ class APIPermission {
     kDeveloperPrivate,
     kDevtools,
     kDownloads,
+    kDownloadsInternal,
     kEchoPrivate,
     kExperimental,
     kFileBrowserHandler,

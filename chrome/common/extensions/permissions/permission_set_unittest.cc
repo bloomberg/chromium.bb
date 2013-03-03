@@ -714,6 +714,7 @@ TEST_F(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kCloudPrintPrivate);
   skip.insert(APIPermission::kDeveloperPrivate);
   skip.insert(APIPermission::kDial);
+  skip.insert(APIPermission::kDownloadsInternal);
   skip.insert(APIPermission::kEchoPrivate);
   skip.insert(APIPermission::kFileBrowserHandlerInternal);
   skip.insert(APIPermission::kFileBrowserPrivate);

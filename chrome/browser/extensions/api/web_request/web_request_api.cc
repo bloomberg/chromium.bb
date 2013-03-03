@@ -369,6 +369,9 @@ void SendOnMessageEventOnUI(
 // Represents a single unique listener to an event, along with whatever filter
 // parameters and extra_info_spec were specified at the time the listener was
 // added.
+// NOTE(benjhayden) New APIs should not use this sub_event_name trick! It does
+// not play well with event pages. See downloads.onDeterminingFilename and
+// ExtensionDownloadsEventRouter for an alternative approach.
 struct ExtensionWebRequestEventRouter::EventListener {
   std::string extension_id;
   std::string extension_name;

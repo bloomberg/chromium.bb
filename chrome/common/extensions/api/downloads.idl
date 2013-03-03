@@ -12,6 +12,20 @@ namespace downloads {
     DOMString value;
   };
 
+  // $ref:onDeterminingFilename listeners may pass a $ref:FilenameSuggestion
+  // object to <code>suggest()</code> in order to override a download's target
+  // filename.
+  dictionary FilenameSuggestion {
+    // The $ref:DownloadItem's new target $ref:DownloadItem.filename, as a path
+    // relative to the user's default Downloads directory, possibly containing
+    // subdirectories. Absolute paths, empty paths, and paths containing
+    // back-references ".." will be ignored.
+    DOMString filename;
+
+    // Whether to overwrite any existing files.
+    boolean? overwrite;
+  };
+
   [inline_doc] enum HttpMethod {GET, POST};
 
   [inline_doc] dictionary DownloadOptions {
@@ -19,7 +33,9 @@ namespace downloads {
     DOMString url;
 
     // A file path relative to the Downloads directory to contain the downloaded
-    // file.
+    // file. See $ref:onDeterminingFilename for how to dynamically suggest a
+    // filename after the file's MIME type and a tentative filename have been
+    // determined.
     DOMString? filename;
 
     // Use a file-chooser to allow the user to select a filename.
@@ -313,6 +329,8 @@ namespace downloads {
   callback EraseCallback = void(long[] erasedIds);
   callback NullCallback = void();
   callback GetFileIconCallback = void(optional DOMString iconURL);
+  callback SuggestFilenameCallback = void(
+    optional FilenameSuggestion suggestion);
 
   interface Functions {
     // Download a URL. If the URL uses the HTTP[S] protocol, then the request
@@ -323,10 +341,9 @@ namespace downloads {
     // <code>callback</code> will be called with the new $ref:DownloadItem's
     // <code>downloadId</code>. If there was an error starting the download,
     // then <code>callback</code> will be called with
-    // <code>downloadId=undefined</code> and
-    // $ref:runtime.lastError
-    // will contain a descriptive string. The error strings are not guaranteed
-    // to remain backwards compatible between releases. You must not parse it.
+    // <code>downloadId=undefined</code> and $ref:runtime.lastError will contain
+    // a descriptive string. The error strings are not guaranteed to remain
+    // backwards compatible between releases. Extensions must not parse it.
     // |options|: What to download and how.
     // |callback|: Called with the id of the new $ref:DownloadItem.
     static void download(DownloadOptions options,
@@ -396,9 +413,6 @@ namespace downloads {
     // then <code>callback</code> will be called.
     static void erase(DownloadQuery query, optional EraseCallback callback);
 
-    // TODO(benjhayden) Comment.
-    [nodoc] static void setDestination(long downloadId, DOMString relativePath);
-
     // Prompt the user to accept a dangerous download. Does not automatically
     // accept dangerous downloads. If the download is accepted, then an
     // $ref:onChanged event will fire, otherwise nothing will happen.  When all
@@ -427,5 +441,29 @@ namespace downloads {
     // except <code>bytesReceived</code> changes, this event fires with the
     // <code>downloadId</code> and an object containing the properties that changed.
     static void onChanged(DownloadDelta downloadDelta);
+
+    // During the filename determination process, extensions will be given the
+    // opportunity to override the target $ref:DownloadItem.filename. Each
+    // extension may not register more than one listener for this event. Each
+    // listener must call <code>suggest</code> exactly once, either
+    // synchronously or asynchronously. If the listener calls
+    // <code>suggest</code> asynchronously, then it must return
+    // <code>true</code>. If the listener neither calls <code>suggest</code>
+    // synchronously nor returns <code>true</code>, then <code>suggest</code>
+    // will be called automatically. The $ref:DownloadItem will not complete
+    // until all listeners have called <code>suggest</code>. Listeners may call
+    // <code>suggest</code> without any arguments in order to allow the download
+    // to use <code>downloadItem.filename</code> for its filename, or pass a
+    // $ref:FilenameSuggestion object to <code>suggest</code> in order to
+    // override the target filename. If more than one extension overrides the
+    // filename, then the last extension installed whose listener passes a
+    // $ref:FilenameSuggestion object to <code>suggest</code> wins. In order to
+    // avoid confusion regarding which extension will win, users should not
+    // install extensions that may conflict. If the download is initiated by
+    // $ref:download and the target filename is known before the MIME type and
+    // tentative filename have been determined, use
+    // $ref:DownloadOptions.filename instead.
+    [maxListeners=1] static void onDeterminingFilename(
+        DownloadItem downloadItem, SuggestFilenameCallback suggest);
   };
 };

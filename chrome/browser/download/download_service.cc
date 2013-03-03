@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
+#include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -44,6 +45,11 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
     manager_delegate_ = new ChromeDownloadManagerDelegate(profile_);
 
   manager_delegate_->SetDownloadManager(manager);
+
+#if !defined(OS_ANDROID)
+  extension_event_router_.reset(new ExtensionDownloadsEventRouter(
+      profile_, manager));
+#endif
 
   if (!profile_->IsOffTheRecord()) {
     HistoryService* hs = HistoryServiceFactory::GetForProfile(
@@ -120,6 +126,9 @@ void DownloadService::Shutdown() {
     // manually earlier. See http://crbug.com/131692
     BrowserContext::GetDownloadManager(profile_)->Shutdown();
   }
+#if !defined(OS_ANDROID)
+  extension_event_router_.reset();
+#endif
   manager_delegate_ = NULL;
   download_history_.reset();
 }

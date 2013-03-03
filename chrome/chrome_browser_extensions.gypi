@@ -203,6 +203,8 @@
         'browser/extensions/api/downloads/downloads_api.h',
         'browser/extensions/api/extension_action/extension_action_api.cc',
         'browser/extensions/api/extension_action/extension_action_api.h',
+        'browser/extensions/api/downloads_internal/downloads_internal_api.cc',
+        'browser/extensions/api/downloads_internal/downloads_internal_api.h',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.cc',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.h',
         'browser/extensions/api/file_handlers/app_file_handler_util.cc',

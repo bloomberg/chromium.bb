@@ -24,6 +24,8 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package_file_picker.h"
@@ -208,17 +210,10 @@ ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_manager_ = dm;
-#if !defined(OS_ANDROID)
-  extension_event_router_.reset(new ExtensionDownloadsEventRouter(
-      profile_, download_manager_));
-#endif
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
-#if !defined(OS_ANDROID)
-  extension_event_router_.reset();
-#endif
 }
 
 DownloadId ChromeDownloadManagerDelegate::GetNextId() {
@@ -630,6 +625,22 @@ void ChromeDownloadManagerDelegate::Observe(
   callback.Run(installer->did_handle_successfully());
 }
 
+struct ChromeDownloadManagerDelegate::ContinueFilenameDeterminationInfo {
+  ContinueFilenameDeterminationInfo();
+  ~ContinueFilenameDeterminationInfo();
+
+  int32 download_id;
+  content::DownloadTargetCallback callback;
+  content::DownloadDangerType danger_type;
+  bool visited_referrer_before;
+  bool should_prompt;
+};
+
+ChromeDownloadManagerDelegate::ContinueFilenameDeterminationInfo::
+    ContinueFilenameDeterminationInfo() {}
+ChromeDownloadManagerDelegate::ContinueFilenameDeterminationInfo::
+    ~ContinueFilenameDeterminationInfo() {}
+
 void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     int32 download_id,
     const content::DownloadTargetCallback& callback,
@@ -645,12 +656,12 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   bool should_prompt = (download->GetTargetDisposition() ==
                         DownloadItem::TARGET_DISPOSITION_PROMPT);
   bool is_forced_path = !download->GetForcedFilePath().empty();
+  base::FilePath generated_name;
   base::FilePath suggested_path;
 
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
   if (!is_forced_path) {
-    base::FilePath generated_name;
     GenerateFileNameFromRequest(
         *download,
         &generated_name,
@@ -686,6 +697,78 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     DCHECK(!should_prompt);
     suggested_path = download->GetForcedFilePath();
   }
+
+  ContinueFilenameDeterminationInfo continue_info;
+  continue_info.download_id = download_id;
+  continue_info.callback = callback;
+  continue_info.danger_type = danger_type;
+  continue_info.visited_referrer_before = visited_referrer_before;
+  continue_info.should_prompt = should_prompt;
+
+  base::Closure filename_determined = base::Bind(
+      &ChromeDownloadManagerDelegate::ContinueDeterminingFilename,
+      this, continue_info, suggested_path, is_forced_path);
+#if defined(OS_ANDROID)
+  filename_determined.Run();
+#else
+  if (is_forced_path ||
+      !DownloadServiceFactory::GetForProfile(profile_)
+        ->GetExtensionEventRouter()) {
+    filename_determined.Run();
+  } else {
+    DownloadService* service = DownloadServiceFactory::GetForProfile(profile_);
+    ExtensionDownloadsEventRouter* router = service->GetExtensionEventRouter();
+    ExtensionDownloadsEventRouter::FilenameChangedCallback overriding =
+      base::Bind(&ChromeDownloadManagerDelegate::OnExtensionOverridingFilename,
+                 this, continue_info);
+    router->OnDeterminingFilename(
+        download, generated_name, filename_determined, overriding);
+  }
+#endif
+}
+
+void ChromeDownloadManagerDelegate::OnExtensionOverridingFilename(
+    const ContinueFilenameDeterminationInfo& continue_info,
+    const base::FilePath& changed_filename,
+    bool overwrite) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadItem* download =
+      download_manager_->GetDownload(continue_info.download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
+    return;
+  // If an extension overrides the filename, then the target directory will be
+  // forced to download_prefs_->DownloadPath() since extensions cannot place
+  // downloaded files anywhere except there. This prevents subdirectories from
+  // accumulating: if an extension is allowed to say that a file should go in
+  // last_download_path/music/foo.mp3, then last_download_path will accumulate
+  // the subdirectory /music/ so that the next download may end up in
+  // Downloads/music/music/music/bar.mp3.
+  base::FilePath temp_filename(download_prefs_->DownloadPath().Append(
+      changed_filename).NormalizePathSeparators());
+  // Do not pass a mime type to GenerateSafeFileName so that it does not force
+  // the filename to have an extension if the (chrome) extension does not
+  // suggest it.
+  net::GenerateSafeFileName(std::string(), false, &temp_filename);
+  // If |is_forced_path| were true, then extensions would not have been
+  // consulted, so use |overwrite| instead of |is_forced_path|. This does NOT
+  // set DownloadItem::GetForcedFilePath()!
+  ContinueDeterminingFilename(continue_info, temp_filename, overwrite);
+}
+
+void ChromeDownloadManagerDelegate::ContinueDeterminingFilename(
+    const ContinueFilenameDeterminationInfo& continue_info,
+    const base::FilePath& suggested_path,
+    bool is_forced_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int32 download_id = continue_info.download_id;
+  const content::DownloadTargetCallback& callback = continue_info.callback;
+  content::DownloadDangerType danger_type = continue_info.danger_type;
+  bool visited_referrer_before = continue_info.visited_referrer_before;
+  bool should_prompt = continue_info.should_prompt;
+  DownloadItem* download =
+      download_manager_->GetDownload(download_id);
+  if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
+    return;
 
   // If the download hasn't already been marked dangerous (could be
   // DANGEROUS_URL), check if it is a dangerous file.

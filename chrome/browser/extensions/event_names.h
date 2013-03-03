@@ -59,6 +59,7 @@ extern const char kOnDialError[];
 extern const char kOnDownloadCreated[];
 extern const char kOnDownloadChanged[];
 extern const char kOnDownloadErased[];
+extern const char kOnDownloadDeterminingFilename[];
 
 // Settings.
 extern const char kOnSettingsChanged[];

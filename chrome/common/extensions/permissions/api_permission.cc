@@ -252,6 +252,7 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kDeveloperPrivate, "developerPrivate",
       kFlagCannotBeOptional },
     { APIPermission::kDial, "dial", kFlagCannotBeOptional },
+    { APIPermission::kDownloadsInternal, "downloadsInternal" },
     { APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
       kFlagCannotBeOptional },
     { APIPermission::kFileBrowserPrivate, "fileBrowserPrivate",

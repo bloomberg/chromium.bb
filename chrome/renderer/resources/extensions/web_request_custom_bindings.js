@@ -62,6 +62,9 @@ WebRequestEvent.prototype.addListener =
     function(cb, opt_filter, opt_extraInfo) {
   if (!this.eventOptions_.supportsListeners)
     throw new Error('This event does not support listeners.');
+  // NOTE(benjhayden) New APIs should not use this subEventName trick! It does
+  // not play well with event pages. See downloads.onDeterminingFilename and
+  // ExtensionDownloadsEventRouter for an alternative approach.
   var subEventName = GetUniqueSubEventName(this.eventName_);
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.

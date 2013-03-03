@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
@@ -35,6 +36,7 @@ namespace download_extension_errors {
 extern const char kGenericError[];
 extern const char kIconNotFoundError[];
 extern const char kInvalidDangerTypeError[];
+extern const char kInvalidFilenameError[];
 extern const char kInvalidFilterError[];
 extern const char kInvalidOperationError[];
 extern const char kInvalidOrderByError[];
@@ -42,6 +44,7 @@ extern const char kInvalidQueryLimit[];
 extern const char kInvalidStateError[];
 extern const char kInvalidURLError[];
 extern const char kNotImplementedError[];
+extern const char kTooManyListenersError[];
 
 }  // namespace download_extension_errors
 
@@ -126,20 +129,6 @@ class DownloadsEraseFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
 };
 
-class DownloadsSetDestinationFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("downloads.setDestination",
-                             DOWNLOADS_SETDESTINATION)
-  DownloadsSetDestinationFunction();
-  virtual bool RunImpl() OVERRIDE;
-
- protected:
-  virtual ~DownloadsSetDestinationFunction();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadsSetDestinationFunction);
-};
-
 class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
@@ -212,14 +201,45 @@ class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
 
 // Observes a single DownloadManager and many DownloadItems and dispatches
 // onCreated and onErased events.
-class ExtensionDownloadsEventRouter
-  : public AllDownloadItemNotifier::Observer {
+class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
+                                      public AllDownloadItemNotifier::Observer {
  public:
+  typedef base::Callback<void(const base::FilePath& changed_filename,
+                              bool overwrite)> FilenameChangedCallback;
+
+  // A downloads.onDeterminingFilename listener has returned. If the extension
+  // wishes to override the download's filename, then |filename| will be
+  // non-empty. |filename| will be interpreted as a relative path, appended to
+  // the default downloads directory. If the extension wishes to overwrite any
+  // existing files, then |overwrite| will be true. Returns true on success,
+  // false otherwise.
+  static bool DetermineFilename(
+      Profile* profile,
+      bool include_incognito,
+      const std::string& ext_id,
+      int download_id,
+      const base::FilePath& filename,
+      bool overwrite,
+      std::string* error);
+
   explicit ExtensionDownloadsEventRouter(
       Profile* profile, content::DownloadManager* manager);
   virtual ~ExtensionDownloadsEventRouter();
 
-  // AllDownloadItemNotifier::Observer interface
+  // Called by ChromeDownloadManagerDelegate during the filename determination
+  // process, allows extensions to change the item's target filename. If no
+  // extension wants to change the target filename, then |no_change| will be
+  // called and the filename determination process will continue as normal. If
+  // an extension wants to change the target filename, then |change| will be
+  // called with the new filename and a flag indicating whether the new file
+  // should overwrite any old files of the same name.
+  void OnDeterminingFilename(
+      content::DownloadItem* item,
+      const base::FilePath& suggested_path,
+      const base::Closure& no_change,
+      const FilenameChangedCallback& change);
+
+  // AllDownloadItemNotifier::Observer
   virtual void OnDownloadCreated(
       content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
@@ -230,6 +250,10 @@ class ExtensionDownloadsEventRouter
       content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
 
+  // extensions::EventRouter::Observer
+  virtual void OnListenerRemoved(
+      const extensions::EventListenerInfo& details) OVERRIDE;
+
   // Used for testing.
   struct DownloadsNotificationSource {
     std::string event_name;
@@ -237,7 +261,11 @@ class ExtensionDownloadsEventRouter
   };
 
  private:
-  void DispatchEvent(const char* event_name, base::Value* json_arg);
+  void DispatchEvent(
+      const char* event_name,
+      bool include_incognito,
+      const extensions::Event::WillDispatchCallback& will_dispatch_callback,
+      base::Value* json_arg);
 
   Profile* profile_;
   AllDownloadItemNotifier notifier_;

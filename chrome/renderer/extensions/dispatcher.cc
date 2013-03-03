@@ -786,6 +786,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("declarativeWebRequest",
                              IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("downloads",
+                             IDR_DOWNLOADS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource(
       "experimental.mediaGalleries",
       IDR_EXPERIMENTAL_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);
