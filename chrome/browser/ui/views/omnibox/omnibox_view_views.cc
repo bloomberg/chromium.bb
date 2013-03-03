@@ -243,67 +243,57 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
-  // Use our own implementation of paste. See OnPaste() for details.
-  if (!read_only() && event.IsControlDown() &&
-      event.key_code() == ui::VKEY_V) {
-    OnBeforePossibleChange();
-    OnPaste();
-    OnAfterPossibleChange();
-    return true;
+  switch (event.key_code()) {
+    case ui::VKEY_RETURN:
+      model()->AcceptInput(event.IsAltDown() ? NEW_FOREGROUND_TAB : CURRENT_TAB,
+                           false);
+      return true;
+    case ui::VKEY_ESCAPE:
+      return model()->OnEscapeKeyPressed();
+    case ui::VKEY_CONTROL:
+      model()->OnControlKeyChanged(true);
+      break;
+    case ui::VKEY_DELETE:
+      if (event.IsShiftDown() && model()->popup_model()->IsOpen())
+        model()->popup_model()->TryDeletingCurrentItem();
+      break;
+    case ui::VKEY_UP:
+      model()->OnUpOrDownKeyPressed(-1);
+      return true;
+    case ui::VKEY_DOWN:
+      model()->OnUpOrDownKeyPressed(1);
+      return true;
+    case ui::VKEY_PRIOR:
+      model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
+      return true;
+    case ui::VKEY_NEXT:
+      model()->OnUpOrDownKeyPressed(model()->result().size());
+      return true;
+    case ui::VKEY_V:
+      if (event.IsControlDown() && !read_only()) {
+        OnBeforePossibleChange();
+        OnPaste();
+        OnAfterPossibleChange();
+        return true;
+      }
+      break;
+    default:
+      break;
   }
 
   bool handled = views::Textfield::OnKeyPressed(event);
-  if (event.key_code() == ui::VKEY_RETURN) {
-    bool alt_held = event.IsAltDown();
-    model()->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
-    handled = true;
-  } else if (!handled && event.key_code() == ui::VKEY_ESCAPE) {
-    // Let the model handle the Escape key or continue its propagation.
-    handled = model()->OnEscapeKeyPressed();
-  } else if (event.key_code() == ui::VKEY_CONTROL) {
-    // Omnibox2 can switch its contents while pressing a control key. To switch
-    // the contents of omnibox2, we notify the OmniboxEditModel class when the
-    // control-key state is changed.
-    model()->OnControlKeyChanged(true);
-  } else if (!handled && event.key_code() == ui::VKEY_DELETE &&
-             event.IsShiftDown()) {
-    // If shift+del didn't change the text, we let this delete an entry from
-    // the popup.  We can't check to see if the IME handled it because even if
-    // nothing is selected, the IME or the TextView still report handling it.
-    if (model()->popup_model()->IsOpen())
-      model()->popup_model()->TryDeletingCurrentItem();
-  } else if (!handled && event.key_code() == ui::VKEY_UP) {
-    model()->OnUpOrDownKeyPressed(-1);
-    handled = true;
-  } else if (!handled && event.key_code() == ui::VKEY_DOWN) {
-    model()->OnUpOrDownKeyPressed(1);
-    handled = true;
-  } else if (!handled && event.key_code() == ui::VKEY_PRIOR) {
-    model()->OnUpOrDownKeyPressed(-1 * model()->result().size());
-    handled = true;
-  } else if (!handled && event.key_code() == ui::VKEY_NEXT) {
-    model()->OnUpOrDownKeyPressed(model()->result().size());
-    handled = true;
-  } else if (!handled) {
 #if !defined(OS_WIN) || defined(USE_AURA)
-    // TODO(msw): Avoid this complexity, consolidate cross-platform behavior.
-    handled = SkipDefaultKeyEventProcessing(event);
+  // TODO(msw): Avoid this complexity, consolidate cross-platform behavior.
+  handled |= SkipDefaultKeyEventProcessing(event);
 #endif
-  }
   return handled;
 }
 
 bool OmniboxViewViews::OnKeyReleased(const ui::KeyEvent& event) {
-  // Omnibox2 can switch its contents while pressing a control key. To switch
-  // the contents of omnibox2, we notify the OmniboxEditModel class when the
-  // control-key state is changed.
-  if (event.key_code() == ui::VKEY_CONTROL) {
-    // TODO(oshima): investigate if we need to support keyboard with two
-    // controls.
+  // The omnibox contents may change while the control key is pressed.
+  if (event.key_code() == ui::VKEY_CONTROL)
     model()->OnControlKeyChanged(false);
-    return true;
-  }
-  return false;
+  return views::Textfield::OnKeyReleased(event);
 }
 
 bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
