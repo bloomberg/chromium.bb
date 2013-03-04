@@ -38,7 +38,8 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   void OnBuffersSwapped(const gfx::Size& size,
                         const std::string& mailbox_name,
                         int gpu_route_id,
-                        int gpu_host_id);
+                        int gpu_host_id,
+                        float device_scale_factor);
   void UpdateVisibility(bool);
  protected:
   // Friend RefCounted so that the dtor can be non-public.

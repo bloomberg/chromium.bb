@@ -152,7 +152,8 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     const gfx::Size& size,
     const std::string& mailbox_name,
     int gpu_route_id,
-    int gpu_host_id) {
+    int gpu_host_id,
+    float device_scale_factor) {
   // If the guest crashed but the GPU process didn't, we may still have
   // a transport surface waiting on an ACK, which we must send to
   // avoid leaking.
@@ -188,7 +189,16 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   // or introduce a gutter around it.
   if (buffer_size_ != size) {
     buffer_size_ = size;
-    texture_layer_->setBounds(buffer_size_);
+    // The container size is in DIP, so is the layer size.
+    // Buffer size is in physical pixels, so we need to adjust
+    // it by the device scale factor.
+    float inverse_scale_factor = 1.0f / device_scale_factor;
+    gfx::SizeF scaledSize(size);
+    scaledSize.Scale(inverse_scale_factor);
+    gfx::Size device_scale_adjusted_size(
+        static_cast<int>(scaledSize.width()),
+        static_cast<int>(scaledSize.height()));
+    texture_layer_->setBounds(device_scale_adjusted_size);
   }
 
   bool current_mailbox_valid = !mailbox_name.empty();

@@ -405,7 +405,8 @@ void BrowserPlugin::OnBuffersSwapped(int instance_id,
   compositing_helper_->OnBuffersSwapped(size,
                                         mailbox_name,
                                         gpu_route_id,
-                                        gpu_host_id);
+                                        gpu_host_id,
+                                        GetDeviceScaleFactor());
 }
 
 void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
