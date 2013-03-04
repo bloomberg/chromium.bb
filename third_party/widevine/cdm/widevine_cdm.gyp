@@ -48,7 +48,7 @@
       'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
-        [ 'branding == "Chrome"', {
+        [ 'branding == "Chrome" and OS != "android" or OS != "ios"', {
           'dependencies': [
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
             'widevine_cdm_version_h',
@@ -65,17 +65,15 @@
               'type': 'loadable_module',
               # Allow the plugin wrapper to find the CDM in the same directory.
               'ldflags': ['-Wl,-rpath=\$$ORIGIN'],
-            }],
-            [ 'chromeos == 1 and target_arch == "arm"', {
-              'libraries': [
-                # Copied by widevine_cdm_binaries.
-                '<(PRODUCT_DIR)/libwidevinecdm.so',
-              ],
-            }],
-            [ 'chromeos == 0 and OS == "linux" and target_arch == "x64"', {
-              'libraries': [
-                # Copied by widevine_cdm_binaries.
-                '<(PRODUCT_DIR)/libwidevinecdm.so',
+              'conditions': [
+                # We have binaries for Linux ia32 & x64 and Chrome OS ARM. The
+                # build fails if we add the dependency for Chrome OS ia32 & x64.
+                [ 'chromeos == 0 or target_arch == "arm"', {
+                  'libraries': [
+                    # Copied by widevine_cdm_binaries.
+                    '<(PRODUCT_DIR)/libwidevinecdm.so',
+                  ],
+                }],
               ],
             }],
             [ 'OS == "win" and 0', {
