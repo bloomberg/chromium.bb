@@ -1832,12 +1832,12 @@
 {
    bug_179758_a
    Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:AsWeakPtr
+   ...
    fun:base::WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtr_Test::TestBody
 }
 {
    bug_179758_b
    Heapcheck:Leak
+   ...
    fun:base::WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtrBase_Test::TestBody
 }
