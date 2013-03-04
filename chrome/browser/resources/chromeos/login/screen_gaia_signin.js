@@ -48,12 +48,6 @@ cr.define('login', function() {
     // Whether extension should be loaded silently.
     silentLoad_: false,
 
-    // Number of times that we reload extension frame.
-    retryCount_: 0,
-
-    // Timer id of pending retry.
-    retryTimer_: undefined,
-
     // Whether local version of Gaia page is used.
     // @type {boolean}
     isLocal_: false,
@@ -133,7 +127,6 @@ cr.define('login', function() {
      */
     onLoadingTimeOut_: function() {
       this.loadingTimer_ = undefined;
-      this.clearRetry_();
       chrome.send('showLoadingTimeoutError');
     },
 
@@ -244,7 +237,6 @@ cr.define('login', function() {
         this.extensionUrl_ = url;
 
         this.loading = true;
-        this.clearRetry_();
         this.startLoadingTimer_();
       } else if (this.loading) {
         if (this.error_) {
@@ -330,7 +322,6 @@ cr.define('login', function() {
           this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
           this.errorBubble_ = undefined;
         }
-        this.clearRetry_();
         chrome.send('loginWebuiReady');
         chrome.send('loginVisible', ['gaia-signin']);
         // Warm up the user images screen.
@@ -367,45 +358,14 @@ cr.define('login', function() {
     },
 
     /**
-     * Clears retry data.
-     * @private
-     */
-    clearRetry_: function() {
-      this.retryCount_ = 0;
-      if (this.retryTimer_) {
-        window.clearTimeout(this.retryTimer_);
-        this.retryTimer_ = undefined;
-      }
-    },
-
-    /**
      * Reloads extension frame.
      */
     doReload: function() {
       console.log('Reload auth extension frame.');
       this.error_ = 0;
       this.frame_.src = this.extensionUrl_;
-      this.retryTimer_ = undefined;
       this.loading = true;
       this.startLoadingTimer_();
-    },
-
-    /**
-     * Schedules extension frame reload.
-     */
-    scheduleRetry: function() {
-      if (this.retryCount_ >= 3 || this.retryTimer_)
-        return;
-
-      /** @const */ var MAX_DELAY = 7200;  // 7200 seconds (i.e. 2 hours)
-      /** @const */ var MIN_DELAY = 1;  // 1 second
-
-      var delay = Math.pow(2, this.retryCount_) * 5;
-      delay = Math.max(MIN_DELAY, Math.min(MAX_DELAY, delay)) * 1000;
-
-      ++this.retryCount_;
-      this.retryTimer_ = window.setTimeout(this.doReload.bind(this), delay);
-      console.log('GaiaSigninScreen scheduleRetry in ' + delay + 'ms.');
     },
 
     /**
@@ -502,10 +462,6 @@ cr.define('login', function() {
 
   GaiaSigninScreen.doReload = function() {
     $('gaia-signin').doReload();
-  };
-
-  GaiaSigninScreen.scheduleRetry = function() {
-    $('gaia-signin').scheduleRetry();
   };
 
   /**
