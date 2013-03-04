@@ -208,19 +208,8 @@ class SigninScreenHandler
                            ConnectionType connection_type,
                            const std::string reason,
                            bool force_update);
-  void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
-                                  const std::string& service_path,
-                                  ConnectionType connection_type,
-                                  const std::string& reason,
-                                  bool is_proxy_error,
-                                  bool is_under_captive_portal,
-                                  bool is_gaia_loading_timeout);
-  void HideOfflineMessage(NetworkStateInformer::State state,
-                          const std::string& service_path,
-                          const std::string& reason,
-                          bool is_gaia_signin,
-                          bool is_gaia_reloaded);
   void ReloadGaiaScreen();
+  void ScheduleGaiaFrameReload();
 
   // BaseScreenHandler implementation:
   virtual void GetLocalizedStrings(

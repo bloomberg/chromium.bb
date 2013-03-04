@@ -403,8 +403,8 @@ void NetworkPortalDetector::Observe(
   if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED ||
       type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
       type == chrome::NOTIFICATION_AUTH_CANCELLED) {
-    attempt_count_ = 0;
     if (!IsCheckingForPortal() && !IsPortalCheckPending()) {
+      attempt_count_ = 0;
       DetectCaptivePortal(
           base::TimeDelta::FromMilliseconds(kProxyChangeDelayMs));
     }
