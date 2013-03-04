@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"

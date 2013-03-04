@@ -9,11 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "webkit/fileapi/file_snapshot_policy.h"
-#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_writer_delegate.h"
 #include "webkit/quota/quota_types.h"
