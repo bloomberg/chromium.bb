@@ -78,6 +78,28 @@ const char* MountErrorToString(chromeos::MountError error) {
       return "error_unknown";
     case chromeos::MOUNT_ERROR_INTERNAL:
       return "error_internal";
+    case chromeos::MOUNT_ERROR_INVALID_ARGUMENT:
+      return "error_invalid_argument";
+    case chromeos::MOUNT_ERROR_INVALID_PATH:
+      return "error_invalid_path";
+    case chromeos::MOUNT_ERROR_PATH_ALREADY_MOUNTED:
+      return "error_path_already_mounted";
+    case chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED:
+      return "error_path_not_mounted";
+    case chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED:
+      return "error_directory_creation_failed";
+    case chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS:
+      return "error_invalid_mount_options";
+    case chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS:
+      return "error_invalid_unmount_options";
+    case chromeos::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS:
+      return "error_insufficient_permissions";
+    case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND:
+      return "error_mount_program_not_found";
+    case chromeos::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
+      return "error_mount_program_failed";
+    case chromeos::MOUNT_ERROR_INVALID_DEVICE_PATH:
+      return "error_invalid_device_path";
     case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
       return "error_unknown_filesystem";
     case chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
@@ -88,9 +110,8 @@ const char* MountErrorToString(chromeos::MountError error) {
       return "error_authentication";
     case chromeos::MOUNT_ERROR_PATH_UNMOUNTED:
       return "error_path_unmounted";
-    default:
-      NOTREACHED();
   }
+  NOTREACHED();
   return "";
 }
 
