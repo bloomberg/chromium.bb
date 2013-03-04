@@ -428,7 +428,8 @@ void OmniboxViewGtk::SetFocus() {
 
 void OmniboxViewGtk::ApplyCaretVisibility() {
   // TODO(mathp): implement for Linux.
-  NOTIMPLEMENTED();
+  // This started to get hit after WebKit r144580.
+  // NOTIMPLEMENTED();
 }
 
 int OmniboxViewGtk::WidthOfTextAfterCursor() {
