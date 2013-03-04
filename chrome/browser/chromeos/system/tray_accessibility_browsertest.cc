@@ -88,19 +88,19 @@ class TrayAccessibilityTest : public CrosInProcessBrowserTest {
 
   void ClickSpokenFeedbackOnDetailMenu() {
     views::View* button = tray()->detailed_menu_->spoken_feedback_view_;
-    tray()->detailed_menu_->ClickedOn(button);
+    tray()->detailed_menu_->OnViewClicked(button);
   }
 
   void ClickHighContrastOnDetailMenu() {
     views::View* button = tray()->detailed_menu_->high_contrast_view_;
     EXPECT_TRUE(button);
-    tray()->detailed_menu_->ClickedOn(button);
+    tray()->detailed_menu_->OnViewClicked(button);
   }
 
   void ClickScreenMagnifierOnDetailMenu() {
     views::View* button = tray()->detailed_menu_->screen_magnifier_view_;
     EXPECT_TRUE(button);
-    tray()->detailed_menu_->ClickedOn(button);
+    tray()->detailed_menu_->OnViewClicked(button);
   }
 
   bool IsSpokenFeedbackEnabledOnDetailMenu() {

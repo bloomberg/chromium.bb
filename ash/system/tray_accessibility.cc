@@ -187,7 +187,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
   return container;
 }
 
-void AccessibilityDetailedView::ClickedOn(views::View* sender) {
+void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
   ShellDelegate* shell_delegate = Shell::GetInstance()->delegate();
   if (sender == footer()->content()) {
     owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);

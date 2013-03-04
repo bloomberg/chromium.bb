@@ -110,7 +110,7 @@ void TrayEnterprise::OnEnterpriseDomainChanged() {
   UpdateEnterpriseMessage();
 }
 
-void TrayEnterprise::ClickedOn(views::View* sender) {
+void TrayEnterprise::OnViewClicked(views::View* sender) {
   Shell::GetInstance()->system_tray_delegate()->ShowEnterpriseInfo();
 }
 

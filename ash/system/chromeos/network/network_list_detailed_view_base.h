@@ -5,10 +5,10 @@
 #define ASH_SYSTEM_NETWORK_NETWORK_LIST_DETAILED_VIEW_BASE_H
 
 #include "ash/system/chromeos/network/network_detailed_view.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class BubbleDelegateView;
@@ -21,6 +21,7 @@ struct NetworkIconInfo;
 namespace internal {
 
 class HoverHighlightView;
+class TrayPopupLabelButton;
 
 namespace tray {
 
@@ -61,7 +62,7 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from ViewClickListener.
-  virtual void ClickedOn(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) OVERRIDE;
 
  private:
   typedef std::map<views::View*, std::string> NetworkMap;

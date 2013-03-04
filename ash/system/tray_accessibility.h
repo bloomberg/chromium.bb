@@ -9,8 +9,10 @@
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_image_item.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "base/gtest_prod_util.h"
+#include "ui/gfx/font.h"
+#include "ui/views/controls/button/button.h"
 
 namespace chromeos {
 class TrayAccessibilityTest;
@@ -63,7 +65,7 @@ class AccessibilityDetailedView : public TrayDetailsView,
                                         gfx::Font::FontStyle style,
                                         bool checked);
   // Overridden from ViewClickListener.
-  virtual void ClickedOn(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) OVERRIDE;
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;

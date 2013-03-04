@@ -12,7 +12,7 @@
 #include "ash/system/chromeos/network/network_detailed_view.h"
 #include "ash/system/chromeos/network/network_icon.h"
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/controls/button/button.h"
@@ -30,6 +30,7 @@ namespace internal {
 
 class HoverHighlightView;
 class TrayNetwork;
+class TrayPopupLabelButton;
 
 namespace tray {
 
@@ -61,7 +62,7 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from ViewClickListener.
-  virtual void ClickedOn(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) OVERRIDE;
 
  private:
   typedef std::map<views::View*, std::string> NetworkMap;

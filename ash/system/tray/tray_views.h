@@ -33,12 +33,6 @@ namespace internal {
 
 class TrayItemView;
 
-class ViewClickListener {
- public:
-  virtual ~ViewClickListener() {}
-  virtual void ClickedOn(views::View* sender) = 0;
-};
-
 // A custom scroll-view that has a specified dimension.
 class FixedSizedScrollView : public views::ScrollView {
  public:

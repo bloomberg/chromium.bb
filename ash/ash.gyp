@@ -284,6 +284,7 @@
         'system/tray/tray_notification_view.h',
         'system/tray/tray_views.cc',
         'system/tray/tray_views.h',
+        'system/tray/view_click_listener.h',
         'system/tray_accessibility.cc',
         'system/tray_accessibility.h',
         'system/tray_caps_lock.cc',

@@ -325,7 +325,7 @@ void NetworkListDetailedViewBase::ButtonPressed(views::Button* sender,
     CustomButtonPressed(sender, event);
 }
 
-void NetworkListDetailedViewBase::ClickedOn(views::View* sender) {
+void NetworkListDetailedViewBase::OnViewClicked(views::View* sender) {
   SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
   // If the info bubble was visible, close it when some other item is clicked
   // on.

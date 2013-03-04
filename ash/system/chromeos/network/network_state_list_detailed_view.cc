@@ -241,7 +241,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
   }
 }
 
-void NetworkStateListDetailedView::ClickedOn(views::View* sender) {
+void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
   // If the info bubble was visible, close it when some other item is clicked.
   ResetInfoBubble();
 

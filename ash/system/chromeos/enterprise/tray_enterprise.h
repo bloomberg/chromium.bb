@@ -7,7 +7,7 @@
 
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/view_click_listener.h"
 
 namespace ash {
 class SystemTray;
@@ -37,7 +37,7 @@ class TrayEnterprise : public SystemTrayItem,
   virtual void OnEnterpriseDomainChanged() OVERRIDE;
 
   // Overridden from ViewClickListener.
-  virtual void ClickedOn(views::View* sender) OVERRIDE;
+  virtual void OnViewClicked(views::View* sender) OVERRIDE;
 
  private:
   EnterpriseDefaultView* default_view_;
