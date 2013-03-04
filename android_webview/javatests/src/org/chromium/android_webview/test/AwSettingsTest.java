@@ -2428,29 +2428,30 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         final String page = "<html><body>" +
                 "<p style='height:1000px;width:1000px'>testSetInitialScale</p>" +
                 "</body></html>";
-        final float defaultScale = 1.0f;
+        final float defaultScale =
+            getInstrumentation().getTargetContext().getResources().getDisplayMetrics().density;
 
-        assertEquals(defaultScale, getScaleOnUiThread(awContents));
+        assertEquals(defaultScale, getPixelScaleOnUiThread(awContents), .01f);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        assertEquals(defaultScale, getScaleOnUiThread(awContents));
+        assertEquals(defaultScale, getPixelScaleOnUiThread(awContents), .01f);
 
         int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
         awSettings.setInitialPageScale(50);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
-        assertEquals(0.5f, getScaleOnUiThread(awContents));
+        assertEquals(0.5f, getPixelScaleOnUiThread(awContents), .01f);
 
         onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
-        awSettings.setInitialPageScale(200);
+        awSettings.setInitialPageScale(500);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
-        assertEquals(2.0f, getScaleOnUiThread(awContents));
+        assertEquals(5.0f, getPixelScaleOnUiThread(awContents), .01f);
 
         onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
-        awSettings.setInitialPageScale(-1);
+        awSettings.setInitialPageScale(0);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
-        assertEquals(defaultScale, getScaleOnUiThread(awContents));
+        assertEquals(defaultScale, getPixelScaleOnUiThread(awContents), .01f);
     }
 
     /**
@@ -2638,11 +2639,26 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         AndroidProtocolHandler.setResourceContextForTesting(null);
     }
 
+    /**
+     * Returns pure page scale.
+     */
     private float getScaleOnUiThread(final AwContents awContents) throws Throwable {
         return runTestOnUiThreadAndGetResult(new Callable<Float>() {
             @Override
             public Float call() throws Exception {
                 return awContents.getContentViewCore().getScale();
+            }
+        });
+    }
+
+    /**
+     * Returns page scale multiplied by the screen density.
+     */
+    private float getPixelScaleOnUiThread(final AwContents awContents) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<Float>() {
+            @Override
+            public Float call() throws Exception {
+                return awContents.getScale();
             }
         });
     }

@@ -14,7 +14,7 @@ namespace android_webview {
 AwSettings::AwSettings(JNIEnv* env, jobject obj)
     : java_ref_(env, obj),
       enable_fixed_layout_(false),
-      initial_page_scale_percent_(-1),
+      initial_page_scale_percent_(0),
       text_zoom_percent_(100) {
 }
 
@@ -72,7 +72,7 @@ void AwSettings::UpdateEnableFixedLayoutMode() {
 void AwSettings::UpdateInitialPageScale() {
   AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
   if (!rvhe) return;
-  if (initial_page_scale_percent_ == -1) {
+  if (initial_page_scale_percent_ == 0) {
     rvhe->SetInitialPageScale(-1);
   } else {
     rvhe->SetInitialPageScale(initial_page_scale_percent_ / 100.0f);

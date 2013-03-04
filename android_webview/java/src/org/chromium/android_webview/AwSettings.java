@@ -25,6 +25,7 @@ public class AwSettings {
     private final Object mAwSettingsLock = new Object();
 
     private final Context mContext;
+    private double mDIPScale;
     private boolean mBlockNetworkLoads;  // Default depends on permission of embedding APK.
     private boolean mAllowContentUrlAccess = true;
     private boolean mAllowFileUrlAccess = true;
@@ -48,6 +49,10 @@ public class AwSettings {
     public void destroy() {
         nativeDestroy(mNativeAwSettings);
         mNativeAwSettings = 0;
+    }
+
+    void setDIPScale(double dipScale) {
+        mDIPScale = dipScale;
     }
 
     /**
@@ -161,7 +166,7 @@ public class AwSettings {
 
     /**
      * Sets the initial scale for this WebView. The default value
-     * is -1. A non-default value overrides initial scale set by
+     * is 0. A non-default value overrides initial scale set by
      * the meta viewport tag.
      */
     public void setInitialPageScale(final float scaleInPercent) {
@@ -170,7 +175,7 @@ public class AwSettings {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                nativeSetInitialPageScale(mNativeAwSettings, scaleInPercent);
+                nativeSetInitialPageScale(mNativeAwSettings, (float)(scaleInPercent / mDIPScale));
             }
         });
     }

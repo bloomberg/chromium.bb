@@ -135,7 +135,7 @@ class TestAwContentsClient extends NullContentsClient {
     }
 
     @Override
-    public void onScaleChanged(float oldScale, float newScale) {
+    public void onScaleChangedScaled(float oldScale, float newScale) {
         mOnScaleChangedHelper.notifyCalled(oldScale, newScale);
     }
 }

@@ -284,6 +284,8 @@ public class AwContents {
                 mContentViewCore.getNativeContentViewCore());
 
         mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
+        mContentsClient.setDIPScale(mDIPScale);
+        mSettings.setDIPScale(mDIPScale);
 
         ContentVideoView.registerContentVideoViewContextDelegate(
                 new AwContentVideoViewDelegate(contentsClient, containerView.getContext()));
@@ -669,6 +671,16 @@ public class AwContents {
         data.putString("url", mPossiblyStaleHitTestData.imgSrc);
         msg.setData(data);
         msg.sendToTarget();
+    }
+
+    /**
+     * @see android.webkit.WebView#getScale()
+     *
+     * Please note that the scale returned is the page scale multiplied by
+     * the screen density factor. See CTS WebViewTest.testSetInitialScale.
+     */
+    public float getScale() {
+        return (float)(getContentViewCore().getScale() * mDIPScale);
     }
 
     //--------------------------------------------------------------------------------------------

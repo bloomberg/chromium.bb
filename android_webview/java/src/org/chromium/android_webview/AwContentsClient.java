@@ -47,6 +47,8 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     private AwWebContentsObserver mWebContentsObserver;
 
+    private double mDIPScale;
+
     //--------------------------------------------------------------------------------------------
     //                        Adapter for WebContentsDelegate methods.
     //--------------------------------------------------------------------------------------------
@@ -201,6 +203,10 @@ public abstract class AwContentsClient extends ContentViewClient {
         mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
     }
 
+    void setDIPScale(double dipScale) {
+        mDIPScale = dipScale;
+    }
+
     final AwWebContentsDelegate getWebContentsDelegate() {
         return mWebContentsDelegateAdapter;
     }
@@ -245,6 +251,15 @@ public abstract class AwContentsClient extends ContentViewClient {
             GeolocationPermissions.Callback callback);
 
     public abstract void onGeolocationPermissionsHidePrompt();
+
+    // TODO(mnaganov): Make final after updating the glue layer.
+    public /*final*/ void onScaleChanged(float oldScale, float newScale) {
+        onScaleChangedScaled((float)(oldScale * mDIPScale), (float)(newScale * mDIPScale));
+    }
+
+    // TODO(mnaganov): Make abstract after updating the glue layer.
+    public /*abstract*/ void onScaleChangedScaled(float oldScale, float newScale) {
+    }
 
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
 

@@ -152,4 +152,8 @@ class NullContentsClient extends AwContentsClient {
     public void onShowCustomView(View view,
            int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
     }
+
+    @Override
+    public void onScaleChangedScaled(float oldScale, float newScale) {
+    }
 }
