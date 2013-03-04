@@ -1,0 +1,123 @@
+<table class="intro">
+  <tr>
+    <th scope="col"></th>
+    <th scope="col"></th>
+  </tr>
+  <tr>
+    <td><strong>Description:</strong></td>
+    <td>Use the <code>chrome.experimental.notification</code> module
+    to create rich notifications using templates and
+    show these notifications to users in the system tray
+    (see <a href="#usage">Usage</a>).</td>
+  </tr>
+  <tr>
+    <td><strong>Availability:</strong></td>
+    <td>Experimental API. You must enable the
+    <a href="experimental.html#using">"Experimental Extensions API"</a>.</td>
+  </tr>
+  <tr>
+    <td><strong>Permissions:</strong></td>
+    <td><code>"experimental"</code></td>
+  </tr>
+  <tr>
+    <td><strong>Learn more:</strong></td>
+    <td><a href="https://developers.google.com/live/shows/83992232-1001/">Chrome Apps Office Hours: Rich Notifications</a></td>
+  </tr>
+</table>
+
+<p class="warning">
+<b>Warning: </b>
+Currently this API only works on ChromeOS and Windows.
+Linux and Mac should fail gracefully by displaying normal HTML5 notifications;
+however, some information may not be displayed.
+</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>
+To use this API,
+call the <a href="#method-create">create()</a> method,
+passing in the notification details
+via the <code>options</code> parameter:
+</p>
+
+<pre>
+chrome.experimental.notification
+  .create(id, options, creationCallback);
+</pre>
+
+<p>
+<a href="#type-NotificationOptions">NotificationOptions</a> must include the
+<a href="#type-TemplateType">TemplateType</a>
+which defines available notification details
+and how those details are displayed.
+All four available template types
+(<code>simple</code>, <code>basic</code>, <code>image</code>, <code>list</code>)
+include the notification <code>title</code> and <code>message</code>.
+</p>
+
+<p>
+They can also include urls to icons or images.
+The <code>simple</code>, <code>basic</code>, and <code>list</code>
+templates link to small icons (<code>secondIconUrl</code>) displayed
+to the left of the notification message.
+The <code>image</code> template displays icons and images
+more prominently than the text
+(use <code>iconURL</code> or <code>imageURL</code>).
+Due to a strict <a href="app_csp.html">Content Security Policy</a>,
+all icon and image URLs in packaged apps should point to a local resource.
+</p>
+
+<p>
+The <code>basic</code> template looks similar to <code>simple</code>,
+and can also include an <code>expandedMessage</code>.
+Here's an example:
+</p>
+
+<pre>
+var opt = {
+  templateType: "basic",
+  title: "Primary Title",
+  message: "Primary message to display",
+  expandedMessage: "Additional message",
+  secondIconURL: "url_to_small_icon"
+}
+</pre>
+
+<p>
+The <code>list</code> template will display <code>items</code>
+in a list format:
+</p>
+
+<pre>
+var opt = {
+  templateType: "list",
+  title: "Primary Title",
+  message: "Primary message to display",
+  secondIconURL: "url_to_small_icon",
+  items: [{ title: "Item1", message: "This is item 1."},
+          { title: "Item2", message: "This is item 2."},
+          { title: "Item3", message: "This is item 3."}]
+}
+</pre>
+
+<p>
+Let us know if you have ideas for new templates with varying layouts
+by filing a <a href="crbug.com/new">crbug</a>!
+</p>
+
+<h2 id="events">Listening for and responding to events</h2>
+
+<p>
+With the exception of the <code>simple</code> template,
+all notifications can include event listeners and event handlers
+which respond to user actions.
+For example,
+you can write an event handler to respond to an
+<a href="#event-onButtonClicked">onButtonClicked</a> event.
+</p>
+
+<p>Consider including event listeners and handlers within the
+  <a href="app_lifecycle.html#create_event_page">event page</a>,
+so that notifications can pop-up even when the app or extension isn't running.
+</p>
