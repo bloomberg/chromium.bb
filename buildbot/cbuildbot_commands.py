@@ -952,7 +952,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
 
 
 def UploadArchivedFile(archive_path, upload_url, filename, debug,
-                       update_list=False, timeout=30 * 60):
+                       update_list=False, timeout=30 * 60, acl=None):
   """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
@@ -962,15 +962,22 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
     filename: Filename of the tarball to upload.
     update_list: Flag to update the list of uploaded files.
     timeout: Raise an exception if the upload takes longer than this timeout.
+    acl: Canned gsutil acl to use (e.g. 'public-read'), otherwise the internal
+         (private) one is used.
   """
 
   if upload_url:
     full_filename = os.path.join(archive_path, filename)
     full_url = '%s/%s' % (upload_url, filename)
-    cmds = (
-        [_GSUTIL_PATH, 'cp', full_filename, full_url],
-        [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url]
-    )
+    if acl:
+      cmds = (
+          [_GSUTIL_PATH, 'cp', '-a', acl, full_filename, full_url],
+      )
+    else:
+      cmds = (
+          [_GSUTIL_PATH, 'cp', full_filename, full_url],
+          [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url],
+      )
 
     for cmd in cmds:
       if debug:

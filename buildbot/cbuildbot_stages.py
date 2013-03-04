@@ -2037,8 +2037,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def UploadArtifact(filename):
       """Upload generated artifact to Google Storage."""
+      acl = None if config['internal'] else 'public-read'
       commands.UploadArchivedFile(archive_path, upload_url, filename, debug,
-                                  update_list=True)
+                                  update_list=True, acl=acl)
 
     def ArchiveArtifactsForHWTesting(num_upload_processes=6):
       """Archives artifacts required for HWTest stage."""
