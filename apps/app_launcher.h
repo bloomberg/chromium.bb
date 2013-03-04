@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APPS_APP_LAUNCHER_H_
-#define CHROME_APPS_APP_LAUNCHER_H_
+#ifndef APPS_APP_LAUNCHER_H_
+#define APPS_APP_LAUNCHER_H_
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
-
-class PrefRegistrySimple;
 
 namespace apps {
 
@@ -33,6 +30,6 @@ void GetIsAppLauncherEnabled(
 // Returns whether the app launcher was enabled the last time it was checked.
 bool WasAppLauncherEnabled();
 
-}  // namespace extensions
+}  // namespace apps
 
-#endif  // CHROME_APPS_APP_LAUNCHER_H_
+#endif  // APPS_APP_LAUNCHER_H_

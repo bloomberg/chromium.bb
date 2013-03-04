@@ -51,8 +51,8 @@
           'target_name': 'app_host',
           'type': 'executable',
           'include_dirs': [
-              '..',
-            ],
+            '..',
+          ],
           'direct_dependent_settings': {
             'include_dirs': [
               '..',
