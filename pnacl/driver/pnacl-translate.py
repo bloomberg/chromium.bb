@@ -128,8 +128,9 @@ EXTRA_ENV = {
   'LLC_FLAGS_TARGET' : '-mcpu=${LLC_MCPU} ' +
                        '-mtriple=${TRIPLE} ' +
                        '-filetype=${filetype}',
-  # Additional non-default flags go here.
-  'LLC_FLAGS_EXTRA' : '',
+  # Append additional non-default flags here.
+  'LLC_FLAGS_EXTRA' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
+                      '${OPT_LEVEL == 0 ? -disable-fp-elim}',
 
   # Opt level from command line (if any)
   'OPT_LEVEL' : '',
@@ -160,9 +161,7 @@ EXTRA_ENV = {
                '${LLC_FLAGS_COMMON} ' +
                '${LLC_FLAGS_%ARCH%} ' +
                '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST} : ${LLC_FLAGS_SLOW}} ' +
-               '${LLC_FLAGS_EXTRA} ' +
-               '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
-               '${OPT_LEVEL == 0 ? -disable-fp-elim}',
+               '${LLC_FLAGS_EXTRA}',
 
   # CPU that is representative of baseline feature requirements for NaCl
   # and/or chrome.  We may want to make this more like "-mtune"
