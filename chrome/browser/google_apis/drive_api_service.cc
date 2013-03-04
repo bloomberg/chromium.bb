@@ -155,6 +155,34 @@ void ParseAppListAndRun(const google_apis::GetAppListCallback& callback,
   callback.Run(error, app_list.Pass());
 }
 
+// Parses the FileResource value to ResourceEntry for upload range operation,
+// and runs |callback| on the UI thread.
+void ParseResourceEntryForUploadRangeAndRun(
+    const UploadRangeCallback& callback,
+    const UploadRangeResponse& response,
+    scoped_ptr<FileResource> value) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!value) {
+    callback.Run(response, scoped_ptr<ResourceEntry>());
+    return;
+  }
+
+  // Converting to ResourceEntry is cheap enough to do on UI thread.
+  scoped_ptr<ResourceEntry> entry =
+      ResourceEntry::CreateFromFileResource(*value);
+  if (!entry) {
+    callback.Run(UploadRangeResponse(GDATA_PARSE_ERROR,
+                                     response.start_position_received,
+                                     response.end_position_received),
+                 scoped_ptr<ResourceEntry>());
+    return;
+  }
+
+  callback.Run(response, entry.Pass());
+}
+
 // The resource ID for the root directory for Drive API is defined in the spec:
 // https://developers.google.com/drive/folder
 const char kDriveApiRootDirectoryResourceId[] = "root";
@@ -509,8 +537,19 @@ void DriveAPIService::ResumeUpload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(kochi): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new drive::ResumeUploadOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          upload_mode,
+          drive_file_path,
+          upload_url,
+          start_position,
+          end_position,
+          content_length,
+          content_type,
+          buf,
+          base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback)));
 }
 
 void DriveAPIService::GetUploadStatus(

@@ -12,6 +12,8 @@
 #include "base/pending_task.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
@@ -277,6 +279,36 @@ bool VerifyJsonData(const base::FilePath& expected_json_file_path,
   }
 
   return true;
+}
+
+bool ParseContentRangeHeader(const std::string& value,
+                             int64* start_position,
+                             int64* end_position,
+                             int64* length) {
+  DCHECK(start_position);
+  DCHECK(end_position);
+  DCHECK(length);
+
+  std::string remaining;
+  if (!RemovePrefix(value, "bytes ", &remaining))
+    return false;
+
+  std::vector<std::string> parts;
+  base::SplitString(remaining, '/', &parts);
+  if (parts.size() != 2U)
+    return false;
+
+  const std::string range = parts[0];
+  if (!base::StringToInt64(parts[1], length))
+    return false;
+
+  parts.clear();
+  base::SplitString(range, '-', &parts);
+  if (parts.size() != 2U)
+    return false;
+
+  return (base::StringToInt64(parts[0], start_position) &&
+          base::StringToInt64(parts[1], end_position));
 }
 
 }  // namespace test_util

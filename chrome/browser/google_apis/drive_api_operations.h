@@ -392,6 +392,44 @@ class InitiateUploadExistingFileOperation
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
 };
 
+// Callback used for ResumeUpload() (and will be used for GetUploadStatus()).
+typedef base::Callback<void(
+    const UploadRangeResponse& response,
+    scoped_ptr<FileResource> new_resource)> UploadRangeCallback;
+
+//============================ ResumeUploadOperation ===========================
+
+// Performs the operation for resuming the upload of a file.
+class ResumeUploadOperation : public ResumeUploadOperationBase {
+ public:
+  // See also ResumeUploadOperationBase's comment for parameters meaining.
+  // |callback| must not be null.
+  ResumeUploadOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      UploadMode upload_mode,
+      const base::FilePath& drive_file_path,
+      const GURL& upload_location,
+      int64 start_position,
+      int64 end_position,
+      int64 content_length,
+      const std::string& content_type,
+      const scoped_refptr<net::IOBuffer>& buf,
+      const UploadRangeCallback& callback);
+  virtual ~ResumeUploadOperation();
+
+ protected:
+  // UploadRangeOperationBase overrides.
+  virtual void OnRangeOperationComplete(
+      const UploadRangeResponse& response,
+      scoped_ptr<base::Value> value) OVERRIDE;
+
+ private:
+  const UploadRangeCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
+};
+
 }  // namespace drive
 }  // namespace google_apis
 

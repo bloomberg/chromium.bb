@@ -13,7 +13,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
@@ -46,39 +45,6 @@ void CopyResultFromUploadRangeCallbackAndQuit(
   *out_response = response;
   *out_new_entry = new_entry.Pass();
   MessageLoop::current()->Quit();
-}
-
-// Parses a value of Content-Range header, which looks like
-// "bytes <start_position>-<end_position>/<length>".
-// Returns true on success.
-bool ParseContentRangeHeader(const std::string& value,
-                             int64* start_position,
-                             int64* end_position,
-                             int64* length) {
-  DCHECK(start_position);
-  DCHECK(end_position);
-  DCHECK(length);
-
-  std::string remaining;
-  if (!test_util::RemovePrefix(value, "bytes ", &remaining))
-    return false;
-
-  std::vector<std::string> parts;
-  base::SplitString(remaining, '/', &parts);
-  if (parts.size() != 2U)
-    return false;
-
-  const std::string range = parts[0];
-  if (!base::StringToInt64(parts[1], length))
-    return false;
-
-  parts.clear();
-  base::SplitString(range, '-', &parts);
-  if (parts.size() != 2U)
-    return false;
-
-  return (base::StringToInt64(parts[0], start_position) &&
-          base::StringToInt64(parts[1], end_position));
 }
 
 class GDataWapiOperationsTest : public testing::Test {
@@ -304,10 +270,10 @@ class GDataWapiOperationsTest : public testing::Test {
       int64 length = 0;
       int64 start_position = 0;
       int64 end_position = 0;
-      if (!ParseContentRangeHeader(iter->second,
-                                   &start_position,
-                                   &end_position,
-                                   &length)) {
+      if (!test_util::ParseContentRangeHeader(iter->second,
+                                              &start_position,
+                                              &end_position,
+                                              &length)) {
         return scoped_ptr<test_server::HttpResponse>();
       }
       EXPECT_EQ(start_position, received_bytes_);

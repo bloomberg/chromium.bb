@@ -177,6 +177,14 @@ scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
 bool VerifyJsonData(const base::FilePath& expected_json_file_path,
                     const base::Value* json_data);
 
+// Parses a value of Content-Range header, which looks like
+// "bytes <start_position>-<end_position>/<length>".
+// Returns true on success.
+bool ParseContentRangeHeader(const std::string& value,
+                             int64* start_position,
+                             int64* end_position,
+                             int64* length);
+
 }  // namespace test_util
 }  // namespace google_apis
 

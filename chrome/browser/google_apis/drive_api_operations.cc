@@ -32,7 +32,7 @@ void ParseJsonAndRun(
   DCHECK(!callback.is_null());
 
   scoped_ptr<T> resource;
-  if (value.get()) {
+  if (value) {
     resource = T::CreateFrom(*value);
     if (!resource) {
       // Failed to parse the JSON value, although the JSON value is available,
@@ -42,6 +42,33 @@ void ParseJsonAndRun(
   }
 
   callback.Run(error, resource.Pass());
+}
+
+// Parses the JSON value to FileResource instance and runs |callback| on the
+// UI thread once parsing is done.
+// This is customized version of ParseJsonAndRun defined above to adapt the
+// remaining response type.
+void ParseFileResourceWithUploadRangeAndRun(
+    const drive::UploadRangeCallback& callback,
+    const UploadRangeResponse& response,
+    scoped_ptr<base::Value> value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<FileResource> file_resource;
+  if (value) {
+    file_resource = FileResource::CreateFrom(*value);
+    if (!file_resource) {
+      callback.Run(
+          UploadRangeResponse(GDATA_PARSE_ERROR,
+                              response.start_position_received,
+                              response.end_position_received),
+          scoped_ptr<FileResource>());
+      return;
+    }
+  }
+
+  callback.Run(response, file_resource.Pass());
 }
 
 }  // namespace
@@ -439,6 +466,41 @@ InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
       InitiateUploadOperationBase::GetExtraRequestHeaders());
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
+}
+
+//============================ ResumeUploadOperation ===========================
+
+ResumeUploadOperation::ResumeUploadOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    UploadMode upload_mode,
+    const base::FilePath& drive_file_path,
+    const GURL& upload_location,
+    int64 start_position,
+    int64 end_position,
+    int64 content_length,
+    const std::string& content_type,
+    const scoped_refptr<net::IOBuffer>& buf,
+    const UploadRangeCallback& callback)
+    : ResumeUploadOperationBase(registry,
+                                url_request_context_getter,
+                                upload_mode,
+                                drive_file_path,
+                                upload_location,
+                                start_position,
+                                end_position,
+                                content_length,
+                                content_type,
+                                buf),
+      callback_(callback) {
+  DCHECK(!callback_.is_null());
+}
+
+ResumeUploadOperation::~ResumeUploadOperation() {}
+
+void ResumeUploadOperation::OnRangeOperationComplete(
+    const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
+  ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }
 
 }  // namespace drive
