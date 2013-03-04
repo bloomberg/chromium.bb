@@ -16,7 +16,7 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_constants.h"
-#include "ui/message_center/notifier_settings_view.h"
+#include "ui/message_center/views/notifier_settings_view.h"
 #include "ui/views/widget/widget.h"
 
 MessageCenterSettingsController::MessageCenterSettingsController()

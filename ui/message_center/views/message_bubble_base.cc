@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/message_bubble_base.h"
+#include "ui/message_center/views/message_bubble_base.h"
 
 #include "base/bind.h"
 #include "ui/message_center/message_center_util.h"
-#include "ui/message_center/message_view.h"
+#include "ui/message_center/views/message_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 

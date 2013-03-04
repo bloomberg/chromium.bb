@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
-#define UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
+#ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
+#define UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
 
 #include <set>
 #include <string>
@@ -62,4 +62,4 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
+#endif  // UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_

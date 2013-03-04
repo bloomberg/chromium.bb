@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/notification_view.h"
+#include "ui/message_center/views/notification_view.h"
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -13,9 +13,9 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_switches.h"
-#include "ui/message_center/message_simple_view.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
+#include "ui/message_center/views/message_simple_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"

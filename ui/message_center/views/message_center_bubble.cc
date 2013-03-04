@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/message_center_bubble.h"
+#include "ui/message_center/views/message_center_bubble.h"
 
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -16,8 +16,8 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_util.h"
-#include "ui/message_center/message_view.h"
-#include "ui/message_center/notification_view.h"
+#include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/notification_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/text_button.h"

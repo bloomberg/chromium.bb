@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/message_popup_bubble.h"
+#include "ui/message_center/views/message_popup_bubble.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "ui/message_center/message_center_constants.h"
-#include "ui/message_center/message_view.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
-#include "ui/message_center/notification_view.h"
+#include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/notification_view.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"

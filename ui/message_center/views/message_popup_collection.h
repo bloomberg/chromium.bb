@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_MESSAGE_POPUP_COLLECTION_H_
-#define UI_MESSAGE_CENTER_MESSAGE_POPUP_COLLECTION_H_
+#ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
+#define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 
 #include <list>
 #include <map>
 
 #include "base/timer.h"
-#include "ui/message_center/message_bubble_base.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/views/message_bubble_base.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
@@ -58,4 +58,4 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
 }  // namespace message_center
 
-#endif // UI_MESSAGE_CENTER_MESSAGE_POPUP_COLLECTION_H_
+#endif // UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_

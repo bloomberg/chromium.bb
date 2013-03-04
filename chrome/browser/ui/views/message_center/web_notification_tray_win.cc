@@ -21,11 +21,11 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
-#include "ui/message_center/message_bubble_base.h"
-#include "ui/message_center/message_center_bubble.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
-#include "ui/message_center/message_popup_bubble.h"
+#include "ui/message_center/views/message_bubble_base.h"
+#include "ui/message_center/views/message_center_bubble.h"
+#include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

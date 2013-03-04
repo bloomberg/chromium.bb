@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_QUIET_MODE_BUBBLE_H_
-#define UI_MESSAGE_CENTER_QUIET_MODE_BUBBLE_H_
+#ifndef UI_MESSAGE_CENTER_VIEWS_QUIET_MODE_BUBBLE_H_
+#define UI_MESSAGE_CENTER_VIEWS_QUIET_MODE_BUBBLE_H_
 
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
@@ -55,4 +55,4 @@ class MESSAGE_CENTER_EXPORT QuietModeBubble : public views::ButtonListener {
 
 }  // namespace messge_center
 
-#endif  // UI_MESSAGE_CENTER_QUIET_MODE_BUBBLE_H_
+#endif  // UI_MESSAGE_CENTER_VIEWS_QUIET_MODE_BUBBLE_H_

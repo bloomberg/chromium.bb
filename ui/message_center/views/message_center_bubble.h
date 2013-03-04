@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_BUBBLE_H_
-#define UI_MESSAGE_CENTER_MESSAGE_CENTER_BUBBLE_H_
+#ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_BUBBLE_H_
+#define UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_BUBBLE_H_
 
-#include "ui/message_center/message_bubble_base.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/views/message_bubble_base.h"
 
 namespace message_center {
 
@@ -42,4 +42,4 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble : public MessageBubbleBase {
 
 }  // namespace message_center
 
-#endif // UI_MESSAGE_CENTER_MESSAGE_CENTER_BUBBLE_H_
+#endif // UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_BUBBLE_H_

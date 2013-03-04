@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/message_view.h"
+#include "ui/message_center/views/message_view.h"
 
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"

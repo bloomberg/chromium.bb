@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFICATION_VIEW_H_
-#define UI_MESSAGE_CENTER_NOTIFICATION_VIEW_H_
+#ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_H_
+#define UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_H_
 
-#include "ui/message_center/message_view.h"
 #include "ui/message_center/notification_list.h"
+#include "ui/message_center/views/message_view.h"
 
 namespace message_center {
 
@@ -46,4 +46,4 @@ class NotificationView : public MessageView {
 
 }  // namespace message_center
 
-#endif // UI_MESSAGE_CENTER_NOTIFICATION_VIEW_H_
+#endif // UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_H_

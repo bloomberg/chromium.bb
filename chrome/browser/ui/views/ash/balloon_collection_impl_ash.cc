@@ -24,7 +24,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "ui/message_center/notifier_settings_view.h"
+#include "ui/message_center/views/notifier_settings_view.h"
 #include "ui/views/widget/widget.h"
 
 BalloonCollectionImplAsh::BalloonCollectionImplAsh()

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/notifier_settings_view.h"
+#include "ui/message_center/views/notifier_settings_view.h"
 
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkColor.h"

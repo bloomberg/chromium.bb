@@ -1,7 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "ui/message_center/quiet_mode_bubble.h"
+
+#include "ui/message_center/views/quiet_mode_bubble.h"
 
 #include "base/time.h"
 #include "grit/ui_strings.h"
