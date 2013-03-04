@@ -77,7 +77,7 @@ int32_t UDPSocketPrivateResource::Bind(
 
   bind_callback_ = callback;
 
-  // Send the request, the browser will call us back via BindReply.
+  // Send the request, the browser will call us back via BindACK.
   SendBind(*addr);
   return PP_OK_COMPLETIONPENDING;
 }
@@ -105,7 +105,7 @@ int32_t UDPSocketPrivateResource::RecvFrom(
   bytes_to_read_ = std::min(num_bytes, kMaxReadSize);
   recvfrom_callback_ = callback;
 
-  // Send the request, the browser will call us back via RecvFromReply.
+  // Send the request, the browser will call us back via RecvFromACK.
   SendRecvFrom(bytes_to_read_);
   return PP_OK_COMPLETIONPENDING;
 }
@@ -141,7 +141,7 @@ int32_t UDPSocketPrivateResource::SendTo(
 
   sendto_callback_ = callback;
 
-  // Send the request, the browser will call us back via SendToReply.
+  // Send the request, the browser will call us back via SendToACK.
   SendSendTo(std::string(buffer, num_bytes), *addr);
   return PP_OK_COMPLETIONPENDING;
 }
@@ -200,26 +200,27 @@ void UDPSocketPrivateResource::SendClose() {
 
 void UDPSocketPrivateResource::OnPluginMsgBindReply(
     const ResourceMessageReplyParams& params,
+    bool succeeded,
     const PP_NetAddress_Private& bound_addr) {
   if (!TrackedCallback::IsPending(bind_callback_)) {
     NOTREACHED();
     return;
   }
-  if (params.result() == PP_OK)
+  if (succeeded)
     bound_ = true;
   bound_addr_ = bound_addr;
-  bind_callback_->Run(params.result());
+  bind_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void UDPSocketPrivateResource::OnPluginMsgRecvFromReply(
     const ResourceMessageReplyParams& params,
+    bool succeeded,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
   if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_) {
     NOTREACHED();
     return;
   }
-  bool succeeded = (params.result() == PP_OK);
   if (succeeded) {
     CHECK_LE(static_cast<int32_t>(data.size()), bytes_to_read_);
     if (!data.empty())
@@ -229,23 +230,20 @@ void UDPSocketPrivateResource::OnPluginMsgRecvFromReply(
   bytes_to_read_ = -1;
   recvfrom_addr_ = addr;
 
-  if (succeeded)
-    recvfrom_callback_->Run(static_cast<int32_t>(data.size()));
-  else
-    recvfrom_callback_->Run(params.result());
+  recvfrom_callback_->Run(succeeded ? static_cast<int32_t>(data.size()) :
+      static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
 void UDPSocketPrivateResource::OnPluginMsgSendToReply(
     const ResourceMessageReplyParams& params,
+    bool succeeded,
     int32_t bytes_written) {
   if (!TrackedCallback::IsPending(sendto_callback_)) {
     NOTREACHED();
     return;
   }
-  if (params.result() == PP_OK)
-    sendto_callback_->Run(bytes_written);
-  else
-    sendto_callback_->Run(params.result());
+  sendto_callback_->Run(
+      succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
 }
 
 }  // namespace proxy

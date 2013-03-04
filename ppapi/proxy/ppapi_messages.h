@@ -1222,12 +1222,15 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SendTo,
                      std::string /* data */,
                      PP_NetAddress_Private /* net_addr */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Close)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocketPrivate_BindReply,
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocketPrivate_BindReply,
+                     bool /* succeeded */,
                      PP_NetAddress_Private /* bound_addr */)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocketPrivate_RecvFromReply,
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_UDPSocketPrivate_RecvFromReply,
+                     bool /* succeeded */,
                      std::string /* data */,
                      PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocketPrivate_SendToReply,
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocketPrivate_SendToReply,
+                     bool /* succeeded */,
                      int32_t /* bytes_written */)
 
 // PPB_TCPServerSocket_Private.

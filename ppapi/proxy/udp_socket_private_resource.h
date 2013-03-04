@@ -62,11 +62,14 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
 
   // IPC message handlers.
   void OnPluginMsgBindReply(const ResourceMessageReplyParams& params,
+                            bool succeeded,
                             const PP_NetAddress_Private& bound_addr);
   void OnPluginMsgRecvFromReply(const ResourceMessageReplyParams& params,
+                                bool succeeded,
                                 const std::string& data,
                                 const PP_NetAddress_Private& addr);
   void OnPluginMsgSendToReply(const ResourceMessageReplyParams& params,
+                              bool succeeded,
                               int32_t bytes_written);
 
   bool bound_;
