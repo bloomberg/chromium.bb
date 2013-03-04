@@ -826,11 +826,14 @@ void TemplateURLService::OnWebDataServiceRequestDone(
           SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
       DCHECK(success);
     }
-    UMA_HISTOGRAM_ENUMERATION(
-        kDSPHistogramName,
-        default_search_provider_ ?
-            default_search_provider_->prepopulate_id() : 0,
-        TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
+    // Don't log anything if the user has a NULL default search provider. A
+    // logged value of 0 indicates a custom default search provider.
+    if (default_search_provider_) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kDSPHistogramName,
+          default_search_provider_->prepopulate_id(),
+          TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
+    }
   }
 
   NotifyObservers();
