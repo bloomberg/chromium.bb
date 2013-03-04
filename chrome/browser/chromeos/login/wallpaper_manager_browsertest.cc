@@ -150,6 +150,10 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   // Hook up another 800x600 display.
   UpdateDisplay("800x600,800x600");
+#if !defined(GOOGLE_CHROME_BUILD)
+  // wallpaper.width() < 800, expect to reload wallpaper.
+  WaitAsyncWallpaperLoad();
+#endif
   // The small resolution wallpaper is expected.
   EXPECT_EQ(kExpectedSmallWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kExpectedSmallWallpaperHeight, wallpaper.height());
@@ -227,6 +231,10 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   // Hook up another 800x600 display.
   UpdateDisplay("800x600,800x600");
+#if !defined(GOOGLE_CHROME_BUILD)
+  // wallpaper.width() < 800, expect to reload wallpaper.
+  WaitAsyncWallpaperLoad();
+#endif
   // The small resolution custom wallpaper is expected.
   EXPECT_EQ(kExpectedSmallWallpaperWidth, wallpaper.width());
   EXPECT_EQ(kExpectedSmallWallpaperHeight, wallpaper.height());
