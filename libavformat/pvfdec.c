@@ -37,7 +37,7 @@ static int pvf_read_header(AVFormatContext *s)
     int bps, channels, sample_rate;
 
     avio_skip(s->pb, 5);
-    ff_get_line(s->pb, (char *)&buffer, 32);
+    ff_get_line(s->pb, buffer, sizeof(buffer));
     if (sscanf(buffer, "%d %d %d",
                &channels,
                &sample_rate,
@@ -63,23 +63,12 @@ static int pvf_read_header(AVFormatContext *s)
     return 0;
 }
 
-static int pvf_read_packet(AVFormatContext *s, AVPacket *pkt)
-{
-    int ret;
-
-    ret = av_get_packet(s->pb, pkt, 1024 * s->streams[0]->codec->block_align);
-    pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
-    pkt->stream_index = 0;
-
-    return ret;
-}
-
 AVInputFormat ff_pvf_demuxer = {
     .name           = "pvf",
     .long_name      = NULL_IF_CONFIG_SMALL("PVF (Portable Voice Format)"),
     .read_probe     = pvf_probe,
     .read_header    = pvf_read_header,
-    .read_packet    = pvf_read_packet,
+    .read_packet    = ff_pcm_read_packet,
     .read_seek      = ff_pcm_read_seek,
     .extensions     = "pvf",
     .flags          = AVFMT_GENERIC_INDEX,

@@ -25,7 +25,8 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
-
+#include "internal.h"
+#include "h264chroma.h"
 #include "vp56.h"
 #include "vp56data.h"
 
@@ -339,7 +340,7 @@ static void vp56_mc(VP56Context *s, int b, int plane, uint8_t *src,
 
     if (x<0 || x+12>=s->plane_width[plane] ||
         y<0 || y+12>=s->plane_height[plane]) {
-        s->dsp.emulated_edge_mc(s->edge_emu_buffer,
+        s->vdsp.emulated_edge_mc(s->edge_emu_buffer,
                             src + s->block_offset[b] + (dy-2)*stride + (dx-2),
                             stride, 12, 12, x, y,
                             s->plane_width[plane],
@@ -372,7 +373,7 @@ static void vp56_mc(VP56Context *s, int b, int plane, uint8_t *src,
             s->filter(s, dst, src_block, src_offset, src_offset+overlap_offset,
                       stride, s->mv[b], mask, s->filter_selection, b<4);
         else
-            s->dsp.put_no_rnd_pixels_l2[1](dst, src_block+src_offset,
+            s->vp3dsp.put_no_rnd_pixels_l2(dst, src_block+src_offset,
                                            src_block+src_offset+overlap_offset,
                                            stride, 8);
     } else {
@@ -392,8 +393,6 @@ static void vp56_decode_mb(VP56Context *s, int row, int col, int is_alpha)
     else
         mb_type = vp56_decode_mv(s, row, col);
     ref_frame = vp56_reference_frame[mb_type];
-
-    s->dsp.clear_blocks(*s->block_coeff);
 
     s->parse_coeff(s);
 
@@ -447,6 +446,11 @@ static void vp56_decode_mb(VP56Context *s, int row, int col, int is_alpha)
             }
             break;
     }
+
+    if (is_alpha) {
+        s->block_coeff[4][0] = 0;
+        s->block_coeff[5][0] = 0;
+    }
 }
 
 static int vp56_size_changed(VP56Context *s)
@@ -491,7 +495,7 @@ static int vp56_size_changed(VP56Context *s)
 
 static int ff_vp56_decode_mbs(AVCodecContext *avctx, void *, int, int);
 
-int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
+int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                          AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -523,10 +527,10 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     }
 
     res = s->parse_header(s, buf, remaining_buf_size);
-    if (!res)
-        return -1;
+    if (res < 0)
+        return res;
 
-    if (res == 2) {
+    if (res == VP56_SIZE_CHANGE) {
         for (i = 0; i < 4; i++) {
             if (s->frames[i].data[0])
                 avctx->release_buffer(avctx, &s->frames[i]);
@@ -534,12 +538,12 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     }
 
     p->reference = 3;
-    if (avctx->get_buffer(avctx, p) < 0) {
+    if (ff_get_buffer(avctx, p) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return -1;
     }
 
-    if (res == 2) {
+    if (res == VP56_SIZE_CHANGE) {
         if (vp56_size_changed(s)) {
             avctx->release_buffer(avctx, p);
             return -1;
@@ -555,8 +559,8 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         remaining_buf_size -= alpha_offset;
 
         res = s->alpha_context->parse_header(s->alpha_context, buf, remaining_buf_size);
-        if (res != 1) {
-            if(res==2) {
+        if (res != 0) {
+            if(res==VP56_SIZE_CHANGE) {
                 av_log(avctx, AV_LOG_ERROR, "Alpha reconfiguration\n");
                 avctx->width  = bak_w;
                 avctx->height = bak_h;
@@ -585,7 +589,7 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     p->qscale_table = s->qscale_table;
     p->qscale_type = FF_QSCALE_TYPE_VP56;
     *(AVFrame*)data = *p;
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
 
     return avpkt->size;
 }
@@ -702,6 +706,8 @@ av_cold void ff_vp56_init_context(AVCodecContext *avctx, VP56Context *s,
     avctx->pix_fmt = has_alpha ? AV_PIX_FMT_YUVA420P : AV_PIX_FMT_YUV420P;
 
     ff_dsputil_init(&s->dsp, avctx);
+    ff_h264chroma_init(&s->h264chroma, 8);
+    ff_videodsp_init(&s->vdsp, 8);
     ff_vp3dsp_init(&s->vp3dsp, avctx->flags);
     ff_vp56dsp_init(&s->vp56dsp, avctx->codec->id);
     ff_init_scantable_permutation(s->dsp.idct_permutation, s->vp3dsp.idct_perm);

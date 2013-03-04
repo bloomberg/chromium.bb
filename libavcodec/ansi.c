@@ -29,6 +29,7 @@
 #include "libavutil/xga_font_data.h"
 #include "avcodec.h"
 #include "cga_data.h"
+#include "internal.h"
 
 #define ATTR_BOLD         0x01  /**< Bold/Bright-foreground (mode 1) */
 #define ATTR_FAINT        0x02  /**< Faint (mode 2) */
@@ -242,7 +243,7 @@ static int execute_code(AVCodecContext * avctx, int c)
             if (s->frame.data[0])
                 avctx->release_buffer(avctx, &s->frame);
             avcodec_set_dimensions(avctx, width, height);
-            ret = avctx->get_buffer(avctx, &s->frame);
+            ret = ff_get_buffer(avctx, &s->frame);
             if (ret < 0) {
                 av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
                 return ret;
@@ -338,7 +339,7 @@ static int execute_code(AVCodecContext * avctx, int c)
 }
 
 static int decode_frame(AVCodecContext *avctx,
-                            void *data, int *data_size,
+                            void *data, int *got_frame,
                             AVPacket *avpkt)
 {
     AnsiContext *s = avctx->priv_data;
@@ -352,6 +353,12 @@ static int decode_frame(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
+    if (!avctx->frame_number) {
+        for (i=0; i<avctx->height; i++)
+            memset(s->frame.data[0]+ i*s->frame.linesize[0], 0, avctx->width);
+        memset(s->frame.data[1], 0, AVPALETTE_SIZE);
+    }
+
     s->frame.pict_type           = AV_PICTURE_TYPE_I;
     s->frame.palette_has_changed = 1;
     set_palette((uint32_t *)s->frame.data[1]);
@@ -427,8 +434,8 @@ static int decode_frame(AVCodecContext *avctx,
                     av_log(avctx, AV_LOG_WARNING, "args overflow (%i)\n", s->nb_args);
                 if (s->nb_args < MAX_NB_ARGS && s->args[s->nb_args] >= 0)
                     s->nb_args++;
-                if (execute_code(avctx, buf[0]) < 0)
-                    return -1;
+                if ((ret = execute_code(avctx, buf[0])) < 0)
+                    return ret;
                 s->state = STATE_NORMAL;
             }
             break;
@@ -441,7 +448,7 @@ static int decode_frame(AVCodecContext *avctx,
         buf++;
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = s->frame;
     return buf_size;
 }

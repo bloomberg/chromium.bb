@@ -25,6 +25,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/dict.h"
 #include "avformat.h"
+#include "avio_internal.h"
 #include "internal.h"
 #include "rmsipr.h"
 #include "rm.h"
@@ -127,9 +128,12 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
     /* ra type header */
     version = avio_rb16(pb); /* version */
     if (version == 3) {
+        unsigned bytes_per_minute;
         int header_size = avio_rb16(pb);
         int64_t startpos = avio_tell(pb);
-        avio_skip(pb, 14);
+        avio_skip(pb, 8);
+        bytes_per_minute = avio_rb16(pb);
+        avio_skip(pb, 4);
         rm_read_metadata(s, 0);
         if ((startpos + header_size) >= avio_tell(pb) + 2) {
             // fourcc (should always be "lpcJ")
@@ -139,6 +143,8 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         // Skip extra header crap (this should never happen)
         if ((startpos + header_size) > avio_tell(pb))
             avio_skip(pb, header_size + startpos - avio_tell(pb));
+        if (bytes_per_minute)
+            st->codec->bit_rate = 8LL * bytes_per_minute / 60;
         st->codec->sample_rate = 8000;
         st->codec->channels = 1;
         st->codec->channel_layout = AV_CH_LAYOUT_MONO;
@@ -148,6 +154,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
     } else {
         int flavor, sub_packet_h, coded_framesize, sub_packet_size;
         int codecdata_length;
+        unsigned bytes_per_minute;
         /* old version (4) */
         avio_skip(pb, 2); /* unused */
         avio_rb32(pb); /* .ra4 */
@@ -157,7 +164,11 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         flavor= avio_rb16(pb); /* add codec info / flavor */
         ast->coded_framesize = coded_framesize = avio_rb32(pb); /* coded frame size */
         avio_rb32(pb); /* ??? */
-        avio_rb32(pb); /* ??? */
+        bytes_per_minute = avio_rb32(pb);
+        if (version == 4) {
+            if (bytes_per_minute)
+                st->codec->bit_rate = 8LL * bytes_per_minute / 60;
+        }
         avio_rb32(pb); /* ??? */
         ast->sub_packet_h = sub_packet_h = avio_rb16(pb); /* 1 */
         st->codec->block_align= avio_rb16(pb); /* frame size */
@@ -196,13 +207,17 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             st->need_parsing = AVSTREAM_PARSE_HEADERS;
         case AV_CODEC_ID_ATRAC3:
         case AV_CODEC_ID_SIPR:
-            avio_rb16(pb); avio_r8(pb);
-            if (version == 5)
-                avio_r8(pb);
-            codecdata_length = avio_rb32(pb);
-            if(codecdata_length + FF_INPUT_BUFFER_PADDING_SIZE <= (unsigned)codecdata_length){
-                av_log(s, AV_LOG_ERROR, "codecdata_length too large\n");
-                return -1;
+            if (read_all) {
+                codecdata_length = 0;
+            } else {
+                avio_rb16(pb); avio_r8(pb);
+                if (version == 5)
+                    avio_r8(pb);
+                codecdata_length = avio_rb32(pb);
+                if(codecdata_length + FF_INPUT_BUFFER_PADDING_SIZE <= (unsigned)codecdata_length){
+                    av_log(s, AV_LOG_ERROR, "codecdata_length too large\n");
+                    return -1;
+                }
             }
 
             ast->audio_framesize = st->codec->block_align;
@@ -644,7 +659,8 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
                                    AVPacket *pkt, int len, int *pseq,
                                    int64_t *timestamp)
 {
-    int hdr, seq, pic_num, len2, pos;
+    int hdr;
+    int seq = 0, pic_num = 0, len2 = 0, pos = 0; //init to silcense compiler warning
     int type;
 
     hdr = avio_r8(pb); len--;
@@ -681,6 +697,10 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
 
     *pseq = seq;
     if((seq & 0x7F) == 1 || vst->curpic_num != pic_num){
+        if (len2 > ffio_limit(pb, len2)) {
+            av_log(s, AV_LOG_ERROR, "Impossibly sized packet\n");
+            return AVERROR_INVALIDDATA;
+        }
         vst->slices = ((hdr & 0x3F) << 1) + 1;
         vst->videobufsize = len2 + 8*vst->slices + 1;
         av_free_packet(&vst->pkt); //FIXME this should be output.
@@ -860,7 +880,7 @@ ff_rm_retrieve_cache (AVFormatContext *s, AVIOContext *pb,
 static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     RMDemuxContext *rm = s->priv_data;
-    AVStream *st;
+    AVStream *st = NULL; // init to silence compiler warning
     int i, len, res, seq = 1;
     int64_t timestamp, pos;
     int flags;

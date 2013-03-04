@@ -23,8 +23,8 @@ libavdevice library.
 The libavdevice library provides the same interface as
 libavformat. Namely, an input device is considered like a demuxer, and
 an output device like a muxer, and the interface and generic device
-options are the same provided by libavformat (see the @ref{FFmpeg
-formats} manual page).
+options are the same provided by libavformat (see the ffmpeg-formats
+manual).
 
 In addition each input or output device may support so-called private
 options, which are specific for that component.
@@ -39,18 +39,23 @@ for programmatic use.
 @include indevs.texi
 @include outdevs.texi
 
+@chapter See Also
+
+@ifhtml
+@url{ffmpeg.html,ffmpeg}, @url{ffplay.html,ffplay}, @url{ffprobe.html,ffprobe}, @url{ffserver.html,ffserver},
+@url{libavdevice.html,libavdevice}
+@end ifhtml
+
+@ifnothtml
+ffmpeg(1), ffplay(1), ffprobe(1), ffserver(1), libavdevice(3)
+@end ifnothtml
+
+@include authors.texi
+
 @ignore
 
 @setfilename ffmpeg-devices
 @settitle FFmpeg devices
-
-@c man begin SEEALSO
-ffmpeg(1), ffplay(1), ffprobe(1), ffserver(1), libavformat(3), libavdevice(3)
-@c man end
-
-@c man begin AUTHORS
-See Git history (git://source.ffmpeg.org/ffmpeg)
-@c man end
 
 @end ignore
 

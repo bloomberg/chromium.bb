@@ -55,9 +55,18 @@ static void h263_free_context(PayloadContext *data)
     av_free(data);
 }
 
+static int h263_init(AVFormatContext *ctx, int st_index, PayloadContext *data)
+{
+    if (st_index < 0)
+        return 0;
+    ctx->streams[st_index]->need_parsing = AVSTREAM_PARSE_FULL;
+    return 0;
+}
+
 static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
                               AVStream *st, AVPacket *pkt, uint32_t *timestamp,
-                              const uint8_t *buf, int len, int flags)
+                              const uint8_t *buf, int len, uint16_t seq,
+                              int flags)
 {
     /* Corresponding to header fields in the RFC */
     int f, p, i, sbit, ebit, src, r;
@@ -65,7 +74,7 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
 
     if (data->newformat)
         return ff_h263_handle_packet(ctx, data, st, pkt, timestamp, buf, len,
-                                     flags);
+                                     seq, flags);
 
     if (data->buf && data->timestamp != *timestamp) {
         /* Dropping old buffered, unfinished data */
@@ -122,7 +131,7 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
                    "signalled with a static payload type.\n");
             data->newformat = 1;
             return ff_h263_handle_packet(ctx, data, st, pkt, timestamp, buf,
-                                         len, flags);
+                                         len, seq, flags);
         }
     }
 
@@ -197,6 +206,7 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
 RTPDynamicProtocolHandler ff_h263_rfc2190_dynamic_handler = {
     .codec_type        = AVMEDIA_TYPE_VIDEO,
     .codec_id          = AV_CODEC_ID_H263,
+    .init              = h263_init,
     .parse_packet      = h263_handle_packet,
     .alloc             = h263_new_context,
     .free              = h263_free_context,

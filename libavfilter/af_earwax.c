@@ -77,7 +77,7 @@ typedef struct {
 
 static int query_formats(AVFilterContext *ctx)
 {
-    int sample_rates[] = { 44100, -1 };
+    static const int sample_rates[] = { 44100, -1 };
 
     AVFilterFormats *formats = NULL;
     AVFilterChannelLayouts *layout = NULL;
@@ -88,17 +88,6 @@ static int query_formats(AVFilterContext *ctx)
     ff_set_common_channel_layouts(ctx, layout);
     ff_set_common_samplerates(ctx, ff_make_format_list(sample_rates));
 
-    return 0;
-}
-
-static int config_input(AVFilterLink *inlink)
-{
-    if (inlink->sample_rate != 44100) {
-        av_log(inlink->dst, AV_LOG_ERROR,
-               "The earwax filter only works for 44.1kHz audio. Insert "
-               "a resample filter before this\n");
-        return AVERROR(EINVAL);
-    }
     return 0;
 }
 
@@ -158,7 +147,6 @@ static const AVFilterPad earwax_inputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
-        .config_props = config_input,
         .min_perms    = AV_PERM_READ,
     },
     { NULL }

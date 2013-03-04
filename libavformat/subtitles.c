@@ -104,16 +104,6 @@ int ff_subtitles_queue_seek(FFDemuxSubtitlesQueue *q, AVFormatContext *s, int st
         int i, idx = -1;
         int64_t min_ts_diff = INT64_MAX;
         int64_t ts_selected;
-        if (stream_index == -1) {
-            AVRational time_base = s->streams[0]->time_base;
-            ts = av_rescale_q(ts, AV_TIME_BASE_Q, time_base);
-            min_ts = av_rescale_rnd(min_ts, time_base.den,
-                                    time_base.num * (int64_t)AV_TIME_BASE,
-                                    AV_ROUND_UP);
-            max_ts = av_rescale_rnd(max_ts, time_base.den,
-                                    time_base.num * (int64_t)AV_TIME_BASE,
-                                    AV_ROUND_DOWN);
-        }
         /* TODO: q->subs[] is sorted by pts so we could do a binary search */
         for (i = 0; i < q->nb_subs; i++) {
             int64_t pts = q->subs[i].pts;
@@ -191,4 +181,50 @@ const char *ff_smil_get_attr_ptr(const char *s, const char *attr)
             return s + len + 1 + (s[len + 1] == '"');
     }
     return NULL;
+}
+
+static inline int is_eol(char c)
+{
+    return c == '\r' || c == '\n';
+}
+
+void ff_subtitles_read_chunk(AVIOContext *pb, AVBPrint *buf)
+{
+    char eol_buf[5];
+    int n = 0, i = 0, nb_eol = 0;
+
+    av_bprint_clear(buf);
+
+    for (;;) {
+        char c = avio_r8(pb);
+
+        if (!c)
+            break;
+
+        /* ignore all initial line breaks */
+        if (n == 0 && is_eol(c))
+            continue;
+
+        /* line break buffering: we don't want to add the trailing \r\n */
+        if (is_eol(c)) {
+            nb_eol += c == '\n';
+            if (nb_eol == 2)
+                break;
+            eol_buf[i++] = c;
+            if (i == sizeof(eol_buf) - 1)
+                break;
+            continue;
+        }
+
+        /* only one line break followed by data: we flush the line breaks
+         * buffer */
+        if (i) {
+            eol_buf[i] = 0;
+            av_bprintf(buf, "%s", eol_buf);
+            i = nb_eol = 0;
+        }
+
+        av_bprint_chars(buf, c, 1);
+        n++;
+    }
 }

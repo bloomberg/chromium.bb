@@ -29,6 +29,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 #include "j2k.h"
 #include "libavutil/common.h"
 
@@ -283,7 +284,7 @@ static int get_siz(J2kDecoderContext *s)
     if (s->picture.data[0])
         s->avctx->release_buffer(s->avctx, &s->picture);
 
-    if ((ret = s->avctx->get_buffer(s->avctx, &s->picture)) < 0)
+    if ((ret = ff_get_buffer(s->avctx, &s->picture)) < 0)
         return ret;
 
     s->picture.pict_type = AV_PICTURE_TYPE_I;
@@ -1017,7 +1018,7 @@ static int jp2_find_codestream(J2kDecoderContext *s)
 }
 
 static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
+                        void *data, int *got_frame,
                         AVPacket *avpkt)
 {
     J2kDecoderContext *s = avctx->priv_data;
@@ -1060,7 +1061,7 @@ static int decode_frame(AVCodecContext *avctx,
 
     cleanup(s);
 
-    *data_size = sizeof(AVPicture);
+    *got_frame = 1;
     *picture = s->picture;
 
     return bytestream2_tell(&s->g);

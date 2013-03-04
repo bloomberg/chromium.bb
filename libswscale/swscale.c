@@ -148,7 +148,7 @@ static void hScale8To19_c(SwsContext *c, int16_t *_dst, int dstW,
     }
 }
 
-// FIXME all pal and rgb srcFormats could do this convertion as well
+// FIXME all pal and rgb srcFormats could do this conversion as well
 // FIXME all scalers more complex than bilinear could do half of this transform
 static void chrRangeToJpeg_c(int16_t *dstU, int16_t *dstV, int width)
 {
@@ -369,6 +369,7 @@ static int swScale(SwsContext *c, const uint8_t *src[],
     yuv2packed1_fn yuv2packed1       = c->yuv2packed1;
     yuv2packed2_fn yuv2packed2       = c->yuv2packed2;
     yuv2packedX_fn yuv2packedX       = c->yuv2packedX;
+    yuv2anyX_fn yuv2anyX             = c->yuv2anyX;
     const int chrSrcSliceY           =     srcSliceY  >> c->chrSrcVSubSample;
     const int chrSrcSliceH           = -((-srcSliceH) >> c->chrSrcVSubSample);
     int should_dither                = is9_OR_10BPS(c->srcFormat) ||
@@ -416,7 +417,8 @@ static int swScale(SwsContext *c, const uint8_t *src[],
         }
     }
 
-    if ((int)dst[0]%16 || (int)dst[1]%16 || (int)dst[2]%16 || (int)src[0]%16 || (int)src[1]%16 || (int)src[2]%16
+    if (   (uintptr_t)dst[0]%16 || (uintptr_t)dst[1]%16 || (uintptr_t)dst[2]%16
+        || (uintptr_t)src[0]%16 || (uintptr_t)src[1]%16 || (uintptr_t)src[2]%16
         || dstStride[0]%16 || dstStride[1]%16 || dstStride[2]%16 || dstStride[3]%16
         || srcStride[0]%16 || srcStride[1]%16 || srcStride[2]%16 || srcStride[3]%16
     ) {
@@ -556,7 +558,7 @@ static int swScale(SwsContext *c, const uint8_t *src[],
             /* hmm looks like we can't use MMX here without overwriting
              * this array's tail */
             ff_sws_init_output_funcs(c, &yuv2plane1, &yuv2planeX, &yuv2nv12cX,
-                                     &yuv2packed1, &yuv2packed2, &yuv2packedX);
+                                     &yuv2packed1, &yuv2packed2, &yuv2packedX, &yuv2anyX);
             use_mmx_vfilter= 0;
         }
 
@@ -586,8 +588,8 @@ static int swScale(SwsContext *c, const uint8_t *src[],
 //                             || yuv2planeX == yuv2planeX_8_c) || !ARCH_X86);
 
                 if(use_mmx_vfilter){
-                    vLumFilter= c->lumMmxFilter;
-                    vChrFilter= c->chrMmxFilter;
+                    vLumFilter= (int16_t *)c->lumMmxFilter;
+                    vChrFilter= (int16_t *)c->chrMmxFilter;
                 }
 
                 if (vLumFilterSize == 1) {
@@ -618,7 +620,7 @@ static int swScale(SwsContext *c, const uint8_t *src[],
 
                 if (CONFIG_SWSCALE_ALPHA && alpPixBuf) {
                     if(use_mmx_vfilter){
-                        vLumFilter= c->alpMmxFilter;
+                        vLumFilter= (int16_t *)c->alpMmxFilter;
                     }
                     if (vLumFilterSize == 1) {
                         yuv2plane1(alpSrcPtr[0], dest[3], dstW,
@@ -629,9 +631,9 @@ static int swScale(SwsContext *c, const uint8_t *src[],
                                    dstW, c->lumDither8, 0);
                     }
                 }
-            } else {
-                av_assert1(lumSrcPtr  + vLumFilterSize - 1 < lumPixBuf  + vLumBufSize * 2);
-                av_assert1(chrUSrcPtr + vChrFilterSize - 1 < chrUPixBuf + vChrBufSize * 2);
+            } else if (yuv2packedX) {
+                av_assert1(lumSrcPtr  + vLumFilterSize - 1 < (const int16_t **)lumPixBuf  + vLumBufSize * 2);
+                av_assert1(chrUSrcPtr + vChrFilterSize - 1 < (const int16_t **)chrUPixBuf + vChrBufSize * 2);
                 if (c->yuv2packed1 && vLumFilterSize == 1 &&
                     vChrFilterSize <= 2) { // unscaled RGB
                     int chrAlpha = vChrFilterSize == 1 ? 0 : vChrFilter[2 * dstY + 1];
@@ -656,6 +658,13 @@ static int swScale(SwsContext *c, const uint8_t *src[],
                                 chrUSrcPtr, chrVSrcPtr, vChrFilterSize,
                                 alpSrcPtr, dest[0], dstW, dstY);
                 }
+            } else {
+                av_assert1(!yuv2packed1 && !yuv2packed2);
+                yuv2anyX(c, vLumFilter + dstY * vLumFilterSize,
+                         lumSrcPtr, vLumFilterSize,
+                         vChrFilter + dstY * vChrFilterSize,
+                         chrUSrcPtr, chrVSrcPtr, vChrFilterSize,
+                         alpSrcPtr, dest, dstW, dstY);
             }
         }
     }
@@ -694,7 +703,7 @@ static av_cold void sws_init_swScale_c(SwsContext *c)
 
     ff_sws_init_output_funcs(c, &c->yuv2plane1, &c->yuv2planeX,
                              &c->yuv2nv12cX, &c->yuv2packed1,
-                             &c->yuv2packed2, &c->yuv2packedX);
+                             &c->yuv2packed2, &c->yuv2packedX, &c->yuv2anyX);
 
     ff_sws_init_input_funcs(c);
 
@@ -789,9 +798,16 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
                                   const int dstStride[])
 {
     int i, ret;
-    const uint8_t *src2[4] = { srcSlice[0], srcSlice[1], srcSlice[2], srcSlice[3] };
-    uint8_t *dst2[4] = { dst[0], dst[1], dst[2], dst[3] };
+    const uint8_t *src2[4];
+    uint8_t *dst2[4];
     uint8_t *rgb0_tmp = NULL;
+
+    if (!srcSlice || !dstStride || !dst || !srcSlice) {
+        av_log(c, AV_LOG_ERROR, "One of the input parameters to sws_scale() is NULL, please check the calling code\n");
+        return 0;
+    }
+    memcpy(src2, srcSlice, sizeof(src2));
+    memcpy(dst2, dst, sizeof(dst2));
 
     // do not mess up sliceDir if we have a "trailing" 0-size slice
     if (srcSliceH == 0)
@@ -901,6 +917,11 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
         }
         src2[0] = base;
     }
+
+    if (!srcSliceY && (c->flags & SWS_BITEXACT) && (c->flags & SWS_ERROR_DIFFUSION) && c->dither_error[0])
+        for (i = 0; i < 4; i++)
+            memset(c->dither_error[i], 0, sizeof(c->dither_error[0][0]) * (c->dstW+2));
+
 
     // copy strides, so they can safely be modified
     if (c->sliceDir == 1) {

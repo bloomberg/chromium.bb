@@ -137,6 +137,8 @@ do_lavf nut "" "-acodec mp2 -ab 64k"
 fi
 
 if [ -n "$do_mkv" ] ; then
+do_lavf mkv "" "-acodec mp2 -ab 64k -vcodec mpeg4 \
+ -attach ${raw_src%/*}/00.pgm -metadata:s:t mimetype=image/x-portable-greymap"
 do_lavf mkv "" "-acodec mp2 -ab 64k -vcodec mpeg4"
 fi
 
@@ -324,6 +326,18 @@ fi
 
 if [ -n "$do_caf" ] ; then
 do_audio_only caf
+fi
+
+if [ -n "$do_ast" ] ; then
+do_audio_only ast "-ac 2" "-loopstart 1 -loopend 10"
+fi
+
+if [ -n "$do_ircam" ] ; then
+do_audio_only ircam
+fi
+
+if [ -n "$do_w64" ] ; then
+do_audio_only w64
 fi
 
 # pix_fmt conversions

@@ -29,6 +29,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 
 #define KMVC_KEYFRAME 0x80
 #define KMVC_PALETTE  0x40
@@ -258,15 +259,15 @@ static int kmvc_decode_inter_8x8(KmvcContext * ctx, int w, int h)
     return 0;
 }
 
-static int decode_frame(AVCodecContext * avctx, void *data, int *data_size, AVPacket *avpkt)
+static int decode_frame(AVCodecContext * avctx, void *data, int *got_frame,
+                        AVPacket *avpkt)
 {
     KmvcContext *const ctx = avctx->priv_data;
     uint8_t *out, *src;
-    int i;
+    int i, ret;
     int header;
     int blocksize;
     const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, NULL);
-    int ret;
 
     bytestream2_init(&ctx->g, avpkt->data, avpkt->size);
     if (ctx->pic.data[0])
@@ -274,7 +275,7 @@ static int decode_frame(AVCodecContext * avctx, void *data, int *data_size, AVPa
 
     ctx->pic.reference = 3;
     ctx->pic.buffer_hints = FF_BUFFER_HINTS_VALID;
-    if ((ret = avctx->get_buffer(avctx, &ctx->pic)) < 0) {
+    if ((ret = ff_get_buffer(avctx, &ctx->pic)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -360,7 +361,7 @@ static int decode_frame(AVCodecContext * avctx, void *data, int *data_size, AVPa
         ctx->prev = ctx->frm1;
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame *) data = ctx->pic;
 
     /* always report that the buffer was completely consumed */
@@ -381,7 +382,7 @@ static av_cold int decode_init(AVCodecContext * avctx)
 
     if (avctx->width > 320 || avctx->height > 200) {
         av_log(avctx, AV_LOG_ERROR, "KMVC supports frames <= 320x200\n");
-        return AVERROR_INVALIDDATA;
+        return AVERROR(EINVAL);
     }
 
     c->frm0 = av_mallocz(320 * 200);

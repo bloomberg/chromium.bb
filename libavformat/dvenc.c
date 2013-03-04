@@ -51,9 +51,9 @@ struct DVMuxContext {
     AVFifoBuffer     *audio_data[2]; /* FIFO for storing excessive amounts of PCM */
     int               frames;        /* current frame number */
     int64_t           start_time;    /* recording start time */
-    int               has_audio;     /* frame under contruction has audio */
-    int               has_video;     /* frame under contruction has video */
-    uint8_t           frame_buf[DV_MAX_FRAME_SIZE]; /* frame under contruction */
+    int               has_audio;     /* frame under construction has audio */
+    int               has_video;     /* frame under construction has video */
+    uint8_t           frame_buf[DV_MAX_FRAME_SIZE]; /* frame under construction */
     AVTimecode        tc;            /* timecode context */
 };
 
@@ -376,8 +376,8 @@ static int dv_write_header(AVFormatContext *s)
                 break;
         }
     }
-    if (tcr)
-        return av_timecode_init_from_string(&dvc->tc, rate, tcr->value, s);
+    if (tcr && av_timecode_init_from_string(&dvc->tc, rate, tcr->value, s) >= 0)
+        return 0;
     return av_timecode_init(&dvc->tc, rate, 0, 0, s);
 }
 

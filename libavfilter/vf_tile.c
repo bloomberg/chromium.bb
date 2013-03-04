@@ -40,6 +40,7 @@ typedef struct {
     unsigned nb_frames;
     FFDrawContext draw;
     FFDrawColor blank;
+    AVFilterBufferRef *out_ref;
 } TileContext;
 
 #define REASONABLE_SIZE 1024
@@ -99,7 +100,7 @@ static int query_formats(AVFilterContext *ctx)
 static int config_props(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
-    TileContext *tile   = ctx->priv;
+    TileContext *tile    = ctx->priv;
     AVFilterLink *inlink = ctx->inputs[0];
     const unsigned total_margin_w = (tile->w - 1) * tile->padding + 2*tile->margin;
     const unsigned total_margin_h = (tile->h - 1) * tile->padding + 2*tile->margin;
@@ -140,7 +141,7 @@ static void get_current_tile_pos(AVFilterContext *ctx, unsigned *x, unsigned *y)
 static void draw_blank_frame(AVFilterContext *ctx, AVFilterBufferRef *out_buf)
 {
     TileContext *tile    = ctx->priv;
-    AVFilterLink *inlink  = ctx->inputs[0];
+    AVFilterLink *inlink = ctx->inputs[0];
     unsigned x0, y0;
 
     get_current_tile_pos(ctx, &x0, &y0);
@@ -151,12 +152,11 @@ static void draw_blank_frame(AVFilterContext *ctx, AVFilterBufferRef *out_buf)
 }
 static int end_last_frame(AVFilterContext *ctx)
 {
-    TileContext *tile    = ctx->priv;
+    TileContext *tile     = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
-    AVFilterBufferRef *out_buf = outlink->out_buf;
+    AVFilterBufferRef *out_buf = tile->out_ref;
     int ret;
 
-    outlink->out_buf = NULL;
     while (tile->current < tile->nb_frames)
         draw_blank_frame(ctx, out_buf);
     ret = ff_filter_frame(outlink, out_buf);
@@ -171,34 +171,34 @@ static int end_last_frame(AVFilterContext *ctx)
 static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
 {
     AVFilterContext *ctx  = inlink->dst;
-    TileContext *tile    = ctx->priv;
+    TileContext *tile     = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
     unsigned x0, y0;
 
     if (!tile->current) {
-        outlink->out_buf = ff_get_video_buffer(outlink, AV_PERM_WRITE,
-                                               outlink->w, outlink->h);
-        if (!outlink->out_buf)
+        tile->out_ref = ff_get_video_buffer(outlink, AV_PERM_WRITE,
+                                            outlink->w, outlink->h);
+        if (!tile->out_ref)
             return AVERROR(ENOMEM);
-        avfilter_copy_buffer_ref_props(outlink->out_buf, picref);
-        outlink->out_buf->video->w = outlink->w;
-        outlink->out_buf->video->h = outlink->h;
+        avfilter_copy_buffer_ref_props(tile->out_ref, picref);
+        tile->out_ref->video->w = outlink->w;
+        tile->out_ref->video->h = outlink->h;
 
         /* fill surface once for margin/padding */
         if (tile->margin || tile->padding)
             ff_fill_rectangle(&tile->draw, &tile->blank,
-                              outlink->out_buf->data,
-                              outlink->out_buf->linesize,
+                              tile->out_ref->data,
+                              tile->out_ref->linesize,
                               0, 0, outlink->w, outlink->h);
     }
 
     get_current_tile_pos(ctx, &x0, &y0);
     ff_copy_rectangle2(&tile->draw,
-                       outlink->out_buf->data, outlink->out_buf->linesize,
-                       inlink ->cur_buf->data, inlink ->cur_buf->linesize,
+                       tile->out_ref->data, tile->out_ref->linesize,
+                       picref->data, picref->linesize,
                        x0, y0, 0, 0, inlink->w, inlink->h);
 
-    avfilter_unref_bufferp(&inlink->cur_buf);
+    avfilter_unref_bufferp(&picref);
     if (++tile->current == tile->nb_frames)
         return end_last_frame(ctx);
 
@@ -208,7 +208,7 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
 static int request_frame(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
-    TileContext *tile   = ctx->priv;
+    TileContext *tile    = ctx->priv;
     AVFilterLink *inlink = ctx->inputs[0];
     int r;
 

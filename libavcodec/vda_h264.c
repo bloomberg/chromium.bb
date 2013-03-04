@@ -243,7 +243,7 @@ static int end_frame(AVCodecContext *avctx)
 {
     H264Context *h                      = avctx->priv_data;
     struct vda_context *vda_ctx         = avctx->hwaccel_context;
-    AVFrame *frame                      = &h->s.current_picture_ptr->f;
+    AVFrame *frame                      = &h->cur_pic_ptr->f;
     int status;
 
     if (!vda_ctx->decoder || !vda_ctx->priv_bitstream)
@@ -285,7 +285,7 @@ int ff_vda_create_decoder(struct vda_context *vda_ctx,
     pthread_mutex_init(&vda_ctx->queue_mutex, NULL);
 #endif
 
-    /* Each VCL NAL in the bistream sent to the decoder
+    /* Each VCL NAL in the bitstream sent to the decoder
      * is preceded by a 4 bytes length header.
      * Change the avcC atom header if needed, to signal headers of 4 bytes. */
     if (extradata_size >= 4 && (extradata[4] & 0x03) != 0x03) {

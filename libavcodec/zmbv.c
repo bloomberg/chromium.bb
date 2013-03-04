@@ -30,6 +30,7 @@
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
+#include "internal.h"
 
 #include <zlib.h>
 
@@ -397,7 +398,7 @@ static int zmbv_decode_intra(ZmbvContext *c)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
@@ -411,7 +412,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
 
     c->pic.reference = 3;
     c->pic.buffer_hints = FF_BUFFER_HINTS_VALID;
-    if ((ret = avctx->get_buffer(avctx, &c->pic)) < 0) {
+    if ((ret = ff_get_buffer(avctx, &c->pic)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -428,6 +429,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
         c->fmt = buf[3];
         c->bw = buf[4];
         c->bh = buf[5];
+        c->decode_intra = NULL;
+        c->decode_xor = NULL;
 
         buf += 6;
         len -= 6;
@@ -484,7 +487,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
         zret = inflateReset(&c->zstream);
         if (zret != Z_OK) {
             av_log(avctx, AV_LOG_ERROR, "Inflate reset error: %d\n", zret);
-            return -1;
+            return AVERROR_UNKNOWN;
         }
 
         c->cur  = av_realloc_f(c->cur, avctx->width * avctx->height,  (c->bpp / 8));
@@ -600,20 +603,13 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
         }
         FFSWAP(uint8_t *, c->cur, c->prev);
     }
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = c->pic;
 
     /* always report that the buffer was completely consumed */
     return buf_size;
 }
 
-
-
-/*
- *
- * Init zmbv decoder
- *
- */
 static av_cold int decode_init(AVCodecContext *avctx)
 {
     ZmbvContext * const c = avctx->priv_data;
@@ -648,19 +644,12 @@ static av_cold int decode_init(AVCodecContext *avctx)
     zret = inflateInit(&c->zstream);
     if (zret != Z_OK) {
         av_log(avctx, AV_LOG_ERROR, "Inflate init error: %d\n", zret);
-        return -1;
+        return AVERROR_UNKNOWN;
     }
 
     return 0;
 }
 
-
-
-/*
- *
- * Uninit zmbv decoder
- *
- */
 static av_cold int decode_end(AVCodecContext *avctx)
 {
     ZmbvContext * const c = avctx->priv_data;

@@ -92,6 +92,8 @@ static int bfi_read_header(AVFormatContext * s)
     vstream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     vstream->codec->codec_id   = AV_CODEC_ID_BFI;
     vstream->codec->pix_fmt    = AV_PIX_FMT_PAL8;
+    vstream->nb_frames         =
+    vstream->duration          = bfi->nframes;
 
     /* Set up the audio codec now... */
     astream->codec->codec_type      = AVMEDIA_TYPE_AUDIO;
@@ -150,7 +152,7 @@ static int bfi_read_packet(AVFormatContext * s, AVPacket * pkt)
             return ret;
 
         pkt->pts          = bfi->video_frame;
-        bfi->video_frame += ret / bfi->video_size;
+        bfi->video_frame += bfi->video_size ? ret / bfi->video_size : 1;
 
         /* One less frame to read. A cursory decrement. */
         bfi->nframes--;

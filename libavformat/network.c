@@ -28,6 +28,8 @@
 #if HAVE_THREADS
 #if HAVE_PTHREADS
 #include <pthread.h>
+#elif HAVE_OS2THREADS
+#include "libavcodec/os2threads.h"
 #else
 #include "libavcodec/w32pthreads.h"
 #endif
@@ -60,8 +62,6 @@ static unsigned long openssl_thread_id(void)
 #if HAVE_THREADS && GNUTLS_VERSION_NUMBER <= 0x020b00
 #include <gcrypt.h>
 #include <errno.h>
-#undef malloc
-#undef free
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 #endif
 #endif

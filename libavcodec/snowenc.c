@@ -24,7 +24,8 @@
 #include "avcodec.h"
 #include "internal.h"
 #include "dsputil.h"
-#include "dwt.h"
+#include "internal.h"
+#include "snow_dwt.h"
 #include "snow.h"
 
 #include "rangecoder.h"
@@ -238,7 +239,8 @@ static av_cold int encode_init(AVCodecContext *avctx)
     ff_set_cmp(&s->dsp, s->dsp.me_cmp, s->avctx->me_cmp);
     ff_set_cmp(&s->dsp, s->dsp.me_sub_cmp, s->avctx->me_sub_cmp);
 
-    s->avctx->get_buffer(s->avctx, &s->input_picture);
+    if ((ret = ff_get_buffer(s->avctx, &s->input_picture)) < 0)
+        return ret;
 
     if(s->avctx->me_method == ME_ITER){
         int i;
@@ -283,6 +285,30 @@ static int pix_norm1(uint8_t * pix, int line_size, int w)
         pix += line_size - w;
     }
     return s;
+}
+
+static inline int get_penalty_factor(int lambda, int lambda2, int type){
+    switch(type&0xFF){
+    default:
+    case FF_CMP_SAD:
+        return lambda>>FF_LAMBDA_SHIFT;
+    case FF_CMP_DCT:
+        return (3*lambda)>>(FF_LAMBDA_SHIFT+1);
+    case FF_CMP_W53:
+        return (4*lambda)>>(FF_LAMBDA_SHIFT);
+    case FF_CMP_W97:
+        return (2*lambda)>>(FF_LAMBDA_SHIFT);
+    case FF_CMP_SATD:
+    case FF_CMP_DCT264:
+        return (2*lambda)>>FF_LAMBDA_SHIFT;
+    case FF_CMP_RD:
+    case FF_CMP_PSNR:
+    case FF_CMP_SSE:
+    case FF_CMP_NSSE:
+        return lambda2>>FF_LAMBDA_SHIFT;
+    case FF_CMP_BIT:
+        return 1;
+    }
 }
 
 //FIXME copy&paste

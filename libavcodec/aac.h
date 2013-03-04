@@ -32,7 +32,6 @@
 
 #include "libavutil/float_dsp.h"
 #include "avcodec.h"
-#include "dsputil.h"
 #include "fft.h"
 #include "mpeg4audio.h"
 #include "sbr.h"
@@ -260,9 +259,10 @@ typedef struct ChannelElement {
 /**
  * main AAC context
  */
-typedef struct AACContext {
+struct AACContext {
+    AVClass        *class;
     AVCodecContext *avctx;
-    AVFrame frame;
+    AVFrame *frame;
 
     int is_saved;                 ///< Set if elements have stored overlap from previous frame.
     DynamicRangeControl che_drc;
@@ -291,7 +291,6 @@ typedef struct AACContext {
     FFTContext mdct;
     FFTContext mdct_small;
     FFTContext mdct_ltp;
-    DSPContext dsp;
     FmtConvertContext fmt_conv;
     AVFloatDSPContext fdsp;
     int random_state;
@@ -309,14 +308,26 @@ typedef struct AACContext {
      * @name Japanese DTV specific extension
      * @{
      */
-    int enable_jp_dmono; ///< enable japanese DTV specific 'dual mono'
-    int dmono_mode;      ///< select the channel to decode in dual mono.
+    int force_dmono_mode;///< 0->not dmono, 1->use first channel, 2->use second channel
+    int dmono_mode;      ///< 0->not dmono, 1->use first channel, 2->use second channel
     /** @} */
 
     DECLARE_ALIGNED(32, float, temp)[128];
 
     OutputConfiguration oc[2];
     int warned_num_aac_frames;
-} AACContext;
+
+    /* aacdec functions pointers */
+    void (*imdct_and_windowing)(AACContext *ac, SingleChannelElement *sce);
+    void (*apply_ltp)(AACContext *ac, SingleChannelElement *sce);
+    void (*apply_tns)(float coef[1024], TemporalNoiseShaping *tns,
+                      IndividualChannelStream *ics, int decode);
+    void (*windowing_and_mdct_ltp)(AACContext *ac, float *out,
+                                   float *in, IndividualChannelStream *ics);
+    void (*update_ltp)(AACContext *ac, SingleChannelElement *sce);
+
+};
+
+void ff_aacdec_init_mips(AACContext *c);
 
 #endif /* AVCODEC_AAC_H */

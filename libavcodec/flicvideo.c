@@ -148,7 +148,7 @@ static av_cold int flic_decode_init(AVCodecContext *avctx)
 }
 
 static int flic_decode_frame_8BPP(AVCodecContext *avctx,
-                                  void *data, int *data_size,
+                                  void *data, int *got_frame,
                                   const uint8_t *buf, int buf_size)
 {
     FlicDecodeContext *s = avctx->priv_data;
@@ -387,6 +387,11 @@ static int flic_decode_frame_8BPP(AVCodecContext *avctx,
                     if (bytestream2_tell(&g2) + 1 > stream_ptr_after_chunk)
                         break;
                     byte_run = sign_extend(bytestream2_get_byte(&g2), 8);
+                    if (!byte_run) {
+                        av_log(avctx, AV_LOG_ERROR, "Invalid byte run value.\n");
+                        return AVERROR_INVALIDDATA;
+                    }
+
                     if (byte_run > 0) {
                         palette_idx1 = bytestream2_get_byte(&g2);
                         CHECK_PIXEL_PTR(byte_run);
@@ -461,14 +466,14 @@ static int flic_decode_frame_8BPP(AVCodecContext *avctx,
         s->new_palette = 0;
     }
 
-    *data_size=sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = s->frame;
 
     return buf_size;
 }
 
 static int flic_decode_frame_15_16BPP(AVCodecContext *avctx,
-                                      void *data, int *data_size,
+                                      void *data, int *got_frame,
                                       const uint8_t *buf, int buf_size)
 {
     /* Note, the only difference between the 15Bpp and 16Bpp */
@@ -644,7 +649,7 @@ static int flic_decode_frame_15_16BPP(AVCodecContext *avctx,
                 }
 
                 /* Now FLX is strange, in that it is "byte" as opposed to "pixel" run length compressed.
-                 * This does not give us any good oportunity to perform word endian conversion
+                 * This does not give us any good opportunity to perform word endian conversion
                  * during decompression. So if it is required (i.e., this is not a LE target, we do
                  * a second pass over the line here, swapping the bytes.
                  */
@@ -748,14 +753,14 @@ static int flic_decode_frame_15_16BPP(AVCodecContext *avctx,
                "and final chunk ptr = %d\n", buf_size, bytestream2_tell(&g2));
 
 
-    *data_size=sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = s->frame;
 
     return buf_size;
 }
 
 static int flic_decode_frame_24BPP(AVCodecContext *avctx,
-                                   void *data, int *data_size,
+                                   void *data, int *got_frame,
                                    const uint8_t *buf, int buf_size)
 {
   av_log(avctx, AV_LOG_ERROR, "24Bpp FLC Unsupported due to lack of test files.\n");
@@ -763,22 +768,22 @@ static int flic_decode_frame_24BPP(AVCodecContext *avctx,
 }
 
 static int flic_decode_frame(AVCodecContext *avctx,
-                             void *data, int *data_size,
+                             void *data, int *got_frame,
                              AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
-      return flic_decode_frame_8BPP(avctx, data, data_size,
+      return flic_decode_frame_8BPP(avctx, data, got_frame,
                                     buf, buf_size);
     }
     else if ((avctx->pix_fmt == AV_PIX_FMT_RGB555) ||
              (avctx->pix_fmt == AV_PIX_FMT_RGB565)) {
-      return flic_decode_frame_15_16BPP(avctx, data, data_size,
+      return flic_decode_frame_15_16BPP(avctx, data, got_frame,
                                         buf, buf_size);
     }
     else if (avctx->pix_fmt == AV_PIX_FMT_BGR24) {
-      return flic_decode_frame_24BPP(avctx, data, data_size,
+      return flic_decode_frame_24BPP(avctx, data, got_frame,
                                      buf, buf_size);
     }
 
@@ -787,7 +792,7 @@ static int flic_decode_frame(AVCodecContext *avctx,
     /* the finite set of possibilites allowable by here. */
     /* But in case we do, just error out. */
     av_log(avctx, AV_LOG_ERROR, "Unknown FLC format, my science cannot explain how this happened.\n");
-    return AVERROR_INVALIDDATA;
+    return AVERROR_BUG;
 }
 
 

@@ -27,7 +27,6 @@
  */
 
 #include "avcodec.h"
-#include "dsputil.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "internal.h"
@@ -538,7 +537,7 @@ static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     int i, ret;
 
     if ((ret = ff_alloc_packet2(avctx, pkt, s->y_block_width * s->y_block_height *
-                             MAX_MB_BYTES*3 + FF_MIN_BUFFER_SIZE) < 0))
+                             MAX_MB_BYTES*3 + FF_MIN_BUFFER_SIZE)) < 0)
         return ret;
 
     if (avctx->pix_fmt != AV_PIX_FMT_YUV410P) {
@@ -547,8 +546,10 @@ static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     }
 
     if (!s->current_picture.data[0]) {
-        avctx->get_buffer(avctx, &s->current_picture);
-        avctx->get_buffer(avctx, &s->last_picture);
+        if ((ret = ff_get_buffer(avctx, &s->current_picture))< 0 ||
+            (ret = ff_get_buffer(avctx, &s->last_picture))   < 0) {
+            return ret;
+        }
         s->scratchbuf = av_malloc(s->current_picture.linesize[0] * 16 * 2);
     }
 

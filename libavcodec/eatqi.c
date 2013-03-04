@@ -28,9 +28,9 @@
 
 #include "avcodec.h"
 #include "get_bits.h"
-#include "dsputil.h"
 #include "aandcttab.h"
 #include "eaidct.h"
+#include "internal.h"
 #include "mpeg12.h"
 #include "mpegvideo.h"
 
@@ -39,7 +39,7 @@ typedef struct TqiContext {
     AVFrame frame;
     void *bitstream_buf;
     unsigned int bitstream_buf_size;
-    DECLARE_ALIGNED(16, DCTELEM, block)[6][64];
+    DECLARE_ALIGNED(16, int16_t, block)[6][64];
 } TqiContext;
 
 static av_cold int tqi_decode_init(AVCodecContext *avctx)
@@ -57,7 +57,7 @@ static av_cold int tqi_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int tqi_decode_mb(MpegEncContext *s, DCTELEM (*block)[64])
+static int tqi_decode_mb(MpegEncContext *s, int16_t (*block)[64])
 {
     int n;
     s->dsp.clear_blocks(block[0]);
@@ -68,7 +68,7 @@ static int tqi_decode_mb(MpegEncContext *s, DCTELEM (*block)[64])
     return 0;
 }
 
-static inline void tqi_idct_put(TqiContext *t, DCTELEM (*block)[64])
+static inline void tqi_idct_put(TqiContext *t, int16_t (*block)[64])
 {
     MpegEncContext *s = &t->s;
     int linesize= t->frame.linesize[0];
@@ -96,7 +96,7 @@ static void tqi_calculate_qtable(MpegEncContext *s, int quant)
 }
 
 static int tqi_decode_frame(AVCodecContext *avctx,
-                            void *data, int *data_size,
+                            void *data, int *got_frame,
                             AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -116,7 +116,7 @@ static int tqi_decode_frame(AVCodecContext *avctx,
     if (s->avctx->width!=s->width || s->avctx->height!=s->height)
         avcodec_set_dimensions(s->avctx, s->width, s->height);
 
-    if(avctx->get_buffer(avctx, &t->frame) < 0) {
+    if(ff_get_buffer(avctx, &t->frame) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return -1;
     }
@@ -138,7 +138,7 @@ static int tqi_decode_frame(AVCodecContext *avctx,
     }
     end:
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = t->frame;
     return buf_size;
 }

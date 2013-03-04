@@ -28,6 +28,7 @@
 #include "avcodec.h"
 #include "bytestream.h"
 #include "cga_data.h"
+#include "internal.h"
 
 typedef struct PicContext {
     AVFrame frame;
@@ -105,7 +106,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 }
 
 static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
+                        void *data, int *got_frame,
                         AVPacket *avpkt)
 {
     PicContext *s = avctx->priv_data;
@@ -130,7 +131,7 @@ static int decode_frame(AVCodecContext *avctx,
     bpp            = bits_per_plane * s->nb_planes;
     if (bits_per_plane > 8 || bpp < 1 || bpp > 32) {
         av_log_ask_for_sample(avctx, "unsupported bit depth\n");
-        return AVERROR_INVALIDDATA;
+        return AVERROR_PATCHWELCOME;
     }
 
     if (bytestream2_peek_byte(&s->g) == 0xFF || bpp == 1 || bpp == 4 || bpp == 8) {
@@ -154,7 +155,7 @@ static int decode_frame(AVCodecContext *avctx,
             avctx->release_buffer(avctx, &s->frame);
     }
 
-    if (avctx->get_buffer(avctx, &s->frame) < 0){
+    if (ff_get_buffer(avctx, &s->frame) < 0){
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return -1;
     }
@@ -173,7 +174,7 @@ static int decode_frame(AVCodecContext *avctx,
         npal = FFMIN(esize, 16);
         for (i = 0; i < npal; i++) {
             int pal_idx = bytestream2_get_byte(&s->g);
-            palette[i]  = ff_cga_palette[FFMIN(pal_idx, 16)];
+            palette[i]  = ff_cga_palette[FFMIN(pal_idx, 15)];
         }
     } else if (etype == 3) {
         npal = FFMIN(esize, 16);
@@ -257,7 +258,7 @@ static int decode_frame(AVCodecContext *avctx,
         }
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame      = 1;
     *(AVFrame*)data = s->frame;
     return avpkt->size;
 }

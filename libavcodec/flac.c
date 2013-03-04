@@ -29,13 +29,15 @@
 
 static const int8_t sample_size_table[] = { 0, 8, 12, 0, 16, 20, 24, 0 };
 
-static const int64_t flac_channel_layouts[6] = {
+static const uint64_t flac_channel_layouts[8] = {
     AV_CH_LAYOUT_MONO,
     AV_CH_LAYOUT_STEREO,
     AV_CH_LAYOUT_SURROUND,
     AV_CH_LAYOUT_QUAD,
     AV_CH_LAYOUT_5POINT0,
-    AV_CH_LAYOUT_5POINT1
+    AV_CH_LAYOUT_5POINT1,
+    AV_CH_LAYOUT_6POINT1,
+    AV_CH_LAYOUT_7POINT1
 };
 
 static int64_t get_utf8(GetBitContext *gb)
@@ -225,7 +227,7 @@ void avpriv_flac_parse_streaminfo(AVCodecContext *avctx, struct FLACStreaminfo *
     avctx->bits_per_raw_sample = s->bps;
     ff_flac_set_channel_layout(avctx);
 
-    s->samples = get_bits_longlong(&gb, 36);
+    s->samples = get_bits64(&gb, 36);
 
     skip_bits_long(&gb, 64); /* md5 sum */
     skip_bits_long(&gb, 64); /* md5 sum */

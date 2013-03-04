@@ -31,7 +31,6 @@
  */
 
 #include "avcodec.h"
-#include "dsputil.h"
 #include "mpegvideo.h"
 #include "mjpeg.h"
 #include "mjpegenc.h"
@@ -137,7 +136,7 @@ static void jpeg_table_header(MpegEncContext *s)
     if(s->avctx->active_thread_type & FF_THREAD_SLICE){
         put_marker(p, DRI);
         put_bits(p, 16, 4);
-        put_bits(p, 16, s->mb_width);
+        put_bits(p, 16, (s->width-1)/(8*s->mjpeg_hsample[0]) + 1);
     }
 
     /* huffman table */
@@ -397,7 +396,7 @@ void ff_mjpeg_encode_dc(MpegEncContext *s, int val,
     }
 }
 
-static void encode_block(MpegEncContext *s, DCTELEM *block, int n)
+static void encode_block(MpegEncContext *s, int16_t *block, int n)
 {
     int mant, nbits, code, i, j;
     int component, dc, run, last_index, val;
@@ -455,26 +454,36 @@ static void encode_block(MpegEncContext *s, DCTELEM *block, int n)
         put_bits(&s->pb, huff_size_ac[0], huff_code_ac[0]);
 }
 
-void ff_mjpeg_encode_mb(MpegEncContext *s, DCTELEM block[6][64])
+void ff_mjpeg_encode_mb(MpegEncContext *s, int16_t block[6][64])
 {
     int i;
-    for(i=0;i<5;i++) {
-        encode_block(s, block[i], i);
-    }
-    if (s->chroma_format == CHROMA_420) {
-        encode_block(s, block[5], 5);
-    } else if (s->chroma_format == CHROMA_422) {
-        encode_block(s, block[6], 6);
-        encode_block(s, block[5], 5);
-        encode_block(s, block[7], 7);
-    } else {
-        encode_block(s, block[6], 6);
+    if (s->chroma_format == CHROMA_444) {
+        encode_block(s, block[0], 0);
+        encode_block(s, block[2], 2);
+        encode_block(s, block[4], 4);
         encode_block(s, block[8], 8);
-        encode_block(s, block[10], 10);
         encode_block(s, block[5], 5);
-        encode_block(s, block[7], 7);
         encode_block(s, block[9], 9);
-        encode_block(s, block[11], 11);
+
+        if (16*s->mb_x+8 < s->width) {
+            encode_block(s, block[1], 1);
+            encode_block(s, block[3], 3);
+            encode_block(s, block[6], 6);
+            encode_block(s, block[10], 10);
+            encode_block(s, block[7], 7);
+            encode_block(s, block[11], 11);
+        }
+    } else {
+        for(i=0;i<5;i++) {
+            encode_block(s, block[i], i);
+        }
+        if (s->chroma_format == CHROMA_420) {
+            encode_block(s, block[5], 5);
+        } else {
+            encode_block(s, block[6], 6);
+            encode_block(s, block[5], 5);
+            encode_block(s, block[7], 7);
+        }
     }
 
     s->i_tex_bits += get_bits_diff(s);

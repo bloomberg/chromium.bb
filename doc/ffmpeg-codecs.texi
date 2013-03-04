@@ -823,7 +823,7 @@ detect a good number of threads
 @end table
 
 @item me_threshold @var{integer} (@emph{encoding,video})
-Set motion estimaton threshold.
+Set motion estimation threshold.
 
 @item mb_threshold @var{integer} (@emph{encoding,video})
 Set macroblock threshold.
@@ -1098,6 +1098,9 @@ Set sample format audio decoders should prefer. Default value is
 @code{none}.
 
 @item pkt_timebase @var{rational number}
+
+@item sub_charenc @var{encoding} (@emph{decoding,subtitles})
+Set the input subtitles character encoding.
 @end table
 
 @c man end CODEC OPTIONS
@@ -1105,18 +1108,23 @@ Set sample format audio decoders should prefer. Default value is
 @include decoders.texi
 @include encoders.texi
 
+@chapter See Also
+
+@ifhtml
+@url{ffmpeg.html,ffmpeg}, @url{ffplay.html,ffplay}, @url{ffprobe.html,ffprobe}, @url{ffserver.html,ffserver},
+@url{libavcodec.html,libavcodec}
+@end ifhtml
+
+@ifnothtml
+ffmpeg(1), ffplay(1), ffprobe(1), ffserver(1), libavcodec(3)
+@end ifnothtml
+
+@include authors.texi
+
 @ignore
 
 @setfilename ffmpeg-codecs
 @settitle FFmpeg codecs
-
-@c man begin SEEALSO
-ffmpeg(1), ffplay(1), ffprobe(1), ffserver(1), libavcodec(3)
-@c man end
-
-@c man begin AUTHORS
-See Git history (git://source.ffmpeg.org/ffmpeg)
-@c man end
 
 @end ignore
 

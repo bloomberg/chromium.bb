@@ -26,6 +26,8 @@
 #include "libavutil/avutil.h"
 #include "get_bits.h"
 #include "dsputil.h"
+#include "internal.h"
+
 
 #include "g729.h"
 #include "lsp.h"
@@ -418,7 +420,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame_ptr,
     int is_periodic = 0;         // whether one of the subframes is declared as periodic or not
 
     ctx->frame.nb_samples = SUBFRAME_SIZE<<1;
-    if ((ret = avctx->get_buffer(avctx, &ctx->frame)) < 0) {
+    if ((ret = ff_get_buffer(avctx, &ctx->frame)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -508,6 +510,10 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame_ptr,
 
         /* Round pitch delay to nearest (used everywhere except ff_acelp_interpolate). */
         pitch_delay_int[i]  = (pitch_delay_3x + 1) / 3;
+        if (pitch_delay_int[i] > PITCH_DELAY_MAX) {
+            av_log(avctx, AV_LOG_WARNING, "pitch_delay_int %d is too large\n", pitch_delay_int[i]);
+            pitch_delay_int[i] = PITCH_DELAY_MAX;
+        }
 
         if (frame_erasure) {
             ctx->rand_value = g729_prng(ctx->rand_value);

@@ -212,7 +212,7 @@ static av_cold int encode_init(AVCodecContext* avc_context)
                 * 0 <= p <=63
                 * an int value
          */
-        t_info.quality        = av_clip(avc_context->global_quality / (float)FF_QP2LAMBDA, 0, 10) * 6.3;
+        t_info.quality        = av_clipf(avc_context->global_quality / (float)FF_QP2LAMBDA, 0, 10) * 6.3;
         t_info.target_bitrate = 0;
     } else {
         t_info.target_bitrate = avc_context->bit_rate;
@@ -341,7 +341,7 @@ static int encode_frame(AVCodecContext* avc_context, AVPacket *pkt,
     memcpy(pkt->data, o_packet.packet, o_packet.bytes);
 
     // HACK: assumes no encoder delay, this is true until libtheora becomes
-    // multithreaded (which will be disabled unless explictly requested)
+    // multithreaded (which will be disabled unless explicitly requested)
     pkt->pts = pkt->dts = frame->pts;
     avc_context->coded_frame->key_frame = !(o_packet.granulepos & h->keyframe_mask);
     if (avc_context->coded_frame->key_frame)

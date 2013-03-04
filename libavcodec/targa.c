@@ -23,6 +23,7 @@
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 #include "targa.h"
 
 typedef struct TargaContext {
@@ -39,7 +40,7 @@ static uint8_t *advance_line(uint8_t *start, uint8_t *line,
         return line + interleave * stride;
     } else {
         *y = (*y + 1) & (interleave - 1);
-        if (*y) {
+        if (*y && *y < h) {
             return start + *y * stride;
         } else {
             return NULL;
@@ -107,7 +108,7 @@ static int targa_decode_rle(AVCodecContext *avctx, TargaContext *s,
 }
 
 static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
+                        void *data, int *got_frame,
                         AVPacket *avpkt)
 {
     TargaContext * const s = avctx->priv_data;
@@ -177,11 +178,11 @@ static int decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = av_image_check_size(w, h, 0, avctx)))
+    if ((ret = av_image_check_size(w, h, 0, avctx)) < 0)
         return ret;
     if (w != avctx->width || h != avctx->height)
         avcodec_set_dimensions(avctx, w, h);
-    if ((ret = avctx->get_buffer(avctx, p)) < 0) {
+    if ((ret = ff_get_buffer(avctx, p)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -199,6 +200,7 @@ static int decode_frame(AVCodecContext *avctx,
 
     if (colors) {
         int pal_size, pal_sample_size;
+
         switch (csize) {
         case 32: pal_sample_size = 4; break;
         case 24: pal_sample_size = 3; break;
@@ -266,7 +268,7 @@ static int decode_frame(AVCodecContext *avctx,
             line = dst;
             y = 0;
             do {
-                bytestream2_get_bufferu(&s->gb, line, img_size);
+                bytestream2_get_buffer(&s->gb, line, img_size);
                 line = advance_line(dst, line, stride, &y, h, interleave);
             } while (line);
         }
@@ -297,7 +299,7 @@ static int decode_frame(AVCodecContext *avctx,
     }
 
     *picture   = s->picture;
-    *data_size = sizeof(AVPicture);
+    *got_frame = 1;
 
     return avpkt->size;
 }

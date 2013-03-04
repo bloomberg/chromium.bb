@@ -219,7 +219,8 @@ static void create_default_qtables(uint8_t *qtables, uint8_t q)
 
 static int jpeg_parse_packet(AVFormatContext *ctx, PayloadContext *jpeg,
                              AVStream *st, AVPacket *pkt, uint32_t *timestamp,
-                             const uint8_t *buf, int len, int flags)
+                             const uint8_t *buf, int len, uint16_t seq,
+                             int flags)
 {
     uint8_t type, q, width, height;
     const uint8_t *qtables = NULL;
@@ -370,7 +371,7 @@ static int jpeg_parse_packet(AVFormatContext *ctx, PayloadContext *jpeg,
         /* Prepare the JPEG packet. */
         if ((ret = ff_rtp_finalize_packet(pkt, &jpeg->frame, st->index)) < 0) {
             av_log(ctx, AV_LOG_ERROR,
-                   "Error occured when getting frame buffer.\n");
+                   "Error occurred when getting frame buffer.\n");
             return ret;
         }
 

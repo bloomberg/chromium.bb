@@ -40,6 +40,14 @@
 #include "cpu.h"
 #include "dict.h"
 
+#if ARCH_X86
+#   include "x86/emms.h"
+#endif
+
+#ifndef emms_c
+#   define emms_c()
+#endif
+
 #ifndef attribute_align_arg
 #if ARCH_X86_32 && AV_GCC_VERSION_AT_LEAST(4,2)
 #    define attribute_align_arg __attribute__((force_align_arg_pointer))
@@ -58,37 +66,31 @@
 #    define INT_BIT (CHAR_BIT * sizeof(int))
 #endif
 
-/* avoid usage of dangerous/inappropriate system functions */
-#undef  malloc
-#define malloc please_use_av_malloc
-#undef  free
-#define free please_use_av_free
-#undef  realloc
-#define realloc please_use_av_realloc
-#undef  rand
-#define rand rand_is_forbidden_due_to_state_trashing_use_av_lfg_get
-#undef  srand
-#define srand srand_is_forbidden_due_to_state_trashing_use_av_lfg_init
-#undef  random
-#define random random_is_forbidden_due_to_state_trashing_use_av_lfg_get
-#undef  sprintf
-#define sprintf sprintf_is_forbidden_due_to_security_issues_use_snprintf
-#undef  strcat
-#define strcat strcat_is_forbidden_due_to_security_issues_use_av_strlcat
-#undef  exit
-#define exit exit_is_forbidden
-#undef  printf
-#define printf please_use_av_log_instead_of_printf
-#undef  fprintf
-#define fprintf please_use_av_log_instead_of_fprintf
-#undef  puts
-#define puts please_use_av_log_instead_of_puts
-#undef  perror
-#define perror please_use_av_log_instead_of_perror
-#undef strcasecmp
-#define strcasecmp please_use_av_strcasecmp
-#undef strncasecmp
-#define strncasecmp please_use_av_strncasecmp
+// Some broken preprocessors need a second expansion
+// to be forced to tokenize __VA_ARGS__
+#define E1(x) x
+
+#define LOCAL_ALIGNED_A(a, t, v, s, o, ...)             \
+    uint8_t la_##v[sizeof(t s o) + (a)];                \
+    t (*v) o = (void *)FFALIGN((uintptr_t)la_##v, a)
+
+#define LOCAL_ALIGNED_D(a, t, v, s, o, ...)             \
+    DECLARE_ALIGNED(a, t, la_##v) s o;                  \
+    t (*v) o = la_##v
+
+#define LOCAL_ALIGNED(a, t, v, ...) E1(LOCAL_ALIGNED_A(a, t, v, __VA_ARGS__,,))
+
+#if HAVE_LOCAL_ALIGNED_8
+#   define LOCAL_ALIGNED_8(t, v, ...) E1(LOCAL_ALIGNED_D(8, t, v, __VA_ARGS__,,))
+#else
+#   define LOCAL_ALIGNED_8(t, v, ...) LOCAL_ALIGNED(8, t, v, __VA_ARGS__)
+#endif
+
+#if HAVE_LOCAL_ALIGNED_16
+#   define LOCAL_ALIGNED_16(t, v, ...) E1(LOCAL_ALIGNED_D(16, t, v, __VA_ARGS__,,))
+#else
+#   define LOCAL_ALIGNED_16(t, v, ...) LOCAL_ALIGNED(16, t, v, __VA_ARGS__)
+#endif
 
 #define FF_ALLOC_OR_GOTO(ctx, p, size, label)\
 {\
@@ -159,23 +161,5 @@
 #else
 #   define ONLY_IF_THREADS_ENABLED(x) NULL
 #endif
-
-#if HAVE_MMX_INLINE
-/**
- * Empty mmx state.
- * this must be called between any dsp function and float/double code.
- * for example sin(); dsp->idct_put(); emms_c(); cos()
- */
-static av_always_inline void emms_c(void)
-{
-    if(av_get_cpu_flags() & AV_CPU_FLAG_MMX)
-        __asm__ volatile ("emms" ::: "memory");
-}
-#elif HAVE_MMX && HAVE_MM_EMPTY
-#   include <mmintrin.h>
-#   define emms_c _mm_empty
-#else
-#   define emms_c()
-#endif /* HAVE_MMX_INLINE */
 
 #endif /* AVUTIL_INTERNAL_H */

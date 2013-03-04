@@ -20,12 +20,13 @@
  */
 
 #include "avcodec.h"
+#include "internal.h"
 #include "put_bits.h"
 #include "pnm.h"
 
 
 static int pnm_decode_frame(AVCodecContext *avctx, void *data,
-                            int *data_size, AVPacket *avpkt)
+                            int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf   = avpkt->data;
     int buf_size         = avpkt->size;
@@ -40,14 +41,14 @@ static int pnm_decode_frame(AVCodecContext *avctx, void *data,
     s->bytestream       = (uint8_t *)buf;
     s->bytestream_end   = (uint8_t *)buf + buf_size;
 
-    if (ff_pnm_decode_header(avctx, s) < 0)
-        return AVERROR_INVALIDDATA;
+    if ((ret = ff_pnm_decode_header(avctx, s)) < 0)
+        return ret;
 
     if (p->data[0])
         avctx->release_buffer(avctx, p);
 
     p->reference = 0;
-    if ((ret = avctx->get_buffer(avctx, p)) < 0) {
+    if ((ret = ff_get_buffer(avctx, p)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -56,7 +57,7 @@ static int pnm_decode_frame(AVCodecContext *avctx, void *data,
 
     switch (avctx->pix_fmt) {
     default:
-        return AVERROR_INVALIDDATA;
+        return AVERROR(EINVAL);
     case AV_PIX_FMT_RGBA64BE:
         n = avctx->width * 8;
         components=4;
@@ -156,12 +157,16 @@ static int pnm_decode_frame(AVCodecContext *avctx, void *data,
         }
         break;
     case AV_PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUV420P9BE:
+    case AV_PIX_FMT_YUV420P10BE:
         {
             unsigned char *ptr1, *ptr2;
 
             n        = avctx->width;
             ptr      = p->data[0];
             linesize = p->linesize[0];
+            if (s->maxval >= 256)
+                n *= 2;
             if (s->bytestream + n * avctx->height * 3 / 2 > s->bytestream_end)
                 return AVERROR_INVALIDDATA;
             for (i = 0; i < avctx->height; i++) {
@@ -183,9 +188,50 @@ static int pnm_decode_frame(AVCodecContext *avctx, void *data,
             }
         }
         break;
+    case AV_PIX_FMT_YUV420P16:
+        {
+            uint16_t *ptr1, *ptr2;
+            const int f = (65535 * 32768 + s->maxval / 2) / s->maxval;
+            unsigned int j, v;
+
+            n        = avctx->width * 2;
+            ptr      = p->data[0];
+            linesize = p->linesize[0];
+            if (s->bytestream + n * avctx->height * 3 / 2 > s->bytestream_end)
+                return AVERROR_INVALIDDATA;
+            for (i = 0; i < avctx->height; i++) {
+                for (j = 0; j < n / 2; j++) {
+                    v = av_be2ne16(((uint16_t *)s->bytestream)[j]);
+                    ((uint16_t *)ptr)[j] = (v * f + 16384) >> 15;
+                }
+                s->bytestream += n;
+                ptr           += linesize;
+            }
+            ptr1 = (uint16_t*)p->data[1];
+            ptr2 = (uint16_t*)p->data[2];
+            n >>= 1;
+            h = avctx->height >> 1;
+            for (i = 0; i < h; i++) {
+                for (j = 0; j < n / 2; j++) {
+                    v = av_be2ne16(((uint16_t *)s->bytestream)[j]);
+                    ptr1[j] = (v * f + 16384) >> 15;
+                }
+                s->bytestream += n;
+
+                for (j = 0; j < n / 2; j++) {
+                    v = av_be2ne16(((uint16_t *)s->bytestream)[j]);
+                    ptr2[j] = (v * f + 16384) >> 15;
+                }
+                s->bytestream += n;
+
+                ptr1 += p->linesize[1] / 2;
+                ptr2 += p->linesize[2] / 2;
+            }
+        }
+        break;
     }
     *picture   = s->picture;
-    *data_size = sizeof(AVPicture);
+    *got_frame = 1;
 
     return s->bytestream - s->bytestream_start;
 }

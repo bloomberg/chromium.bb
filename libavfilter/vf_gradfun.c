@@ -36,11 +36,23 @@
 #include "libavutil/common.h"
 #include "libavutil/cpu.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/opt.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "gradfun.h"
 #include "internal.h"
 #include "video.h"
+
+#define OFFSET(x) offsetof(GradFunContext, x)
+#define F AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+
+static const AVOption gradfun_options[] = {
+    { "strength", "set the maximum amount by which the filter will change any one pixel", OFFSET(strength), AV_OPT_TYPE_DOUBLE, {.dbl = 1.2}, 0.51, 64, F },
+    { "radius",   "set the neighborhood to fit the gradient to",                          OFFSET(radius),   AV_OPT_TYPE_INT,    {.i64 =  16},    4, 32, F },
+    { NULL }
+};
+
+AVFILTER_DEFINE_CLASS(gradfun);
 
 DECLARE_ALIGNED(16, static const uint16_t, dither)[8][8] = {
     {0x00,0x60,0x18,0x78,0x06,0x66,0x1E,0x7E},
@@ -56,7 +68,7 @@ DECLARE_ALIGNED(16, static const uint16_t, dither)[8][8] = {
 void ff_gradfun_filter_line_c(uint8_t *dst, const uint8_t *src, const uint16_t *dc, int width, int thresh, const uint16_t *dithers)
 {
     int x;
-    for (x = 0; x < width; x++, dc += x & 1) {
+    for (x = 0; x < width; dc += x & 1, x++) {
         int pix = src[x] << 7;
         int delta = dc[0] - pix;
         int m = abs(delta) * thresh >> 16;
@@ -121,24 +133,26 @@ static void filter(GradFunContext *ctx, uint8_t *dst, const uint8_t *src, int wi
 
 static av_cold int init(AVFilterContext *ctx, const char *args)
 {
+    int ret;
     GradFunContext *gf = ctx->priv;
-    float thresh = 1.2;
-    int radius = 16;
+    static const char *shorthand[] = { "strength", "radius", NULL };
 
-    if (args)
-        sscanf(args, "%f:%d", &thresh, &radius);
+    gf->class = &gradfun_class;
+    av_opt_set_defaults(gf);
 
-    thresh = av_clipf(thresh, 0.51, 255);
-    gf->thresh = (1 << 15) / thresh;
-    gf->radius = av_clip((radius + 1) & ~1, 4, 32);
+    if ((ret = av_opt_set_from_string(gf, args, shorthand, "=", ":")) < 0)
+        return ret;
 
-    gf->blur_line = ff_gradfun_blur_line_c;
+    gf->thresh = (1 << 15) / gf->strength;
+    gf->radius = av_clip((gf->radius + 1) & ~1, 4, 32);
+
+    gf->blur_line   = ff_gradfun_blur_line_c;
     gf->filter_line = ff_gradfun_filter_line_c;
 
     if (ARCH_X86)
         ff_gradfun_init_x86(gf);
 
-    av_log(ctx, AV_LOG_VERBOSE, "threshold:%.2f radius:%d\n", thresh, gf->radius);
+    av_log(ctx, AV_LOG_VERBOSE, "threshold:%.2f radius:%d\n", gf->strength, gf->radius);
 
     return 0;
 }
@@ -156,6 +170,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GRAY8,              AV_PIX_FMT_NV12,
         AV_PIX_FMT_NV21,               AV_PIX_FMT_YUV444P,
         AV_PIX_FMT_YUV422P,            AV_PIX_FMT_YUV411P,
+        AV_PIX_FMT_YUV440P,
         AV_PIX_FMT_NONE
     };
 
@@ -198,10 +213,7 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
             avfilter_unref_bufferp(&in);
             return AVERROR(ENOMEM);
         }
-
         avfilter_copy_buffer_ref_props(out, in);
-        out->video->w = outlink->w;
-        out->video->h = outlink->h;
     }
 
     for (p = 0; p < 4 && in->data[p]; p++) {
@@ -252,7 +264,7 @@ AVFilter avfilter_vf_gradfun = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-
-    .inputs    = avfilter_vf_gradfun_inputs,
-    .outputs   = avfilter_vf_gradfun_outputs,
+    .inputs        = avfilter_vf_gradfun_inputs,
+    .outputs       = avfilter_vf_gradfun_outputs,
+    .priv_class    = &gradfun_class,
 };

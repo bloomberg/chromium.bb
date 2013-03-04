@@ -83,6 +83,14 @@ You'll need to roll DEPS once your SVN changes are committed.
 -- Performing an upstream merge.
 
 The upstream merge process follows the normal Git merge process:
+  # First, modify the origin url to enable push of merge result later.
+  # e.g., change remote.origin.url from:
+  #  https://chromium.googlesource.com/chromium/third_party/ffmpeg.git
+  # to:
+  #  ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg.git
+  # One way is to use custom_deps in .gclient.  Another might be to run
+  # git config -e within this folder and edit the URLs if already synced,
+  # though this alternative could have danger.
 
   git remote add upstream git://source.ffmpeg.org/ffmpeg.git
   git fetch upstream

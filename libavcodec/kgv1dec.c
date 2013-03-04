@@ -28,6 +28,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
+#include "internal.h"
 
 typedef struct {
     AVCodecContext *avctx;
@@ -42,7 +43,8 @@ static void decode_flush(AVCodecContext *avctx)
         avctx->release_buffer(avctx, &c->prev);
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
+                        AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     const uint8_t *buf_end = buf + avpkt->size;
@@ -53,14 +55,14 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     int w, h, i, res;
 
     if (avpkt->size < 2)
-        return -1;
+        return AVERROR_INVALIDDATA;
 
     w = (buf[0] + 1) * 8;
     h = (buf[1] + 1) * 8;
     buf += 2;
 
-    if (av_image_check_size(w, h, 0, avctx))
-        return -1;
+    if ((res = av_image_check_size(w, h, 0, avctx)) < 0)
+        return res;
 
     if (w != avctx->width || h != avctx->height) {
         if (c->prev.data[0])
@@ -71,7 +73,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     maxcnt = w * h;
 
     c->cur.reference = 3;
-    if ((res = avctx->get_buffer(avctx, &c->cur)) < 0)
+    if ((res = ff_get_buffer(avctx, &c->cur)) < 0)
         return res;
     out  = (uint16_t *) c->cur.data[0];
     if (c->prev.data[0]) {
@@ -154,7 +156,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     if (outcnt - maxcnt)
         av_log(avctx, AV_LOG_DEBUG, "frame finished with %d diff\n", outcnt - maxcnt);
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = c->cur;
 
     if (c->prev.data[0])

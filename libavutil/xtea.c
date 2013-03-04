@@ -39,10 +39,12 @@ static void xtea_crypt_ecb(AVXTEA *ctx, uint8_t *dst, const uint8_t *src,
                            int decrypt, uint8_t *iv)
 {
     uint32_t v0, v1;
+#if !CONFIG_SMALL
     uint32_t k0 = ctx->key[0];
     uint32_t k1 = ctx->key[1];
     uint32_t k2 = ctx->key[2];
     uint32_t k3 = ctx->key[3];
+#endif
 
     v0 = AV_RB32(src);
     v1 = AV_RB32(src + 4);
@@ -183,7 +185,6 @@ void av_xtea_crypt(AVXTEA *ctx, uint8_t *dst, const uint8_t *src, int count,
 
 #ifdef TEST
 #include <stdio.h>
-#undef printf
 
 #define XTEA_NUM_TESTS 6
 
@@ -220,7 +221,6 @@ static const uint8_t xtea_test_ct[XTEA_NUM_TESTS][8] = {
     { 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41 }
 };
 
-#undef exit
 static void test_xtea(AVXTEA *ctx, uint8_t *dst, const uint8_t *src,
                       const uint8_t *ref, int len, uint8_t *iv, int dir,
                       const char *test)

@@ -43,9 +43,11 @@ typedef enum stereo_code {
     ANAGLYPH_GM_GRAY,   //anaglyph green/magenta gray
     ANAGLYPH_GM_HALF,   //anaglyph green/magenta half colored
     ANAGLYPH_GM_COLOR,  //anaglyph green/magenta colored
+    ANAGLYPH_GM_DUBOIS, //anaglyph green/magenta dubois
     ANAGLYPH_YB_GRAY,   //anaglyph yellow/blue gray
     ANAGLYPH_YB_HALF,   //anaglyph yellow/blue half colored
     ANAGLYPH_YB_COLOR,  //anaglyph yellow/blue colored
+    ANAGLYPH_YB_DUBOIS, //anaglyph yellow/blue dubois
     MONO_L,             //mono output for debugging (left eye only)
     MONO_R,             //mono output for debugging (right eye only)
     SIDE_BY_SIDE_LR,    //side by side parallel (left eye left, right eye right)
@@ -72,37 +74,55 @@ typedef struct component {
 } component;
 
 //==global variables==//
-static const int ana_coeff[10][3][6] = {
-    {{19595, 38470,  7471,     0,     0,     0},    //ANAGLYPH_RC_GRAY
+static const int ana_coeff[][3][6] = {
+  [ANAGLYPH_RC_GRAY]   =
+    {{19595, 38470,  7471,     0,     0,     0},
      {    0,     0,     0, 19595, 38470,  7471},
      {    0,     0,     0, 19595, 38470,  7471}},
-    {{19595, 38470,  7471,     0,     0,     0},    //ANAGLYPH_RC_HALF
+  [ANAGLYPH_RC_HALF]   =
+    {{19595, 38470,  7471,     0,     0,     0},
      {    0,     0,     0,     0, 65536,     0},
      {    0,     0,     0,     0,     0, 65536}},
-    {{65536,     0,     0,     0,     0,     0},    //ANAGLYPH_RC_COLOR
+  [ANAGLYPH_RC_COLOR]  =
+    {{65536,     0,     0,     0,     0,     0},
      {    0,     0,     0,     0, 65536,     0},
      {    0,     0,     0,     0,     0, 65536}},
-    {{29891, 32800, 11559, -2849, -5763,  -102},    //ANAGLYPH_RC_DUBOIS
+  [ANAGLYPH_RC_DUBOIS] =
+    {{29891, 32800, 11559, -2849, -5763,  -102},
      {-2627, -2479, -1033, 24804, 48080, -1209},
      { -997, -1350,  -358, -4729, -7403, 80373}},
-    {{    0,     0,     0, 19595, 38470,  7471},    //ANAGLYPH_GM_GRAY
+  [ANAGLYPH_GM_GRAY]   =
+    {{    0,     0,     0, 19595, 38470,  7471},
      {19595, 38470,  7471,     0,     0,     0},
      {    0,     0,     0, 19595, 38470,  7471}},
-    {{    0,     0,     0, 65536,     0,     0},    //ANAGLYPH_GM_HALF
+  [ANAGLYPH_GM_HALF]   =
+    {{    0,     0,     0, 65536,     0,     0},
      {19595, 38470,  7471,     0,     0,     0},
      {    0,     0,     0,     0,     0, 65536}},
-    {{    0,     0,     0, 65536,     0,     0},    //ANAGLYPH_GM_COLOR
+  [ANAGLYPH_GM_COLOR]  =
+    {{    0,     0,     0, 65536,     0,     0},
      {    0, 65536,     0,     0,     0,     0},
      {    0,     0,     0,     0,     0, 65536}},
-    {{    0,     0,     0, 19595, 38470,  7471},    //ANAGLYPH_YB_GRAY
+  [ANAGLYPH_GM_DUBOIS]  =
+    {{-4063,-10354, -2556, 34669, 46203,  1573},
+     {18612, 43778,  9372, -1049,  -983, -4260},
+     { -983, -1769,  1376,   590,  4915, 61407}},
+  [ANAGLYPH_YB_GRAY]   =
+    {{    0,     0,     0, 19595, 38470,  7471},
      {    0,     0,     0, 19595, 38470,  7471},
      {19595, 38470,  7471,     0,     0,     0}},
-    {{    0,     0,     0, 65536,     0,     0},    //ANAGLYPH_YB_HALF
+  [ANAGLYPH_YB_HALF]   =
+    {{    0,     0,     0, 65536,     0,     0},
      {    0,     0,     0,     0, 65536,     0},
      {19595, 38470,  7471,     0,     0,     0}},
-    {{    0,     0,     0, 65536,     0,     0},    //ANAGLYPH_YB_COLOR
+  [ANAGLYPH_YB_COLOR]  =
+    {{    0,     0,     0, 65536,     0,     0},
      {    0,     0,     0,     0, 65536,     0},
-     {    0,     0, 65536,     0,     0,     0}}
+     {    0,     0, 65536,     0,     0,     0}},
+  [ANAGLYPH_YB_DUBOIS] =
+    {{65535,-12650,18451,   -987, -7590, -1049},
+     {-1604, 56032, 4196,    370,  3826, -1049},
+     {-2345,-10676, 1358,   5801, 11416, 56217}},
 };
 
 struct vf_priv_s {
@@ -112,7 +132,7 @@ struct vf_priv_s {
     unsigned int width;
     unsigned int height;
     unsigned int row_step;
-} const vf_priv_default = {
+} const ff_vf_priv_default = {
   {SIDE_BY_SIDE_LR},
   {ANAGLYPH_RC_DUBOIS}
 };
@@ -132,7 +152,7 @@ static int config(struct vf_instance *vf, int width, int height, int d_width,
                   int d_height, unsigned int flags, unsigned int outfmt)
 {
     if ((width & 1) || (height & 1)) {
-        mp_msg(MSGT_VFILTER, MSGL_WARN, "[stereo3d] invalid height or width\n");
+        ff_mp_msg(MSGT_VFILTER, MSGL_WARN, "[stereo3d] invalid height or width\n");
         return 0;
     }
     //default input values
@@ -173,7 +193,7 @@ static int config(struct vf_instance *vf, int width, int height, int d_width,
         vf->priv->in.row_left   = vf->priv->height;
         break;
     default:
-        mp_msg(MSGT_VFILTER, MSGL_WARN,
+        ff_mp_msg(MSGT_VFILTER, MSGL_WARN,
                "[stereo3d] stereo format of input is not supported\n");
         return 0;
         break;
@@ -195,9 +215,11 @@ static int config(struct vf_instance *vf, int width, int height, int d_width,
     case ANAGLYPH_GM_GRAY:
     case ANAGLYPH_GM_HALF:
     case ANAGLYPH_GM_COLOR:
+    case ANAGLYPH_GM_DUBOIS:
     case ANAGLYPH_YB_GRAY:
     case ANAGLYPH_YB_HALF:
     case ANAGLYPH_YB_COLOR:
+    case ANAGLYPH_YB_DUBOIS:
         memcpy(vf->priv->ana_matrix, ana_coeff[vf->priv->out.fmt],
                sizeof(vf->priv->ana_matrix));
         break;
@@ -246,7 +268,7 @@ static int config(struct vf_instance *vf, int width, int height, int d_width,
         //use default settings
         break;
     default:
-        mp_msg(MSGT_VFILTER, MSGL_WARN,
+        ff_mp_msg(MSGT_VFILTER, MSGL_WARN,
             "[stereo3d] stereo format of output is not supported\n");
         return 0;
         break;
@@ -256,7 +278,7 @@ static int config(struct vf_instance *vf, int width, int height, int d_width,
         d_height    = d_height * vf->priv->out.height / height;
 //    }
 
-    return vf_next_config(vf, vf->priv->out.width, vf->priv->out.height,
+    return ff_vf_next_config(vf, vf->priv->out.width, vf->priv->out.height,
                           d_width, d_height, flags, outfmt);
 }
 
@@ -272,7 +294,7 @@ static int put_image(struct vf_instance *vf, mp_image_t *mpi, double pts)
         int in_off_right = vf->priv->in.row_right  * mpi->stride[0]  +
                            vf->priv->in.off_right;
 
-        dmpi = vf_get_image(vf->next, IMGFMT_RGB24, MP_IMGTYPE_TEMP,
+        dmpi = ff_vf_get_image(vf->next, IMGFMT_RGB24, MP_IMGTYPE_TEMP,
                             MP_IMGFLAG_ACCEPT_STRIDE,
                             vf->priv->out.width, vf->priv->out.height);
         out_off_left   = vf->priv->out.row_left  * dmpi->stride[0] +
@@ -322,9 +344,11 @@ static int put_image(struct vf_instance *vf, mp_image_t *mpi, double pts)
         case ANAGLYPH_GM_GRAY:
         case ANAGLYPH_GM_HALF:
         case ANAGLYPH_GM_COLOR:
+        case ANAGLYPH_GM_DUBOIS:
         case ANAGLYPH_YB_GRAY:
         case ANAGLYPH_YB_HALF:
-        case ANAGLYPH_YB_COLOR: {
+        case ANAGLYPH_YB_COLOR:
+        case ANAGLYPH_YB_DUBOIS: {
             int i,x,y,il,ir,o;
             unsigned char *source     = mpi->planes[0];
             unsigned char *dest       = dmpi->planes[0];
@@ -353,20 +377,20 @@ static int put_image(struct vf_instance *vf, mp_image_t *mpi, double pts)
             break;
         }
         default:
-            mp_msg(MSGT_VFILTER, MSGL_WARN,
+            ff_mp_msg(MSGT_VFILTER, MSGL_WARN,
                    "[stereo3d] stereo format of output is not supported\n");
             return 0;
             break;
         }
     }
-    return vf_next_put_image(vf, dmpi, pts);
+    return ff_vf_next_put_image(vf, dmpi, pts);
 }
 
 static int query_format(struct vf_instance *vf, unsigned int fmt)
 {
     switch (fmt)
     case IMGFMT_RGB24:
-        return vf_next_query_format(vf, fmt);
+        return ff_vf_next_query_format(vf, fmt);
     return 0;
 }
 
@@ -410,12 +434,16 @@ static const struct format_preset {
     {"anaglyph_green_magenta_half_color",ANAGLYPH_GM_HALF},
     {"agmc",                             ANAGLYPH_GM_COLOR},
     {"anaglyph_green_magenta_color",     ANAGLYPH_GM_COLOR},
+    {"agmd",                             ANAGLYPH_GM_DUBOIS},
+    {"anaglyph_green_magenta_dubois",    ANAGLYPH_GM_DUBOIS},
     {"aybg",                             ANAGLYPH_YB_GRAY},
     {"anaglyph_yellow_blue_gray",        ANAGLYPH_YB_GRAY},
     {"aybh",                             ANAGLYPH_YB_HALF},
     {"anaglyph_yellow_blue_half_color",  ANAGLYPH_YB_HALF},
     {"aybc",                             ANAGLYPH_YB_COLOR},
     {"anaglyph_yellow_blue_color",       ANAGLYPH_YB_COLOR},
+    {"aybd",                             ANAGLYPH_YB_DUBOIS},
+    {"anaglyph_yellow_blue_dubois",      ANAGLYPH_YB_DUBOIS},
     {"ml",                               MONO_L},
     {"mono_left",                        MONO_L},
     {"mr",                               MONO_R},
@@ -496,13 +524,13 @@ static const m_option_t vf_opts_fields[] = {
 static const m_struct_t vf_opts = {
   "stereo3d",
   sizeof(struct vf_priv_s),
-  &vf_priv_default,
+  &ff_vf_priv_default,
   vf_opts_fields
 };
 #endif
 
 //==info struct==//
-const vf_info_t vf_info_stereo3d = {
+const vf_info_t ff_vf_info_stereo3d = {
     "stereoscopic 3d view",
     "stereo3d",
     "Gordon Schmidt",

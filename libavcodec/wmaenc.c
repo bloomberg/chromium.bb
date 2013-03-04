@@ -33,13 +33,13 @@ static int encode_init(AVCodecContext * avctx){
     s->avctx = avctx;
 
     if(avctx->channels > MAX_CHANNELS) {
-        av_log(avctx, AV_LOG_ERROR, "too many channels: got %i, need %i or fewer",
+        av_log(avctx, AV_LOG_ERROR, "too many channels: got %i, need %i or fewer\n",
                avctx->channels, MAX_CHANNELS);
         return AVERROR(EINVAL);
     }
 
     if (avctx->sample_rate > 48000) {
-        av_log(avctx, AV_LOG_ERROR, "sample rate is too high: %d > 48kHz",
+        av_log(avctx, AV_LOG_ERROR, "sample rate is too high: %d > 48kHz\n",
                avctx->sample_rate);
         return AVERROR(EINVAL);
     }
@@ -49,6 +49,11 @@ static int encode_init(AVCodecContext * avctx){
                avctx->bit_rate);
         return AVERROR(EINVAL);
     }
+
+#if FF_API_OLD_ENCODE_AUDIO
+    if (!(avctx->coded_frame = avcodec_alloc_frame()))
+        return AVERROR(ENOMEM);
+#endif
 
     /* extract flag infos */
     flags1 = 0;
@@ -85,11 +90,6 @@ static int encode_init(AVCodecContext * avctx){
 
     avctx->frame_size = avctx->delay = s->frame_len;
 
-#if FF_API_OLD_ENCODE_AUDIO
-    avctx->coded_frame = &s->frame;
-    avcodec_get_frame_defaults(avctx->coded_frame);
-#endif
-
     return 0;
 }
 
@@ -109,7 +109,7 @@ static void apply_window_and_mdct(AVCodecContext * avctx, const AVFrame *frame)
     for (ch = 0; ch < avctx->channels; ch++) {
         memcpy(s->output, s->frame_out[ch], window_len * sizeof(*s->output));
         s->fdsp.vector_fmul_scalar(s->frame_out[ch], audio[ch], n, len);
-        s->dsp.vector_fmul_reverse(&s->output[window_len], s->frame_out[ch], win, len);
+        s->fdsp.vector_fmul_reverse(&s->output[window_len], s->frame_out[ch], win, len);
         s->fdsp.vector_fmul(s->frame_out[ch], s->frame_out[ch], win, len);
         mdct->mdct_calc(mdct, s->coefs[ch], s->output);
     }

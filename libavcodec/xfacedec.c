@@ -27,6 +27,7 @@
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 #include "xface.h"
 
 static int pop_integer(BigInt *b, const ProbRange *pranges)
@@ -123,7 +124,7 @@ static av_cold int xface_decode_close(AVCodecContext *avctx)
 }
 
 static int xface_decode_frame(AVCodecContext *avctx,
-                              void *data, int *data_size,
+                              void *data, int *got_frame,
                               AVPacket *avpkt)
 {
     XFaceContext *xface = avctx->priv_data;
@@ -136,7 +137,7 @@ static int xface_decode_frame(AVCodecContext *avctx,
     if (xface->frame.data[0])
         avctx->release_buffer(avctx, &xface->frame);
     xface->frame.data[0] = NULL;
-    if ((ret = avctx->get_buffer(avctx, &xface->frame)) < 0)
+    if ((ret = ff_get_buffer(avctx, &xface->frame)) < 0)
         return ret;
     xface->frame.reference = 0;
 
@@ -188,7 +189,7 @@ static int xface_decode_frame(AVCodecContext *avctx,
         }
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = xface->frame;
 
     return avpkt->size;

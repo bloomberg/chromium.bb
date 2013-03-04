@@ -126,7 +126,6 @@ static const uint8_t mss4_vec_entry_vlc_syms[2][9] = {
 
 typedef struct MSS4Context {
     AVFrame    pic;
-    DSPContext dsp;
 
     VLC        dc_vlc[2], ac_vlc[2];
     VLC        vec_entry_vlc[2];
@@ -506,7 +505,7 @@ static inline void mss4_update_dc_cache(MSS4Context *c, int mb_x)
     }
 }
 
-static int mss4_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
+static int mss4_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                              AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -566,7 +565,7 @@ static int mss4_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
     c->pic.pict_type = (frame_type == INTRA_FRAME) ? AV_PICTURE_TYPE_I
                                                    : AV_PICTURE_TYPE_P;
     if (frame_type == SKIP_FRAME) {
-        *data_size = sizeof(AVFrame);
+        *got_frame      = 1;
         *(AVFrame*)data = c->pic;
 
         return buf_size;
@@ -623,7 +622,7 @@ static int mss4_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         dst[2] += c->pic.linesize[2] * 16;
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame      = 1;
     *(AVFrame*)data = c->pic;
 
     return buf_size;

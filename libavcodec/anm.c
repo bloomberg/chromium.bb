@@ -106,7 +106,7 @@ exhausted:
 }
 
 static int decode_frame(AVCodecContext *avctx,
-                        void *data, int *data_size,
+                        void *data, int *got_frame,
                         AVPacket *avpkt)
 {
     AnmContext *s = avctx->priv_data;
@@ -114,7 +114,7 @@ static int decode_frame(AVCodecContext *avctx,
     uint8_t *dst, *dst_end;
     int count, ret;
 
-    if ((ret = avctx->reget_buffer(avctx, &s->frame)) < 0) {
+    if ((ret = avctx->reget_buffer(avctx, &s->frame)) < 0){
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -159,7 +159,7 @@ static int decode_frame(AVCodecContext *avctx,
                     break; // stop
                 if (type == 2) {
                     av_log_ask_for_sample(avctx, "unknown opcode");
-                    return AVERROR_INVALIDDATA;
+                    return AVERROR_PATCHWELCOME;
                 }
                 continue;
             }
@@ -171,7 +171,7 @@ static int decode_frame(AVCodecContext *avctx,
 
     memcpy(s->frame.data[1], s->palette, AVPALETTE_SIZE);
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = s->frame;
     return buf_size;
 }

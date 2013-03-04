@@ -32,6 +32,7 @@
 #include "eval.h"
 #include "log.h"
 #include "mathematics.h"
+#include "time.h"
 
 typedef struct Parser {
     const AVClass *class;
@@ -94,7 +95,11 @@ double av_strtod(const char *numstr, char **tail)
         d = strtod(numstr, &next);
     /* if parsing succeeded, check for and interpret postfixes */
     if (next!=numstr) {
-        if (*next >= 'E' && *next <= 'z') {
+        if (next[0] == 'd' && next[1] == 'B') {
+            /* treat dB as decibels instead of decibytes */
+            d = pow(10, d / 20);
+            next += 2;
+        } else if (*next >= 'E' && *next <= 'z') {
             int e= si_prefixes[*next - 'E'];
             if (e) {
                 if (next[1] == 'i') {
@@ -139,7 +144,7 @@ struct AVExpr {
         e_pow, e_mul, e_div, e_add,
         e_last, e_st, e_while, e_taylor, e_root, e_floor, e_ceil, e_trunc,
         e_sqrt, e_not, e_random, e_hypot, e_gcd,
-        e_if, e_ifnot,
+        e_if, e_ifnot, e_print,
     } type;
     double value; // is sign in other types
     union {
@@ -151,6 +156,11 @@ struct AVExpr {
     struct AVExpr *param[3];
     double *var;
 };
+
+static double etime(double v)
+{
+    return av_gettime() * 0.000001;
+}
 
 static double eval_expr(Parser *p, AVExpr *e)
 {
@@ -170,8 +180,16 @@ static double eval_expr(Parser *p, AVExpr *e)
         case e_trunc:  return e->value * trunc(eval_expr(p, e->param[0]));
         case e_sqrt:   return e->value * sqrt (eval_expr(p, e->param[0]));
         case e_not:    return e->value * (eval_expr(p, e->param[0]) == 0);
-        case e_if:     return e->value * ( eval_expr(p, e->param[0]) ? eval_expr(p, e->param[1]) : 0);
-        case e_ifnot:  return e->value * (!eval_expr(p, e->param[0]) ? eval_expr(p, e->param[1]) : 0);
+        case e_if:     return e->value * (eval_expr(p, e->param[0]) ? eval_expr(p, e->param[1]) :
+                                          e->param[2] ? eval_expr(p, e->param[2]) : 0);
+        case e_ifnot:  return e->value * (!eval_expr(p, e->param[0]) ? eval_expr(p, e->param[1]) :
+                                          e->param[2] ? eval_expr(p, e->param[2]) : 0);
+        case e_print: {
+            double x = eval_expr(p, e->param[0]);
+            int level = e->param[1] ? av_clip(eval_expr(p, e->param[1]), INT_MIN, INT_MAX) : AV_LOG_INFO;
+            av_log(p, level, "%f\n", x);
+            return x;
+        }
         case e_random:{
             int idx= av_clip(eval_expr(p, e->param[0]), 0, VARS-1);
             uint64_t r= isnan(p->var[idx]) ? 0 : p->var[idx];
@@ -249,7 +267,7 @@ static double eval_expr(Parser *p, AVExpr *e)
             double d = eval_expr(p, e->param[0]);
             double d2 = eval_expr(p, e->param[1]);
             switch (e->type) {
-                case e_mod: return e->value * (d - floor(d/d2)*d2);
+                case e_mod: return e->value * (d - floor((!CONFIG_FTRAPV || d2) ? d / d2 : d * INFINITY) * d2);
                 case e_gcd: return e->value * av_gcd(d,d2);
                 case e_max: return e->value * (d >  d2 ?   d : d2);
                 case e_min: return e->value * (d <  d2 ?   d : d2);
@@ -373,6 +391,7 @@ static int parse_primary(AVExpr **e, Parser *p)
     else if (strmatch(next, "exp"   )) d->a.func0 = exp;
     else if (strmatch(next, "log"   )) d->a.func0 = log;
     else if (strmatch(next, "abs"   )) d->a.func0 = fabs;
+    else if (strmatch(next, "time"  )) d->a.func0 = etime;
     else if (strmatch(next, "squish")) d->type = e_squish;
     else if (strmatch(next, "gauss" )) d->type = e_gauss;
     else if (strmatch(next, "mod"   )) d->type = e_mod;
@@ -396,6 +415,7 @@ static int parse_primary(AVExpr **e, Parser *p)
     else if (strmatch(next, "sqrt"  )) d->type = e_sqrt;
     else if (strmatch(next, "not"   )) d->type = e_not;
     else if (strmatch(next, "pow"   )) d->type = e_pow;
+    else if (strmatch(next, "print" )) d->type = e_print;
     else if (strmatch(next, "random")) d->type = e_random;
     else if (strmatch(next, "hypot" )) d->type = e_hypot;
     else if (strmatch(next, "gcd"   )) d->type = e_gcd;
@@ -448,16 +468,31 @@ static int parse_pow(AVExpr **e, Parser *p, int *sign)
     return parse_primary(e, p);
 }
 
+static int parse_dB(AVExpr **e, Parser *p, int *sign)
+{
+    /* do not filter out the negative sign when parsing a dB value.
+       for example, -3dB is not the same as -(3dB) */
+    if (*p->s == '-') {
+        char *next;
+        double av_unused v = strtod(p->s, &next);
+        if (next != p->s && next[0] == 'd' && next[1] == 'B') {
+            *sign = 0;
+            return parse_primary(e, p);
+        }
+    }
+    return parse_pow(e, p, sign);
+}
+
 static int parse_factor(AVExpr **e, Parser *p)
 {
     int sign, sign2, ret;
     AVExpr *e0, *e1, *e2;
-    if ((ret = parse_pow(&e0, p, &sign)) < 0)
+    if ((ret = parse_dB(&e0, p, &sign)) < 0)
         return ret;
     while(p->s[0]=='^'){
         e1 = e0;
         p->s++;
-        if ((ret = parse_pow(&e2, p, &sign2)) < 0) {
+        if ((ret = parse_dB(&e2, p, &sign2)) < 0) {
             av_expr_free(e1);
             return ret;
         }
@@ -573,6 +608,11 @@ static int verify_expr(AVExpr *e)
         case e_not:
         case e_random:
             return verify_expr(e->param[0]) && !e->param[1];
+        case e_print:
+            return verify_expr(e->param[0])
+                   && (!e->param[1] || verify_expr(e->param[1]));
+        case e_if:
+        case e_ifnot:
         case e_taylor:
             return verify_expr(e->param[0]) && verify_expr(e->param[1])
                    && (!e->param[2] || verify_expr(e->param[2]));
@@ -660,8 +700,6 @@ int av_expr_parse_and_eval(double *d, const char *s,
 }
 
 #ifdef TEST
-// LCOV_EXCL_START
-#undef printf
 #include <string.h>
 
 static const double const_values[] = {
@@ -746,13 +784,19 @@ int main(int argc, char **argv)
         "not(1)",
         "not(NAN)",
         "not(0)",
+        "6.0206dB",
+        "-3.0103dB",
         "pow(0,1.23)",
         "pow(PI,1.23)",
         "PI^1.23",
         "pow(-1,1.23)",
         "if(1, 2)",
+        "if(1, 1, 2)",
+        "if(0, 1, 2)",
         "ifnot(0, 23)",
         "ifnot(1, NaN) + if(0, 1)",
+        "ifnot(1, 1, 2)",
+        "ifnot(0, 1, 2)",
         "taylor(1, 1)",
         "taylor(eq(mod(ld(1),4),1)-eq(mod(ld(1),4),3), PI/2, 1)",
         "root(sin(ld(0))-1, 2)",
@@ -761,7 +805,7 @@ int main(int argc, char **argv)
         "squish(2)",
         "gauss(0.1)",
         "hypot(4,3)",
-        "gcd(30,55)*min(9,1)",
+        "gcd(30,55)*print(min(9,1))",
         NULL
     };
 
@@ -797,5 +841,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
-// LCOV_EXCL_STOP
 #endif

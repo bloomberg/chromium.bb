@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2012 Michael Niedermayer (michaelni@gmx.at)
+ * Copyright (C) 2011-2013 Michael Niedermayer (michaelni@gmx.at)
  *
  * This file is part of libswresample
  *
@@ -23,6 +23,7 @@
 
 /**
  * @file
+ * @ingroup lswr
  * libswresample public header
  */
 
@@ -47,8 +48,8 @@
  * av_opt_set_int(swr, "out_channel_layout", AV_CH_LAYOUT_STEREO,  0);
  * av_opt_set_int(swr, "in_sample_rate",     48000,                0);
  * av_opt_set_int(swr, "out_sample_rate",    44100,                0);
- * av_opt_set_sample_fmt(swr, "in_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
- * av_opt_set_sample_fmt(swr, "out_sample_fmt, AV_SAMPLE_FMT_S16,  0);
+ * av_opt_set_sample_fmt(swr, "in_sample_fmt",  AV_SAMPLE_FMT_FLTP, 0);
+ * av_opt_set_sample_fmt(swr, "out_sample_fmt", AV_SAMPLE_FMT_S16,  0);
  * @endcode
  *
  * Once all values have been set, it must be initialized with swr_init(). If
@@ -110,7 +111,23 @@ enum SwrDitherType {
     SWR_DITHER_RECTANGULAR,
     SWR_DITHER_TRIANGULAR,
     SWR_DITHER_TRIANGULAR_HIGHPASS,
+
+    SWR_DITHER_NS = 64,         ///< not part of API/ABI
+    SWR_DITHER_NS_LIPSHITZ,
+    SWR_DITHER_NS_F_WEIGHTED,
+    SWR_DITHER_NS_MODIFIED_E_WEIGHTED,
+    SWR_DITHER_NS_IMPROVED_E_WEIGHTED,
+    SWR_DITHER_NS_SHIBATA,
+    SWR_DITHER_NS_LOW_SHIBATA,
+    SWR_DITHER_NS_HIGH_SHIBATA,
     SWR_DITHER_NB,              ///< not part of API/ABI
+};
+
+/** Resampling Engines */
+enum SwrEngine {
+    SWR_ENGINE_SWR,             /**< SW Resampler */
+    SWR_ENGINE_SOXR,            /**< SoX Resampler */
+    SWR_ENGINE_NB,              ///< not part of API/ABI
 };
 
 /** Resampling Filter Types */

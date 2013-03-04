@@ -149,7 +149,7 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
     WtvFile *wf;
     uint8_t *buffer;
 
-    if (avio_seek(s->pb, first_sector << WTV_SECTOR_BITS, SEEK_SET) < 0)
+    if (avio_seek(s->pb, (int64_t)first_sector << WTV_SECTOR_BITS, SEEK_SET) < 0)
         return NULL;
 
     wf = av_mallocz(sizeof(WtvFile));
@@ -199,6 +199,9 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
         av_free(wf);
         return NULL;
     }
+
+    if ((int64_t)wf->sectors[wf->nb_sectors - 1] << WTV_SECTOR_BITS > avio_tell(s->pb))
+        av_log(s, AV_LOG_WARNING, "truncated file\n");
 
     /* check length */
     length &= 0xFFFFFFFFFFFF;
@@ -414,6 +417,7 @@ static void get_attachment(AVFormatContext *s, AVIOContext *pb, int length)
     char description[1024];
     unsigned int filesize;
     AVStream *st;
+    int ret;
     int64_t pos = avio_tell(pb);
 
     avio_get_str16le(pb, INT_MAX, mime, sizeof(mime));
@@ -430,21 +434,30 @@ static void get_attachment(AVFormatContext *s, AVIOContext *pb, int length)
     if (!st)
         goto done;
     av_dict_set(&st->metadata, "title", description, 0);
+    st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codec->codec_id   = AV_CODEC_ID_MJPEG;
-    st->codec->codec_type = AVMEDIA_TYPE_ATTACHMENT;
-    st->codec->extradata  = av_mallocz(filesize);
-    if (!st->codec->extradata)
+    ret = av_get_packet(pb, &st->attached_pic, filesize);
+    if (ret < 0)
         goto done;
-    st->codec->extradata_size = filesize;
-    avio_read(pb, st->codec->extradata, filesize);
+    st->attached_pic.stream_index = st->index;
+    st->attached_pic.flags       |= AV_PKT_FLAG_KEY;
+    st->disposition              |= AV_DISPOSITION_ATTACHED_PIC;
 done:
     avio_seek(pb, pos + length, SEEK_SET);
 }
 
 static void get_tag(AVFormatContext *s, AVIOContext *pb, const char *key, int type, int length)
 {
-    int buf_size = FFMAX(2*length, LEN_PRETTY_GUID) + 1;
-    char *buf = av_malloc(buf_size);
+    int buf_size;
+    char *buf;
+
+    if (!strcmp(key, "WM/MediaThumbType")) {
+        avio_skip(pb, length);
+        return;
+    }
+
+    buf_size = FFMAX(2*length, LEN_PRETTY_GUID) + 1;
+    buf = av_malloc(buf_size);
     if (!buf)
         return;
 
@@ -922,7 +935,7 @@ static int read_header(AVFormatContext *s)
     avio_skip(s->pb, 4);
     root_sector = avio_rl32(s->pb);
 
-    avio_seek(s->pb, root_sector << WTV_SECTOR_BITS, SEEK_SET);
+    avio_seek(s->pb, (int64_t)root_sector << WTV_SECTOR_BITS, SEEK_SET);
     root_size = avio_read(s->pb, root, root_size);
     if (root_size < 0)
         return AVERROR_INVALIDDATA;

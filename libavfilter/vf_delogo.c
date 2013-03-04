@@ -83,8 +83,8 @@ static void apply_delogo(uint8_t *dst, int dst_linesize,
     if (!direct)
         av_image_copy_plane(dst, dst_linesize, src, src_linesize, w, h);
 
-    dst += (logo_y1+1)*dst_linesize;
-    src += (logo_y1+1)*src_linesize;
+    dst += (logo_y1 + 1) * dst_linesize;
+    src += (logo_y1 + 1) * src_linesize;
 
     for (y = logo_y1+1; y < logo_y2-1; y++) {
         for (x = logo_x1+1,
@@ -157,7 +157,7 @@ AVFILTER_DEFINE_CLASS(delogo);
 
 static int query_formats(AVFilterContext *ctx)
 {
-    enum AVPixelFormat pix_fmts[] = {
+    static const enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV420P,
         AV_PIX_FMT_YUV411P,  AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUV440P,
         AV_PIX_FMT_YUVA420P, AV_PIX_FMT_GRAY8,
@@ -229,11 +229,7 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
             avfilter_unref_bufferp(&in);
             return AVERROR(ENOMEM);
         }
-
         avfilter_copy_buffer_ref_props(out, in);
-
-        out->video->w = outlink->w;
-        out->video->h = outlink->h;
     }
 
     for (plane = 0; plane < 4 && in->data[plane]; plane++) {

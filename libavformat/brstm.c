@@ -75,7 +75,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
     if (bom == 0xFFFE) {
-        av_log_ask_for_sample(s, "unsupported byte order");
+        av_log_ask_for_sample(s, "unsupported byte order\n");
         return AVERROR_PATCHWELCOME;
     }
 
@@ -110,7 +110,7 @@ static int read_header(AVFormatContext *s)
     case 1: codec = AV_CODEC_ID_PCM_S16BE_PLANAR; break;
     case 2: codec = AV_CODEC_ID_ADPCM_THP;        break;
     default:
-        av_log_ask_for_sample(s, "unsupported codec: %d", codec);
+        av_log_ask_for_sample(s, "unsupported codec: %d\n", codec);
         return AVERROR_PATCHWELCOME;
     }
 
@@ -219,6 +219,10 @@ static int read_header(AVFormatContext *s)
                 goto fail;
             }
             avio_skip(s->pb, start - avio_tell(s->pb));
+
+            if (major!=1 || minor)
+                av_log_ask_for_sample(s, "Version %d.%d\n", major, minor);
+
             return 0;
         default:
             av_log(s, AV_LOG_WARNING, "skipping unknown chunk: %X\n", chunk);
@@ -245,7 +249,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     b->current_block++;
     if (b->current_block == b->block_count) {
         size    = b->last_block_used_bytes;
-        samples = size / 16 * 14;
+        samples = size / (8 * codec->channels) * 14;
     } else if (b->current_block < b->block_count) {
         size    = b->block_size;
         samples = b->samples_per_block;
@@ -266,18 +270,17 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
                                     (b->current_block - 1), 4 * codec->channels);
 
         ret = avio_read(s->pb, dst, size);
-        if (ret < 0) {
+        if (ret != size)
             av_free_packet(pkt);
-            return ret;
-        }
         pkt->duration = samples;
     } else {
         ret = av_get_packet(s->pb, pkt, size);
-        if (ret < 0)
-            return ret;
     }
 
     pkt->stream_index = 0;
+
+    if (ret != size)
+        ret = AVERROR(EIO);
 
     return ret;
 }

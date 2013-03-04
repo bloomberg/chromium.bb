@@ -28,6 +28,7 @@
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 
 typedef struct BRPixContext {
     AVFrame frame;
@@ -69,7 +70,7 @@ static int brpix_decode_header(BRPixHeader *out, GetByteContext *pgb)
 }
 
 static int brpix_decode_frame(AVCodecContext *avctx,
-                              void *data, int *data_size_out,
+                              void *data, int *got_frame,
                               AVPacket *avpkt)
 {
     BRPixContext *s = avctx->priv_data;
@@ -151,7 +152,7 @@ static int brpix_decode_frame(AVCodecContext *avctx,
     if (hdr.width != avctx->width || hdr.height != avctx->height)
         avcodec_set_dimensions(avctx, hdr.width, hdr.height);
 
-    if ((ret = avctx->get_buffer(avctx, &s->frame)) < 0) {
+    if ((ret = ff_get_buffer(avctx, &s->frame)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -192,6 +193,14 @@ static int brpix_decode_frame(AVCodecContext *avctx,
         s->frame.palette_has_changed = 1;
 
         chunk_type = bytestream2_get_be32(&gb);
+    } else if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
+        uint32_t *pal_out = (uint32_t *)s->frame.data[1];
+        int i;
+
+        for (i = 0; i < 256; ++i) {
+            *pal_out++ = (0xFFU << 24) | (i * 0x010101);
+        }
+        s->frame.palette_has_changed = 1;
     }
 
     data_len = bytestream2_get_be32(&gb);
@@ -216,7 +225,7 @@ static int brpix_decode_frame(AVCodecContext *avctx,
     }
 
     *frame_out = s->frame;
-    *data_size_out = sizeof(AVFrame);
+    *got_frame = 1;
 
     return avpkt->size;
 }

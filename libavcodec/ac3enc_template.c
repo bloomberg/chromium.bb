@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+#include "libavutil/internal.h"
 
 /* prototypes for static functions in ac3enc_fixed.c and ac3enc_float.c */
 
@@ -132,7 +133,7 @@ static void apply_channel_coupling(AC3EncodeContext *s)
 #else
     int32_t (*fixed_cpl_coords)[AC3_MAX_CHANNELS][16] = cpl_coords;
 #endif
-    int blk, ch, bnd, i, j;
+    int av_uninit(blk), ch, bnd, i, j;
     CoefSumType energy[AC3_MAX_BLOCKS][AC3_MAX_CHANNELS][16] = {{{0}}};
     int cpl_start, num_cpl_coefs;
 
@@ -336,7 +337,7 @@ static void compute_rematrixing_strategy(AC3EncodeContext *s)
 {
     int nb_coefs;
     int blk, bnd;
-    AC3Block *block, *block0;
+    AC3Block *block, *block0 = NULL;
 
     if (s->channel_mode != AC3_CHMODE_STEREO)
         return;

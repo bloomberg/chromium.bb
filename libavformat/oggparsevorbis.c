@@ -179,6 +179,8 @@ fixup_vorbis_headers(AVFormatContext * as, struct oggvorbis_private *priv,
     len = priv->len[0] + priv->len[1] + priv->len[2];
     buf_len = len + len/255 + 64;
     ptr = *buf = av_realloc(NULL, buf_len);
+    if (!*buf)
+        return 0;
     memset(*buf, '\0', buf_len);
 
     ptr[0] = 2;
@@ -194,6 +196,16 @@ fixup_vorbis_headers(AVFormatContext * as, struct oggvorbis_private *priv,
     return offset;
 }
 
+static void vorbis_cleanup(AVFormatContext *s, int idx)
+{
+    struct ogg *ogg = s->priv_data;
+    struct ogg_stream *os = ogg->streams + idx;
+    struct oggvorbis_private *priv = os->private;
+    int i;
+    if (os->private)
+        for (i = 0; i < 3; i++)
+            av_freep(&priv->packet[i]);
+}
 
 static int
 vorbis_header (AVFormatContext * s, int idx)
@@ -232,6 +244,7 @@ vorbis_header (AVFormatContext * s, int idx)
         const uint8_t *p = os->buf + os->pstart + 7; /* skip "\001vorbis" tag */
         unsigned blocksize, bs0, bs1;
         int srate;
+        int channels;
 
         if (os->psize != 30)
             return -1;
@@ -239,7 +252,12 @@ vorbis_header (AVFormatContext * s, int idx)
         if (bytestream_get_le32(&p) != 0) /* vorbis_version */
             return -1;
 
-        st->codec->channels = bytestream_get_byte(&p);
+        channels= bytestream_get_byte(&p);
+        if (st->codec->channels && channels != st->codec->channels) {
+            av_log(s, AV_LOG_ERROR, "Channel change is not supported\n");
+            return AVERROR_PATCHWELCOME;
+        }
+        st->codec->channels = channels;
         srate = bytestream_get_le32(&p);
         p += 4; // skip maximum bitrate
         st->codec->bit_rate = bytestream_get_le32(&p); // nominal bitrate
@@ -369,5 +387,6 @@ const struct ogg_codec ff_vorbis_codec = {
     .magicsize = 7,
     .header = vorbis_header,
     .packet = vorbis_packet,
+    .cleanup= vorbis_cleanup,
     .nb_header = 3,
 };

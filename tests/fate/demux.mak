@@ -13,6 +13,9 @@ fate-ast: CMD = crc -i $(SAMPLES)/ast/demo11_02_partial.ast -c copy
 FATE_SAMPLES_DEMUX-$(CONFIG_BINK_DEMUXER) += fate-bink-demux
 fate-bink-demux: CMD = crc -i $(SAMPLES)/bink/Snd0a7d9b58.dee -vn -acodec copy
 
+FATE_SAMPLES_DEMUX-$(CONFIG_BRSTM_DEMUXER) += fate-brstm
+fate-brstm: CMD = crc -i $(SAMPLES)/brstm/lozswd_partial.brstm -acodec copy
+
 FATE_SAMPLES_DEMUX-$(CONFIG_CAF_DEMUXER) += fate-caf
 fate-caf: CMD = crc -i $(SAMPLES)/caf/caf-pcm16.caf -c copy
 
@@ -21,6 +24,9 @@ fate-cdxl-demux: CMD = framecrc -i $(SAMPLES)/cdxl/mirage.cdxl -vcodec copy -aco
 
 FATE_SAMPLES_DEMUX-$(CONFIG_DAUD_DEMUXER) += fate-d-cinema-demux
 fate-d-cinema-demux: CMD = framecrc -i $(SAMPLES)/d-cinema/THX_Science_FLT_1920-partial.302 -acodec copy
+
+FATE_SAMPLES_DEMUX-$(CONFIG_GIF_DEMUXER) += fate-gif-demux
+fate-gif-demux: CMD = framecrc -i $(SAMPLES)/gif/Newtons_cradle_animation_book_2.gif -vcodec copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_IV8_DEMUXER) += fate-iv8-demux
 fate-iv8-demux: CMD = framecrc -i $(SAMPLES)/iv8/zzz-partial.mpg -vcodec copy
@@ -42,6 +48,9 @@ fate-mxf-demux: CMD = framecrc -i $(SAMPLES)/mxf/C0023S01.mxf -acodec copy -vcod
 
 FATE_SAMPLES_DEMUX-$(CONFIG_NC_DEMUXER) += fate-nc-demux
 fate-nc-demux: CMD = framecrc -i $(SAMPLES)/nc-camera/nc-sample-partial -vcodec copy
+
+FATE_SAMPLES_DEMUX-$(CONFIG_NISTSPHERE_DEMUXER) += fate-nistsphere-demux
+fate-nistsphere-demux: CMD = crc -i $(SAMPLES)/nistsphere/nist-ulaw.nist -acodec copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_NSV_DEMUXER) += fate-nsv-demux
 fate-nsv-demux: CMD = framecrc -i $(SAMPLES)/nsv/witchblade-51kbps.nsv -t 6 -vcodec copy -acodec copy
@@ -67,8 +76,8 @@ fate-qcp-demux: CMD = crc -i $(SAMPLES)/qcp/0036580847.QCP -acodec copy
 FATE_SAMPLES_DEMUX-$(CONFIG_R3D_DEMUXER) += fate-redcode-demux
 fate-redcode-demux: CMD = framecrc -i $(SAMPLES)/r3d/4MB-sample.r3d -vcodec copy -acodec copy
 
-FATE_SAMPLES_DEMUX-$(CONFIG_SIFF_DEMUXER) += fate-siff
-fate-siff: CMD = framecrc -i $(SAMPLES)/SIFF/INTRO_B.VB -t 3 -pix_fmt rgb24
+FATE_SAMPLES_DEMUX-$(CONFIG_SIFF_DEMUXER) += fate-siff-demux
+fate-siff-demux: CMD = framecrc -i $(SAMPLES)/SIFF/INTRO_B.VB -c copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_SMJPEG_DEMUXER) += fate-smjpeg-demux
 fate-smjpeg-demux: CMD = framecrc -i $(SAMPLES)/smjpeg/scenwin.mjpg -c copy

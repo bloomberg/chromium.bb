@@ -395,7 +395,7 @@ int avformat_write_header(AVFormatContext *s, AVDictionary **options)
             return ret;
     }
 
-    if ((ret = init_pts(s) < 0))
+    if ((ret = init_pts(s)) < 0)
         return ret;
 
     return 0;
@@ -484,13 +484,28 @@ static int compute_pkt_fields2(AVFormatContext *s, AVStream *st, AVPacket *pkt)
     return 0;
 }
 
+/**
+ * Move side data from payload to internal struct, call muxer, and restore
+ * original packet.
+ */
+static inline int split_write_packet(AVFormatContext *s, AVPacket *pkt)
+{
+    int ret, did_split;
+
+    did_split = av_packet_split_side_data(pkt);
+    ret = s->oformat->write_packet(s, pkt);
+    if (did_split)
+        av_packet_merge_side_data(pkt);
+    return ret;
+}
+
 int av_write_frame(AVFormatContext *s, AVPacket *pkt)
 {
     int ret;
 
     if (!pkt) {
         if (s->oformat->flags & AVFMT_ALLOW_FLUSH) {
-            ret = s->oformat->write_packet(s, pkt);
+            ret = s->oformat->write_packet(s, NULL);
             if (ret >= 0 && s->pb && s->pb->error < 0)
                 ret = s->pb->error;
             return ret;
@@ -503,7 +518,7 @@ int av_write_frame(AVFormatContext *s, AVPacket *pkt)
     if (ret < 0 && !(s->oformat->flags & AVFMT_NOTIMESTAMPS))
         return ret;
 
-    ret = s->oformat->write_packet(s, pkt);
+    ret = split_write_packet(s, pkt);
     if (ret >= 0 && s->pb && s->pb->error < 0)
         ret = s->pb->error;
 
@@ -534,20 +549,26 @@ int ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
         next_point = &s->packet_buffer;
     }
 
-    if (*next_point) {
-        if (chunked) {
-            uint64_t max= av_rescale_q(s->max_chunk_duration, AV_TIME_BASE_Q, st->time_base);
-            if (   st->interleaver_chunk_size     + pkt->size     <= s->max_chunk_size-1U
-                && st->interleaver_chunk_duration + pkt->duration <= max-1U) {
-                st->interleaver_chunk_size     += pkt->size;
-                st->interleaver_chunk_duration += pkt->duration;
-                goto next_non_null;
-            } else {
-                st->interleaver_chunk_size     =
+    if (chunked) {
+        uint64_t max= av_rescale_q_rnd(s->max_chunk_duration, AV_TIME_BASE_Q, st->time_base, AV_ROUND_UP);
+        st->interleaver_chunk_size     += pkt->size;
+        st->interleaver_chunk_duration += pkt->duration;
+        if (   (s->max_chunk_size && st->interleaver_chunk_size > s->max_chunk_size)
+            || (max && st->interleaver_chunk_duration           > max)) {
+            st->interleaver_chunk_size      = 0;
+            this_pktl->pkt.flags |= CHUNK_START;
+            if (max && st->interleaver_chunk_duration > max) {
+                int64_t syncoffset = (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)*max/2;
+                int64_t syncto = av_rescale(pkt->dts + syncoffset, 1, max)*max - syncoffset;
+
+                st->interleaver_chunk_duration += (pkt->dts - syncto)/8 - max;
+            } else
                 st->interleaver_chunk_duration = 0;
-                this_pktl->pkt.flags |= CHUNK_START;
-            }
         }
+    }
+    if (*next_point) {
+        if (chunked && !(this_pktl->pkt.flags & CHUNK_START))
+            goto next_non_null;
 
         if (compare(s, &s->packet_buffer_end->pkt, pkt)) {
             while (   *next_point
@@ -733,7 +754,7 @@ int av_interleaved_write_frame(AVFormatContext *s, AVPacket *pkt)
         if (ret <= 0) //FIXME cleanup needed for ret<0 ?
             return ret;
 
-        ret = s->oformat->write_packet(s, &opkt);
+        ret = split_write_packet(s, &opkt);
         if (ret >= 0)
             s->streams[opkt.stream_index]->nb_frames++;
 
@@ -759,7 +780,7 @@ int av_write_trailer(AVFormatContext *s)
         if (!ret)
             break;
 
-        ret = s->oformat->write_packet(s, &pkt);
+        ret = split_write_packet(s, &pkt);
         if (ret >= 0)
             s->streams[pkt.stream_index]->nb_frames++;
 

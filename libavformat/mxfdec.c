@@ -134,6 +134,7 @@ typedef struct {
     AVRational edit_rate;
     int intra_only;
     uint64_t sample_count;
+    int64_t original_duration;  ///< duration before multiplying st->duration by SampleRate/EditRate
 } MXFTrack;
 
 typedef struct {
@@ -866,7 +867,11 @@ static int mxf_read_generic_descriptor(void *arg, AVIOContext *pb, int tag, int 
     default:
         /* Private uid used by SONY C0023S01.mxf */
         if (IS_KLV_KEY(uid, mxf_sony_mpeg4_extradata)) {
-            descriptor->extradata = av_malloc(size + FF_INPUT_BUFFER_PADDING_SIZE);
+            if (descriptor->extradata)
+                av_log(NULL, AV_LOG_WARNING, "Duplicate sony_mpeg4_extradata\n");
+            av_free(descriptor->extradata);
+            descriptor->extradata_size = 0;
+            descriptor->extradata = av_malloc(size);
             if (!descriptor->extradata)
                 return AVERROR(ENOMEM);
             descriptor->extradata_size = size;
@@ -1441,7 +1446,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         }
         st->id = source_track->track_id;
         st->priv_data = source_track;
-        st->duration = component->duration;
+        source_track->original_duration = st->duration = component->duration;
         if (st->duration == -1)
             st->duration = AV_NOPTS_VALUE;
         st->start_time = component->start_position;
@@ -1452,6 +1457,9 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             material_track->edit_rate = (AVRational){25, 1};
         }
         avpriv_set_pts_info(st, 64, material_track->edit_rate.den, material_track->edit_rate.num);
+
+        /* ensure SourceTrack EditRate == MaterialTrack EditRate since only the former is accessible via st->priv_data */
+        source_track->edit_rate = material_track->edit_rate;
 
         PRINT_KEY(mxf->fc, "data definition   ul", source_track->sequence->data_definition_ul);
         codec_ul = mxf_get_codec_ul(ff_mxf_data_definition_uls, &source_track->sequence->data_definition_ul);
@@ -1498,10 +1506,15 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         /* TODO: drop PictureEssenceCoding and SoundEssenceCompression, only check EssenceContainer */
         codec_ul = mxf_get_codec_ul(ff_mxf_codec_uls, &descriptor->essence_codec_ul);
         st->codec->codec_id = (enum AVCodecID)codec_ul->id;
-        if (descriptor->extradata) {
-            st->codec->extradata = descriptor->extradata;
-            st->codec->extradata_size = descriptor->extradata_size;
+        av_log(mxf->fc, AV_LOG_VERBOSE, "%s: Universal Label: ",
+               avcodec_get_name(st->codec->codec_id));
+        for (k = 0; k < 16; k++) {
+            av_log(mxf->fc, AV_LOG_VERBOSE, "%.2x",
+                   descriptor->essence_codec_ul[k]);
+            if (!(k+1 & 19) || k == 5)
+                av_log(mxf->fc, AV_LOG_VERBOSE, ".");
         }
+        av_log(mxf->fc, AV_LOG_VERBOSE, "\n");
         if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
             source_track->intra_only = mxf_is_intra_only(descriptor);
             container_ul = mxf_get_codec_ul(mxf_picture_essence_container_uls, essence_container_ul);
@@ -1515,6 +1528,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                     av_log(mxf->fc, AV_LOG_INFO, "SegmentedFrame layout isn't currently supported\n");
                     break;
                 case FullFrame:
+                    st->codec->field_order = AV_FIELD_PROGRESSIVE;
                     break;
                 case OneField:
                     /* Every other line is stored and needs to be duplicated. */
@@ -1565,6 +1579,10 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                 avpriv_set_pts_info(st, 64, 1, 48000);
             }
 
+            /* if duration is set, rescale it from EditRate to SampleRate */
+            if (st->duration != AV_NOPTS_VALUE)
+                st->duration = av_rescale_q(st->duration, av_inv_q(material_track->edit_rate), st->time_base);
+
             /* TODO: implement AV_CODEC_ID_RAWAUDIO */
             if (st->codec->codec_id == AV_CODEC_ID_PCM_S16LE) {
                 if (descriptor->bits_per_sample > 16 && descriptor->bits_per_sample <= 24)
@@ -1579,6 +1597,13 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             } else if (st->codec->codec_id == AV_CODEC_ID_MP2) {
                 st->need_parsing = AVSTREAM_PARSE_FULL;
             }
+        }
+        if (descriptor->extradata) {
+            st->codec->extradata = av_mallocz(descriptor->extradata_size + FF_INPUT_BUFFER_PADDING_SIZE);
+            if (st->codec->extradata)
+                memcpy(st->codec->extradata, descriptor->extradata, descriptor->extradata_size);
+        } else if(st->codec->codec_id == CODEC_ID_H264) {
+            ff_generate_avci_extradata(st);
         }
         if (st->codec->codec_type != AVMEDIA_TYPE_DATA && (*essence_container_ul)[15] > 0x01) {
             /* TODO: decode timestamps */
@@ -2052,7 +2077,9 @@ static int mxf_set_audio_pts(MXFContext *mxf, AVCodecContext *codec, AVPacket *p
 {
     MXFTrack *track = mxf->fc->streams[pkt->stream_index]->priv_data;
     pkt->pts = track->sample_count;
-    track->sample_count += pkt->size / (codec->channels * av_get_bits_per_sample(codec->codec_id) / 8);
+    if (codec->channels <= 0 || av_get_bits_per_sample(codec->codec_id) <= 0)
+        return AVERROR(EINVAL);
+    track->sample_count += pkt->size / (codec->channels * (int64_t)av_get_bits_per_sample(codec->codec_id) / 8);
     return 0;
 }
 
@@ -2224,6 +2251,9 @@ static int mxf_read_close(AVFormatContext *s)
 
     for (i = 0; i < mxf->metadata_sets_count; i++) {
         switch (mxf->metadata_sets[i]->type) {
+        case Descriptor:
+            av_freep(&((MXFDescriptor *)mxf->metadata_sets[i])->extradata);
+            break;
         case MultipleDescriptor:
             av_freep(&((MXFDescriptor *)mxf->metadata_sets[i])->sub_descriptors_refs);
             break;
@@ -2263,8 +2293,8 @@ static int mxf_read_close(AVFormatContext *s)
 }
 
 static int mxf_probe(AVProbeData *p) {
-    uint8_t *bufp = p->buf;
-    uint8_t *end = p->buf + p->buf_size;
+    const uint8_t *bufp = p->buf;
+    const uint8_t *end = p->buf + p->buf_size;
 
     if (p->buf_size < sizeof(mxf_header_partition_pack_key))
         return 0;
@@ -2288,6 +2318,11 @@ static int mxf_read_seek(AVFormatContext *s, int stream_index, int64_t sample_ti
     int64_t seekpos;
     int i, ret;
     MXFIndexTable *t;
+    MXFTrack *source_track = st->priv_data;
+
+    /* if audio then truncate sample_time to EditRate */
+    if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+        sample_time = av_rescale_q(sample_time, st->time_base, av_inv_q(source_track->edit_rate));
 
     if (mxf->nb_index_tables <= 0) {
     if (!s->bit_rate)
@@ -2313,7 +2348,7 @@ static int mxf_read_seek(AVFormatContext *s, int stream_index, int64_t sample_ti
         } else {
             /* no IndexEntryArray (one or more CBR segments)
              * make sure we don't seek past the end */
-            sample_time = FFMIN(sample_time, st->duration - 1);
+            sample_time = FFMIN(sample_time, source_track->original_duration - 1);
         }
 
         if ((ret = mxf_edit_unit_absolute_offset(mxf, t, sample_time, &sample_time, &seekpos, 1)) << 0)

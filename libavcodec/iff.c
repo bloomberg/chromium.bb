@@ -29,6 +29,7 @@
 #include "bytestream.h"
 #include "avcodec.h"
 #include "get_bits.h"
+#include "internal.h"
 
 // TODO: masking bits
 typedef enum {
@@ -53,6 +54,7 @@ typedef struct {
     unsigned  transparency; ///< TODO: transparency color index in palette
     unsigned  masking;      ///< TODO: masking method used
     int init; // 1 if buffer and palette data already initialized, 0 otherwise
+    int16_t   tvdc[16];     ///< TVDC lookup table
 } IffContext;
 
 #define LUT8_PART(plane, v)                             \
@@ -137,7 +139,7 @@ static av_always_inline uint32_t gray2rgb(const uint32_t x) {
 /**
  * Convert CMAP buffer (stored in extradata) to lavc palette format
  */
-static int ff_cmap_read_palette(AVCodecContext *avctx, uint32_t *pal)
+static int cmap_read_palette(AVCodecContext *avctx, uint32_t *pal)
 {
     IffContext *s = avctx->priv_data;
     int count, i;
@@ -191,7 +193,7 @@ static int extract_header(AVCodecContext *const avctx,
     const uint8_t *buf;
     unsigned buf_size;
     IffContext *s = avctx->priv_data;
-    int palette_size;
+    int i, palette_size;
 
     if (avctx->extradata_size < 2) {
         av_log(avctx, AV_LOG_ERROR, "not enough extradata\n");
@@ -223,13 +225,16 @@ static int extract_header(AVCodecContext *const avctx,
         }
     }
 
-    if (buf_size > 8) {
+    if (buf_size >= 41) {
         s->compression  = bytestream_get_byte(&buf);
         s->bpp          = bytestream_get_byte(&buf);
         s->ham          = bytestream_get_byte(&buf);
         s->flags        = bytestream_get_byte(&buf);
         s->transparency = bytestream_get_be16(&buf);
         s->masking      = bytestream_get_byte(&buf);
+        for (i = 0; i < 16; i++)
+            s->tvdc[i] = bytestream_get_be16(&buf);
+
         if (s->masking == MASK_HAS_MASK) {
             if (s->bpp >= 8 && !s->ham) {
                 avctx->pix_fmt = AV_PIX_FMT_RGB32;
@@ -330,9 +335,13 @@ static av_cold int decode_init(AVCodecContext *avctx)
         avctx->pix_fmt = (avctx->bits_per_coded_sample < 8) ||
                          (avctx->extradata_size >= 2 && palette_size) ? AV_PIX_FMT_PAL8 : AV_PIX_FMT_GRAY8;
     } else if (avctx->bits_per_coded_sample <= 32) {
-        if (avctx->codec_tag != MKTAG('D','E','E','P')) {
+        if (avctx->codec_tag == MKTAG('R','G','B','8')) {
+            avctx->pix_fmt = AV_PIX_FMT_RGB32;
+        } else if (avctx->codec_tag == MKTAG('R','G','B','N')) {
+            avctx->pix_fmt = AV_PIX_FMT_RGB444;
+        } else if (avctx->codec_tag != MKTAG('D','E','E','P')) {
             if (avctx->bits_per_coded_sample == 24) {
-                avctx->pix_fmt = AV_PIX_FMT_RGB0;
+                avctx->pix_fmt = AV_PIX_FMT_0BGR32;
             } else if (avctx->bits_per_coded_sample == 32) {
                 avctx->pix_fmt = AV_PIX_FMT_BGR32;
             } else {
@@ -479,6 +488,61 @@ static int decode_byterun(uint8_t *dst, int dst_size,
     return buf - buf_start;
 }
 
+#define DECODE_RGBX_COMMON(type) \
+    if (!length) { \
+        length = bytestream2_get_byte(gb); \
+        if (!length) { \
+            length = bytestream2_get_be16(gb); \
+            if (!length) \
+                return; \
+        } \
+    } \
+    for (i = 0; i < length; i++) { \
+        *(type *)(dst + y*linesize + x * sizeof(type)) = pixel; \
+        x += 1; \
+        if (x >= width) { \
+            y += 1; \
+            if (y >= height) \
+                return; \
+            x = 0; \
+        } \
+    }
+
+/**
+ * Decode RGB8 buffer
+ * @param[out] dst Destination buffer
+ * @param width Width of destination buffer (pixels)
+ * @param height Height of destination buffer (pixels)
+ * @param linesize Line size of destination buffer (bytes)
+ */
+static void decode_rgb8(GetByteContext *gb, uint8_t *dst, int width, int height, int linesize)
+{
+    int x = 0, y = 0, i, length;
+    while (bytestream2_get_bytes_left(gb) >= 4) {
+        uint32_t pixel = 0xFF000000 | bytestream2_get_be24(gb);
+        length = bytestream2_get_byte(gb) & 0x7F;
+        DECODE_RGBX_COMMON(uint32_t)
+    }
+}
+
+/**
+ * Decode RGBN buffer
+ * @param[out] dst Destination buffer
+ * @param width Width of destination buffer (pixels)
+ * @param height Height of destination buffer (pixels)
+ * @param linesize Line size of destination buffer (bytes)
+ */
+static void decode_rgbn(GetByteContext *gb, uint8_t *dst, int width, int height, int linesize)
+{
+    int x = 0, y = 0, i, length;
+    while (bytestream2_get_bytes_left(gb) >= 2) {
+        uint32_t pixel = bytestream2_get_be16u(gb);
+        length = pixel & 0x7;
+        pixel >>= 4;
+        DECODE_RGBX_COMMON(uint16_t)
+    }
+}
+
 /**
  * Decode DEEP RLE 32-bit buffer
  * @param[out] dst Destination buffer
@@ -512,7 +576,7 @@ static void decode_deep_rle32(uint8_t *dst, const uint8_t *src, int src_size, in
             }
         } else {
             int size = -opcode + 1;
-            uint32_t pixel = AV_RL32(src);
+            uint32_t pixel = AV_RN32(src);
             for (i = 0; i < size; i++) {
                 *(uint32_t *)(dst + y*linesize + x * 4) = pixel;
                 x += 1;
@@ -528,6 +592,56 @@ static void decode_deep_rle32(uint8_t *dst, const uint8_t *src, int src_size, in
     }
 }
 
+/**
+ * Decode DEEP TVDC 32-bit buffer
+ * @param[out] dst Destination buffer
+ * @param[in] src Source buffer
+ * @param src_size Source buffer size (bytes)
+ * @param width Width of destination buffer (pixels)
+ * @param height Height of destination buffer (pixels)
+ * @param linesize Line size of destination buffer (bytes)
+ * @param[int] tvdc TVDC lookup table
+ */
+static void decode_deep_tvdc32(uint8_t *dst, const uint8_t *src, int src_size, int width, int height, int linesize, const int16_t *tvdc)
+{
+    int x = 0, y = 0, plane = 0;
+    int8_t pixel = 0;
+    int i, j;
+
+    for (i = 0; i < src_size * 2;) {
+#define GETNIBBLE ((i & 1) ?  (src[i>>1] & 0xF) : (src[i>>1] >> 4))
+        int d = tvdc[GETNIBBLE];
+        i++;
+        if (d) {
+            pixel += d;
+            dst[y * linesize + x*4 + plane] = pixel;
+            x++;
+        } else {
+            if (i >= src_size * 2)
+                return;
+            d = GETNIBBLE + 1;
+            i++;
+            d = FFMIN(d, width - x);
+            for (j = 0; j < d; j++) {
+                dst[y * linesize + x*4 + plane] = pixel;
+                x++;
+            }
+        }
+        if (x >= width) {
+            plane++;
+            if (plane >= 4) {
+                y++;
+                if (y >= height)
+                    return;
+                plane = 0;
+            }
+            x = 0;
+            pixel = 0;
+            i = (i + 1) & ~1;
+        }
+    }
+}
+
 static int unsupported(AVCodecContext *avctx)
 {
     IffContext *s = avctx->priv_data;
@@ -536,7 +650,7 @@ static int unsupported(AVCodecContext *avctx)
 }
 
 static int decode_frame(AVCodecContext *avctx,
-                            void *data, int *data_size,
+                            void *data, int *got_frame,
                             AVPacket *avpkt)
 {
     IffContext *s = avctx->priv_data;
@@ -544,6 +658,7 @@ static int decode_frame(AVCodecContext *avctx,
     const int buf_size = avpkt->size >= 2 ? avpkt->size - AV_RB16(avpkt->data) : 0;
     const uint8_t *buf_end = buf+buf_size;
     int y, plane, res;
+    GetByteContext gb;
 
     if ((res = extract_header(avctx, avpkt)) < 0)
         return res;
@@ -552,14 +667,14 @@ static int decode_frame(AVCodecContext *avctx,
             av_log(avctx, AV_LOG_ERROR, "reget_buffer() failed\n");
             return res;
         }
-    } else if ((res = avctx->get_buffer(avctx, &s->frame)) < 0) {
+    } else if ((res = ff_get_buffer(avctx, &s->frame)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return res;
     } else if (avctx->bits_per_coded_sample <= 8 && avctx->pix_fmt == AV_PIX_FMT_PAL8) {
-        if ((res = ff_cmap_read_palette(avctx, (uint32_t*)s->frame.data[1])) < 0)
+        if ((res = cmap_read_palette(avctx, (uint32_t*)s->frame.data[1])) < 0)
             return res;
     } else if (avctx->pix_fmt == AV_PIX_FMT_RGB32 && avctx->bits_per_coded_sample <= 8) {
-        if ((res = ff_cmap_read_palette(avctx, s->mask_palbuf)) < 0)
+        if ((res = cmap_read_palette(avctx, s->mask_palbuf)) < 0)
             return res;
     }
     s->init = 1;
@@ -715,11 +830,30 @@ static int decode_frame(AVCodecContext *avctx,
                 return unsupported(avctx);
         }
         break;
+    case 4:
+        bytestream2_init(&gb, buf, buf_size);
+        if (avctx->codec_tag == MKTAG('R','G','B','8'))
+            decode_rgb8(&gb, s->frame.data[0], avctx->width, avctx->height, s->frame.linesize[0]);
+        else if (avctx->codec_tag == MKTAG('R','G','B','N'))
+            decode_rgbn(&gb, s->frame.data[0], avctx->width, avctx->height, s->frame.linesize[0]);
+        else
+            return unsupported(avctx);
+        break;
+    case 5:
+        if (avctx->codec_tag == MKTAG('D','E','E','P')) {
+            const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
+            if (av_get_bits_per_pixel(desc) == 32)
+                decode_deep_tvdc32(s->frame.data[0], buf, buf_size, avctx->width, avctx->height, s->frame.linesize[0], s->tvdc);
+            else
+                return unsupported(avctx);
+        } else
+            return unsupported(avctx);
+        break;
     default:
         return unsupported(avctx);
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = s->frame;
     return buf_size;
 }

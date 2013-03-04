@@ -23,7 +23,8 @@
 #include "libavutil/opt.h"
 #include "avcodec.h"
 #include "dsputil.h"
-#include "dwt.h"
+#include "snow_dwt.h"
+#include "internal.h"
 #include "snow.h"
 #include "snowdata.h"
 
@@ -345,7 +346,7 @@ void ff_snow_pred_block(SnowContext *s, uint8_t *dst, uint8_t *tmp, int stride, 
         src += sx + sy*stride;
         if(   (unsigned)sx >= FFMAX(w - b_w - (HTAPS_MAX-2), 0)
            || (unsigned)sy >= FFMAX(h - b_h - (HTAPS_MAX-2), 0)){
-            s->dsp.emulated_edge_mc(tmp + MB_SIZE, src, stride, b_w+HTAPS_MAX-1, b_h+HTAPS_MAX-1, sx, sy, w, h);
+            s->vdsp.emulated_edge_mc(tmp + MB_SIZE, src, stride, b_w+HTAPS_MAX-1, b_h+HTAPS_MAX-1, sx, sy, w, h);
             src= tmp + MB_SIZE;
         }
 
@@ -360,24 +361,24 @@ void ff_snow_pred_block(SnowContext *s, uint8_t *dst, uint8_t *tmp, int stride, 
         else if(b_w==32){
             int y;
             for(y=0; y<b_h; y+=16){
-                s->dsp.put_h264_qpel_pixels_tab[0][dy+(dx>>2)](dst + y*stride, src + 3 + (y+3)*stride,stride);
-                s->dsp.put_h264_qpel_pixels_tab[0][dy+(dx>>2)](dst + 16 + y*stride, src + 19 + (y+3)*stride,stride);
+                s->h264qpel.put_h264_qpel_pixels_tab[0][dy+(dx>>2)](dst + y*stride, src + 3 + (y+3)*stride,stride);
+                s->h264qpel.put_h264_qpel_pixels_tab[0][dy+(dx>>2)](dst + 16 + y*stride, src + 19 + (y+3)*stride,stride);
             }
         }else if(b_w==b_h)
-            s->dsp.put_h264_qpel_pixels_tab[tab_index  ][dy+(dx>>2)](dst,src + 3 + 3*stride,stride);
+            s->h264qpel.put_h264_qpel_pixels_tab[tab_index  ][dy+(dx>>2)](dst,src + 3 + 3*stride,stride);
         else if(b_w==2*b_h){
-            s->dsp.put_h264_qpel_pixels_tab[tab_index+1][dy+(dx>>2)](dst    ,src + 3       + 3*stride,stride);
-            s->dsp.put_h264_qpel_pixels_tab[tab_index+1][dy+(dx>>2)](dst+b_h,src + 3 + b_h + 3*stride,stride);
+            s->h264qpel.put_h264_qpel_pixels_tab[tab_index+1][dy+(dx>>2)](dst    ,src + 3       + 3*stride,stride);
+            s->h264qpel.put_h264_qpel_pixels_tab[tab_index+1][dy+(dx>>2)](dst+b_h,src + 3 + b_h + 3*stride,stride);
         }else{
             av_assert2(2*b_w==b_h);
-            s->dsp.put_h264_qpel_pixels_tab[tab_index  ][dy+(dx>>2)](dst           ,src + 3 + 3*stride           ,stride);
-            s->dsp.put_h264_qpel_pixels_tab[tab_index  ][dy+(dx>>2)](dst+b_w*stride,src + 3 + 3*stride+b_w*stride,stride);
+            s->h264qpel.put_h264_qpel_pixels_tab[tab_index  ][dy+(dx>>2)](dst           ,src + 3 + 3*stride           ,stride);
+            s->h264qpel.put_h264_qpel_pixels_tab[tab_index  ][dy+(dx>>2)](dst+b_w*stride,src + 3 + 3*stride+b_w*stride,stride);
         }
     }
 }
 
 #define mca(dx,dy,b_w)\
-static void mc_block_hpel ## dx ## dy ## b_w(uint8_t *dst, const uint8_t *src, int stride, int h){\
+static void mc_block_hpel ## dx ## dy ## b_w(uint8_t *dst, const uint8_t *src, ptrdiff_t stride, int h){\
     av_assert2(h==b_w);\
     mc_block(NULL, dst, src-(HTAPS_MAX/2-1)-(HTAPS_MAX/2-1)*stride, stride, b_w, b_w, dx, dy);\
 }
@@ -397,18 +398,20 @@ av_cold int ff_snow_common_init(AVCodecContext *avctx){
     int i, j;
 
     s->avctx= avctx;
-    s->max_ref_frames=1; //just make sure its not an invalid value in case of no initial keyframe
+    s->max_ref_frames=1; //just make sure it's not an invalid value in case of no initial keyframe
 
     ff_dsputil_init(&s->dsp, avctx);
+    ff_videodsp_init(&s->vdsp, 8);
     ff_dwt_init(&s->dwt);
+    ff_h264qpel_init(&s->h264qpel, 8);
 
 #define mcf(dx,dy)\
     s->dsp.put_qpel_pixels_tab       [0][dy+dx/4]=\
     s->dsp.put_no_rnd_qpel_pixels_tab[0][dy+dx/4]=\
-        s->dsp.put_h264_qpel_pixels_tab[0][dy+dx/4];\
+        s->h264qpel.put_h264_qpel_pixels_tab[0][dy+dx/4];\
     s->dsp.put_qpel_pixels_tab       [1][dy+dx/4]=\
     s->dsp.put_no_rnd_qpel_pixels_tab[1][dy+dx/4]=\
-        s->dsp.put_h264_qpel_pixels_tab[1][dy+dx/4];
+        s->h264qpel.put_h264_qpel_pixels_tab[1][dy+dx/4];
 
     mcf( 0, 0)
     mcf( 4, 0)
@@ -468,7 +471,7 @@ int ff_snow_common_init_after_header(AVCodecContext *avctx) {
     int ret, emu_buf_size;
 
     if(!s->scratchbuf) {
-        if ((ret = s->avctx->get_buffer(s->avctx, &s->mconly_picture)) < 0) {
+        if ((ret = ff_get_buffer(s->avctx, &s->mconly_picture)) < 0) {
             av_log(s->avctx, AV_LOG_ERROR, "get_buffer() failed\n");
             return ret;
         }
@@ -632,7 +635,7 @@ int ff_snow_frame_start(SnowContext *s){
     }
 
     s->current_picture.reference= 3;
-    if(s->avctx->get_buffer(s->avctx, &s->current_picture) < 0){
+    if(ff_get_buffer(s->avctx, &s->current_picture) < 0){
         av_log(s->avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return -1;
     }

@@ -706,10 +706,10 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .log2_chroma_w = 1,
         .log2_chroma_h = 1,
         .comp = {
-            { 0, 1, 1, 0, 15 },        /* Y */
-            { 1, 1, 1, 0, 15 },        /* U */
-            { 2, 1, 1, 0, 15 },        /* V */
-            { 3, 1, 1, 0, 15 },        /* A */
+            { 0, 1, 1, 0, 9 },        /* Y */
+            { 1, 1, 1, 0, 9 },        /* U */
+            { 2, 1, 1, 0, 9 },        /* V */
+            { 3, 1, 1, 0, 9 },        /* A */
         },
         .flags = PIX_FMT_PLANAR | PIX_FMT_ALPHA,
     },
@@ -719,10 +719,10 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .log2_chroma_w = 1,
         .log2_chroma_h = 0,
         .comp = {
-            { 0, 1, 1, 0, 15 },        /* Y */
-            { 1, 1, 1, 0, 15 },        /* U */
-            { 2, 1, 1, 0, 15 },        /* V */
-            { 3, 1, 1, 0, 15 },        /* A */
+            { 0, 1, 1, 0, 9 },        /* Y */
+            { 1, 1, 1, 0, 9 },        /* U */
+            { 2, 1, 1, 0, 9 },        /* V */
+            { 3, 1, 1, 0, 9 },        /* A */
         },
         .flags = PIX_FMT_BE | PIX_FMT_PLANAR | PIX_FMT_ALPHA,
     },
@@ -732,10 +732,10 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .log2_chroma_w = 1,
         .log2_chroma_h = 0,
         .comp = {
-            { 0, 1, 1, 0, 15 },        /* Y */
-            { 1, 1, 1, 0, 15 },        /* U */
-            { 2, 1, 1, 0, 15 },        /* V */
-            { 3, 1, 1, 0, 15 },        /* A */
+            { 0, 1, 1, 0, 9 },        /* Y */
+            { 1, 1, 1, 0, 9 },        /* U */
+            { 2, 1, 1, 0, 9 },        /* V */
+            { 3, 1, 1, 0, 9 },        /* A */
         },
         .flags = PIX_FMT_PLANAR | PIX_FMT_ALPHA,
     },
@@ -745,10 +745,10 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .log2_chroma_w = 0,
         .log2_chroma_h = 0,
         .comp = {
-            { 0, 1, 1, 0, 15 },        /* Y */
-            { 1, 1, 1, 0, 15 },        /* U */
-            { 2, 1, 1, 0, 15 },        /* V */
-            { 3, 1, 1, 0, 15 },        /* A */
+            { 0, 1, 1, 0, 9 },        /* Y */
+            { 1, 1, 1, 0, 9 },        /* U */
+            { 2, 1, 1, 0, 9 },        /* V */
+            { 3, 1, 1, 0, 9 },        /* A */
         },
         .flags = PIX_FMT_BE | PIX_FMT_PLANAR | PIX_FMT_ALPHA,
     },
@@ -758,10 +758,10 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .log2_chroma_w = 0,
         .log2_chroma_h = 0,
         .comp = {
-            { 0, 1, 1, 0, 15 },        /* Y */
-            { 1, 1, 1, 0, 15 },        /* U */
-            { 2, 1, 1, 0, 15 },        /* V */
-            { 3, 1, 1, 0, 15 },        /* A */
+            { 0, 1, 1, 0, 9 },        /* Y */
+            { 1, 1, 1, 0, 9 },        /* U */
+            { 2, 1, 1, 0, 9 },        /* V */
+            { 3, 1, 1, 0, 9 },        /* A */
         },
         .flags = PIX_FMT_PLANAR | PIX_FMT_ALPHA,
     },
@@ -1654,6 +1654,12 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         },
         .flags = PIX_FMT_BE | PIX_FMT_PLANAR | PIX_FMT_RGB,
     },
+    [AV_PIX_FMT_VDPAU] = {
+        .name = "vdpau",
+        .log2_chroma_w = 1,
+        .log2_chroma_h = 1,
+        .flags = PIX_FMT_HWACCEL,
+    },
 };
 
 static enum AVPixelFormat get_pix_fmt_internal(const char *name)
@@ -1719,7 +1725,7 @@ int av_get_padded_bits_per_pixel(const AVPixFmtDescriptor *pixdesc)
     int steps[4] = {0};
 
     for (c = 0; c < pixdesc->nb_components; c++) {
-        AVComponentDescriptor *comp = &pixdesc->comp[c];
+        const AVComponentDescriptor *comp = &pixdesc->comp[c];
         int s = c == 1 || c == 2 ? 0 : log2_pixels;
         steps[comp->plane] = (comp->step_minus1 + 1) << s;
     }
@@ -1757,8 +1763,11 @@ const AVPixFmtDescriptor *av_pix_fmt_desc_next(const AVPixFmtDescriptor *prev)
 {
     if (!prev)
         return &av_pix_fmt_descriptors[0];
-    if (prev - av_pix_fmt_descriptors < FF_ARRAY_ELEMS(av_pix_fmt_descriptors) - 1)
-        return prev + 1;
+    while (prev - av_pix_fmt_descriptors < FF_ARRAY_ELEMS(av_pix_fmt_descriptors) - 1) {
+        prev++;
+        if (prev->name)
+            return prev;
+    }
     return NULL;
 }
 

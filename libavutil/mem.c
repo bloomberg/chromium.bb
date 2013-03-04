@@ -36,14 +36,10 @@
 #include <malloc.h>
 #endif
 
+#include "avassert.h"
 #include "avutil.h"
 #include "intreadwrite.h"
 #include "mem.h"
-
-/* here we can use OS-dependent allocation functions */
-#undef free
-#undef malloc
-#undef realloc
 
 #ifdef MALLOC_PREFIX
 
@@ -89,7 +85,7 @@ void *av_malloc(size_t size)
     ptr = malloc(size + ALIGN);
     if (!ptr)
         return ptr;
-    diff              = ((-(long)ptr - 1)&(ALIGN - 1)) + 1;
+    diff              = ((~(long)ptr)&(ALIGN - 1)) + 1;
     ptr               = (char *)ptr + diff;
     ((char *)ptr)[-1] = diff;
 #elif HAVE_POSIX_MEMALIGN
@@ -153,6 +149,7 @@ void *av_realloc(void *ptr, size_t size)
     if (!ptr)
         return av_malloc(size);
     diff = ((char *)ptr)[-1];
+    av_assert0(diff>0 && diff<=ALIGN);
     ptr = realloc((char *)ptr - diff, size + diff);
     if (ptr)
         ptr = (char *)ptr + diff;
@@ -182,8 +179,11 @@ void *av_realloc_f(void *ptr, size_t nelem, size_t elsize)
 void av_free(void *ptr)
 {
 #if CONFIG_MEMALIGN_HACK
-    if (ptr)
-        free((char *)ptr - ((char *)ptr)[-1]);
+    if (ptr) {
+        int v= ((char *)ptr)[-1];
+        av_assert0(v>0 && v<=ALIGN);
+        free((char *)ptr - v);
+    }
 #elif HAVE_ALIGNED_MALLOC
     _aligned_free(ptr);
 #else
@@ -323,7 +323,10 @@ static void fill32(uint8_t *dst, int len)
 void av_memcpy_backptr(uint8_t *dst, int back, int cnt)
 {
     const uint8_t *src = &dst[-back];
-    if (back <= 1) {
+    if (!back)
+        return;
+
+    if (back == 1) {
         memset(dst, *src, cnt);
     } else if (back == 2) {
         fill16(dst, cnt);

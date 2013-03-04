@@ -642,15 +642,15 @@ static const char *csv_escape_str(AVBPrint *dst, const char *src, const char sep
     int needs_quoting = !!src[strcspn(src, meta_chars)];
 
     if (needs_quoting)
-        av_bprint_chars(dst, '\"', 1);
+        av_bprint_chars(dst, '"', 1);
 
     for (; *src; src++) {
         if (*src == '"')
-            av_bprint_chars(dst, '\"', 1);
+            av_bprint_chars(dst, '"', 1);
         av_bprint_chars(dst, *src, 1);
     }
     if (needs_quoting)
-        av_bprint_chars(dst, '\"', 1);
+        av_bprint_chars(dst, '"', 1);
     return dst->str;
 }
 
@@ -1254,7 +1254,7 @@ static const char *xml_escape_str(AVBPrint *dst, const char *src, void *log_ctx)
         case '&' : av_bprintf(dst, "%s", "&amp;");  break;
         case '<' : av_bprintf(dst, "%s", "&lt;");   break;
         case '>' : av_bprintf(dst, "%s", "&gt;");   break;
-        case '\"': av_bprintf(dst, "%s", "&quot;"); break;
+        case '"' : av_bprintf(dst, "%s", "&quot;"); break;
         case '\'': av_bprintf(dst, "%s", "&apos;"); break;
         default: av_bprint_chars(dst, *p, 1);
         }
@@ -1476,6 +1476,8 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
     print_duration_time("pkt_duration_time", frame->pkt_duration, &stream->time_base);
     if (frame->pkt_pos != -1) print_fmt    ("pkt_pos", "%"PRId64, frame->pkt_pos);
     else                      print_str_opt("pkt_pos", "N/A");
+    if (frame->pkt_size != -1) print_fmt    ("pkt_size", "%d", av_frame_get_pkt_size(frame));
+    else                       print_str_opt("pkt_size", "N/A");
 
     switch (stream->codec->codec_type) {
         AVRational sar;

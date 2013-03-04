@@ -23,6 +23,7 @@
 #include "libavutil/imgutils.h"
 #include "bytestream.h"
 #include "avcodec.h"
+#include "internal.h"
 
 typedef struct DPXContext {
     AVFrame picture;
@@ -58,7 +59,7 @@ static uint16_t read10in32(const uint8_t **ptr, uint32_t * lbuf,
 
 static int decode_frame(AVCodecContext *avctx,
                         void *data,
-                        int *data_size,
+                        int *got_frame,
                         AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -70,7 +71,7 @@ static int decode_frame(AVCodecContext *avctx,
 
     unsigned int offset;
     int magic_num, endian;
-    int x, y, i;
+    int x, y, i, ret;
     int w, h, bits_per_color, descriptor, elements, packing, total_size;
 
     unsigned int rgbBuffer = 0;
@@ -92,7 +93,7 @@ static int decode_frame(AVCodecContext *avctx,
         endian = 1;
     } else {
         av_log(avctx, AV_LOG_ERROR, "DPX marker not found\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
 
     offset = read32(&buf, endian);
@@ -104,8 +105,8 @@ static int decode_frame(AVCodecContext *avctx,
     buf = avpkt->data + 0x304;
     w = read32(&buf, endian);
     h = read32(&buf, endian);
-    if (av_image_check_size(w, h, 0, avctx))
-        return AVERROR(EINVAL);
+    if ((ret = av_image_check_size(w, h, 0, avctx)) < 0)
+        return ret;
 
     if (w != avctx->width || h != avctx->height)
         avcodec_set_dimensions(avctx, w, h);
@@ -140,7 +141,7 @@ static int decode_frame(AVCodecContext *avctx,
             break;
         default:
             av_log(avctx, AV_LOG_ERROR, "Unsupported descriptor %d\n", descriptor);
-            return -1;
+            return AVERROR_INVALIDDATA;
     }
 
     switch (bits_per_color) {
@@ -158,7 +159,7 @@ static int decode_frame(AVCodecContext *avctx,
                 return -1;
             }
             avctx->pix_fmt = AV_PIX_FMT_GBRP10;
-            total_size = (4 * avctx->width * avctx->height * elements) / 3;
+            total_size = (avctx->width * avctx->height * elements + 2) / 3 * 4;
             break;
         case 12:
             if (!packing) {
@@ -182,14 +183,14 @@ static int decode_frame(AVCodecContext *avctx,
             break;
         default:
             av_log(avctx, AV_LOG_ERROR, "Unsupported color depth : %d\n", bits_per_color);
-            return -1;
+            return AVERROR_INVALIDDATA;
     }
 
     if (s->picture.data[0])
         avctx->release_buffer(avctx, &s->picture);
-    if (avctx->get_buffer(avctx, p) < 0) {
+    if ((ret = ff_get_buffer(avctx, p)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
-        return -1;
+        return ret;
     }
 
     // Move pointer to offset from start of file
@@ -198,9 +199,9 @@ static int decode_frame(AVCodecContext *avctx,
     for (i=0; i<AV_NUM_DATA_POINTERS; i++)
         ptr[i] = p->data[i];
 
-    if (total_size > avpkt->size) {
+    if (total_size + (int64_t)offset > avpkt->size) {
         av_log(avctx, AV_LOG_ERROR, "Overread buffer. Invalid header?\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     switch (bits_per_color) {
     case 10:
@@ -262,7 +263,7 @@ static int decode_frame(AVCodecContext *avctx,
     }
 
     *picture   = s->picture;
-    *data_size = sizeof(AVPicture);
+    *got_frame = 1;
 
     return buf_size;
 }

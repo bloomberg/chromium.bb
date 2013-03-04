@@ -74,16 +74,14 @@ AVFILTER_DEFINE_CLASS(fps);
 static av_cold int init(AVFilterContext *ctx, const char *args)
 {
     FPSContext *s = ctx->priv;
+    const char *shorthand[] = { "fps", "round", NULL };
     int ret;
 
     s->class = &fps_class;
     av_opt_set_defaults(s);
 
-    if ((ret = av_set_options_string(s, args, "=", ":")) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error parsing the options string %s.\n",
-               args);
+    if ((ret = av_opt_set_from_string(s, args, shorthand, "=", ":")) < 0)
         return ret;
-    }
 
     if ((ret = av_parse_video_rate(&s->framerate, s->fps)) < 0) {
         av_log(ctx, AV_LOG_ERROR, "Error parsing framerate %s.\n", s->fps);
@@ -111,6 +109,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     FPSContext *s = ctx->priv;
     if (s->fifo) {
+        s->drop += av_fifo_size(s->fifo) / sizeof(AVFilterBufferRef*);
         flush_fifo(s->fifo);
         av_fifo_free(s->fifo);
     }

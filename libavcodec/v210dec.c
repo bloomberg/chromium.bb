@@ -22,6 +22,7 @@
  */
 
 #include "avcodec.h"
+#include "internal.h"
 #include "v210dec.h"
 #include "libavutil/bswap.h"
 #include "libavutil/internal.h"
@@ -54,7 +55,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
     if (avctx->width & 1) {
         av_log(avctx, AV_LOG_ERROR, "v210 needs even width\n");
-        return -1;
+        return AVERROR_INVALIDDATA;
     }
     avctx->pix_fmt             = AV_PIX_FMT_YUV422P10;
     avctx->bits_per_raw_sample = 10;
@@ -71,12 +72,12 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
+static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                         AVPacket *avpkt)
 {
     V210DecContext *s = avctx->priv_data;
 
-    int h, w, stride, aligned_input;
+    int h, w, ret, stride, aligned_input;
     AVFrame *pic = avctx->coded_frame;
     const uint8_t *psrc = avpkt->data;
     uint16_t *y, *u, *v;
@@ -96,7 +97,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
             s->stride_warning_shown = 1;
         } else {
             av_log(avctx, AV_LOG_ERROR, "packet too small\n");
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
     }
 
@@ -111,8 +112,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         avctx->release_buffer(avctx, pic);
 
     pic->reference = 0;
-    if (avctx->get_buffer(avctx, pic) < 0)
-        return -1;
+    if ((ret = ff_get_buffer(avctx, pic)) < 0)
+        return ret;
 
     y = (uint16_t*)pic->data[0];
     u = (uint16_t*)pic->data[1];
@@ -153,7 +154,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         v += pic->linesize[2] / 2 - avctx->width / 2;
     }
 
-    *data_size = sizeof(AVFrame);
+    *got_frame      = 1;
     *(AVFrame*)data = *avctx->coded_frame;
 
     return avpkt->size;

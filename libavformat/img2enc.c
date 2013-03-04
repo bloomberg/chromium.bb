@@ -78,7 +78,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         if (av_get_frame_filename(filename, sizeof(filename),
                                   img->path, img->img_number) < 0 && img->img_number > 1 && !img->updatefirst) {
             av_log(s, AV_LOG_ERROR,
-                   "Could not get frame filename number %d from pattern '%s'\n",
+                   "Could not get frame filename number %d from pattern '%s' (either set updatefirst or use a pattern like %%03d within the filename pattern)\n",
                    img->img_number, img->path);
             return AVERROR(EINVAL);
         }
@@ -128,8 +128,8 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 #define OFFSET(x) offsetof(VideoMuxData, x)
 #define ENC AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption muxoptions[] = {
-    { "updatefirst",  "",                            OFFSET(updatefirst), AV_OPT_TYPE_INT, { .i64 = 0 }, 0,       1, ENC },
-    { "start_number", "first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT, { .i64 = 1 }, 1, INT_MAX, ENC },
+    { "updatefirst",  "update the first image file",      OFFSET(updatefirst), AV_OPT_TYPE_INT, { .i64 = 0 }, 0,       1, ENC },
+    { "start_number", "set first number in the sequence", OFFSET(img_number), AV_OPT_TYPE_INT,  { .i64 = 1 }, 1, INT_MAX, ENC },
     { NULL },
 };
 

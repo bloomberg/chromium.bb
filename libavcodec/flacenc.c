@@ -26,7 +26,7 @@
 #include "libavutil/opt.h"
 #include "avcodec.h"
 #include "dsputil.h"
-#include "get_bits.h"
+#include "put_bits.h"
 #include "golomb.h"
 #include "internal.h"
 #include "lpc.h"
@@ -248,8 +248,11 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
         break;
     }
 
-    if (channels < 1 || channels > FLAC_MAX_CHANNELS)
-        return -1;
+    if (channels < 1 || channels > FLAC_MAX_CHANNELS) {
+        av_log(avctx, AV_LOG_ERROR, "%d channels not supported (max %d)\n",
+               channels, FLAC_MAX_CHANNELS);
+        return AVERROR(EINVAL);
+    }
     s->channels = channels;
 
     /* find samplerate in table */
@@ -275,7 +278,8 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
             s->sr_code[0] = 13;
             s->sr_code[1] = freq;
         } else {
-            return -1;
+            av_log(avctx, AV_LOG_ERROR, "%d Hz not supported\n", freq);
+            return AVERROR(EINVAL);
         }
         s->samplerate = freq;
     }
@@ -290,7 +294,7 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
     if (level > 12) {
         av_log(avctx, AV_LOG_ERROR, "invalid compression level: %d\n",
                s->options.compression_level);
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     s->options.block_time_ms = ((int[]){ 27, 27, 27,105,105,105,105,105,105,105,105,105,105})[level];
@@ -329,13 +333,13 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
             if (avctx->min_prediction_order > MAX_FIXED_ORDER) {
                 av_log(avctx, AV_LOG_ERROR, "invalid min prediction order: %d\n",
                        avctx->min_prediction_order);
-                return -1;
+                return AVERROR(EINVAL);
             }
         } else if (avctx->min_prediction_order < MIN_LPC_ORDER ||
                    avctx->min_prediction_order > MAX_LPC_ORDER) {
             av_log(avctx, AV_LOG_ERROR, "invalid min prediction order: %d\n",
                    avctx->min_prediction_order);
-            return -1;
+            return AVERROR(EINVAL);
         }
         s->options.min_prediction_order = avctx->min_prediction_order;
     }
@@ -346,20 +350,20 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
             if (avctx->max_prediction_order > MAX_FIXED_ORDER) {
                 av_log(avctx, AV_LOG_ERROR, "invalid max prediction order: %d\n",
                        avctx->max_prediction_order);
-                return -1;
+                return AVERROR(EINVAL);
             }
         } else if (avctx->max_prediction_order < MIN_LPC_ORDER ||
                    avctx->max_prediction_order > MAX_LPC_ORDER) {
             av_log(avctx, AV_LOG_ERROR, "invalid max prediction order: %d\n",
                    avctx->max_prediction_order);
-            return -1;
+            return AVERROR(EINVAL);
         }
         s->options.max_prediction_order = avctx->max_prediction_order;
     }
     if (s->options.max_prediction_order < s->options.min_prediction_order) {
         av_log(avctx, AV_LOG_ERROR, "invalid prediction orders: min=%d max=%d\n",
                s->options.min_prediction_order, s->options.max_prediction_order);
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     if (avctx->frame_size > 0) {
@@ -367,7 +371,7 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
                 avctx->frame_size > FLAC_MAX_BLOCKSIZE) {
             av_log(avctx, AV_LOG_ERROR, "invalid block size: %d\n",
                    avctx->frame_size);
-            return -1;
+            return AVERROR(EINVAL);
         }
     } else {
         s->avctx->frame_size = select_blocksize(s->samplerate, s->options.block_time_ms);
@@ -1320,7 +1324,7 @@ static const AVOption options[] = {
 { "fixed",    NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_LPC_TYPE_FIXED },    INT_MIN, INT_MAX, FLAGS, "lpc_type" },
 { "levinson", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_LPC_TYPE_LEVINSON }, INT_MIN, INT_MAX, FLAGS, "lpc_type" },
 { "cholesky", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = FF_LPC_TYPE_CHOLESKY }, INT_MIN, INT_MAX, FLAGS, "lpc_type" },
-{ "lpc_passes", "Number of passes to use for Cholesky factorization during LPC analysis", offsetof(FlacEncodeContext, options.lpc_passes),  AV_OPT_TYPE_INT, {.i64 = -1 }, INT_MIN, INT_MAX, FLAGS },
+{ "lpc_passes", "Number of passes to use for Cholesky factorization during LPC analysis", offsetof(FlacEncodeContext, options.lpc_passes),  AV_OPT_TYPE_INT, {.i64 = 2 }, 1, INT_MAX, FLAGS },
 { "min_partition_order",  NULL, offsetof(FlacEncodeContext, options.min_partition_order),  AV_OPT_TYPE_INT, {.i64 = -1 },      -1, MAX_PARTITION_ORDER, FLAGS },
 { "max_partition_order",  NULL, offsetof(FlacEncodeContext, options.max_partition_order),  AV_OPT_TYPE_INT, {.i64 = -1 },      -1, MAX_PARTITION_ORDER, FLAGS },
 { "prediction_order_method", "Search method for selecting prediction order", offsetof(FlacEncodeContext, options.prediction_order_method), AV_OPT_TYPE_INT, {.i64 = -1 }, -1, ORDER_METHOD_LOG, FLAGS, "predm" },

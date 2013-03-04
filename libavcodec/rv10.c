@@ -27,7 +27,6 @@
 
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
-#include "dsputil.h"
 #include "mpegvideo.h"
 #include "mpeg4video.h"
 #include "h263.h"
@@ -415,12 +414,14 @@ static int rv20_decode_picture_header(RVDecContext *rv)
         }else{
             s->time= seq;
             s->pb_time= s->pp_time - (s->last_non_b_time - s->time);
-            if(s->pp_time <=s->pb_time || s->pp_time <= s->pp_time - s->pb_time || s->pp_time<=0){
-                av_log(s->avctx, AV_LOG_DEBUG, "messed up order, possible from seeking? skipping current b frame\n");
-                return FRAME_SKIPPED;
-            }
-            ff_mpeg4_init_direct_mv(s);
         }
+    }
+    if (s->pict_type==AV_PICTURE_TYPE_B) {
+        if(s->pp_time <=s->pb_time || s->pp_time <= s->pp_time - s->pb_time || s->pp_time<=0){
+            av_log(s->avctx, AV_LOG_DEBUG, "messed up order, possible from seeking? skipping current b frame\n");
+            return FRAME_SKIPPED;
+        }
+        ff_mpeg4_init_direct_mv(s);
     }
 
     s->no_rounding= get_bits1(&s->gb);
@@ -495,7 +496,7 @@ static av_cold int rv10_decode_init(AVCodecContext *avctx)
     }
 
     if(avctx->debug & FF_DEBUG_PICT_INFO){
-        av_log(avctx, AV_LOG_DEBUG, "ver:%X ver0:%X\n", rv->sub_id, avctx->extradata_size >= 4 ? ((uint32_t*)avctx->extradata)[0] : -1);
+        av_log(avctx, AV_LOG_DEBUG, "ver:%X ver0:%X\n", rv->sub_id, ((uint32_t*)avctx->extradata)[0]);
     }
 
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
@@ -503,7 +504,7 @@ static av_cold int rv10_decode_init(AVCodecContext *avctx)
     if (ff_MPV_common_init(s) < 0)
         return -1;
 
-    ff_h263_decode_init_vlc(s);
+    ff_h263_decode_init_vlc();
 
     /* init rv vlc */
     if (!done) {
@@ -559,13 +560,13 @@ static int rv10_decode_packet(AVCodecContext *avctx,
 
     if ((s->mb_x == 0 && s->mb_y == 0) || s->current_picture_ptr==NULL) {
         if(s->current_picture_ptr){ //FIXME write parser so we always have complete frames?
-            ff_er_frame_end(s);
+            ff_er_frame_end(&s->er);
             ff_MPV_frame_end(s);
             s->mb_x= s->mb_y = s->resync_mb_x = s->resync_mb_y= 0;
         }
         if(ff_MPV_frame_start(s, avctx) < 0)
             return -1;
-        ff_er_frame_start(s);
+        ff_mpeg_er_frame_start(s);
     } else {
         if (s->current_picture_ptr->f.pict_type != s->pict_type) {
             av_log(s->avctx, AV_LOG_ERROR, "Slice type mismatch\n");
@@ -658,7 +659,7 @@ static int rv10_decode_packet(AVCodecContext *avctx,
         if(ret == SLICE_END) break;
     }
 
-    ff_er_add_slice(s, start_mb_x, s->resync_mb_y, s->mb_x-1, s->mb_y, ER_MB_END);
+    ff_er_add_slice(&s->er, start_mb_x, s->resync_mb_y, s->mb_x-1, s->mb_y, ER_MB_END);
 
     return active_bits_size;
 }
@@ -670,7 +671,7 @@ static int get_slice_offset(AVCodecContext *avctx, const uint8_t *buf, int n)
 }
 
 static int rv10_decode_frame(AVCodecContext *avctx,
-                             void *data, int *data_size,
+                             void *data, int *got_frame,
                              AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -693,11 +694,15 @@ static int rv10_decode_frame(AVCodecContext *avctx,
     if(!avctx->slice_count){
         slice_count = (*buf++) + 1;
         buf_size--;
+
+        if (!slice_count || buf_size <= 8 * slice_count) {
+            av_log(avctx, AV_LOG_ERROR, "Invalid slice count: %d.\n", slice_count);
+            return AVERROR_INVALIDDATA;
+        }
+
         slices_hdr = buf + 4;
         buf += 8 * slice_count;
         buf_size -= 8 * slice_count;
-        if (buf_size <= 0)
-            return AVERROR_INVALIDDATA;
     }else
         slice_count = avctx->slice_count;
 
@@ -727,7 +732,7 @@ static int rv10_decode_frame(AVCodecContext *avctx,
     }
 
     if(s->current_picture_ptr != NULL && s->mb_y>=s->mb_height){
-        ff_er_frame_end(s);
+        ff_er_frame_end(&s->er);
         ff_MPV_frame_end(s);
 
         if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
@@ -737,10 +742,10 @@ static int rv10_decode_frame(AVCodecContext *avctx,
         }
 
         if(s->last_picture_ptr || s->low_delay){
-            *data_size = sizeof(AVFrame);
+            *got_frame = 1;
             ff_print_debug_info(s, pict);
         }
-        s->current_picture_ptr= NULL; //so we can detect if frame_end wasnt called (find some nicer solution...)
+        s->current_picture_ptr= NULL; // so we can detect if frame_end was not called (find some nicer solution...)
     }
 
     return avpkt->size;

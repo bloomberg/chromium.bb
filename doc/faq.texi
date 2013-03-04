@@ -110,7 +110,16 @@ Then you may run:
 
 Notice that @samp{%d} is replaced by the image number.
 
-@file{img%03d.jpg} means the sequence @file{img001.jpg}, @file{img002.jpg}, etc...
+@file{img%03d.jpg} means the sequence @file{img001.jpg}, @file{img002.jpg}, etc.
+
+Use the @option{-start_number} option to declare a starting number for
+the sequence. This is useful if your sequence does not start with
+@file{img001.jpg} but is still in a numerical order. The following
+example will start with @file{img100.jpg}:
+
+@example
+  ffmpeg -f image2 -start_number 100 -i img%d.jpg /tmp/a.mpg
+@end example
 
 If you have large number of pictures to rename, you can use the
 following command to ease the burden. The command, using the bourne
@@ -132,6 +141,12 @@ Then run:
 @end example
 
 The same logic is used for any image format that ffmpeg reads.
+
+You can also use @command{cat} to pipe images to ffmpeg:
+
+@example
+  cat *.jpg | ffmpeg -f image2pipe -c:v mjpeg -i - output.mpg
+@end example
 
 @section How do I encode movie to single pictures?
 
@@ -245,18 +260,18 @@ invoking ffmpeg with several @option{-i} options.
 For audio, to put all channels together in a single stream (example: two
 mono streams into one stereo stream): this is sometimes called to
 @emph{merge} them, and can be done using the
-@url{http://ffmpeg.org/ffmpeg.html#amerge, @code{amerge}} filter.
+@url{http://ffmpeg.org/ffmpeg-filters.html#amerge, @code{amerge}} filter.
 
 @item
 For audio, to play one on top of the other: this is called to @emph{mix}
 them, and can be done by first merging them into a single stream and then
-using the @url{http://ffmpeg.org/ffmpeg.html#pan, @code{pan}} filter to mix
+using the @url{http://ffmpeg.org/ffmpeg-filters.html#pan, @code{pan}} filter to mix
 the channels at will.
 
 @item
 For video, to display both together, side by side or one on top of a part of
 the other; it can be done using the
-@url{http://ffmpeg.org/ffmpeg.html#overlay, @code{overlay}} video filter.
+@url{http://ffmpeg.org/ffmpeg-filters.html#overlay, @code{overlay}} video filter.
 
 @end itemize
 
@@ -265,15 +280,26 @@ the other; it can be done using the
 
 There are several solutions, depending on the exact circumstances.
 
-@subsection Concatenating using filters
+@subsection Concatenating using the concat @emph{filter}
 
-FFmpeg has a @url{http://ffmpeg.org/ffmpeg.html#concat-1, @code{concat}}
-filter designed specifically for that, with examples in the documentation.
+FFmpeg has a @url{http://ffmpeg.org/ffmpeg-filters.html#concat,
+@code{concat}} filter designed specifically for that, with examples in the
+documentation. This operation is recommended if you need to re-encode.
 
-@subsection Concatenating at the file level
+@subsection Concatenating using the concat @emph{demuxer}
+
+FFmpeg has a @url{http://www.ffmpeg.org/ffmpeg-formats.html#concat,
+@code{concat}} demuxer which you can use when you want to avoid a re-encode and
+your format doesn't support file level concatenation.
+
+@subsection Concatenating using the concat @emph{protocol} (file level)
+
+FFmpeg has a @url{http://ffmpeg.org/ffmpeg-protocols.html#concat,
+@code{concat}} protocol designed specifically for that, with examples in the
+documentation.
 
 A few multimedia containers (MPEG-1, MPEG-2 PS, DV) allow to concatenate
-video by merely concatenating the files them.
+video by merely concatenating the files containing them.
 
 Hence you may concatenate your multimedia files by first transcoding them to
 these privileged formats, then using the humble @code{cat} command (or the

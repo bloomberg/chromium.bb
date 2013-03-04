@@ -49,7 +49,7 @@
  * av_opt_set_int(avr, "in_sample_rate",     48000,                0);
  * av_opt_set_int(avr, "out_sample_rate",    44100,                0);
  * av_opt_set_int(avr, "in_sample_fmt",      AV_SAMPLE_FMT_FLTP,   0);
- * av_opt_set_int(avr, "out_sample_fmt,      AV_SAMPLE_FMT_S16,    0);
+ * av_opt_set_int(avr, "out_sample_fmt",     AV_SAMPLE_FMT_S16,    0);
  * @endcode
  *
  * Once the context is initialized, it must be opened with avresample_open(). If
@@ -117,6 +117,15 @@ enum AVResampleFilterType {
     AV_RESAMPLE_FILTER_TYPE_CUBIC,              /**< Cubic */
     AV_RESAMPLE_FILTER_TYPE_BLACKMAN_NUTTALL,   /**< Blackman Nuttall Windowed Sinc */
     AV_RESAMPLE_FILTER_TYPE_KAISER,             /**< Kaiser Windowed Sinc */
+};
+
+enum AVResampleDitherMethod {
+    AV_RESAMPLE_DITHER_NONE,            /**< Do not use dithering */
+    AV_RESAMPLE_DITHER_RECTANGULAR,     /**< Rectangular Dither */
+    AV_RESAMPLE_DITHER_TRIANGULAR,      /**< Triangular Dither*/
+    AV_RESAMPLE_DITHER_TRIANGULAR_HP,   /**< Triangular Dither with High Pass */
+    AV_RESAMPLE_DITHER_TRIANGULAR_NS,   /**< Triangular Dither with Noise Shaping */
+    AV_RESAMPLE_DITHER_NB,              /**< Number of dither types. Not part of ABI. */
 };
 
 /**
@@ -216,6 +225,9 @@ int avresample_build_matrix(uint64_t in_layout, uint64_t out_layout,
 /**
  * Get the current channel mixing matrix.
  *
+ * If no custom matrix has been previously set or the AVAudioResampleContext is
+ * not open, an error is returned.
+ *
  * @param avr     audio resample context
  * @param matrix  mixing coefficients; matrix[i + stride * o] is the weight of
  *                input channel i in output channel o.
@@ -231,7 +243,8 @@ int avresample_get_matrix(AVAudioResampleContext *avr, double *matrix,
  * Allows for setting a custom mixing matrix, overriding the default matrix
  * generated internally during avresample_open(). This function can be called
  * anytime on an allocated context, either before or after calling
- * avresample_open(). avresample_convert() always uses the current matrix.
+ * avresample_open(), as long as the channel layouts have been set.
+ * avresample_convert() always uses the current matrix.
  * Calling avresample_close() on the context will clear the current matrix.
  *
  * @see avresample_close()
@@ -246,13 +259,42 @@ int avresample_set_matrix(AVAudioResampleContext *avr, const double *matrix,
                           int stride);
 
 /**
+ * Set a customized input channel mapping.
+ *
+ * This function can only be called when the allocated context is not open.
+ * Also, the input channel layout must have already been set.
+ *
+ * Calling avresample_close() on the context will clear the channel mapping.
+ *
+ * The map for each input channel specifies the channel index in the source to
+ * use for that particular channel, or -1 to mute the channel. Source channels
+ * can be duplicated by using the same index for multiple input channels.
+ *
+ * Examples:
+ *
+ * Reordering 5.1 AAC order (C,L,R,Ls,Rs,LFE) to Libav order (L,R,C,LFE,Ls,Rs):
+ * { 1, 2, 0, 5, 3, 4 }
+ *
+ * Muting the 3rd channel in 4-channel input:
+ * { 0, 1, -1, 3 }
+ *
+ * Duplicating the left channel of stereo input:
+ * { 0, 0 }
+ *
+ * @param avr         audio resample context
+ * @param channel_map customized input channel mapping
+ * @return            0 on success, negative AVERROR code on failure
+ */
+int avresample_set_channel_mapping(AVAudioResampleContext *avr,
+                                   const int *channel_map);
+
+/**
  * Set compensation for resampling.
  *
- * This can be called anytime after avresample_open(). If resampling was not
- * being done previously, the AVAudioResampleContext is closed and reopened
- * with resampling enabled. In this case, any samples remaining in the output
- * FIFO and the current channel mixing matrix will be restored after reopening
- * the context.
+ * This can be called anytime after avresample_open(). If resampling is not
+ * automatically enabled because of a sample rate conversion, the
+ * "force_resampling" option must have been set to 1 when opening the context
+ * in order to use resampling compensation.
  *
  * @param avr                    audio resample context
  * @param sample_delta           compensation delta, in samples

@@ -4,6 +4,7 @@ Current Status as of Feb 11, 2013
 Upstream cherry-picks:
 <upstream in progress> - Win64 AVX change to not use redzone in
   libavcodec/x86/h264_deblock.asm.
+  TODO(wolenetz): Confirm upstream has the fix in M27 roll.
   TODO(wolenetz): Upstream version of this patch needs to change
   the cglobal stack to be 0x10 on WIN64, 0 on Unix64, -0x50 on 32bit.
   -0x50 means 0x50 but doesn't allocate a stack pointer, saving a
@@ -14,22 +15,17 @@ Upstream cherry-picks:
   patch in Chrome ffmpeg uses (+)0x50 for 32bit.
 <upstream in progress> - Win64 AVX alignment fix in x86inc.asm's
   WIN64_RESTORE_XMM_INTERNAL.
+  TODO(wolenetz): Confirm upstream has the fix in M27 roll.
   TODO(rbultje): Fix may already be in ffmpeg HEAD, though code is
   significantly different versus current Chromium ffmpeg. This fix
   is needed prior to m27 merge so patched directly in Chromium's ffmpeg.
   See also http://crbug.com/174160#c15
-<upstream in progress> - aligned stack fixes for MSVC++.
-<upstream in progress> - vp3 double-free fixes.
-2c16bf2de07c68513072bf3cc96401d2c6291a3e - vorbisdec: Check bark_map_size.
-
+<upstream in progress> - Fix Heap-buffer-overflow in matroska_parse_block.
+  See also http://crbug.com/167069#c16
 
 Current patches:
 
 to_upstream/
-10_realloc_mismatch.patch
-  phajdan.jr: Fixes a mismatch between posix_memalign and realloc
-  detected by debugallocation (http://crbug.com/30715). Pointer passed
-  to realloc must come from malloc, calloc or realloc, which was not the case.
 
 ugly/
 01_enable_checked_bitstream.patch
@@ -40,13 +36,14 @@ ugly/
   dalecurtis: Add CONFIG_* checks to compile out code which we don't use which
   might be a security risk.  Discuss with cevans before removing.  Upstream does
   not want this patch.
+  wolenetz: In M27 merge, added call to matroska_read_close(s) in to this patch
+  in matroska_read_header() to mitigate memory leak caught by valgrind.
+  Confirmed with rbultje that this conforms to API (on error in
+  matroska_read_header(), resulting state should be same as prior to call; and
+  no double-free is expected to result from this either.)
 
 07_remove_av_gettime_symlink.patch
   dalecurtis: In order to preserve ABI compatibility after av_gettime() was
   moved inside the FFmpeg code base, they added a "symbolic link" version which
   our build chain doesn't like.  Remove it until the next major version bump.
-
-08_add_vp9_support.patch
-  tomfinegan: Add support for VP9 in WebM:
-      Tracking issue: http://crbug.com/166094
-      CL: https://codereview.chromium.org/11578025/
+  (If FF_SYMVER is no longer present, this ugly patch can be removed.)

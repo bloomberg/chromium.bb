@@ -23,6 +23,7 @@
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "get_bits.h"
+#include "internal.h"
 
 #define BIT_PLANAR   0x00
 #define CHUNKY       0x20
@@ -116,6 +117,7 @@ static void cdxl_decode_rgb(CDXLVideoContext *c)
 {
     uint32_t *new_palette = (uint32_t *)c->frame.data[1];
 
+    memset(c->frame.data[1], 0, AVPALETTE_SIZE);
     import_palette(c, new_palette);
     import_format(c, c->frame.linesize[0], c->frame.data[0]);
 }
@@ -207,7 +209,7 @@ static void cdxl_decode_ham8(CDXLVideoContext *c)
 }
 
 static int cdxl_decode_frame(AVCodecContext *avctx, void *data,
-                             int *data_size, AVPacket *pkt)
+                             int *got_frame, AVPacket *pkt)
 {
     CDXLVideoContext *c = avctx->priv_data;
     AVFrame * const p = &c->frame;
@@ -262,7 +264,7 @@ static int cdxl_decode_frame(AVCodecContext *avctx, void *data,
         avctx->release_buffer(avctx, p);
 
     p->reference = 0;
-    if ((ret = avctx->get_buffer(avctx, p)) < 0) {
+    if ((ret = ff_get_buffer(avctx, p)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -280,7 +282,7 @@ static int cdxl_decode_frame(AVCodecContext *avctx, void *data,
     } else {
         cdxl_decode_rgb(c);
     }
-    *data_size      = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = c->frame;
 
     return buf_size;

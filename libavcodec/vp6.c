@@ -30,7 +30,6 @@
 #include <stdlib.h>
 
 #include "avcodec.h"
-#include "dsputil.h"
 #include "get_bits.h"
 #include "huffman.h"
 
@@ -51,7 +50,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
     int vrt_shift = 0;
     int sub_version;
     int rows, cols;
-    int res = 1;
+    int res = 0;
     int separated_coeff = buf[0] & 1;
 
     s->framep[VP56_FRAME_CURRENT]->key_frame = !(buf[0] & 0x80);
@@ -60,11 +59,11 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
     if (s->framep[VP56_FRAME_CURRENT]->key_frame) {
         sub_version = buf[1] >> 3;
         if (sub_version > 8)
-            return 0;
+            return AVERROR_INVALIDDATA;
         s->filter_header = buf[1] & 0x06;
         if (buf[1] & 1) {
-            av_log(s->avctx, AV_LOG_ERROR, "interlacing not supported\n");
-            return 0;
+            av_log_missing_feature(s->avctx, "Interlacing", 0);
+            return AVERROR_PATCHWELCOME;
         }
         if (separated_coeff || !s->filter_header) {
             coeff_offset = AV_RB16(buf+2) - 2;
@@ -78,7 +77,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
         /* buf[5] is number of displayed macroblock cols */
         if (!rows || !cols) {
             av_log(s->avctx, AV_LOG_ERROR, "Invalid size %dx%d\n", cols << 4, rows << 4);
-            return 0;
+            return AVERROR_INVALIDDATA;
         }
 
         if (!s->macroblocks || /* first frame */
@@ -89,7 +88,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
                 s->avctx->width  -= s->avctx->extradata[0] >> 4;
                 s->avctx->height -= s->avctx->extradata[0] & 0x0F;
             }
-            res = 2;
+            res = VP56_SIZE_CHANGE;
         }
 
         ff_vp56_init_range_decoder(c, buf+6, buf_size-6);
@@ -102,7 +101,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
         s->golden_frame = 0;
     } else {
         if (!s->sub_version || !s->avctx->coded_width || !s->avctx->coded_height)
-            return 0;
+            return AVERROR_INVALIDDATA;
 
         if (separated_coeff || !s->filter_header) {
             coeff_offset = AV_RB16(buf+1) - 2;
@@ -146,7 +145,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
         if (buf_size < 0) {
             if (s->framep[VP56_FRAME_CURRENT]->key_frame)
                 avcodec_set_dimensions(s->avctx, 0, 0);
-            return 0;
+            return AVERROR_INVALIDDATA;
         }
         if (s->use_huffman) {
             s->parse_coeff = vp6_parse_coeff_huffman;
@@ -536,8 +535,8 @@ static void vp6_filter_diag2(VP56Context *s, uint8_t *dst, uint8_t *src,
                              int stride, int h_weight, int v_weight)
 {
     uint8_t *tmp = s->edge_emu_buffer+16;
-    s->dsp.put_h264_chroma_pixels_tab[0](tmp, src, stride, 9, h_weight, 0);
-    s->dsp.put_h264_chroma_pixels_tab[0](dst, tmp, stride, 8, 0, v_weight);
+    s->h264chroma.put_h264_chroma_pixels_tab[0](tmp, src, stride, 9, h_weight, 0);
+    s->h264chroma.put_h264_chroma_pixels_tab[0](dst, tmp, stride, 8, 0, v_weight);
 }
 
 static void vp6_filter(VP56Context *s, uint8_t *dst, uint8_t *src,
@@ -583,7 +582,7 @@ static void vp6_filter(VP56Context *s, uint8_t *dst, uint8_t *src,
         }
     } else {
         if (!x8 || !y8) {
-            s->dsp.put_h264_chroma_pixels_tab[0](dst, src+offset1, stride, 8, x8, y8);
+            s->h264chroma.put_h264_chroma_pixels_tab[0](dst, src + offset1, stride, 8, x8, y8);
         } else {
             vp6_filter_diag2(s, dst, src+offset1 + ((mv.x^mv.y)>>31), stride, x8, y8);
         }

@@ -39,9 +39,6 @@ typedef struct InternalBuffer {
     int width;
     int height;
     enum AVPixelFormat pix_fmt;
-    uint8_t **extended_data;
-    int audio_data_size;
-    int nb_channels;
 } InternalBuffer;
 
 typedef struct AVCodecInternal {
@@ -78,6 +75,12 @@ typedef struct AVCodecInternal {
      * padded with silence. Reject all subsequent frames.
      */
     int last_audio_frame;
+
+    /**
+     * The data for the last allocated audio frame.
+     * Stored here so we can free it.
+     */
+    uint8_t *audio_data;
 
     /**
      * temporary buffer used for encoders to store their bitstream
@@ -121,10 +124,17 @@ unsigned int avpriv_toupper4(unsigned int x);
  */
 void ff_init_buffer_info(AVCodecContext *s, AVFrame *frame);
 
+
+void avpriv_color_frame(AVFrame *frame, const int color[4]);
+
 /**
  * Remove and free all side data from packet.
  */
 void ff_packet_free_side_data(AVPacket *pkt);
+
+extern volatile int ff_avcodec_locked;
+int ff_lock_avcodec(AVCodecContext *log_ctx);
+int ff_unlock_avcodec(void);
 
 int avpriv_lock_avformat(void);
 int avpriv_unlock_avformat(void);
@@ -169,11 +179,22 @@ static av_always_inline int64_t ff_samples_to_time_base(AVCodecContext *avctx,
                         avctx->time_base);
 }
 
+/**
+ * Get a buffer for a frame. This is a wrapper around
+ * AVCodecContext.get_buffer() and should be used instead calling get_buffer()
+ * directly.
+ */
+int ff_get_buffer(AVCodecContext *avctx, AVFrame *frame);
+
 int ff_thread_can_start_frame(AVCodecContext *avctx);
 
 int ff_get_logical_cpus(AVCodecContext *avctx);
 
 int avpriv_h264_has_num_reorder_frames(AVCodecContext *avctx);
+
+void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_table,
+                         uint8_t *visualization_buffer[3], int *low_delay,
+                         int mb_width, int mb_height, int mb_stride, int quarter_sample);
 
 /**
  * Call avcodec_open2 recursively by decrementing counter, unlocking mutex,
@@ -186,5 +207,10 @@ int ff_codec_open2_recursive(AVCodecContext *avctx, const AVCodec *codec, AVDict
  * Call avcodec_close recursively, counterpart to avcodec_open2_recursive.
  */
 int ff_codec_close_recursive(AVCodecContext *avctx);
+
+/**
+ * Finalize buf into extradata and set its size appropriately.
+ */
+int avpriv_bprint_to_extradata(AVCodecContext *avctx, struct AVBPrint *buf);
 
 #endif /* AVCODEC_INTERNAL_H */

@@ -22,6 +22,17 @@
 #ifndef AVFILTER_AVFILTER_H
 #define AVFILTER_AVFILTER_H
 
+/**
+ * @file
+ * @ingroup lavfi
+ * external API header
+ */
+
+/**
+ * @defgroup lavfi Libavfilter
+ * @{
+ */
+
 #include <stddef.h>
 
 #include "libavutil/avutil.h"
@@ -117,7 +128,7 @@ typedef struct AVFilterBufferRefAudioProps {
     uint64_t channel_layout;    ///< channel layout of audio buffer
     int nb_samples;             ///< number of audio samples per channel
     int sample_rate;            ///< audio buffer sample rate
-    int channels;               ///< number of channels
+    int channels;               ///< number of channels (do not access directly)
 } AVFilterBufferRefAudioProps;
 
 /**
@@ -221,6 +232,11 @@ void avfilter_unref_buffer(AVFilterBufferRef *ref);
  * @param ref pointer to the buffer reference
  */
 void avfilter_unref_bufferp(AVFilterBufferRef **ref);
+
+/**
+ * Get the number of channels of a buffer reference.
+ */
+int avfilter_ref_get_channels(AVFilterBufferRef *ref);
 
 #if FF_API_AVFILTERPAD_PUBLIC
 /**
@@ -567,51 +583,6 @@ struct AVFilterLink {
         AVLINK_INIT             ///< complete
     } init_state;
 
-    /**
-     * The buffer reference currently being sent across the link by the source
-     * filter. This is used internally by the filter system to allow
-     * automatic copying of buffers which do not have sufficient permissions
-     * for the destination. This should not be accessed directly by the
-     * filters.
-     */
-    AVFilterBufferRef *src_buf;
-
-    /**
-     * The buffer reference to the frame sent across the link by the
-     * source filter, which is read by the destination filter. It is
-     * automatically set up by ff_start_frame().
-     *
-     * Depending on the permissions, it may either be the same as
-     * src_buf or an automatic copy of it.
-     *
-     * It is automatically freed by the filter system when calling
-     * ff_end_frame(). In case you save the buffer reference
-     * internally (e.g. if you cache it for later reuse), or give it
-     * away (e.g. if you pass the reference to the next filter) it
-     * must be set to NULL before calling ff_end_frame().
-     */
-    AVFilterBufferRef *cur_buf;
-
-    /**
-     * The buffer reference to the frame which is sent to output by
-     * the source filter.
-     *
-     * If no start_frame callback is defined on a link,
-     * ff_start_frame() will automatically request a new buffer on the
-     * first output link of the destination filter. The reference to
-     * the buffer so obtained is stored in the out_buf field on the
-     * output link.
-     *
-     * It can also be set by the filter code in case the filter needs
-     * to access the output buffer later. For example the filter code
-     * may set it in a custom start_frame, and access it in
-     * draw_slice.
-     *
-     * It is automatically freed by the filter system in
-     * ff_end_frame().
-     */
-    AVFilterBufferRef *out_buf;
-
     struct AVFilterPool *pool;
 
     /**
@@ -688,6 +659,11 @@ struct AVFilterLink {
      * filter.
      */
     int closed;
+
+    /**
+     * Number of channels.
+     */
+    int channels;
 };
 
 /**
@@ -706,6 +682,11 @@ int avfilter_link(AVFilterContext *src, unsigned srcpad,
  * Free the link in *link, and set its pointer to NULL.
  */
 void avfilter_link_free(AVFilterLink **link);
+
+/**
+ * Get the number of channels of a link.
+ */
+int avfilter_link_get_channels(AVFilterLink *link);
 
 /**
  * Set the closed field of a link.
@@ -739,6 +720,9 @@ avfilter_get_video_buffer_ref_from_arrays(uint8_t * const data[4], const int lin
  * Create an audio buffer reference wrapped around an already
  * allocated samples buffer.
  *
+ * See avfilter_get_audio_buffer_ref_from_arrays_channels() for a version
+ * that can handle unknown channel layouts.
+ *
  * @param data           pointers to the samples plane buffers
  * @param linesize       linesize for the samples plane buffers
  * @param perms          the required access permissions
@@ -752,6 +736,27 @@ AVFilterBufferRef *avfilter_get_audio_buffer_ref_from_arrays(uint8_t **data,
                                                              int nb_samples,
                                                              enum AVSampleFormat sample_fmt,
                                                              uint64_t channel_layout);
+/**
+ * Create an audio buffer reference wrapped around an already
+ * allocated samples buffer.
+ *
+ * @param data           pointers to the samples plane buffers
+ * @param linesize       linesize for the samples plane buffers
+ * @param perms          the required access permissions
+ * @param nb_samples     number of samples per channel
+ * @param sample_fmt     the format of each sample in the buffer to allocate
+ * @param channels       the number of channels of the buffer
+ * @param channel_layout the channel layout of the buffer,
+ *                       must be either 0 or consistent with channels
+ */
+AVFilterBufferRef *avfilter_get_audio_buffer_ref_from_arrays_channels(uint8_t **data,
+                                                                      int linesize,
+                                                                      int perms,
+                                                                      int nb_samples,
+                                                                      enum AVSampleFormat sample_fmt,
+                                                                      int channels,
+                                                                      uint64_t channel_layout);
+
 
 
 #define AVFILTER_CMD_FLAG_ONE   1 ///< Stop once a filter understood the command (for target=all for example), fast filters are favored automatically
@@ -839,5 +844,9 @@ void avfilter_free(AVFilterContext *filter);
  */
 int avfilter_insert_filter(AVFilterLink *link, AVFilterContext *filt,
                            unsigned filt_srcpad_idx, unsigned filt_dstpad_idx);
+
+/**
+ * @}
+ */
 
 #endif /* AVFILTER_AVFILTER_H */

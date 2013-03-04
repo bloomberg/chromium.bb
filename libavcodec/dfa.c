@@ -23,6 +23,7 @@
 #include "libavutil/avassert.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 
 #include "libavutil/imgutils.h"
 #include "libavutil/mem.h"
@@ -313,7 +314,7 @@ static const char* chunk_name[8] = {
 };
 
 static int dfa_decode_frame(AVCodecContext *avctx,
-                            void *data, int *data_size,
+                            void *data, int *got_frame,
                             AVPacket *avpkt)
 {
     DfaContext *s = avctx->priv_data;
@@ -327,7 +328,7 @@ static int dfa_decode_frame(AVCodecContext *avctx,
     if (s->pic.data[0])
         avctx->release_buffer(avctx, &s->pic);
 
-    if ((ret = avctx->get_buffer(avctx, &s->pic))) {
+    if ((ret = ff_get_buffer(avctx, &s->pic))) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -368,7 +369,7 @@ static int dfa_decode_frame(AVCodecContext *avctx,
     }
     memcpy(s->pic.data[1], s->pal, sizeof(s->pal));
 
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
     *(AVFrame*)data = s->pic;
 
     return avpkt->size;

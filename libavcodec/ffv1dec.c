@@ -35,7 +35,6 @@
 #include "internal.h"
 #include "get_bits.h"
 #include "put_bits.h"
-#include "dsputil.h"
 #include "rangecoder.h"
 #include "golomb.h"
 #include "mathops.h"
@@ -727,7 +726,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPacket *avpkt)
+static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPacket *avpkt)
 {
     const uint8_t *buf  = avpkt->data;
     int buf_size        = avpkt->size;
@@ -757,14 +756,14 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     } else {
         if (!f->key_frame_ok) {
             av_log(avctx, AV_LOG_ERROR,
-                   "Cant decode non keyframe without valid keyframe\n");
+                   "Cannot decode non-keyframe without valid keyframe\n");
             return AVERROR_INVALIDDATA;
         }
         p->key_frame = 0;
     }
 
     p->reference = 3; //for error concealment
-    if ((ret = avctx->get_buffer(avctx, p)) < 0) {
+    if ((ret = ff_get_buffer(avctx, p)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
         return ret;
     }
@@ -843,7 +842,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, AVPac
     f->picture_number++;
 
     *picture   = *p;
-    *data_size = sizeof(AVFrame);
+    *got_frame = 1;
 
     FFSWAP(AVFrame, f->picture, f->last_picture);
 

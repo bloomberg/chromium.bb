@@ -41,7 +41,10 @@ Reduce buffering.
 @end table
 
 @item probesize @var{integer} (@emph{input})
-Set probing size.
+Set probing size in bytes, i.e. the size of the data to analyze to get
+stream information. A higher value will allow to detect more
+information in case it is dispersed into the stream, but will increase
+latency. Must be an integer not lesser than 32. It is 5000000 by default.
 
 @item packetsize @var{integer} (@emph{output})
 Set packet size.
@@ -74,7 +77,9 @@ Reduce the latency introduced by optional buffering
 @end table
 
 @item analyzeduration @var{integer} (@emph{input})
-Specify how many microseconds are analyzed to estimate duration.
+Specify how many microseconds are analyzed to probe the input. A
+higher value will allow to detect more accurate information, but will
+increase latency. It defaults to 5,000,000 microseconds = 5 seconds.
 
 @item cryptokey @var{hexadecimal string} (@emph{input})
 Set decryption key.
@@ -135,26 +140,33 @@ Consider things that a sane encoder should not do as an error.
 Use wallclock as timestamps.
 
 @item avoid_negative_ts @var{integer} (@emph{output})
-Avoid negative timestamps.
+Shift timestamps to make them positive. 1 enables, 0 disables, default
+of -1 enables when required by target format.
 @end table
 
 @c man end FORMAT OPTIONS
 
 @include demuxers.texi
 @include muxers.texi
+@include metadata.texi
+
+@chapter See Also
+
+@ifhtml
+@url{ffmpeg.html,ffmpeg}, @url{ffplay.html,ffplay}, @url{ffprobe.html,ffprobe}, @url{ffserver.html,ffserver},
+@url{libavformat.html,libavformat}
+@end ifhtml
+
+@ifnothtml
+ffmpeg(1), ffplay(1), ffprobe(1), ffserver(1), libavformat(3)
+@end ifnothtml
+
+@include authors.texi
 
 @ignore
 
 @setfilename ffmpeg-formats
 @settitle FFmpeg formats
-
-@c man begin SEEALSO
-ffmpeg(1), ffplay(1), ffprobe(1), ffserver(1), libavformat(3)
-@c man end
-
-@c man begin AUTHORS
-See Git history (git://source.ffmpeg.org/ffmpeg)
-@c man end
 
 @end ignore
 

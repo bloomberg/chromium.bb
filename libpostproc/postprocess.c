@@ -381,11 +381,10 @@ static inline void doHorizLowPass_C(uint8_t dst[], int stride, const PPContext *
 static inline void horizX1Filter(uint8_t *src, int stride, int QP)
 {
     int y;
-    static uint64_t *lut= NULL;
-    if(lut==NULL)
+    static uint64_t lut[256];
+    if(!lut[255])
     {
         int i;
-        lut = av_malloc(256*8);
         for(i=0; i<256; i++)
         {
             int v= i < 128 ? 2*i : 2*(i-256);
@@ -618,11 +617,7 @@ static inline void postProcess(const uint8_t src[], int srcStride, uint8_t dst[]
 
 /* -pp Command line Help
 */
-#if LIBPOSTPROC_VERSION_INT < (52<<16)
-const char *const pp_help=
-#else
 const char pp_help[] =
-#endif
 "Available postprocessing filters:\n"
 "Filters                        Options\n"
 "short  long name       short   long option     Description\n"
@@ -872,7 +867,7 @@ static void reallocBuffers(PPContext *c, int width, int height, int stride, int 
     c->stride= stride;
     c->qpStride= qpStride;
 
-    reallocAlign((void **)&c->tempDst, 8, stride*24);
+    reallocAlign((void **)&c->tempDst, 8, stride*24+32);
     reallocAlign((void **)&c->tempSrc, 8, stride*24);
     reallocAlign((void **)&c->tempBlocks, 8, 2*16*8);
     reallocAlign((void **)&c->yHistogram, 8, 256*sizeof(uint64_t));

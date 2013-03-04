@@ -53,6 +53,8 @@
 #define ID_CMAP       MKTAG('C','M','A','P')
 #define ID_ACBM       MKTAG('A','C','B','M')
 #define ID_DEEP       MKTAG('D','E','E','P')
+#define ID_RGB8       MKTAG('R','G','B','8')
+#define ID_RGBN       MKTAG('R','G','B','N')
 
 #define ID_FORM       MKTAG('F','O','R','M')
 #define ID_ANNO       MKTAG('A','N','N','O')
@@ -68,6 +70,7 @@
 #define ID_DBOD       MKTAG('D','B','O','D')
 #define ID_DPEL       MKTAG('D','P','E','L')
 #define ID_DLOC       MKTAG('D','L','O','C')
+#define ID_TVDC       MKTAG('T','V','D','C')
 
 #define LEFT    2
 #define RIGHT   4
@@ -81,7 +84,7 @@
  * set it to smallest possible size of 2 to indicate that there's
  * no extradata changing in this frame.
  */
-#define IFF_EXTRA_VIDEO_SIZE 9
+#define IFF_EXTRA_VIDEO_SIZE 41
 
 typedef enum {
     COMP_NONE,
@@ -90,9 +93,9 @@ typedef enum {
 } svx8_compression_type;
 
 typedef struct {
-    uint64_t  body_pos;
+    int64_t  body_pos;
+    int64_t  body_end;
     uint32_t  body_size;
-    uint32_t  sent_bytes;
     svx8_compression_type   svx8_compression;
     unsigned  maud_bits;
     unsigned  maud_compression;
@@ -102,6 +105,7 @@ typedef struct {
     unsigned  flags;        ///< 1 for EHB, 0 is no extra half darkening
     unsigned  transparency; ///< transparency color index in palette
     unsigned  masking;      ///< masking method used
+    uint8_t   tvdc[32];     ///< TVDC lookup table
 } IffDemuxContext;
 
 /* Metadata string read */
@@ -134,7 +138,9 @@ static int iff_probe(AVProbeData *p)
           AV_RL32(d+8) == ID_PBM  ||
           AV_RL32(d+8) == ID_ACBM ||
           AV_RL32(d+8) == ID_DEEP ||
-          AV_RL32(d+8) == ID_ILBM) )
+          AV_RL32(d+8) == ID_ILBM ||
+          AV_RL32(d+8) == ID_RGB8 ||
+          AV_RL32(d+8) == ID_RGBN) )
         return AVPROBE_SCORE_MAX;
     return 0;
 }
@@ -221,6 +227,7 @@ static int iff_read_header(AVFormatContext *s)
         case ID_DBOD:
         case ID_MDAT:
             iff->body_pos = avio_tell(pb);
+            iff->body_end = iff->body_pos + data_size;
             iff->body_size = data_size;
             break;
 
@@ -313,6 +320,14 @@ static int iff_read_header(AVFormatContext *s)
             st->codec->height = avio_rb16(pb);
             break;
 
+        case ID_TVDC:
+            if (data_size < sizeof(iff->tvdc))
+                return AVERROR_INVALIDDATA;
+            res = avio_read(pb, iff->tvdc, sizeof(iff->tvdc));
+            if (res < 0)
+                return res;
+            break;
+
         case ID_ANNO:
         case ID_TEXT:      metadata_tag = "comment";   break;
         case ID_AUTH:      metadata_tag = "artist";    break;
@@ -403,6 +418,7 @@ static int iff_read_header(AVFormatContext *s)
         bytestream_put_byte(&buf, iff->flags);
         bytestream_put_be16(&buf, iff->transparency);
         bytestream_put_byte(&buf, iff->masking);
+        bytestream_put_buffer(&buf, iff->tvdc, sizeof(iff->tvdc));
         st->codec->codec_id = AV_CODEC_ID_IFF_ILBM;
         break;
     default:
@@ -419,14 +435,14 @@ static int iff_read_packet(AVFormatContext *s,
     AVIOContext *pb = s->pb;
     AVStream *st = s->streams[0];
     int ret;
+    int64_t pos = avio_tell(pb);
 
-    if(iff->sent_bytes >= iff->body_size)
+    if (pos >= iff->body_end)
         return AVERROR_EOF;
 
     if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
         if (st->codec->codec_tag == ID_MAUD) {
-            ret = av_get_packet(pb, pkt,
-                                FFMIN(iff->body_size - iff->sent_bytes, 1024 * st->codec->block_align));
+            ret = av_get_packet(pb, pkt, FFMIN(iff->body_end - pos, 1024 * st->codec->block_align));
         } else {
             ret = av_get_packet(pb, pkt, iff->body_size);
         }
@@ -444,11 +460,10 @@ static int iff_read_packet(AVFormatContext *s,
         av_assert0(0);
     }
 
-    if(iff->sent_bytes == 0)
+    if (pos == iff->body_pos)
         pkt->flags |= AV_PKT_FLAG_KEY;
     if (ret < 0)
         return ret;
-    iff->sent_bytes += ret;
     pkt->stream_index = 0;
     return ret;
 }
@@ -460,4 +475,5 @@ AVInputFormat ff_iff_demuxer = {
     .read_probe     = iff_probe,
     .read_header    = iff_read_header,
     .read_packet    = iff_read_packet,
+    .flags          = AVFMT_GENERIC_INDEX,
 };
