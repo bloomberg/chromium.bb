@@ -176,6 +176,10 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   }
 
   void TearDownForTestCase() {
+    scoped_ptr<DriveFileSyncClientInterface> sync_client =
+        DriveFileSyncService::DestroyAndPassSyncClientForTesting(
+            sync_service_.Pass());
+    message_loop_.RunUntilIdle();
     metadata_store_ = NULL;
     fake_sync_client_ = NULL;
     sync_service_.reset();
