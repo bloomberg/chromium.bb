@@ -871,9 +871,22 @@ STDMETHODIMP Hook_Terminate(InternetProtocol_Terminate_Fn orig_req,
                             IInternetProtocol* protocol,
                             DWORD options) {
   scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
-  // TODO(ananta/robertshield)
-  // Write a test for this bug http://crbug.com/178421
-  if (prot_data && !IsChrome(prot_data->renderer_type()))
+  // We should not be invalidating the cached protocol data in the following
+  // cases:-
+  // 1. Pages which are switching into ChromeFrame.
+  //    When IE switches into ChromeFrame, we report the Chrome mime type as
+  //    the handler for the page. This results in urlmon terminating the
+  //    protocol. When Chrome attempts to read the data we need to report the
+  //    cached data back to Chrome.
+  // 2. For the attach external tab requests which are temporary navigations
+  //    to ensure that a top level URL is opened in IE from ChromeFrame.
+  //    We rely on the mapping to identify these requests as attach tab
+  //    requests. This mapping is referred to in the
+  //    IInternetProtocol::LockRequest/IInternetProtocol::UnlockRequest
+  //    intercepts. Invalidating the mapping after LockRequest is called and
+  //    before UnlockRequest causes IE to crash.
+  if (prot_data && !IsChrome(prot_data->renderer_type()) &&
+      !prot_data->is_attach_external_tab_request())
     prot_data->Invalidate();
 
   // We are just pass through at this point, avoid false positive crash
