@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
@@ -28,6 +29,7 @@
 #include "ui/aura/window_observer.h"
 #endif
 
+using ui::Compositor;
 using views::View;
 
 namespace {
@@ -37,7 +39,9 @@ namespace {
 const int kTopEdgeRevealDelayMs = 200;
 
 // Duration for the reveal show/hide slide animation.
-const int kRevealAnimationDurationMs = 200;
+// TODO(jamescook): Use a longer duration for the initial slide out (400?) and
+// a shorter duration for subsequent in/out (200?).
+const int kRevealAnimationDurationMs = 250;
 
 }  // namespace
 
@@ -53,13 +57,18 @@ const int kRevealAnimationDurationMs = 200;
 // reparenting.
 // TODO(jamescook): Bookmark bar does not yet work.
 class ImmersiveModeController::RevealView : public views::View,
-                                            public views::FocusChangeListener {
+                                            public views::FocusChangeListener,
+                                            public ui::CompositorObserver {
  public:
   RevealView(ImmersiveModeController* controller, BrowserView* browser_view);
   virtual ~RevealView();
 
   // Returns true if the mouse is in the bounds of this view.
   bool hovered() const { return hovered_; }
+
+  // Trigger a paint, composite and then an EndReveal animation. Used for the
+  // initial slide-out animation when enabling immersive mode.
+  void EndRevealAfterPaint();
 
   // Returns true when this or any child view has focus.
   bool ContainsFocusedView() const;
@@ -83,7 +92,28 @@ class ImmersiveModeController::RevealView : public views::View,
   virtual void OnDidChangeFocus(View* focused_before,
                                 View* focused_now) OVERRIDE;
 
+  // ui::CompositorObserver overrides:
+  virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE {}
+  virtual void OnCompositingStarted(Compositor* compositor,
+                                    base::TimeTicks start_time) OVERRIDE {}
+  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE;
+  virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE {}
+  virtual void OnCompositingLockStateChanged(Compositor* compositor) OVERRIDE {}
+  virtual void OnUpdateVSyncParameters(Compositor* compositor,
+                                       base::TimeTicks timebase,
+                                       base::TimeDelta interval) OVERRIDE {}
+
+  // Called when painting is complete. Public for tests.
+  void OnPainted();
+
  private:
+  // Don't end the reveal until we have both painted and composited the layer.
+  enum EndRevealState {
+    END_REVEAL_NONE,
+    END_REVEAL_NEEDS_PAINT,
+    END_REVEAL_NEEDS_COMPOSITE,
+  };
+
   // Returns true if the mouse cursor is inside this view.
   bool ContainsCursor() const;
 
@@ -97,6 +127,9 @@ class ImmersiveModeController::RevealView : public views::View,
 
   // True until the mouse leaves the view.
   bool hovered_;
+
+  // State machine for PaintAndEndReveal().
+  EndRevealState end_reveal_state_;
 
   // During widget destruction the views are disconnected from the widget and
   // GetFocusManager() and GetWidget() return NULL. Cache a pointer to the
@@ -114,6 +147,7 @@ ImmersiveModeController::RevealView::RevealView(
       tabstrip_(NULL),
       toolbar_view_(NULL),
       hovered_(false),
+      end_reveal_state_(END_REVEAL_NONE),
       focus_manager_(browser_view->GetFocusManager()) {
   set_notify_enter_exit_on_child(true);
   SetPaintToLayer(true);
@@ -122,7 +156,14 @@ ImmersiveModeController::RevealView::RevealView(
 }
 
 ImmersiveModeController::RevealView::~RevealView() {
+  // |this| could be deleted while waiting for a composite.
+  if (layer()->GetCompositor())
+    layer()->GetCompositor()->RemoveObserver(this);
   focus_manager_->RemoveFocusChangeListener(this);
+}
+
+void ImmersiveModeController::RevealView::EndRevealAfterPaint() {
+  end_reveal_state_ = END_REVEAL_NEEDS_PAINT;
 }
 
 bool ImmersiveModeController::RevealView::ContainsFocusedView() const {
@@ -145,7 +186,7 @@ void ImmersiveModeController::RevealView::AcquireTopViews() {
   AddChildView(tabstrip_);
   AddChildView(toolbar_view_);
 
-  // Set our initial bounds, which triggers a Layout().
+  // Set our initial bounds, which triggers a Layout() and SchedulePaint().
   int width = parent()->width();
   int height = toolbar_view_->bounds().bottom();
   SetBounds(0, 0, width, height);
@@ -205,6 +246,8 @@ void ImmersiveModeController::RevealView::PaintChildren(gfx::Canvas* canvas) {
   frame->Paint(canvas);
 
   views::View::PaintChildren(canvas);
+
+  OnPainted();
 }
 
 void ImmersiveModeController::RevealView::OnDidChangeFocus(View* focused_before,
@@ -214,6 +257,23 @@ void ImmersiveModeController::RevealView::OnDidChangeFocus(View* focused_before,
   if (Contains(focused_before) && !Contains(focused_now))
     controller_->OnRevealViewLostFocus();
   // |this| may be deleted.
+}
+
+void ImmersiveModeController::RevealView::OnCompositingEnded(
+    Compositor* compositor) {
+  if (end_reveal_state_ == END_REVEAL_NEEDS_COMPOSITE) {
+    // Pixels should be on the screen, so slide out the layer.
+    end_reveal_state_ = END_REVEAL_NONE;
+    layer()->GetCompositor()->RemoveObserver(this);
+    controller_->EndReveal(ANIMATE_YES, LAYOUT_YES);
+  }
+}
+
+void ImmersiveModeController::RevealView::OnPainted() {
+  if (end_reveal_state_ == END_REVEAL_NEEDS_PAINT) {
+    end_reveal_state_ = END_REVEAL_NEEDS_COMPOSITE;
+    layer()->GetCompositor()->AddObserver(this);
+  }
 }
 
 bool ImmersiveModeController::RevealView::ContainsCursor() const {
@@ -303,10 +363,16 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
     return;
   enabled_ = enabled;
 
-  if (!enabled_) {
+  if (enabled_) {
+    // When UI is enabled slide-out the reveal views by slamming it to open then
+    // triggering an end-reveal animation.
+    StartReveal(ANIMATE_NO);
+    reveal_view_->EndRevealAfterPaint();
+  } else {
     // Layout occurs below because EndReveal() only performs layout if the view
     // is already revealed.
     EndReveal(ANIMATE_NO, LAYOUT_NO);
+    LayoutBrowserView(false);
     // Stop cursor-at-top tracking.
     top_timer_.Stop();
   }
@@ -320,14 +386,6 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
     ash::Shell::GetInstance()->UpdateShelfVisibility();
   }
 #endif
-
-  // Ensure window caption buttons are shown/hidden appropriately.
-  browser_view_->frame()->non_client_view()->frame_view()->
-      ResetWindowControls();
-
-  // Always ensure tab strip is in correct state.
-  browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
-  browser_view_->Layout();
 }
 
 views::View* ImmersiveModeController::reveal_view() {
@@ -345,7 +403,7 @@ void ImmersiveModeController::MaybeStackViewAtTop() {
 
 void ImmersiveModeController::MaybeStartReveal() {
   if (enabled_ && !revealed_)
-    StartReveal();
+    StartReveal(ANIMATE_YES);
 }
 
 void ImmersiveModeController::CancelReveal() {
@@ -362,9 +420,12 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
     // Start a reveal if the mouse touches the top of the screen and then stops
     // moving for a little while. This mirrors the Ash launcher behavior.
     top_timer_.Stop();
+    // Timer is stopped when |this| is destroyed, hence Unretained() is safe.
     top_timer_.Start(FROM_HERE,
                      base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
-                     this, &ImmersiveModeController::StartReveal);
+                     base::Bind(&ImmersiveModeController::StartReveal,
+                                base::Unretained(this),
+                                ANIMATE_YES));
   } else {
     // Cursor left the top edge.
     top_timer_.Stop();
@@ -377,13 +438,25 @@ void ImmersiveModeController::OnImplicitAnimationsCompleted() {
   OnHideAnimationCompleted();
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // Testing interface:
+
 void ImmersiveModeController::SetHideTabIndicatorsForTest(bool hide) {
   hide_tab_indicators_ = hide;
 }
 
+void ImmersiveModeController::SetEnabledForTest(bool enabled) {
+  bool was_enabled = enabled_;
+  SetEnabled(enabled);
+  if (enabled && !was_enabled) {
+    // Simulate the reveal view being painted and composited.
+    reveal_view_->OnPainted();
+    reveal_view_->OnCompositingEnded(NULL);
+  }
+}
+
 void ImmersiveModeController::StartRevealForTest() {
-  StartReveal();
+  StartReveal(ANIMATE_NO);
 }
 
 void ImmersiveModeController::OnRevealViewLostMouseForTest() {
@@ -416,18 +489,14 @@ void ImmersiveModeController::EnableWindowObservers(bool enable) {
 #endif  // defined(USE_AURA)
 }
 
-void ImmersiveModeController::StartReveal() {
+void ImmersiveModeController::StartReveal(Animate animate) {
   if (revealed_)
     return;
   revealed_ = true;
 
-  // Reveal shows the window caption buttons.
-  browser_view_->frame()->non_client_view()->frame_view()->
-      ResetWindowControls();
-
-  // Recompute the bounds of the views when painted normally.
-  browser_view_->tabstrip()->SetImmersiveStyle(false);
-  browser_view_->Layout();
+  // Ensure window caption buttons are updated and the view bounds are computed
+  // at normal (non-immersive-style) size.
+  LayoutBrowserView(false);
 
   // Place tabstrip, toolbar, and bookmarks bar in a new view at the end of
   // the BrowserView hierarchy so it paints over the web contents.
@@ -436,7 +505,8 @@ void ImmersiveModeController::StartReveal() {
   reveal_view_->AcquireTopViews();
 
   // Slide in the reveal view.
-  AnimateShowRevealView();
+  if (animate == ANIMATE_YES)
+    AnimateShowRevealView();
 }
 
 void ImmersiveModeController::AnimateShowRevealView() {
@@ -474,32 +544,33 @@ void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
   revealed_ = false;
 
   if (reveal_view_.get()) {
-    reveal_view_->ReleaseTopViews();
     if (animate == ANIMATE_YES) {
       // Animation resets the reveal view when complete.
       AnimateHideRevealView();
     } else {
       // Deleting the reveal view also removes it from its parent.
+      reveal_view_->ReleaseTopViews();
       reveal_view_.reset();
     }
   }
 
-  if (layout == LAYOUT_YES) {
-    // Ending reveal hides the window caption buttons.
-    browser_view_->frame()->non_client_view()->frame_view()->
-        ResetWindowControls();
+  if (layout == LAYOUT_YES)
+    LayoutBrowserView(enabled_);
+}
 
-    browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
-    browser_view_->Layout();
-  }
+void ImmersiveModeController::LayoutBrowserView(bool immersive_style) {
+  // Update the window caption buttons.
+  browser_view_->frame()->non_client_view()->frame_view()->
+      ResetWindowControls();
+  browser_view_->tabstrip()->SetImmersiveStyle(immersive_style);
+  browser_view_->Layout();
 }
 
 void ImmersiveModeController::AnimateHideRevealView() {
   ui::Layer* layer = reveal_view_->layer();
-  // Stop any show animation in progress.
-  // TODO(jamescook): Switch to AbortAllAnimations() when crrev.com/11571027
-  // lands, which will avoid a "pop" if a hide is triggered mid-show.
-  layer->GetAnimator()->StopAnimating();
+  // Stop any show animation in progress, but don't skip to the end. This
+  // avoids a visual "pop" when starting a hide in the middle of a show.
+  layer->GetAnimator()->AbortAllAnimations();
   // Detach the layer from its delegate to stop updating it. This prevents
   // graphical glitches due to hover events causing repaints during the hide.
   layer->set_delegate(NULL);
@@ -515,5 +586,6 @@ void ImmersiveModeController::AnimateHideRevealView() {
 }
 
 void ImmersiveModeController::OnHideAnimationCompleted() {
+  reveal_view_->ReleaseTopViews();
   reveal_view_.reset();  // Also removes from parent.
 }

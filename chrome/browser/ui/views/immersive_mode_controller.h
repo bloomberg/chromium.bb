@@ -70,6 +70,7 @@ class ImmersiveModeController : public ui::EventHandler,
 
   // Testing interface.
   void SetHideTabIndicatorsForTest(bool hide);
+  void SetEnabledForTest(bool enabled);
   void StartRevealForTest();
   void OnRevealViewLostMouseForTest();
 
@@ -89,8 +90,9 @@ class ImmersiveModeController : public ui::EventHandler,
   void EnableWindowObservers(bool enable);
 
   // Temporarily reveals the top-of-window views while in immersive mode,
-  // hiding them when the cursor exits the area of the top views.
-  void StartReveal();
+  // hiding them when the cursor exits the area of the top views. If |animate|
+  // is ANIMATE_YES, slides in the view, otherwise shows it immediately.
+  void StartReveal(Animate animate);
 
   // Slide in the reveal view.
   void AnimateShowRevealView();
@@ -104,6 +106,10 @@ class ImmersiveModeController : public ui::EventHandler,
   // Hides the top-of-window views. Optionally animates. Optionally updates
   // the |browser_view_| layout when the reveal finishes.
   void EndReveal(Animate animate, Layout layout);
+
+  // Updates layout for |browser_view_| including window caption controls and
+  // tab strip style |immersive_style|.
+  void LayoutBrowserView(bool immersive_style);
 
   // Slide out the reveal view. Deletes the view when complete.
   void AnimateHideRevealView();

@@ -106,7 +106,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveMode) {
   browser_view->EnterFullscreen(GURL(), FEB_TYPE_NONE);
   EXPECT_TRUE(browser_view->immersive_mode_controller()->enabled());
 
-  // Entering immersive mode hides the caption buttons and the frame.
+  // During the slide-out animation the buttons are visible.
+  EXPECT_TRUE(frame_view->size_button_->visible());
+  EXPECT_TRUE(frame_view->close_button_->visible());
+  EXPECT_TRUE(frame_view->ShouldPaint());
+
+  // Short-circuit the initial slide-out animation. In the steady state the
+  // frame and caption buttons are hidden.
+  browser_view->immersive_mode_controller()->CancelReveal();
   EXPECT_FALSE(frame_view->size_button_->visible());
   EXPECT_FALSE(frame_view->close_button_->visible());
   EXPECT_FALSE(frame_view->ShouldPaint());
