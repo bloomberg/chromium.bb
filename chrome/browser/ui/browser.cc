@@ -938,7 +938,7 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
 
   if (contents_is_selected)
-    contents->GetView()->Focus();
+    contents->GetView()->SetInitialFocus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
