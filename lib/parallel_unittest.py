@@ -36,10 +36,9 @@ class ParallelMock(partial_mock.PartialMock):
   ATTRS = ('_ParallelSteps',)
 
   @contextlib.contextmanager
-  def _ParallelSteps(self, steps, max_parallel=None,
-                     hide_output_after_errors=False):
+  def _ParallelSteps(self, steps, max_parallel=None, halt_on_error=False):
     assert max_parallel is None or isinstance(max_parallel, (int, long))
-    assert isinstance(hide_output_after_errors, bool)
+    assert isinstance(halt_on_error, bool)
     try:
       yield
     finally:
@@ -186,7 +185,7 @@ class TestParallelMock(cros_test_lib.TestCase):
 
 
 class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
-  """Test cases where a child processes raise exceptions."""
+  """Test cases where child processes raise exceptions."""
 
   def _SystemExit(self):
     sys.stdout.write(_GREETING)
@@ -210,6 +209,42 @@ class TestExceptions(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
             ex_str = str(ex)
         self.assertTrue('Traceback' in ex_str)
         self.assertEqual(output_str, _GREETING)
+
+
+class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
+  """Test that child processes are halted when exceptions occur."""
+
+  def setUp(self):
+    self.failed = multiprocessing.Event()
+    self.passed = multiprocessing.Event()
+
+  def _Pass(self):
+    self.passed.set()
+    sys.stdout.write(_GREETING)
+
+  def _Exit(self):
+    sys.stdout.write(_GREETING)
+    self.passed.wait()
+    sys.exit(1)
+
+  def _Fail(self):
+    self.failed.wait(30)
+    self.failed.set()
+
+  def testExceptionRaising(self):
+    self.StartPatcher(BackgroundTaskVerifier())
+    steps = [self._Exit, self._Fail, self._Pass]
+    output_str = None
+    with self.OutputCapturer() as capture:
+      try:
+        parallel.RunParallelSteps(steps, halt_on_error=True)
+      except parallel.BackgroundFailure as ex:
+        output_str = capture.GetStdout()
+        ex_str = str(ex)
+    self.assertTrue('Traceback' in ex_str)
+    self.assertTrue(self.passed.is_set())
+    self.assertEqual(output_str, _GREETING)
+    self.assertFalse(self.failed.is_set())
 
 
 if __name__ == '__main__':

@@ -192,11 +192,10 @@ class DeployChrome(object):
       return 0
 
     # Run setup steps in parallel. If any step fails, RunParallelSteps will
-    # print the error message and squelch any further output, making the
-    # output look nice (though hiding some information).
+    # stop printing output at that point, and halt any running steps.
     steps = [self._PrepareStagingDir, self._CheckConnection,
              self._KillProcsIfNeeded, self._MountRootfsAsWritable]
-    parallel.RunParallelSteps(steps, hide_output_after_errors=True)
+    parallel.RunParallelSteps(steps, halt_on_error=True)
 
     # If we failed to mark the rootfs as writable, try disabling rootfs
     # verification.

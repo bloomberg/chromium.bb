@@ -10,6 +10,7 @@ import functools
 import multiprocessing
 import os
 import Queue
+import signal
 import sys
 import tempfile
 import traceback
@@ -44,11 +45,16 @@ class _BackgroundSteps(multiprocessing.Process):
     self._steps = collections.deque()
     self._queue = multiprocessing.Queue()
     self._semaphore = semaphore
+    self._started = multiprocessing.Event()
 
   def AddStep(self, step):
     """Add a step to the list of steps to run in the background."""
     output = tempfile.NamedTemporaryFile(delete=False, bufsize=0)
     self._steps.append((step, output))
+
+  def WaitForStartup(self):
+    """Wait for the process to start up."""
+    self._started.wait()
 
   def WaitForStep(self, silent=False):
     """Wait for the next step to complete.
@@ -124,6 +130,13 @@ class _BackgroundSteps(multiprocessing.Process):
   def _RunSteps(self):
     """Internal method for running the list of steps."""
 
+    # The default handler for SIGINT sometimes forgets to actually raise the
+    # exception (and we can reproduce this using unit tests), so we define a
+    # custom one instead.
+    def kill_us(_sig_num, _frame):
+      raise KeyboardInterrupt('SIGINT received')
+    signal.signal(signal.SIGINT, kill_us)
+
     sys.stdout.flush()
     sys.stderr.flush()
     orig_stdout, orig_stderr = sys.stdout, sys.stderr
@@ -131,6 +144,7 @@ class _BackgroundSteps(multiprocessing.Process):
     stderr_fileno = sys.__stderr__.fileno()
     orig_stdout_fd, orig_stderr_fd = map(os.dup,
                                          [stdout_fileno, stderr_fileno])
+    cancel = False
     while self._steps:
       step, output = self._steps.popleft()
       # Send all output to a named temporary file.
@@ -142,14 +156,16 @@ class _BackgroundSteps(multiprocessing.Process):
       error = None
       try:
         results_lib.Results.Clear()
-        step()
+        self._started.set()
+        if not cancel:
+          step()
       except results_lib.StepFailure as ex:
         error = str(ex)
       except BaseException as ex:
         error = traceback.format_exc()
         # If it's a fatal exception, don't run any more steps.
         if isinstance(ex, (SystemExit, KeyboardInterrupt)):
-          self._steps = []
+          cancel = True
 
       sys.stdout.flush()
       sys.stderr.flush()
@@ -163,7 +179,7 @@ class _BackgroundSteps(multiprocessing.Process):
 
 
 @contextlib.contextmanager
-def _ParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
+def _ParallelSteps(steps, max_parallel=None, halt_on_error=False):
   """Run a list of functions in parallel.
 
   This function launches the provided functions in the background, yields,
@@ -180,8 +196,8 @@ def _ParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
     steps: A list of functions to run.
     max_parallel: The maximum number of simultaneous tasks to run in parallel.
       By default, run all tasks in parallel.
-    hide_output_after_errors: After the first exception occurs, squelch any
-      further output, including any exceptions that might occur.
+    halt_on_error: After the first exception occurs, halt any running steps,
+      and squelch any further output, including any exceptions that might occur.
   """
 
   semaphore = None
@@ -203,9 +219,13 @@ def _ParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
     tracebacks = []
     for bg in bg_steps:
       while not bg.Empty():
-        silent = tracebacks and hide_output_after_errors
-        error = bg.WaitForStep(silent=silent)
-        if not silent and error is not None:
+        halt = tracebacks and halt_on_error
+        if halt:
+          # Kill the children nicely with a KeyboardInterrupt.
+          bg.WaitForStartup()
+          os.kill(bg.pid, signal.SIGINT)
+        error = bg.WaitForStep(silent=halt)
+        if not halt and error is not None:
           tracebacks.append(error)
       bg.join()
 
@@ -214,7 +234,7 @@ def _ParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
       raise BackgroundFailure('\n' + ''.join(tracebacks))
 
 
-def RunParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
+def RunParallelSteps(steps, max_parallel=None, halt_on_error=False):
   """Run a list of functions in parallel.
 
   This function blocks until all steps are completed.
@@ -230,8 +250,8 @@ def RunParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
     steps: A list of functions to run.
     max_parallel: The maximum number of simultaneous tasks to run in parallel.
       By default, run all tasks in parallel.
-    hide_output_after_errors: After the first exception occurs, squelch any
-      further output, including any exceptions that might occur.
+    halt_on_error: After the first exception occurs, halt any running steps,
+      and squelch any further output, including any exceptions that might occur.
 
   Example:
     # This snippet will execute in parallel:
@@ -243,7 +263,7 @@ def RunParallelSteps(steps, max_parallel=None, hide_output_after_errors=False):
     # Blocks until all calls have completed.
   """
   with _ParallelSteps(steps, max_parallel=max_parallel,
-                      hide_output_after_errors=hide_output_after_errors):
+                      halt_on_error=halt_on_error):
     pass
 
 
