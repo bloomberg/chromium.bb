@@ -36,7 +36,7 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
       launcher_controller()->GetExtensionForAppID(app_id);
   // Some unit tests have no real extension and will set their
   if (extension)
-    refocus_url_ = GURL(extension->launch_web_url() + "*");
+    set_refocus_url(GURL(extension->launch_web_url() + "*"));
 }
 
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {
@@ -66,14 +66,14 @@ void AppShortcutLauncherItemController::Launch(int event_flags) {
 }
 
 void AppShortcutLauncherItemController::Activate() {
-  std::vector<content::WebContents*> content = GetRunningApplications();
-  if (content.empty()) {
+  content::WebContents* content = GetLRUApplication();
+  if (!content) {
     Launch(ui::EF_NONE);
     return;
   }
-  Browser* browser = chrome::FindBrowserWithWebContents(content[0]);
+  Browser* browser = chrome::FindBrowserWithWebContents(content);
   TabStripModel* tab_strip = browser->tab_strip_model();
-  int index = tab_strip->GetIndexOfWebContents(content[0]);
+  int index = tab_strip->GetIndexOfWebContents(content);
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_strip->ActivateTabAt(index, false);
   browser->window()->Show();
@@ -151,8 +151,39 @@ AppShortcutLauncherItemController::GetRunningApplications() {
 
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  for (BrowserList::const_reverse_iterator it =
-           ash_browser_list->begin_last_active();
+  for (BrowserList::const_iterator it = ash_browser_list->begin();
+       it != ash_browser_list->end(); ++it) {
+    Browser* browser = *it;
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    for (int index = 0; index  < tab_strip->count(); index++) {
+      content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
+      if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
+        items.push_back(web_contents);
+    }
+  }
+  return items;
+}
+
+content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
+  URLPattern refocus_pattern(URLPattern::SCHEME_ALL);
+  refocus_pattern.SetMatchAllURLs(true);
+
+  if (!refocus_url_.is_empty()) {
+    refocus_pattern.SetMatchAllURLs(false);
+    refocus_pattern.Parse(refocus_url_.spec());
+  }
+
+  const Extension* extension =
+      launcher_controller()->GetExtensionForAppID(app_id());
+
+  // We may get here while the extension is loading (and NULL).
+  if (!extension)
+    return NULL;
+
+  const BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (BrowserList::const_reverse_iterator
+       it = ash_browser_list->begin_last_active();
        it != ash_browser_list->end_last_active(); ++it) {
     Browser* browser = *it;
     TabStripModel* tab_strip = browser->tab_strip_model();
@@ -161,20 +192,27 @@ AppShortcutLauncherItemController::GetRunningApplications() {
     for (int index = 0; index  < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(
           (index + active_index) % tab_strip->count());
-      const GURL tab_url = web_contents->GetURL();
-      // There are three ways to identify the association of a URL with this
-      // extension:
-      // - The refocus pattern is matched (needed for apps like drive).
-      // - The extension's origin + extent gets matched.
-      // - The launcher controller knows that the tab got created for this app.
-      if ((!refocus_pattern.match_all_urls() &&
+      if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
+        return web_contents;
+    }
+  }
+  return NULL;
+}
+
+bool AppShortcutLauncherItemController::WebContentMatchesApp(
+    const extensions::Extension* extension,
+    const URLPattern& refocus_pattern,
+    content::WebContents* web_contents) {
+  const GURL tab_url = web_contents->GetURL();
+  // There are three ways to identify the association of a URL with this
+  // extension:
+  // - The refocus pattern is matched (needed for apps like drive).
+  // - The extension's origin + extent gets matched.
+  // - The launcher controller knows that the tab got created for this app.
+  return ((!refocus_pattern.match_all_urls() &&
            refocus_pattern.MatchesURL(tab_url)) ||
           (extension->OverlapsWithOrigin(tab_url) &&
            extension->web_extent().MatchesURL(tab_url)) ||
           launcher_controller()->GetPerAppInterface()->
-             IsWebContentHandledByApplication(web_contents, app_id()))
-        items.push_back(web_contents);
-    }
-  }
-  return items;
+             IsWebContentHandledByApplication(web_contents, app_id()));
 }

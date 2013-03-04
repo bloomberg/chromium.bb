@@ -86,7 +86,7 @@ ui::MenuModel* TestLauncherDelegate::CreateContextMenu(
   return NULL;
 }
 
-ui::MenuModel* TestLauncherDelegate::CreateApplicationMenu(
+ash::LauncherMenuModel* TestLauncherDelegate::CreateApplicationMenu(
     const ash::LauncherItem& item) {
   return NULL;
 }

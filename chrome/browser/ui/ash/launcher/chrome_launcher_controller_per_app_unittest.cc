@@ -483,7 +483,8 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
     EXPECT_EQ(title[i], items[1 + i]->title());
   }
 
-  scoped_ptr<ui::MenuModel> menu(controller->CreateApplicationMenu(item));
+  scoped_ptr<ash::LauncherMenuModel> menu(
+      controller->CreateApplicationMenu(item));
   // The first element in the menu is a spacing separator. On some systems
   // (e.g. Windows) such things do not exist. As such we check the existence
   // and adjust dynamically.
@@ -531,7 +532,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
 
   // Check that the list contains now two entries - make furthermore sure that
   // the active item is the first entry.
-  string16 two_menu_items[] = {title2, title1};
+  string16 two_menu_items[] = {title1, title2};
   CheckMenuCreation(&launcher_controller,
                     item_browser,
                     2,
@@ -596,7 +597,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
   chrome::NewTab(browser());
   string16 title3 = ASCIIToUTF16("Test3");
   NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title3);
-  string16 two_menu_items[] = {title3, title1};
+  string16 two_menu_items[] = {title1, title3};
   CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items, false);
 
   // Even though the item is in the V1 app list, it should also be in the
@@ -644,30 +645,30 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
   ash::LauncherItem item_gmail;
   item_gmail.type = ash::TYPE_APP_SHORTCUT;
   item_gmail.id = gmail_id;
-  string16 two_menu_items[] = {title2, title1};
+  string16 two_menu_items[] = {title1, title2};
   CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items, false);
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  // Execute the first item in the list (which shouldn't do anything since that
+  // Execute the second item in the list (which shouldn't do anything since that
   // item is per definition already the active tab).
   {
-    scoped_ptr<ui::MenuModel> menu(
+    scoped_ptr<ash::LauncherMenuModel> menu(
         launcher_controller.CreateApplicationMenu(item_gmail));
     // The first element in the menu is a spacing separator. On some systems
     // (e.g. Windows) such things do not exist. As such we check the existence
     // and adjust dynamically.
     int first_item =
         (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
-    menu->ActivatedAt(first_item + 2);
+    menu->ActivatedAt(first_item + 3);
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
-  // Execute the second item.
+  // Execute the first item.
   {
-    scoped_ptr<ui::MenuModel> menu(
+    scoped_ptr<ash::LauncherMenuModel> menu(
         launcher_controller.CreateApplicationMenu(item_gmail));
     int first_item =
         (menu->GetTypeAt(0) == ui::MenuModel::TYPE_SEPARATOR) ? 1 : 0;
-    menu->ActivatedAt(first_item + 3);
+    menu->ActivatedAt(first_item + 2);
   }
   // Now the active tab should be the second item.
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());

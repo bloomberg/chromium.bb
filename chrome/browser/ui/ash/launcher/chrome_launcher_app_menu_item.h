@@ -22,6 +22,9 @@ class ChromeLauncherAppMenuItem {
   // Retrieves the icon for this menu option.
   const gfx::Image& icon() const { return icon_; }
 
+  // Returns true if the item is active.
+  virtual bool IsActive() const;
+
   // Returns true if item is enabled.
   virtual bool IsEnabled() const;
 

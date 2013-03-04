@@ -51,7 +51,7 @@ ui::MenuModel* LauncherDelegateImpl::CreateContextMenu(
   return NULL;
 }
 
-ui::MenuModel* LauncherDelegateImpl::CreateApplicationMenu(
+ash::LauncherMenuModel* LauncherDelegateImpl::CreateApplicationMenu(
     const ash::LauncherItem& item) {
   return NULL;
 }

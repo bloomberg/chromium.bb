@@ -67,9 +67,6 @@ const float kReservedNonPanelIconProportion = 0.67f;
 // This is the command id of the menu item which contains the name of the menu.
 const int kCommandIdOfMenuName = 0;
 
-// This is the command id of the active menu item.
-const int kCommandIdOfActiveName = 1;
-
 // The background color of the active item in the list.
 const SkColor kActiveListItemBackgroundColor = SkColorSetRGB(203 , 219, 241);
 
@@ -101,7 +98,7 @@ class ScopedAnimationSetter {
 class LauncherMenuModelAdapter
     : public views::MenuModelAdapter {
  public:
-  explicit LauncherMenuModelAdapter(ui::MenuModel* menu_model);
+  explicit LauncherMenuModelAdapter(ash::LauncherMenuModel* menu_model);
 
   // Overriding MenuModelAdapter's MenuDelegate implementation.
   virtual const gfx::Font* GetLabelFont(int command_id) const OVERRIDE;
@@ -116,12 +113,16 @@ class LauncherMenuModelAdapter
   virtual bool ShouldReserveSpaceForSubmenuIndicator() const OVERRIDE;
 
  private:
+  ash::LauncherMenuModel* launcher_menu_model_;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherMenuModelAdapter);
 };
 
 
-LauncherMenuModelAdapter::LauncherMenuModelAdapter(ui::MenuModel* menu_model)
-    : MenuModelAdapter(menu_model) {}
+LauncherMenuModelAdapter::LauncherMenuModelAdapter(
+    ash::LauncherMenuModel* menu_model)
+    : MenuModelAdapter(menu_model),
+      launcher_menu_model_(menu_model) {}
 
 const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
     int command_id) const {
@@ -136,7 +137,7 @@ bool LauncherMenuModelAdapter::GetBackgroundColor(
     int command_id,
     bool is_hovered,
     SkColor* override_color) const {
-  if (command_id != kCommandIdOfActiveName)
+  if (!launcher_menu_model_->IsCommandActive(command_id))
     return false;
 
   *override_color = is_hovered ? kFocusedActiveListItemBackgroundColor :
@@ -1318,7 +1319,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
 bool LauncherView::ShowListMenuForView(const LauncherItem& item,
                                        views::View* source) {
-  scoped_ptr<ui::MenuModel> menu_model;
+  scoped_ptr<ash::LauncherMenuModel> menu_model;
   menu_model.reset(delegate_->CreateApplicationMenu(item));
 
   // Make sure we have a menu and it has at least two items in addition to the
@@ -1326,7 +1327,11 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
   if (!menu_model.get() || menu_model->GetItemCount() <= 4)
     return false;
 
-  ShowMenu(menu_model.get(), source, gfx::Point(), false);
+  ShowMenu(scoped_ptr<views::MenuModelAdapter>(
+               new LauncherMenuModelAdapter(menu_model.get())),
+           source,
+           gfx::Point(),
+           false);
   return true;
 }
 
@@ -1351,20 +1356,18 @@ void LauncherView::ShowContextMenuForView(views::View* source,
       &context_menu_id_,
       view_index == -1 ? 0 : model_->items()[view_index].id);
 
-  ShowMenu(menu_model.get(), source, point, true);
+  ShowMenu(scoped_ptr<views::MenuModelAdapter>(
+               new views::MenuModelAdapter(menu_model.get())),
+           source,
+           point,
+           true);
 }
 
-void LauncherView::ShowMenu(ui::MenuModel* menu_model,
-                            views::View* source,
-                            const gfx::Point& click_point,
-                            bool context_menu) {
-  launcher_menu_runner_.reset();
-  scoped_ptr<views::MenuModelAdapter> menu_model_adapter;
-  if (context_menu)
-    menu_model_adapter.reset(new views::MenuModelAdapter(menu_model));
-  else
-    menu_model_adapter.reset(new LauncherMenuModelAdapter(menu_model));
-
+void LauncherView::ShowMenu(
+    scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
+    views::View* source,
+    const gfx::Point& click_point,
+    bool context_menu) {
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter->CreateMenu()));
 

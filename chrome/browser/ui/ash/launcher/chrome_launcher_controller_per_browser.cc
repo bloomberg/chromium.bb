@@ -871,7 +871,8 @@ ui::MenuModel* ChromeLauncherControllerPerBrowser::CreateContextMenu(
   return new LauncherContextMenu(this, &item, root_window);
 }
 
-ui::MenuModel* ChromeLauncherControllerPerBrowser::CreateApplicationMenu(
+ash::LauncherMenuModel*
+ChromeLauncherControllerPerBrowser::CreateApplicationMenu(
     const ash::LauncherItem& item) {
   // Not used by this launcher type.
   return NULL;

@@ -5,18 +5,21 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 
+#include "ash/launcher/launcher_delegate.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
-#include "ui/base/models/simple_menu_model.h"
 
 // A menu model that builds the contents of a menu for a launcher item
 // containing a list of running applications.
-class LauncherApplicationMenuItemModel : public ui::SimpleMenuModel,
+class LauncherApplicationMenuItemModel : public ash::LauncherMenuModel,
                                          public ui::SimpleMenuModel::Delegate {
  public:
   explicit LauncherApplicationMenuItemModel(
       ChromeLauncherAppMenuItems item_list);
   virtual ~LauncherApplicationMenuItemModel();
+
+  // Overridden from ash::LauncherMenuModel:
+  virtual bool IsCommandActive(int command_id) const OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

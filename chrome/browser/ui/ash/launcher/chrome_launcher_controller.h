@@ -264,7 +264,7 @@ class ChromeLauncherController
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE = 0;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE = 0;
-  virtual ui::MenuModel* CreateApplicationMenu(
+  virtual ash::LauncherMenuModel* CreateApplicationMenu(
       const ash::LauncherItem& item) OVERRIDE = 0;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE = 0;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE = 0;

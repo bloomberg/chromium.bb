@@ -155,6 +155,8 @@ Browser* FindBrowserWithID(SessionID::id_type desired_id) {
 }
 
 Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
+  if (!window)
+    return NULL;
   for (BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     if (browser->window() && browser->window()->GetNativeWindow() == window)

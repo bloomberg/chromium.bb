@@ -13,6 +13,10 @@ ChromeLauncherAppMenuItem::ChromeLauncherAppMenuItem(const string16 title,
 ChromeLauncherAppMenuItem::~ChromeLauncherAppMenuItem() {
 }
 
+bool ChromeLauncherAppMenuItem::IsActive() const {
+  return false;
+}
+
 bool ChromeLauncherAppMenuItem::IsEnabled() const {
   return false;
 }

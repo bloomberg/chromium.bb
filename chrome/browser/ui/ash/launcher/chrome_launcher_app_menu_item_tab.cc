@@ -19,6 +19,13 @@ ChromeLauncherAppMenuItemTab::ChromeLauncherAppMenuItemTab(
       content::WebContentsObserver(content) {
 }
 
+bool ChromeLauncherAppMenuItemTab::IsActive() const {
+  Browser* browser = chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  if (!browser)
+    return false;
+  return web_contents() == browser->tab_strip_model()->GetActiveWebContents();
+}
+
 bool ChromeLauncherAppMenuItemTab::IsEnabled() const {
   return true;
 }

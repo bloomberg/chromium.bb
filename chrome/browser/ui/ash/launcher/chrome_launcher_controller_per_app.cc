@@ -889,10 +889,9 @@ ui::MenuModel* ChromeLauncherControllerPerApp::CreateContextMenu(
   return new LauncherContextMenu(this, &item, root_window);
 }
 
-ui::MenuModel* ChromeLauncherControllerPerApp::CreateApplicationMenu(
+ash::LauncherMenuModel* ChromeLauncherControllerPerApp::CreateApplicationMenu(
     const ash::LauncherItem& item) {
-  return new LauncherApplicationMenuItemModel(
-      GetApplicationList(item));
+  return new LauncherApplicationMenuItemModel(GetApplicationList(item));
 }
 
 ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
@@ -1459,10 +1458,15 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   int index = 1;
-  for (BrowserList::const_reverse_iterator it =
-           ash_browser_list->begin_last_active();
-       it != ash_browser_list->end_last_active(); ++it, ++index) {
+  for (BrowserList::const_iterator it = ash_browser_list->begin();
+       it != ash_browser_list->end(); ++it, ++index) {
     Browser* browser = *it;
+    // Make sure that the browser was already shown and had a proper window.
+    if (std::find(ash_browser_list->begin_last_active(),
+                  ash_browser_list->end_last_active(),
+                  browser) == ash_browser_list->end_last_active() ||
+        !browser->window())
+      continue;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
     else if (!IsBrowserRepresentedInBrowserList(browser))

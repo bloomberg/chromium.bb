@@ -8,12 +8,18 @@
 
 LauncherApplicationMenuItemModel::LauncherApplicationMenuItemModel(
     ChromeLauncherAppMenuItems item_list)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ash::LauncherMenuModel(this)),
       launcher_items_(item_list.Pass()) {
   Build();
 }
 
 LauncherApplicationMenuItemModel::~LauncherApplicationMenuItemModel() {
+}
+
+bool LauncherApplicationMenuItemModel::IsCommandActive(int command_id) const {
+  DCHECK(command_id >= 0);
+  DCHECK(static_cast<size_t>(command_id) < launcher_items_.size());
+  return launcher_items_[command_id]->IsActive();
 }
 
 bool LauncherApplicationMenuItemModel::IsCommandIdChecked(

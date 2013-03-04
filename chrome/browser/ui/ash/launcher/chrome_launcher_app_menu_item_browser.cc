@@ -7,6 +7,7 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -20,6 +21,10 @@ ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,
                  content::Source<Browser>(browser));
+}
+
+bool ChromeLauncherAppMenuItemBrowser::IsActive() const {
+  return browser_ == chrome::FindBrowserWithWindow(ash::wm::GetActiveWindow());
 }
 
 bool ChromeLauncherAppMenuItemBrowser::IsEnabled() const {
