@@ -26,6 +26,7 @@ class ErrorScreenActor {
 
   // Possible error reasons.
   static const char kErrorReasonProxyAuthCancelled[];
+  static const char kErrorReasonProxyAuthSupplied[];
   static const char kErrorReasonProxyConnectionFailed[];
   static const char kErrorReasonProxyConfigChanged[];
   static const char kErrorReasonLoadingTimeout[];

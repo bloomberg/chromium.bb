@@ -9,6 +9,8 @@ namespace chromeos {
 // static
 const char ErrorScreenActor::kErrorReasonProxyAuthCancelled[] =
     "frame error:111";
+const char ErrorScreenActor::kErrorReasonProxyAuthSupplied[] =
+    "proxy auth supplied";
 const char ErrorScreenActor::kErrorReasonProxyConnectionFailed[] =
     "frame error:130";
 const char ErrorScreenActor::kErrorReasonProxyConfigChanged[] =
