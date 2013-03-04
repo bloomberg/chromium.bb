@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "ui/gfx/size_conversions.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 
 namespace content {
@@ -192,12 +193,8 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     // The container size is in DIP, so is the layer size.
     // Buffer size is in physical pixels, so we need to adjust
     // it by the device scale factor.
-    float inverse_scale_factor = 1.0f / device_scale_factor;
-    gfx::SizeF scaledSize(size);
-    scaledSize.Scale(inverse_scale_factor);
-    gfx::Size device_scale_adjusted_size(
-        static_cast<int>(scaledSize.width()),
-        static_cast<int>(scaledSize.height()));
+    gfx::Size device_scale_adjusted_size = gfx::ToFlooredSize(
+        gfx::ScaleSize(buffer_size_, 1.0f / device_scale_factor));
     texture_layer_->setBounds(device_scale_adjusted_size);
   }
 
