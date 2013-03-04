@@ -33,6 +33,7 @@ button:focus {
 
 .action-choice h1 {
   font-size: 14px;
+  font-weight: normal;
   line-height: 1.5;
   margin: 5px 3px;
 }
