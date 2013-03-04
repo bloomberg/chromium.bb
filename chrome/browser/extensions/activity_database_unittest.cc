@@ -117,8 +117,9 @@ TEST(ActivityDatabaseTest, RecordBlockedAction) {
   ASSERT_EQ("extra", statement.ColumnString(5));
 }
 
+// Disabled due to http://crbug.com/179782
 // Check that we can read back recent actions in the db.
-TEST(ActivityDatabaseTest, GetTodaysActions) {
+TEST(ActivityDatabaseTest, DISABLED_GetTodaysActions) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -175,8 +176,9 @@ TEST(ActivityDatabaseTest, GetTodaysActions) {
   activity_db->Release();
 }
 
+// Disabled due to http://crbug.com/179782
 // Check that we can read back recent actions in the db.
-TEST(ActivityDatabaseTest, GetOlderActions) {
+TEST(ActivityDatabaseTest, DISABLED_GetOlderActions) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
