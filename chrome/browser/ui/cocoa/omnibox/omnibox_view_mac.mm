@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
@@ -875,6 +876,10 @@ void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pb) {
     [pb declareURLPasteboardWithAdditionalTypes:[NSArray array] owner:nil];
     [pb setDataForURL:base::SysUTF8ToNSString(url.spec()) title:nstext];
   }
+  ui::Clipboard::WriteSourceTag(pb,
+                                content::BrowserContext::
+                                    GetMarkerForOffTheRecordContext(
+                                        model()->profile()));
 }
 
 void OmniboxViewMac::CopyURLToPasteboard(NSPasteboard* pb) {
@@ -890,6 +895,10 @@ void OmniboxViewMac::CopyURLToPasteboard(NSPasteboard* pb) {
 
   [pb declareURLPasteboardWithAdditionalTypes:[NSArray array] owner:nil];
   [pb setDataForURL:base::SysUTF8ToNSString(url.spec()) title:nstext];
+  ui::Clipboard::WriteSourceTag(pb,
+                                content::BrowserContext::
+                                    GetMarkerForOffTheRecordContext(
+                                        model()->profile()));
 }
 
 void OmniboxViewMac::OnPaste() {

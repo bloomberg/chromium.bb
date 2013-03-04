@@ -242,7 +242,8 @@ namespace bookmark_pasteboard_helper_mac {
 
 void WriteToPasteboard(PasteboardType type,
                        const std::vector<BookmarkNodeData::Element>& elements,
-                       const base::FilePath& profile_path) {
+                       const base::FilePath& profile_path,
+                       ui::Clipboard::SourceTag tag) {
   if (elements.empty())
     return;
 
@@ -260,6 +261,7 @@ void WriteToPasteboard(PasteboardType type,
         forType:kChromiumProfilePathPboardType];
   WriteBookmarkDictionaryListPboardType(pb, elements);
   WriteSimplifiedBookmarkTypes(pb, elements);
+  ui::Clipboard::WriteSourceTag(pb, tag);
 }
 
 bool ReadFromPasteboard(PasteboardType type,

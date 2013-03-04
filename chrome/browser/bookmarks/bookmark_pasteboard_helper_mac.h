@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if defined(__OBJC__)
 @class NSString;
@@ -27,7 +28,8 @@ enum PasteboardType {
 // Writes a set of bookmark elements from a profile to the specified pasteboard.
 void WriteToPasteboard(PasteboardType type,
                        const std::vector<BookmarkNodeData::Element>& elements,
-                       const base::FilePath& profile_path);
+                       const base::FilePath& profile_path,
+                       ui::Clipboard::SourceTag tag);
 
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadFromPasteboard(PasteboardType type,
