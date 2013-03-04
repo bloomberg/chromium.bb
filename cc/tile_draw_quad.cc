@@ -11,11 +11,7 @@ namespace cc {
 
 TileDrawQuad::TileDrawQuad()
     : resource_id(0),
-      swizzle_contents(false),
-      left_edge_aa(false),
-      top_edge_aa(false),
-      right_edge_aa(false),
-      bottom_edge_aa(false) {
+      swizzle_contents(false) {
 }
 
 scoped_ptr<TileDrawQuad> TileDrawQuad::Create() {
@@ -28,11 +24,7 @@ void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                           unsigned resource_id,
                           const gfx::RectF& tex_coord_rect,
                           gfx::Size texture_size,
-                          bool swizzle_contents,
-                          bool left_edge_aa,
-                          bool top_edge_aa,
-                          bool right_edge_aa,
-                          bool bottom_edge_aa) {
+                          bool swizzle_contents) {
   gfx::Rect visible_rect = rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TILED_CONTENT, rect,
@@ -41,13 +33,6 @@ void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
-  this->left_edge_aa = left_edge_aa;
-  this->top_edge_aa = top_edge_aa;
-  this->right_edge_aa = right_edge_aa;
-  this->bottom_edge_aa = bottom_edge_aa;
-
-  // Override needs_blending after initializing the quad.
-  this->needs_blending = IsAntialiased();
 }
 
 void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -58,21 +43,13 @@ void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                           unsigned resource_id,
                           const gfx::RectF& tex_coord_rect,
                           gfx::Size texture_size,
-                          bool swizzle_contents,
-                          bool left_edge_aa,
-                          bool top_edge_aa,
-                          bool right_edge_aa,
-                          bool bottom_edge_aa) {
+                          bool swizzle_contents) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TILED_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->resource_id = resource_id;
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
-  this->left_edge_aa = left_edge_aa;
-  this->top_edge_aa = top_edge_aa;
-  this->right_edge_aa = right_edge_aa;
-  this->bottom_edge_aa = bottom_edge_aa;
 }
 
 void TileDrawQuad::IterateResources(

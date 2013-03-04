@@ -74,6 +74,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
 
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
   shared_state->SetAll(gfx::Transform(),
+                       rect.size(),
                        rect,
                        rect,
                        false,
@@ -171,10 +172,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                            resource2,
                            gfx::RectF(0, 0, 50, 50),
                            gfx::Size(50, 50),
-                           false,
-                           false,
-                           false,
-                           false,
                            false);
   AppendQuad(scaled_tile_quad.PassAs<DrawQuad>());
 
@@ -190,10 +187,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                 resource3,
                                 gfx::RectF(0, 0, 100, 100),
                                 gfx::Size(100, 100),
-                                false,
-                                false,
-                                false,
-                                false,
                                 false);
   AppendQuad(transformed_tile_quad.PassAs<DrawQuad>());
 
@@ -205,10 +198,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                     resource4,
                     gfx::RectF(0, 0, 100, 100),
                     gfx::Size(100, 100),
-                    false,
-                    false,
-                    false,
-                    false,
                     false);
   AppendQuad(tile_quad.PassAs<DrawQuad>());
 

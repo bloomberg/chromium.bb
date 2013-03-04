@@ -47,6 +47,7 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const SharedQuadState* a, const SharedQuadState* b) {
     EXPECT_EQ(a->content_to_target_transform, b->content_to_target_transform);
+    EXPECT_EQ(a->content_bounds, b->content_bounds);
     EXPECT_EQ(a->visible_content_rect, b->visible_content_rect);
     EXPECT_EQ(a->clip_rect, b->clip_rect);
     EXPECT_EQ(a->is_clipped, b->is_clipped);
@@ -157,10 +158,6 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->tex_coord_rect, b->tex_coord_rect);
     EXPECT_EQ(a->texture_size, b->texture_size);
     EXPECT_EQ(a->swizzle_contents, b->swizzle_contents);
-    EXPECT_EQ(a->left_edge_aa, b->left_edge_aa);
-    EXPECT_EQ(a->top_edge_aa, b->top_edge_aa);
-    EXPECT_EQ(a->right_edge_aa, b->right_edge_aa);
-    EXPECT_EQ(a->bottom_edge_aa, b->bottom_edge_aa);
   }
 
   void Compare(const YUVVideoDrawQuad* a, const YUVVideoDrawQuad* b) {
@@ -211,9 +208,6 @@ TEST_F(CCMessagesTest, AllQuads) {
   bool arbitrary_bool1 = true;
   bool arbitrary_bool2 = false;
   bool arbitrary_bool3 = true;
-  bool arbitrary_bool4 = true;
-  bool arbitrary_bool5 = false;
-  bool arbitrary_bool6 = true;
   int arbitrary_int = 5;
   SkColor arbitrary_color = SkColorSetARGB(25, 36, 47, 58);
   IOSurfaceDrawQuad::Orientation arbitrary_orientation =
@@ -249,6 +243,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   scoped_ptr<SharedQuadState> shared_state1_in = SharedQuadState::Create();
   shared_state1_in->SetAll(arbitrary_matrix,
+                           arbitrary_size1,
                            arbitrary_rect1,
                            arbitrary_rect2,
                            arbitrary_bool1,
@@ -311,6 +306,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   scoped_ptr<SharedQuadState> shared_state2_in = SharedQuadState::Create();
   shared_state2_in->SetAll(arbitrary_matrix,
+                           arbitrary_size2,
                            arbitrary_rect2,
                            arbitrary_rect3,
                            arbitrary_bool1,
@@ -319,6 +315,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   scoped_ptr<SharedQuadState> shared_state3_in = SharedQuadState::Create();
   shared_state3_in->SetAll(arbitrary_matrix,
+                           arbitrary_size3,
                            arbitrary_rect3,
                            arbitrary_rect1,
                            arbitrary_bool1,
@@ -372,11 +369,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_resourceid,
                   arbitrary_rectf1,
                   arbitrary_size1,
-                  arbitrary_bool2,
-                  arbitrary_bool3,
-                  arbitrary_bool4,
-                  arbitrary_bool5,
-                  arbitrary_bool6);
+                  arbitrary_bool2);
   scoped_ptr<DrawQuad> tile_cmp = tile_in->Copy(
       tile_in->shared_quad_state);
 

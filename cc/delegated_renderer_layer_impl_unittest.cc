@@ -473,6 +473,7 @@ class DelegatedRendererLayerImplTestTransform
 
     ScopedPtrVector<RenderPass> delegated_render_passes;
 
+    gfx::Size child_pass_content_bounds(7, 7);
     gfx::Rect child_pass_rect(20, 20, 7, 7);
     gfx::Transform child_pass_transform;
     child_pass_transform.Scale(0.8, 0.8);
@@ -492,6 +493,7 @@ class DelegatedRendererLayerImplTestTransform
           SharedQuadState::Create());
       shared_quad_state->SetAll(
           child_pass_transform,
+          child_pass_content_bounds,
           child_pass_rect,
           child_pass_clip_rect,
           child_pass_clipped,
@@ -507,6 +509,7 @@ class DelegatedRendererLayerImplTestTransform
       quad_sink.append(color_quad.PassAs<DrawQuad>(), data);
     }
 
+    gfx::Size root_pass_content_bounds(50, 50);
     gfx::Rect root_pass_rect(0, 0, 50, 50);
     gfx::Transform root_pass_transform;
     root_pass_transform.Scale(1.5, 1.5);
@@ -524,6 +527,7 @@ class DelegatedRendererLayerImplTestTransform
     SharedQuadState* shared_quad_state = quad_sink.useSharedQuadState(SharedQuadState::Create());
     shared_quad_state->SetAll(
         root_pass_transform,
+        root_pass_content_bounds,
         root_pass_rect,
         root_pass_clip_rect,
         root_pass_clipped,
@@ -859,12 +863,13 @@ class DelegatedRendererLayerImplTestClip
     root_layer->setBounds(gfx::Size(100, 100));
 
     delegated_renderer_layer->setPosition(gfx::Point(20, 20));
-    delegated_renderer_layer->setBounds(gfx::Size(50, 50)); 
+    delegated_renderer_layer->setBounds(gfx::Size(50, 50));
     delegated_renderer_layer->setContentBounds(gfx::Size(50, 50));
     delegated_renderer_layer->setDrawsContent(true);
 
     ScopedPtrVector<RenderPass> delegated_render_passes;
 
+    gfx::Size child_pass_content_bounds(7, 7);
     gfx::Rect child_pass_rect(20, 20, 7, 7);
     gfx::Transform child_pass_transform;
     gfx::Rect child_pass_clip_rect(21, 21, 3, 3);
@@ -882,6 +887,7 @@ class DelegatedRendererLayerImplTestClip
           quad_sink.useSharedQuadState(SharedQuadState::Create());
       shared_quad_state->SetAll(
           child_pass_transform,
+          child_pass_content_bounds,
           child_pass_rect,
           child_pass_clip_rect,
           child_pass_clipped,
@@ -897,6 +903,7 @@ class DelegatedRendererLayerImplTestClip
       quad_sink.append(color_quad.PassAs<DrawQuad>(), data);
     }
 
+    gfx::Size root_pass_content_bounds(50, 50);
     gfx::Rect root_pass_rect(0, 0, 50, 50);
     gfx::Transform root_pass_transform;
     gfx::Rect root_pass_clip_rect(5, 5, 40, 40);
@@ -911,7 +918,12 @@ class DelegatedRendererLayerImplTestClip
     AppendQuadsData data(pass->id);
     SharedQuadState* shared_quad_state =
         quad_sink.useSharedQuadState(SharedQuadState::Create());
-    shared_quad_state->SetAll(root_pass_transform, root_pass_rect, root_pass_clip_rect, root_pass_clipped, 1);
+    shared_quad_state->SetAll(root_pass_transform,
+                              root_pass_content_bounds,
+                              root_pass_rect,
+                              root_pass_clip_rect,
+                              root_pass_clipped,
+                              1.f);
 
     scoped_ptr<RenderPassDrawQuad> render_pass_quad =
         RenderPassDrawQuad::Create();

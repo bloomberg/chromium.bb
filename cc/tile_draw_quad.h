@@ -24,11 +24,7 @@ class CC_EXPORT TileDrawQuad : public DrawQuad {
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               gfx::Size texture_size,
-              bool swizzle_contents,
-              bool left_edge_aa,
-              bool top_edge_aa,
-              bool right_edge_aa,
-              bool bottom_edge_aa);
+              bool swizzle_contents);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               gfx::Rect rect,
@@ -38,27 +34,12 @@ class CC_EXPORT TileDrawQuad : public DrawQuad {
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
               gfx::Size texture_size,
-              bool swizzle_contents,
-              bool left_edge_aa,
-              bool top_edge_aa,
-              bool right_edge_aa,
-              bool bottom_edge_aa);
+              bool swizzle_contents);
 
   unsigned resource_id;
   gfx::RectF tex_coord_rect;
   gfx::Size texture_size;
   bool swizzle_contents;
-
-  // TODO(danakj): Stick the data used to compute these things in the quad
-  // instead so the parent compositor can decide to use AA on its own.
-  bool left_edge_aa;
-  bool top_edge_aa;
-  bool right_edge_aa;
-  bool bottom_edge_aa;
-
-  bool IsAntialiased() const {
-    return left_edge_aa || top_edge_aa || right_edge_aa || bottom_edge_aa;
-  }
 
   virtual void IterateResources(const ResourceIteratorCallback& callback)
       OVERRIDE;

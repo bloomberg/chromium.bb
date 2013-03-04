@@ -27,13 +27,15 @@ namespace {
 TEST(DrawQuadTest, copySharedQuadState)
 {
     gfx::Transform quadTransform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
+    gfx::Size contentBounds(26, 28);
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clipRect(19, 21, 23, 25);
     bool isClipped = true;
     float opacity = 0.25;
 
     scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
-    state->SetAll(quadTransform, visibleContentRect, clipRect, isClipped, opacity);
+    state->SetAll(quadTransform, contentBounds, visibleContentRect, clipRect,
+                  isClipped, opacity);
 
     scoped_ptr<SharedQuadState> copy(state->Copy());
     EXPECT_EQ(quadTransform, copy->content_to_target_transform);
@@ -46,13 +48,15 @@ TEST(DrawQuadTest, copySharedQuadState)
 scoped_ptr<SharedQuadState> createSharedQuadState()
 {
     gfx::Transform quadTransform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
+    gfx::Size contentBounds(26, 28);
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clipRect(19, 21, 23, 25);
     bool isClipped = false;
     float opacity = 1;
 
     scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
-    state->SetAll(quadTransform, visibleContentRect, clipRect, isClipped, opacity);
+    state->SetAll(quadTransform, contentBounds, visibleContentRect, clipRect,
+                  isClipped, opacity);
     return state.Pass();
 }
 
@@ -461,34 +465,22 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     gfx::RectF texCoordRect(31, 12, 54, 20);
     gfx::Size textureSize(85, 32);
     bool swizzleContents = true;
-    bool leftEdgeAA = true;
-    bool topEdgeAA = true;
-    bool rightEdgeAA = false;
-    bool bottomEdgeAA = true;
     CREATE_SHARED_STATE();
 
-    CREATE_QUAD_9_NEW(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    CREATE_QUAD_5_NEW(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents);
     EXPECT_EQ(DrawQuad::TILED_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
     EXPECT_EQ(resourceId, copyQuad->resource_id);
     EXPECT_EQ(texCoordRect, copyQuad->tex_coord_rect);
     EXPECT_EQ(textureSize, copyQuad->texture_size);
     EXPECT_EQ(swizzleContents, copyQuad->swizzle_contents);
-    EXPECT_EQ(leftEdgeAA, copyQuad->left_edge_aa);
-    EXPECT_EQ(topEdgeAA, copyQuad->top_edge_aa);
-    EXPECT_EQ(rightEdgeAA, copyQuad->right_edge_aa);
-    EXPECT_EQ(bottomEdgeAA, copyQuad->bottom_edge_aa);
 
-    CREATE_QUAD_8_ALL(TileDrawQuad, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    CREATE_QUAD_4_ALL(TileDrawQuad, resourceId, texCoordRect, textureSize, swizzleContents);
     EXPECT_EQ(DrawQuad::TILED_CONTENT, copyQuad->material);
     EXPECT_EQ(resourceId, copyQuad->resource_id);
     EXPECT_EQ(texCoordRect, copyQuad->tex_coord_rect);
     EXPECT_EQ(textureSize, copyQuad->texture_size);
     EXPECT_EQ(swizzleContents, copyQuad->swizzle_contents);
-    EXPECT_EQ(leftEdgeAA, copyQuad->left_edge_aa);
-    EXPECT_EQ(topEdgeAA, copyQuad->top_edge_aa);
-    EXPECT_EQ(rightEdgeAA, copyQuad->right_edge_aa);
-    EXPECT_EQ(bottomEdgeAA, copyQuad->bottom_edge_aa);
 }
 
 TEST(DrawQuadTest, copyYUVVideoDrawQuad)
@@ -648,13 +640,9 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
   gfx::RectF texCoordRect(31, 12, 54, 20);
   gfx::Size textureSize(85, 32);
   bool swizzleContents = true;
-  bool leftEdgeAA = true;
-  bool topEdgeAA = true;
-  bool rightEdgeAA = false;
-  bool bottomEdgeAA = true;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_9_NEW(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+  CREATE_QUAD_5_NEW(TileDrawQuad, opaqueRect, resourceId, texCoordRect, textureSize, swizzleContents);
   EXPECT_EQ(resourceId, quadNew->resource_id);
   EXPECT_EQ(1, IterateAndCount(quadNew.get()));
   EXPECT_EQ(resourceId + 1, quadNew->resource_id);

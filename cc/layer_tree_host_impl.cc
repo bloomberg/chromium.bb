@@ -416,6 +416,7 @@ static void appendQuadsToFillScreen(RenderPass* targetRenderPass, LayerImpl* roo
     float opacity = 1;
     SharedQuadState* sharedQuadState = quadCuller.useSharedQuadState(SharedQuadState::Create());
     sharedQuadState->SetAll(rootLayer->drawTransform(),
+                            rootTargetRect.size(),
                             rootTargetRect,
                             rootTargetRect,
                             false,

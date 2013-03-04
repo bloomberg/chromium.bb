@@ -49,7 +49,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 
     // Stick a quad in the pass, this should not get copied.
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::Create();
-    sharedState->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), false, 1);
+    sharedState->SetAll(gfx::Transform(), gfx::Size(), gfx::Rect(), gfx::Rect(), false, 1);
     pass->AppendSharedQuadState(sharedState.Pass());
 
     scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();

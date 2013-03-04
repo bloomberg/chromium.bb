@@ -98,7 +98,6 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
       gfx::QuadF(rect),
       clipped);
   bool isAxisAlignedInTarget = !clipped && target_quad.IsRectilinear();
-  bool useAA = !isAxisAlignedInTarget;
 
   bool isPixelAligned = isAxisAlignedInTarget && drawTransform().IsIdentityOrIntegerTranslation();
   PictureLayerTiling::LayerDeviceAlignment layerDeviceAlignment =
@@ -185,11 +184,6 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
     gfx::Rect opaque_rect = iter->opaque_rect();
     opaque_rect.Intersect(content_rect);
 
-    bool outside_left_edge = geometry_rect.x() == content_rect.x();
-    bool outside_top_edge = geometry_rect.y() == content_rect.y();
-    bool outside_right_edge = geometry_rect.right() == content_rect.right();
-    bool outside_bottom_edge = geometry_rect.bottom() == content_rect.bottom();
-
     scoped_ptr<TileDrawQuad> quad = TileDrawQuad::Create();
     quad->SetNew(sharedQuadState,
                  geometry_rect,
@@ -197,11 +191,7 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                  resource,
                  texture_rect,
                  iter.texture_size(),
-                 iter->contents_swizzled(),
-                 outside_left_edge && useAA,
-                 outside_top_edge && useAA,
-                 outside_right_edge && useAA,
-                 outside_bottom_edge && useAA);
+                 iter->contents_swizzled());
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())

@@ -33,7 +33,7 @@ SolidColorDrawQuad* addQuad(TestRenderPass* pass,
   AppendQuadsData data(pass->id);
   SharedQuadState* sharedState =
       quadSink.useSharedQuadState(SharedQuadState::Create());
-  sharedState->SetAll(gfx::Transform(), rect, rect, false, 1);
+  sharedState->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(sharedState, rect, color);
   SolidColorDrawQuad* quadPtr = quad.get();
@@ -48,7 +48,7 @@ SolidColorDrawQuad* addClippedQuad(TestRenderPass* pass,
   AppendQuadsData data(pass->id);
   SharedQuadState* sharedState =
       quadSink.useSharedQuadState(SharedQuadState::Create());
-  sharedState->SetAll(gfx::Transform(), rect, rect, true, 1);
+  sharedState->SetAll(gfx::Transform(), rect.size(), rect, rect, true, 1);
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(sharedState, rect, color);
   SolidColorDrawQuad* quadPtr = quad.get();
@@ -63,7 +63,7 @@ void addRenderPassQuad(TestRenderPass* toPass,
   gfx::Rect outputRect = contributingPass->output_rect;
   SharedQuadState* sharedState =
       quadSink.useSharedQuadState(SharedQuadState::Create());
-  sharedState->SetAll(gfx::Transform(), outputRect, outputRect, false, 1);
+  sharedState->SetAll(gfx::Transform(), outputRect.size(), outputRect, outputRect, false, 1);
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0,
                outputRect, gfx::RectF(), WebKit::WebFilterOperations(),

@@ -122,6 +122,7 @@ scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
 {
   scoped_ptr<SharedQuadState> state = SharedQuadState::Create();
   state->SetAll(m_drawProperties.target_space_transform,
+                m_drawProperties.content_bounds,
                 m_drawProperties.visible_content_rect,
                 m_drawProperties.clip_rect,
                 m_drawProperties.is_clipped,

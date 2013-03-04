@@ -282,8 +282,7 @@ void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     DCHECK(quad->rect.Contains(quad->visible_rect));
     if (quad->material != DrawQuad::TEXTURE_CONTENT) {
-        flushTextureQuadCache();
-        setBlendEnabled(quad->ShouldDrawWithBlending());
+      flushTextureQuadCache();
     }
 
     switch (quad->material) {
@@ -322,6 +321,8 @@ void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 
 void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const CheckerboardDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     const TileCheckerboardProgram* program = tileCheckerboardProgram();
     DCHECK(program && (program->initialized() || isContextLost()));
     setUseProgram(program->program());
@@ -347,6 +348,8 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
 
 void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorderDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     static float glMatrix[16];
     const SolidColorProgram* program = solidColorProgram();
     DCHECK(program && (program->initialized() || isContextLost()));
@@ -550,6 +553,8 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
 
 void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     CachedResource* contentsTexture = m_renderPassTextures.get(quad->render_pass_id);
     if (!contentsTexture || !contentsTexture->id())
         return;
@@ -719,6 +724,8 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
 void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     const SolidColorProgram* program = solidColorProgram();
     setUseProgram(program->program());
 
@@ -806,7 +813,6 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float fragmentTexScaleX = clampTexRect.width() / textureSize.width();
     float fragmentTexScaleY = clampTexRect.height() / textureSize.height();
 
-
     gfx::QuadF localQuad;
     gfx::Transform deviceTransform = frame.windowMatrix * frame.projectionMatrix * quad->quadTransform();
     deviceTransform.FlattenTo2d();
@@ -817,10 +823,14 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     gfx::QuadF deviceLayerQuad = MathUtil::mapQuad(deviceTransform, gfx::QuadF(quad->visibleContentRect()), clipped);
     DCHECK(!clipped);
 
+    // TODO(reveman): Axis-aligned is not enough to avoid anti-aliasing.
+    // Bounding rectangle for quad also needs to be expressible as
+    // an integer rectangle. crbug.com/169374
+    bool isAxisAlignedInTarget = deviceLayerQuad.IsRectilinear();
+    bool useAA = !clipped && !isAxisAlignedInTarget && quad->IsEdge();
+
     TileProgramUniforms uniforms;
-    // For now, we simply skip anti-aliasing with the quad is clipped. This only happens
-    // on perspective transformed layers that go partially behind the camera.
-    if (quad->IsAntialiased() && !clipped) {
+    if (useAA) {
         if (quad->swizzle_contents)
             tileUniformLocation(tileProgramSwizzleAA(), uniforms);
         else
@@ -842,10 +852,9 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     setUseProgram(uniforms.program);
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
     bool scaled = (texToGeomScaleX != 1 || texToGeomScaleY != 1);
-    GLenum filter = (quad->IsAntialiased() || scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation()) ? GL_LINEAR : GL_NEAREST;
+    GLenum filter = (useAA || scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation()) ? GL_LINEAR : GL_NEAREST;
     ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, filter);
 
-    bool useAA = !clipped && quad->IsAntialiased();
     if (useAA) {
         LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
         deviceLayerBounds.inflateAntiAliasingDistance();
@@ -882,13 +891,13 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         LayerQuad::Edge rightEdge(topRight, bottomRight);
 
         // Only apply anti-aliasing to edges not clipped by culling or scissoring.
-        if (quad->top_edge_aa && tileRect.y() == quad->rect.y())
+        if (quad->IsTopEdge() && tileRect.y() == quad->rect.y())
             topEdge = deviceLayerEdges.top();
-        if (quad->left_edge_aa && tileRect.x() == quad->rect.x())
+        if (quad->IsLeftEdge() && tileRect.x() == quad->rect.x())
             leftEdge = deviceLayerEdges.left();
-        if (quad->right_edge_aa && tileRect.right() == quad->rect.right())
+        if (quad->IsRightEdge() && tileRect.right() == quad->rect.right())
             rightEdge = deviceLayerEdges.right();
-        if (quad->bottom_edge_aa && tileRect.bottom() == quad->rect.bottom())
+        if (quad->IsBottomEdge() && tileRect.bottom() == quad->rect.bottom())
             bottomEdge = deviceLayerEdges.bottom();
 
         float sign = gfx::QuadF(tileRect).IsCounterClockwise() ? -1 : 1;
@@ -926,6 +935,10 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         localQuad = gfx::RectF(tileRect);
     }
 
+    // Enable blending when the quad properties require it or if we decided
+    // to use antialiasing.
+    setBlendEnabled(quad->ShouldDrawWithBlending() || useAA);
+
     // Normalize to tileRect.
     localQuad.Scale(1.0f / tileRect.width(), 1.0f / tileRect.height());
 
@@ -943,6 +956,8 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
 void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     const VideoYUVProgram* program = videoYUVProgram();
     DCHECK(program && (program->initialized() || isContextLost()));
 
@@ -995,6 +1010,8 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
 
 void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVideoDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     static float glMatrix[16];
 
     DCHECK(m_capabilities.usingEglImage);
@@ -1183,6 +1200,8 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
 
 void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDrawQuad* quad)
 {
+    setBlendEnabled(quad->ShouldDrawWithBlending());
+
     TexTransformTextureProgramBinding binding;
     binding.set(textureIOSurfaceProgram(), context());
 
