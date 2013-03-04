@@ -105,7 +105,5 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetClientWindowRect,
                     gfx::Rect /* rect */)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
                     float /* factor */)
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetFocus,
-                    bool /* focus */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)

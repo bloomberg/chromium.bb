@@ -137,7 +137,6 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnReload();
   void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
   void OnSetClientWindowRect(const gfx::Rect& rect);
-  void OnSetFocus(bool focus);
   void OnCaptureSessionHistory();
   void OnCloseRemainingWindows();
 

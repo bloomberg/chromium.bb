@@ -315,8 +315,13 @@ void WebKitTestRunner::setDeviceScaleFactor(float factor) {
   render_view()->GetWebView()->setDeviceScaleFactor(factor);
 }
 
+void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
+  // TODO(jochen): Implement once it's possible to synchronously set the focus
+  // from the renderer.
+}
+
 void WebKitTestRunner::setFocus(bool focus) {
-  Send(new ShellViewHostMsg_SetFocus(routing_id(), focus));
+  // TODO(jochen): Remove once the new WebKit API is rolled.
 }
 
 void WebKitTestRunner::setAcceptAllCookies(bool accept) {

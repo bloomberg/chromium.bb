@@ -211,8 +211,8 @@ bool WebKitTestController::PrepareForLayoutTest(
       initial_size);
   WebContentsObserver::Observe(main_window_->web_contents());
   main_window_->LoadURL(test_url);
-  main_window_->web_contents()->GetRenderViewHost()->Focus();
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
+  main_window_->web_contents()->GetRenderViewHost()->Focus();
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
     watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
                                base::Unretained(this)));
@@ -289,7 +289,6 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetClientWindowRect,
                         OnSetClientWindowRect)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CaptureSessionHistory,
                         OnCaptureSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
@@ -498,13 +497,6 @@ void WebKitTestController::OnSetClientWindowRect(const gfx::Rect& rect) {
                        rect.height() - 2 * kVirtualWindowBorder);
   main_window_->web_contents()->GetRenderViewHost()->WasResized();
 #endif
-}
-
-void WebKitTestController::OnSetFocus(bool focus) {
-  if (focus)
-    main_window_->web_contents()->GetRenderViewHost()->Focus();
-  else
-    main_window_->web_contents()->GetRenderViewHost()->Blur();
 }
 
 void WebKitTestController::OnCaptureSessionHistory() {
