@@ -205,6 +205,7 @@ const char kGetIdleTime[] = "GetIdleTime";
 const char kRequestIdleNotification[] = "RequestIdleNotification";
 const char kRequestRestartMethod[] = "RequestRestart";
 const char kRequestShutdownMethod[] = "RequestShutdown";
+const char kRequestSuspendMethod[] = "RequestSuspend";
 const char kGetPowerSupplyPropertiesMethod[] = "GetPowerSupplyProperties";
 const char kStateOverrideRequest[] = "StateOverrideRequest";
 const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
@@ -216,7 +217,6 @@ const char kRegisterSuspendDelayMethod[] = "RegisterSuspendDelay";
 const char kUnregisterSuspendDelayMethod[] = "UnregisterSuspendDelay";
 const char kHandleSuspendReadinessMethod[] = "HandleSuspendReadiness";
 // Signals emitted by powerd.
-const char kRequestSuspendSignal[] = "RequestSuspend";
 const char kCleanShutdown[] = "CleanShutdown";
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kIdleNotifySignal[] = "IdleNotify";
