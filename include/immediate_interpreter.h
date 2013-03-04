@@ -51,10 +51,10 @@ class TapRecord {
   // If any contact has met the minimum pressure threshold
   bool MinTapPressureMet() const;
   bool FingersBelowMaxAge() const;
-  void Remove(short the_id);  // Removes from touched_ and released_
  private:
   void NoteTouch(short the_id, const FingerState& fs);  // Adds to touched_
   void NoteRelease(short the_id);  // Adds to released_
+  void Remove(short the_id);  // Removes from touched_ and released_
 
   float CotapMinPressure() const;
 
