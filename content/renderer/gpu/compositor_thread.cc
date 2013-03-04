@@ -100,6 +100,7 @@ void SetHighThreadPriority() {
 
 CompositorThread::CompositorThread(IPC::Listener* main_listener)
     : thread_("Compositor") {
+  thread_.Start();
   filter_ =
       new InputEventFilter(main_listener,
                            thread_.message_loop()->message_loop_proxy(),
@@ -159,6 +160,11 @@ void CompositorThread::AddInputHandlerOnCompositorThread(
   input_handlers_[routing_id] =
       make_scoped_refptr(new InputHandlerWrapper(this,
           routing_id, input_handler, main_loop, render_view_impl));
+}
+
+
+base::MessageLoopProxy* CompositorThread::message_loop_proxy() const {
+  return thread_.message_loop()->message_loop_proxy();
 }
 
 void CompositorThread::RemoveInputHandler(int routing_id) {
