@@ -251,7 +251,14 @@ TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
   EXPECT_EQ(animatingController, root->GetProperty(kDesktopController));
 }
 
-TEST_F(DesktopBackgroundControllerTest, ResizeToFitScreens) {
+#if defined(OS_WIN)
+// Broken on win8_aura. http://crbug.com/179763
+# define MAYBE_ResizeToFitScreens DISABLED_ResizeToFitScreens
+#else
+# define MAYBE_ResizeToFitScreens ResizeToFitScreens
+#endif
+
+TEST_F(DesktopBackgroundControllerTest, MAYBE_ResizeToFitScreens) {
   // We cannot short-circuit animations for this test.
   ui::LayerAnimator::set_disable_animations_for_test(false);
 
