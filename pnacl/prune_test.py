@@ -64,7 +64,8 @@ class TestTranslatorPruned(unittest.TestCase):
                       'ELFAsmParser', 'COFFAsmParser', 'DarwinAsmParser',
                       'MCAsmLexer', '::AsmLexer',
                       # Gigantic Asm MatchTable (globbed for all targets),
-                      'MatchTable']:
+                      'MatchTable',
+                      'PBQP']:
       unpruned = self.sizeOfMatchingSyms(sym_regex, self.unpruned_symbols)
       pruned = self.sizeOfMatchingSyms(sym_regex, self.pruned_symbols)
       self.assertNotEqual(unpruned, 0, 'Unpruned never had ' + sym_regex)
