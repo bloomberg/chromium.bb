@@ -65,6 +65,10 @@ cr.define('login', function() {
     // Timer id of pending load.
     loadingTimer_: undefined,
 
+    // Whether user can cancel Gaia screen.
+    // @type {boolean}
+    cancelAllowed_: undefined,
+
     /** @override */
     decorate: function() {
       this.frame_ = $('signin-frame');
@@ -271,9 +275,9 @@ cr.define('login', function() {
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
       $('createLocallyManagedUser').hidden = !data.createLocallyManagedUser;
-      // Only show Cancel button when user pods can be displayed.
-      $('login-header-bar').allowCancel =
-          data.isShowUsers && $('pod-row').pods.length;
+      // Allow cancellation of screen only when user pods can be displayed.
+      this.cancelAllowed_ = data.isShowUsers && $('pod-row').pods.length;
+      $('login-header-bar').allowCancel = this.cancelAllowed_;
 
       // Sign-in right panel is hidden if all of its items are hidden.
       var noRightPanel = $('gaia-signin-reason').hidden &&
@@ -466,6 +470,17 @@ cr.define('login', function() {
         // Defer the bubble until the frame has been loaded.
         this.errorBubble_ = [loginAttempts, error];
       }
+    },
+
+    /**
+     * Called when user canceled signin.
+     */
+    cancel: function() {
+      if (!this.cancelAllowed_)
+        return;
+      $('pod-row').loadLastWallpaper();
+      Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+      Oobe.resetSigninUI(true);
     }
   };
 

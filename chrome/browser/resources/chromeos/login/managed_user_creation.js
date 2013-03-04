@@ -201,9 +201,7 @@ cr.define('login', function() {
       var passwordField = $('managed-user-creation-password');
       var password2Field = $('managed-user-creation-password-confirm');
 
-      closeButton.addEventListener('click', function(e) {
-        Oobe.goBack();
-      });
+      closeButton.addEventListener('click', this.cancel.bind(this));
       var creationScreen = this;
       userNameField.addEventListener('keydown', function(e) {
         if (e.keyIdentifier == 'Enter') {
@@ -468,6 +466,14 @@ cr.define('login', function() {
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);
+    },
+
+    /**
+     * Called on user creation cancellation.
+     */
+    cancel: function() {
+      if (!this.disabled)
+        Oobe.goBack();
     },
   };
 
