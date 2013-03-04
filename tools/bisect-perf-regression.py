@@ -42,6 +42,7 @@ import re
 import shlex
 import subprocess
 import sys
+import threading
 
 import bisect_utils
 
@@ -126,11 +127,13 @@ def IsStringInt(string_to_check):
     return False
 
 
-def RunProcess(command):
+def RunProcess(command, print_output=False):
   """Run an arbitrary command, returning its output and return code.
 
   Args:
     command: A list containing the command and args to execute.
+    print_output: Optional parameter to write output to stdout as it's
+        being collected.
 
   Returns:
     A tuple of the output and return code.
@@ -140,10 +143,26 @@ def RunProcess(command):
   proc = subprocess.Popen(command,
                           shell=shell,
                           stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
-  out = proc.communicate()[0]
+                          stderr=subprocess.PIPE,
+                          bufsize=0)
 
-  return (out, proc.returncode)
+  out = ['']
+  def ReadOutputWhileProcessRuns(stdout, print_output, out):
+    while True:
+      line = stdout.readline()
+      out[0] += line
+      if line == '':
+        break
+      if print_output:
+        sys.stdout.write(line)
+
+  thread = threading.Thread(target=ReadOutputWhileProcessRuns,
+                            args=(proc.stdout, print_output, out))
+  thread.start()
+  proc.wait()
+  thread.join()
+
+  return (out[0], proc.returncode)
 
 
 def RunGit(command):
@@ -319,6 +338,35 @@ class GitSourceControl(SourceControl):
 
     return None
 
+  def QueryRevisionInfo(self, revision):
+    """Gathers information on a particular revision, such as author's name,
+    email, subject, and date.
+
+    Args:
+      revision: Revision you want to gather information on.
+    Returns:
+      A dict in the following format:
+      {
+        'author': %s,
+        'email': %s,
+        'date': %s,
+        'subject': %s,
+      }
+    """
+    commit_info = {}
+
+    formats = ['%cN', '%cE', '%s', '%cD']
+    targets = ['author', 'email', 'subject', 'date']
+
+    for i in xrange(len(formats)):
+      cmd = ['log', '--format=%s' % formats[i], '-1', revision]
+      (output, return_code) = RunGit(cmd)
+      commit_info[targets[i]] = output.rstrip()
+
+      assert not return_code, 'An error occurred while running'\
+                              ' "git %s"' % ' '.join(cmd)
+
+    return commit_info
 
 
 class BisectPerformanceMetrics(object):
@@ -417,7 +465,8 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
-    (output, return_code) = RunProcess(args)
+    (output, return_code) = RunProcess(args,
+        self.opts.output_buildbot_annotations)
 
     os.chdir(cwd)
 
@@ -538,7 +587,8 @@ class BisectPerformanceMetrics(object):
     os.chdir(self.src_cwd)
 
     # Can ignore the return code since if the tests fail, it won't return 0.
-    (output, return_code) = RunProcess(args)
+    (output, return_code) = RunProcess(args,
+        self.opts.output_buildbot_annotations)
 
     os.chdir(cwd)
 
@@ -1099,6 +1149,20 @@ class BisectPerformanceMetrics(object):
       print '  -> Last Good Revision: [%s] [%s]' %\
             (first_working_revision,
             revision_data[first_working_revision]['depot'])
+
+      cwd = os.getcwd()
+      self.ChangeToDepotWorkingDirectory(
+          revision_data[last_broken_revision]['depot'])
+      info = self.source_control.QueryRevisionInfo(last_broken_revision)
+
+      print
+      print 'Commit  : %s' % last_broken_revision
+      print 'Author  : %s' % info['author']
+      print 'Email   : %s' % info['email']
+      print 'Date    : %s' % info['date']
+      print 'Subject : %s' % info['subject']
+      print
+      os.chdir(cwd)
 
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
