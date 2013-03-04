@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
@@ -78,6 +79,8 @@ class EnterpriseOAuthEnrollmentScreenHandler
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
  private:
+  class TokenRevoker;
+
   // Handlers for WebUI messages.
   void HandleClose(const base::ListValue* args);
   void HandleCompleteLogin(const base::ListValue* args);
@@ -98,17 +101,11 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // Starts asynchronous token revocation requests if there are tokens present.
   void RevokeTokens();
 
+  // Callback for TokenRevokers that have completed.
+  void OnTokenRevokerDone(TokenRevoker* revoker);
+
   // Shows the screen.
   void DoShow();
-
-  // Closes the screen. |back_to_signin| is true if the user should go back to
-  // the sign-in screen when the enrollment screen is closed. Otherwise, a
-  // pending sign-in will be resumed.
-  void DoClose(bool back_to_signin);
-
-  // Records |sample| as a UMA metric for auto-enrollment. This is a member
-  // function for convenience.
-  void UMAFailure(int sample);
 
   // Keeps the controller for this actor.
   Controller* controller_;
@@ -142,6 +139,9 @@ class EnterpriseOAuthEnrollmentScreenHandler
 
   // The callbacks to invoke after browsing data has been cleared.
   std::vector<base::Closure> auth_reset_callbacks_;
+
+  // Helpers that revoke the tokens used.
+  ScopedVector<TokenRevoker> token_revokers_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseOAuthEnrollmentScreenHandler);
 };
