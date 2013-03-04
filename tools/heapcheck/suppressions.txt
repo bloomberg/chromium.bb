@@ -1823,13 +1823,6 @@
    fun:sync_file_system::DriveFileSyncServiceSyncTest::SetUp
 }
 {
-   bug_179231
-   Heapcheck:Leak
-   ...
-   fun:policy::BrowserPolicyConnector::CreatePlatformProvider
-   fun:BrowserPolicyConnector
-}
-{
    bug_179758_a
    Heapcheck:Leak
    ...
