@@ -32,10 +32,6 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual void appendQuads(
       QuadSink& quad_sink, AppendQuadsData& append_quads_data) OVERRIDE;
 
-  // TODO(danakj): Make private
-  void SetRenderPasses(ScopedPtrVector<RenderPass>&);
-  void ClearRenderPasses();
-
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
   virtual void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
@@ -60,6 +56,10 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   // that will be sending quads to the layer.
   void CreateChildIdIfNeeded();
   void ClearChildId();
+
+  void SetRenderPasses(
+      ScopedPtrVector<RenderPass>* render_passes_in_draw_order);
+  void ClearRenderPasses();
 
   RenderPass::Id ConvertDelegatedRenderPassId(
       RenderPass::Id delegated_render_pass_id) const;

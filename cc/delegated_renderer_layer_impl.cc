@@ -116,7 +116,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
 
   // Save the remapped quads on the layer. This steals the quads and render
   // passes from the frame_data.
-  SetRenderPasses(frame_data->render_pass_list);
+  SetRenderPasses(&frame_data->render_pass_list);
 
   // Release the resources from the previous frame to prepare them for transport
   // back to the child compositor.
@@ -142,22 +142,22 @@ void DelegatedRendererLayerImpl::SetDisplaySize(gfx::Size size) {
 }
 
 void DelegatedRendererLayerImpl::SetRenderPasses(
-    ScopedPtrVector<RenderPass>& render_passes_in_draw_order) {
+    ScopedPtrVector<RenderPass>* render_passes_in_draw_order) {
   gfx::RectF old_root_damage;
   if (!render_passes_in_draw_order_.empty())
     old_root_damage = render_passes_in_draw_order_.back()->damage_rect;
 
   ClearRenderPasses();
 
-  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
+  for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
+    ScopedPtrVector<RenderPass>::iterator to_take =
+        render_passes_in_draw_order->begin() + i;
     render_passes_index_by_id_.insert(
-        std::pair<RenderPass::Id, int>(render_passes_in_draw_order[i]->id, i));
-    scoped_ptr<RenderPass> passed_render_pass =
-        render_passes_in_draw_order.take(
-            render_passes_in_draw_order.begin() + i);
-    render_passes_in_draw_order_.push_back(passed_render_pass.Pass());
+        std::pair<RenderPass::Id, int>((*to_take)->id, i));
+    scoped_ptr<RenderPass> taken_render_pass =
+        render_passes_in_draw_order->take(to_take);
+    render_passes_in_draw_order_.push_back(taken_render_pass.Pass());
   }
-  render_passes_in_draw_order.clear();
 
   if (!render_passes_in_draw_order_.empty())
     render_passes_in_draw_order_.back()->damage_rect.Union(old_root_damage);

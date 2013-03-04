@@ -6,8 +6,6 @@
 
 #include "base/basictypes.h"
 #include "cc/content_layer.h"
-#include "cc/delegated_renderer_layer.h"
-#include "cc/delegated_renderer_layer_impl.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/io_surface_layer.h"
 #include "cc/layer_impl.h"
@@ -20,6 +18,8 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_context_provider.h"
+#include "cc/test/fake_delegated_renderer_layer.h"
+#include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
@@ -892,8 +892,8 @@ class LayerTreeHostContextTestDontUseLostResources :
     root_->setAnchorPoint(gfx::PointF());
     root_->setIsDrawable(true);
 
-    scoped_refptr<DelegatedRendererLayer> delegated_ =
-        DelegatedRendererLayer::Create();
+    scoped_refptr<FakeDelegatedRendererLayer> delegated_ =
+        FakeDelegatedRendererLayer::Create();
     delegated_->setBounds(gfx::Size(10, 10));
     delegated_->setAnchorPoint(gfx::PointF());
     delegated_->setIsDrawable(true);
@@ -1008,10 +1008,10 @@ class LayerTreeHostContextTestDontUseLostResources :
       pass_list.push_back(pass.PassAs<RenderPass>());
 
       // First child is the delegated layer.
-      DelegatedRendererLayerImpl* delegated_impl =
-          static_cast<DelegatedRendererLayerImpl*>(
+      FakeDelegatedRendererLayerImpl* delegated_impl =
+          static_cast<FakeDelegatedRendererLayerImpl*>(
               host_impl->rootLayer()->children()[0]);
-      delegated_impl->SetRenderPasses(pass_list);
+      delegated_impl->SetFrameDataForRenderPasses(&pass_list);
       EXPECT_TRUE(pass_list.empty());
 
       color_video_frame_ = VideoFrame::CreateColorFrame(

@@ -25,6 +25,8 @@ class FakeDelegatedRendererLayerImpl : public DelegatedRendererLayerImpl {
     return ResourcesForTesting();
   }
 
+  void SetFrameDataForRenderPasses(ScopedPtrVector<RenderPass>* pass_list);
+
  protected:
   FakeDelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
 };

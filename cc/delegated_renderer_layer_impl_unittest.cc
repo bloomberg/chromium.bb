@@ -13,6 +13,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/solid_color_layer_impl.h"
+#include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
@@ -60,8 +61,8 @@ class DelegatedRendererLayerImplTestSimple
         host_impl_->activeTree(), 2).PassAs<LayerImpl>();
     scoped_ptr<LayerImpl> layer_after = SolidColorLayerImpl::create(
         host_impl_->activeTree(), 3).PassAs<LayerImpl>();
-    scoped_ptr<DelegatedRendererLayerImpl> delegated_renderer_layer =
-        DelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 4);
+    scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
+        FakeDelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 4);
 
     host_impl_->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
     root_layer->setBounds(gfx::Size(100, 100));
@@ -106,7 +107,8 @@ class DelegatedRendererLayerImplTestSimple
         gfx::Rect(0, 0, 8, 8),
         gfx::Transform());
     addRenderPassQuad(pass3, pass2);
-    delegated_renderer_layer->SetRenderPasses(delegated_render_passes);
+    delegated_renderer_layer->SetFrameDataForRenderPasses(
+        &delegated_render_passes);
 
     // The RenderPasses should be taken by the layer.
     EXPECT_EQ(0u, delegated_render_passes.size());
@@ -456,8 +458,8 @@ class DelegatedRendererLayerImplTestTransform
   void SetUpTest() {
     scoped_ptr<LayerImpl> root_layer = LayerImpl::create(
         host_impl_->activeTree(), 1);
-    scoped_ptr<DelegatedRendererLayerImpl> delegated_renderer_layer =
-        DelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 2);
+    scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
+        FakeDelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 2);
 
     host_impl_->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));
     root_layer->setBounds(gfx::Size(100, 100));
@@ -565,7 +567,8 @@ class DelegatedRendererLayerImplTestTransform
     color_quad->SetNew(shared_quad_state, gfx::Rect(10, 10, 10, 10), 4u);
     quad_sink.append(color_quad.PassAs<DrawQuad>(), data);
 
-    delegated_renderer_layer->SetRenderPasses(delegated_render_passes);
+    delegated_renderer_layer->SetFrameDataForRenderPasses(
+        &delegated_render_passes);
 
     // The RenderPasses should be taken by the layer.
     EXPECT_EQ(0u, delegated_render_passes.size());
@@ -852,8 +855,8 @@ class DelegatedRendererLayerImplTestClip
   void SetUpTest() {
     scoped_ptr<LayerImpl> root_layer =
         LayerImpl::create(host_impl_->activeTree(), 1);
-    scoped_ptr<DelegatedRendererLayerImpl> delegated_renderer_layer =
-        DelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 2);
+    scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
+        FakeDelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 2);
     scoped_ptr<LayerImpl> clip_layer =
         LayerImpl::create(host_impl_->activeTree(), 3);
     scoped_ptr<LayerImpl> origin_layer =
@@ -957,7 +960,8 @@ class DelegatedRendererLayerImplTestClip
     color_quad->SetNew(shared_quad_state, gfx::Rect(10, 10, 10, 10), 4u);
     quad_sink.append(color_quad.PassAs<DrawQuad>(), data);
 
-    delegated_renderer_layer->SetRenderPasses(delegated_render_passes);
+    delegated_renderer_layer->SetFrameDataForRenderPasses(
+        &delegated_render_passes);
 
     // The RenderPasses should be taken by the layer.
     EXPECT_EQ(0u, delegated_render_passes.size());
