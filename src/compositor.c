@@ -998,7 +998,12 @@ weston_buffer_reference(struct weston_buffer_reference *ref,
 			struct wl_buffer *buffer)
 {
 	if (ref->buffer && buffer != ref->buffer) {
-		weston_buffer_post_release(ref->buffer);
+		ref->buffer->busy_count--;
+		if (ref->buffer->busy_count == 0) {
+			assert(ref->buffer->resource.client != NULL);
+			wl_resource_queue_event(&ref->buffer->resource,
+						WL_BUFFER_RELEASE);
+		}
 		wl_list_remove(&ref->destroy_listener.link);
 	}
 
@@ -1041,16 +1046,6 @@ weston_compositor_damage_all(struct weston_compositor *compositor)
 
 	wl_list_for_each(output, &compositor->output_list, link)
 		weston_output_damage(output);
-}
-
-WL_EXPORT void
-weston_buffer_post_release(struct wl_buffer *buffer)
-{
-	if (--buffer->busy_count > 0)
-		return;
-
-	assert(buffer->resource.client != NULL);
-	wl_resource_queue_event(&buffer->resource, WL_BUFFER_RELEASE);
 }
 
 WL_EXPORT void
