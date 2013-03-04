@@ -99,6 +99,10 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->asynchronous_spell_checking_enabled = false;
   prefs->user_style_sheet_enabled = true;
   prefs->threaded_html_parser = true;
+  prefs->accelerated_2d_canvas_enabled = false;
+  prefs->accelerated_compositing_for_video_enabled = false;
+  prefs->deferred_2d_canvas_enabled = false;
+  prefs->mock_scrollbars_enabled = false;
 }
 
 }  // namespace content
