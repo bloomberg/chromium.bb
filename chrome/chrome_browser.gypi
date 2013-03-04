@@ -3143,6 +3143,18 @@
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
+        {
+          'target_name': 'toolbar_model_security_levels_java',
+          'type': 'none',
+          'sources': [
+            'android/java/ToolbarModelSecurityLevel.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/chrome/browser/ui/toolbar',
+            'template_deps': ['browser/ui/toolbar/toolbar_model_security_level_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
       ],
      },
     ],

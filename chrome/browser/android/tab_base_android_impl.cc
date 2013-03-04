@@ -39,6 +39,10 @@ void TabBaseAndroidImpl::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
+WebContents* TabBaseAndroidImpl::GetWebContents() {
+  return web_contents_.get();
+}
+
 browser_sync::SyncedTabDelegate* TabBaseAndroidImpl::GetSyncedTabDelegate() {
   NOTIMPLEMENTED();
   return NULL;

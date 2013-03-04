@@ -1080,6 +1080,7 @@
           'target_name': 'chrome_java',
           'type': 'none',
           'dependencies': [
+            'toolbar_model_security_levels_java',
             '../base/base.gyp:base',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:web_contents_delegate_android_java',

@@ -40,6 +40,8 @@ class TabBaseAndroidImpl : public TabAndroid {
   // --------------------------------------------------------------------------
   // TabAndroid Methods
   // --------------------------------------------------------------------------
+  virtual content::WebContents* GetWebContents() OVERRIDE;
+
   virtual browser_sync::SyncedTabDelegate* GetSyncedTabDelegate() OVERRIDE;
 
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
