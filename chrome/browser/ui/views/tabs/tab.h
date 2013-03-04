@@ -197,7 +197,7 @@ class Tab : public ui::AnimationDelegate,
   void PaintTab(gfx::Canvas* canvas);
 
   // Paint with the "immersive mode" light-bar style.
-  void PaintTabImmersive(gfx::Canvas* canvas);
+  void PaintImmersiveTab(gfx::Canvas* canvas);
 
   // Paint various portions of the Tab
   void PaintTabBackground(gfx::Canvas* canvas);
@@ -249,6 +249,9 @@ class Tab : public ui::AnimationDelegate,
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
 
+  // Returns the rectangle for the light bar in immersive mode.
+  gfx::Rect GetImmersiveBarRect() const;
+
   // Performs a one-time initialization of static resources such as tab images.
   static void InitTabResources();
 
@@ -286,8 +289,12 @@ class Tab : public ui::AnimationDelegate,
   // crashes.
   int favicon_hiding_offset_;
 
-  // The current index of the loading animation.
+  // The current index of the loading animation. The range varies depending on
+  // whether the tab is loading or waiting, see AdvanceLoadingAnimation().
   int loading_animation_frame_;
+
+  // Step in the immersive loading progress indicator.
+  int immersive_loading_step_;
 
   bool should_display_crashed_favicon_;
 
