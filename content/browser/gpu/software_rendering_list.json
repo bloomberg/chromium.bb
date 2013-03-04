@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.17",
+  "version": "4.18",
   "entries": [
     {
       "id": 1,
@@ -1026,6 +1026,26 @@
       },
       "blacklist": [
         "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 68,
+      "description": "VMware Fusion 4 has corrupt rendering with Win Vista+.",
+      "cr_bugs": [169470],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": ">=",
+          "number": "6.0"
+        }
+      },
+      "vendor_id": "0x15ad",
+      "driver_version": {
+        "op": "<=",
+        "number": "7.14.1.1134"
+      },
+      "blacklist": [
+        "all"
       ]
     }
   ]
