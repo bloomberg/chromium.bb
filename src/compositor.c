@@ -1426,6 +1426,9 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 		surface->configure(surface, surface->pending.sx,
 				   surface->pending.sy, buffer_width, buffer_height);
 
+	if (surface->pending.buffer)
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
+	surface->pending.buffer = NULL;
 	surface->pending.sx = 0;
 	surface->pending.sy = 0;
 	surface->pending.newly_attached = 0;

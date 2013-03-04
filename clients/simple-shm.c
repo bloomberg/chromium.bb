@@ -269,11 +269,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 
 	paint_pixels(buffer->shm_data, 20, window->width, window->height, time);
 
-	if (window->prev_buffer != buffer) {
-		wl_surface_attach(window->surface, buffer->buffer, 0, 0);
-		window->prev_buffer = buffer;
-	}
-
+	wl_surface_attach(window->surface, buffer->buffer, 0, 0);
 	wl_surface_damage(window->surface,
 			  20, 20, window->width - 40, window->height - 40);
 
