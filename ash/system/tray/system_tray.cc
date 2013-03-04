@@ -78,6 +78,7 @@ class SystemBubbleWrapper {
   void InitView(TrayBackgroundView* tray,
                 views::View* anchor,
                 TrayBubbleView::InitParams* init_params) {
+    DCHECK(anchor);
     user::LoginStatus login_status =
         Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus();
     bubble_->InitView(anchor, login_status, init_params);
@@ -408,7 +409,7 @@ void SystemTray::UpdateNotificationBubble() {
       this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
   views::View* anchor;
   TrayBubbleView::AnchorType anchor_type;
-  if (system_bubble_.get()) {
+  if (system_bubble_.get() && system_bubble_->bubble_view()) {
     anchor = system_bubble_->bubble_view();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
   } else {
