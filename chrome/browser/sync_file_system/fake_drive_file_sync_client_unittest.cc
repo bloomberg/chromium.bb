@@ -32,9 +32,15 @@ void DidGetChangeList(google_apis::GDataErrorCode* error_out,
   *change_list_out = change_list.Pass();
 }
 
+void DidDeleteFile(google_apis::GDataErrorCode* error_out,
+                   google_apis::GDataErrorCode error) {
+  *error_out = error;
+}
+
 }  // namespace
 
 TEST(FakeDriveFileSyncClientTest, ChangeSquashTest) {
+  MessageLoop message_loop;
   FakeDriveFileSyncClient sync_client;
   std::string kParentResourceId("parent resource id");
   std::string kParentTitle("app-id");
@@ -64,8 +70,6 @@ TEST(FakeDriveFileSyncClientTest, ChangeSquashTest) {
       kParentResourceId, kParentTitle,
       kTitle3, kResourceId2, kMD5_3, false /* deleted */);
 
-  MessageLoop message_loop;
-
   google_apis::GDataErrorCode error;
   std::string md5;
   sync_client.DownloadFile(
@@ -89,6 +93,25 @@ TEST(FakeDriveFileSyncClientTest, ChangeSquashTest) {
   EXPECT_EQ(kResourceId2, change_list->entries()[1]->resource_id());
   EXPECT_EQ(kMD5_3, change_list->entries()[1]->file_md5());
   EXPECT_FALSE(change_list->entries()[1]->deleted());
+}
+
+TEST(FakeDriveFileSyncClientTest, DeleteFile) {
+  MessageLoop message_loop;
+  FakeDriveFileSyncClient sync_client;
+  std::string resource_id = "resource_id_to_be_deleted";
+  sync_client.PushRemoteChange(
+      "parent_id", "parent_title",
+      "resource_title", resource_id, "resource_md5", false /* deleted */);
+
+  google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
+  sync_client.DeleteFile(
+      resource_id,
+      std::string(),
+      base::Bind(&DidDeleteFile, &error));
+  message_loop.RunUntilIdle();
+
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+  EXPECT_TRUE(sync_client.remote_resources().find(resource_id)->second.deleted);
 }
 
 }  // namespace sync_file_system

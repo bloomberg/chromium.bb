@@ -197,7 +197,21 @@ void FakeDriveFileSyncClient::DeleteFile(
     const std::string& resource_id,
     const std::string& remote_file_md5,
     const GDataErrorCallback& callback) {
-  NOTREACHED();
+  google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
+  DCHECK(ContainsKey(remote_resources_, resource_id));
+
+  const RemoteResource& deleted_directory = remote_resources_[resource_id];
+  PushRemoteChange(deleted_directory.parent_resource_id,
+                   deleted_directory.parent_title,
+                   deleted_directory.title,
+                   deleted_directory.resource_id,
+                   deleted_directory.md5_checksum,
+                   true /* deleted */);
+
+  error = google_apis::HTTP_SUCCESS;
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error));
 }
 
 GURL FakeDriveFileSyncClient::ResourceIdToResourceLink(
