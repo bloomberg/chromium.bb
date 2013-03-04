@@ -42,6 +42,12 @@ mkdir $PDIR
 mkdir $PDIR/bin
 mkdir $PDIR/lib
 
+if [ "$(uname -s)" = "Darwin" ]; then
+  SO_EXT="dylib"
+else
+  SO_EXT="so"
+fi
+
 # Copy buildlog over.
 cp buildlog.txt $PDIR/
 
@@ -52,11 +58,8 @@ cp "${LLVM_BIN_DIR}/llvm-symbolizer" $PDIR/bin/
 
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
 # care about.
-if [ "$(uname -s)" = "Darwin" ]; then
-  cp "${LLVM_LIB_DIR}/libFindBadConstructs.dylib" $PDIR/lib
-else
-  cp "${LLVM_LIB_DIR}/libFindBadConstructs.so" $PDIR/lib
-fi
+cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
+cp "${LLVM_LIB_DIR}/libprofile_rt.${SO_EXT}" $PDIR/lib
 
 # Copy built-in headers (lib/clang/3.2/include).
 # libcompiler-rt puts all kinds of libraries there too, but we want only ASan.
