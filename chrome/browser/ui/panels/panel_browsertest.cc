@@ -1569,7 +1569,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_SizeClamping) {
 }
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
-#if defined(OS_MACOSX)
+// http://crbug.com/179890; TightAutosizeAroundSingleLine broken on Windows by
+// WebKit roll.
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_TightAutosizeAroundSingleLine \
         DISABLED_TightAutosizeAroundSingleLine
 #else
