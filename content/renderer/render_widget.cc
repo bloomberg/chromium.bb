@@ -344,7 +344,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
   if (compositor_)
     compositor_->setViewportSize(new_size, physical_backing_size);
 
-  physical_backing_size_ = physical_backing_size_;
+  physical_backing_size_ = physical_backing_size;
   resizer_rect_ = resizer_rect;
 
   // NOTE: We may have entered fullscreen mode without changing our size.
