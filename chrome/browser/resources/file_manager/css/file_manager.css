@@ -1649,6 +1649,12 @@ list.autocomplete-suggestions > li:hover {
   border: 1px solid white;
 }
 
+list.autocomplete-suggestions > li > div.detail-text {
+  -webkit-box-flex: 1;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
 list.autocomplete-suggestions[hasElementFocus] > [selected],
 list.autocomplete-suggestions[hasElementFocus] > [lead],
 list.autocomplete-suggestions:not([hasElementFocus]) > [selected],

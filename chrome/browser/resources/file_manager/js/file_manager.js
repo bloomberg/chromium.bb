@@ -2978,6 +2978,7 @@ DialogType.isModal = function(type) {
     icon.className = 'detail-icon';
     icon.setAttribute('file-type-icon', iconType);
     var text = this.document_.createElement('div');
+    text.className = 'detail-text';
     // highlightedBaseName is a piece of HTML with meta characters properly
     // escaped. See the comment at fileBrowserPrivate.searchDriveMetadata().
     text.innerHTML = item.highlightedBaseName;
