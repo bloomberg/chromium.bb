@@ -7,12 +7,15 @@
  * @param {DirectoryModel} directoryModel The model.
  * @param {VolumeManager} volumeManager The manager.
  * @param {DOMDocument} document HTML document.
+ * @param {boolean} showOffers True if we should show offer banners.
  * @constructor
  */
-function FileListBannerController(directoryModel, volumeManager, document) {
+function FileListBannerController(
+    directoryModel, volumeManager, document, showOffers) {
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
   this.document_ = document;
+  this.showOffers_ = showOffers;
   this.driveEnabled_ = false;
 
   if (!util.boardIs('x86-mario') &&
@@ -388,7 +391,7 @@ FileListBannerController.prototype.closeBanner_ = function() {
 };
 
 /**
- * Shows or hides the Low Disck Space banner.
+ * Shows or hides the Low Disk Space banner.
  * @private
  */
 FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
@@ -402,6 +405,8 @@ FileListBannerController.prototype.checkSpaceAndShowBanner_ = function() {
             if (util.boardIs('link'))
               offerSpaceKb = 1024 * 1024 * 1024;  // 1TB.
             if (result && result.totalSizeKB >= offerSpaceKb)
+              self.newWelcome_ = false;
+            if (!self.showOffers_)
               self.newWelcome_ = false;
             self.maybeShowBanner_();
           });

@@ -414,10 +414,20 @@ DialogType.isModal = function(type) {
 
     this.initFileList_(prefs);
     this.initDialogs_();
-    this.bannersController_ = new FileListBannerController(
-        this.directoryModel_, this.volumeManager_, this.document_);
-    this.bannersController_.addEventListener('relayout',
-                                             this.onResize_.bind(this));
+
+    var self = this;
+
+    // Get the 'allowRedeemOffers' preference before launching
+    // FileListBannerController.
+    this.getPreferences_(function(pref) {
+      /* @type {boolean} */
+      var showOffers = pref['allowRedeemOffers'];
+      self.bannersController_ = new FileListBannerController(
+          self.directoryModel_, self.volumeManager_, self.document_,
+          showOffers);
+      self.bannersController_.addEventListener('relayout',
+                                               self.onResize_.bind(self));
+    });
 
     if (!util.platform.v2()) {
       window.addEventListener('popstate', this.onPopState_.bind(this));
@@ -428,7 +438,6 @@ DialogType.isModal = function(type) {
     var dm = this.directoryModel_;
     dm.addEventListener('directory-changed',
                         this.onDirectoryChanged_.bind(this));
-    var self = this;
     dm.addEventListener('begin-update-files', function() {
       self.currentList_.startBatchUpdates();
     });
@@ -1707,10 +1716,9 @@ DialogType.isModal = function(type) {
         callback();
     };
 
-    chrome.fileBrowserPrivate.getPreferences(function(prefs) {
-      self.preferences_ = prefs;
+    this.getPreferences_(function(prefs) {
       done();
-    });
+    }, true);
 
     chrome.fileBrowserPrivate.getDriveConnectionState(function(state) {
       self.driveConnectionState_ = state;
@@ -3131,5 +3139,26 @@ DialogType.isModal = function(type) {
    */
   FileManager.prototype.getCurrentList = function() {
     return this.currentList_;
+  };
+
+  /**
+   * Retrieve the preferences of the files.app. This method caches the result
+   * and returns it unless opt_update is true.
+   * @param {function(Object.<string, *>)} callback Callback to get the
+   *     preference.
+   * @param {boolean=} opt_update If is's true, don't use the cache and
+   *     retrieve latest preference. Default is false.
+   * @private
+   */
+  FileManager.prototype.getPreferences_ = function(callback, opt_update) {
+    if (!opt_update && !this.preferences_ !== undefined) {
+      callback(this.preferences_);
+      return;
+    }
+
+    chrome.fileBrowserPrivate.getPreferences(function(prefs) {
+      this.preferences_ = prefs;
+      callback(prefs);
+    }.bind(this));
   };
 })();

@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -2907,6 +2908,15 @@ bool GetPreferencesFunction::RunImpl() {
 
   value->SetBoolean("use24hourClock",
                     service->GetBoolean(prefs::kUse24HourClock));
+
+  {
+    bool allow = true;
+    if (!chromeos::CrosSettings::Get()->GetBoolean(
+            chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow)) {
+      allow = true;
+    }
+    value->SetBoolean("allowRedeemOffers", allow);
+  }
 
   SetResult(value.release());
   return true;
