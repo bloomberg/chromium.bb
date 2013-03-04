@@ -6703,19 +6703,6 @@
    fun:_ZN16sync_file_system28DriveFileSyncServiceSyncTest5SetUpEv
 }
 {
-   bug_179231_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6policy22BrowserPolicyConnector22CreatePlatformProviderEv
-   fun:_ZN6policy22BrowserPolicyConnectorC1Ev
-   fun:_ZN21TestingBrowserProcess24browser_policy_connectorEv
-   fun:_ZN8chromeos22DeviceSettingsProvider21MitigateMissingPolicyEv
-   fun:_ZN8chromeos22DeviceSettingsProvider17UpdateFromServiceEv
-   fun:_ZN8chromeos22DeviceSettingsProvider23UpdateAndProceedStoringEv
-   fun:_ZN8chromeos22DeviceSettingsProvider21DeviceSettingsUpdatedEv
-   fun:_ZN8chromeos21DeviceSettingsService24HandleCompletedOperationERKN4base8CallbackIFvvEEEPNS_23SessionManagerOperationENS0_6StatusE
-}
-{
    bug_179758_a
    Memcheck:Leak
    fun:_Znw*
