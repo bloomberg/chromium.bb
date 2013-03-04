@@ -81,6 +81,8 @@ namespace content {
 
 namespace {
 
+int kDefaultLayoutTestTimeoutMs = 30 * 1000;
+
 void InvokeTaskHelper(void* context) {
   WebTask* task = reinterpret_cast<WebTask*>(context);
   task->run();
@@ -129,6 +131,10 @@ class SyncNavigationStateVisitor : public RenderViewVisitor {
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<WebKitTestRunner>(render_view),
+      proxy_(NULL),
+      enable_pixel_dumping_(true),
+      layout_test_timeout_(kDefaultLayoutTestTimeoutMs),
+      allow_external_pages_(false),
       is_main_window_(false) {
 }
 
@@ -451,12 +457,14 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
 // Public methods - -----------------------------------------------------------
 
 void WebKitTestRunner::Reset() {
+  // The proxy_ is always non-NULL, it is set right after construction.
+  proxy_->reset();
   prefs_.reset();
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   enable_pixel_dumping_ = true;
-  layout_test_timeout_ = 30 * 1000;
+  layout_test_timeout_ = kDefaultLayoutTestTimeoutMs;
   allow_external_pages_ = false;
   expected_pixel_hash_ = std::string();
   routing_ids_.clear();
