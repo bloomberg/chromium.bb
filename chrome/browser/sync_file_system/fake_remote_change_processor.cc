@@ -24,10 +24,23 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
     const fileapi::FileSystemURL& url,
     const std::string& service_name,
     const PrepareChangeCallback& callback) {
+  SyncFileMetadata local_metadata;
+
+  URLToFileChangesMap::iterator found = applied_changes_.find(url);
+  if (found != applied_changes_.end()) {
+    DCHECK(!found->second.empty());
+    const FileChange& applied_change = found->second.back();
+    if (applied_change.IsAddOrUpdate()) {
+      local_metadata = SyncFileMetadata(
+          applied_change.file_type(),
+          100 /* size */,
+          base::Time::Now());
+    }
+  }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_OK,
-                 SyncFileMetadata(), FileChangeList()));
+                 local_metadata, FileChangeList()));
 }
 
 void FakeRemoteChangeProcessor::ApplyRemoteChange(

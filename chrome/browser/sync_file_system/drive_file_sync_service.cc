@@ -287,7 +287,8 @@ DriveFileSyncService::~DriveFileSyncService() {
   // Invalidate WeakPtr instances here explicitly to notify TaskToken that we
   // can safely discard the token.
   weak_factory_.InvalidateWeakPtrs();
-  sync_client_->RemoveObserver(this);
+  if (sync_client_)
+    sync_client_->RemoveObserver(this);
   token_.reset();
 
   // Unregister for Drive notifications.
@@ -316,6 +317,12 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     scoped_ptr<DriveMetadataStore> metadata_store) {
   return make_scoped_ptr(new DriveFileSyncService(
       profile, base_dir, sync_client.Pass(), metadata_store.Pass()));
+}
+
+scoped_ptr<DriveFileSyncClientInterface>
+DriveFileSyncService::DestroyAndPassSyncClientForTesting(
+    scoped_ptr<DriveFileSyncService> sync_service) {
+  return sync_service->sync_client_.Pass();
 }
 
 void DriveFileSyncService::AddServiceObserver(Observer* observer) {
@@ -1823,8 +1830,7 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
   }
 
   if (may_have_unfetched_changes_ &&
-      !metadata_store_->incremental_sync_origins().empty() &&
-      pending_changes_.empty()) {
+      !metadata_store_->incremental_sync_origins().empty()) {
     FetchChangesForIncrementalSync();
   }
 }
@@ -1836,7 +1842,6 @@ void DriveFileSyncService::FetchChangesForIncrementalSync() {
   DCHECK(may_have_unfetched_changes_);
   DCHECK(pending_batch_sync_origins_.empty());
   DCHECK(!metadata_store_->incremental_sync_origins().empty());
-  DCHECK(pending_changes_.empty());
 
   DVLOG(1) << "FetchChangesForIncrementalSync (start_changestamp:"
            << (largest_fetched_changestamp_ + 1) << ")";

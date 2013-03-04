@@ -62,6 +62,12 @@ class DriveFileSyncService
       scoped_ptr<DriveFileSyncClientInterface> sync_client,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
+  // Destroys |sync_service| and passes the ownership of |sync_client| to caller
+  // for testing.
+  static scoped_ptr<DriveFileSyncClientInterface>
+  DestroyAndPassSyncClientForTesting(
+      scoped_ptr<DriveFileSyncService> sync_service);
+
   // RemoteFileSyncService overrides.
   virtual void AddServiceObserver(Observer* observer) OVERRIDE;
   virtual void AddFileStatusObserver(FileStatusObserver* observer) OVERRIDE;

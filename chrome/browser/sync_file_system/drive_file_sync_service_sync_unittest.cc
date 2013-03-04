@@ -31,7 +31,6 @@ const char kAppOrigin[] = "chrome-extension://app-id";
 
 void DidInitialize(bool* done, SyncStatusCode status, bool created) {
   EXPECT_EQ(SYNC_STATUS_OK, status);
-  EXPECT_TRUE(created);
   *done = true;
 }
 
@@ -61,30 +60,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     RegisterSyncableFileSystem(DriveFileSyncService::kServiceName);
-
-    ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
-
-    fake_sync_client_ = new FakeDriveFileSyncClient;
-    fake_remote_processor_.reset(new FakeRemoteChangeProcessor);
-
-    metadata_store_ = new DriveMetadataStore(
-        base_dir_.path(),
-        base::MessageLoopProxy::current());
-
-    bool done = false;
-    metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
-    message_loop_.RunUntilIdle();
-    EXPECT_TRUE(done);
-
-    metadata_store_->SetSyncRootDirectory(kSyncRootResourceId);
-    metadata_store_->AddBatchSyncOrigin(GURL(kAppOrigin), kParentResourceId);
-    metadata_store_->MoveBatchSyncOriginToIncremental(GURL(kAppOrigin));
-
-    sync_service_ = DriveFileSyncService::CreateForTesting(
-        &profile_,
-        base_dir_.path(),
-        scoped_ptr<DriveFileSyncClientInterface>(fake_sync_client_),
-        scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -117,6 +92,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
                    base::Unretained(this), title));
   }
 
+  SyncEvent CreateRelaunchEvent() {
+    return SyncEvent(
+        "SyncEvent: Relaunch service",
+        base::Bind(&DriveFileSyncServiceSyncTest::RelaunchService,
+                   base::Unretained(this)));
+  }
+
   SyncEvent CreateFetchEvent() {
     return SyncEvent(
         "SyncEvent: Fetch remote changes",
@@ -143,8 +125,15 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   }
 
   void RunTest(const std::vector<SyncEvent>& events) {
+    base::ScopedTempDir scoped_base_dir_;
+    ASSERT_TRUE(scoped_base_dir_.CreateUniqueTempDir());
+    base_dir_ = scoped_base_dir_.path();
+
+    SetUpForTestCase();
+
     typedef std::vector<SyncEvent>::const_iterator iterator;
     std::ostringstream out;
+    out << '\n';
     for (iterator itr = events.begin(); itr != events.end(); ++itr)
       out << itr->description << '\n';
     SCOPED_TRACE(out.str());
@@ -156,9 +145,43 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     while (ProcessRemoteChange()) {}
 
     VerifyResult();
+    TearDownForTestCase();
+
+    base_dir_ = base::FilePath();
   }
 
  private:
+  void SetUpForTestCase() {
+    fake_sync_client_ = new FakeDriveFileSyncClient;
+    fake_remote_processor_.reset(new FakeRemoteChangeProcessor);
+
+    metadata_store_ = new DriveMetadataStore(
+        base_dir_,
+        base::MessageLoopProxy::current());
+
+    bool done = false;
+    metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
+    message_loop_.RunUntilIdle();
+    EXPECT_TRUE(done);
+
+    metadata_store_->SetSyncRootDirectory(kSyncRootResourceId);
+    metadata_store_->AddBatchSyncOrigin(GURL(kAppOrigin), kParentResourceId);
+    metadata_store_->MoveBatchSyncOriginToIncremental(GURL(kAppOrigin));
+
+    sync_service_ = DriveFileSyncService::CreateForTesting(
+        &profile_,
+        base_dir_,
+        scoped_ptr<DriveFileSyncClientInterface>(fake_sync_client_),
+        scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
+  }
+
+  void TearDownForTestCase() {
+    metadata_store_ = NULL;
+    fake_sync_client_ = NULL;
+    sync_service_.reset();
+    fake_remote_processor_.reset();
+  }
+
   void AddOrUpdateResource(const std::string& title) {
     typedef ResourceIdByTitle::iterator iterator;
     std::pair<iterator, bool> inserted =
@@ -186,6 +209,29 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void RelaunchService() {
+    metadata_store_ = NULL;
+    scoped_ptr<DriveFileSyncClientInterface> sync_client =
+        DriveFileSyncService::DestroyAndPassSyncClientForTesting(
+            sync_service_.Pass());
+    message_loop_.RunUntilIdle();
+
+    metadata_store_ = new DriveMetadataStore(
+        base_dir_,
+        base::MessageLoopProxy::current());
+
+    bool done = false;
+    metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
+    message_loop_.RunUntilIdle();
+    EXPECT_TRUE(done);
+
+    sync_service_ = DriveFileSyncService::CreateForTesting(
+        &profile_,
+        base_dir_,
+        sync_client.Pass(),
+        scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
+  }
+
   void FetchRemoteChange() {
     sync_service_->may_have_unfetched_changes_ = true;
     sync_service_->MaybeStartFetchChanges();
@@ -200,7 +246,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         base::Bind(&DidProcessRemoteChange, &done, &status));
     message_loop_.RunUntilIdle();
     EXPECT_TRUE(done);
-    return status == SYNC_STATUS_OK;
+    return status != SYNC_STATUS_NO_CHANGE_TO_SYNC;
   }
 
 
@@ -262,11 +308,11 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   TestingProfile profile_;
-  base::ScopedTempDir base_dir_;
+  base::FilePath base_dir_;
 
-  FakeDriveFileSyncClient* fake_sync_client_;
+  FakeDriveFileSyncClient* fake_sync_client_;  // Owned by |sync_service_|.
   scoped_ptr<FakeRemoteChangeProcessor> fake_remote_processor_;
-  DriveMetadataStore* metadata_store_;
+  DriveMetadataStore* metadata_store_;  // Owned by |sync_service_|.
 
   scoped_ptr<DriveFileSyncService> sync_service_;
 
@@ -296,14 +342,33 @@ TEST_F(DriveFileSyncServiceSyncTest, UpdateFileTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-
 TEST_F(DriveFileSyncServiceSyncTest, DeleteFileTest) {
   std::string kFile1 = "file title 1";
   SyncEvent sync_event[] = {
     CreateRemoteFileAddOrUpdateEvent(kFile1),
+    CreateFetchEvent(),
+    CreateProcessRemoteChangeEvent(),
     CreateRemoteFileDeleteEvent(kFile1),
   };
 
+  RunTest(CreateTestCase(sync_event));
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RelaunchTest) {
+  SyncEvent sync_event[] = {
+    CreateRelaunchEvent(),
+  };
+
+  RunTest(CreateTestCase(sync_event));
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, SquashedFileAddTest) {
+  std::string kFile1 = "file title 1";
+  SyncEvent sync_event[] = {
+    CreateRemoteFileAddOrUpdateEvent(kFile1),
+    CreateFetchEvent(),
+    CreateRemoteFileDeleteEvent(kFile1),
+  };
   RunTest(CreateTestCase(sync_event));
 }
 
