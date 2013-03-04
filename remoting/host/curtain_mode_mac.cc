@@ -91,6 +91,7 @@ bool CurtainModeMac::ActivateCurtain() {
   // Try to install the switch-in handler. Do this before switching out the
   // current session so that the console session is not affected if it fails.
   if (!InstallEventHandler()) {
+    LOG(ERROR) << "Failed to install the switch-in handler.";
     return false;
   }
 

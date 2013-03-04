@@ -95,6 +95,8 @@ void CurtainModeLinux::SetActivated(bool activated) {
   // Either the session is running on Xvfb (i.e. always curtained), or it is
   // attached to the physical console (i.e. impossible to curtain).
   if (activated && !IsXvfbSession()) {
+    LOG(ERROR) << "Curtain-mode is not supported when running on non-Xvfb "
+                  "X server";
     on_error_.Run();
   }
 }

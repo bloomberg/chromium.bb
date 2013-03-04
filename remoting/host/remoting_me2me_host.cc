@@ -801,6 +801,7 @@ bool HostProcess::OnUsernamePolicyUpdate(bool host_username_match_required) {
 #endif
 
     if (shutdown) {
+      LOG(ERROR) << "The host username does not match.";
       ShutdownHost(kUsernameMismatchExitCode);
     }
   } else {
@@ -841,6 +842,8 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
     // TODO(jamiewalch): Fix this once we have implemented the multi-process
     // daemon architecture (crbug.com/134894)
     if (getuid() == 0) {
+      LOG(ERROR) << "Running the host in the console login session is yet not "
+                    "supported.";
       ShutdownHost(kLoginScreenNotSupportedExitCode);
       return false;
     }
@@ -849,9 +852,9 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
 
   if (curtain_required_ != curtain_required) {
     if (curtain_required)
-      LOG(ERROR) << "Policy requires curtain-mode.";
+      LOG(INFO) << "Policy requires curtain-mode.";
     else
-      LOG(ERROR) << "Policy does not require curtain-mode.";
+      LOG(INFO) << "Policy does not require curtain-mode.";
     curtain_required_ = curtain_required;
     if (curtaining_host_observer_)
       curtaining_host_observer_->SetEnableCurtaining(curtain_required_);

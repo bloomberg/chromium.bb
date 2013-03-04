@@ -15,6 +15,7 @@ class CurtainModeWin : public CurtainMode {
   virtual void SetActivated(bool activated) OVERRIDE {
     // Curtain-mode is not currently implemented for Windows.
     if (activated) {
+      LOG(ERROR) << "Curtain-mode is not yet supported on Windows.";
       on_error_.Run();
     }
   }
