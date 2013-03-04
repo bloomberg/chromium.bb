@@ -379,9 +379,7 @@ int WebKitTestRunner::layoutTestTimeout() {
 }
 
 void WebKitTestRunner::closeRemainingWindows() {
-  // We currently always close all remaining windows at the end of each test.
-  // TODO(jochen): Reuse the renderer across tests instead of closing all
-  // windows. http://crbug.com/171128
+  Send(new ShellViewHostMsg_CloseRemainingWindows(routing_id()));
 }
 
 int WebKitTestRunner::navigationEntryCount() {

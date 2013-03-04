@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -291,6 +292,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CaptureSessionHistory,
                         OnCaptureSessionHistory)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
+                        OnCloseRemainingWindows)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -546,6 +549,16 @@ void WebKitTestController::OnCaptureSessionHistory() {
                                        routing_ids,
                                        session_histories,
                                        current_entry_indexes));
+}
+
+void WebKitTestController::OnCloseRemainingWindows() {
+  DevToolsManager::GetInstance()->CloseAllClientHosts();
+  std::vector<Shell*> open_windows(Shell::windows());
+  for (size_t i = 0; i < open_windows.size(); ++i) {
+    if (open_windows[i] != main_window_)
+      open_windows[i]->Close();
+  }
+  MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace content

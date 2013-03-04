@@ -108,3 +108,4 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetFocus,
                     bool /* focus */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)

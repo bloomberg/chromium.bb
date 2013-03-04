@@ -139,6 +139,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnSetClientWindowRect(const gfx::Rect& rect);
   void OnSetFocus(bool focus);
   void OnCaptureSessionHistory();
+  void OnCloseRemainingWindows();
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
