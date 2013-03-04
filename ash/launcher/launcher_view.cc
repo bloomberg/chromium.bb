@@ -102,6 +102,7 @@ class LauncherMenuModelAdapter
 
   // Overriding MenuModelAdapter's MenuDelegate implementation.
   virtual const gfx::Font* GetLabelFont(int command_id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void GetHorizontalIconMargins(int id,
                                         int icon_size,
                                         int* left_margin,
@@ -131,6 +132,10 @@ const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return &rb.GetFont(ui::ResourceBundle::BoldFont);
+}
+
+bool LauncherMenuModelAdapter::IsCommandEnabled(int id) const {
+  return id != kCommandIdOfMenuName;
 }
 
 bool LauncherMenuModelAdapter::GetBackgroundColor(
