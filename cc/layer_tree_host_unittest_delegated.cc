@@ -557,5 +557,359 @@ class LayerTreeHostDelegatedTestReusedResources
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestReusedResources)
 
+class LayerTreeHostDelegatedTestFrameBeforeAck
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void didCommit() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame;
+    TransferableResourceArray resources;
+
+    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    switch (next_source_frame_number) {
+      case 1:
+        // Generate a frame with some resources in it.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
+        AddTextureQuad(frame.get(), 444);
+        AddTransferableResource(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 2:
+        // All of the resources are in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Keep using 999 but stop using 555 and 444.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        delegated_->SetFrameData(frame.Pass());
+
+        // Resource are not immediately released.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // The parent compositor (this one) does a commit.
+        break;
+      case 3:
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(2u, resources.size());
+        if (resources[0].id == 555) {
+          EXPECT_EQ(555, resources[0].id);
+          EXPECT_EQ(444, resources[1].id);
+        } else {
+          EXPECT_EQ(444, resources[0].id);
+          EXPECT_EQ(555, resources[1].id);
+        }
+
+        // The child compositor sends a frame before receiving an for the
+        // second frame. It uses 999, 444, and 555 again.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTextureQuad(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+    }
+  }
+
+  virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (host_impl->activeTree()->source_frame_number() != 3)
+      return;
+
+    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    const ResourceProvider::ResourceIdMap& map =
+        host_impl->resourceProvider()->getChildToParentMap(
+            delegated_impl->ChildId());
+
+    // The bad frame should be dropped. So we should only have one quad (the
+    // one with resource 999) on the impl tree. And only 999 will be present
+    // in the parent's resource provider.
+    EXPECT_EQ(1u, map.size());
+    EXPECT_EQ(1u, map.count(999));
+
+    EXPECT_EQ(1u, delegated_impl->Resources().size());
+    EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(999)->second));
+
+    const RenderPass* pass = delegated_impl->RenderPassesInDrawOrder()[0];
+    EXPECT_EQ(1u, pass->quad_list.size());
+    const TextureDrawQuad* quad = TextureDrawQuad::MaterialCast(
+        pass->quad_list[0]);
+    EXPECT_EQ(map.find(999)->second, quad->resource_id);
+
+    endTest();
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestFrameBeforeAck)
+
+class LayerTreeHostDelegatedTestFrameBeforeTakeResources
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void didCommit() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame;
+    TransferableResourceArray resources;
+
+    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    switch (next_source_frame_number) {
+      case 1:
+        // Generate a frame with some resources in it.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
+        AddTextureQuad(frame.get(), 444);
+        AddTransferableResource(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 2:
+        // All of the resources are in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Keep using 999 but stop using 555 and 444.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        delegated_->SetFrameData(frame.Pass());
+
+        // Resource are not immediately released.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // The parent compositor (this one) does a commit.
+        break;
+      case 3:
+        // The child compositor sends a frame before taking resources back
+        // from the previous commit. This frame makes use of the resources 555
+        // and 444, which were just released during commit.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTextureQuad(frame.get(), 444);
+        delegated_->SetFrameData(frame.Pass());
+
+        // When we take resources, it should have the resources that were
+        // released during the last valid frame committed.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(2u, resources.size());
+        if (resources[0].id == 555) {
+          EXPECT_EQ(555, resources[0].id);
+          EXPECT_EQ(444, resources[1].id);
+        } else {
+          EXPECT_EQ(444, resources[0].id);
+          EXPECT_EQ(555, resources[1].id);
+        }
+        break;
+      case 4:
+        // The invalid frame doesn't cause anything to be released.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+        endTest();
+        break;
+    }
+  }
+
+  virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (host_impl->activeTree()->source_frame_number() != 3)
+      return;
+
+    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    const ResourceProvider::ResourceIdMap& map =
+        host_impl->resourceProvider()->getChildToParentMap(
+            delegated_impl->ChildId());
+
+    // The bad frame should be dropped. So we should only have one quad (the
+    // one with resource 999) on the impl tree. And only 999 will be present
+    // in the parent's resource provider.
+    EXPECT_EQ(1u, map.size());
+    EXPECT_EQ(1u, map.count(999));
+
+    EXPECT_EQ(1u, delegated_impl->Resources().size());
+    EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(999)->second));
+
+    const RenderPass* pass = delegated_impl->RenderPassesInDrawOrder()[0];
+    EXPECT_EQ(1u, pass->quad_list.size());
+    const TextureDrawQuad* quad = TextureDrawQuad::MaterialCast(
+        pass->quad_list[0]);
+    EXPECT_EQ(map.find(999)->second, quad->resource_id);
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostDelegatedTestFrameBeforeTakeResources)
+
+class LayerTreeHostDelegatedTestBadFrame
+    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
+ public:
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void didCommit() OVERRIDE {
+    scoped_ptr<DelegatedFrameData> frame;
+    TransferableResourceArray resources;
+
+    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    switch (next_source_frame_number) {
+      case 1:
+        // Generate a frame with some resources in it.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
+        AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 2:
+        // All of the resources are in use.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Generate a bad frame with a resource the layer doesn't have. The
+        // 885 and 775 resources are unknown, while ownership of the legit 444
+        // resource is passed in here. The bad frame does not use any of the
+        // previous resources, 999 or 555.
+        // A bad quad is present both before and after the good quad.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 885);
+        AddTextureQuad(frame.get(), 444);
+        AddTransferableResource(frame.get(), 444);
+        AddTextureQuad(frame.get(), 775);
+        delegated_->SetFrameData(frame.Pass());
+
+        // The parent compositor (this one) does a commit.
+        break;
+      case 3:
+        // The bad frame does not cause resources to be released, and the
+        // resources given in it are held onto.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(0u, resources.size());
+
+        // Now send a good frame with 999 again.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        AddTextureQuad(frame.get(), 999);
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 4:
+        // The unused 444 resource from the bad frame will be released along
+        // with the unused 555.
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        EXPECT_EQ(2u, resources.size());
+        if (resources[0].id == 555) {
+          EXPECT_EQ(555, resources[0].id);
+          EXPECT_EQ(444, resources[1].id);
+        } else {
+          EXPECT_EQ(444, resources[0].id);
+          EXPECT_EQ(555, resources[1].id);
+        }
+
+        endTest();
+        break;
+    }
+  }
+
+  virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    if (host_impl->activeTree()->source_frame_number() < 1)
+      return;
+
+    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    FakeDelegatedRendererLayerImpl* delegated_impl =
+        static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
+
+    const ResourceProvider::ResourceIdMap& map =
+        host_impl->resourceProvider()->getChildToParentMap(
+            delegated_impl->ChildId());
+
+    switch (host_impl->activeTree()->source_frame_number()) {
+      case 1: {
+        // We have the first good frame with just 990 and 555 in it.
+        // layer.
+        EXPECT_EQ(2u, map.size());
+        EXPECT_EQ(1u, map.count(999));
+        EXPECT_EQ(1u, map.count(555));
+
+        EXPECT_EQ(2u, delegated_impl->Resources().size());
+        EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(999)->second));
+        EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(555)->second));
+
+        const RenderPass* pass = delegated_impl->RenderPassesInDrawOrder()[0];
+        EXPECT_EQ(2u, pass->quad_list.size());
+        const TextureDrawQuad* quad1 = TextureDrawQuad::MaterialCast(
+            pass->quad_list[0]);
+        EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+        const TextureDrawQuad* quad2 = TextureDrawQuad::MaterialCast(
+            pass->quad_list[1]);
+        EXPECT_EQ(map.find(555)->second, quad2->resource_id);
+        break;
+      }
+      case 2: {
+        // We have all resources whose ownership has been given to the delegated
+        // layer.
+        EXPECT_EQ(3u, map.size());
+        EXPECT_EQ(1u, map.count(999));
+        EXPECT_EQ(1u, map.count(555));
+        EXPECT_EQ(1u, map.count(444));
+
+        EXPECT_EQ(3u, delegated_impl->Resources().size());
+        EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(999)->second));
+        EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(555)->second));
+        EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(444)->second));
+
+        // The bad frame is dropped though, we still have the frame with 999 and
+        // 555 in it.
+        const RenderPass* pass = delegated_impl->RenderPassesInDrawOrder()[0];
+        EXPECT_EQ(2u, pass->quad_list.size());
+        const TextureDrawQuad* quad1 = TextureDrawQuad::MaterialCast(
+            pass->quad_list[0]);
+        EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+        const TextureDrawQuad* quad2 = TextureDrawQuad::MaterialCast(
+            pass->quad_list[1]);
+        EXPECT_EQ(map.find(555)->second, quad2->resource_id);
+        break;
+      }
+      case 3: {
+        // We have the new good frame with just 999 in it.
+        EXPECT_EQ(1u, map.size());
+        EXPECT_EQ(1u, map.count(999));
+
+        EXPECT_EQ(1u, delegated_impl->Resources().size());
+        EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(999)->second));
+
+        const RenderPass* pass = delegated_impl->RenderPassesInDrawOrder()[0];
+        EXPECT_EQ(1u, pass->quad_list.size());
+        const TextureDrawQuad* quad1 = TextureDrawQuad::MaterialCast(
+            pass->quad_list[0]);
+        EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+        break;
+      }
+    }
+  }
+
+  virtual void afterTest() OVERRIDE {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestBadFrame)
+
 }  // namespace
 }  // namespace cc

@@ -38,15 +38,19 @@ bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const {
 }
 
 static ResourceProvider::ResourceId ResourceRemapHelper(
+    bool* invalid_frame,
     const ResourceProvider::ResourceIdMap& child_to_parent_map,
     ResourceProvider::ResourceIdSet *remapped_resources,
     ResourceProvider::ResourceId id) {
 
   ResourceProvider::ResourceIdMap::const_iterator it =
       child_to_parent_map.find(id);
-  DCHECK(it != child_to_parent_map.end());
-  DCHECK(it->first == id);
+  if (it == child_to_parent_map.end()) {
+    *invalid_frame = true;
+    return 0;
+  }
 
+  DCHECK(it->first == id);
   ResourceProvider::ResourceId remapped_id = it->second;
   remapped_resources->insert(remapped_id);
   return remapped_id;
@@ -74,18 +78,19 @@ void DelegatedRendererLayerImpl::SetFrameData(
   }
 
   // Save the resources from the last frame.
-  ResourceProvider::ResourceIdSet previous_frame_resources;
-  previous_frame_resources.swap(resources_);
+  ResourceProvider::ResourceIdSet new_resources;
 
   // Receive the current frame's resources from the child compositor.
   ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
   resource_provider->receiveFromChild(child_id_, frame_data->resource_list);
 
   // Remap resource ids in the current frame's quads to the parent's namespace.
+  bool invalid_frame = false;
   DrawQuad::ResourceIteratorCallback remap_callback = base::Bind(
       &ResourceRemapHelper,
+      &invalid_frame,
       resource_provider->getChildToParentMap(child_id_),
-      &resources_);
+      &new_resources);
   for (size_t i = 0; i < frame_data->render_pass_list.size(); ++i) {
     RenderPass* pass = frame_data->render_pass_list[i];
     for (size_t j = 0; j < pass->quad_list.size(); ++j) {
@@ -93,6 +98,22 @@ void DelegatedRendererLayerImpl::SetFrameData(
       quad->IterateResources(remap_callback);
     }
   }
+
+  // If the frame has invalid data in it, don't display it.
+  if (invalid_frame) {
+    // Keep the resources given to us this frame.
+    for (ResourceProvider::ResourceIdSet::iterator it = new_resources.begin();
+         it != new_resources.end();
+         ++it)
+      resources_.insert(*it);
+    return;
+  }
+
+  // Save the resources that this layer owns now.
+  ResourceProvider::ResourceIdSet previous_frame_resources;
+  previous_frame_resources.swap(resources_);
+  resources_.swap(new_resources);
+
   // Save the remapped quads on the layer. This steals the quads and render
   // passes from the frame_data.
   SetRenderPasses(frame_data->render_pass_list);
