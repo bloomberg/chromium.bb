@@ -695,15 +695,8 @@ or verify this branch is set up to track another (via the --track argument to
         patchset,
         author)
 
-  def RunHook(self, committing, upstream_branch, may_prompt, verbose, author):
+  def RunHook(self, committing, may_prompt, verbose, change):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
-    change = self.GetChange(upstream_branch, author)
-
-    # Apply watchlists on upload.
-    if not committing:
-      watchlist = watchlists.Watchlists(change.RepositoryRoot())
-      files = [f.LocalPath() for f in change.AffectedFiles()]
-      self.SetWatchers(watchlist.GetWatchersForPaths(files))
 
     try:
       return presubmit_support.DoPresubmitChecks(change, committing,
@@ -1070,9 +1063,11 @@ def CMDpresubmit(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
 
-  cl.RunHook(committing=not options.upload, upstream_branch=base_branch,
-             may_prompt=False, verbose=options.verbose,
-             author=None)
+  cl.RunHook(
+      committing=not options.upload,
+      may_prompt=False,
+      verbose=options.verbose,
+      change=cl.GetChange(base_branch, None))
   return 0
 
 
@@ -1274,11 +1269,17 @@ def CMDupload(parser, args):
     base_branch = RunGit(['merge-base', cl.GetUpstreamBranch(), 'HEAD']).strip()
     args = [base_branch, 'HEAD']
 
+  # Apply watchlists on upload.
+  change = cl.GetChange(base_branch, None)
+  watchlist = watchlists.Watchlists(change.RepositoryRoot())
+  files = [f.LocalPath() for f in change.AffectedFiles()]
+  cl.SetWatchers(watchlist.GetWatchersForPaths(files))
+
   if not options.bypass_hooks:
-    hook_results = cl.RunHook(committing=False, upstream_branch=base_branch,
+    hook_results = cl.RunHook(committing=False,
                               may_prompt=not options.force,
                               verbose=options.verbose,
-                              author=None)
+                              change=change)
     if not hook_results.should_continue():
       return 1
     if not options.reviewers and hook_results.reviewers:
@@ -1371,10 +1372,9 @@ def SendUpstream(parser, args, cmd):
       author = re.search(r'\<(.*)\>', options.contributor).group(1)
     hook_results = cl.RunHook(
         committing=True,
-        upstream_branch=base_branch,
         may_prompt=not options.force,
         verbose=options.verbose,
-        author=author)
+        change=cl.GetChange(base_branch, author))
     if not hook_results.should_continue():
       return 1
 
