@@ -4,8 +4,8 @@
 # toolchain, so that new toolchain tarballs are not downloaded
 # unnecessarily.  There is no need to keep these numbers in sync
 # with each other.
-NEWLIB_VERSION=10893
-GLIBC_VERSION=10893
+NEWLIB_VERSION=10924
+GLIBC_VERSION=10924
 PNACL_VERSION=10865
 
 # ARM trusted toolchain version cannot be changed for now.
