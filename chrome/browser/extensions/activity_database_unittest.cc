@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/activity_database.h"
 #include "chrome/browser/extensions/api_actions.h"
 #include "chrome/browser/extensions/blocked_actions.h"
@@ -117,23 +119,29 @@ TEST(ActivityDatabaseTest, RecordBlockedAction) {
   ASSERT_EQ("extra", statement.ColumnString(5));
 }
 
-// Disabled due to http://crbug.com/179782
 // Check that we can read back recent actions in the db.
-TEST(ActivityDatabaseTest, DISABLED_GetTodaysActions) {
+TEST(ActivityDatabaseTest, GetTodaysActions) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   file_util::Delete(db_file, false);
 
+  // Use a mock clock to ensure that events are not recorded on the wrong day
+  // when the test is run close to local midnight.
+  base::SimpleTestClock mock_clock;
+  mock_clock.SetNow(base::Time::Now().LocalMidnight() +
+                    base::TimeDelta::FromHours(12));
+
   // Record some actions
   ActivityDatabase* activity_db = new ActivityDatabase();
+  activity_db->SetClockForTesting(&mock_clock);
   activity_db->AddRef();
   activity_db->Init(db_file);
   ASSERT_TRUE(activity_db->initialized());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
-      base::Time::Now() - base::TimeDelta::FromMinutes(40),
+      mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
       APIAction::READ,
       APIAction::BOOKMARK,
@@ -142,7 +150,7 @@ TEST(ActivityDatabaseTest, DISABLED_GetTodaysActions) {
       "extra");
   scoped_refptr<DOMAction> dom_action = new DOMAction(
       "punky",
-      base::Time::Now(),
+      mock_clock.Now(),
       DOMAction::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
@@ -151,7 +159,7 @@ TEST(ActivityDatabaseTest, DISABLED_GetTodaysActions) {
       "extra");
   scoped_refptr<DOMAction> extra_dom_action = new DOMAction(
       "scoobydoo",
-      base::Time::Now(),
+      mock_clock.Now(),
       DOMAction::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
@@ -176,23 +184,29 @@ TEST(ActivityDatabaseTest, DISABLED_GetTodaysActions) {
   activity_db->Release();
 }
 
-// Disabled due to http://crbug.com/179782
 // Check that we can read back recent actions in the db.
-TEST(ActivityDatabaseTest, DISABLED_GetOlderActions) {
+TEST(ActivityDatabaseTest, GetOlderActions) {
   base::ScopedTempDir temp_dir;
   base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   file_util::Delete(db_file, false);
 
+  // Use a mock clock to ensure that events are not recorded on the wrong day
+  // when the test is run close to local midnight.
+  base::SimpleTestClock mock_clock;
+  mock_clock.SetNow(base::Time::Now().LocalMidnight() +
+                    base::TimeDelta::FromHours(12));
+
   // Record some actions
   ActivityDatabase* activity_db = new ActivityDatabase();
+  activity_db->SetClockForTesting(&mock_clock);
   activity_db->AddRef();
   activity_db->Init(db_file);
   ASSERT_TRUE(activity_db->initialized());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
-      base::Time::Now() - base::TimeDelta::FromDays(3)
+      mock_clock.Now() - base::TimeDelta::FromDays(3)
           - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
       APIAction::READ,
@@ -202,7 +216,7 @@ TEST(ActivityDatabaseTest, DISABLED_GetOlderActions) {
       "extra");
   scoped_refptr<DOMAction> dom_action = new DOMAction(
       "punky",
-      base::Time::Now() - base::TimeDelta::FromDays(3),
+      mock_clock.Now() - base::TimeDelta::FromDays(3),
       DOMAction::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
@@ -211,7 +225,7 @@ TEST(ActivityDatabaseTest, DISABLED_GetOlderActions) {
       "extra");
   scoped_refptr<DOMAction> toonew_dom_action = new DOMAction(
       "punky",
-      base::Time::Now(),
+      mock_clock.Now(),
       DOMAction::MODIFIED,
       GURL("http://www.google.com"),
       string16(),
@@ -220,7 +234,7 @@ TEST(ActivityDatabaseTest, DISABLED_GetOlderActions) {
       "extra");
   scoped_refptr<DOMAction> tooold_dom_action = new DOMAction(
       "punky",
-      base::Time::Now() - base::TimeDelta::FromDays(7),
+      mock_clock.Now() - base::TimeDelta::FromDays(7),
       DOMAction::MODIFIED,
       GURL("http://www.google.com"),
       string16(),

@@ -18,6 +18,7 @@
 #include "sql/init_status.h"
 
 namespace base {
+class Clock;
 class FilePath;
 }
 
@@ -70,6 +71,8 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
   bool Raze();
   void Close();
 
+  void SetClockForTesting(base::Clock* clock);
+
  private:
   friend class base::RefCountedThreadSafe<ActivityDatabase>;
 
@@ -78,6 +81,7 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
   sql::InitStatus InitializeTable(const char* table_name,
                                   const char* table_structure);
 
+  base::Clock* testing_clock_;
   sql::Connection db_;
   bool initialized_;
 

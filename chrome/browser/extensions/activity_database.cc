@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/time/clock.h"
 #include "chrome/browser/extensions/activity_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,7 +29,10 @@ bool SortActionsByTime(const scoped_refptr<extensions::Action> a,
 
 namespace extensions {
 
-ActivityDatabase::ActivityDatabase() : initialized_(false) {}
+ActivityDatabase::ActivityDatabase()
+    : testing_clock_(NULL),
+      initialized_(false) {
+}
 
 ActivityDatabase::~ActivityDatabase() {
   Close();  // Safe to call Close() even if Open() never happened.
@@ -96,7 +100,9 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   if (!initialized_)
     return actions.Pass();
   // Compute the time bounds for that day.
-  base::Time morning_midnight = base::Time::Now().LocalMidnight();
+  base::Time morning_midnight = testing_clock_ ?
+      testing_clock_->Now().LocalMidnight() :
+      base::Time::Now().LocalMidnight();
   int64 early_bound = 0;
   int64 late_bound = 0;
   if (days_ago == 0) {
@@ -179,6 +185,10 @@ void ActivityDatabase::Close() {
 
 void ActivityDatabase::KillDatabase() {
   db_.RazeAndClose();
+}
+
+void ActivityDatabase::SetClockForTesting(base::Clock* clock) {
+  testing_clock_ = clock;
 }
 
 }  // namespace extensions
