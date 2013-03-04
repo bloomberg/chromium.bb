@@ -2235,6 +2235,8 @@
               ['<(windows_sdk_path)/Lib/win8/um/x86'],
             'AdditionalLibraryDirectories':
               ['<(windows_sdk_path)/Lib/win8/um/x64'],
+            # Doesn't exist x64 SDK. Should use oleaut32 in any case.
+            'IgnoreDefaultLibraryNames': [ 'olepro32.lib' ],
           },
           'VCLibrarianTool': {
             'AdditionalLibraryDirectories!':
