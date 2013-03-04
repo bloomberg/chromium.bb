@@ -465,6 +465,10 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
 
   // Do color conversion from the camera format to I420.
   switch (frame->format()) {
+#if defined(GOOGLE_TV)
+    case media::VideoFrame::HOLE:
+      // Fall-through to NOTREACHED() block.
+#endif
     case media::VideoFrame::INVALID:
     case media::VideoFrame::YV16:
     case media::VideoFrame::EMPTY:

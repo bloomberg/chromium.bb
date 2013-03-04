@@ -43,6 +43,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     EMPTY = 9,  // An empty frame.
     I420 = 11,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
     NATIVE_TEXTURE = 12,  // Native texture.  Pixel-format agnostic.
+#if defined(GOOGLE_TV)
+    HOLE = 13,  // Hole frame.
+#endif
   };
 
   // Creates a new frame in system memory with given parameters. Buffers for
@@ -124,6 +127,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Allocates YV12 frame based on |size|, and sets its data to the YUV
   // equivalent of RGB(0,0,0).
   static scoped_refptr<VideoFrame> CreateBlackFrame(const gfx::Size& size);
+
+#if defined(GOOGLE_TV)
+  // Allocates a hole frame.
+  static scoped_refptr<VideoFrame> CreateHoleFrame(const gfx::Size& size);
+#endif
 
   Format format() const { return format_; }
 

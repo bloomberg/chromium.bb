@@ -135,6 +135,17 @@ scoped_refptr<VideoFrame> VideoFrame::CreateBlackFrame(const gfx::Size& size) {
   return CreateColorFrame(size, kBlackY, kBlackUV, kBlackUV, kZero);
 }
 
+#if defined(GOOGLE_TV)
+// static
+scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
+    const gfx::Size& size) {
+  DCHECK(IsValidConfig(VideoFrame::HOLE, size, gfx::Rect(size), size));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(
+      VideoFrame::HOLE, size, gfx::Rect(size), size, base::TimeDelta()));
+  return frame;
+}
+#endif
+
 static inline size_t RoundUp(size_t value, size_t alignment) {
   // Check that |alignment| is a power of 2.
   DCHECK((alignment + (alignment - 1)) == (alignment | (alignment - 1)));

@@ -20,6 +20,10 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
+#if defined(GOOGLE_TV)
+#include "cc/solid_color_draw_quad.h"
+#endif
+
 namespace cc {
 
 // static
@@ -89,6 +93,10 @@ static GLenum convertVFCFormatToGLenum(const media::VideoFrame& frame)
         return GL_LUMINANCE;
     case media::VideoFrame::NATIVE_TEXTURE:
         return frame.texture_target();
+#if defined(GOOGLE_TV)
+    case media::VideoFrame::HOLE:
+        return GL_INVALID_VALUE;
+#endif
     case media::VideoFrame::INVALID:
     case media::VideoFrame::RGB32:
     case media::VideoFrame::EMPTY:
@@ -108,6 +116,10 @@ size_t VideoLayerImpl::numPlanes() const
         return 1;
 
     switch (m_frame->format()) {
+#if defined(GOOGLE_TV)
+    case media::VideoFrame::HOLE:
+        return 0;
+#endif
     case media::VideoFrame::RGB32:
         return 1;
     case media::VideoFrame::YV12:
@@ -151,6 +163,11 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
 
     if (!m_frame)
         return;
+
+#if defined(GOOGLE_TV)
+    if (m_frame->format() == media::VideoFrame::HOLE)
+        return;
+#endif
 
     m_format = convertVFCFormatToGLenum(*m_frame);
 
@@ -214,6 +231,27 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         static_cast<float>(visibleRect.width()) / codedSize.width();
     const float texHeightScale =
         static_cast<float>(visibleRect.height()) / codedSize.height();
+
+#if defined(GOOGLE_TV)
+    // This block and other blocks wrapped around #if defined(GOOGLE_TV) is not
+    // maintained by the general compositor team. Please contact the following
+    // people instead:
+    //
+    // wonsik@chromium.org
+    // ycheo@chromium.org
+
+    if (m_frame->format() == media::VideoFrame::HOLE) {
+        scoped_ptr<SolidColorDrawQuad> solidColorDrawQuad =
+            SolidColorDrawQuad::Create();
+        // Create a solid color quad with transparent black and force no
+        // blending.
+        solidColorDrawQuad->SetAll(
+            sharedQuadState, quadRect, quadRect, quadRect, false,
+            SK_ColorTRANSPARENT);
+        quadSink.append(solidColorDrawQuad.PassAs<DrawQuad>(), appendQuadsData);
+        return;
+    }
+#endif
 
     switch (m_format) {
     case GL_LUMINANCE: {
