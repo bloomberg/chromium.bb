@@ -14,13 +14,12 @@
 // record referring to itself.  You must call setContainer:property: before
 // you can call this method.
 - (NSScriptObjectSpecifier*)objectSpecifier {
-  return [[NSUniqueIDSpecifier allocWithZone:[self zone]]
-                  initWithContainerClassDescription:
-      (NSScriptClassDescription*)[[self container] classDescription]
-                                 containerSpecifier:
-                                    [[self container] objectSpecifier]
-                                                key:[self containerProperty]
-                                           uniqueID:[self uniqueID]];
+  return [[[NSUniqueIDSpecifier allocWithZone:[self zone]]
+      initWithContainerClassDescription:
+          (NSScriptClassDescription*)[[self container] classDescription]
+                     containerSpecifier:[[self container] objectSpecifier]
+                                    key:[self containerProperty]
+                               uniqueID:[self uniqueID]] autorelease];
 }
 
 - (void)setContainer:(id)value property:(NSString*)property {

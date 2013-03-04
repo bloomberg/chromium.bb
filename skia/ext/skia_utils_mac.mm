@@ -363,8 +363,10 @@ CGContextRef SkiaBitLocker::cgContext() {
     bitmap_.allocPixels();
     bitmap_.eraseColor(0);
   }
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
+      CGColorSpaceCreateDeviceRGB());
   cgContext_ = CGBitmapContextCreate(bitmap_.getPixels(), bitmap_.width(),
-    bitmap_.height(), 8, bitmap_.rowBytes(), CGColorSpaceCreateDeviceRGB(), 
+    bitmap_.height(), 8, bitmap_.rowBytes(), colorSpace, 
     kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
 
   // Apply device matrix.

@@ -327,15 +327,15 @@ const CGFloat kIconSize = 26.0;
   NSView* contentView = [[self window] contentView];
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  textField_ =
-      [[PasswordGenerationTextField alloc]
-         initWithFrame:NSMakeRect(kBorderSize,
-                                  kBorderSize,
-                                  kTextFieldWidth,
-                                  kTextFieldHeight + kTextFieldTopPadding)
-        withController:self
-           normalImage:rb.GetNativeImageNamed(IDR_RELOAD_DIMMED).ToNSImage()
-            hoverImage:rb.GetNativeImageNamed(IDR_RELOAD).ToNSImage()];
+  textField_ = [[[PasswordGenerationTextField alloc]
+      initWithFrame:NSMakeRect(kBorderSize,
+                               kBorderSize,
+                               kTextFieldWidth,
+                               kTextFieldHeight + kTextFieldTopPadding)
+     withController:self
+        normalImage:rb.GetNativeImageNamed(IDR_RELOAD_DIMMED).ToNSImage()
+         hoverImage:rb.GetNativeImageNamed(IDR_RELOAD)
+             .ToNSImage()] autorelease];
   gfx::Font smallBoldFont =
       rb.GetFont(ResourceBundle::SmallFont).DeriveFont(0, gfx::Font::BOLD);
   [textField_ setFont:smallBoldFont.GetNativeFont()];
@@ -360,12 +360,12 @@ const CGFloat kIconSize = 26.0;
   [button setAction:@selector(fillPassword:)];
   [contentView addSubview:button];
 
-  NSTextField* title = [[NSTextField alloc]
+  scoped_nsobject<NSTextField> title([[NSTextField alloc]
                          initWithFrame:NSMakeRect(
                              kBorderSize,
                              kBorderSize + kTextFieldHeight + kVerticalSpacing,
                              kTitleWidth,
-                             kTitleHeight)];
+                             kTitleHeight)]);
   [title setEditable:NO];
   [title setBordered:NO];
   [title setStringValue:l10n_util::GetNSString(
