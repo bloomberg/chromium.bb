@@ -322,6 +322,7 @@ void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
 
 void WebKitTestRunner::setFocus(bool focus) {
   // TODO(jochen): Remove once the new WebKit API is rolled.
+  SetFocusAndActivate(render_view(), focus);
 }
 
 void WebKitTestRunner::setAcceptAllCookies(bool accept) {

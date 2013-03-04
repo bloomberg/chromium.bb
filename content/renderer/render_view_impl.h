@@ -403,6 +403,11 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderView is the currently active RenderView of a WebContents.
   unsigned GetLocalSessionHistoryLengthForTesting() const;
 
+  // Invokes OnSetFocus and marks the widget as active depending on the value
+  // of |enable|. This is used for layout tests that need to control the focus
+  // synchronously from the renderer.
+  void SetFocusAndActivateForTesting(bool enable);
+
   // IPC::Listener implementation ----------------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

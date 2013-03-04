@@ -6728,6 +6728,20 @@ unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
   return history_list_length_;
 }
 
+void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
+  if (enable) {
+    if (has_focus())
+      return;
+    OnSetActive(true);
+    OnSetFocus(true);
+  } else {
+    if (!has_focus())
+      return;
+    OnSetFocus(false);
+    OnSetActive(false);
+  }
+}
+
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(
     TransportDIB::Handle dib_handle) {
   TransportDIB* dib = TransportDIB::CreateWithHandle(dib_handle);
