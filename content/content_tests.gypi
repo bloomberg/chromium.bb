@@ -522,6 +522,7 @@
             'content_renderer',
             'content_resources.gyp:content_resources',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../gpu/gpu.gyp:gpu',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ipc/ipc.gyp:test_support_ipc',
             '../jingle/jingle.gyp:jingle_glue_test_util',

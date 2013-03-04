@@ -508,7 +508,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource1.format = 7;
   arbitrary_resource1.filter = 53;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
-  arbitrary_resource1.mailbox.setName(arbitrary_mailbox1);
+  arbitrary_resource1.mailbox.SetName(arbitrary_mailbox1);
 
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
@@ -516,7 +516,7 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.format = 30;
   arbitrary_resource1.filter = 47;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
-  arbitrary_resource2.mailbox.setName(arbitrary_mailbox2);
+  arbitrary_resource2.mailbox.SetName(arbitrary_mailbox2);
 
   DelegatedFrameData frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);

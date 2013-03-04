@@ -1,5 +1,6 @@
 include_rules = [
   "+gpu/GLES2",
+  "+gpu/command_buffer/common/mailbox.h",
   "+media",
   "+skia/ext",
   "+third_party/skia/include",

@@ -21,6 +21,7 @@
 #include "cc/video_layer_impl.h"
 #include "cc/yuv_video_draw_quad.h"
 #include "content/common/content_export.h"
+#include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
 
@@ -71,14 +72,6 @@ struct CONTENT_EXPORT ParamTraits<cc::RenderPass> {
   typedef cc::RenderPass param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<cc::Mailbox> {
-  typedef cc::Mailbox param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

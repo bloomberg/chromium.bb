@@ -47,14 +47,14 @@ class MailboxOutputSurface : public CompositorOutputSurface {
         : texture_id(0) {}
 
     TransferableFrame(uint32 texture_id,
-                      const cc::Mailbox& mailbox,
+                      const gpu::Mailbox& mailbox,
                       const gfx::Size size)
         : texture_id(texture_id),
           mailbox(mailbox),
           size(size) {}
 
     uint32 texture_id;
-    cc::Mailbox mailbox;
+    gpu::Mailbox mailbox;
     gfx::Size size;
   };
   TransferableFrame current_backing_;

@@ -536,26 +536,6 @@ void ParamTraits<cc::RenderPass>::Log(
   l->append("])");
 }
 
-void ParamTraits<cc::Mailbox>::Write(Message* m, const param_type& p) {
-  m->WriteBytes(p.name, sizeof(p.name));
-}
-
-bool ParamTraits<cc::Mailbox>::Read(const Message* m,
-                                    PickleIterator* iter,
-                                    param_type* p) {
-  const char* bytes = NULL;
-  if (!m->ReadBytes(iter, &bytes, sizeof(p->name)))
-    return false;
-  DCHECK(bytes);
-  memcpy(p->name, bytes, sizeof(p->name));
-  return true;
-}
-
-void ParamTraits<cc::Mailbox>::Log(const param_type& p, std::string* l) {
-  for (size_t i = 0; i < sizeof(p.name); ++i)
-    *l += base::StringPrintf("%02x", p.name[i]);
-}
-
 namespace {
   enum CompositorFrameType {
     NO_FRAME,

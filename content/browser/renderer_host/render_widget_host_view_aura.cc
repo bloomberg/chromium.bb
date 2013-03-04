@@ -280,7 +280,7 @@ bool PointerEventActivates(const ui::Event& event) {
 void SendCompositorFrameAck(
     int32 route_id,
     int renderer_host_id,
-    const cc::Mailbox& received_mailbox,
+    const gpu::Mailbox& received_mailbox,
     const gfx::Size& received_size,
     bool skip_frame,
     const scoped_refptr<ui::Texture>& texture_to_produce) {
@@ -1252,7 +1252,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     const cc::CompositorFrame& frame) {
-  if (!frame.gl_frame_data || frame.gl_frame_data->mailbox.isZero())
+  if (!frame.gl_frame_data || frame.gl_frame_data->mailbox.IsZero())
     return;
 
   BufferPresentedCallback ack_callback = base::Bind(

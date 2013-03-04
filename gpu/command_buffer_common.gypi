@@ -23,6 +23,8 @@
     'command_buffer/common/gles2_cmd_format.h',
     'command_buffer/common/id_allocator.cc',
     'command_buffer/common/id_allocator.h',
+    'command_buffer/common/mailbox.cc',
+    'command_buffer/common/mailbox.h',
     'command_buffer/common/thread_local.h',
     'command_buffer/common/time.h',
     'command_buffer/common/types.h',

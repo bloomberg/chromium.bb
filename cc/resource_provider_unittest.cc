@@ -681,7 +681,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
     context()->bindTexture(GL_TEXTURE_2D, texture);
     uint8_t data[4] = {1, 2, 3, 4};
     context()->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data);
-    Mailbox mailbox;
+    gpu::Mailbox mailbox;
     context()->genMailboxCHROMIUM(mailbox.name);
     context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     unsigned syncPoint = context()->insertSyncPoint();

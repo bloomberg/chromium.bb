@@ -14,7 +14,7 @@
 
 using cc::CompositorFrame;
 using cc::GLFrameData;
-using cc::Mailbox;
+using gpu::Mailbox;
 using WebKit::WebGraphicsContext3D;
 
 namespace content {
@@ -113,7 +113,7 @@ void MailboxOutputSurface::SendFrameToParentCompositor(
 
   DCHECK(!size_.IsEmpty());
   DCHECK(size_ == current_backing_.size);
-  DCHECK(!current_backing_.mailbox.isZero());
+  DCHECK(!current_backing_.mailbox.IsZero());
 
   context3d_->framebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
@@ -132,7 +132,7 @@ void MailboxOutputSurface::SendFrameToParentCompositor(
 }
 
 void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
-  if (!ack.gl_frame_data->mailbox.isZero()) {
+  if (!ack.gl_frame_data->mailbox.IsZero()) {
     DCHECK(!ack.gl_frame_data->size.IsEmpty());
     uint32 texture_id = context3d_->createTexture();
     TransferableFrame texture(
