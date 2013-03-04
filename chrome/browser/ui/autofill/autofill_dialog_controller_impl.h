@@ -279,6 +279,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void LoadRiskFingerprintData();
   void OnDidLoadRiskFingerprintData(scoped_ptr<risk::Fingerprint> fingerprint);
 
+  // Whether the billing section should be used to fill in the shipping details.
+  bool UseBillingForShipping();
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 

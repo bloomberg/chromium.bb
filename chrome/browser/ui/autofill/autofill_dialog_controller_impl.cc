@@ -240,14 +240,14 @@ void AutofillDialogControllerImpl::Show() {
       "billing" },
     { 7, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
       "billing" },
-    // TODO(estade): state is supposed to be a combobox.
+    // TODO(estade): state placeholder should depend on locale.
     { 8, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
     { 8, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
       "billing", 0.5 },
     // TODO(estade): this should have a default based on the locale.
     { 9, ADDRESS_HOME_COUNTRY, 0, "billing" },
     { 10, PHONE_HOME_WHOLE_NUMBER,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER, "billing" },
   };
 
   const DetailInput kShippingInputs[] = {
@@ -259,10 +259,12 @@ void AutofillDialogControllerImpl::Show() {
       "shipping" },
     { 14, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
       "shipping" },
-    // TODO(estade): state is supposed to be a combobox.
     { 15, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
     { 15, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
       "shipping", 0.5 },
+    { 16, ADDRESS_HOME_COUNTRY, 0, "shipping" },
+    { 17, PHONE_HOME_WHOLE_NUMBER,
+      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER, "shipping" },
   };
 
   BuildInputs(kEmailInputs,
@@ -896,7 +898,7 @@ void AutofillDialogControllerImpl::OnSubmit() {
   FillOutputForSection(SECTION_EMAIL);
   FillOutputForSection(SECTION_CC);
   FillOutputForSection(SECTION_BILLING);
-  if (view_->UseBillingForShipping()) {
+  if (UseBillingForShipping()) {
     FillOutputForSectionWithComparator(
         SECTION_BILLING,
         base::Bind(DetailInputMatchesShippingField));
@@ -1406,6 +1408,19 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
 void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
     scoped_ptr<risk::Fingerprint> fingerprint) {
   NOTIMPLEMENTED();
+}
+
+bool AutofillDialogControllerImpl::UseBillingForShipping() {
+  SuggestionsMenuModel* model =
+      SuggestionsMenuModelForSection(SECTION_SHIPPING);
+  std::string item_key = model->GetItemKeyForCheckedItem();
+  // If the user is editing or inputting data, ask the view.
+  if (item_key.empty() || section_editing_state_[SECTION_SHIPPING])
+    return view_->UseBillingForShipping();
+
+  // Otherwise, the checkbox should be hidden so its state is irrelevant.
+  // Always use the shipping suggestion model.
+  return false;
 }
 
 }  // namespace autofill

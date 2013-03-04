@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/autofill_country.h"
 
 namespace autofill {
 namespace wallet {
@@ -88,6 +89,15 @@ string16 Address::GetInfo(AutofillFieldType type) const {
 
     case ADDRESS_HOME_ZIP:
       return postal_code_number();
+
+    case ADDRESS_HOME_COUNTRY: {
+      AutofillCountry country(country_name_code(),
+                              AutofillCountry::ApplicationLocale());
+      return country.name();
+    }
+
+    case PHONE_HOME_WHOLE_NUMBER:
+      return phone_number();
 
     // TODO(estade): implement more.
     default:
