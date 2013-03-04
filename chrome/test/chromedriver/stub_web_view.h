@@ -49,6 +49,7 @@ class StubWebView : public WebView {
       const std::string& frame_id) OVERRIDE;
   virtual Status GetMainFrame(std::string* frame_id) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
+  virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;
 
  private:
   std::string id_;

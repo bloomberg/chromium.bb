@@ -66,3 +66,7 @@ Status StubWebView::GetMainFrame(std::string* frame_id) {
 JavaScriptDialogManager* StubWebView::GetJavaScriptDialogManager() {
   return NULL;
 }
+
+Status StubWebView::CaptureScreenshot(std::string* screenshot) {
+  return Status(kOk);
+}

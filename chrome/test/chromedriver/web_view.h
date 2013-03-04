@@ -77,6 +77,9 @@ class WebView {
 
   // Returns the JavaScriptDialogManager. Never null.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
+
+  // Captures the visible portions of the web view as a base64-encoded PNG.
+  virtual Status CaptureScreenshot(std::string* screenshot) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_WEB_VIEW_H_

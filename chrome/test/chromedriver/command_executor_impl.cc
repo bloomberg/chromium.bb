@@ -26,6 +26,13 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+namespace {
+
+const char kLocalStorage[] = "localStorage";
+const char kSessionStorage[] = "sessionStorage";
+
+}  // namespace
+
 CommandExecutorImpl::CommandExecutorImpl()
     : io_thread_("ChromeDriver IO") {}
 
@@ -56,6 +63,32 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteClearElement);
   element_command_map[CommandNames::kSendKeysToElement] =
       base::Bind(&ExecuteSendKeysToElement);
+  element_command_map[CommandNames::kSubmitElement] =
+      base::Bind(&ExecuteSubmitElement);
+  element_command_map[CommandNames::kGetElementText] =
+      base::Bind(&ExecuteGetElementText);
+  element_command_map[CommandNames::kGetElementValue] =
+      base::Bind(&ExecuteGetElementValue);
+  element_command_map[CommandNames::kGetElementTagName] =
+      base::Bind(&ExecuteGetElementTagName);
+  element_command_map[CommandNames::kIsElementSelected] =
+      base::Bind(&ExecuteIsElementSelected);
+  element_command_map[CommandNames::kIsElementEnabled] =
+      base::Bind(&ExecuteIsElementEnabled);
+  element_command_map[CommandNames::kIsElementDisplayed] =
+      base::Bind(&ExecuteIsElementDisplayed);
+  element_command_map[CommandNames::kGetElementLocation] =
+      base::Bind(&ExecuteGetElementLocation);
+  element_command_map[CommandNames::kGetElementLocationOnceScrolledIntoView] =
+      base::Bind(&ExecuteGetElementLocationOnceScrolledIntoView);
+  element_command_map[CommandNames::kGetElementSize] =
+      base::Bind(&ExecuteGetElementSize);
+  element_command_map[CommandNames::kGetElementAttribute] =
+      base::Bind(&ExecuteGetElementAttribute);
+  element_command_map[CommandNames::kGetElementValueOfCssProperty] =
+      base::Bind(&ExecuteGetElementValueOfCSSProperty);
+  element_command_map[CommandNames::kElementEquals] =
+      base::Bind(&ExecuteElementEquals);
 
   // Commands which require a window.
   typedef std::map<std::string, WindowCommand> WindowCommandMap;
@@ -97,6 +130,38 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteMouseButtonUp);
   window_command_map[CommandNames::kMouseDoubleClick] =
       base::Bind(&ExecuteMouseDoubleClick);
+  window_command_map[CommandNames::kGetActiveElement] =
+      base::Bind(&ExecuteGetActiveElement);
+  window_command_map[CommandNames::kGetStatus] =
+      base::Bind(&ExecuteGetAppCacheStatus);
+  window_command_map[CommandNames::kIsBrowserOnline] =
+      base::Bind(&ExecuteIsBrowserOnline);
+  window_command_map[CommandNames::kGetLocalStorageItem] =
+      base::Bind(&ExecuteGetStorageItem, kLocalStorage);
+  window_command_map[CommandNames::kGetLocalStorageKeys] =
+      base::Bind(&ExecuteGetStorageKeys, kLocalStorage);
+  window_command_map[CommandNames::kSetLocalStorageItem] =
+      base::Bind(&ExecuteSetStorageItem, kLocalStorage);
+  window_command_map[CommandNames::kRemoveLocalStorageItem] =
+      base::Bind(&ExecuteRemoveStorageItem, kLocalStorage);
+  window_command_map[CommandNames::kClearLocalStorage] =
+      base::Bind(&ExecuteClearStorage, kLocalStorage);
+  window_command_map[CommandNames::kGetLocalStorageSize] =
+      base::Bind(&ExecuteGetStorageSize, kLocalStorage);
+  window_command_map[CommandNames::kGetSessionStorageItem] =
+      base::Bind(&ExecuteGetStorageItem, kSessionStorage);
+  window_command_map[CommandNames::kGetSessionStorageKey] =
+      base::Bind(&ExecuteGetStorageKeys, kSessionStorage);
+  window_command_map[CommandNames::kSetSessionStorageItem] =
+      base::Bind(&ExecuteSetStorageItem, kSessionStorage);
+  window_command_map[CommandNames::kRemoveSessionStorageItem] =
+      base::Bind(&ExecuteRemoveStorageItem, kSessionStorage);
+  window_command_map[CommandNames::kClearSessionStorage] =
+      base::Bind(&ExecuteClearStorage, kSessionStorage);
+  window_command_map[CommandNames::kGetSessionStorageSize] =
+      base::Bind(&ExecuteGetStorageSize, kSessionStorage);
+  window_command_map[CommandNames::kScreenshot] =
+      base::Bind(&ExecuteScreenshot);
 
   // Commands which require a session.
   typedef std::map<std::string, SessionCommand> SessionCommandMap;

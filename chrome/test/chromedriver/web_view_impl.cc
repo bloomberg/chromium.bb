@@ -237,6 +237,18 @@ JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
   return dialog_manager_.get();
 }
 
+Status WebViewImpl::CaptureScreenshot(std::string* screenshot) {
+  base::DictionaryValue params;
+  scoped_ptr<base::DictionaryValue> result;
+  Status status = client_->SendCommandAndGetResult(
+      "Page.captureScreenshot", params, &result);
+  if (status.IsError())
+    return status;
+  if (!result->GetString("data", screenshot))
+    return Status(kUnknownError, "expected string 'data' in response");
+  return Status(kOk);
+}
+
 namespace internal {
 
 Status EvaluateScript(DevToolsClient* client,

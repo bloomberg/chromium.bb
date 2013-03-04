@@ -341,3 +341,151 @@ Status ExecuteMouseDoubleClick(
                  session->mouse_position.x, session->mouse_position.y, 2));
   return web_view->DispatchMouseEvents(events);
 }
+
+Status ExecuteGetActiveElement(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  return web_view->CallFunction(
+      session->frame,
+      "function() { return document.activeElement || document.body }",
+      args,
+      value);
+}
+
+Status ExecuteGetAppCacheStatus(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return web_view->EvaluateScript(
+      session->frame,
+      "applicationCache.status",
+      value);
+}
+
+Status ExecuteIsBrowserOnline(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return web_view->EvaluateScript(
+      session->frame,
+      "navigator.onLine",
+      value);
+}
+
+Status ExecuteGetStorageItem(
+    const char* storage,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string key;
+  if (!params.GetString("key", &key))
+    return Status(kUnknownError, "'key' must be a string");
+  base::ListValue args;
+  args.Append(new base::StringValue(key));
+  return web_view->CallFunction(
+      session->frame,
+      base::StringPrintf("function(key) { return %s[key]; }", storage),
+      args,
+      value);
+}
+
+Status ExecuteGetStorageKeys(
+    const char* storage,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const char script[] =
+      "var keys = [];"
+      "for (var key in %s) {"
+      "  keys.push(key);"
+      "}"
+      "keys";
+  return web_view->EvaluateScript(
+      session->frame,
+      base::StringPrintf(script, storage),
+      value);
+}
+
+Status ExecuteSetStorageItem(
+    const char* storage,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string key;
+  if (!params.GetString("key", &key))
+    return Status(kUnknownError, "'key' must be a string");
+  std::string storage_value;
+  if (!params.GetString("value", &storage_value))
+    return Status(kUnknownError, "'value' must be a string");
+  base::ListValue args;
+  args.Append(new base::StringValue(key));
+  args.Append(new base::StringValue(storage_value));
+  return web_view->CallFunction(
+      session->frame,
+      base::StringPrintf("function(key, value) { %s[key] = value; }", storage),
+      args,
+      value);
+}
+
+Status ExecuteRemoveStorageItem(
+    const char* storage,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string key;
+  if (!params.GetString("key", &key))
+    return Status(kUnknownError, "'key' must be a string");
+  base::ListValue args;
+  args.Append(new base::StringValue(key));
+  return web_view->CallFunction(
+      session->frame,
+      base::StringPrintf("function(key) { %s.removeItem(key) }", storage),
+      args,
+      value);
+}
+
+Status ExecuteClearStorage(
+    const char* storage,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return web_view->EvaluateScript(
+      session->frame,
+      base::StringPrintf("%s.clear()", storage),
+      value);
+}
+
+Status ExecuteGetStorageSize(
+    const char* storage,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return web_view->EvaluateScript(
+      session->frame,
+      base::StringPrintf("%s.length", storage),
+      value);
+}
+
+Status ExecuteScreenshot(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string screenshot;
+  Status status = web_view->CaptureScreenshot(&screenshot);
+  if (status.IsError())
+    return status;
+  value->reset(new base::StringValue(screenshot));
+  return Status(kOk);
+}
