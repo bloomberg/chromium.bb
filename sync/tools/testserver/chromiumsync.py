@@ -410,6 +410,13 @@ class UpdateSieve(object):
     return [datatype for datatype, timestamp in self._state.iteritems()
             if timestamp == 0]
 
+  def GetCreateMobileBookmarks(self):
+    """Return true if the client has requested to create the 'Mobile Bookmarks'
+       folder.
+    """
+    return (self._original_request.HasField('create_mobile_bookmarks_folder')
+            and self._original_request.create_mobile_bookmarks_folder)
+
   def SaveProgress(self, new_timestamp, get_updates_response):
     """Write the new_timestamp or new_progress_marker fields to a response."""
     if self._original_request.from_progress_marker:
@@ -449,7 +456,7 @@ class SyncDataModel(object):
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('synced_bookmarks', name='Synced Bookmarks',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK,
-                    create_by_default=False),  # Must be True in the iOS tree.
+                    create_by_default=False),
       PermanentItem('google_chrome_autofill', name='Autofill',
                     parent_tag=ROOT_ID, sync_type=AUTOFILL),
       PermanentItem('google_chrome_autofill_profiles', name='Autofill Profiles',
@@ -683,7 +690,14 @@ class SyncDataModel(object):
     if not sieve.HasAnyTimestamp():
       return (0, [], 0)
     min_timestamp = sieve.GetMinTimestamp()
-    self._CreateDefaultPermanentItems(sieve.GetFirstTimeTypes())
+    first_time_types = sieve.GetFirstTimeTypes()
+    self._CreateDefaultPermanentItems(first_time_types)
+    # Mobile bookmark folder is not created by default, create it only when
+    # client requested it.
+    if (sieve.GetCreateMobileBookmarks() and
+        first_time_types.count(BOOKMARK) > 0):
+      self.TriggerCreateSyncedBookmarks()
+
     change_log = sorted(self._entries.values(),
                         key=operator.attrgetter('version'))
     new_changes = [x for x in change_log if x.version > min_timestamp]
