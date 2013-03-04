@@ -5,6 +5,7 @@
 
 """Runs all ChromeDriver end to end tests."""
 
+import optparse
 import os
 import shutil
 import sys
@@ -34,14 +35,19 @@ def _AddToolsToSystemPathForWindows():
   os.environ['PATH'] = os.pathsep.join(paths) + os.pathsep + os.environ['PATH']
 
 
-def RunPythonTests(chromedriver, chrome):
+def RunPythonTests(chromedriver, chrome=None, android_package=None):
   print '@@@BUILD_STEP chromedriver2_python_tests@@@'
   cmd = [
     sys.executable,
     os.path.join(_THIS_DIR, 'run_py_tests.py'),
     '--chromedriver=' + chromedriver,
-    '--chrome=' + chrome,
   ]
+  if chrome:
+    cmd.append('--chrome=' + chrome)
+
+  if android_package:
+    cmd.append('--android-package=' + android_package)
+
   if util.IsMac():
     # In Mac, chromedriver2.so is a 32-bit build, so run with the 32-bit python.
     os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
@@ -74,6 +80,12 @@ def RunCppTests(cpp_tests):
 
 
 def main():
+  parser = optparse.OptionParser()
+  parser.add_option(
+      '', '--android-package',
+      help='Application package name, if running tests on Android.')
+  options, _ = parser.parse_args()
+
   chromedriver_map = {
     'win': 'chromedriver2.dll',
     'mac': 'chromedriver2.so',
@@ -93,7 +105,7 @@ def main():
   else:
     cpp_tests_name = 'chromedriver2_tests'
 
-  required_build_outputs = [chromedriver_name, chrome_name, cpp_tests_name]
+  required_build_outputs = [chromedriver_name,  cpp_tests_name]
   build_dir = chrome_paths.GetBuildDir(required_build_outputs)
   print 'Using build outputs from', build_dir
 
@@ -109,10 +121,15 @@ def main():
     # For Windows bots: add ant, java(jre) and the like to system path.
     _AddToolsToSystemPathForWindows()
 
-  code1 = RunPythonTests(chromedriver, chrome)
-  code2 = RunJavaTests(chromedriver, chrome)
-  code3 = RunCppTests(cpp_tests)
-  return code1 or code2 or code3
+  if options.android_package:
+    os.environ['PATH'] += os.pathsep + _THIS_DIR
+    return RunPythonTests(chromedriver,
+                          android_package=options.android_package)
+  else:
+    code1 = RunPythonTests(chromedriver, chrome=chrome)
+    code2 = RunJavaTests(chromedriver, chrome)
+    code3 = RunCppTests(cpp_tests)
+    return code1 or code2 or code3
 
 
 if __name__ == '__main__':
