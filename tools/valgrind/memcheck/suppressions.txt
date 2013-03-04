@@ -6719,3 +6719,15 @@
    fun:_ZN8chromeos15UserManagerImpl12UserLoggedInERKSsb
    fun:_ZN8chromeos51UserManagerTest_RegularUserLoggedInAsEphemeral_Test8TestBodyEv
 }
+{
+   bug_179758_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base54WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtr_Test8TestBodyEv
+}
+{
+   bug_179758_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base58WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtrBase_Test8TestBodyEv
+}
