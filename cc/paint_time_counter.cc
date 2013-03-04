@@ -33,9 +33,9 @@ void PaintTimeCounter::SaveRasterizeTime(
     const base::TimeDelta& total_rasterize_time,
     int commit_number) {
   if (can_save_rasterize_time_delta_) {
-    Entry entry = ring_buffer_.MutableReadBuffer(ring_buffer_.BufferSize() - 1);
-    DCHECK(commit_number == entry.commit_number);
-    entry.rasterize_time = total_rasterize_time - last_total_rasterize_time_;
+    Entry* entry = ring_buffer_.MutableReadBuffer(ring_buffer_.BufferSize() - 1);
+    DCHECK(commit_number == entry->commit_number);
+    entry->rasterize_time = total_rasterize_time - last_total_rasterize_time_;
   }
 
   last_total_rasterize_time_ = total_rasterize_time;
