@@ -97,7 +97,6 @@ button:focus {
   -webkit-mask-image: -webkit-linear-gradient(right, rgba(0, 0, 0, 0) 0,
                                                      rgba(0, 0, 0, 1) 80px);
   display: -webkit-box;
-  height: 130px;
   position: relative;
   width: 100%;
 }

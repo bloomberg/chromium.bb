@@ -221,8 +221,8 @@ ActionChoice.prototype.renderPreview_ = function(entries, count) {
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata).load(
             box,
-            ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
             ThumbnailLoader.FillMode.FILL,
+            ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
             onSuccess,
             onError,
             onError);
