@@ -42,6 +42,25 @@ TEST(DriveAPIParserTest, AboutResourceParser) {
   EXPECT_EQ(8177LL, resource->largest_change_id());
 }
 
+TEST(DriveAPIParserTest, AboutResourceFromAccountMetadata) {
+  AccountMetadata account_metadata;
+  // Set up AccountMetadata instance.
+  {
+    account_metadata.set_quota_bytes_total(10000);
+    account_metadata.set_quota_bytes_used(1000);
+    account_metadata.set_largest_changestamp(100);
+  }
+
+  scoped_ptr<AboutResource> about_resource(
+      AboutResource::CreateFromAccountMetadata(account_metadata,
+                                               "dummy_root_id"));
+
+  EXPECT_EQ(10000, about_resource->quota_bytes_total());
+  EXPECT_EQ(1000, about_resource->quota_bytes_used());
+  EXPECT_EQ(100, about_resource->largest_change_id());
+  EXPECT_EQ("dummy_root_id", about_resource->root_folder_id());
+}
+
 // Test app list parsing.
 TEST(DriveAPIParserTest, AppListParser) {
   std::string error;

@@ -388,15 +388,10 @@ void FakeDriveService::GetAboutResource(
   }
 
   ++about_resource_load_count_;
-  scoped_ptr<AccountMetadata> account_metadata =
-      AccountMetadata::CreateFrom(*account_metadata_value_);
-  scoped_ptr<AboutResource> about_resource(new AboutResource);
-  about_resource->set_largest_change_id(
-      account_metadata->largest_changestamp());
-  about_resource->set_quota_bytes_total(account_metadata->quota_bytes_total());
-  about_resource->set_quota_bytes_used(account_metadata->quota_bytes_used());
-  about_resource->set_root_folder_id(GetRootResourceId());
-
+  scoped_ptr<AboutResource> about_resource(
+      AboutResource::CreateFromAccountMetadata(
+          *AccountMetadata::CreateFrom(*account_metadata_value_),
+          GetRootResourceId()));
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,

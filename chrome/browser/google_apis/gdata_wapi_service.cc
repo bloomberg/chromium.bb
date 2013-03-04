@@ -28,6 +28,16 @@ namespace google_apis {
 
 namespace {
 
+// OAuth2 scopes for the documents API.
+const char kDocsListScope[] = "https://docs.google.com/feeds/";
+const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
+const char kUserContentScope[] = "https://docs.googleusercontent.com/";
+const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
+
+// The resource ID for the root directory for WAPI is defined in the spec:
+// https://developers.google.com/google-apps/documents-list/
+const char kWapiRootDirectoryResourceId[] = "folder:root";
+
 // Parses the JSON value to ResourceList.
 scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
     scoped_ptr<base::Value> value) {
@@ -121,6 +131,22 @@ void ExtractOpenLinkAndRun(const std::string app_id,
   callback.Run(error, open_link);
 }
 
+void ParseAboutResourceAndRun(
+    const GetAboutResourceCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<AccountMetadata> account_metadata) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<AboutResource> about_resource;
+  if (account_metadata) {
+    about_resource = AboutResource::CreateFromAccountMetadata(
+        *account_metadata, kWapiRootDirectoryResourceId);
+  }
+
+  callback.Run(error, about_resource.Pass());
+}
+
 void ParseAppListAndRun(
     const GetAppListCallback& callback,
     GDataErrorCode error,
@@ -135,16 +161,6 @@ void ParseAppListAndRun(
 
   callback.Run(error, app_list.Pass());
 }
-
-// OAuth2 scopes for the documents API.
-const char kDocsListScope[] = "https://docs.google.com/feeds/";
-const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
-const char kUserContentScope[] = "https://docs.googleusercontent.com/";
-const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
-
-// The resource ID for the root directory for WAPI is defined in the spec:
-// https://developers.google.com/google-apps/documents-list/
-const char kWapiRootDirectoryResourceId[] = "folder:root";
 
 }  // namespace
 
@@ -282,8 +298,13 @@ void GDataWapiService::GetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTREACHED();
+  runner_->StartOperationWithRetry(
+      new GetAccountMetadataOperation(
+          operation_registry(),
+          url_request_context_getter_,
+          url_generator_,
+          base::Bind(&ParseAboutResourceAndRun, callback),
+          false));  // Exclude installed apps.
 }
 
 void GDataWapiService::GetAppList(const GetAppListCallback& callback) {

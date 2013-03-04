@@ -50,6 +50,15 @@ class AboutResource {
   // Creates about resource from parsed JSON.
   static scoped_ptr<AboutResource> CreateFrom(const base::Value& value);
 
+  // Creates drive app icon instance from parsed AccountMetadata.
+  // It is also necessary to set |root_resource_id|, which is contained by
+  // AboutResource but not by AccountMetadata.
+  // This method is designed to migrate GData WAPI to Drive API v2.
+  // TODO(hidehiko): Remove this method once the migration is completed.
+  static scoped_ptr<AboutResource> CreateFromAccountMetadata(
+      const AccountMetadata& account_metadata,
+      const std::string& root_resource_id);
+
   // Returns the largest change ID number.
   int64 largest_change_id() const { return largest_change_id_; }
   // Returns total number of quota bytes.

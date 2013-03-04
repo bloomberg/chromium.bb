@@ -198,6 +198,18 @@ scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
 }
 
 // static
+scoped_ptr<AboutResource> AboutResource::CreateFromAccountMetadata(
+    const AccountMetadata& account_metadata,
+    const std::string& root_resource_id) {
+  scoped_ptr<AboutResource> resource(new AboutResource);
+  resource->set_largest_change_id(account_metadata.largest_changestamp());
+  resource->set_quota_bytes_total(account_metadata.quota_bytes_total());
+  resource->set_quota_bytes_used(account_metadata.quota_bytes_used());
+  resource->set_root_folder_id(root_resource_id);
+  return resource.Pass();
+}
+
+// static
 void AboutResource::RegisterJSONConverter(
     base::JSONValueConverter<AboutResource>* converter) {
   converter->RegisterCustomField<int64>(kLargestChangeId,
