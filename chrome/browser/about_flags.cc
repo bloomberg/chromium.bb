@@ -1024,11 +1024,12 @@ const Experiment kExperiments[] = {
   },
 #endif  // defined(OS_CHROMEOS)
   {
-    "enable-views-textfield",
-    IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_NAME,
-    IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_DESCRIPTION,
+    "views-textfield",
+    IDS_FLAGS_VIEWS_TEXTFIELD_NAME,
+    IDS_FLAGS_VIEWS_TEXTFIELD_DESCRIPTION,
     kOsWin,
-    SINGLE_VALUE_TYPE(switches::kEnableViewsTextfield),
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableViewsTextfield,
+                              switches::kDisableViewsTextfield),
   },
   {
     "old-checkbox-style",

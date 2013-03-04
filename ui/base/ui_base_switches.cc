@@ -9,10 +9,13 @@ namespace switches {
 // Disables new menu UI.
 const char kDisableNewMenuStyle[] = "disable-new-menu-style";
 
-// Disable touch adjustment.
+// Disables touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 
-// Enable support for bezel touch.
+// Disables the Views textfield on Windows.
+const char kDisableViewsTextfield[] = "disable-views-textfield";
+
+// Enables support for bezel touch.
 const char kEnableBezelTouch[] = "enable-bezel-touch";
 
 // Enables the new dialog style wherever it is available.
@@ -26,8 +29,7 @@ const char kEnableTouchEditing[] = "enable-touch-editing";
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
 
-// Overrides the device scale factor for the browser UI and the
-// contents.
+// Overrides the device scale factor for the browser UI and the contents.
 const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 
 // If a resource is requested at a scale factor at which it is not available

@@ -51,8 +51,12 @@ const char Textfield::kViewClassName[] = "views/Textfield";
 // static
 bool Textfield::IsViewsTextfieldEnabled() {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableViewsTextfield);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableViewsTextfield))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableViewsTextfield))
+    return true;
+  return false;
 #endif
   return true;
 }
