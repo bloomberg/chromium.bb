@@ -72,13 +72,21 @@ class AppsModelBuilder : public content::NotificationObserver,
   // no match is found, returns -1.
   int FindApp(const std::string& app_id);
 
+  // Sets which app is intended to be highlighted. Will remove the highlight
+  // from a currently highlighted app.
+  void SetHighlightedApp(const std::string& extension_id);
+
   // Sets the application app with |highlight_app_id_| in |model_| as
-  // highlighted. If such an app is found, reset |highlight_app_id_| so that it
-  // is highlighted once per install notification.
-  void HighlightApp();
+  // highlighted if |highlighted_app_pending_| is true. If such an app is found,
+  // reset |highlighted_app_pending_| so that won't be highlighted again until
+  // another call to SetHighlightedApp() is made.
+  void UpdateHighlight();
 
   // Returns app instance at given |index|.
   ExtensionAppItem* GetAppAt(size_t index);
+
+  // Returns app instance with id |extension_id|.
+  ExtensionAppItem* GetApp(const std::string& extension_id);
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -98,6 +106,10 @@ class AppsModelBuilder : public content::NotificationObserver,
   app_list::AppListModel::Apps* model_;
 
   std::string highlight_app_id_;
+
+  // True if we haven't set |highlight_app_id_| to be highlighted. This happens
+  // if we try to highlight an app that doesn't exist in the list yet.
+  bool highlighted_app_pending_;
 
   // True to ignore |model_| changes.
   bool ignore_changes_;

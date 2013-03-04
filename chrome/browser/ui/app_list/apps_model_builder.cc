@@ -57,6 +57,7 @@ AppsModelBuilder::AppsModelBuilder(Profile* profile,
     : profile_(profile),
       controller_(controller),
       model_(model),
+      highlighted_app_pending_(false),
       ignore_changes_(false),
       tracker_(extensions::InstallTrackerFactory::GetForProfile(profile_)) {
   tracker_->AddObserver(this);
@@ -72,7 +73,7 @@ void AppsModelBuilder::Build() {
   DCHECK(model_ && model_->item_count() == 0);
 
   PopulateApps();
-  HighlightApp();
+  UpdateHighlight();
 
   // Start observing after model is built.
   extensions::ExtensionPrefs* extension_prefs =
@@ -106,8 +107,7 @@ void AppsModelBuilder::OnBeginExtensionInstall(
                                  controller_,
                                  extension_name,
                                  installing_icon));
-  highlight_app_id_ = extension_id;
-  HighlightApp();
+  SetHighlightedApp(extension_id);
 }
 
 void AppsModelBuilder::OnDownloadProgress(const std::string& extension_id,
@@ -218,9 +218,34 @@ int AppsModelBuilder::FindApp(const std::string& app_id) {
   return -1;
 }
 
-void AppsModelBuilder::HighlightApp() {
+void AppsModelBuilder::SetHighlightedApp(const std::string& extension_id) {
+  if (extension_id == highlight_app_id_)
+    return;
+  ExtensionAppItem* old_app = GetApp(highlight_app_id_);
+  if (old_app)
+    old_app->SetHighlighted(false);
+  highlight_app_id_ = extension_id;
+  ExtensionAppItem* new_app = GetApp(highlight_app_id_);
+  highlighted_app_pending_ = !new_app;
+  if (new_app)
+    new_app->SetHighlighted(true);
+}
+
+ExtensionAppItem* AppsModelBuilder::GetApp(
+    const std::string& extension_id) {
   DCHECK(model_);
-  if (highlight_app_id_.empty())
+  if (extension_id.empty())
+    return NULL;
+
+  int index = FindApp(highlight_app_id_);
+  if (index == -1)
+    return NULL;
+  return GetAppAt(index);
+}
+
+void AppsModelBuilder::UpdateHighlight() {
+  DCHECK(model_);
+  if (!highlighted_app_pending_ || highlight_app_id_.empty())
     return;
 
   int index = FindApp(highlight_app_id_);
@@ -228,7 +253,7 @@ void AppsModelBuilder::HighlightApp() {
     return;
 
   model_->GetItemAt(index)->SetHighlighted(true);
-  highlight_app_id_.clear();
+  highlighted_app_pending_ = false;
 }
 
 ExtensionAppItem* AppsModelBuilder::GetAppAt(size_t index) {
@@ -261,7 +286,7 @@ void AppsModelBuilder::Observe(int type,
                                      controller_,
                                      "",
                                      gfx::ImageSkia()));
-      HighlightApp();
+      UpdateHighlight();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
@@ -283,8 +308,7 @@ void AppsModelBuilder::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST: {
-      highlight_app_id_ = *content::Details<const std::string>(details).ptr();
-      HighlightApp();
+      SetHighlightedApp(*content::Details<const std::string>(details).ptr());
       break;
     }
     default:
