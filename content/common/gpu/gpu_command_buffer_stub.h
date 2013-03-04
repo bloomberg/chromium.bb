@@ -30,10 +30,6 @@
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
 
-#if defined(OS_MACOSX)
-#include "ui/surface/accelerated_surface_mac.h"
-#endif
-
 namespace gpu {
 namespace gles2 {
 class ImageManager;
