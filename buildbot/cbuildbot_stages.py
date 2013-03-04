@@ -1046,10 +1046,12 @@ class SyncChromeStage(bs.BuilderStage):
     if self._chrome_rev == constants.CHROME_REV_SPEC:
       kwargs['revision'] = self._options.chrome_version
       cpv = None
+      cros_build_lib.PrintBuildbotStepText('revision %s' % kwargs['revision'])
     else:
       cpv = portage_utilities.BestVisible(constants.CHROME_CP,
                                           buildroot=self._build_root)
       kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
+      cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
     useflags = self._build_config['useflags'] or []
     commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
                         **kwargs)
