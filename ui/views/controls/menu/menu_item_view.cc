@@ -312,13 +312,13 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
   gfx::Image icon;
+  model->GetIconAt(index, &icon);
   string16 label;
   ui::MenuSeparatorType separator_style = ui::NORMAL_SEPARATOR;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
   switch (menu_type) {
     case ui::MenuModel::TYPE_COMMAND:
-      model->GetIconAt(index, &icon);
       type = MenuItemView::NORMAL;
       label = model->GetLabelAt(index);
       break;
@@ -331,11 +331,11 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
       label = model->GetLabelAt(index);
       break;
     case ui::MenuModel::TYPE_SEPARATOR:
+      icon = gfx::Image();
       type = MenuItemView::SEPARATOR;
       separator_style = model->GetSeparatorTypeAt(index);
       break;
     case ui::MenuModel::TYPE_SUBMENU:
-      model->GetIconAt(index, &icon);
       type = MenuItemView::SUBMENU;
       label = model->GetLabelAt(index);
       break;
@@ -560,6 +560,8 @@ void MenuItemView::Layout() {
       gfx::Size size = icon_view_->GetPreferredSize();
       int x = config.item_left_margin + left_icon_margin_ +
               (icon_area_width_ - size.width()) / 2;
+      if (type_ == CHECKBOX || type_ == RADIO)
+        x = label_start_;
       int y =
           (height() + GetTopMargin() - GetBottomMargin() - size.height()) / 2;
       icon_view_->SetPosition(gfx::Point(x, y));
@@ -831,6 +833,9 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
+  if ((type_ == CHECKBOX || type_ == RADIO) && icon_view_)
+    label_start += icon_view_->size().width() + config.icon_to_label_padding;
+
   int width = this->width() - label_start - accel_width -
       (!GetDelegate() ||
        GetDelegate()->ShouldReserveSpaceForSubmenuIndicator() ?

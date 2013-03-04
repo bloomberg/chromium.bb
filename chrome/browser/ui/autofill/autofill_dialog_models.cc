@@ -97,7 +97,6 @@ AccountChooserModel::AccountChooserModel(
 
   // TODO(estade): proper strings and l10n.
   AddCheckItem(kWalletItemId, ASCIIToUTF16("Google Wallet"));
-  // TODO(estade): icons on check items are not yet supported in Views.
   SetIcon(
       kWalletItemId,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_WALLET_ICON));

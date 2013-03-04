@@ -103,7 +103,10 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   int height = this->height() - GetTopMargin() - GetBottomMargin();
   int flags = GetDrawStringFlags();
-  gfx::Rect text_bounds(label_start_, top_margin, width, height);
+  int label_start = label_start_;
+  if ((type_ == CHECKBOX || type_ == RADIO) && icon_view_)
+    label_start += icon_view_->size().width() + config.icon_to_label_padding;
+  gfx::Rect text_bounds(label_start, top_margin, width, height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   if (mode == PB_FOR_DRAG) {
     // With different themes, it's difficult to tell what the correct
