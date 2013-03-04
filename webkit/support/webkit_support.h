@@ -133,6 +133,12 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view);
 
+enum LayerTreeViewType {
+  FAKE_CONTEXT,
+  SOFTWARE_CONTEXT,
+  MESA_CONTEXT
+};
+
 class DRTLayerTreeViewClient {
  public:
   virtual ~DRTLayerTreeViewClient() { }
@@ -140,6 +146,12 @@ class DRTLayerTreeViewClient {
   virtual void ScheduleComposite() = 0;
 };
 
+WebKit::WebLayerTreeView* CreateLayerTreeView(
+    LayerTreeViewType type,
+    DRTLayerTreeViewClient* client,
+    WebKit::WebThread* thread);
+
+// DEPRECATED. TODO(jamesr): Remove these two after fixing WebKit-side callers.
 WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
     DRTLayerTreeViewClient* client);
 WebKit::WebLayerTreeView* CreateLayerTreeView3d(

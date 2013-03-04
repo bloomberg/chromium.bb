@@ -57,6 +57,7 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/gpu/test_context_provider_factory.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
@@ -524,11 +525,33 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
 }
 
 static WebKit::WebLayerTreeView* CreateLayerTreeView(
-    WebKit::WebLayerTreeViewImplForTesting::RenderingType type,
-    DRTLayerTreeViewClient* client) {
+    LayerTreeViewType type,
+    DRTLayerTreeViewClient* client,
+    scoped_ptr<cc::Thread> compositor_thread) {
   scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
       new WebKit::WebLayerTreeViewImplForTesting(type, client));
 
+  if (!view->initialize(compositor_thread.Pass()))
+    return NULL;
+  return view.release();
+}
+
+WebKit::WebLayerTreeView* CreateLayerTreeView(
+    LayerTreeViewType type,
+    DRTLayerTreeViewClient* client,
+    WebKit::WebThread* thread) {
+  scoped_ptr<cc::Thread> compositor_thread;
+  if (thread)
+    compositor_thread = cc::ThreadImpl::createForDifferentThread(
+        static_cast<webkit_glue::WebThreadImpl*>(thread)->
+        message_loop()->message_loop_proxy());
+  return CreateLayerTreeView(type, client, compositor_thread.Pass());
+}
+
+// DEPRECATED. TODO(jamesr): Remove these three after fixing WebKit callers.
+static WebKit::WebLayerTreeView* CreateLayerTreeView(
+    LayerTreeViewType type,
+    DRTLayerTreeViewClient* client) {
   scoped_ptr<cc::Thread> compositor_thread;
 
   webkit::WebCompositorSupportImpl* compositor_support_impl =
@@ -536,22 +559,15 @@ static WebKit::WebLayerTreeView* CreateLayerTreeView(
   if (compositor_support_impl->compositor_thread_message_loop_proxy())
     compositor_thread = cc::ThreadImpl::createForDifferentThread(
         compositor_support_impl->compositor_thread_message_loop_proxy());
-
-  if (!view->initialize(compositor_thread.Pass()))
-    return NULL;
-  return view.release();
+  return CreateLayerTreeView(type, client, compositor_thread.Pass());
 }
-
 WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
     DRTLayerTreeViewClient* client) {
-  return CreateLayerTreeView(
-      WebKit::WebLayerTreeViewImplForTesting::SOFTWARE_CONTEXT, client);
+  return CreateLayerTreeView(SOFTWARE_CONTEXT, client);
 }
-
 WebKit::WebLayerTreeView* CreateLayerTreeView3d(
     DRTLayerTreeViewClient* client) {
-  return CreateLayerTreeView(
-      WebKit::WebLayerTreeViewImplForTesting::MESA_CONTEXT, client);
+  return CreateLayerTreeView(MESA_CONTEXT, client);
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,

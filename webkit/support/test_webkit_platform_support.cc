@@ -568,7 +568,7 @@ WebKit::WebLayerTreeView*
     TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
   scoped_ptr<WebLayerTreeViewImplForTesting> view(
       new WebLayerTreeViewImplForTesting(
-          WebLayerTreeViewImplForTesting::FAKE_CONTEXT, NULL));
+          webkit_support::FAKE_CONTEXT, NULL));
 
   if (!view->initialize(scoped_ptr<cc::Thread>()))
     return NULL;

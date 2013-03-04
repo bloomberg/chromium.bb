@@ -33,7 +33,7 @@
 
 namespace WebKit {
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
-    RenderingType type,
+    webkit_support::LayerTreeViewType type,
     webkit_support::DRTLayerTreeViewClient* client)
     : type_(type),
       client_(client) {}
@@ -45,7 +45,7 @@ bool WebLayerTreeViewImplForTesting::initialize(
   cc::LayerTreeSettings settings;
   // Accelerated animations are disabled for layout tests, but enabled for unit
   // tests.
-  settings.acceleratedAnimationEnabled = type_ == FAKE_CONTEXT;
+  settings.acceleratedAnimationEnabled = type_ == webkit_support::FAKE_CONTEXT;
   layer_tree_host_ =
       cc::LayerTreeHost::create(this, settings, compositor_thread.Pass());
   if (!layer_tree_host_.get())
@@ -177,13 +177,13 @@ scoped_ptr<cc::OutputSurface>
 WebLayerTreeViewImplForTesting::createOutputSurface() {
   scoped_ptr<cc::OutputSurface> surface;
   switch (type_) {
-    case FAKE_CONTEXT: {
+    case webkit_support::FAKE_CONTEXT: {
       scoped_ptr<WebGraphicsContext3D> context3d(
           new cc::FakeWebGraphicsContext3D);
       surface.reset(new cc::OutputSurface(context3d.Pass()));
       break;
     }
-    case SOFTWARE_CONTEXT: {
+    case webkit_support::SOFTWARE_CONTEXT: {
       using webkit::WebCompositorSupportSoftwareOutputDevice;
       scoped_ptr<WebCompositorSupportSoftwareOutputDevice> software_device =
           make_scoped_ptr(new WebCompositorSupportSoftwareOutputDevice);
@@ -191,7 +191,7 @@ WebLayerTreeViewImplForTesting::createOutputSurface() {
           software_device.PassAs<cc::SoftwareOutputDevice>()));
       break;
     }
-    case MESA_CONTEXT: {
+    case webkit_support::MESA_CONTEXT: {
       scoped_ptr<WebGraphicsContext3D> context3d(
           WebKit::Platform::current()->createOffscreenGraphicsContext3D(
               WebGraphicsContext3D::Attributes()));

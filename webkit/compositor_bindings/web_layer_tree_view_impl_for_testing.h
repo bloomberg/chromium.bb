@@ -22,13 +22,8 @@ class WebLayer;
 class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
                                        public cc::LayerTreeHostClient {
  public:
-  enum RenderingType {
-    FAKE_CONTEXT,
-    SOFTWARE_CONTEXT,
-    MESA_CONTEXT
-  };
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
-      RenderingType type,
+      webkit_support::LayerTreeViewType type,
       webkit_support::DRTLayerTreeViewClient* client);
   virtual ~WebLayerTreeViewImplForTesting();
 
@@ -87,7 +82,7 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   OffscreenContextProviderForCompositorThread() OVERRIDE;
 
  private:
-  RenderingType type_;
+  webkit_support::LayerTreeViewType type_;
   webkit_support::DRTLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 };
