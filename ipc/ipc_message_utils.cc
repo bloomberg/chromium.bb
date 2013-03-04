@@ -753,17 +753,17 @@ void ParamTraits<Message>::Log(const Message& p, std::string* l) {
 
 #if defined(OS_WIN)
 // Note that HWNDs/HANDLE/HCURSOR/HACCEL etc are always 32 bits, even on 64
-// bit systems.
+// bit systems. That's why we use the Windows macros to convert to 32 bits.
 void ParamTraits<HANDLE>::Write(Message* m, const param_type& p) {
-  m->WriteUInt32(reinterpret_cast<uint32>(p));
+  m->WriteInt(HandleToLong(p));
 }
 
 bool ParamTraits<HANDLE>::Read(const Message* m, PickleIterator* iter,
                                param_type* r) {
-  uint32 temp;
-  if (!m->ReadUInt32(iter, &temp))
+  int32 temp;
+  if (!m->ReadInt(iter, &temp))
     return false;
-  *r = reinterpret_cast<HANDLE>(temp);
+  *r = LongToHandle(temp);
   return true;
 }
 
