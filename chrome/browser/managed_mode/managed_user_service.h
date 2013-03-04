@@ -12,8 +12,10 @@
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
 
 class ManagedModeURLFilter;
 class ManagedModeSiteList;
@@ -76,6 +78,10 @@ class ManagedUserService : public ProfileKeyedService,
   // Sets the manual behavior for the given URL.
   void SetManualBehaviorForURLs(const std::vector<GURL>& url,
                                 ManualBehavior behavior);
+
+  // Handles the request to authorize as the custodian of the managed user.
+  void RequestAuthorization(content::WebContents* web_contents,
+                            const PassphraseCheckedCallback& callback);
 
   void SetElevated(bool is_elevated);
 

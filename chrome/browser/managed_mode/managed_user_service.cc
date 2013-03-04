@@ -105,6 +105,20 @@ bool ManagedUserService::IsElevated() const {
   return is_elevated_;
 }
 
+void ManagedUserService::RequestAuthorization(
+    content::WebContents* web_contents,
+    const PassphraseCheckedCallback& callback) {
+  PrefService* pref_service = profile_->GetPrefs();
+
+  // If there is no passphrase set, we do not need to ask for authentication.
+  if (pref_service->GetString(prefs::kManagedModeLocalPassphrase).empty()) {
+    callback.Run(true);
+    return;
+  }
+  // Is deleted automatically when the dialog is closed.
+  new ManagedUserPassphraseDialog(web_contents, callback);
+}
+
 // static
 void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kManagedModeManualHosts,
