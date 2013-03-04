@@ -132,7 +132,10 @@ def expand_symlinks(indir, relfile):
 
   filepath = os.path.join(indir, relfile)
   native_filepath = trace_inputs.get_native_path_case(filepath)
-  assert filepath == native_filepath, (filepath, native_filepath)
+  if filepath != native_filepath:
+    raise run_isolated.MappingError('File path doesn\'t equal native file '
+                                    'path\n%s!=%s' % (filepath,
+                                                      native_filepath))
 
   is_directory = relfile.endswith(os.path.sep)
   done = indir
