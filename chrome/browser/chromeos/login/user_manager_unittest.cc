@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -37,7 +38,7 @@ class UserManagerTest : public testing::Test {
         file_thread_(content::BrowserThread::FILE, &message_loop_) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     MockCertLibrary* mock_cert_library = new MockCertLibrary();
     EXPECT_CALL(*mock_cert_library, LoadKeyStore()).Times(AnyNumber());
     chromeos::CrosLibrary::Get()->GetTestApi()->SetCertLibrary(
@@ -70,7 +71,7 @@ class UserManagerTest : public testing::Test {
     ResetUserManager();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // Unregister the in-memory local settings instance.
     reinterpret_cast<TestingBrowserProcess*>(g_browser_process)
         ->SetLocalState(0);
@@ -89,6 +90,8 @@ class UserManagerTest : public testing::Test {
     if (user_manager_impl)
       user_manager_impl->Shutdown();
     UserManager::Get()->Shutdown();
+
+    base::RunLoop().RunUntilIdle();
   }
 
   bool GetUserManagerEphemeralUsersEnabled() const {

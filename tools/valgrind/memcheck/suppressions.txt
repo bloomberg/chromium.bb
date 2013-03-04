@@ -3928,6 +3928,13 @@
    fun:_ZN15tracked_objects10ThreadData19TallyABirthIfActiveERKNS_8LocationE
 }
 {
+   bug_102327d
+   Memcheck:Uninitialized
+   fun:_ZN15tracked_objects9DeathData11RecordDeathEiii
+   fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEii
+   fun:_ZN15tracked_objects10ThreadData31TallyRunOnNamedThreadIfTrackingERKN4base12TrackingInfoERKNS_11TrackedTimeES7_
+}
+{
    Intentional leak of stl map during thread cleanup in profiler
    Memcheck:Leak
    fun:_Znw*
@@ -6707,17 +6714,6 @@
    fun:_ZN8chromeos22DeviceSettingsProvider23UpdateAndProceedStoringEv
    fun:_ZN8chromeos22DeviceSettingsProvider21DeviceSettingsUpdatedEv
    fun:_ZN8chromeos21DeviceSettingsService24HandleCompletedOperationERKN4base8CallbackIFvvEEEPNS_23SessionManagerOperationENS0_6StatusE
-}
-{
-   bug_179231_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6policy22BrowserPolicyConnector22CreatePlatformProviderEv
-   fun:_ZN6policy22BrowserPolicyConnectorC1Ev
-   fun:_ZN21TestingBrowserProcess24browser_policy_connectorEv
-   fun:_ZNK8chromeos15UserManagerImpl24AreEphemeralUsersEnabledEv
-   fun:_ZN8chromeos15UserManagerImpl12UserLoggedInERKSsb
-   fun:_ZN8chromeos51UserManagerTest_RegularUserLoggedInAsEphemeral_Test8TestBodyEv
 }
 {
    bug_179758_a
