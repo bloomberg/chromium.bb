@@ -164,6 +164,7 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
   return private_data_->HistoryItemsForTerms(
       term_string,
       cursor_position,
+      languages_,
       BookmarkModelFactory::GetForProfile(profile_));
 }
 

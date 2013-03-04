@@ -13,7 +13,6 @@
 #include <math.h>
 
 #include "base/command_line.h"
-#include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -56,6 +55,7 @@ ScoredHistoryMatch::ScoredHistoryMatch()
 }
 
 ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
+                                       const std::string& languages,
                                        const string16& lower_string,
                                        const String16Vector& terms,
                                        const RowWordStarts& word_starts,
@@ -77,8 +77,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
   // Figure out where each search term appears in the URL and/or page title
   // so that we can score as well as provide autocomplete highlighting.
-  string16 url = base::i18n::ToLower(UTF8ToUTF16(gurl.spec()));
-  string16 title = base::i18n::ToLower(row.title());
+  string16 url = CleanUpUrlForMatching(gurl, languages);
+  string16 title = CleanUpTitleForMatching(row.title());
   int term_num = 0;
   for (String16Vector::const_iterator iter = terms.begin(); iter != terms.end();
        ++iter, ++term_num) {

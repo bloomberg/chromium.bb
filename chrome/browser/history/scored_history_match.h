@@ -30,7 +30,10 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // influence the final score calculated by the client of this index.
   // If the row does not qualify the raw score will be 0. |bookmark_service| is
   // used to determine if the match's URL is referenced by any bookmarks.
+  // |languages| is used to help parse/format the URL before looking for
+  // the terms.
   ScoredHistoryMatch(const URLRow& row,
+                     const std::string& languages,
                      const string16& lower_string,
                      const String16Vector& terms_vector,
                      const RowWordStarts& word_starts,

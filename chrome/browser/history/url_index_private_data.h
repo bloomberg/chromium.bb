@@ -63,9 +63,11 @@ class URLIndexPrivateData
   // descending score. The full results set (i.e. beyond the
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
   // to this function. |bookmark_service| is used to boost a result's score if
-  // its URL is referenced by one or more of the user's bookmarks.
+  // its URL is referenced by one or more of the user's bookmarks.  |languages|
+  // is used to help parse/format the URLs in the history index.
   ScoredHistoryMatches HistoryItemsForTerms(string16 term_string,
                                             size_t cursor_position,
+                                            const std::string& languages,
                                             BookmarkService* bookmark_service);
 
   // Adds the history item in |row| to the index if it does not already already
@@ -170,6 +172,7 @@ class URLIndexPrivateData
   class AddHistoryMatch : public std::unary_function<HistoryID, void> {
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
+                    const std::string& languages,
                     BookmarkService* bookmark_service,
                     const string16& lower_string,
                     const String16Vector& lower_terms,
@@ -182,6 +185,7 @@ class URLIndexPrivateData
 
    private:
     const URLIndexPrivateData& private_data_;
+    const std::string& languages_;
     BookmarkService* bookmark_service_;
     ScoredHistoryMatches scored_matches_;
     const string16& lower_string_;

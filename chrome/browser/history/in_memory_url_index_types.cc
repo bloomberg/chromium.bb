@@ -13,6 +13,8 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/string_util.h"
+#include "net/base/escape.h"
+#include "net/base/net_util.h"
 
 namespace history {
 
@@ -29,12 +31,24 @@ const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
 // Matches within URL and Title Strings ----------------------------------------
 
+string16 CleanUpUrlForMatching(const GURL& gurl,
+                               const std::string& languages) {
+  return base::i18n::ToLower(net::FormatUrl(
+      gurl, languages, net::kFormatUrlOmitUsernamePassword,
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
+      NULL, NULL, NULL));
+}
+
+string16 CleanUpTitleForMatching(const string16& title) {
+  return base::i18n::ToLower(title);
+}
+
 TermMatches MatchTermInString(const string16& term,
-                              const string16& string,
+                              const string16& cleaned_string,
                               int term_num) {
   const size_t kMaxCompareLength = 2048;
-  const string16& short_string = (string.length() > kMaxCompareLength) ?
-      string.substr(0, kMaxCompareLength) : string;
+  const string16& short_string = (cleaned_string.length() > kMaxCompareLength) ?
+      cleaned_string.substr(0, kMaxCompareLength) : cleaned_string;
   TermMatches matches;
   for (size_t location = short_string.find(term); location != string16::npos;
        location = short_string.find(term, location + 1))
@@ -89,10 +103,10 @@ TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
 
 // Utility Functions -----------------------------------------------------------
 
-String16Set String16SetFromString16(const string16& uni_string,
+String16Set String16SetFromString16(const string16& cleaned_uni_string,
                                     WordStarts* word_starts) {
   String16Vector words =
-      String16VectorFromString16(uni_string, false, word_starts);
+      String16VectorFromString16(cleaned_uni_string, false, word_starts);
   String16Set word_set;
   for (String16Vector::const_iterator iter = words.begin(); iter != words.end();
        ++iter)
@@ -100,12 +114,12 @@ String16Set String16SetFromString16(const string16& uni_string,
   return word_set;
 }
 
-String16Vector String16VectorFromString16(const string16& uni_string,
+String16Vector String16VectorFromString16(const string16& cleaned_uni_string,
                                           bool break_on_space,
                                           WordStarts* word_starts) {
   if (word_starts)
     word_starts->clear();
-  base::i18n::BreakIterator iter(uni_string,
+  base::i18n::BreakIterator iter(cleaned_uni_string,
       break_on_space ? base::i18n::BreakIterator::BREAK_SPACE :
           base::i18n::BreakIterator::BREAK_WORD);
   String16Vector words;

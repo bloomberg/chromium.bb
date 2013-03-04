@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
+#include "googleurl/src/gurl.h"
 
 namespace history {
 
@@ -37,13 +38,30 @@ struct TermMatch {
 };
 typedef std::vector<TermMatch> TermMatches;
 
-// Returns a TermMatches which has an entry for each occurrence of the string
-// |term| found in the string |string|. Mark each match with |term_num| so
-// that the resulting TermMatches can be merged with other TermMatches for
-// other terms. Note that only the first 2,048 characters of |string| are
-// considered during the match operation.
+// Unescapes the URL and lower-cases it, returning the result.  This
+// unescaping makes it possible to match substrings that were
+// originally escaped for navigation; for example, if the user
+// searched for "a&p", the query would be escaped as "a%26p", so
+// without unescaping, an input string of "a&p" would no longer match
+// this URL.  Note that the resulting unescaped URL may not be
+// directly navigable (which is why we escaped it to begin with).
+// |languages| is passed to net::FormatUrl().
+string16 CleanUpUrlForMatching(const GURL& gurl,
+                               const std::string& languages);
+
+// Returns the lower-cased title.
+string16 CleanUpTitleForMatching(const string16& title);
+
+// Returns a TermMatches which has an entry for each occurrence of the
+// string |term| found in the string |cleaned_string|. Use
+// CleanUpUrlForMatching() or CleanUpUrlTitleMatching() before passing
+// |cleaned_string| to this function. The function marks each match
+// with |term_num| so that the resulting TermMatches can be merged
+// with other TermMatches for other terms. Note that only the first
+// 2,048 characters of |string| are considered during the match
+// operation.
 TermMatches MatchTermInString(const string16& term,
-                              const string16& string,
+                              const string16& cleaned_string,
                               int term_num);
 
 // Sorts and removes overlapping substring matches from |matches| and
@@ -70,30 +88,36 @@ typedef std::vector<size_t> WordStarts;
 
 // Utility Functions -----------------------------------------------------------
 
-// Breaks the string |uni_string| down into individual words. If |word_starts|
-// is not NULL then clears and pushes the offsets within |uni_string| at which
-// each word starts onto |word_starts|. These offsets are collected only up to
-// the first kMaxSignificantChars of |uni_string|.
-String16Set String16SetFromString16(const string16& uni_string,
+// Breaks the string |cleaned_uni_string| down into individual words.
+// Use CleanUpUrlForMatching() or CleanUpUrlTitleMatching() before
+// passing |cleaned_uni_string| to this function. If |word_starts| is
+// not NULL then clears and pushes the offsets within
+// |cleaned_uni_string| at which each word starts onto
+// |word_starts|. These offsets are collected only up to the first
+// kMaxSignificantChars of |cleaned_uni_string|.
+String16Set String16SetFromString16(const string16& cleaned_uni_string,
                                     WordStarts* word_starts);
 
-// Breaks the |uni_string| string down into individual words and return
-// a vector with the individual words in their original order. If
-// |break_on_space| is false then the resulting list will contain only words
-// containing alpha-numeric characters. If |break_on_space| is true then the
-// resulting list will contain strings broken at whitespace. (|break_on_space|
-// indicates that the BreakIterator::BREAK_SPACE (equivalent to BREAK_LINE)
-// approach is to be used. For a complete description of this algorithm
-// refer to the comments in base/i18n/break_iterator.h.) If |word_starts| is
+// Breaks the |cleaned_uni_string| string down into individual words
+// and return a vector with the individual words in their original
+// order.  Use CleanUpUrlForMatching() or CleanUpUrlTitleMatching()
+// before passing |cleaned_uni_string| to this function.  If
+// |break_on_space| is false then the resulting list will contain only
+// words containing alpha-numeric characters. If |break_on_space| is
+// true then the resulting list will contain strings broken at
+// whitespace. (|break_on_space| indicates that the
+// BreakIterator::BREAK_SPACE (equivalent to BREAK_LINE) approach is
+// to be used. For a complete description of this algorithm refer to
+// the comments in base/i18n/break_iterator.h.) If |word_starts| is
 // not NULL then clears and pushes the word starts onto |word_starts|.
 //
 // Example:
-//   Given: |uni_string|: "http://www.google.com/ harry the rabbit."
+//   Given: |cleaned_uni_string|: "http://www.google.com/ harry the rabbit."
 //   With |break_on_space| false the returned list will contain:
 //    "http", "www", "google", "com", "harry", "the", "rabbit"
 //   With |break_on_space| true the returned list will contain:
 //    "http://", "www.google.com/", "harry", "the", "rabbit."
-String16Vector String16VectorFromString16(const string16& uni_string,
+String16Vector String16VectorFromString16(const string16& cleaned_uni_string,
                                           bool break_on_space,
                                           WordStarts* word_starts);
 
