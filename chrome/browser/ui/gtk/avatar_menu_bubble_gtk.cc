@@ -146,20 +146,23 @@ void AvatarMenuBubbleGtk::InitContents() {
   }
 
   gtk_box_pack_start(GTK_BOX(contents_), items_vbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(contents_), gtk_hseparator_new(), TRUE, TRUE, 0);
 
-  // The new profile link.
-  new_profile_link_ = theme_service_->BuildChromeLinkButton(
-      l10n_util::GetStringUTF8(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
-  g_signal_connect(new_profile_link_, "clicked",
-                   G_CALLBACK(OnNewProfileLinkClickedThunk), this);
+  if (avatar_menu_model_->ShouldShowAddNewProfileLink()) {
+    gtk_box_pack_start(GTK_BOX(contents_), gtk_hseparator_new(), TRUE, TRUE, 0);
 
-  GtkWidget* link_align = gtk_alignment_new(0, 0, 0, 0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(link_align),
-                            0, 0, kNewProfileLinkLeftPadding, 0);
-  gtk_container_add(GTK_CONTAINER(link_align), new_profile_link_);
+    // The new profile link.
+    new_profile_link_ = theme_service_->BuildChromeLinkButton(
+        l10n_util::GetStringUTF8(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
+    g_signal_connect(new_profile_link_, "clicked",
+                     G_CALLBACK(OnNewProfileLinkClickedThunk), this);
 
-  gtk_box_pack_start(GTK_BOX(contents_), link_align, FALSE, FALSE, 0);
+    GtkWidget* link_align = gtk_alignment_new(0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(link_align),
+                              0, 0, kNewProfileLinkLeftPadding, 0);
+    gtk_container_add(GTK_CONTAINER(link_align), new_profile_link_);
+
+    gtk_box_pack_start(GTK_BOX(contents_), link_align, FALSE, FALSE, 0);
+  }
 }
 
 void AvatarMenuBubbleGtk::CloseBubble() {

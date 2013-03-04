@@ -29,6 +29,11 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -160,6 +165,20 @@ size_t AvatarMenuModel::GetActiveProfileIndex() {
 const AvatarMenuModel::Item& AvatarMenuModel::GetItemAt(size_t index) {
   DCHECK_LT(index, items_.size());
   return *items_[index];
+}
+
+bool AvatarMenuModel::ShouldShowAddNewProfileLink() const {
+#if defined(ENABLE_MANAGED_USERS)
+  Profile* active_profile = NULL;
+  if (!browser_)
+    active_profile = ProfileManager::GetLastUsedProfile();
+  else
+    active_profile = browser_->profile();
+  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
+      active_profile);
+  return !service->ProfileIsManaged();
+#endif
+  return true;
 }
 
 void AvatarMenuModel::Observe(int type,

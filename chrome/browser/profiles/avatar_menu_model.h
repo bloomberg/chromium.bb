@@ -78,6 +78,9 @@ class AvatarMenuModel : public content::NotificationObserver {
   // Gets the an Item at a specified index.
   const Item& GetItemAt(size_t index);
 
+  // Returns true if the add profile link should be shown.
+  bool ShouldShowAddNewProfileLink() const;
+
   // This model is also used for the always-present Mac system menubar. As the
   // last active browser changes, the model needs to update accordingly.
   void set_browser(Browser* browser) { browser_ = browser; }
