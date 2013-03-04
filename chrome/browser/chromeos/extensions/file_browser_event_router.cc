@@ -727,15 +727,12 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
   const base::FilePath dcim_path = mount_path.Append(
       FILE_PATH_LITERAL("DCIM"));
 
-  // Show the action choice dialog only for sd cards with a DCIM directory.
-  if (disk.device_type() == chromeos::DEVICE_TYPE_SD) {
-      DirectoryExistsOnUIThread(
-          dcim_path,
-          base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path),
-          base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
-  } else {
-    file_manager_util::ViewRemovableDrive(mount_path);
-  }
+  // Show the action choice dialog only for media with a DCIM directory.
+  // Otherwise, just show Files.app.
+  DirectoryExistsOnUIThread(
+      dcim_path,
+      base::Bind(&file_manager_util::OpenActionChoiceDialog, mount_path),
+      base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
 }
 
 void FileBrowserEventRouter::OnDiskAdded(
