@@ -252,6 +252,14 @@ class AppListController : public AppListService {
   // How many profile loads are pending.
   int pending_profile_loads_;
 
+  // When the context menu on the app list's taskbar icon is brought up the
+  // app list should not be hidden, but it should be if the taskbar is clicked
+  // on. There can be a period of time when the taskbar gets focus between a
+  // right mouse click and the menu showing; to prevent hiding the app launcher
+  // when this happens it is kept visible if the taskbar is seen briefly without
+  // the right mouse button down, but not if this happens twice in a row.
+  bool preserving_focus_for_taskbar_menu_;
+
   base::WeakPtrFactory<AppListController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListController);
@@ -337,6 +345,7 @@ AppListController::AppListController()
       app_list_is_showing_(false),
       profile_load_sequence_id_(0),
       pending_profile_loads_(0),
+      preserving_focus_for_taskbar_menu_(false),
       weak_factory_(this) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->GetProfileInfoCache().AddObserver(this);
@@ -525,6 +534,7 @@ void AppListController::AppListActivationChanged(bool active) {
     return;
   }
 
+  preserving_focus_for_taskbar_menu_ = false;
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
                &AppListController::CheckTaskbarOrViewHasFocus);
@@ -637,6 +647,11 @@ string16 AppListController::GetAppListIconPath() {
 }
 
 void AppListController::CheckTaskbarOrViewHasFocus() {
+  // Remember if the taskbar had focus without the right mouse button being
+  // down.
+  bool was_preserving_focus = preserving_focus_for_taskbar_menu_;
+  preserving_focus_for_taskbar_menu_ = false;
+
   // Don't bother checking if the view has been closed.
   if (!current_view_)
     return;
@@ -648,28 +663,53 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
 
   HWND app_list_hwnd = GetAppListHWND();
 
-  // Get the focused window. According to MSDN this will be NULL in some cases,
-  // "such as when a window is losing activation". In these cases we do not hide
-  // the launcher. In other cases, we will keep the launcher open if:
-  // - a jump list window has focus, or
-  // - the right mouse button is down and the taskbar has focus, or
-  // - the launcher has regained focus.
-  // This is enough to allow the launcher to be pinned via the right click menu.
+  // This code is designed to hide the app launcher when it loses focus, except
+  // for the cases necessary to allow the launcher to be pinned or closed via
+  // the taskbar context menu.
+  // First work out if the left or right button is currently down.
+  int swapped = GetSystemMetrics(SM_SWAPBUTTON);
+  int left_button = swapped ? VK_RBUTTON : VK_LBUTTON;
+  bool left_button_down = GetAsyncKeyState(left_button) < 0;
+  int right_button = swapped ? VK_LBUTTON : VK_RBUTTON;
+  bool right_button_down = GetAsyncKeyState(right_button) < 0;
+
+  // Now get the window that currently has focus.
   HWND focused_hwnd = GetForegroundWindow();
-  if (!focused_hwnd)
+  if (!focused_hwnd) {
+    // Sometimes the focused window is NULL. This can happen when the focus is
+    // changing due to a mouse button press. If the button is still being
+    // pressed the launcher should not be hidden.
+    if (right_button_down || left_button_down)
+      return;
+
+    // If the focused window is NULL, and the mouse button is not being pressed,
+    // then the launcher no longer has focus so hide it.
+    DismissAppList();
     return;
+  }
 
   while (focused_hwnd) {
+    // If the focused window is the right click menu (called a jump list) or
+    // the app list, don't hide the launcher.
     if (focused_hwnd == jump_list_hwnd ||
         focused_hwnd == app_list_hwnd) {
       return;
     }
+
     if (focused_hwnd == taskbar_hwnd) {
-      int right_button =
-          GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON;
-      bool right_button_down = GetAsyncKeyState(right_button) < 0;
+      // If the focused window is the taskbar, and the right button is down,
+      // don't hide the launcher as the user might be bringing up the menu.
       if (right_button_down)
         return;
+
+      // There is a short period between the right mouse button being down
+      // and the menu gaining focus, where the taskbar has focus and no button
+      // is down. If the taskbar is observed in this state once the launcher
+      // is not dismissed. If it happens twice in a row it is dismissed.
+      if (!was_preserving_focus) {
+        preserving_focus_for_taskbar_menu_ = true;
+        return;
+      }
 
       break;
     }
