@@ -328,10 +328,10 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
     setUseProgram(program->program());
 
     SkColor color = quad->color;
-    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), SkColorGetR(color) / 255.0, SkColorGetG(color) / 255.0, SkColorGetB(color) / 255.0, 1));
+    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), SkColorGetR(color) * (1.0f / 255.0f), SkColorGetG(color) * (1.0f / 255.0f), SkColorGetB(color) * (1.0f / 255.0f), 1));
 
     const int checkerboardWidth = 16;
-    float frequency = 1.0 / checkerboardWidth;
+    float frequency = 1.0f / checkerboardWidth;
 
     gfx::Rect tileRect = quad->rect;
     float texOffsetX = tileRect.x() % checkerboardWidth;
@@ -358,15 +358,15 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
     const gfx::Rect& layerRect = quad->rect;
     gfx::Transform renderMatrix = quad->quadTransform();
-    renderMatrix.Translate(0.5 * layerRect.width() + layerRect.x(), 0.5 * layerRect.height() + layerRect.y());
+    renderMatrix.Translate(0.5f * layerRect.width() + layerRect.x(), 0.5f * layerRect.height() + layerRect.y());
     renderMatrix.Scale(layerRect.width(), layerRect.height());
     GLRenderer::toGLMatrix(&glMatrix[0], frame.projectionMatrix * renderMatrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().matrixLocation(), 1, false, &glMatrix[0]));
 
     SkColor color = quad->color;
-    float alpha = SkColorGetA(color) / 255.0;
+    float alpha = SkColorGetA(color) * (1.0f / 255.0f);
 
-    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) / 255.0) * alpha, (SkColorGetG(color) / 255.0) * alpha, (SkColorGetB(color) / 255.0) * alpha, alpha));
+    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) * (1.0f / 255.0f)) * alpha, (SkColorGetG(color) * (1.0f / 255.0f)) * alpha, (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha));
 
     GLC(context(), context()->lineWidth(quad->width));
 
@@ -538,7 +538,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     if (usingBackgroundTexture) {
         // Copy the readback pixels from device to the background texture for the surface.
         gfx::Transform deviceToFramebufferTransform;
-        deviceToFramebufferTransform.Translate(quad->rect.width() / 2.0, quad->rect.height() / 2.0);
+        deviceToFramebufferTransform.Translate(quad->rect.width() * 0.5f, quad->rect.height() * 0.5f);
         deviceToFramebufferTransform.Scale(quad->rect.width(), quad->rect.height());
         deviceToFramebufferTransform.PreconcatTransform(contentsDeviceTransformInverse);
         copyTextureToFramebuffer(frame, filteredDeviceBackgroundTextureId, deviceRect, deviceToFramebufferTransform);
@@ -731,9 +731,9 @@ void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorD
 
     SkColor color = quad->color;
     float opacity = quad->opacity();
-    float alpha = (SkColorGetA(color) / 255.0) * opacity;
+    float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
-    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) / 255.0) * alpha, (SkColorGetG(color) / 255.0) * alpha, (SkColorGetB(color) / 255.0) * alpha, alpha));
+    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) * (1.0f / 255.0f)) * alpha, (SkColorGetG(color) * (1.0f / 255.0f)) * alpha, (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha));
 
     drawQuadGeometry(frame, quad->quadTransform(), quad->rect, program->vertexShader().matrixLocation());
 }
@@ -950,7 +950,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     // un-antialiased quad should have and which vertex this is and the float
     // quad passed in via uniform is the actual geometry that gets used to draw
     // it. This is why this centered rect is used and not the original quadRect.
-    gfx::RectF centeredRect(gfx::PointF(-0.5 * tileRect.width(), -0.5 * tileRect.height()), tileRect.size());
+    gfx::RectF centeredRect(gfx::PointF(-0.5f * tileRect.width(), -0.5f * tileRect.height()), tileRect.size());
     drawQuadGeometry(frame, quad->quadTransform(), centeredRect, uniforms.matrixLocation);
 }
 
@@ -983,8 +983,8 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     // They are taken from the following webpage: http://www.fourcc.org/fccyvrgb.php
     float yuv2RGB[9] = {
         1.164f, 1.164f, 1.164f,
-        0.f, -.391f, 2.018f,
-        1.596f, -.813f, 0.f,
+        0.0f, -.391f, 2.018f,
+        1.596f, -.813f, 0.0f,
     };
     GLC(context(), context()->uniformMatrix3fv(program->fragmentShader().yuvMatrixLocation(), 1, 0, yuv2RGB));
 
@@ -1080,9 +1080,9 @@ void GLRenderer::flushTextureQuadCache()
     // set up premultiplied alpha.
     if (!m_drawCache.use_premultiplied_alpha) {
       // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
-        // will never cause the alpha channel to be set to anything less than 1.0 if it is
+        // will never cause the alpha channel to be set to anything less than 1.0f if it is
         // initialized to that value! Therefore, premultipliedAlpha being false is the first
-        // situation we can generally see an alpha channel less than 1.0 coming out of the
+        // situation we can generally see an alpha channel less than 1.0f coming out of the
         // compositor. This is causing platform differences in some layout tests (see
         // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use a separate
         // blend function for the alpha channel to avoid modifying it. Don't use colorMask for this
@@ -1182,9 +1182,9 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
 
     if (!quad->premultiplied_alpha) {
         // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
-        // will never cause the alpha channel to be set to anything less than 1.0 if it is
+        // will never cause the alpha channel to be set to anything less than 1.0f if it is
         // initialized to that value! Therefore, premultipliedAlpha being false is the first
-        // situation we can generally see an alpha channel less than 1.0 coming out of the
+        // situation we can generally see an alpha channel less than 1.0f coming out of the
         // compositor. This is causing platform differences in some layout tests (see
         // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use a separate
         // blend function for the alpha channel to avoid modifying it. Don't use colorMask for this
@@ -1208,7 +1208,7 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
     setUseProgram(binding.programId);
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
     if (quad->orientation == IOSurfaceDrawQuad::FLIPPED)
-        GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, quad->io_surface_size.height(), quad->io_surface_size.width(), quad->io_surface_size.height() * -1.0));
+        GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, quad->io_surface_size.height(), quad->io_surface_size.width(), quad->io_surface_size.height() * -1.0f));
     else
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->io_surface_size.width(), quad->io_surface_size.height()));
 
