@@ -10,12 +10,19 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
+#include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session.h"
+#include "remoting/host/host_event_logger.h"
+#include "remoting/host/host_status_observer.h"
+#include "remoting/protocol/transport.h"
 
 namespace remoting {
+
+// This is used for tagging system event logs.
+const char kApplicationName[] = "chromoting";
 
 DaemonProcess::~DaemonProcess() {
   DCHECK(!config_watcher_.get());
@@ -36,6 +43,18 @@ void DaemonProcess::OnConfigWatcherError() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   Stop();
+}
+
+void DaemonProcess::AddStatusObserver(HostStatusObserver* observer) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  status_observers_.AddObserver(observer);
+}
+
+void DaemonProcess::RemoveStatusObserver(HostStatusObserver* observer) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  status_observers_.RemoveObserver(observer);
 }
 
 void DaemonProcess::OnChannelConnected(int32 peer_pid) {
@@ -63,6 +82,20 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
                         CreateDesktopSession)
     IPC_MESSAGE_HANDLER(ChromotingNetworkHostMsg_DisconnectTerminal,
                         CloseDesktopSession)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_AccessDenied,
+                        OnAccessDenied)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_ClientAuthenticated,
+                        OnClientAuthenticated)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_ClientConnected,
+                        OnClientConnected)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_ClientDisconnected,
+                        OnClientDisconnected)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_ClientRouteChange,
+                        OnClientRouteChange)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_HostStarted,
+                        OnHostStarted)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_HostShutdown,
+                        OnHostShutdown)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -82,7 +115,6 @@ void DaemonProcess::CloseDesktopSession(int terminal_id) {
   if (!IsTerminalIdKnown(terminal_id)) {
     LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
     CrashNetworkProcess(FROM_HERE);
-    DeleteAllDesktopSessions();
     return;
   }
 
@@ -114,12 +146,9 @@ DaemonProcess::DaemonProcess(
     : Stoppable(caller_task_runner, stopped_callback),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
-      next_terminal_id_(0) {
+      next_terminal_id_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
-}
-
-bool DaemonProcess::IsTerminalIdKnown(int terminal_id) {
-  return terminal_id < next_terminal_id_;
 }
 
 void DaemonProcess::CreateDesktopSession(int terminal_id) {
@@ -131,7 +160,6 @@ void DaemonProcess::CreateDesktopSession(int terminal_id) {
   if (IsTerminalIdKnown(terminal_id)) {
     LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
     CrashNetworkProcess(FROM_HERE);
-    DeleteAllDesktopSessions();
     return;
   }
 
@@ -145,6 +173,8 @@ void DaemonProcess::CrashNetworkProcess(
     const tracked_objects::Location& location) {
   SendToNetwork(new ChromotingDaemonNetworkMsg_Crash(
       location.function_name(), location.file_name(), location.line_number()));
+
+  DeleteAllDesktopSessions();
 }
 
 void DaemonProcess::Initialize() {
@@ -164,12 +194,100 @@ void DaemonProcess::Initialize() {
                                               this));
   config_watcher_->Watch(config_path);
 
+  host_event_logger_ =
+      HostEventLogger::Create(weak_factory_.GetWeakPtr(), kApplicationName);
+
   // Launch the process.
   LaunchNetworkProcess();
 }
 
+bool DaemonProcess::IsTerminalIdKnown(int terminal_id) {
+  return terminal_id < next_terminal_id_;
+}
+
+void DaemonProcess::OnAccessDenied(const std::string& jid) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnAccessDenied(jid));
+}
+
+void DaemonProcess::OnClientAuthenticated(const std::string& jid) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientAuthenticated(jid));
+}
+
+void DaemonProcess::OnClientConnected(const std::string& jid) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientConnected(jid));
+}
+
+void DaemonProcess::OnClientDisconnected(const std::string& jid) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientDisconnected(jid));
+}
+
+void DaemonProcess::OnClientRouteChange(const std::string& jid,
+                                        const std::string& channel_name,
+                                        const SerializedTransportRoute& route) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Validate |route|.
+  if (route.type != protocol::TransportRoute::DIRECT &&
+      route.type != protocol::TransportRoute::STUN &&
+      route.type != protocol::TransportRoute::RELAY) {
+    LOG(ERROR) << "An invalid RouteType " << route.type << " passed.";
+    CrashNetworkProcess(FROM_HERE);
+    return;
+  }
+  if (route.remote_address.size() != net::kIPv4AddressSize &&
+      route.remote_address.size() != net::kIPv6AddressSize) {
+    LOG(ERROR) << "An invalid net::IPAddressNumber size "
+               << route.remote_address.size() << " passed.";
+    CrashNetworkProcess(FROM_HERE);
+    return;
+  }
+  if (route.local_address.size() != net::kIPv4AddressSize &&
+      route.local_address.size() != net::kIPv6AddressSize) {
+    LOG(ERROR) << "An invalid net::IPAddressNumber size "
+               << route.local_address.size() << " passed.";
+    CrashNetworkProcess(FROM_HERE);
+    return;
+  }
+
+  protocol::TransportRoute parsed_route;
+  parsed_route.type =
+      static_cast<protocol::TransportRoute::RouteType>(route.type);
+  parsed_route.remote_address =
+      net::IPEndPoint(route.remote_address, route.remote_port);
+  parsed_route.local_address =
+      net::IPEndPoint(route.local_address, route.local_port);
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientRouteChange(jid, channel_name, parsed_route));
+}
+
+void DaemonProcess::OnHostStarted(const std::string& xmpp_login) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnStart(xmpp_login));
+}
+
+void DaemonProcess::OnHostShutdown() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnShutdown());
+}
+
 void DaemonProcess::DoStop() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  host_event_logger_.reset();
+  weak_factory_.InvalidateWeakPtrs();
 
   config_watcher_.reset();
   DeleteAllDesktopSessions();

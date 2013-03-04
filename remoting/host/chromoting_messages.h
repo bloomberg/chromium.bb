@@ -7,6 +7,8 @@
 
 #include "ipc/ipc_platform_file.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
+#include "net/base/ip_endpoint.h"
+#include "remoting/protocol/transport.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -67,6 +69,39 @@ IPC_MESSAGE_CONTROL1(ChromotingNetworkHostMsg_ConnectTerminal,
 // connected to.
 IPC_MESSAGE_CONTROL1(ChromotingNetworkHostMsg_DisconnectTerminal,
                      int /* terminal_id */)
+
+// Serialized remoting::protocol::TransportRoute structure.
+IPC_STRUCT_BEGIN(SerializedTransportRoute)
+  IPC_STRUCT_MEMBER(int, type)
+  IPC_STRUCT_MEMBER(net::IPAddressNumber, remote_address)
+  IPC_STRUCT_MEMBER(int, remote_port)
+  IPC_STRUCT_MEMBER(net::IPAddressNumber, local_address)
+  IPC_STRUCT_MEMBER(int, local_port)
+IPC_STRUCT_END()
+
+// Hosts status notifications (see HostStatusObserver interface) sent by
+// IpcHostEventLogger.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDaemonMsg_AccessDenied,
+                     std::string /* jid */)
+
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDaemonMsg_ClientAuthenticated,
+                     std::string /* jid */)
+
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDaemonMsg_ClientConnected,
+                     std::string /* jid */)
+
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDaemonMsg_ClientDisconnected,
+                     std::string /* jid */)
+
+IPC_MESSAGE_CONTROL3(ChromotingNetworkDaemonMsg_ClientRouteChange,
+                     std::string /* jid */,
+                     std::string /* channel_name */,
+                     SerializedTransportRoute /* route */)
+
+IPC_MESSAGE_CONTROL1(ChromotingNetworkDaemonMsg_HostStarted,
+                     std::string /* xmpp_login */)
+
+IPC_MESSAGE_CONTROL0(ChromotingNetworkDaemonMsg_HostShutdown)
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the daemon to the desktop process.

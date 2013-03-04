@@ -54,6 +54,7 @@
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
+#include "remoting/host/ipc_host_event_logger.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/logging.h"
@@ -937,8 +938,15 @@ void HostProcess::StartHost() {
   log_to_server_.reset(
       new LogToServer(host_->AsWeakPtr(), ServerLogEntry::ME2ME,
                       signal_strategy_.get(), directory_bot_jid_));
+
+  // Set up repoting the host status notifications.
+#if defined(REMOTING_MULTI_PROCESS)
+  host_event_logger_.reset(
+      new IpcHostEventLogger(host_->AsWeakPtr(), daemon_channel_.get()));
+#else  // !defined(REMOTING_MULTI_PROCESS)
   host_event_logger_ =
       HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
+#endif  // !defined(REMOTING_MULTI_PROCESS)
 
   resizing_host_observer_.reset(
       new ResizingHostObserver(desktop_resizer_.get(), host_->AsWeakPtr()));
