@@ -38,13 +38,14 @@ GERRIT_SSH_URL = 'ssh://%s:%s' % (GERRIT_HOST, GERRIT_PORT)
 GERRIT_INT_SSH_URL = 'ssh://%s:%s' % (GERRIT_INT_HOST, GERRIT_INT_PORT)
 GERRIT_HTTP_URL = 'https://%s' % GERRIT_HOST
 GIT_HTTP_URL = 'https://%s/git' % GIT_HOST
-GIT_HTTP_TESTING_URL = 'https://chromium.googlesource.com/'
+CHROMIUM_GOOGLESOURCE_URL = 'https://chromium.googlesource.com/'
 
 REPO_PROJECT = 'external/repo'
 REPO_URL = '%s/%s' % (GIT_HTTP_URL, REPO_PROJECT)
 
 CHROMITE_PROJECT = 'chromiumos/chromite'
 CHROMITE_URL = '%s/%s' % (GIT_HTTP_URL, CHROMITE_PROJECT)
+CHROMIUM_SRC_PROJECT = 'chromium/src'
 
 MANIFEST_PROJECT = 'chromiumos/manifest'
 MANIFEST_INT_PROJECT = 'chromeos/manifest-internal'

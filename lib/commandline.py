@@ -86,6 +86,9 @@ class BaseParser(object):
   ALLOW_LOGGING = True
   SUPPORTS_CACHING = False
 
+  REPO_CACHE_DIR = '.cache'
+  CHROME_CACHE_DIR = '.cros_cache'
+
   def __init__(self, **kwargs):
     """Initialize this parser instance.
 
@@ -199,16 +202,22 @@ class BaseParser(object):
       os.environ[constants.SHARED_CACHE_ENVVAR] = cache_dir
       logging.debug("Configured cache_dir to %r", cache_dir)
 
-  @staticmethod
-  def FindCacheDir(_parser, _opts):
+  @classmethod
+  def FindCacheDir(cls, _parser, _opts):
     debug_msg = 'Cache dir lookup: looking for %s checkout root.'
     logging.debug(debug_msg, 'repo')
     path = git.FindRepoCheckoutRoot(os.getcwd())
-    path = os.path.join(path, '.cache') if path else path
+    path = os.path.join(path, cls.REPO_CACHE_DIR) if path else path
     if path is None:
       logging.debug(debug_msg, 'gclient')
       path = gclient.FindGclientCheckoutRoot(os.getcwd())
-      path = os.path.join(path, '.cros_cache') if path else path
+      path = os.path.join(path, cls.CHROME_CACHE_DIR) if path else path
+    if path is None:
+      logging.debug(debug_msg, 'git submodule')
+      chrome_url = os.path.join(constants.CHROMIUM_GOOGLESOURCE_URL,
+                                '%s.git' % constants.CHROMIUM_SRC_PROJECT)
+      path = git.FindGitSubmoduleCheckoutRoot(os.getcwd(), 'origin', chrome_url)
+      path = os.path.join(path, cls.CHROME_CACHE_DIR) if path else path
     if path is None:
       path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
 

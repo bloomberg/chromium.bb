@@ -6,6 +6,7 @@
 
 import errno
 import hashlib
+import logging
 import os
 import re
 # pylint: disable=W0402
@@ -47,6 +48,32 @@ def FindRepoCheckoutRoot(path):
     return os.path.dirname(repo_dir)
   else:
     return None
+
+
+def FindGitSubmoduleCheckoutRoot(path, remote, url):
+  """Get the root of your git submodule checkout, looking up from |path|.
+
+  This function goes up the tree starting from |path| and looks for a .git/ dir
+  configured with a |remote| pointing at |url|.
+
+  Arguments:
+    path: The path to start searching from.
+    remote: The remote to compare the |url| with.
+    url: The exact URL the |remote| needs to be pointed at.
+  """
+  def test_config(path):
+    if os.path.isdir(path):
+      remote_url = cros_build_lib.RunCommand(
+          ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
+          redirect_stdout=True, debug_level=logging.DEBUG).output.strip()
+      if remote_url == url:
+        return True
+    return False
+
+  root_dir = osutils.FindInPathParents('.git', path, test_func=test_config)
+  if root_dir:
+    return os.path.dirname(root_dir)
+  return None
 
 
 def ReinterpretPathForChroot(path):

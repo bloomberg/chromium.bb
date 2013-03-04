@@ -75,17 +75,21 @@ class CacheTest(cros_test_lib.MockTestCase):
 
   REPO_ROOT = '/fake/repo/root'
   GCLIENT_ROOT = '/fake/gclient/root'
+  SUBMODULE_ROOT = '/fake/submodule/root'
   CACHE_DIR = '/fake/cache/dir'
 
   def setUp(self):
     self.PatchObject(commandline.ArgumentParser, 'ConfigureCacheDir')
     self.PatchObject(git, 'FindRepoCheckoutRoot')
+    self.PatchObject(git, 'FindGitSubmoduleCheckoutRoot')
     self.PatchObject(gclient, 'FindGclientCheckoutRoot')
     self.parser = commandline.ArgumentParser(caching=True)
 
-  def _SetCheckoutRoots(self, repo_root=None, gclient_root=None):
+  def _SetCheckoutRoots(self, repo_root=None, gclient_root=None,
+                        submodule_root=None):
     git.FindRepoCheckoutRoot.return_value = repo_root
     gclient.FindGclientCheckoutRoot.return_value = gclient_root
+    git.FindGitSubmoduleCheckoutRoot.return_value = submodule_root
 
   def _CheckCall(self, expected):
     f = self.parser.ConfigureCacheDir
@@ -103,6 +107,12 @@ class CacheTest(cros_test_lib.MockTestCase):
     self._SetCheckoutRoots(gclient_root=self.GCLIENT_ROOT)
     self.parser.parse_args([])
     self._CheckCall(self.GCLIENT_ROOT)
+
+  def testSubmoduleRoot(self):
+    """Test when we are inside a git submodule Chrome checkout."""
+    self._SetCheckoutRoots(submodule_root=self.SUBMODULE_ROOT)
+    self.parser.parse_args([])
+    self._CheckCall(self.SUBMODULE_ROOT)
 
   def testTempdir(self):
     """Test when we are not in any checkout."""
