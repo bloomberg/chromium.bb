@@ -279,7 +279,8 @@ cr.define('options', function() {
       }
       this.dataChild.textContent = text;
 
-      for (var key in info.appsProtectingThis) {
+      var apps = info.appsProtectingThis;
+      for (var key in apps) {
         addAppInfo(this.dataChild, apps[key]);
       }
 
