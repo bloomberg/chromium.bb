@@ -35,6 +35,9 @@ class WebUILoginView : public views::View,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   WebUILoginView();
   virtual ~WebUILoginView();
 

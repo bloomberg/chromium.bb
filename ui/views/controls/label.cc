@@ -27,14 +27,15 @@
 
 namespace {
 
-const char kViewClassName[] = "views/Label";
-
 // The padding for the focus border when rendering focused text.
 const int kFocusBorderPadding = 1;
 
 }  // namespace
 
 namespace views {
+
+// static
+const char Label::kViewClassName[] = "views/Label";
 
 Label::Label() {
   Init(string16(), GetDefaultFont());

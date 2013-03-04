@@ -26,6 +26,9 @@ namespace views {
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT Label : public View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   // The following enum is used to indicate whether using the Chrome UI's
   // directionality as the label's directionality, or auto-detecting the label's
   // directionality.

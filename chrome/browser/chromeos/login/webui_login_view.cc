@@ -47,8 +47,6 @@ using content::WebContents;
 
 namespace {
 
-const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
-
 // These strings must be kept in sync with handleAccelerator() in oobe.js.
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
@@ -111,6 +109,10 @@ void RightAlignedView::ChildPreferredSizeChanged(View* child) {
 }  // namespace
 
 namespace chromeos {
+
+// static
+const char WebUILoginView::kViewClassName[] =
+    "browser/chromeos/login/WebUILoginView";
 
 // WebUILoginView public: ------------------------------------------------------
 

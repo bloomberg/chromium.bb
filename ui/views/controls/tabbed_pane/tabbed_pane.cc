@@ -16,8 +16,6 @@
 
 namespace {
 
-const char kViewClassName[] = "views/TabbedPane";
-
 // TODO(markusheintz|msw): Use NativeTheme colors.
 const SkColor kTabTitleColor_Inactive = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kTabTitleColor_Active = SkColorSetRGB(0x20, 0x20, 0x20);
@@ -31,6 +29,9 @@ const SkScalar kTabBorderRadius = 2.0f;
 }  // namespace
 
 namespace views {
+
+// static
+const char TabbedPane::kViewClassName[] = "views/TabbedPane";
 
 // The tab view shown in the tab strip.
 class Tab : public View {

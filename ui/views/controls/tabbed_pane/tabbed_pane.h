@@ -20,6 +20,9 @@ class TabStrip;
 // associated view is displayed.
 class VIEWS_EXPORT TabbedPane : public View {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   TabbedPane();
   virtual ~TabbedPane();
 
@@ -52,6 +55,7 @@ class VIEWS_EXPORT TabbedPane : public View {
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
    // Get the Tab (the tabstrip view, not its content) at the valid |index|.
@@ -63,7 +67,6 @@ class VIEWS_EXPORT TabbedPane : public View {
                                     View* parent,
                                     View* child) OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
