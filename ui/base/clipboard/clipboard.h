@@ -49,10 +49,8 @@ typedef struct _GtkClipboard GtkClipboard;
 #endif
 
 #ifdef __OBJC__
-@class NSPasteboard;
 @class NSString;
 #else
-class NSPasteboard;
 class NSString;
 #endif
 
@@ -322,12 +320,6 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const FormatType& GetCFHDropFormatType();
   static const FormatType& GetFileDescriptorFormatType();
   static const FormatType& GetFileContentFormatZeroType();
-#endif
-
-#if defined(OS_MACOSX)
-  // Allows code that directly manipulates the clipboard and doesn't use this
-  // class to write a SourceTag.
-  static void WriteSourceTag(NSPasteboard* pb, SourceTag tag);
 #endif
 
  private:

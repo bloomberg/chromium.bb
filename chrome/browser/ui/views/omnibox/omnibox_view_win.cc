@@ -130,19 +130,17 @@ bool IsDrag(const POINT& origin, const POINT& current) {
 }
 
 // Copies |selected_text| as text to the primary clipboard.
-void DoCopyText(const string16& selected_text, Profile* profile) {
+void DoCopyText(const string16& selected_text) {
   ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
-                                ui::Clipboard::BUFFER_STANDARD,
-                                content::BrowserContext::
-                                    GetMarkerForOffTheRecordContext(profile));
+                                ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(selected_text);
 }
 
 // Writes |url| and |text| to the clipboard as a well-formed URL.
-void DoCopyURL(const GURL& url, const string16& text, Profile* profile) {
+void DoCopyURL(const GURL& url, const string16& text) {
   BookmarkNodeData data;
   data.ReadFromTuple(url, text);
-  data.WriteToClipboard(profile);
+  data.WriteToClipboard(NULL);
 }
 
 }  // namespace
@@ -1116,9 +1114,7 @@ int OmniboxViewWin::OnPerformDropImpl(const ui::DropTargetEvent& event,
 }
 
 void OmniboxViewWin::CopyURL() {
-  DoCopyURL(toolbar_model()->GetURL(),
-            toolbar_model()->GetText(false),
-            model()->profile());
+  DoCopyURL(toolbar_model()->GetURL(), toolbar_model()->GetText(false));
 }
 
 bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
@@ -1453,9 +1449,9 @@ void OmniboxViewWin::OnCopy() {
   // the smaller value.
   model()->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
   if (write_url)
-    DoCopyURL(url, text, model()->profile());
+    DoCopyURL(url, text);
   else
-    DoCopyText(text, model()->profile());
+    DoCopyText(text);
 }
 
 LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
