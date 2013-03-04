@@ -193,6 +193,10 @@ bool GetAppLaunchContainer(
   if (!extension)
     return false;
 
+  // Don't launch platform apps in incognito mode.
+  if (profile->IsOffTheRecord() && extension->is_platform_app())
+    return false;
+
   // Look at preferences to find the right launch container.  If no
   // preference is set, launch as a window.
   extension_misc::LaunchContainer launch_container =
@@ -396,12 +400,8 @@ void StartupBrowserCreatorImpl::ExtractOptionalAppWindowSize(
   }
 }
 
-bool StartupBrowserCreatorImpl::IsAppLaunch(Profile* profile,
-                                            std::string* app_url,
+bool StartupBrowserCreatorImpl::IsAppLaunch(std::string* app_url,
                                             std::string* app_id) {
-  // Don't launch apps in incognito mode.
-  if (profile->IsOffTheRecord())
-    return false;
   if (command_line_.HasSwitch(switches::kApp)) {
     if (app_url)
       *app_url = command_line_.GetSwitchValueASCII(switches::kApp);
@@ -421,7 +421,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
   // function will open an app that should be in a tab, there is no need
   // to look at the app URL.  OpenApplicationWindow() will open app url
   // shortcuts.
-  if (!IsAppLaunch(profile, NULL, &app_id) || app_id.empty())
+  if (!IsAppLaunch(NULL, &app_id) || app_id.empty())
     return false;
 
   extension_misc::LaunchContainer launch_container;
@@ -448,7 +448,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     *out_app_contents = NULL;
 
   std::string url_string, app_id;
-  if (!IsAppLaunch(profile, &url_string, &app_id))
+  if (!IsAppLaunch(&url_string, &app_id))
     return false;
 
   // This can fail if the app_id is invalid.  It can also fail if the

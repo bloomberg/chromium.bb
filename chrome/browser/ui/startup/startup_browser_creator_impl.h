@@ -85,7 +85,7 @@ class StartupBrowserCreatorImpl {
   // If the process was launched with the web application command line flags,
   // e.g. --app=http://www.google.com/ or --app_id=... return true.
   // In this case |app_url| or |app_id| are populated if they're non-null.
-  bool IsAppLaunch(Profile* profile, std::string* app_url, std::string* app_id);
+  bool IsAppLaunch(std::string* app_url, std::string* app_id);
 
   // If IsAppLaunch is true, tries to open an application window.
   // If the app is specified to start in a tab, or IsAppLaunch is false,
