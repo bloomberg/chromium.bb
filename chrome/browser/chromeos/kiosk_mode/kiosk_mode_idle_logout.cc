@@ -53,7 +53,7 @@ void KioskModeIdleLogout::Setup() {
   if (UserManager::Get()->IsLoggedInAsDemoUser()) {
     // This means that we're recovering from a crash.  The user is already
     // logged in, so go ahead and start the timer.
-    StartTimer();
+    Start();
   } else {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
@@ -65,22 +65,32 @@ void KioskModeIdleLogout::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    StartTimer();
+    Start();
     registrar_.RemoveAll();
   }
 }
 
 void KioskModeIdleLogout::OnUserActivity() {
   IdleLogoutDialogView::CloseDialog();
-  timer_.Reset();
+  ResetTimer();
 }
 
-void KioskModeIdleLogout::StartTimer() {
+void KioskModeIdleLogout::Start() {
   if (!ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
     ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
-  timer_.Start(FROM_HERE, KioskModeSettings::Get()->GetIdleLogoutTimeout(),
-               base::Bind(&KioskModeIdleLogout::OnTimeout,
-                          base::Unretained(this)));
+  ResetTimer();
+}
+
+void KioskModeIdleLogout::ResetTimer() {
+  if (timer_.IsRunning()) {
+    timer_.Reset();
+  } else {
+    // OneShotTimer destroys the posted task after running it, so Reset()
+    // isn't safe to call on a timer that's already fired.
+    timer_.Start(FROM_HERE, KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+                 base::Bind(&KioskModeIdleLogout::OnTimeout,
+                            base::Unretained(this)));
+  }
 }
 
 void KioskModeIdleLogout::OnTimeout() {

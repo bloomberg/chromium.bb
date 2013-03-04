@@ -36,8 +36,11 @@ class KioskModeIdleLogout : public ash::UserActivityObserver,
   // UserActivityObserver::Observer overrides:
   virtual void OnUserActivity() OVERRIDE;
 
-  // Starts |timer_| and begins listening for user activity.
-  void StartTimer();
+  // Begins listening for user activity and calls ResetTimer().
+  void Start();
+
+  // Resets |timer_| to fire when the logout dialog should be shown.
+  void ResetTimer();
 
   // Invoked by |timer_| to display the logout dialog.
   void OnTimeout();
