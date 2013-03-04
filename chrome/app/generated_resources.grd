@@ -4471,8 +4471,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
         Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
       </message>
-      <message name="IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX" desc="The prefix for an Instant preview in the Task Manager">
-        Instant: <ph name="INSTANT_PREVIEW_NAME">$1<ex>http://www.google.com/</ex></ph>
+      <message name="IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX" desc="The prefix for an Instant overlay in the Task Manager">
+        Instant: <ph name="INSTANT_OVERLAY_NAME">$1<ex>http://www.google.com/</ex></ph>
       </message>
       <message name="IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in webview tag in the Task Manager">
         Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>

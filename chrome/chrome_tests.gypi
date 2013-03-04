@@ -1385,7 +1385,7 @@
         'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
         'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
         'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
-        'browser/ui/cocoa/tab_contents/previewable_contents_controller_browsertest.mm',
+        'browser/ui/cocoa/tab_contents/overlayable_contents_controller_browsertest.mm',
         'browser/ui/cocoa/view_id_util_browsertest.mm',
         'browser/ui/find_bar/find_bar_host_browsertest.cc',
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',

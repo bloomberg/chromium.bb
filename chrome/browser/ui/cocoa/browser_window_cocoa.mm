@@ -425,7 +425,6 @@ void BrowserWindowCocoa::FocusBookmarksToolbar() {
   // Not needed on the Mac.
 }
 
-
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
   return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
@@ -669,7 +668,7 @@ extensions::ActiveTabPermissionGranter*
 void BrowserWindowCocoa::ModeChanged(
     const chrome::search::Mode& old_mode,
     const chrome::search::Mode& new_mode) {
-  [controller_ updateBookmarkBarStateForInstantPreview];
+  [controller_ updateBookmarkBarStateForInstantOverlay];
 }
 
 void BrowserWindowCocoa::DestroyBrowser() {

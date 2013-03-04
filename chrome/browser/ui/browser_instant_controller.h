@@ -38,7 +38,7 @@ class BrowserInstantController : public content::NotificationObserver,
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
 
-  // Returns true if Instant is enabled in a visible, preview-showing mode.
+  // Returns true if Instant is enabled in a visible, overlay-showing mode.
   static bool IsInstantEnabled(Profile* profile);
 
   // Registers Instant related preferences.
@@ -67,9 +67,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // this BrowserInstantController.
   InstantController* instant() { return &instant_; }
 
-  // Invoked by |instant_| to commit the |preview| by merging it into the active
+  // Invoked by |instant_| to commit the |overlay| by merging it into the active
   // tab or adding it as a new tab.
-  void CommitInstant(scoped_ptr<content::WebContents> preview, bool in_new_tab);
+  void CommitInstant(scoped_ptr<content::WebContents> overlay, bool in_new_tab);
 
   // Invoked by |instant_| to autocomplete the |suggestion| into the omnibox.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
@@ -78,19 +78,19 @@ class BrowserInstantController : public content::NotificationObserver,
   // Call-through to OmniboxEditModel::CommitSuggestedText.
   void CommitSuggestedText(bool skip_inline_autocomplete);
 
-  // Invoked by |instant_| to get the bounds that the preview is placed at,
+  // Invoked by |instant_| to get the bounds that the overlay is placed at,
   // in screen coordinates.
   gfx::Rect GetInstantBounds();
 
-  // Invoked by |instant_| to notify that the preview gained focus, usually due
+  // Invoked by |instant_| to notify that the overlay gained focus, usually due
   // to the user clicking on it.
-  void InstantPreviewFocused();
+  void InstantOverlayFocused();
 
   // Invoked by |instant_| to give the omnibox focus invisibly.
   void FocusOmniboxInvisibly();
 
   // Invoked by |instant_| to get the currently active tab, over which the
-  // preview would be shown.
+  // overlay would be shown.
   content::WebContents* GetActiveWebContents() const;
 
   // Invoked by |browser_| when the active tab changes.
@@ -138,7 +138,7 @@ class BrowserInstantController : public content::NotificationObserver,
   InstantController instant_;
   InstantUnloadHandler instant_unload_handler_;
 
-  // Theme-related data for NTP preview to adopt themes.
+  // Theme-related data for NTP overlay to adopt themes.
   bool initialized_theme_info_;  // True if theme_info_ has been initialized.
   ThemeBackgroundInfo theme_info_;
 

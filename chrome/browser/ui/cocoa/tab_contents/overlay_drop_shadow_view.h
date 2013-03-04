@@ -4,8 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-// A view used to draw a drop shadow beneath the instant preview view.
-@interface PreviewDropShadowView : NSView {
+// A view used to draw a drop shadow beneath the Instant overlay view.
+@interface OverlayDropShadowView : NSView {
 }
 
 + (CGFloat)preferredHeight;

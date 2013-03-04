@@ -28,7 +28,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
-#import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -69,11 +69,11 @@ const CGFloat kLocBarBottomInset = 1;
 
 // Create the tab strip controller.
 - (void)createTabStripController {
-  DCHECK([previewableContentsController_ activeContainer]);
-  DCHECK([[previewableContentsController_ activeContainer] window]);
+  DCHECK([overlayableContentsController_ activeContainer]);
+  DCHECK([[overlayableContentsController_ activeContainer] window]);
   tabStripController_.reset([[TabStripController alloc]
       initWithView:[self tabStripView]
-        switchView:[previewableContentsController_ activeContainer]
+        switchView:[overlayableContentsController_ activeContainer]
            browser:browser_.get()
           delegate:self]);
 }
@@ -880,9 +880,9 @@ willPositionSheet:(NSWindow*)sheet
   if (!browser_->search_model()->mode().is_search_suggestions())
     return NO;
 
-  // If the search suggestions are already being displayed in the preview
+  // If the search suggestions are already being displayed in the overlay
   // contents then return YES.
-  if ([previewableContentsController_ isShowingPreview])
+  if ([overlayableContentsController_ isShowingOverlay])
     return YES;
 
   // Search suggestions might be shown directly in the web contents in some
@@ -893,14 +893,14 @@ willPositionSheet:(NSWindow*)sheet
 - (void)updateContentOffsets {
   // Normally the tab contents sits below the bookmark bar. This is achieved by
   // setting the offset to the height of the bookmark bar. The only exception
-  // is on the search results page where the instant results are shown inside
-  // the page and not in the preview contents as usual.
+  // is on the search results page where the Instant results are shown inside
+  // the page and not in the overlay contents as usual.
   CGFloat tabContentsOffset = toolbarToWebContentsOffset_;
   if (browser_->search_model()->mode().is_search_suggestions() &&
       !browser_->search_model()->mode().is_origin_default()) {
     tabContentsOffset = 0;
   }
-  [previewableContentsController_ setActiveContainerOffset:tabContentsOffset];
+  [overlayableContentsController_ setActiveContainerOffset:tabContentsOffset];
 
   // Prevent the fast resize view from drawing white over the bookmark bar.
   [[self tabContentArea] setContentOffset:toolbarToWebContentsOffset_];
@@ -932,7 +932,7 @@ willPositionSheet:(NSWindow*)sheet
   }
 
   // The bookmark bar is always below the toolbar. In normal mode this means
-  // that it is below tab contents. This allows instant results to be above
+  // that it is below tab contents. This allows Instant results to be above
   // the bookmark bar.
   [contentView cr_ensureSubview:[bookmarkBarController_ view]
                    isPositioned:NSWindowBelow
@@ -945,13 +945,13 @@ willPositionSheet:(NSWindow*)sheet
                        relativeTo:[self tabContentArea]];
   } else {
     // Above the toolbar but still below tab contents. Similar to the bookmark
-    // bar, this allows instant results to be above the info bar.
+    // bar, this allows Instant results to be above the info bar.
     [contentView cr_ensureSubview:[infoBarContainerController_ view]
                      isPositioned:NSWindowAbove
                        relativeTo:toolbarView];
   }
 
-  // The find bar is above everything except instant search results.
+  // The find bar is above everything except Instant search results.
   if (findBarCocoaController_) {
     NSView* relativeView = nil;
     if (inPresentationMode)

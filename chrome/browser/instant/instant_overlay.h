@@ -22,9 +22,9 @@ namespace content {
 class WebContents;
 }
 
-// InstantOverlay is used to communicate with a preview WebContents that it owns
-// and loads the "Instant URL" into. This preview can appear and disappear at
-// will as the user types in the omnibox.
+// InstantOverlay is used to communicate with an overlay WebContents that it
+// owns and loads the "Instant URL" into. This overlay can appear and disappear
+// at will as the user types in the omnibox.
 class InstantOverlay : public InstantPage,
                        public InstantLoader::Delegate {
  public:
@@ -52,7 +52,7 @@ class InstantOverlay : public InstantPage,
   bool is_stale() const { return is_stale_; }
 
   // Returns true if the mouse or a touch pointer is down due to activating the
-  // preview contents.
+  // overlay contents.
   bool is_pointer_down_from_activate() const {
     return is_pointer_down_from_activate_;
   }
@@ -69,7 +69,7 @@ class InstantOverlay : public InstantPage,
 
   // Returns true if the overlay is using
   // InstantController::kLocalOmniboxPopupURL as the |instant_url_|.
-  bool IsUsingLocalPreview() const;
+  bool IsUsingLocalOverlay() const;
 
   // Overridden from InstantPage:
   virtual void Update(const string16& text,

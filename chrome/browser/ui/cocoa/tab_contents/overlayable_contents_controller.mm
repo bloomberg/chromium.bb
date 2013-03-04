@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
-#include "chrome/browser/ui/cocoa/tab_contents/preview_drop_shadow_view.h"
+#include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
+#include "chrome/browser/ui/cocoa/tab_contents/overlay_drop_shadow_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
-@interface PreviewableContentsController()
+@interface OverlayableContentsController()
 - (void)viewDidResize:(NSNotification*)note;
 - (void)layoutViews;
-- (CGFloat)previewHeightInPixels;
+- (CGFloat)overlayHeightInPixels;
 @end
 
-@implementation PreviewableContentsController
+@implementation OverlayableContentsController
 
 @synthesize drawDropShadow = drawDropShadow_;
 @synthesize activeContainerOffset = activeContainerOffset_;
@@ -39,8 +39,8 @@
     activeContainer_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
     [view addSubview:activeContainer_];
 
-    instantPreviewController_.reset(
-        new InstantPreviewControllerMac(browser, windowController, self));
+    instantOverlayController_.reset(
+        new InstantOverlayControllerMac(browser, windowController, self));
   }
   return self;
 }
@@ -50,46 +50,46 @@
   [super dealloc];
 }
 
-- (void)setPreview:(content::WebContents*)preview
+- (void)setOverlay:(content::WebContents*)overlay
             height:(CGFloat)height
        heightUnits:(InstantSizeUnits)heightUnits
     drawDropShadow:(BOOL)drawDropShadow {
   // If drawing drop shadow, clip the bottom 1-px-thick separator out of
-  // preview.
+  // overlay.
   // TODO(sail): remove this when GWS gives chrome the height without the
   // separator.
   if (drawDropShadow && heightUnits != INSTANT_SIZE_PERCENT)
     --height;
 
-  if (previewContents_ == preview &&
-      previewHeight_ == height &&
-      previewHeightUnits_ == heightUnits &&
+  if (overlayContents_ == overlay &&
+      overlayHeight_ == height &&
+      overlayHeightUnits_ == heightUnits &&
       drawDropShadow_ == drawDropShadow) {
     return;
   }
 
-  // Remove any old preview contents before showing the new one.
-  if (previewContents_) {
-    [previewContents_->GetView()->GetNativeView() removeFromSuperview];
-    previewContents_->WasHidden();
+  // Remove any old overlay contents before showing the new one.
+  if (overlayContents_) {
+    [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
+    overlayContents_->WasHidden();
   }
 
-  previewContents_ = preview;
-  previewHeight_ = height;
-  previewHeightUnits_ = heightUnits;
+  overlayContents_ = overlay;
+  overlayHeight_ = height;
+  overlayHeightUnits_ = heightUnits;
   drawDropShadow_ = drawDropShadow;
 
-  // Add the preview contents.
-  if (previewContents_) {
+  // Add the overlay contents.
+  if (overlayContents_) {
     [[[self view] window] disableScreenUpdatesUntilFlush];
-    previewContents_->GetView()->SetAllowOverlappingViews(true);
-    [[self view] addSubview:previewContents_->GetView()->GetNativeView()];
+    overlayContents_->GetView()->SetAllowOverlappingViews(true);
+    [[self view] addSubview:overlayContents_->GetView()->GetNativeView()];
   }
 
   if (drawDropShadow_) {
     if (!dropShadowView_) {
       dropShadowView_.reset(
-          [[PreviewDropShadowView alloc] initWithFrame:NSZeroRect]);
+          [[OverlayDropShadowView alloc] initWithFrame:NSZeroRect]);
       [[self view] addSubview:dropShadowView_];
     }
   } else {
@@ -99,29 +99,29 @@
 
   [self layoutViews];
 
-  if (previewContents_)
-    previewContents_->WasShown();
+  if (overlayContents_)
+    overlayContents_->WasShown();
 }
 
 - (void)onActivateTabWithContents:(content::WebContents*)contents {
-  if (previewContents_ == contents) {
-    if (previewContents_) {
-      [previewContents_->GetView()->GetNativeView() removeFromSuperview];
-      previewContents_ = NULL;
+  if (overlayContents_ == contents) {
+    if (overlayContents_) {
+      [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
+      overlayContents_ = NULL;
     }
-    [self setPreview:NULL
+    [self setOverlay:NULL
               height:0
          heightUnits:INSTANT_SIZE_PIXELS
       drawDropShadow:NO];
   }
 }
 
-- (BOOL)isShowingPreview {
-  return previewContents_ != nil;
+- (BOOL)isShowingOverlay {
+  return overlayContents_ != nil;
 }
 
-- (InstantPreviewControllerMac*)instantPreviewController {
-  return instantPreviewController_.get();
+- (InstantOverlayControllerMac*)instantOverlayController {
+  return instantOverlayController_.get();
 }
 
 - (NSView*)activeContainer {
@@ -147,17 +147,17 @@
 - (void)layoutViews {
   NSRect bounds = [[self view] bounds];
 
-  if (previewContents_) {
-    NSRect previewFrame = bounds;
-    previewFrame.size.height = [self previewHeightInPixels];
-    previewFrame.origin.y = NSMaxY(bounds) - NSHeight(previewFrame);
-    [previewContents_->GetView()->GetNativeView() setFrame:previewFrame];
+  if (overlayContents_) {
+    NSRect overlayFrame = bounds;
+    overlayFrame.size.height = [self overlayHeightInPixels];
+    overlayFrame.origin.y = NSMaxY(bounds) - NSHeight(overlayFrame);
+    [overlayContents_->GetView()->GetNativeView() setFrame:overlayFrame];
 
     if (dropShadowView_) {
       NSRect dropShadowFrame = bounds;
-      dropShadowFrame.size.height = [PreviewDropShadowView preferredHeight];
+      dropShadowFrame.size.height = [OverlayDropShadowView preferredHeight];
       dropShadowFrame.origin.y =
-          NSMinY(previewFrame) - NSHeight(dropShadowFrame);
+          NSMinY(overlayFrame) - NSHeight(dropShadowFrame);
       [dropShadowView_ setFrame:dropShadowFrame];
     }
   }
@@ -167,13 +167,13 @@
   [activeContainer_ setFrame:activeFrame];
 }
 
-- (CGFloat)previewHeightInPixels {
+- (CGFloat)overlayHeightInPixels {
   CGFloat height = NSHeight([[self view] bounds]);
-  switch (previewHeightUnits_) {
+  switch (overlayHeightUnits_) {
     case INSTANT_SIZE_PERCENT:
-      return std::min(height, (height * previewHeight_) / 100);
+      return std::min(height, (height * overlayHeight_) / 100);
     case INSTANT_SIZE_PIXELS:
-      return std::min(height, previewHeight_);
+      return std::min(height, overlayHeight_);
   }
 }
 

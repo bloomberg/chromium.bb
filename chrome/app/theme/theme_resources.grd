@@ -569,6 +569,7 @@
       <if expr="not context.startswith('default_')">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon_fullscreen.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="common/overlay_drop_shadow.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" />
@@ -586,7 +587,6 @@
       <structure type="chrome_scaled_image" name="IDR_PHONE_FAVICON" file="common/favicon_phone.png" />
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="prerender_succeed_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_PREVIEW_DROP_SHADOW" file="common/preview_drop_shadow.png" />
       <if expr="not pp_ifdef('_google_chrome')">
         <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" />
         <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" />

@@ -1224,11 +1224,11 @@ void Browser::ShowFirstRunBubble() {
   window()->GetLocationBar()->ShowFirstRunBubble();
 }
 
-void Browser::MaybeUpdateBookmarkBarStateForInstantPreview(
+void Browser::MaybeUpdateBookmarkBarStateForInstantOverlay(
     const chrome::search::Mode& mode) {
   // This is invoked by a platform-specific implementation of
-  // |InstantPreviewController| to update bookmark bar state according to
-  // instant preview state.
+  // |InstantOverlayController| to update bookmark bar state according to
+  // Instant overlay state.
   // ModeChanged() updates bookmark bar state for all mode transitions except
   // when new mode is |SEARCH_SUGGESTIONS|, because that needs to be done when
   // the suggestions are ready.
@@ -1826,8 +1826,8 @@ void Browser::Observe(int type,
 void Browser::ModeChanged(const chrome::search::Mode& old_mode,
                           const chrome::search::Mode& new_mode) {
   // If new mode is |SEARCH_SUGGESTIONS|, don't update bookmark bar state now;
-  // wait till the instant preview is ready to show suggestions before hiding
-  // the bookmark bar (in MaybeUpdateBookmarkBarStateForInstantPreview()).
+  // wait till the Instant overlay is ready to show suggestions before hiding
+  // the bookmark bar (in MaybeUpdateBookmarkBarStateForInstantOverlay()).
   // TODO(kuan): but for now, only delay updating bookmark bar state if origin
   // is |DEFAULT|; other origins require more complex logic to be implemented
   // to prevent jankiness caused by hiding bookmark bar, so just hide the
@@ -1987,7 +1987,6 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
   if (i != scheduled_updates_.end())
     scheduled_updates_.erase(i);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Getters for UI (private):

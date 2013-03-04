@@ -85,7 +85,7 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
   CoreTabHelper::CreateForWebContents(contents());
   CoreTabHelper::FromWebContents(contents())->set_delegate(this);
 
-  // Tab helpers used when committing a preview.
+  // Tab helpers used when committing an overlay.
   chrome::search::SearchTabHelper::CreateForWebContents(contents());
   HistoryTabHelper::CreateForWebContents(contents());
 

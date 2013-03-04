@@ -1370,7 +1370,7 @@
         'browser/ui/cocoa/styled_text_field_test_helper.h',
         'browser/ui/cocoa/styled_text_field_test_helper.mm',
         'browser/ui/cocoa/styled_text_field_unittest.mm',
-        'browser/ui/cocoa/tab_contents/preview_drop_shadow_view_unittest.mm',
+        'browser/ui/cocoa/tab_contents/overlay_drop_shadow_view_unittest.mm',
         'browser/ui/cocoa/tab_contents/sad_tab_controller_unittest.mm',
         'browser/ui/cocoa/tab_contents/sad_tab_view_unittest.mm',
         'browser/ui/cocoa/tab_view_picker_table_unittest.mm',
@@ -2341,7 +2341,6 @@
       ],
     },
   ],
-
 
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library

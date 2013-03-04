@@ -19,7 +19,7 @@
 
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
     : tab_(NULL),
-      preview_(NULL),
+      overlay_(NULL),
       status_bubble_(status_bubble) {
   Init();
 }
@@ -72,10 +72,10 @@ void TabContentsContainerGtk::SetTab(content::WebContents* tab) {
   tab_ = tab;
 
   if (tab_) {
-    // If the preview is becoming the new permanent tab, we just reassign some
+    // If the overlay is becoming the new permanent tab, we just reassign some
     // pointers. Otherwise, we have to actually add it to the widget hierarchy.
-    if (tab_ == preview_)
-      preview_ = NULL;
+    if (tab_ == overlay_)
+      overlay_ = NULL;
     else
       PackTab(tab_);
 
@@ -90,21 +90,21 @@ void TabContentsContainerGtk::SetTab(content::WebContents* tab) {
   }
 }
 
-void TabContentsContainerGtk::SetPreview(content::WebContents* preview) {
-  if (preview_ == preview)
+void TabContentsContainerGtk::SetOverlay(content::WebContents* overlay) {
+  if (overlay_ == overlay)
     return;
 
-  if (preview_) {
-    HideTab(preview_);
-    GtkWidget* preview_widget = preview_->GetView()->GetNativeView();
-    if (preview_widget)
-      gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
+  if (overlay_) {
+    HideTab(overlay_);
+    GtkWidget* overlay_widget = overlay_->GetView()->GetNativeView();
+    if (overlay_widget)
+      gtk_container_remove(GTK_CONTAINER(expanded_), overlay_widget);
   }
 
-  preview_ = preview;
+  overlay_ = overlay;
 
-  if (preview_)
-    PackTab(preview_);
+  if (overlay_)
+    PackTab(overlay_);
 }
 
 void TabContentsContainerGtk::PackTab(content::WebContents* tab) {
@@ -156,25 +156,25 @@ void TabContentsContainerGtk::WebContentsDestroyed(
     content::WebContents* contents) {
   // Sometimes, a WebContents is destroyed before we know about it. This allows
   // us to clean up our state in case this happens.
-  if (contents == preview_)
-    SetPreview(NULL);
+  if (contents == overlay_)
+    SetOverlay(NULL);
   else if (contents == tab_)
     SetTab(NULL);
   else
     NOTREACHED();
 }
 
-// Prevent |preview_| from getting focus via the tab key. If |tab_| exists, try
+// Prevent |overlay_| from getting focus via the tab key. If |tab_| exists, try
 // to focus that. Otherwise, do nothing, but stop event propagation. See bug
 // http://crbug.com/63365
 gboolean TabContentsContainerGtk::OnFocus(GtkWidget* widget,
                                           GtkDirectionType focus) {
-  if (preview_) {
+  if (overlay_) {
     gtk_widget_child_focus(tab_->GetView()->GetContentNativeView(), focus);
     return TRUE;
   }
 
-  // No preview contents; let the default handler run.
+  // No overlay contents; let the default handler run.
   return FALSE;
 }
 

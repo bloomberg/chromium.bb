@@ -75,9 +75,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_FALSE(omnibox()->model()->has_focus());
 
-  // Delete any existing preview.
+  // Delete any existing overlay.
   instant()->overlay_.reset();
-  EXPECT_FALSE(instant()->GetPreviewContents());
+  EXPECT_FALSE(instant()->GetOverlayContents());
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
   FocusOmniboxAndWaitForInstantSupport();
@@ -85,32 +85,32 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_TRUE(omnibox()->model()->has_focus());
 
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
 
   // Check that the page supports Instant, but it isn't showing.
   EXPECT_TRUE(instant()->overlay_->supports_instant());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  // Adding a new tab shouldn't delete or recreate the preview; otherwise,
+  // Adding a new tab shouldn't delete or recreate the overlay; otherwise,
   // what's the point of preloading?
   AddBlankTabAndShow(browser());
-  EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
 
-  // Unfocusing and refocusing the omnibox should also preserve the preview.
+  // Unfocusing and refocusing the omnibox should also preserve the overlay.
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   FocusOmnibox();
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
-  EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
 
   // Doing a search should also use the same preloaded page.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
-  EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
 }
 
 // Flakes on Windows and Mac: http://crbug.com/170677
@@ -138,11 +138,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   // Typing "query" into the omnibox causes one or more onchange events. The
   // page suggested "query suggestion" is inline autocompleted into the omnibox,
   // causing another onchange event.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
   int min_onchangecalls = 2;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
   EXPECT_LE(min_onchangecalls, onchangecalls_);
   min_onchangecalls = onchangecalls_;
 
@@ -150,10 +150,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   SetOmniboxText("search");
   ++min_onchangecalls;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
   EXPECT_LE(min_onchangecalls, onchangecalls_);
 
-  // The preview was shown once, and the active tab was never hidden.
+  // The overlay was shown once, and the active tab was never hidden.
   EXPECT_EQ(1, onvisibilitycalls_);
   active_tab_onvisibilitycalls = -1;
   EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
@@ -165,14 +165,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
 IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
 
-  // Stash a reference to the preview, so we can refer to it after commit.
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
+  // Stash a reference to the overlay, so we can refer to it after commit.
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
 
   // The state of the searchbox before the commit.
-  EXPECT_TRUE(UpdateSearchState(preview_tab));
+  EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ("search", value_);
   EXPECT_FALSE(verbatim_);
   EXPECT_EQ(0, onsubmitcalls_);
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   // Before the commit, the active tab is the NTP (i.e., not Instant).
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_NE(preview_tab, active_tab);
+  EXPECT_NE(overlay, active_tab);
   EXPECT_EQ(1, active_tab->GetController().GetEntryCount());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL),
             omnibox()->model()->PermanentURL().spec());
@@ -190,50 +190,50 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   browser()->window()->GetLocationBar()->AcceptInput();
 
   // After the commit, Instant should not be showing.
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // The old overlay is deleted and a new one is created.
-  EXPECT_TRUE(instant()->GetPreviewContents());
-  EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
+  EXPECT_TRUE(instant()->GetOverlayContents());
+  EXPECT_NE(instant()->GetOverlayContents(), overlay);
 
-  // Check that the current active tab is indeed what was once the preview.
-  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveWebContents());
+  // Check that the current active tab is indeed what was once the overlay.
+  EXPECT_EQ(overlay, browser()->tab_strip_model()->GetActiveWebContents());
 
   // We should have two navigation entries, one for the NTP, and one for the
   // Instant search that was committed.
-  EXPECT_EQ(2, preview_tab->GetController().GetEntryCount());
+  EXPECT_EQ(2, overlay->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.
   EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab,
+  EXPECT_TRUE(GetStringFromJS(overlay,
                               "chrome.embeddedSearch.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
-  EXPECT_TRUE(UpdateSearchState(preview_tab));
+  EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ("search", value_);
   EXPECT_TRUE(verbatim_);
   EXPECT_EQ(1, onsubmitcalls_);
   EXPECT_EQ(1, onvisibilitycalls_);
 }
 
-// Test that the oncancel event is dispatched upon clicking on the preview.
+// Test that the oncancel event is dispatched upon clicking on the overlay.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   FocusOmniboxAndWaitForInstantSupport();
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
 
-  // Stash a reference to the preview, so we can refer to it after commit.
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
+  // Stash a reference to the overlay, so we can refer to it after commit.
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
 
   // The state of the searchbox before the commit.
-  EXPECT_TRUE(UpdateSearchState(preview_tab));
+  EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ("search", value_);
   EXPECT_FALSE(verbatim_);
   EXPECT_EQ(0, oncancelcalls_);
@@ -242,40 +242,40 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   // Before the commit, the active tab is the NTP (i.e., not Instant).
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_NE(preview_tab, active_tab);
+  EXPECT_NE(overlay, active_tab);
   EXPECT_EQ(1, active_tab->GetController().GetEntryCount());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL),
             omnibox()->model()->PermanentURL().spec());
 
-  // Commit the search by clicking on the preview.
+  // Commit the search by clicking on the overlay.
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
 
   // After the commit, Instant should not be showing.
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // The old overlay is deleted and a new one is created.
-  EXPECT_TRUE(instant()->GetPreviewContents());
-  EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
+  EXPECT_TRUE(instant()->GetOverlayContents());
+  EXPECT_NE(instant()->GetOverlayContents(), overlay);
 
-  // Check that the current active tab is indeed what was once the preview.
-  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveWebContents());
+  // Check that the current active tab is indeed what was once the overlay.
+  EXPECT_EQ(overlay, browser()->tab_strip_model()->GetActiveWebContents());
 
   // We should have two navigation entries, one for the NTP, and one for the
   // Instant search that was committed.
-  EXPECT_EQ(2, preview_tab->GetController().GetEntryCount());
+  EXPECT_EQ(2, overlay->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.
   EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab,
+  EXPECT_TRUE(GetStringFromJS(overlay,
                               "chrome.embeddedSearch.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
-  EXPECT_TRUE(UpdateSearchState(preview_tab));
+  EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ("search", value_);
   EXPECT_TRUE(verbatim_);
   EXPECT_EQ(1, oncancelcalls_);
@@ -288,15 +288,15 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnResizeEvent) {
 
   FocusOmniboxAndWaitForInstantSupport();
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
   EXPECT_EQ(0, onresizecalls_);
   EXPECT_EQ(0, height_);
 
   // Type a query into the omnibox. This should cause an onresize() event, with
   // a valid (non-zero) height.
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
   EXPECT_EQ(1, onresizecalls_);
   EXPECT_LT(0, height_);
 }
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
   EXPECT_TRUE(ExecuteScript("behavior = 'now'"));
 
   // Type a query, causing the hardcoded "query suggestion" to be returned.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
 
   // Get what's showing in the omnibox, and what's highlighted.
   string16 text = omnibox()->GetText();
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
   EXPECT_TRUE(ExecuteScript("behavior = 'never'"));
 
   // Type a query, causing the hardcoded "query suggestion" to be returned.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
 
   // Get what's showing in the omnibox, and what's highlighted.
   string16 text = omnibox()->GetText();
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsValidObject) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'query completion' } ]"));
 
   // Type a query, causing "query completion" to be returned as the suggestion.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query completion"), omnibox()->GetText());
 }
 
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsInvalidObject) {
   EXPECT_TRUE(ExecuteScript("suggestion = { value: 'query completion' }"));
 
   // Type a query, but expect no suggestion.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
 }
 
@@ -379,19 +379,19 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsEmpty) {
   FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_TRUE(ExecuteScript("suggestion = {}"));
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
 
   omnibox()->RevertAll();
 
   EXPECT_TRUE(ExecuteScript("suggestion = []"));
-  SetOmniboxTextAndWaitForInstantToShow("query sugg");
+  SetOmniboxTextAndWaitForOverlayToShow("query sugg");
   EXPECT_EQ(ASCIIToUTF16("query sugg"), omnibox()->GetText());
 
   omnibox()->RevertAll();
 
   EXPECT_TRUE(ExecuteScript("suggestion = [{}]"));
-  SetOmniboxTextAndWaitForInstantToShow("query suggest");
+  SetOmniboxTextAndWaitForOverlayToShow("query suggest");
   EXPECT_EQ(ASCIIToUTF16("query suggest"), omnibox()->GetText());
 }
 
@@ -404,19 +404,19 @@ IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
   // typing them into the omnibox (without pressing Enter) and checking that
   // Instant doesn't try to process them.
   SetOmniboxText(content::kChromeUICrashURL);
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   SetOmniboxText(content::kChromeUIHangURL);
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   SetOmniboxText(content::kChromeUIKillURL);
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
-  // Make sure that the URLs were never sent to the preview page.
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
+  // Make sure that the URLs were never sent to the overlay page.
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
   EXPECT_EQ("", value_);
 }
 
@@ -431,8 +431,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
   ui_test_utils::NavigateToURL(browser(), GURL("http://baby/beluga"));
   EXPECT_EQ(ASCIIToUTF16("baby/beluga"), omnibox()->GetText());
 
-  EXPECT_TRUE(instant()->GetPreviewContents());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(instant()->GetOverlayContents());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
@@ -449,41 +449,41 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   SetOmniboxText("http://monstrous/nightmare");
   int min_onchangecalls = 2;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
   EXPECT_EQ("", value_);
   EXPECT_LE(min_onchangecalls, onchangecalls_);
   min_onchangecalls = onchangecalls_;
 
   // Type a search. Instant should show.
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
   ++min_onchangecalls;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_TRUE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_TRUE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   EXPECT_EQ("search", value_);
   EXPECT_LE(min_onchangecalls, onchangecalls_);
   min_onchangecalls = onchangecalls_;
 
-  // Type another URL. The preview should be hidden.
+  // Type another URL. The overlay should be hidden.
   SetOmniboxText("http://terrible/terror");
   ++min_onchangecalls;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
   EXPECT_EQ("", value_);
   EXPECT_LE(min_onchangecalls, onchangecalls_);
   min_onchangecalls = onchangecalls_;
 
   // Type the same search as before.
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
   min_onchangecalls++;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_TRUE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_TRUE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
   EXPECT_EQ("search", value_);
   EXPECT_LE(min_onchangecalls, onchangecalls_);
@@ -493,8 +493,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   omnibox()->RevertAll();
   min_onchangecalls++;
 
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
   EXPECT_EQ("", value_);
   EXPECT_LE(min_onchangecalls, onchangecalls_);
@@ -505,9 +505,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsOne) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
-  // Type a URL. The Instant preview shouldn't be showing.
+  // Type a URL. The Instant overlay shouldn't be showing.
   SetOmniboxText("http://deadly/nadder");
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // Unfocus and refocus the omnibox.
@@ -515,24 +515,24 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsOne) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   FocusOmnibox();
 
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
 
   // The omnibox text hasn't changed, so Instant still shouldn't be showing.
   EXPECT_EQ(ASCIIToUTF16("http://deadly/nadder"), omnibox()->GetText());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // Commit the URL. The omnibox should reflect the URL minus the scheme.
   browser()->window()->GetLocationBar()->AcceptInput();
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_NE(preview_tab, active_tab);
+  EXPECT_NE(overlay, active_tab);
   EXPECT_EQ(ASCIIToUTF16("deadly/nadder"), omnibox()->GetText());
 
   // Instant shouldn't have done anything.
-  EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
@@ -541,15 +541,15 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
-  // Type a query. This causes the preview to be shown.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  // Type a query. This causes the overlay to be shown.
+  SetOmniboxTextAndWaitForOverlayToShow("query");
 
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
 
-  // Type a URL. This causes the preview to be hidden.
+  // Type a URL. This causes the overlay to be hidden.
   SetOmniboxText("http://hideous/zippleback");
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // Pretend the omnibox got focus. It already had focus, so we are just trying
@@ -561,16 +561,16 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
   browser()->window()->GetLocationBar()->AcceptInput();
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_NE(preview_tab, active_tab);
+  EXPECT_NE(overlay, active_tab);
   EXPECT_EQ(ASCIIToUTF16("hideous/zippleback"), omnibox()->GetText());
 
   // As before, Instant shouldn't have done anything.
-  EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
-// Test that a non-Instant search provider shows no previews.
+// Test that a non-Instant search provider shows no overlays.
 IN_PROC_BROWSER_TEST_F(InstantTest, NonInstantSearchProvider) {
   instant_url_ = test_server()->GetURL("files/empty.html");
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
@@ -594,41 +594,41 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NoCrashOnBlockedJS) {
   FocusOmniboxAndWaitForInstantSupport();
 }
 
-// Test that the preview and active tab's visibility states are set correctly.
+// Test that the overlay and active tab's visibility states are set correctly.
 IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
+  content::WebContents* overlay = instant()->GetOverlayContents();
 
-  // Inititally, the active tab is showing; the preview is not.
+  // Inititally, the active tab is showing; the overlay is not.
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
-  EXPECT_TRUE(CheckVisibilityIs(preview_tab, false));
+  EXPECT_TRUE(CheckVisibilityIs(overlay, false));
 
   // Type a query and wait for Instant to show.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
-  EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
+  EXPECT_TRUE(CheckVisibilityIs(overlay, true));
 
-  // Deleting the omnibox text should hide the preview.
+  // Deleting the omnibox text should hide the overlay.
   SetOmniboxText("");
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
-  EXPECT_TRUE(CheckVisibilityIs(preview_tab, false));
+  EXPECT_TRUE(CheckVisibilityIs(overlay, false));
 
-  // Typing a query should show the preview again.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  // Typing a query should show the overlay again.
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   EXPECT_TRUE(CheckVisibilityIs(active_tab, true));
-  EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
+  EXPECT_TRUE(CheckVisibilityIs(overlay, true));
 
-  // Commit the preview.
+  // Commit the overlay.
   browser()->window()->GetLocationBar()->AcceptInput();
-  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
+  EXPECT_EQ(overlay, browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(CheckVisibilityIs(overlay, true));
 }
 
-// Test that the task manager identifies Instant's preview tab correctly.
+// Test that the task manager identifies Instant's overlay correctly.
 IN_PROC_BROWSER_TEST_F(InstantTest, TaskManagerPrefix) {
   // The browser starts with a new tab, so there's just one renderer initially.
   TaskManagerModel* task_manager = TaskManager::GetInstance()->model();
@@ -636,9 +636,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TaskManagerPrefix) {
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
   string16 prefix = l10n_util::GetStringFUTF16(
-      IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX, string16());
+      IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX, string16());
 
-  // There should be no Instant preview yet.
+  // There should be no Instant overlay yet.
   for (int i = 0; i < task_manager->ResourceCount(); ++i) {
     string16 title = task_manager->GetResourceTitle(i);
     EXPECT_FALSE(StartsWith(title, prefix, true)) << title << " vs " << prefix;
@@ -647,16 +647,16 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TaskManagerPrefix) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmnibox();
 
-  // Now there should be two renderers, the second being the Instant preview.
+  // Now there should be two renderers, the second being the Instant overlay.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 
-  int instant_previews = 0;
+  int instant_overlays = 0;
   for (int i = 0; i < task_manager->ResourceCount(); ++i) {
     string16 title = task_manager->GetResourceTitle(i);
     if (StartsWith(title, prefix, true))
-      ++instant_previews;
+      ++instant_overlays;
   }
-  EXPECT_EQ(1, instant_previews);
+  EXPECT_EQ(1, instant_overlays);
 }
 
 void HistoryQueryDone(base::RunLoop* run_loop,
@@ -696,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
   ui_test_utils::WaitForHistoryToLoad(history);
 
   // Perform a search.
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
 
   // Commit the search.
   browser()->window()->GetLocationBar()->AcceptInput();
@@ -736,40 +736,40 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
 #else
 #define MAYBE_NewWindowDismissesInstant NewWindowDismissesInstant
 #endif
-// Test that creating a new window hides any currently showing Instant preview.
+// Test that creating a new window hides any currently showing Instant overlay.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   FocusOmniboxAndWaitForInstantSupport();
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
 
   Browser* previous_window = browser();
-  EXPECT_TRUE(instant()->IsPreviewingSearchResults());
+  EXPECT_TRUE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
 
   InstantTestModelObserver observer(instant()->model(),
                                     chrome::search::Mode::MODE_DEFAULT);
   chrome::NewEmptyWindow(browser()->profile(),
                          chrome::HOST_DESKTOP_TYPE_NATIVE);
-  observer.WaitUntilDesiredPreviewState();
+  observer.WaitForDesiredOverlayState();
 
   // Even though we just created a new Browser object (for the new window), the
   // browser() accessor should still give us the first window's Browser object.
   EXPECT_EQ(previous_window, browser());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 }
 
 // Test that the Instant overlay is recreated when all these conditions are met:
 // - The stale overlay timer has fired.
-// - The preview is not showing.
+// - The overlay is not showing.
 // - The omnibox doesn't have focus.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
-  // The preview is refreshed only after all three conditions above are met.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  // The overlay is refreshed only after all three conditions above are met.
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   instant()->overlay_->is_stale_ = true;
   instant()->ReloadOverlayIfStale();
   EXPECT_TRUE(instant()->overlay_->supports_instant());
@@ -780,14 +780,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
   EXPECT_FALSE(instant()->overlay_->supports_instant());
 
   // Try with a different ordering.
-  SetOmniboxTextAndWaitForInstantToShow("query");
+  SetOmniboxTextAndWaitForOverlayToShow("query");
   instant()->overlay_->is_stale_ = true;
   instant()->ReloadOverlayIfStale();
   EXPECT_TRUE(instant()->overlay_->supports_instant());
   instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
                                  OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
   // TODO(sreeram): Currently, OmniboxLostFocus() calls HideOverlay(). When it
-  // stops hiding the preview eventually, uncomment these two lines:
+  // stops hiding the overlay eventually, uncomment these two lines:
   //     EXPECT_TRUE(instant()->overlay_->supports_instant());
   //     instant()->HideOverlay();
   EXPECT_FALSE(instant()->overlay_->supports_instant());
@@ -800,42 +800,42 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
 
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'INSTANT' } ]"));
 
-  SetOmniboxTextAndWaitForInstantToShow("in");
+  SetOmniboxTextAndWaitForOverlayToShow("in");
   EXPECT_EQ(ASCIIToUTF16("instant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow("IN");
+  SetOmniboxTextAndWaitForOverlayToShow("IN");
   EXPECT_EQ(ASCIIToUTF16("INSTANT"), omnibox()->GetText());
 
   // U+0130 == LATIN CAPITAL LETTER I WITH DOT ABOVE
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: '\\u0130NSTANT' } ]"));
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow("i");
+  SetOmniboxTextAndWaitForOverlayToShow("i");
   EXPECT_EQ(WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow("I");
+  SetOmniboxTextAndWaitForOverlayToShow("I");
   EXPECT_EQ(WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"i\u0307"));
+  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"i\u0307"));
   EXPECT_EQ(WideToUTF16(L"i\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"I\u0307"));
+  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"I\u0307"));
   EXPECT_EQ(WideToUTF16(L"I\u0307nstant"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"\u0130"));
+  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"\u0130"));
   EXPECT_EQ(WideToUTF16(L"\u0130NSTANT"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow("in");
+  SetOmniboxTextAndWaitForOverlayToShow("in");
   EXPECT_EQ(ASCIIToUTF16("in"), omnibox()->GetText());
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow("IN");
+  SetOmniboxTextAndWaitForOverlayToShow("IN");
   EXPECT_EQ(ASCIIToUTF16("IN"), omnibox()->GetText());
 
   // Check that a d with a dot above and below it is completed regardless of
@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: '\\u1e0d\\u0307oh' } ]"));
 
   omnibox()->RevertAll();
-  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"\u1e0b\u0323"));
+  SetOmniboxTextAndWaitForOverlayToShow(WideToUTF8(L"\u1e0b\u0323"));
   EXPECT_EQ(WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
 }
 
@@ -855,7 +855,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
 #else
 #define MAYBE_CommitInNewTab CommitInNewTab
 #endif
-// Test that the preview can be committed onto a new tab.
+// Test that the overlay can be committed onto a new tab.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
@@ -871,21 +871,21 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
-  SetOmniboxTextAndWaitForInstantToShow("search");
+  SetOmniboxTextAndWaitForOverlayToShow("search");
 
-  // Stash a reference to the preview, so we can refer to it after commit.
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
+  // Stash a reference to the overlay, so we can refer to it after commit.
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
 
   // The state of the searchbox before the commit.
-  EXPECT_TRUE(UpdateSearchState(preview_tab));
+  EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ("search", value_);
   EXPECT_FALSE(verbatim_);
   EXPECT_EQ(0, onsubmitcalls_);
   EXPECT_EQ(1, onvisibilitycalls_);
 
   // The state of the active tab before the commit.
-  EXPECT_NE(preview_tab, active_tab);
+  EXPECT_NE(overlay, active_tab);
   EXPECT_EQ(2, active_tab->GetController().GetEntryCount());
   EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
   active_tab_onvisibilitycalls = -1;
@@ -897,38 +897,38 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
   omnibox()->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
 
   // After the commit, Instant should not be showing.
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
 
   // The old overlay is deleted and a new one is created.
-  EXPECT_TRUE(instant()->GetPreviewContents());
-  EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
+  EXPECT_TRUE(instant()->GetOverlayContents());
+  EXPECT_NE(instant()->GetOverlayContents(), overlay);
 
   // Check that we have two tabs and that the new active tab is indeed what was
-  // once the preview. The preview tab should have just one navigation entry,
-  // for the Instant search that was committed.
+  // once the overlay. The overlay should have just one navigation entry, for
+  // the Instant search that was committed.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(preview_tab, browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_EQ(1, preview_tab->GetController().GetEntryCount());
+  EXPECT_EQ(overlay, browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_EQ(1, overlay->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.
   EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab,
+  EXPECT_TRUE(GetStringFromJS(overlay,
                               "chrome.embeddedSearch.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
-  EXPECT_TRUE(UpdateSearchState(preview_tab));
+  EXPECT_TRUE(UpdateSearchState(overlay));
   EXPECT_EQ("search", value_);
   EXPECT_TRUE(verbatim_);
   EXPECT_EQ(1, onsubmitcalls_);
   EXPECT_EQ(1, onvisibilitycalls_);
 
   // The ex-active tab should've gotten a visibility change marking it hidden.
-  EXPECT_NE(active_tab, preview_tab);
+  EXPECT_NE(active_tab, overlay);
   EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(1, active_tab_onvisibilitycalls);
@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'instant' } ];"
                             "behavior = 'never';"));
 
-  SetOmniboxTextAndWaitForInstantToShow("in");
+  SetOmniboxTextAndWaitForOverlayToShow("in");
   EXPECT_EQ(ASCIIToUTF16("stant"), omnibox()->GetInstantSuggestion());
 
   SetOmniboxText("ins");
@@ -955,20 +955,20 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
 
-// Test that instant overlay is recreated if it gets destroyed.
+// Test that the Instant overlay is recreated if it gets destroyed.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type partial query, get suggestion to show.
-  SetOmniboxTextAndWaitForInstantToShow("q");
+  SetOmniboxTextAndWaitForOverlayToShow("q");
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
 
-  // Kill the instant renderer and wait for instant support again.
+  // Kill the Instant renderer and wait for Instant support again.
   KillInstantRenderView();
   FocusOmniboxAndWaitForInstantSupport();
 
-  SetOmniboxTextAndWaitForInstantToShow("qu");
+  SetOmniboxTextAndWaitForOverlayToShow("qu");
   EXPECT_EQ(ASCIIToUTF16("query suggestion"), omnibox()->GetText());
 }
 
@@ -986,13 +986,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ProcessIsolation) {
   // Now there should be a registered Instant render process.
   EXPECT_LT(0, instant_service->GetInstantProcessCount());
 
-  // And the Instant preview should live inside it.
-  content::WebContents* preview = instant()->GetPreviewContents();
+  // And the Instant overlay should live inside it.
+  content::WebContents* overlay = instant()->GetOverlayContents();
   EXPECT_TRUE(instant_service->IsInstantProcess(
-      preview->GetRenderProcessHost()->GetID()));
+      overlay->GetRenderProcessHost()->GetID()));
 
   // Search and commit the search by pressing Alt-Enter.
-  SetOmniboxTextAndWaitForInstantToShow("tractor");
+  SetOmniboxTextAndWaitForOverlayToShow("tractor");
   omnibox()->model()->AcceptInput(NEW_FOREGROUND_TAB, false);
 
   // The committed search results page should also live inside the

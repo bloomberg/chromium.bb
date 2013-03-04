@@ -156,7 +156,7 @@ bool IsViewInContents(gfx::NativeView view, content::WebContents* contents) {
   return false;
 }
 
-bool IsFullHeight(const InstantModel& model) {
+bool IsFullHeight(const InstantOverlayModel& model) {
   return model.height() == 100 && model.height_units() == INSTANT_SIZE_PERCENT;
 }
 
@@ -196,14 +196,14 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
     : browser_(browser),
       extended_enabled_(extended_enabled),
       instant_enabled_(false),
-      use_local_preview_only_(true),
+      use_local_overlay_only_(true),
       model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       last_omnibox_text_has_inline_autocompletion_(false),
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
-      allow_preview_to_show_search_suggestions_(false),
+      allow_overlay_to_show_search_suggestions_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
@@ -261,7 +261,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   DCHECK(user_input_in_progress || omnibox_popup_is_open || user_text.empty())
       << user_text;
 
-  // The preview is being clicked and will commit soon. Don't change anything.
+  // The overlay is being clicked and will commit soon. Don't change anything.
   // TODO(sreeram): Add a browser test for this.
   if (overlay_ && overlay_->is_pointer_down_from_activate())
     return false;
@@ -284,9 +284,9 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  // If we have an |instant_tab_| use it, else ensure we have a overlay that is
-  // current or is using local preview.
-  if (!instant_tab_ && !(overlay_ && overlay_->IsUsingLocalPreview()) &&
+  // If we have an |instant_tab_| use it, else ensure we have an overlay that is
+  // current or is using the local overlay.
+  if (!instant_tab_ && !(overlay_ && overlay_->IsUsingLocalOverlay()) &&
       !EnsureOverlayIsCurrent(false)) {
     HideOverlay();
     return false;
@@ -311,7 +311,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
             instant_tab_->Submit(full_text);
           }
         } else if (!full_text.empty()) {
-          // If |full_text| is empty, the user is on the NTP. The preview may
+          // If |full_text| is empty, the user is on the NTP. The overlay may
           // be showing custom NTP content; hide only if that's not the case.
           HideOverlay();
         }
@@ -324,8 +324,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
           // On a search results page, tell it to clear old results.
           instant_tab_->Update(string16(), 0, 0, true);
         } else if (search_mode_.is_origin_ntp()) {
-          // On the NTP, tell the preview to clear old results. Don't hide the
-          // preview so it can show a blank page or logo if it wants.
+          // On the NTP, tell the overlay to clear old results. Don't hide the
+          // overlay so it can show a blank page or logo if it wants.
           overlay_->Update(string16(), 0, 0, true);
         } else {
           HideOverlay();
@@ -357,7 +357,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
       return false;
     }
   } else if (!omnibox_popup_is_open || full_text.empty()) {
-    // In the non-extended case, hide the preview as long as the user isn't
+    // In the non-extended case, hide the overlay as long as the user isn't
     // actively typing a non-empty query.
     HideOverlay();
     return false;
@@ -407,12 +407,12 @@ bool InstantController::Update(const AutocompleteMatch& match,
   } else {
     if (first_interaction_time_.is_null())
       first_interaction_time_ = base::Time::Now();
-    allow_preview_to_show_search_suggestions_ = true;
+    allow_overlay_to_show_search_suggestions_ = true;
 
     // For extended mode, if the loader is not ready at this point, switch over
     // to a backup loader.
     if (extended_enabled_ && !overlay_->supports_instant() &&
-        !overlay_->IsUsingLocalPreview() && browser_->GetActiveWebContents()) {
+        !overlay_->IsUsingLocalOverlay() && browser_->GetActiveWebContents()) {
       CreateOverlay(chrome::search::kLocalOmniboxPopupURL,
                     browser_->GetActiveWebContents());
     }
@@ -446,7 +446,7 @@ scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
 }
 
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
-// needs to fire when the preview bounds change (e.g.: open/close info bar).
+// needs to fire when the overlay bounds change (e.g.: open/close info bar).
 void InstantController::SetPopupBounds(const gfx::Rect& bounds) {
   if (!extended_enabled_ && !instant_enabled_)
     return;
@@ -551,11 +551,11 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
     overlay_->CancelSelection(full_text);
 }
 
-content::WebContents* InstantController::GetPreviewContents() const {
+content::WebContents* InstantController::GetOverlayContents() const {
   return overlay_ ? overlay_->contents() : NULL;
 }
 
-bool InstantController::IsPreviewingSearchResults() const {
+bool InstantController::IsOverlayingSearchResults() const {
   return model_.mode().is_search_suggestions() && IsFullHeight(model_) &&
          (last_match_was_search_ ||
           last_suggestion_.behavior == INSTANT_COMPLETE_NEVER);
@@ -585,17 +585,17 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     return false;
   }
 
-  if (!IsPreviewingSearchResults() && type != INSTANT_COMMIT_NAVIGATED)
+  if (!IsOverlayingSearchResults() && type != INSTANT_COMMIT_NAVIGATED)
     return false;
 
   // There may re-entrance here, from the call to browser_->CommitInstant below,
   // which can cause a TabDeactivated notification which gets back here.
   // In this case, overlay_->ReleaseContents() was called already.
-  if (!GetPreviewContents())
+  if (!GetOverlayContents())
     return false;
 
-  // Never commit the local omnibox.
-  if (overlay_->IsUsingLocalPreview())
+  // Never commit the local overlay.
+  if (overlay_->IsUsingLocalOverlay())
     return false;
 
   if (type == INSTANT_COMMIT_FOCUS_LOST)
@@ -603,15 +603,15 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   else if (type != INSTANT_COMMIT_NAVIGATED)
     overlay_->Submit(last_omnibox_text_);
 
-  scoped_ptr<content::WebContents> preview = overlay_->ReleaseContents();
+  scoped_ptr<content::WebContents> overlay = overlay_->ReleaseContents();
 
-  // If the preview page has navigated since the last Update(), we need to add
+  // If the overlay page has navigated since the last Update(), we need to add
   // the navigation to history ourselves. Else, the page will navigate after
   // commit, and it will be added to history in the usual manner.
   const history::HistoryAddPageArgs& last_navigation =
       overlay_->last_navigation();
   if (!last_navigation.url.is_empty()) {
-    content::NavigationEntry* entry = preview->GetController().GetActiveEntry();
+    content::NavigationEntry* entry = overlay->GetController().GetActiveEntry();
 
     // The last navigation should be the same as the active entry if the overlay
     // is in search mode. During navigation, the active entry could have
@@ -624,7 +624,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
 
     // Add the page to history.
     HistoryTabHelper* history_tab_helper =
-        HistoryTabHelper::FromWebContents(preview.get());
+        HistoryTabHelper::FromWebContents(overlay.get());
     history_tab_helper->UpdateHistoryForNavigation(last_navigation);
 
     // Update the page title.
@@ -634,7 +634,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   // Add a fake history entry with a non-Instant search URL, so that search
   // terms extraction (for autocomplete history matches) works.
   HistoryService* history = HistoryServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(preview->GetBrowserContext()),
+      Profile::FromBrowserContext(overlay->GetBrowserContext()),
       Profile::EXPLICIT_ACCESS);
   if (history) {
     history->AddPage(url_for_history_, base::Time::Now(), NULL, 0, GURL(),
@@ -643,11 +643,11 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   }
 
   if (type == INSTANT_COMMIT_PRESSED_ALT_ENTER) {
-    preview->GetController().PruneAllButActive();
+    overlay->GetController().PruneAllButActive();
   } else {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
-    AddSessionStorageHistogram(extended_enabled_, active_tab, preview.get());
-    preview->GetController().CopyStateFromAndPrune(
+    AddSessionStorageHistogram(extended_enabled_, active_tab, overlay.get());
+    overlay->GetController().CopyStateFromAndPrune(
         &active_tab->GetController());
   }
 
@@ -663,13 +663,13 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
       last_omnibox_text_ += last_suggestion_.text;
     }
 
-    EnsureSearchTermsAreSet(preview.get(), last_omnibox_text_);
+    EnsureSearchTermsAreSet(overlay.get(), last_omnibox_text_);
   }
 
-  // Save notification source before we release the preview.
-  content::Source<content::WebContents> notification_source(preview.get());
+  // Save notification source before we release the overlay.
+  content::Source<content::WebContents> notification_source(overlay.get());
 
-  browser_->CommitInstant(preview.Pass(),
+  browser_->CommitInstant(overlay.Pass(),
                           type == INSTANT_COMMIT_PRESSED_ALT_ENTER);
 
   content::NotificationService::current()->Notify(
@@ -678,7 +678,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
       content::NotificationService::NoDetails());
 
   // Hide explicitly. See comments in HideOverlay() for why.
-  model_.SetPreviewState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
+  model_.SetOverlayState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
 
   // Delay deletion as we could've gotten here from an InstantOverlay method.
   MessageLoop::current()->DeleteSoon(FROM_HERE, overlay_.release());
@@ -712,7 +712,7 @@ void InstantController::OmniboxFocusChanged(
   // onkeycapturechange before the corresponding onchange, and the page would
   // have no way of telling whether the keycapturechange happened because of
   // some actual user action or just because they started typing.)
-  if (extended_enabled_ && GetPreviewContents() &&
+  if (extended_enabled_ && GetOverlayContents() &&
       reason != OMNIBOX_FOCUS_CHANGE_TYPING) {
     const bool is_key_capture_enabled =
         omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE;
@@ -724,7 +724,7 @@ void InstantController::OmniboxFocusChanged(
 
   // If focus went from outside the omnibox to the omnibox, preload the default
   // search engine, in anticipation of the user typing a query. If the reverse
-  // happened, commit or discard the preview.
+  // happened, commit or discard the overlay.
   if (state != OMNIBOX_FOCUS_NONE && old_focus_state == OMNIBOX_FOCUS_NONE) {
     // On explicit user actions, ignore the Instant blacklist.
     EnsureOverlayIsCurrent(reason == OMNIBOX_FOCUS_CHANGE_EXPLICIT);
@@ -757,7 +757,7 @@ void InstantController::ActiveTabChanged() {
 
   LOG_INSTANT_DEBUG_EVENT(this, "ActiveTabChanged");
 
-  // When switching tabs, always hide the preview.
+  // When switching tabs, always hide the overlay.
   HideOverlay();
 
   if (extended_enabled_)
@@ -771,20 +771,20 @@ void InstantController::TabDeactivated(content::WebContents* contents) {
 }
 
 void InstantController::SetInstantEnabled(bool instant_enabled,
-                                          bool use_local_preview_only) {
+                                          bool use_local_overlay_only) {
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "SetInstantEnabled: instant_enabled=%d, use_local_preview_only=%d",
-      instant_enabled, use_local_preview_only));
+      "SetInstantEnabled: instant_enabled=%d, use_local_overlay_only=%d",
+      instant_enabled, use_local_overlay_only));
 
-  // Non extended mode does not care about |use_local_preview_only|.
+  // Non extended mode does not care about |use_local_overlay_only|.
   if (instant_enabled == instant_enabled_ &&
       (!extended_enabled_ ||
-       use_local_preview_only == use_local_preview_only_)) {
+       use_local_overlay_only == use_local_overlay_only_)) {
     return;
   }
 
   instant_enabled_ = instant_enabled;
-  use_local_preview_only_ = use_local_preview_only;
+  use_local_overlay_only_ = use_local_overlay_only;
   HideInternal();
   overlay_.reset();
   if (extended_enabled_ || instant_enabled_)
@@ -808,7 +808,7 @@ void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
 }
 
 void InstantController::SwappedOverlayContents() {
-  model_.SetPreviewContents(GetPreviewContents());
+  model_.SetOverlayContents(GetOverlayContents());
 }
 
 void InstantController::FocusedOverlayContents() {
@@ -816,17 +816,17 @@ void InstantController::FocusedOverlayContents() {
   // On aura the omnibox only receives a focus lost if we initiate the focus
   // change. This does that.
   if (!model_.mode().is_default())
-    browser_->InstantPreviewFocused();
+    browser_->InstantOverlayFocused();
 #endif
 }
 
 void InstantController::ReloadOverlayIfStale() {
-  // The local popup is never stale.
-  if (overlay_ && overlay_->IsUsingLocalPreview())
+  // The local overlay is never stale.
+  if (overlay_ && overlay_->IsUsingLocalOverlay())
     return;
 
-  // If the preview is showing or the omnibox has focus, don't delete the
-  // overlay. It will get refreshed the next time the preview is hidden or the
+  // If the overlay is showing or the omnibox has focus, don't delete the
+  // overlay. It will get refreshed the next time the overlay is hidden or the
   // omnibox loses focus.
   if ((!overlay_ || overlay_->is_stale()) &&
       omnibox_focus_state_ == OMNIBOX_FOCUS_NONE &&
@@ -949,22 +949,22 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
     const GURL& url) {
   DCHECK(IsContentsFrom(overlay(), contents));
 
-  // If the page does not yet support instant, we allow redirects and other
-  // navigations to go through since the instant URL can redirect - e.g. to
+  // If the page does not yet support Instant, we allow redirects and other
+  // navigations to go through since the Instant URL can redirect - e.g. to
   // country specific pages.
   if (!overlay_->supports_instant())
     return;
 
   GURL instant_url(overlay_->instant_url());
 
-  // If we are navigating to the instant URL, do nothing.
+  // If we are navigating to the Instant URL, do nothing.
   if (url == instant_url)
     return;
 
   // Commit the navigation if either:
   //  - The page is in NTP mode (so it could only navigate on a user click) or
   //  - The page is not in NTP mode and we are navigating to a URL with a
-  //    different host or path than the instant URL. This enables the instant
+  //    different host or path than the Instant URL. This enables the instant
   //    page when it is showing search results to change the query parameters
   //    and fragments of the URL without it navigating.
   if (model_.mode().is_ntp() ||
@@ -984,7 +984,7 @@ void InstantController::SetSuggestions(
   if (instant_tab_ && !IsContentsFrom(instant_tab(), contents))
     return;
   if (IsContentsFrom(overlay(), contents) &&
-      !allow_preview_to_show_search_suggestions_)
+      !allow_overlay_to_show_search_suggestions_)
     return;
 
   InstantSuggestion suggestion;
@@ -1010,7 +1010,7 @@ void InstantController::SetSuggestions(
 
   if (suggestion.behavior == INSTANT_COMPLETE_REPLACE) {
     // We don't get an Update() when changing the omnibox due to a REPLACE
-    // suggestion (so that we don't inadvertently cause the preview to change
+    // suggestion (so that we don't inadvertently cause the overlay to change
     // what it's showing, as the user arrows up/down through the page-provided
     // suggestions). So, update these state variables here.
     last_omnibox_text_ = suggestion.text;
@@ -1118,7 +1118,7 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
 }
 
 void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
-  // If the preview is showing custom NTP content, don't hide it, commit it
+  // If the overlay is showing custom NTP content, don't hide it, commit it
   // (no matter where the user clicked) or try to recreate it.
   if (model_.mode().is_ntp())
     return;
@@ -1138,15 +1138,15 @@ void InstantController::OmniboxLostFocus(gfx::NativeView view_gaining_focus) {
       last_omnibox_text_ += last_suggestion_.text;
       last_suggestion_ = InstantSuggestion();
     }
-    // If the preview is not showing at all, recreate it if it's stale.
+    // If the overlay is not showing at all, recreate it if it's stale.
     ReloadOverlayIfStale();
     MaybeSwitchToRemoteOverlay();
     return;
   }
 
-  // The preview is showing search suggestions. If GetPreviewContents() is NULL,
+  // The overlay is showing search suggestions. If GetOverlayContents() is NULL,
   // we are in the commit path. Don't do anything.
-  if (!GetPreviewContents())
+  if (!GetOverlayContents())
     return;
 
 #if defined(OS_MACOSX)
@@ -1184,7 +1184,7 @@ bool InstantController::EnsureOverlayIsCurrent(bool ignore_blacklist) {
       active_tab->GetBrowserContext());
   std::string instant_url;
   if (!GetInstantURL(profile, ignore_blacklist, &instant_url)) {
-    // If we are in extended mode, fallback to the local popup.
+    // If we are in extended mode, fallback to the local overlay.
     if (extended_enabled_)
       instant_url = chrome::search::kLocalOmniboxPopupURL;
     else
@@ -1216,9 +1216,9 @@ void InstantController::MaybeSwitchToRemoteOverlay() {
 }
 
 void InstantController::ResetInstantTab() {
-  // Do not wire up the InstantTab if instant should only use local previews, to
+  // Do not wire up the InstantTab if Instant should only use local overlays, to
   // prevent it from sending data to the page.
-  if (!search_mode_.is_origin_default() && !use_local_preview_only_) {
+  if (!search_mode_.is_origin_default() && !use_local_overlay_only_) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
       instant_tab_.reset(new InstantTab(this));
@@ -1249,15 +1249,15 @@ void InstantController::HideOverlay() {
 void InstantController::HideInternal() {
   LOG_INSTANT_DEBUG_EVENT(this, "Hide");
 
-  // If GetPreviewContents() returns NULL, either we're already in the desired
+  // If GetOverlayContents() returns NULL, either we're already in the desired
   // MODE_DEFAULT state, or we're in the commit path. For the latter, don't
-  // change the state just yet; else we may hide the preview unnecessarily.
+  // change the state just yet; else we may hide the overlay unnecessarily.
   // Instead, the state will be set correctly after the commit is done.
-  if (GetPreviewContents()) {
-    model_.SetPreviewState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
-    allow_preview_to_show_search_suggestions_ = false;
+  if (GetOverlayContents()) {
+    model_.SetOverlayState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
+    allow_overlay_to_show_search_suggestions_ = false;
 
-    // Send a message asking the preview to clear out old results.
+    // Send a message asking the overlay to clear out old results.
     overlay_->Update(string16(), 0, 0, true);
   }
 
@@ -1282,17 +1282,17 @@ void InstantController::ShowOverlay(InstantShownReason reason,
 
   // Must have updated omnibox after the last HideOverlay() to show suggestions.
   if (reason == INSTANT_SHOWN_QUERY_SUGGESTIONS &&
-      !allow_preview_to_show_search_suggestions_)
+      !allow_overlay_to_show_search_suggestions_)
     return;
 
   // The page is trying to hide itself. Hide explicitly (i.e., don't use
   // HideOverlay()) so that it can change its mind.
   if (height == 0) {
-    model_.SetPreviewState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
+    model_.SetOverlayState(chrome::search::Mode(), 0, INSTANT_SIZE_PERCENT);
     return;
   }
 
-  // If the preview is being shown for the first time since the user started
+  // If the overlay is being shown for the first time since the user started
   // typing, record a histogram value.
   if (!first_interaction_time_.is_null() && model_.mode().is_default()) {
     base::TimeDelta delta = base::Time::Now() - first_interaction_time_;
@@ -1300,17 +1300,17 @@ void InstantController::ShowOverlay(InstantShownReason reason,
   }
 
   // Show at 100% height except in the following cases:
-  // - The local omnibox popup is being loaded.
+  // - The local overlay (omnibox popup) is being loaded.
   // - Instant is disabled. The page needs to be able to show only a dropdown.
   // - The page wants to show custom NTP content.
   // - The page is over a website other than search or an NTP, and is not
   //   already showing at 100% height.
-  if (overlay_->IsUsingLocalPreview() || !instant_enabled_ ||
+  if (overlay_->IsUsingLocalOverlay() || !instant_enabled_ ||
       reason == INSTANT_SHOWN_CUSTOM_NTP_CONTENT ||
       (search_mode_.is_origin_default() && !IsFullHeight(model_)))
-    model_.SetPreviewState(search_mode_, height, units);
+    model_.SetOverlayState(search_mode_, height, units);
   else
-    model_.SetPreviewState(search_mode_, 100, INSTANT_SIZE_PERCENT);
+    model_.SetOverlayState(search_mode_, 100, INSTANT_SIZE_PERCENT);
 
   // If the overlay is being shown at full height and the omnibox is not
   // focused, commit right away.
@@ -1324,20 +1324,20 @@ void InstantController::SendPopupBoundsToPage() {
     return;
 
   last_popup_bounds_ = popup_bounds_;
-  gfx::Rect preview_bounds = browser_->GetInstantBounds();
-  gfx::Rect intersection = gfx::IntersectRects(popup_bounds_, preview_bounds);
+  gfx::Rect overlay_bounds = browser_->GetInstantBounds();
+  gfx::Rect intersection = gfx::IntersectRects(popup_bounds_, overlay_bounds);
 
   // Translate into window coordinates.
   if (!intersection.IsEmpty()) {
-    intersection.Offset(-preview_bounds.origin().x(),
-                        -preview_bounds.origin().y());
+    intersection.Offset(-overlay_bounds.origin().x(),
+                        -overlay_bounds.origin().y());
   }
 
   // In the current Chrome UI, these must always be true so they sanity check
   // the above operations. In a future UI, these may be removed or adjusted.
   // There is no point in sanity-checking |intersection.y()| because the omnibox
-  // can be placed anywhere vertically relative to the preview (for example, in
-  // Mac fullscreen mode, the omnibox is fully enclosed by the preview bounds).
+  // can be placed anywhere vertically relative to the overlay (for example, in
+  // Mac fullscreen mode, the omnibox is fully enclosed by the overlay bounds).
   DCHECK_LE(0, intersection.x());
   DCHECK_LE(0, intersection.width());
   DCHECK_LE(0, intersection.height());
@@ -1351,7 +1351,7 @@ bool InstantController::GetInstantURL(Profile* profile,
   DCHECK(profile);
   instant_url->clear();
 
-  if (extended_enabled_ && use_local_preview_only_) {
+  if (extended_enabled_ && use_local_overlay_only_) {
     *instant_url = chrome::search::kLocalOmniboxPopupURL;
     return true;
   }

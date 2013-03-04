@@ -182,20 +182,20 @@ Profile* BrowserInstantController::profile() const {
 }
 
 void BrowserInstantController::CommitInstant(
-    scoped_ptr<content::WebContents> preview,
+    scoped_ptr<content::WebContents> overlay,
     bool in_new_tab) {
-  if (profile()->GetExtensionService()->IsInstalledApp(preview->GetURL())) {
+  if (profile()->GetExtensionService()->IsInstalledApp(overlay->GetURL())) {
     AppLauncherHandler::RecordAppLaunchType(
         extension_misc::APP_LAUNCH_OMNIBOX_INSTANT);
   }
   if (in_new_tab) {
-    // TabStripModel takes ownership of |preview|.
-    browser_->tab_strip_model()->AddWebContents(preview.release(), -1,
+    // TabStripModel takes ownership of |overlay|.
+    browser_->tab_strip_model()->AddWebContents(overlay.release(), -1,
         instant_.last_transition_type(), TabStripModel::ADD_ACTIVE);
   } else {
     ReplaceWebContentsAt(
         browser_->tab_strip_model()->active_index(),
-        preview.Pass());
+        overlay.Pass());
   }
 }
 
@@ -224,9 +224,9 @@ gfx::Rect BrowserInstantController::GetInstantBounds() {
   return browser_->window()->GetInstantBounds();
 }
 
-void BrowserInstantController::InstantPreviewFocused() {
+void BrowserInstantController::InstantOverlayFocused() {
   // NOTE: This is only invoked on aura.
-  browser_->window()->WebContentsFocused(instant_.GetPreviewContents());
+  browser_->window()->WebContentsFocused(instant_.GetOverlayContents());
 }
 
 void BrowserInstantController::FocusOmniboxInvisibly() {
@@ -274,10 +274,10 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 
 void BrowserInstantController::ResetInstant() {
   bool instant_enabled = IsInstantEnabled(profile());
-  bool use_local_preview_only = profile()->IsOffTheRecord() ||
+  bool use_local_overlay_only = profile()->IsOffTheRecord() ||
       (!instant_enabled &&
        !profile()->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled));
-  instant_.SetInstantEnabled(instant_enabled, use_local_preview_only);
+  instant_.SetInstantEnabled(instant_enabled, use_local_overlay_only);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,7 +285,7 @@ void BrowserInstantController::ResetInstant() {
 
 void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
                                            const search::Mode& new_mode) {
-  // If mode is now |NTP|, send theme-related information to instant.
+  // If mode is now |NTP|, send theme-related information to Instant.
   if (new_mode.is_ntp())
     UpdateThemeInfo(false);
 

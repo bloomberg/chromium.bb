@@ -9,7 +9,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/instant/instant_model_observer.h"
+#include "chrome/browser/instant/instant_overlay_model_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -18,19 +18,19 @@
 #include "chrome/common/search_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-class InstantTestModelObserver : public InstantModelObserver {
+class InstantTestModelObserver : public InstantOverlayModelObserver {
  public:
-  InstantTestModelObserver(InstantModel* model,
+  InstantTestModelObserver(InstantOverlayModel* model,
                            chrome::search::Mode::Type desired_mode_type);
   ~InstantTestModelObserver();
 
-  void WaitUntilDesiredPreviewState();
+  void WaitForDesiredOverlayState();
 
-  // Overridden from InstantModelObserver:
-  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
+  // Overridden from InstantOverlayModelObserver:
+  virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
 
  private:
-  InstantModel* const model_;
+  InstantOverlayModel* const model_;
   const chrome::search::Mode::Type desired_mode_type_;
   base::RunLoop run_loop_;
 
@@ -63,7 +63,7 @@ class InstantTestBase : public InProcessBrowserTest {
   void FocusOmniboxAndWaitForInstantSupport();
 
   void SetOmniboxText(const std::string& text);
-  void SetOmniboxTextAndWaitForInstantToShow(const std::string& text);
+  void SetOmniboxTextAndWaitForOverlayToShow(const std::string& text);
 
   bool GetBoolFromJS(content::WebContents* contents,
                      const std::string& script,

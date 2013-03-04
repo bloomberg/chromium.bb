@@ -35,12 +35,12 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   void SetTab(content::WebContents* tab);
   content::WebContents* tab() const { return tab_; }
 
-  void SetPreview(content::WebContents* preview);
-  bool HasPreview() const { return preview_ != NULL; }
+  void SetOverlay(content::WebContents* overlay);
+  bool HasOverlay() const { return overlay_ != NULL; }
 
   // Returns the WebContents currently displayed.
   content::WebContents* GetVisibleTab() const {
-    return preview_ ? preview_ : tab_;
+    return overlay_ ? overlay_ : tab_;
   }
 
   // Remove the tab from the hierarchy.
@@ -75,19 +75,19 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   void HideTab(content::WebContents* tab);
 
   // Handle focus traversal on the tab contents container. Focus should not
-  // traverse to the preview contents.
+  // traverse to the overlay contents.
   CHROMEGTK_CALLBACK_1(TabContentsContainerGtk, gboolean, OnFocus,
                        GtkDirectionType);
 
   content::NotificationRegistrar registrar_;
 
   // The WebContents for the currently selected tab. This will be showing
-  // unless there is a preview contents.
+  // unless there is an overlay contents.
   content::WebContents* tab_;
 
-  // The current preview contents (for instant). If non-NULL, it will be
+  // The current overlay contents (for Instant). If non-NULL, it will be
   // visible.
-  content::WebContents* preview_;
+  content::WebContents* overlay_;
 
   // The status bubble manager.  Always non-NULL.
   StatusBubbleGtk* status_bubble_;

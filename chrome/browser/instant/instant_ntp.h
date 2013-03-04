@@ -32,7 +32,7 @@ class InstantNTP : public InstantPage,
                     const content::WebContents* active_tab,
                     const base::Closure& on_stale_callback);
 
-  // Releases the WebContents for the instant page.  This should be called when
+  // Releases the WebContents for the Instant page.  This should be called when
   // the page is about to be committed.
   scoped_ptr<content::WebContents> ReleaseContents() WARN_UNUSED_RESULT;
 

@@ -269,9 +269,9 @@ void BrowserViewLayout::Layout(views::View* host) {
   // contents to continue to display from that origin.
   const chrome::search::Mode& mode = browser()->search_model()->mode();
   views::WebView* contents = browser_view_->contents_container_;
-  int preview_height = contents_container_->preview_height();
+  int overlay_height = contents_container_->overlay_height();
   gfx::Point old_contents_origin;
-  if (preview_height > 0 && mode.is_search_suggestions() &&
+  if (overlay_height > 0 && mode.is_search_suggestions() &&
       mode.is_origin_default()) {
     old_contents_origin = contents->bounds().origin();
     views::View::ConvertPointToTarget(contents->parent(), browser_view_,
@@ -314,7 +314,7 @@ void BrowserViewLayout::Layout(views::View* host) {
     // fully cover that gap, and leaving the contents at their original height
     // would leave an odd-looking blank space.  In this case, we allow the
     // contents to go ahead and shift upward.
-    if (active_top_margin > 0 && active_top_margin < preview_height)
+    if (active_top_margin > 0 && active_top_margin < overlay_height)
       contents_container_->SetActiveTopMargin(active_top_margin);
   }
 

@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/instant_preview_controller_gtk.h"
+#include "chrome/browser/ui/gtk/instant_overlay_controller_gtk.h"
 
-#include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/instant/instant_overlay_model.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 
-InstantPreviewControllerGtk::InstantPreviewControllerGtk(
+InstantOverlayControllerGtk::InstantOverlayControllerGtk(
     BrowserWindowGtk* window,
     TabContentsContainerGtk* contents)
-    : InstantPreviewController(window->browser()),
+    : InstantOverlayController(window->browser()),
       window_(window),
       contents_(contents) {
 }
 
-InstantPreviewControllerGtk::~InstantPreviewControllerGtk() {
+InstantOverlayControllerGtk::~InstantOverlayControllerGtk() {
 }
 
-void InstantPreviewControllerGtk::PreviewStateChanged(
-    const InstantModel& model) {
+void InstantOverlayControllerGtk::OverlayStateChanged(
+    const InstantOverlayModel& model) {
   if (model.mode().is_search_suggestions()) {
     // TODO(jered): Support non-100% height.
-    contents_->SetPreview(model.GetPreviewContents());
+    contents_->SetOverlay(model.GetOverlayContents());
   } else {
-    contents_->SetPreview(NULL);
+    contents_->SetOverlay(NULL);
   }
   window_->MaybeShowBookmarkBar(false);
 }

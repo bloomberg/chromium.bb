@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/ntp_background_util.h"
@@ -63,7 +62,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
-#include "chrome/browser/ui/views/frame/instant_preview_controller_views.h"
+#include "chrome/browser/ui/views/frame/instant_overlay_controller_views.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -478,7 +477,7 @@ BrowserView::~BrowserView() {
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
 
-  preview_controller_.reset();
+  overlay_controller_.reset();
 
   browser_->tab_strip_model()->RemoveObserver(this);
 
@@ -791,7 +790,6 @@ void BrowserView::UpdateDevTools() {
   UpdateDevToolsForContents(GetActiveWebContents());
   Layout();
 }
-
 
 void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
@@ -1303,8 +1301,8 @@ int BrowserView::GetExtraRenderViewHeight() const {
 void BrowserView::WebContentsFocused(WebContents* contents) {
   if (contents_container_->GetWebContents() == contents)
     contents_container_->OnWebContentsFocused(contents);
-  else if (contents_->preview_web_contents() == contents)
-    preview_controller_->preview()->OnWebContentsFocused(contents);
+  else if (contents_->overlay_web_contents() == contents)
+    overlay_controller_->overlay()->OnWebContentsFocused(contents);
   else
     devtools_container_->OnWebContentsFocused(contents);
 }
@@ -1447,7 +1445,7 @@ void BrowserView::Paste() {
 }
 
 gfx::Rect BrowserView::GetInstantBounds() {
-  return contents_->GetPreviewBounds();
+  return contents_->GetOverlayBounds();
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -1518,11 +1516,11 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
                                    bool user_gesture) {
   DCHECK(new_contents);
 
-  // See if the Instant preview is being activated (committed).
-  if (contents_->preview_web_contents() == new_contents) {
-    contents_->MakePreviewContentsActiveContents();
+  // See if the Instant overlay is being activated (committed).
+  if (contents_->overlay_web_contents() == new_contents) {
+    contents_->MakeOverlayContentsActiveContents();
     views::WebView* old_container = contents_container_;
-    contents_container_ = preview_controller_->release_preview();
+    contents_container_ = overlay_controller_->release_overlay();
     old_container->SetWebContents(NULL);
     delete old_container;
   }
@@ -1557,7 +1555,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
 
   if (change_tab_contents) {
     contents_container_->SetWebContents(new_contents);
-    contents_->MaybeStackPreviewAtTop();
+    contents_->MaybeStackOverlayAtTop();
   }
 
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
@@ -1570,7 +1568,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   // Update all the UI bits.
   UpdateTitleBar();
 
-  // Like the preview layer and the bookmark bar layer, the immersive mode
+  // Like the overlay layer and the bookmark bar layer, the immersive mode
   // reveal view's layer may need to live above the web contents.
   MaybeStackImmersiveRevealAtTop();
 
@@ -2070,8 +2068,8 @@ void BrowserView::Init() {
   AddChildViewAt(toolbar_, kToolbarIndex);
   toolbar_->Init();
 
-  preview_controller_.reset(
-      new InstantPreviewControllerViews(browser(), contents_));
+  overlay_controller_.reset(
+      new InstantOverlayControllerViews(browser(), contents_));
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeProperties::COLOR_TOOLBAR);

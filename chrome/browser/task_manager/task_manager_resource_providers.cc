@@ -91,7 +91,7 @@ int GetMessagePrefixID(bool is_app,
                        bool is_extension,
                        bool is_incognito,
                        bool is_prerender,
-                       bool is_instant_preview,
+                       bool is_instant_overlay,
                        bool is_background) {
   if (is_app) {
     if (is_background) {
@@ -108,8 +108,8 @@ int GetMessagePrefixID(bool is_app,
       return IDS_TASK_MANAGER_EXTENSION_PREFIX;
   } else if (is_prerender) {
     return IDS_TASK_MANAGER_PRERENDER_PREFIX;
-  } else if (is_instant_preview) {
-    return IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX;
+  } else if (is_instant_overlay) {
+    return IDS_TASK_MANAGER_INSTANT_OVERLAY_PREFIX;
   } else {
     return IDS_TASK_MANAGER_TAB_PREFIX;
   }
@@ -161,7 +161,7 @@ bool IsContentsInstant(WebContents* web_contents) {
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     if (it->instant_controller() &&
         it->instant_controller()->instant()->
-            GetPreviewContents() == web_contents) {
+            GetOverlayContents() == web_contents) {
       return true;
     }
   }
@@ -305,7 +305,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
           web_contents->GetRenderViewHost()),
       web_contents_(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      is_instant_preview_(IsContentsInstant(web_contents)) {
+      is_instant_overlay_(IsContentsInstant(web_contents)) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     prerender_icon_ = rb.GetImageSkiaNamed(IDR_PRERENDER);
@@ -316,8 +316,8 @@ TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
 }
 
 void TaskManagerTabContentsResource::InstantCommitted() {
-  DCHECK(is_instant_preview_);
-  is_instant_preview_ = false;
+  DCHECK(is_instant_overlay_);
+  is_instant_overlay_ = false;
 }
 
 bool TaskManagerTabContentsResource::HostsExtension() const {
@@ -346,7 +346,7 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
       HostsExtension(),
       profile_->IsOffTheRecord(),
       IsContentsPrerendering(web_contents_),
-      is_instant_preview_,
+      is_instant_overlay_,
       false);
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
@@ -419,18 +419,18 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   updating_ = true;
 
   // The contents that are tracked by this resource provider are those that
-  // are tab contents (WebContents serving as a tab in a Browser), instant
+  // are tab contents (WebContents serving as a tab in a Browser), Instant
   // pages, prerender pages, and background printed pages.
 
   // Add all the existing WebContentses.
   for (TabContentsIterator iterator; !iterator.done(); iterator.Next())
     Add(*iterator);
 
-  // Add all the instant pages.
+  // Add all the Instant pages.
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     if (it->instant_controller() &&
-        it->instant_controller()->instant()->GetPreviewContents()) {
-      Add(it->instant_controller()->instant()->GetPreviewContents());
+        it->instant_controller()->instant()->GetOverlayContents()) {
+      Add(it->instant_controller()->instant()->GetOverlayContents());
     }
   }
 
@@ -501,7 +501,7 @@ void TaskManagerTabContentsResourceProvider::Add(WebContents* web_contents) {
     return;
 
   // The contents that are tracked by this resource provider are those that
-  // are tab contents (WebContents serving as a tab in a Browser), instant
+  // are tab contents (WebContents serving as a tab in a Browser), Instant
   // pages, prerender pages, and background printed pages.
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&

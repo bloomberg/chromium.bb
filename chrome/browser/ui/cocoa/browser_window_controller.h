@@ -37,8 +37,8 @@ class ExtensionKeybindingRegistryCocoa;
 @class FullscreenWindow;
 @class InfoBarContainerController;
 class LocationBarViewMac;
+@class OverlayableContentsController;
 @class PresentationModeController;
-@class PreviewableContentsController;
 class StatusBubbleMac;
 @class TabStripController;
 @class TabStripView;
@@ -69,7 +69,7 @@ class WebContents;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   scoped_nsobject<DevToolsController> devToolsController_;
-  scoped_nsobject<PreviewableContentsController> previewableContentsController_;
+  scoped_nsobject<OverlayableContentsController> overlayableContentsController_;
   scoped_nsobject<PresentationModeController> presentationModeController_;
   scoped_nsobject<FullscreenExitBubbleController>
       fullscreenExitBubbleController_;
@@ -216,8 +216,8 @@ class WebContents;
 // Returns a weak pointer to the floating bar backing view;
 - (NSView*)floatingBarBackingView;
 
-// Returns a weak pointer to the previewable contents controller.
-- (PreviewableContentsController*)previewableContentsController;
+// Returns a weak pointer to the overlayable contents controller.
+- (OverlayableContentsController*)overlayableContentsController;
 
 // Access the Profile object that backs this Browser.
 - (Profile*)profile;
@@ -328,7 +328,7 @@ class WebContents;
 // coordinates.
 - (NSPoint)bookmarkBubblePoint;
 
-// Shows or hides the Instant preview contents.
+// Shows or hides the Instant overlay contents.
 - (void)commitInstant;
 
 // Returns the frame, in Cocoa (unflipped) screen coordinates, of the area where
@@ -341,7 +341,7 @@ class WebContents;
          returnCode:(NSInteger)code
             context:(void*)context;
 
-- (void)updateBookmarkBarStateForInstantPreview;
+- (void)updateBookmarkBarStateForInstantOverlay;
 
 @end  // @interface BrowserWindowController
 

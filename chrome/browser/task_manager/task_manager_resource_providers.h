@@ -106,7 +106,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   DISALLOW_COPY_AND_ASSIGN(TaskManagerRendererResource);
 };
 
-// Tracks a single tab contents, prerendered page, instant page, or background
+// Tracks a single tab contents, prerendered page, Instant page, or background
 // printing page.
 class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
@@ -114,7 +114,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   virtual ~TaskManagerTabContentsResource();
 
   // Called when the underlying web_contents has been committed and is no
-  // longer an Instant preview.
+  // longer an Instant overlay.
   void InstantCommitted();
 
   // TaskManager::Resource methods:
@@ -132,12 +132,12 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   static gfx::ImageSkia* prerender_icon_;
   content::WebContents* web_contents_;
   Profile* profile_;
-  bool is_instant_preview_;
+  bool is_instant_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };
 
-// Provides resources for tab contents, prerendered pages, instant pages, and
+// Provides resources for tab contents, prerendered pages, Instant pages, and
 // background printing pages.
 class TaskManagerTabContentsResourceProvider
     : public TaskManager::ResourceProvider,
@@ -622,7 +622,6 @@ class TaskManagerBrowserProcessResourceProvider
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserProcessResourceProvider);
 };
-
 
 class TaskManagerGuestResource : public TaskManagerRendererResource {
  public:

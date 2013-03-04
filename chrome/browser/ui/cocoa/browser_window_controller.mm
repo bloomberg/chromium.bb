@@ -52,7 +52,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
-#import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabpose_window.h"
@@ -62,8 +62,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -333,15 +331,15 @@ enum {
     [[devToolsController_ view] setFrame:[[self tabContentArea] bounds]];
     [[self tabContentArea] addSubview:[devToolsController_ view]];
 
-    // Create the previewable contents controller.  This provides the switch
+    // Create the overlayable contents controller.  This provides the switch
     // view that TabStripController needs.
-    previewableContentsController_.reset(
-        [[PreviewableContentsController alloc] initWithBrowser:browser
+    overlayableContentsController_.reset(
+        [[OverlayableContentsController alloc] initWithBrowser:browser
                                               windowController:self]);
-    [[previewableContentsController_ view]
+    [[overlayableContentsController_ view]
         setFrame:[[devToolsController_ view] bounds]];
     [[devToolsController_ view]
-        addSubview:[previewableContentsController_ view]];
+        addSubview:[overlayableContentsController_ view]];
 
     // Create a controller for the tab strip, giving it the model object for
     // this window's Browser and the tab strip view. The controller will handle
@@ -517,8 +515,8 @@ enum {
   return floatingBarBackingView_;
 }
 
-- (PreviewableContentsController*)previewableContentsController {
-  return previewableContentsController_;
+- (OverlayableContentsController*)overlayableContentsController {
+  return overlayableContentsController_;
 }
 
 - (Profile*)profile {
@@ -1200,7 +1198,7 @@ enum {
 // StatusBubble delegate method: tell the status bubble the frame it should
 // position itself in.
 - (NSRect)statusBubbleBaseFrame {
-  NSView* view = [previewableContentsController_ view];
+  NSView* view = [overlayableContentsController_ view];
   return [view convertRect:[view bounds] toView:nil];
 }
 
@@ -1580,7 +1578,7 @@ enum {
 
   [infoBarContainerController_ changeWebContents:contents];
 
-  [previewableContentsController_ onActivateTabWithContents:contents];
+  [overlayableContentsController_ onActivateTabWithContents:contents];
 }
 
 - (void)onTabChanged:(TabStripModelObserver::TabChangeType)change
@@ -1934,7 +1932,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // The view's bounds are in its own coordinate system.  Convert that to the
   // window base coordinate system, then translate it into the screen's
   // coordinate system.
-  NSView* view = [previewableContentsController_ view];
+  NSView* view = [overlayableContentsController_ view];
   if (!view)
     return NSZeroRect;
 
@@ -1957,7 +1955,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [sheet orderOut:self];
 }
 
-- (void)updateBookmarkBarStateForInstantPreview {
+- (void)updateBookmarkBarStateForInstantOverlay {
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
   [self updateContentOffsets];
   [self updateSubviewZOrder:[self inPresentationMode]];

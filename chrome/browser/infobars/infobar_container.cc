@@ -15,7 +15,7 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/instant/instant_overlay_model.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -48,7 +48,7 @@ void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
   registrar_.RemoveAll();
 
   // Note that HideAllInfoBars() sets |infobars_shown_| to false, because that's
-  // what the other, instant-related callers want; but here we actually
+  // what the other, Instant-related callers want; but here we actually
   // explicitly want to reset this variable to true.  So do that after calling
   // the function.
   HideAllInfoBars();
@@ -179,8 +179,8 @@ void InfoBarContainer::ModeChanged(const chrome::search::Mode& old_mode,
   // Hide infobars when showing Instant Extended suggestions.
   if (new_mode.is_search_suggestions()) {
     // If suggestions are being shown on a |DEFAULT| page, delay the hiding
-    // until notification that instant preview is ready is received via
-    // PreviewStateChanged(); this prevents jankiness caused by infobars hiding
+    // until notification that Instant overlay is ready is received via
+    // OverlayStateChanged(); this prevents jankiness caused by infobars hiding
     // followed by suggestions appearing.
     if (new_mode.is_origin_default())
       return;
@@ -192,7 +192,7 @@ void InfoBarContainer::ModeChanged(const chrome::search::Mode& old_mode,
   }
 }
 
-void InfoBarContainer::PreviewStateChanged(const InstantModel& model) {
+void InfoBarContainer::OverlayStateChanged(const InstantOverlayModel& model) {
   // If suggestions are being shown on a |DEFAULT| page, hide the infobars now.
   // See comments for ModeChanged() for explanation.
   if (model.mode().is_search_suggestions() &&

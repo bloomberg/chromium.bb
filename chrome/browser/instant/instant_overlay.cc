@@ -71,7 +71,7 @@ void InstantOverlay::DidNavigate(
   last_navigation_ = add_page_args;
 }
 
-bool InstantOverlay::IsUsingLocalPreview() const {
+bool InstantOverlay::IsUsingLocalOverlay() const {
   return instant_url_ == chrome::search::kLocalOmniboxPopupURL;
 }
 
@@ -115,7 +115,7 @@ void InstantOverlay::OnSwappedContents() {
 }
 
 void InstantOverlay::OnFocus() {
-  // The preview is getting focus. Equivalent to it being clicked.
+  // The overlay is getting focus. Equivalent to it being clicked.
   base::AutoReset<bool> reset(&is_pointer_down_from_activate_, true);
   instant_controller()->FocusedOverlayContents();
 }

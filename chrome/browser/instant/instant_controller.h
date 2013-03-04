@@ -19,7 +19,7 @@
 #include "base/timer.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/instant/instant_commit_type.h"
-#include "chrome/browser/instant/instant_model.h"
+#include "chrome/browser/instant/instant_overlay_model.h"
 #include "chrome/browser/instant/instant_page.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/common/instant_types.h"
@@ -104,7 +104,7 @@ class InstantController : public InstantPage::Delegate,
   // Sets the stored start-edge margin and width of the omnibox.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Send autocomplete results from |providers| to the preview page.
+  // Send autocomplete results from |providers| to the overlay page.
   void HandleAutocompleteResults(
       const std::vector<AutocompleteProvider*>& providers);
 
@@ -120,13 +120,14 @@ class InstantController : public InstantPage::Delegate,
   void OnCancel(const AutocompleteMatch& match,
                 const string16& full_text);
 
-  // The preview WebContents. May be NULL. InstantController retains ownership.
-  content::WebContents* GetPreviewContents() const;
+  // The overlay WebContents. May be NULL. InstantController retains ownership.
+  content::WebContents* GetOverlayContents() const;
 
-  // Returns true if the Instant overlay is showing a search results preview.
-  bool IsPreviewingSearchResults() const;
+  // Returns true if Instant is showing a search results overlay. Returns false
+  // if the overlay is not showing, or if it's showing only suggestions.
+  bool IsOverlayingSearchResults() const;
 
-  // If the preview is showing search results, commits the preview, calling
+  // If the overlay is showing search results, commits the overlay, calling
   // CommitInstant() on the browser, and returns true. Else, returns false.
   bool CommitIfPossible(InstantCommitType type);
 
@@ -143,19 +144,19 @@ class InstantController : public InstantPage::Delegate,
   void SearchModeChanged(const chrome::search::Mode& old_mode,
                          const chrome::search::Mode& new_mode);
 
-  // The user switched tabs. Hide the preview. Create |instant_tab_| if the
+  // The user switched tabs. Hide the overlay. Create |instant_tab_| if the
   // newly active tab is an Instant search results page.
   void ActiveTabChanged();
 
-  // The user is about to switch tabs. Commit the preview if needed.
+  // The user is about to switch tabs. Commit the overlay if needed.
   void TabDeactivated(content::WebContents* contents);
 
-  // Sets whether Instant should show result previews. |use_local_preview_only|
+  // Sets whether Instant should show result overlays. |use_local_overlay_only|
   // will force the use of kLocalOmniboxPopupURL as the Instant URL and is only
   // applicable if |extended_enabled_| is true.
-  void SetInstantEnabled(bool instant_enabled, bool use_local_preview_only);
+  void SetInstantEnabled(bool instant_enabled, bool use_local_overlay_only);
 
-  // The theme has changed. Pass the message to the preview page.
+  // The theme has changed. Pass the message to the overlay page.
   void ThemeChanged(const ThemeBackgroundInfo& theme_info);
 
   // Called when someone else swapped in a different contents in the |overlay_|.
@@ -165,7 +166,7 @@ class InstantController : public InstantPage::Delegate,
   void FocusedOverlayContents();
 
   // Called when the |overlay_| might be stale. If it's actually stale, and the
-  // omnibox doesn't have focus, and the preview isn't showing, the |overlay_|
+  // omnibox doesn't have focus, and the overlay isn't showing, the |overlay_|
   // is deleted and recreated. Else the refresh is skipped.
   void ReloadOverlayIfStale();
 
@@ -185,7 +186,7 @@ class InstantController : public InstantPage::Delegate,
 
   // Non-const for Add/RemoveObserver only.  Other model changes should only
   // happen through the InstantController interface.
-  InstantModel* model() { return &model_; }
+  InstantOverlayModel* model() { return &model_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
@@ -242,19 +243,19 @@ class InstantController : public InstantPage::Delegate,
       content::PageTransition transition,
       WindowOpenDisposition disposition) OVERRIDE;
 
-  // Invoked by the InstantLoader when the instant page wants to delete a
+  // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.
   virtual void DeleteMostVisitedItem(const GURL& url) OVERRIDE;
 
-  // Invoked by the InstantLoader when the instant page wants to undo a
+  // Invoked by the InstantLoader when the Instant page wants to undo a
   // Most Visited deletion.
   virtual void UndoMostVisitedDeletion(const GURL& url) OVERRIDE;
 
-  // Invoked by the InstantLoader when the instant page wants to undo all
+  // Invoked by the InstantLoader when the Instant page wants to undo all
   // Most Visited deletions.
   virtual void UndoAllMostVisitedDeletions() OVERRIDE;
 
-  // Helper for OmniboxFocusChanged. Commit or discard the preview.
+  // Helper for OmniboxFocusChanged. Commit or discard the overlay.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
 
   // Creates a new NTP, using the instant_url property of the default
@@ -282,15 +283,15 @@ class InstantController : public InstantPage::Delegate,
   // point to it. Else, deletes any existing |instant_tab_|.
   void ResetInstantTab();
 
-  // Hide the preview. Also sends an onchange event (with blank query) to the
-  // preview, telling it to clear out results for any old queries.
+  // Hide the overlay. Also sends an onchange event (with blank query) to the
+  // overlay, telling it to clear out results for any old queries.
   void HideOverlay();
 
   // Like HideOverlay(), but doesn't call OnStaleOverlay(). Use HideOverlay()
   // unless you are going to call overlay_.reset() yourself subsequently.
   void HideInternal();
 
-  // Counterpart to HideOverlay(). Asks the |browser_| to display the preview
+  // Counterpart to HideOverlay(). Asks the |browser_| to display the overlay
   // with the given |height| in |units|.
   void ShowOverlay(InstantShownReason reason,
                    int height,
@@ -301,7 +302,7 @@ class InstantController : public InstantPage::Delegate,
 
   // Determines the Instant URL based on a number of factors:
   // If |extended_enabled_|:
-  //   - If |use_local_preview_only_| is true return kLocalOmniboxPopupURL, else
+  //   - If |use_local_overlay_only_| is true return kLocalOmniboxPopupURL, else
   //   - If the Instant URL is specified by command line, returns it, else
   //   - If the default Instant URL is present returns it.
   // If !|extended_enabled_|:
@@ -351,12 +352,12 @@ class InstantController : public InstantPage::Delegate,
   const bool extended_enabled_;
   bool instant_enabled_;
 
-  // If true, the instant URL is set to kLocalOmniboxPopupURL.
-  bool use_local_preview_only_;
+  // If true, the Instant URL is set to kLocalOmniboxPopupURL.
+  bool use_local_overlay_only_;
 
-  // The state of the preview page, i.e., the page owned by |overlay_|. Ignored
+  // The state of the overlay page, i.e., the page owned by |overlay_|. Ignored
   // if |instant_tab_| is in use.
-  InstantModel model_;
+  InstantOverlayModel model_;
 
   // The three instances of InstantPage maintained by InstantController as
   // described above. All three may be non-NULL in extended mode.  If
@@ -388,7 +389,7 @@ class InstantController : public InstantPage::Delegate,
   content::PageTransition last_transition_type_;
 
   // True if the last match passed to Update() was a search (versus a URL).
-  // Used to ensure that the preview page is committable.
+  // Used to ensure that the overlay page is committable.
   bool last_match_was_search_;
 
   // Omnibox focus state.
@@ -426,13 +427,13 @@ class InstantController : public InstantPage::Delegate,
   GURL url_for_history_;
 
   // The timestamp at which query editing began. This value is used when the
-  // preview is showed and cleared when the preview is hidden.
+  // overlay is showed and cleared when the overlay is hidden.
   base::Time first_interaction_time_;
 
-  // Whether to allow the preview to show search suggestions. In general, the
-  // preview is allowed to show search suggestions whenever |search_mode_| is
+  // Whether to allow the overlay to show search suggestions. In general, the
+  // overlay is allowed to show search suggestions whenever |search_mode_| is
   // MODE_SEARCH_SUGGESTIONS, except in those cases where this is false.
-  bool allow_preview_to_show_search_suggestions_;
+  bool allow_overlay_to_show_search_suggestions_;
 
   // List of events and their timestamps, useful in debugging Instant behaviour.
   mutable std::list<std::pair<int64, std::string> > debug_events_;

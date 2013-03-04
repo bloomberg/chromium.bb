@@ -456,10 +456,10 @@ class Browser : public TabStripModelObserver,
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
 
-  // If necessary, update the bookmark bar state according to the instant
-  // preview state: when instant preview shows suggestions and bookmark bar is
+  // If necessary, update the bookmark bar state according to the Instant
+  // overlay state: when Instant overlay shows suggestions and bookmark bar is
   // still showing attached, hide it.
-  void MaybeUpdateBookmarkBarStateForInstantPreview(
+  void MaybeUpdateBookmarkBarStateForInstantOverlay(
       const chrome::search::Mode& mode);
 
   FullscreenController* fullscreen_controller() const {

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/time.h"
-#include "chrome/browser/instant/instant_model_observer.h"
+#include "chrome/browser/instant/instant_overlay_model_observer.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/search_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -38,7 +38,7 @@ class SearchModel;
 // temporarily if the user changes into |SEARCH_SUGGESTIONS| mode (refer to
 // chrome::search::Mode in chrome/common/search_types.h for all search modes)
 // when on a :
-// - |DEFAULT| page: when instant preview is ready;
+// - |DEFAULT| page: when Instant overlay is ready;
 // - |NTP| or |SEARCH_RESULTS| page: immediately;
 //   TODO(kuan): this scenario requires more complex synchronization with
 //   renderer SearchBoxAPI and will be implemented as the next step;
@@ -51,7 +51,7 @@ class SearchModel;
 // to re-hide infobars without animation is canceled if a tab change occurs.
 class InfoBarContainer : public content::NotificationObserver,
                          public chrome::search::SearchModelObserver,
-                         public InstantModelObserver  {
+                         public InstantOverlayModelObserver {
  public:
   class Delegate {
    public:
@@ -110,8 +110,8 @@ class InfoBarContainer : public content::NotificationObserver,
 
   const Delegate* delegate() const { return delegate_; }
 
-  // InstantModelObserver:
-  virtual void PreviewStateChanged(const InstantModel& model) OVERRIDE;
+  // InstantOverlayModelObserver:
+  virtual void OverlayStateChanged(const InstantOverlayModel& model) OVERRIDE;
 
  protected:
   // Subclasses must call this during destruction, so that we can remove
