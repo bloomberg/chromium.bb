@@ -476,18 +476,13 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
 #endif
 
   profile_ = profile;
-  gfx::NativeWindow parent = NULL;
-
-#if !defined(USE_AURA)
-  parent = ::GetDesktopWindow();
-#endif
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
   view_delegate_ = new AppListViewDelegate(new AppListControllerDelegateWin(),
                                            profile_);
   current_view_ = new app_list::AppListView(view_delegate_);
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  current_view_->InitAsBubble(parent,
+  current_view_->InitAsBubble(NULL,
                               &pagination_model_,
                               NULL,
                               cursor,
@@ -522,6 +517,11 @@ void AppListController::DismissAppList() {
 }
 
 void AppListController::AppListClosing() {
+  if (current_view_ && app_list_is_showing_) {
+    // DismissAppList was not called so remove the keep alive.
+    chrome::EndKeepAlive();
+    app_list_is_showing_ = false;
+  }
   current_view_ = NULL;
   view_delegate_ = NULL;
   timer_.Stop();

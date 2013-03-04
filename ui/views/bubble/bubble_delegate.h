@@ -123,6 +123,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // after calling CreateBubble.
   void SetAlignment(BubbleBorder::BubbleAlignment alignment);
 
+  // Create the bubble frame for the bubble.
+  virtual BubbleFrameView* CreateBubbleFrameView();
+
  protected:
   // Get bubble bounds from the anchor point and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();

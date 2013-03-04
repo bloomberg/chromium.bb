@@ -142,13 +142,12 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
 
   // Overridden from views::WidgetDelegate.
   virtual bool CanActivate() const OVERRIDE;
-  virtual views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
   virtual bool WidgetHasHitTestMask() const OVERRIDE;
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual BubbleFrameView* CreateBubbleFrameView() OVERRIDE;
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
