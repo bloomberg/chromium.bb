@@ -10,8 +10,7 @@
       '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
     ],
     'isolate_dependency_untracked': [
-      'data/file_util_unittest/',
-      'data/json/',
+      'data/',
       'prefs/test/',
     ],
   },
@@ -42,8 +41,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/icudt.dll',
-          'data/file_version_info_unittest/FileVersionInfoTest1.dll',
-          'data/file_version_info_unittest/FileVersionInfoTest2.dll',
         ],
       },
     }],

@@ -4,8 +4,10 @@
 {
   'variables': {
     'isolate_dependency_tracked': [
-      '../tools/swarm_client/run_isolated.py',
-      '../tools/swarm_client/run_test_cases.py',
+    ],
+    'isolate_dependency_untracked': [
+      '../tools/swarm_client/',
+      '<(PRODUCT_DIR)/pyproto/',
     ],
   },
   'conditions': [
@@ -18,11 +20,6 @@
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
-          '../net/tools/testserver/echo_message.py',
-          '../net/tools/testserver/testserver_base.py',
-          '../sync/tools/testserver/chromiumsync.py',
-          '../sync/tools/testserver/sync_testserver.py',
-          '../sync/tools/testserver/xmppserver.py',
           '../testing/test_env.py',
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/chrome.pak',
@@ -36,8 +33,7 @@
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/pyproto/google/protobuf/',
-          '<(PRODUCT_DIR)/pyproto/sync/protocol/',
+          '../net/tools/testserver/',
         ],
       },
     }],
@@ -62,21 +58,13 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
-          '../net/tools/testserver/',
-          '../third_party/pyftpdlib/src/pyftpdlib/ftpserver.py',
-          '../third_party/pywebsocket/src/mod_pywebsocket/',
-          '../third_party/tlslite/tlslite/',
-          '<(PRODUCT_DIR)/pyproto/google/__init__.py',
-          '<(PRODUCT_DIR)/pyproto/google/protobuf/',
-          '<(PRODUCT_DIR)/pyproto/sync/protocol/',
           '<(PRODUCT_DIR)/resources.pak',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
-          '../third_party/pywebsocket/src/mod_pywebsocket/handshake/',
-        ],
-        'isolate_dependency_touched': [
-          '../third_party/pyftpdlib/src/pyftpdlib/__init__.py',
+          '../third_party/pyftpdlib/',
+          '../third_party/pywebsocket/',
+          '../third_party/tlslite/',
         ],
       },
     }],
