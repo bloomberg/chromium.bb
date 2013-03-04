@@ -558,10 +558,13 @@ bool VariationsService::ValidateStudyAndComputeTotalProbability(
 bool VariationsService::LoadTrialsSeedFromPref(PrefService* local_prefs,
                                                TrialsSeed* seed) {
   std::string base64_seed_data = local_prefs->GetString(prefs::kVariationsSeed);
-  std::string seed_data;
+  if (base64_seed_data.empty()) {
+    UMA_HISTOGRAM_BOOLEAN("Variations.SeedEmpty", true);
+    return false;
+  }
 
-  // If the decode process fails, assume the pref value is corrupt, and clear
-  // it.
+  // If the decode process fails, assume the pref value is corrupt and clear it.
+  std::string seed_data;
   if (!base::Base64Decode(base64_seed_data, &seed_data) ||
       !seed->ParseFromString(seed_data)) {
     VLOG(1) << "Variations Seed data in local pref is corrupt, clearing the "

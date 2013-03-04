@@ -393,6 +393,10 @@ TEST(VariationsServiceTest, LoadSeed) {
   EXPECT_FALSE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
   EXPECT_FALSE(variations_service.LoadTrialsSeedFromPref(&prefs, &loaded_seed));
   EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+
+  // Check that having no seed in prefs results in a return value of false.
+  prefs.ClearPref(prefs::kVariationsSeed);
+  EXPECT_FALSE(variations_service.LoadTrialsSeedFromPref(&prefs, &loaded_seed));
 }
 
 TEST(VariationsServiceTest, StoreSeed) {
