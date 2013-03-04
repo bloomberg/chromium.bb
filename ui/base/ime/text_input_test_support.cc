@@ -5,7 +5,10 @@
 #include "ui/base/ime/text_input_test_support.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/ime/ibus_daemon_controller.h"
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
@@ -22,6 +25,12 @@ void TextInputTestSupport::Initialize() {
     chromeos::DBusThreadManager::InitializeWithStub();
     dbus_thread_manager_was_initialized = true;
   }
+  if (!chromeos::IBusDaemonController::GetInstance()) {
+    // Passing NULL is okay because IBusDaemonController will be initialized
+    // with stub implementation on non-ChromeOS device.
+    DCHECK(!base::chromeos::IsRunningOnChromeOS());
+    chromeos::IBusDaemonController::Initialize(NULL, NULL);
+  }
 #endif  // OS_CHROMEOS
 }
 
@@ -31,6 +40,8 @@ void TextInputTestSupport::Shutdown() {
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_was_initialized = false;
   }
+  if (chromeos::IBusDaemonController::GetInstance())
+    chromeos::IBusDaemonController::Shutdown();
 #endif  // OS_CHROMEOS
 }
 

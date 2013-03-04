@@ -186,101 +186,18 @@ bool FlattenPropertyList(const IBusPropertyList& ibus_prop_list,
   return result;
 }
 
-base::FilePathWatcher* g_file_path_watcher = NULL;
-
-// Called when the ibus-daemon address file is modified.
-void OnFilePathChanged(const base::Closure& closure,
-                       const base::FilePath& file_path,
-                       bool failed) {
-  if (failed)
-    return;  // Can't recover, do nothing.
-  if (!g_file_path_watcher)
-    return;  // Already discarded watch task.
-
-  content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                   FROM_HERE,
-                                   closure);
-
-  MessageLoop::current()->DeleteSoon(FROM_HERE, g_file_path_watcher);
-  g_file_path_watcher = NULL;
-}
-
-// Start watching |address_file_path|. If the target file is changed, |callback|
-// is called on UI thread. This function should be called on FILE thread.
-void StartWatch(const std::string& address_file_path,
-                const base::Callback<void()>& callback) {
-  // Before start watching, discard on-going watching task.
-  delete g_file_path_watcher;
-  g_file_path_watcher = new base::FilePathWatcher;
-  bool result = g_file_path_watcher->Watch(
-      base::FilePath::FromUTF8Unsafe(address_file_path),
-      false,  // do not watch child directory.
-      base::Bind(&OnFilePathChanged, callback));
-  DCHECK(result);
-}
-
 }  // namespace
 
 IBusControllerImpl::IBusControllerImpl()
-    : process_handle_(base::kNullProcessHandle),
-      ibus_daemon_status_(IBUS_DAEMON_STOP),
-      input_method_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  IBusDaemonController::GetInstance()->AddObserver(this);
 }
 
 IBusControllerImpl::~IBusControllerImpl() {
-}
-
-bool IBusControllerImpl::Start() {
-  if (IBusConnectionsAreAlive())
-    return true;
-  if (ibus_daemon_status_ == IBUS_DAEMON_STOP ||
-      ibus_daemon_status_ == IBUS_DAEMON_SHUTTING_DOWN) {
-    return StartIBusDaemon();
-  }
-  return true;
-}
-
-void IBusControllerImpl::Reset() {
-  if (!IBusConnectionsAreAlive())
-    return;
-  IBusInputContextClient* client
-      = DBusThreadManager::Get()->GetIBusInputContextClient();
-  // We don't need to call Reset if there is no on-going input context, because
-  // the input context will be reset at initialization.
-  if (client && client->IsObjectProxyReady())
-    client->Reset();
-}
-
-bool IBusControllerImpl::Stop() {
-  if (ibus_daemon_status_ == IBUS_DAEMON_SHUTTING_DOWN ||
-      ibus_daemon_status_ == IBUS_DAEMON_STOP) {
-    return true;
-  }
-
-  ibus_daemon_status_ = IBUS_DAEMON_SHUTTING_DOWN;
-  // TODO(nona): Shutdown ibus-bus connection.
-  if (IBusConnectionsAreAlive()) {
-    // Ask IBus to exit *asynchronously*.
-    IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
-    if (client)
-      client->Exit(IBusClient::SHUT_DOWN_IBUS_DAEMON,
-                   base::Bind(&base::DoNothing));
-  } else {
-    base::KillProcess(process_handle_, -1, false /* wait */);
-    DVLOG(1) << "Killing ibus-daemon. PID="
-             << base::GetProcId(process_handle_);
-  }
-  process_handle_ = base::kNullProcessHandle;
-  return true;
+  IBusDaemonController::GetInstance()->RemoveObserver(this);
 }
 
 bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
-  if (ibus_daemon_status_ == IBUS_DAEMON_SHUTTING_DOWN ||
-      ibus_daemon_status_ == IBUS_DAEMON_STOP) {
-    return false;
-  }
-
   // Sanity checks.
   DCHECK(!InputMethodUtil::IsKeyboardLayout(id));
   if (!whitelist_.InputMethodIdIsWhitelisted(id) &&
@@ -353,7 +270,8 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
 }
 
 bool IBusControllerImpl::IBusConnectionsAreAlive() {
-  return ibus_daemon_status_ == IBUS_DAEMON_RUNNING;
+  return DBusThreadManager::Get() &&
+      DBusThreadManager::Get()->GetIBusBus() != NULL;
 }
 
 void IBusControllerImpl::SendChangeInputMethodRequest(const std::string& id) {
@@ -418,7 +336,7 @@ void IBusControllerImpl::RegisterProperties(
   current_property_list_.clear();
   if (!FlattenPropertyList(ibus_prop_list, &current_property_list_))
     current_property_list_.clear(); // Clear properties on errors.
-  FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
+  FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
 }
 
 void IBusControllerImpl::UpdateProperty(const IBusProperty& ibus_prop) {
@@ -434,87 +352,8 @@ void IBusControllerImpl::UpdateProperty(const IBusProperty& ibus_prop) {
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_property_list_);
     }
-    FOR_EACH_OBSERVER(Observer, observers_, PropertyChanged());
+    FOR_EACH_OBSERVER(IBusController::Observer, observers_, PropertyChanged());
   }
-}
-
-bool IBusControllerImpl::StartIBusDaemon() {
-  if (ibus_daemon_status_ == IBUS_DAEMON_INITIALIZING ||
-      ibus_daemon_status_ == IBUS_DAEMON_RUNNING) {
-    DVLOG(1) << "MaybeLaunchIBusDaemon: ibus-daemon is already running.";
-    return false;
-  }
-
-  ibus_daemon_status_ = IBUS_DAEMON_INITIALIZING;
-  ibus_daemon_address_ = base::StringPrintf(
-      "unix:abstract=ibus-%d",
-      base::RandInt(0, std::numeric_limits<int>::max()));
-
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string address_file_path;
-  env->GetVar("IBUS_ADDRESS_FILE", &address_file_path);
-  DCHECK(!address_file_path.empty());
-
-  // Set up ibus-daemon address file watcher before launching ibus-daemon,
-  // because if watcher starts after ibus-daemon, we may miss the ibus
-  // connection initialization.
-  bool success = content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&StartWatch,
-                 address_file_path,
-                 base::Bind(&IBusControllerImpl::IBusDaemonInitializationDone,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            ibus_daemon_address_)),
-      base::Bind(&IBusControllerImpl::LaunchIBusDaemon,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 ibus_daemon_address_));
-  DCHECK(success);
-  return true;
-}
-
-void IBusControllerImpl::LaunchIBusDaemon(const std::string& ibus_address) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(base::kNullProcessHandle, process_handle_);
-  static const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
-  // TODO(zork): Send output to /var/log/ibus.log
-  const std::string ibus_daemon_command_line =
-      base::StringPrintf("%s --panel=disable --cache=none --restart --replace"
-                         " --address=%s",
-                         kIBusDaemonPath,
-                         ibus_address.c_str());
-  if (!LaunchProcess(ibus_daemon_command_line, &process_handle_)) {
-    DVLOG(1) << "Failed to launch " << ibus_daemon_command_line;
-  }
-}
-
-bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
-                                       base::ProcessHandle* process_handle) {
-  std::vector<std::string> argv;
-  base::ProcessHandle handle = base::kNullProcessHandle;
-
-  base::SplitString(command_line, ' ', &argv);
-
-  if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
-    DVLOG(1) << "Could not launch: " << command_line;
-    return false;
-  }
-
-  *process_handle = handle;
-
-  return true;
-}
-
-ui::InputMethodIBus* IBusControllerImpl::GetInputMethod() {
-  return input_method_ ? input_method_ :
-      static_cast<ui::InputMethodIBus*>(
-          ash::Shell::GetPrimaryRootWindow()->GetProperty(
-              aura::client::kRootWindowInputMethodKey));
-}
-
-void IBusControllerImpl::set_input_method_for_testing(
-    ui::InputMethodIBus* input_method) {
-  input_method_ = input_method;
 }
 
 void IBusControllerImpl::OnIBusConfigClientInitialized() {
@@ -526,26 +365,8 @@ void IBusControllerImpl::OnIBusConfigClientInitialized() {
   }
 }
 
-void IBusControllerImpl::IBusDaemonInitializationDone(
-    const std::string& ibus_address) {
+void IBusControllerImpl::OnConnected() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (ibus_daemon_address_ != ibus_address)
-    return;
-
-  if (ibus_daemon_status_ != IBUS_DAEMON_INITIALIZING) {
-    // Stop() or OnIBusDaemonExit() has already been called.
-    return;
-  }
-  chromeos::DBusThreadManager::Get()->InitIBusBus(
-      ibus_address,
-      base::Bind(&IBusControllerImpl::OnIBusDaemonDisconnected,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::GetProcId(process_handle_)));
-  ibus_daemon_status_ = IBUS_DAEMON_RUNNING;
-
-  ui::InputMethodIBus* input_method_ibus = GetInputMethod();
-  DCHECK(input_method_ibus);
-  input_method_ibus->OnConnected();
 
   DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(this);
 
@@ -556,47 +377,10 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   DBusThreadManager::Get()->GetIBusConfigClient()->InitializeAsync(
       base::Bind(&IBusControllerImpl::OnIBusConfigClientInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnConnected());
-
-  VLOG(1) << "The ibus-daemon initialization is done.";
 }
 
-void IBusControllerImpl::OnIBusDaemonDisconnected(base::ProcessId pid) {
-  if (!chromeos::DBusThreadManager::Get())
-    return;  // Expected disconnection at shutting down. do nothing.
-
-  if (process_handle_ != base::kNullProcessHandle) {
-    if (base::GetProcId(process_handle_) == pid) {
-      // ibus-daemon crashed.
-      // TODO(nona): Shutdown ibus-bus connection.
-      process_handle_ = base::kNullProcessHandle;
-    } else {
-      // This condition is as follows.
-      // 1. Called Stop (process_handle_ becomes null)
-      // 2. Called LaunchProcess (process_handle_ becomes new instance)
-      // 3. Callbacked OnIBusDaemonExit for old instance and reach here.
-      // In this case, we should not reset process_handle_ as null, and do not
-      // re-launch ibus-daemon.
-      return;
-    }
-  }
-
-  const IBusDaemonStatus on_exit_state = ibus_daemon_status_;
-  ibus_daemon_status_ = IBUS_DAEMON_STOP;
-  ui::InputMethodIBus* input_method_ibus = GetInputMethod();
-  DCHECK(input_method_ibus);
-  input_method_ibus->OnDisconnected();
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnDisconnected());
-
-  if (on_exit_state == IBUS_DAEMON_SHUTTING_DOWN) {
-    // Normal exitting, so do nothing.
-    return;
-  }
-
-  LOG(ERROR) << "The ibus-daemon crashed. Re-launching...";
-  StartIBusDaemon();
+void IBusControllerImpl::OnDisconnected() {
+  DBusThreadManager::Get()->GetIBusPanelService()->SetUpPropertyHandler(NULL);
 }
 
 // static

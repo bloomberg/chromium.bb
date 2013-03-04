@@ -38,11 +38,13 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     : delegate_(delegate.Pass()),
       state_(STATE_LOGIN_SCREEN),
       util_(delegate_.get(), GetSupportedInputMethods()) {
+  IBusDaemonController::GetInstance()->AddObserver(this);
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (ibus_controller_.get())
     ibus_controller_->RemoveObserver(this);
+  IBusDaemonController::GetInstance()->RemoveObserver(this);
   if (candidate_window_controller_.get()) {
     candidate_window_controller_->RemoveObserver(this);
     candidate_window_controller_->Shutdown(ibus_controller_.get());
@@ -83,7 +85,7 @@ void InputMethodManagerImpl::SetState(State new_state) {
       OnScreenLocked();
       break;
     case STATE_TERMINATING: {
-      ibus_controller_->Stop();
+      IBusDaemonController::GetInstance()->Stop();
       if (candidate_window_controller_.get()) {
         candidate_window_controller_->Shutdown(ibus_controller_.get());
         candidate_window_controller_.reset();
@@ -207,7 +209,7 @@ bool InputMethodManagerImpl::EnableInputMethods(
     // is implemented.
   } else {
     MaybeInitializeCandidateWindowController();
-    ibus_controller_->Start();
+    IBusDaemonController::GetInstance()->Start();
   }
 
   // If |current_input_method| is no longer in |active_input_method_ids_|,
@@ -266,7 +268,9 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     const std::string current_input_method_id = current_input_method_.id();
     if (current_input_method_id.empty() ||
         InputMethodUtil::IsKeyboardLayout(current_input_method_id)) {
-      ibus_controller_->Reset();
+      if (DBusThreadManager::Get() &&
+          DBusThreadManager::Get()->GetIBusInputContextClient())
+        DBusThreadManager::Get()->GetIBusInputContextClient()->Reset();
     } else {
       ibus_controller_->ChangeInputMethod(current_input_method_id);
     }
@@ -342,7 +346,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
 
     // Ensure that the input method daemon is running.
     MaybeInitializeCandidateWindowController();
-    ibus_controller_->Start();
+    IBusDaemonController::GetInstance()->Start();
   }
 
   extra_input_method_instances_[id] =
@@ -423,7 +427,7 @@ void InputMethodManagerImpl::SetFilteredExtensionImes(
 
   if (active_imes_changed) {
     MaybeInitializeCandidateWindowController();
-    ibus_controller_->Start();
+    IBusDaemonController::GetInstance()->Start();
 
     // If |current_input_method| is no longer in |active_input_method_ids_|,
     // switch to the first one in |active_input_method_ids_|.

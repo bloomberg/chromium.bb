@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -93,6 +94,14 @@ InputMethodIBus::InputMethodIBus(
       current_keyevent_id_(0),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
+
+  // chromeos::IBusDaemonController is not available in case of some testing,
+  // e.g. content_browser test can't initialize IBusDaemonController.
+  DCHECK(!base::chromeos::IsRunningOnChromeOS() ||
+         chromeos::IBusDaemonController::GetInstance());
+
+  if (chromeos::IBusDaemonController::GetInstance())
+    chromeos::IBusDaemonController::GetInstance()->AddObserver(this);
 }
 
 InputMethodIBus::~InputMethodIBus() {
@@ -101,6 +110,8 @@ InputMethodIBus::~InputMethodIBus() {
     DestroyContext();
   if (GetInputContextClient())
     GetInputContextClient()->SetInputContextHandler(NULL);
+  if (chromeos::IBusDaemonController::GetInstance())
+    chromeos::IBusDaemonController::GetInstance()->RemoveObserver(this);
 }
 
 void InputMethodIBus::OnFocus() {

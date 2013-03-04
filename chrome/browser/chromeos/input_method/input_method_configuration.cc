@@ -30,9 +30,12 @@ void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
   input_method_manager_impl->SetState(new_state);
 }
 
-void Initialize() {
+void Initialize(
+    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   DCHECK(!g_input_method_manager);
 
+  IBusDaemonController::Initialize(ui_task_runner, file_task_runner);
   if (!base::chromeos::IsRunningOnChromeOS()) {
     // IBusBridge is for ChromeOS on desktop Linux not for ChromeOS Devices or
     // production at this moment.
@@ -73,6 +76,7 @@ void Shutdown() {
     // TODO(nona): Remove this condition when ibus-daemon is gone.
     IBusBridge::Shutdown();
   }
+  IBusDaemonController::Shutdown();
 
   DVLOG(1) << "InputMethodManager shutdown";
 }

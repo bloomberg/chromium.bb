@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
+#include "chromeos/ime/ibus_daemon_controller.h"
 
 namespace views {
 class Widget;
@@ -31,7 +32,7 @@ class CandidateWindowControllerImpl
     : public CandidateWindowController,
       public CandidateWindowView::Observer,
       public IBusPanelCandidateWindowHandlerInterface,
-      public IBusController::Observer {
+      public IBusDaemonController::Observer {
  public:
   CandidateWindowControllerImpl();
   virtual ~CandidateWindowControllerImpl();
@@ -94,8 +95,7 @@ class CandidateWindowControllerImpl
   virtual void UpdatePreeditText(const std::string& utf8_text,
                                  unsigned int cursor, bool visible) OVERRIDE;
 
-  // IBusController::Observer override
-  virtual void PropertyChanged() OVERRIDE;
+  // IBusDaemonController::Observer override
   virtual void OnConnected() OVERRIDE;
   virtual void OnDisconnected() OVERRIDE;
 

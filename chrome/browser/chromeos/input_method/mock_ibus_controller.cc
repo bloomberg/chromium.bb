@@ -11,12 +11,7 @@ namespace chromeos {
 namespace input_method {
 
 MockIBusController::MockIBusController()
-    : start_count_(0),
-      start_return_(true),
-      reset_count_(0),
-      stop_count_(0),
-      stop_return_(true),
-      change_input_method_count_(0),
+    : change_input_method_count_(0),
       change_input_method_return_(true),
       activate_input_method_property_count_(0),
       activate_input_method_property_return_(true),
@@ -25,20 +20,6 @@ MockIBusController::MockIBusController()
 }
 
 MockIBusController::~MockIBusController() {
-}
-
-bool MockIBusController::Start() {
-  ++start_count_;
-  return start_return_;
-}
-
-void MockIBusController::Reset() {
-  ++reset_count_;
-}
-
-bool MockIBusController::Stop() {
-  ++stop_count_;
-  return stop_return_;
 }
 
 bool MockIBusController::ChangeInputMethod(const std::string& id) {

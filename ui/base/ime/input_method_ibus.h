@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/ime/ibus_daemon_controller.h"
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
@@ -31,7 +32,8 @@ namespace ui {
 // A ui::InputMethod implementation based on IBus.
 class UI_EXPORT InputMethodIBus
     : public InputMethodBase,
-      public chromeos::IBusInputContextHandlerInterface {
+      public chromeos::IBusInputContextHandlerInterface,
+      public chromeos::IBusDaemonController::Observer {
  public:
   explicit InputMethodIBus(internal::InputMethodDelegate* delegate);
   virtual ~InputMethodIBus();
@@ -50,13 +52,11 @@ class UI_EXPORT InputMethodIBus
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
 
-  // Called when the connection with ibus-daemon is established.
-  virtual void OnConnected();
-
-  // Called when the connection with ibus-daemon is shutdowned.
-  virtual void OnDisconnected();
-
  protected:
+  // chromeos::IBusDaemonController::Observer overrides.
+  virtual void OnConnected() OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
+
   // Converts |text| into CompositionText.
   void ExtractCompositionText(const chromeos::IBusText& text,
                               uint32 cursor_position,

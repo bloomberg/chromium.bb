@@ -24,8 +24,6 @@ class IBusController {
    public:
     virtual ~Observer() {}
     virtual void PropertyChanged() = 0;
-    virtual void OnConnected() = 0;
-    virtual void OnDisconnected() = 0;
     // TODO(yusukes): Add functions for IPC error handling.
   };
 
@@ -36,16 +34,6 @@ class IBusController {
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
-
-  // Starts the system input method framework. No-op if it's already started.
-  virtual bool Start() = 0;
-
-  // Resets the system input method framework. A composition text is discarded,
-  // and a candidate window is closed.
-  virtual void Reset() = 0;
-
-  // Stops the system input method framework.
-  virtual bool Stop() = 0;
 
   // Sets a configuration of an input method engine. Returns true if the
   // configuration is successfully set. For example, when you set

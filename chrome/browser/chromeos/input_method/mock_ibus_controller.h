@@ -20,17 +20,9 @@ class MockIBusController : public IBusControllerBase {
   virtual ~MockIBusController();
 
   // IBusController overrides:
-  virtual bool Start() OVERRIDE;
-  virtual void Reset() OVERRIDE;
-  virtual bool Stop() OVERRIDE;
   virtual bool ChangeInputMethod(const std::string& id) OVERRIDE;
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE;
 
-  int start_count_;
-  bool start_return_;
-  int reset_count_;
-  int stop_count_;
-  bool stop_return_;
   int change_input_method_count_;
   std::string change_input_method_id_;
   bool change_input_method_return_;

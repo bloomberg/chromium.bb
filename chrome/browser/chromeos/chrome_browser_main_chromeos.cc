@@ -98,6 +98,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/power/power_state_override.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
@@ -268,7 +269,11 @@ class DBusServices {
     CrosDBusService::Initialize();
 
     // This function and SystemKeyEventListener use InputMethodManager.
-    chromeos::input_method::Initialize();
+    chromeos::input_method::Initialize(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI),
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::FILE));
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 

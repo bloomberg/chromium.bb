@@ -25,14 +25,6 @@ class TestIBusController : public IBusControllerBase {
   }
 
   // IBusController overrides:
-  virtual bool Start() OVERRIDE {
-    return true;
-  }
-  virtual void Reset() OVERRIDE {
-  }
-  virtual bool Stop() OVERRIDE {
-    return true;
-  }
   virtual bool ChangeInputMethod(const std::string& id) OVERRIDE {
     return true;
   }
@@ -73,8 +65,6 @@ class TestObserver : public IBusController::Observer {
  public:
   // IBusController::Observer overrides:
   virtual void PropertyChanged() OVERRIDE {}
-  virtual void OnConnected() OVERRIDE {}
-  virtual void OnDisconnected() OVERRIDE {}
 };
 
 class IBusControllerBaseTest : public testing::Test {

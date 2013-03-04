@@ -44,16 +44,14 @@ IBusPanelService* GetIBusPanelService() {
 }  // namespace
 
 bool CandidateWindowControllerImpl::Init(IBusController* controller) {
-  if (controller)
-    controller->AddObserver(this);
+  IBusDaemonController::GetInstance()->AddObserver(this);
   // Create the candidate window view.
   CreateView();
   return true;
 }
 
 void CandidateWindowControllerImpl::Shutdown(IBusController* controller) {
-  if (controller)
-    controller->RemoveObserver(this);
+  IBusDaemonController::GetInstance()->RemoveObserver(this);
 }
 
 void CandidateWindowControllerImpl::CreateView() {
@@ -324,9 +322,6 @@ void CandidateWindowControllerImpl::AddObserver(
 void CandidateWindowControllerImpl::RemoveObserver(
     CandidateWindowController::Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void CandidateWindowControllerImpl::PropertyChanged() {
 }
 
 void CandidateWindowControllerImpl::OnConnected() {
