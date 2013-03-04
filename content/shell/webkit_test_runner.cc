@@ -490,7 +490,8 @@ void WebKitTestRunner::CaptureDump() {
   Send(
       new ShellViewHostMsg_TextDump(routing_id(), proxy()->captureTree(false)));
 
-  if (interfaces->testRunner()->shouldGeneratePixelResults()) {
+  if (enable_pixel_dumping_ &&
+      interfaces->testRunner()->shouldGeneratePixelResults()) {
     SkBitmap snapshot;
     CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
 
