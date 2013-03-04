@@ -48,7 +48,7 @@
       'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
-        [ 'branding == "Chrome" and OS != "android" or OS != "ios"', {
+        [ 'branding == "Chrome" and OS != "android" and OS != "ios"', {
           'dependencies': [
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
             'widevine_cdm_version_h',
