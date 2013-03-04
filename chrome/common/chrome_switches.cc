@@ -1209,9 +1209,6 @@ const char kSetToken[]                      = "set-token";
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
 
-// If true an app list shortcut will be shown in the taskbar.
-const char kShowAppListShortcut[]           = "show-app-list-shortcut";
-
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 

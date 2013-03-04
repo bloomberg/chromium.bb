@@ -32,6 +32,8 @@
         'pref_names.h',
         'prefs.cc',
         'prefs.h',
+        'switches.cc',
+        'switches.h',
       ],
       'conditions': [
         ['enable_extensions==0', {

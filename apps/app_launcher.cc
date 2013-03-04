@@ -5,13 +5,13 @@
 #include "apps/app_launcher.h"
 
 #include "apps/pref_names.h"
+#include "apps/switches.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)

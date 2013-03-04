@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
 #include "apps/app_launcher.h"
+#include "apps/switches.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -455,7 +455,7 @@ bool CompleteInstallFunction::RunImpl() {
     } else {
       LOG(INFO) << "Enabling App Launcher via flags";
       about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                        switches::kShowAppListShortcut,
+                                        apps::switches::kShowAppListShortcut,
                                         true);
     }
   }

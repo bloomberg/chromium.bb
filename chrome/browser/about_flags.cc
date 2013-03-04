@@ -10,6 +10,7 @@
 #include <set>
 #include <utility>
 
+#include "apps/switches.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
@@ -1179,7 +1180,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME,
     IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_DESCRIPTION,
     kOsWin,
-    SINGLE_VALUE_TYPE(switches::kShowAppListShortcut)
+    SINGLE_VALUE_TYPE(apps::switches::kShowAppListShortcut)
   },
   {
     "enable-experimental-form-filling",

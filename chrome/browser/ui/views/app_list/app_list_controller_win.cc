@@ -4,6 +4,7 @@
 
 #include <sstream>
 
+#include "apps/switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -710,7 +711,7 @@ void CheckAppListTaskbarShortcutOnFileThread(
       .AddExtension(installer::kLnkExt));
   const bool should_show =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAppListShortcut);
+          apps::switches::kShowAppListShortcut);
 
   // This will not reshow a shortcut if it has been unpinned manually by the
   // user, as that will not delete the shortcut file.
