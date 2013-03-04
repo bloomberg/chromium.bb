@@ -392,6 +392,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;
 
+  bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 

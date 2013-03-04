@@ -2781,13 +2781,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     context3d = RenderThreadImpl::current()->GetGpuVDAContext3D();
   if (context3d) {
-    scoped_refptr<base::MessageLoopProxy> factories_loop;
-    CompositorThread* compositor_thread =
-        RenderThreadImpl::current()->compositor_thread();
-    if (compositor_thread)
-      factories_loop = compositor_thread->message_loop_proxy();
-    else
-      factories_loop = base::MessageLoopProxy::current();
+    scoped_refptr<base::MessageLoopProxy> factories_loop =
+        RenderThreadImpl::current()->compositor_thread() ?
+        RenderThreadImpl::current()->compositor_thread()->GetWebThread()
+            ->message_loop()->message_loop_proxy() :
+        base::MessageLoopProxy::current();
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);

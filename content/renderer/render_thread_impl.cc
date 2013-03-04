@@ -322,6 +322,7 @@ void RenderThreadImpl::Init() {
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   idle_notifications_to_skip_ = 0;
   require_user_gesture_for_focus_ = true;
+  compositor_initialized_ = false;
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
@@ -408,6 +409,10 @@ RenderThreadImpl::~RenderThreadImpl() {
     compositor_output_surface_filter_ = NULL;
   }
 
+  if (compositor_initialized_) {
+    WebKit::Platform::current()->compositorSupport()->shutdown();
+    compositor_initialized_ = false;
+  }
   if (compositor_thread_.get()) {
     RemoveFilter(compositor_thread_->GetMessageFilter());
     compositor_thread_.reset();
@@ -594,22 +599,26 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::setIDBFactory(
       webkit_platform_support_.get()->idbFactory());
 
+  WebKit::WebCompositorSupport* compositor_support =
+      WebKit::Platform::current()->compositorSupport();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   bool enable = command_line.HasSwitch(switches::kEnableThreadedCompositing);
   if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
+    compositor_support->initialize(compositor_thread_->GetWebThread());
+  } else {
+    compositor_support->initialize(NULL);
   }
+  compositor_initialized_ = true;
 
-  base::MessageLoopProxy* output_surface_loop;
-  if (enable)
-    output_surface_loop = compositor_thread_->message_loop_proxy();
-  else
-    output_surface_loop = base::MessageLoopProxy::current();
+  MessageLoop* output_surface_loop = enable ?
+      compositor_thread_->message_loop() :
+      MessageLoop::current();
 
-  compositor_output_surface_filter_ =
-      CompositorOutputSurface::CreateFilter(output_surface_loop);
+  compositor_output_surface_filter_ = CompositorOutputSurface::CreateFilter(
+      output_surface_loop->message_loop_proxy());
   AddFilter(compositor_output_surface_filter_.get());
 
   WebScriptController::enableV8SingleThreadMode();
@@ -876,7 +885,7 @@ void RenderThreadImpl::OnGpuVDAContextLoss() {
   if (!self->gpu_vda_context3d_.get())
     return;
   if (self->compositor_thread()) {
-    self->compositor_thread()->message_loop_proxy()->DeleteSoon(
+    self->compositor_thread()->GetWebThread()->message_loop()->DeleteSoon(
         FROM_HERE, self->gpu_vda_context3d_.release());
   } else {
     self->gpu_vda_context3d_.reset();
