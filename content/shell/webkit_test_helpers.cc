@@ -97,7 +97,6 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
       webkit_glue::WebPreferences::kCommonScript] = ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
   prefs->asynchronous_spell_checking_enabled = false;
-  prefs->unified_textchecker_enabled = true;
   prefs->user_style_sheet_enabled = true;
   prefs->threaded_html_parser = true;
 }
