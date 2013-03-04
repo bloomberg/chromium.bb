@@ -113,9 +113,15 @@ class WebKitTestController : public base::NonThreadSafe,
                        const NotificationDetails& details) OVERRIDE;
 
  private:
+  enum WhetherToQuitMessageLoop {
+    QUIT_MESSAGE_LOOP,
+    DO_NOT_QUIT_MESSAGE_LOOP,
+  };
+
   static WebKitTestController* instance_;
 
   void TimeoutHandler();
+  void DiscardMainWindow(WhetherToQuitMessageLoop quit_message_loop);
 
   // Message handlers.
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);

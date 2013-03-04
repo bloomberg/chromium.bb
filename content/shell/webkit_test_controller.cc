@@ -151,7 +151,6 @@ void WebKitTestResultPrinter::AddErrorMessage(const std::string& message) {
     *error_ << message << "\n";
   PrintTextFooter();
   PrintImageFooter();
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 // WebKitTestController -------------------------------------------------------
@@ -164,7 +163,8 @@ WebKitTestController* WebKitTestController::Get() {
   return instance_;
 }
 
-WebKitTestController::WebKitTestController() {
+WebKitTestController::WebKitTestController()
+    : main_window_(NULL) {
   CHECK(!instance_);
   instance_ = this;
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
@@ -177,8 +177,6 @@ WebKitTestController::WebKitTestController() {
 WebKitTestController::~WebKitTestController() {
   DCHECK(CalledOnValidThread());
   CHECK(instance_ == this);
-  if (main_window_)
-    main_window_->Close();
   instance_ = NULL;
 }
 
@@ -202,6 +200,8 @@ bool WebKitTestController::PrepareForLayoutTest(
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
     initial_size = gfx::Size(480, 360);
+  // TODO(jochen): Only create a new window if we can't reuse an existing
+  // window.
   main_window_ = content::Shell::CreateNewWindow(
       browser_context,
       GURL(),
@@ -234,13 +234,10 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   prefs_ = webkit_glue::WebPreferences();
   should_override_prefs_ = false;
   watchdog_.Cancel();
-  if (main_window_) {
-    WebContentsObserver::Observe(NULL);
-    main_window_ = NULL;
-  }
-  Shell::CloseAllWindows();
   Send(new ShellViewMsg_ResetAll);
-  current_pid_ = base::kNullProcessId;
+  // TODO(jochen): Reuse the main window for the next test.
+  if (main_window_)
+    DiscardMainWindow(DO_NOT_QUIT_MESSAGE_LOOP);
   return true;
 }
 
@@ -250,8 +247,10 @@ void WebKitTestController::SetTempPath(const base::FilePath& temp_path) {
 
 void WebKitTestController::RendererUnresponsive() {
   DCHECK(CalledOnValidThread());
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
-    printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
+    return;
+  printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
+  DiscardMainWindow(QUIT_MESSAGE_LOOP);
 }
 
 void WebKitTestController::OverrideWebkitPrefs(
@@ -303,6 +302,7 @@ void WebKitTestController::PluginCrashed(const base::FilePath& plugin_path,
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage(
       base::StringPrintf("#CRASHED - plugin (pid %d)", plugin_pid));
+  DiscardMainWindow(QUIT_MESSAGE_LOOP);
 }
 
 void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -332,12 +332,13 @@ void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
   } else {
     printer_->AddErrorMessage("#CRASHED - renderer");
   }
+  DiscardMainWindow(QUIT_MESSAGE_LOOP);
 }
 
 void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
-  main_window_ = NULL;
   printer_->AddErrorMessage("FAIL: main window was destroyed");
+  DiscardMainWindow(QUIT_MESSAGE_LOOP);
 }
 
 void WebKitTestController::Observe(int type,
@@ -368,6 +369,17 @@ void WebKitTestController::TimeoutHandler() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage(
       "FAIL: Timed out waiting for notifyDone to be called");
+  DiscardMainWindow(QUIT_MESSAGE_LOOP);
+}
+
+void WebKitTestController::DiscardMainWindow(
+    WhetherToQuitMessageLoop quit_message_loop) {
+  main_window_ = NULL;
+  WebContentsObserver::Observe(NULL);
+  current_pid_ = base::kNullProcessId;
+  Shell::CloseAllWindows();
+  if (quit_message_loop == QUIT_MESSAGE_LOOP)
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void WebKitTestController::OnTestFinished(bool did_timeout) {
@@ -375,6 +387,7 @@ void WebKitTestController::OnTestFinished(bool did_timeout) {
   if (did_timeout) {
     printer_->AddErrorMessage(
         "FAIL: Timed out waiting for notifyDone to be called");
+    DiscardMainWindow(QUIT_MESSAGE_LOOP);
     return;
   }
   if (!printer_->output_finished())
