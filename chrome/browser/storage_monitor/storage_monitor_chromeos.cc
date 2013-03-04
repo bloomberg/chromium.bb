@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::RemovableDeviceNotificationsCros implementation.
+// chromeos::StorageMonitorCros implementation.
 
-#include "chrome/browser/storage_monitor/removable_device_notifications_chromeos.h"
+#include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -86,20 +86,20 @@ bool GetDeviceInfo(const std::string& source_path,
 
 using content::BrowserThread;
 
-RemovableDeviceNotificationsCros::RemovableDeviceNotificationsCros() {
+StorageMonitorCros::StorageMonitorCros() {
   DCHECK(disks::DiskMountManager::GetInstance());
   disks::DiskMountManager::GetInstance()->AddObserver(this);
   CheckExistingMountPointsOnUIThread();
 }
 
-RemovableDeviceNotificationsCros::~RemovableDeviceNotificationsCros() {
+StorageMonitorCros::~StorageMonitorCros() {
   disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
   if (manager) {
     manager->RemoveObserver(this);
   }
 }
 
-void RemovableDeviceNotificationsCros::CheckExistingMountPointsOnUIThread() {
+void StorageMonitorCros::CheckExistingMountPointsOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const disks::DiskMountManager::MountPointMap& mount_point_map =
       disks::DiskMountManager::GetInstance()->mount_points();
@@ -107,23 +107,22 @@ void RemovableDeviceNotificationsCros::CheckExistingMountPointsOnUIThread() {
            mount_point_map.begin(); it != mount_point_map.end(); ++it) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(
-            &RemovableDeviceNotificationsCros::CheckMountedPathOnFileThread,
-            this, it->second));
+        base::Bind(&StorageMonitorCros::CheckMountedPathOnFileThread, this,
+                   it->second));
   }
 }
 
-void RemovableDeviceNotificationsCros::OnDiskEvent(
+void StorageMonitorCros::OnDiskEvent(
     disks::DiskMountManager::DiskEvent event,
     const disks::DiskMountManager::Disk* disk) {
 }
 
-void RemovableDeviceNotificationsCros::OnDeviceEvent(
+void StorageMonitorCros::OnDeviceEvent(
     disks::DiskMountManager::DeviceEvent event,
     const std::string& device_path) {
 }
 
-void RemovableDeviceNotificationsCros::OnMountEvent(
+void StorageMonitorCros::OnMountEvent(
     disks::DiskMountManager::MountEvent event,
     MountError error_code,
     const disks::DiskMountManager::MountPointInfo& mount_info) {
@@ -147,9 +146,8 @@ void RemovableDeviceNotificationsCros::OnMountEvent(
 
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(
-              &RemovableDeviceNotificationsCros::CheckMountedPathOnFileThread,
-              this, mount_info));
+          base::Bind(&StorageMonitorCros::CheckMountedPathOnFileThread, this,
+                     mount_info));
       break;
     }
     case disks::DiskMountManager::UNMOUNTING: {
@@ -163,15 +161,14 @@ void RemovableDeviceNotificationsCros::OnMountEvent(
   }
 }
 
-void RemovableDeviceNotificationsCros::OnFormatEvent(
+void StorageMonitorCros::OnFormatEvent(
     disks::DiskMountManager::FormatEvent event,
     FormatError error_code,
     const std::string& device_path) {
 }
 
-bool RemovableDeviceNotificationsCros::GetStorageInfoForPath(
-    const base::FilePath& path,
-    StorageInfo* device_info) const {
+bool StorageMonitorCros::GetStorageInfoForPath(const base::FilePath& path,
+                                               StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -190,14 +187,14 @@ bool RemovableDeviceNotificationsCros::GetStorageInfoForPath(
   return true;
 }
 
-uint64 RemovableDeviceNotificationsCros::GetStorageSize(
+uint64 StorageMonitorCros::GetStorageSize(
     const std::string& device_location) const {
   MountMap::const_iterator info_it = mount_map_.find(device_location);
   return (info_it != mount_map_.end()) ?
       info_it->second.storage_size_in_bytes : 0;
 }
 
-void RemovableDeviceNotificationsCros::CheckMountedPathOnFileThread(
+void StorageMonitorCros::CheckMountedPathOnFileThread(
     const disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -205,11 +202,11 @@ void RemovableDeviceNotificationsCros::CheckMountedPathOnFileThread(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RemovableDeviceNotificationsCros::AddMountedPathOnUIThread,
-                 this, mount_info, has_dcim));
+      base::Bind(&StorageMonitorCros::AddMountedPathOnUIThread, this,
+                 mount_info, has_dcim));
 }
 
-void RemovableDeviceNotificationsCros::AddMountedPathOnUIThread(
+void StorageMonitorCros::AddMountedPathOnUIThread(
     const disks::DiskMountManager::MountPointInfo& mount_info, bool has_dcim) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

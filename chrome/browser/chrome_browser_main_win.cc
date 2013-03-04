@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/storage_monitor/removable_device_notifications_window_win.h"
+#include "chrome/browser/storage_monitor/storage_monitor_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_constants.h"
@@ -199,8 +199,7 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
-  removable_device_notifications_window_.reset(
-      chrome::RemovableDeviceNotificationsWindowWin::Create());
+  storage_monitor_.reset(chrome::StorageMonitorWin::Create());
 }
 
 void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
@@ -221,7 +220,7 @@ void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsWin::PreMainMessageLoopRun() {
   ChromeBrowserMainParts::PreMainMessageLoopRun();
 
-  removable_device_notifications_window_->Init();
+  storage_monitor_->Init();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {

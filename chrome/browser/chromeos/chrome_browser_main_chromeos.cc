@@ -78,7 +78,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/storage_monitor/removable_device_notifications_chromeos.h"
+#include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -625,8 +625,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   }
   chromeos::accessibility::Initialize();
 
-  removable_device_notifications_ =
-      new RemovableDeviceNotificationsCros();
+  storage_monitor_ = new StorageMonitorCros();
 
   // Initialize the network portal detector for Chrome OS. The network
   // portal detector starts to listen for notifications from

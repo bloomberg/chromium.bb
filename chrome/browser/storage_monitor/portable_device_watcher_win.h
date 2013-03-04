@@ -28,10 +28,9 @@ class TestPortableDeviceWatcherWin;
 
 // This class watches the portable device mount points and sends notifications
 // about the attached/detached media transfer protocol (MTP) devices.
-// This is a singleton class instantiated by
-// RemovableDeviceNotificationsWindowWin. This class is created, destroyed and
-// operates on the UI thread, except for long running tasks it spins off to a
-// SequencedTaskRunner.
+// This is a singleton class instantiated by StorageMonitorWin. This class is
+// created, destroyed and operates on the UI thread, except for long running
+// tasks it spins off to a SequencedTaskRunner.
 class PortableDeviceWatcherWin {
  public:
   typedef std::vector<string16> StorageObjectIDs;
@@ -71,7 +70,7 @@ class PortableDeviceWatcherWin {
   virtual ~PortableDeviceWatcherWin();
 
   // Must be called after the browser blocking pool is ready for use.
-  // RemovableDeviceNotificationsWindowsWin::Init() will call this function.
+  // StorageMonitorWin::Init() will call this function.
   void Init(HWND hwnd);
 
   // Processes DEV_BROADCAST_DEVICEINTERFACE messages and triggers a

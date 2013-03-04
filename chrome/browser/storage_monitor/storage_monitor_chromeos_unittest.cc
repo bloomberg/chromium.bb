@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::RemovableDeviceNotificationsCros unit tests.
+// chromeos::StorageMonitorCros unit tests.
 
-#include "chrome/browser/storage_monitor/removable_device_notifications_chromeos.h"
+#include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -56,11 +56,11 @@ std::string GetDCIMDeviceId(const std::string& unique_id) {
       chrome::kFSUniqueIdPrefix + unique_id);
 }
 
-// Wrapper class to test RemovableDeviceNotificationsCros.
-class RemovableDeviceNotificationsCrosTest : public testing::Test {
+// Wrapper class to test StorageMonitorCros.
+class StorageMonitorCrosTest : public testing::Test {
  public:
-  RemovableDeviceNotificationsCrosTest();
-  virtual ~RemovableDeviceNotificationsCrosTest();
+  StorageMonitorCrosTest();
+  virtual ~StorageMonitorCrosTest();
 
  protected:
   // testing::Test:
@@ -104,25 +104,25 @@ class RemovableDeviceNotificationsCrosTest : public testing::Test {
   // Temporary directory for created test data.
   base::ScopedTempDir scoped_temp_dir_;
 
-  // Objects that talks with RemovableDeviceNotificationsCros.
+  // Objects that talks with StorageMonitorCros.
   scoped_ptr<chrome::MockRemovableStorageObserver> mock_storage_observer_;
   // Owned by DiskMountManager.
   disks::MockDiskMountManager* disk_mount_manager_mock_;
 
-  scoped_refptr<RemovableDeviceNotificationsCros> notifications_;
+  scoped_refptr<StorageMonitorCros> monitor_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsCrosTest);
+  DISALLOW_COPY_AND_ASSIGN(StorageMonitorCrosTest);
 };
 
-RemovableDeviceNotificationsCrosTest::RemovableDeviceNotificationsCrosTest()
+StorageMonitorCrosTest::StorageMonitorCrosTest()
     : ui_thread_(BrowserThread::UI, &ui_loop_),
       file_thread_(BrowserThread::FILE) {
 }
 
-RemovableDeviceNotificationsCrosTest::~RemovableDeviceNotificationsCrosTest() {
+StorageMonitorCrosTest::~StorageMonitorCrosTest() {
 }
 
-void RemovableDeviceNotificationsCrosTest::SetUp() {
+void StorageMonitorCrosTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   file_thread_.Start();
@@ -133,20 +133,20 @@ void RemovableDeviceNotificationsCrosTest::SetUp() {
   mock_storage_observer_.reset(new chrome::MockRemovableStorageObserver);
 
   // Initialize the test subject.
-  notifications_ = new RemovableDeviceNotificationsCros();
-  notifications_->AddObserver(mock_storage_observer_.get());
+  monitor_ = new StorageMonitorCros();
+  monitor_->AddObserver(mock_storage_observer_.get());
 }
 
-void RemovableDeviceNotificationsCrosTest::TearDown() {
-  notifications_->RemoveObserver(mock_storage_observer_.get());
-  notifications_ = NULL;
+void StorageMonitorCrosTest::TearDown() {
+  monitor_->RemoveObserver(mock_storage_observer_.get());
+  monitor_ = NULL;
 
   disk_mount_manager_mock_ = NULL;
   DiskMountManager::Shutdown();
   WaitForFileThread();
 }
 
-void RemovableDeviceNotificationsCrosTest::MountDevice(
+void StorageMonitorCrosTest::MountDevice(
     MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info,
     const std::string& unique_id,
@@ -160,29 +160,27 @@ void RemovableDeviceNotificationsCrosTest::MountDevice(
         mount_info, unique_id, device_label, vendor_name, product_name,
         device_type, device_size_in_bytes);
   }
-  notifications_->OnMountEvent(disks::DiskMountManager::MOUNTING,
-                               error_code,
-                               mount_info);
+  monitor_->OnMountEvent(disks::DiskMountManager::MOUNTING, error_code,
+                         mount_info);
   WaitForFileThread();
 }
 
-void RemovableDeviceNotificationsCrosTest::UnmountDevice(
+void StorageMonitorCrosTest::UnmountDevice(
     MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
-  notifications_->OnMountEvent(disks::DiskMountManager::UNMOUNTING,
-                               error_code,
-                               mount_info);
+  monitor_->OnMountEvent(disks::DiskMountManager::UNMOUNTING, error_code,
+                         mount_info);
   if (error_code == MOUNT_ERROR_NONE)
     disk_mount_manager_mock_->RemoveDiskEntryForMountDevice(mount_info);
   WaitForFileThread();
 }
 
-uint64 RemovableDeviceNotificationsCrosTest::GetDeviceStorageSize(
+uint64 StorageMonitorCrosTest::GetDeviceStorageSize(
     const std::string& device_location) {
-  return notifications_->GetStorageSize(device_location);
+  return monitor_->GetStorageSize(device_location);
 }
 
-base::FilePath RemovableDeviceNotificationsCrosTest::CreateMountPoint(
+base::FilePath StorageMonitorCrosTest::CreateMountPoint(
     const std::string& dir, bool with_dcim_dir) {
   base::FilePath return_path(scoped_temp_dir_.path());
   return_path = return_path.AppendASCII(dir);
@@ -195,20 +193,20 @@ base::FilePath RemovableDeviceNotificationsCrosTest::CreateMountPoint(
 }
 
 // static
-void RemovableDeviceNotificationsCrosTest::PostQuitToUIThread() {
+void StorageMonitorCrosTest::PostQuitToUIThread() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           MessageLoop::QuitClosure());
 }
 
 // static
-void RemovableDeviceNotificationsCrosTest::WaitForFileThread() {
+void StorageMonitorCrosTest::WaitForFileThread() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&PostQuitToUIThread));
   MessageLoop::current()->Run();
 }
 
 // Simple test case where we attach and detach a media device.
-TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
+TEST_F(StorageMonitorCrosTest, BasicAttachDetach) {
   base::FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kDevice1,
@@ -251,7 +249,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
 }
 
 // Removable mass storage devices with no dcim folder are also recognized.
-TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
+TEST_F(StorageMonitorCrosTest, NoDCIM) {
   testing::Sequence mock_sequence;
   base::FilePath mount_path = CreateMountPoint(kMountPointA, false);
   const std::string kUniqueId = "FFFF-FFFF";
@@ -274,7 +272,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
 }
 
 // Non device mounts and mount errors are ignored.
-TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
+TEST_F(StorageMonitorCrosTest, Ignore) {
   testing::Sequence mock_sequence;
   base::FilePath mount_path = CreateMountPoint(kMountPointA, true);
   const std::string kUniqueId = "FFFF-FFFF";
@@ -306,7 +304,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
   EXPECT_EQ(0, observer().detach_calls());
 }
 
-TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
+TEST_F(StorageMonitorCrosTest, SDCardAttachDetach) {
   base::FilePath mount_path1 = CreateMountPoint(kSDCardMountPoint1, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info1(kSDCardDeviceName1,
@@ -348,7 +346,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, SDCardAttachDetach) {
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId2), observer().last_detached().device_id);
 }
 
-TEST_F(RemovableDeviceNotificationsCrosTest, AttachDeviceWithEmptyLabel) {
+TEST_F(StorageMonitorCrosTest, AttachDeviceWithEmptyLabel) {
   base::FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,
@@ -370,7 +368,7 @@ TEST_F(RemovableDeviceNotificationsCrosTest, AttachDeviceWithEmptyLabel) {
   EXPECT_EQ(GetDCIMDeviceId(kUniqueId1), observer().last_detached().device_id);
 }
 
-TEST_F(RemovableDeviceNotificationsCrosTest, GetStorageSize) {
+TEST_F(StorageMonitorCrosTest, GetStorageSize) {
   base::FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
   DiskMountManager::MountPointInfo mount_info(kEmptyDeviceLabel,

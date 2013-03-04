@@ -22,8 +22,7 @@ namespace chrome {
 
 // This class watches the volume mount points and sends notifications to
 // StorageMonitor about the device attach/detach events.
-// This is a singleton class instantiated by
-// RemovableDeviceNotificationsWindowWin.
+// This is a singleton class instantiated by StorageMonitorWin.
 class VolumeMountWatcherWin {
  public:
   VolumeMountWatcherWin();

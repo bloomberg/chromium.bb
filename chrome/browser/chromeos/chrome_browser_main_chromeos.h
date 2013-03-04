@@ -24,7 +24,7 @@ class OutputObserver;
 class PowerButtonObserver;
 class PowerStateOverride;
 class PrimaryDisplaySwitchObserver;
-class RemovableDeviceNotificationsCros;
+class StorageMonitorCros;
 class ResumeObserver;
 class ScreenDimmingObserver;
 class ScreenLockObserver;
@@ -87,8 +87,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<ScreenDimmingObserver> screen_dimming_observer_;
-  scoped_refptr<RemovableDeviceNotificationsCros>
-      removable_device_notifications_;
+  scoped_refptr<StorageMonitorCros> storage_monitor_;
 
   scoped_ptr<internal::DBusServices> dbus_services_;
 

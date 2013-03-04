@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// RemovableDeviceNotificationsLinux unit tests.
+// StorageMonitorLinux unit tests.
 
-#include "chrome/browser/storage_monitor/removable_device_notifications_linux.h"
+#include "chrome/browser/storage_monitor/storage_monitor_linux.h"
 
 #include <mntent.h>
 #include <stdio.h>
@@ -134,12 +134,10 @@ string16 GetDeviceName(const std::string& device) {
   return string16();
 }
 
-class RemovableDeviceNotificationsLinuxTestWrapper
-    : public RemovableDeviceNotificationsLinux {
+class TestStorageMonitorLinux : public StorageMonitorLinux {
  public:
-  RemovableDeviceNotificationsLinuxTestWrapper(const base::FilePath& path,
-                                               MessageLoop* message_loop)
-      : RemovableDeviceNotificationsLinux(path, &GetDeviceInfo),
+  TestStorageMonitorLinux(const base::FilePath& path, MessageLoop* message_loop)
+      : StorageMonitorLinux(path, &GetDeviceInfo),
         message_loop_(message_loop) {
   }
 
@@ -147,20 +145,20 @@ class RemovableDeviceNotificationsLinuxTestWrapper
   // Avoids code deleting the object while there are references to it.
   // Aside from the base::RefCountedThreadSafe friend class, any attempts to
   // call this dtor will result in a compile-time error.
-  virtual ~RemovableDeviceNotificationsLinuxTestWrapper() {}
+  virtual ~TestStorageMonitorLinux() {}
 
   virtual void OnFilePathChanged(const base::FilePath& path,
                                  bool error) OVERRIDE {
-    RemovableDeviceNotificationsLinux::OnFilePathChanged(path, error);
+    StorageMonitorLinux::OnFilePathChanged(path, error);
     message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoop* message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsLinuxTestWrapper);
+  DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorLinux);
 };
 
-class RemovableDeviceNotificationLinuxTest : public testing::Test {
+class StorageMonitorLinuxTest : public testing::Test {
  public:
   struct MtabTestData {
     MtabTestData(const std::string& mount_device,
@@ -176,11 +174,11 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
     const std::string mount_type;
   };
 
-  RemovableDeviceNotificationLinuxTest()
+  StorageMonitorLinuxTest()
       : message_loop_(MessageLoop::TYPE_IO),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {
   }
-  virtual ~RemovableDeviceNotificationLinuxTest() {}
+  virtual ~StorageMonitorLinuxTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -197,19 +195,18 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
                 true  /* overwrite */);
 
     // Initialize the test subject.
-    notifications_ = new RemovableDeviceNotificationsLinuxTestWrapper(
-        mtab_file_, &message_loop_);
+    monitor_ = new TestStorageMonitorLinux(mtab_file_, &message_loop_);
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
-    notifications_->AddObserver(mock_storage_observer_.get());
+    monitor_->AddObserver(mock_storage_observer_.get());
 
-    notifications_->Init();
+    monitor_->Init();
     message_loop_.RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     message_loop_.RunUntilIdle();
-    notifications_->RemoveObserver(mock_storage_observer_.get());
-    notifications_ = NULL;
+    monitor_->RemoveObserver(mock_storage_observer_.get());
+    monitor_ = NULL;
   }
 
   // Append mtab entries from the |data| array of size |data_size| to the mtab
@@ -234,15 +231,15 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   }
 
   // Create a directory named |dir| relative to the test directory.
-  // It has a DCIM directory, so RemovableDeviceNotificationsLinux recognizes it
-  // as a media directory.
+  // It has a DCIM directory, so StorageMonitorLinux recognizes it as a media
+  // directory.
   base::FilePath CreateMountPointWithDCIMDir(const std::string& dir) {
     return CreateMountPoint(dir, true  /* create DCIM dir */);
   }
 
   // Create a directory named |dir| relative to the test directory.
-  // It does not have a DCIM directory, so RemovableDeviceNotificationsLinux
-  // does not recognizes it as a media directory.
+  // It does not have a DCIM directory, so StorageMonitorLinux does not
+  // recognize it as a media directory.
   base::FilePath CreateMountPointWithoutDCIMDir(const std::string& dir) {
     return CreateMountPoint(dir, false  /* do not create DCIM dir */);
   }
@@ -257,8 +254,8 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
     return *mock_storage_observer_;
   }
 
-  RemovableDeviceNotificationsLinux* notifier() {
-    return notifications_.get();
+  StorageMonitorLinux* notifier() {
+    return monitor_.get();
   }
 
  private:
@@ -322,13 +319,13 @@ class RemovableDeviceNotificationLinuxTest : public testing::Test {
   // Path to the test mtab file.
   base::FilePath mtab_file_;
 
-  scoped_refptr<RemovableDeviceNotificationsLinuxTestWrapper> notifications_;
+  scoped_refptr<TestStorageMonitorLinux> monitor_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationLinuxTest);
+  DISALLOW_COPY_AND_ASSIGN(StorageMonitorLinuxTest);
 };
 
 // Simple test case where we attach and detach a media device.
-TEST_F(RemovableDeviceNotificationLinuxTest, BasicAttachDetach) {
+TEST_F(StorageMonitorLinuxTest, BasicAttachDetach) {
   base::FilePath test_path = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path.empty());
   MtabTestData test_data[] = {
@@ -355,7 +352,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest, BasicAttachDetach) {
 }
 
 // Only removable devices are recognized.
-TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
+TEST_F(StorageMonitorLinuxTest, Removable) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path_a.empty());
   MtabTestData test_data1[] = {
@@ -409,14 +406,14 @@ TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
 }
 
 // More complicated test case with multiple devices on multiple mount points.
-TEST_F(RemovableDeviceNotificationLinuxTest, SwapMountPoints) {
+TEST_F(StorageMonitorLinuxTest, SwapMountPoints) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
   // Attach two devices.
-  // (*'d mounts are those RemovableStorageNotifications knows about.)
+  // (*'d mounts are those StorageMonitor knows about.)
   // kDeviceDCIM1 -> kMountPointA *
   // kDeviceDCIM2 -> kMountPointB *
   MtabTestData test_data1[] = {
@@ -446,14 +443,14 @@ TEST_F(RemovableDeviceNotificationLinuxTest, SwapMountPoints) {
 }
 
 // More complicated test case with multiple devices on multiple mount points.
-TEST_F(RemovableDeviceNotificationLinuxTest, MultiDevicesMultiMountPoints) {
+TEST_F(StorageMonitorLinuxTest, MultiDevicesMultiMountPoints) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
   // Attach two devices.
-  // (*'d mounts are those RemovableStorageNotifications knows about.)
+  // (*'d mounts are those StorageMonitor knows about.)
   // kDeviceDCIM1 -> kMountPointA *
   // kDeviceDCIM2 -> kMountPointB *
   MtabTestData test_data1[] = {
@@ -513,15 +510,14 @@ TEST_F(RemovableDeviceNotificationLinuxTest, MultiDevicesMultiMountPoints) {
   EXPECT_EQ(5, observer().detach_calls());
 }
 
-TEST_F(RemovableDeviceNotificationLinuxTest,
-       MultipleMountPointsWithNonDCIMDevices) {
+TEST_F(StorageMonitorLinuxTest, MultipleMountPointsWithNonDCIMDevices) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
   // Attach to one first.
-  // (*'d mounts are those RemovableStorageNotifications knows about.)
+  // (*'d mounts are those StorageMonitor knows about.)
   // kDeviceDCIM1 -> kMountPointA *
   MtabTestData test_data1[] = {
     MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
@@ -600,7 +596,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest,
   EXPECT_EQ(4, observer().detach_calls());
 }
 
-TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
+TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   base::FilePath test_path_c = CreateMountPointWithoutDCIMDir(kMountPointC);
@@ -609,7 +605,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   ASSERT_FALSE(test_path_c.empty());
 
   // Attach to one first.
-  // (*'d mounts are those RemovableStorageNotifications knows about.)
+  // (*'d mounts are those StorageMonitor knows about.)
   // kDeviceDCIM1  -> kMountPointA *
   // kDeviceNoDCIM -> kMountPointB *
   // kDeviceFixed  -> kMountPointC
@@ -674,7 +670,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   EXPECT_EQ(1, observer().detach_calls());
 }
 
-TEST_F(RemovableDeviceNotificationLinuxTest, DevicePartitionSize) {
+TEST_F(StorageMonitorLinuxTest, DevicePartitionSize) {
   base::FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   base::FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());

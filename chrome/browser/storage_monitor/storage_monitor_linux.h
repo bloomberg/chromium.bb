@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// RemovableDeviceNotificationsLinux listens for mount point changes, notifies
-// listeners about the addition and deletion of media devices, and
-// answers queries about mounted devices.
+// StorageMonitorLinux listens for mount point changes, notifies listeners
+// about the addition and deletion of media devices, and answers queries about
+// mounted devices.
 
-#ifndef CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
-#define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
+#ifndef CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_LINUX_H_
+#define CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_LINUX_H_
 
 #if defined(OS_CHROMEOS)
 #error "Use the ChromeOS-specific implementation instead."
@@ -39,15 +39,15 @@ typedef void (*GetDeviceInfoFunc)(const base::FilePath& device_path,
 
 namespace chrome {
 
-class RemovableDeviceNotificationsLinux
+class StorageMonitorLinux
     : public StorageMonitor,
-      public base::RefCountedThreadSafe<RemovableDeviceNotificationsLinux,
+      public base::RefCountedThreadSafe<StorageMonitorLinux,
           content::BrowserThread::DeleteOnFileThread> {
  public:
   // Should only be called by browser start up code.  Use GetInstance() instead.
-  explicit RemovableDeviceNotificationsLinux(const base::FilePath& path);
+  explicit StorageMonitorLinux(const base::FilePath& path);
 
-  // Must be called for RemovableDeviceNotificationsLinux to work.
+  // Must be called for StorageMonitorLinux to work.
   void Init();
 
   // Finds the device that contains |path| and populates |device_info|.
@@ -62,20 +62,20 @@ class RemovableDeviceNotificationsLinux
 
  protected:
   // Only for use in unit tests.
-  RemovableDeviceNotificationsLinux(const base::FilePath& path,
-                                    GetDeviceInfoFunc getDeviceInfo);
+  StorageMonitorLinux(const base::FilePath& path,
+                      GetDeviceInfoFunc getDeviceInfo);
 
   // Avoids code deleting the object while there are references to it.
   // Aside from the base::RefCountedThreadSafe friend class, and derived
   // classes, any attempts to call this dtor will result in a compile-time
   // error.
-  virtual ~RemovableDeviceNotificationsLinux();
+  virtual ~StorageMonitorLinux();
 
   virtual void OnFilePathChanged(const base::FilePath& path, bool error);
 
  private:
-  friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsLinux>;
-  friend class base::DeleteHelper<RemovableDeviceNotificationsLinux>;
+  friend class base::RefCountedThreadSafe<StorageMonitorLinux>;
+  friend class base::DeleteHelper<StorageMonitorLinux>;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::FILE>;
 
@@ -141,9 +141,9 @@ class RemovableDeviceNotificationsLinux
   // points.
   MountPriorityMap mount_priority_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsLinux);
+  DISALLOW_COPY_AND_ASSIGN(StorageMonitorLinux);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
+#endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_LINUX_H_

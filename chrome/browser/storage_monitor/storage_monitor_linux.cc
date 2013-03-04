@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// RemovableDeviceNotificationsLinux implementation.
+// StorageMonitorLinux implementation.
 
-#include "chrome/browser/storage_monitor/removable_device_notifications_linux.h"
+#include "chrome/browser/storage_monitor/storage_monitor_linux.h"
 
 #include <mntent.h>
 #include <stdio.h>
@@ -224,26 +224,24 @@ void GetDeviceInfo(const base::FilePath& device_path,
 
 }  // namespace
 
-RemovableDeviceNotificationsLinux::RemovableDeviceNotificationsLinux(
-    const base::FilePath& path)
+StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
     : initialized_(false),
       mtab_path_(path),
       get_device_info_func_(&GetDeviceInfo) {
 }
 
-RemovableDeviceNotificationsLinux::RemovableDeviceNotificationsLinux(
-    const base::FilePath& path,
-    GetDeviceInfoFunc get_device_info_func)
+StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path,
+                                         GetDeviceInfoFunc get_device_info_func)
     : initialized_(false),
       mtab_path_(path),
       get_device_info_func_(get_device_info_func) {
 }
 
-RemovableDeviceNotificationsLinux::~RemovableDeviceNotificationsLinux() {
+StorageMonitorLinux::~StorageMonitorLinux() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-void RemovableDeviceNotificationsLinux::Init() {
+void StorageMonitorLinux::Init() {
   DCHECK(!mtab_path_.empty());
 
   // Put |kKnownFileSystems| in std::set to get O(log N) access time.
@@ -252,10 +250,10 @@ void RemovableDeviceNotificationsLinux::Init() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RemovableDeviceNotificationsLinux::InitOnFileThread, this));
+      base::Bind(&StorageMonitorLinux::InitOnFileThread, this));
 }
 
-bool RemovableDeviceNotificationsLinux::GetStorageInfoForPath(
+bool StorageMonitorLinux::GetStorageInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
   if (!path.IsAbsolute())
@@ -277,17 +275,15 @@ bool RemovableDeviceNotificationsLinux::GetStorageInfoForPath(
   return true;
 }
 
-uint64 RemovableDeviceNotificationsLinux::GetStorageSize(
-    const std::string& location) const {
+uint64 StorageMonitorLinux::GetStorageSize(const std::string& location) const {
   MountMap::const_iterator mount_info = mount_info_map_.find(
       base::FilePath(location));
   return (mount_info != mount_info_map_.end()) ?
       mount_info->second.partition_size_in_bytes : 0;
 }
 
-void RemovableDeviceNotificationsLinux::OnFilePathChanged(
-    const base::FilePath& path,
-    bool error) {
+void StorageMonitorLinux::OnFilePathChanged(const base::FilePath& path,
+                                            bool error) {
   if (path != mtab_path_) {
     // This cannot happen unless FilePathWatcher is buggy. Just ignore this
     // notification and do nothing.
@@ -302,21 +298,21 @@ void RemovableDeviceNotificationsLinux::OnFilePathChanged(
   UpdateMtab();
 }
 
-RemovableDeviceNotificationsLinux::MountPointInfo::MountPointInfo()
+StorageMonitorLinux::MountPointInfo::MountPointInfo()
     : partition_size_in_bytes(0) {
 }
 
-void RemovableDeviceNotificationsLinux::InitOnFileThread() {
+void StorageMonitorLinux::InitOnFileThread() {
   DCHECK(!initialized_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   initialized_ = true;
 
   // The callback passed to Watch() has to be unretained. Otherwise
-  // RemovableDeviceNotificationsLinux will live longer than expected, and
-  // FilePathWatcher will get in trouble at shutdown time.
+  // StorageMonitorLinux will live longer than expected, and FilePathWatcher
+  // will get in trouble at shutdown time.
   bool ret = file_watcher_.Watch(
       mtab_path_, false,
-      base::Bind(&RemovableDeviceNotificationsLinux::OnFilePathChanged,
+      base::Bind(&StorageMonitorLinux::OnFilePathChanged,
                  base::Unretained(this)));
   if (!ret) {
     LOG(ERROR) << "Adding watch for " << mtab_path_.value() << " failed";
@@ -326,7 +322,7 @@ void RemovableDeviceNotificationsLinux::InitOnFileThread() {
   UpdateMtab();
 }
 
-void RemovableDeviceNotificationsLinux::UpdateMtab() {
+void StorageMonitorLinux::UpdateMtab() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   MountPointDeviceMap new_mtab;
@@ -408,8 +404,8 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
   }
 }
 
-void RemovableDeviceNotificationsLinux::AddNewMount(
-    const base::FilePath& mount_device, const base::FilePath& mount_point) {
+void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
+                                      const base::FilePath& mount_point) {
   MountPriorityMap::iterator priority =
       mount_priority_map_.find(mount_device);
   if (priority != mount_priority_map_.end()) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/storage_monitor/removable_device_notifications_mac.h"
+#include "chrome/browser/storage_monitor/storage_monitor_mac.h"
 
 #include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -14,9 +14,9 @@ namespace {
 const char kDiskImageModelName[] = "Disk Image";
 
 void GetDiskInfoAndUpdateOnFileThread(
-    const scoped_refptr<RemovableDeviceNotificationsMac>& notifications,
+    const scoped_refptr<StorageMonitorMac>& monitor,
     base::mac::ScopedCFTypeRef<CFDictionaryRef> dict,
-    RemovableDeviceNotificationsMac::UpdateType update_type) {
+    StorageMonitorMac::UpdateType update_type) {
   DiskInfoMac info = DiskInfoMac::BuildDiskInfoOnFileThread(dict);
   if (info.device_id().empty())
     return;
@@ -24,29 +24,28 @@ void GetDiskInfoAndUpdateOnFileThread(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&RemovableDeviceNotificationsMac::UpdateDisk,
-                 notifications,
+      base::Bind(&StorageMonitorMac::UpdateDisk,
+                 monitor,
                  info,
                  update_type));
 }
 
-void GetDiskInfoAndUpdate(
-    const scoped_refptr<RemovableDeviceNotificationsMac>& notifications,
-    DADiskRef disk,
-    RemovableDeviceNotificationsMac::UpdateType update_type) {
+void GetDiskInfoAndUpdate(const scoped_refptr<StorageMonitorMac>& monitor,
+                          DADiskRef disk,
+                          StorageMonitorMac::UpdateType update_type) {
   base::mac::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(GetDiskInfoAndUpdateOnFileThread,
-                 notifications,
+                 monitor,
                  dict,
                  update_type));
 }
 
 }  // namespace
 
-RemovableDeviceNotificationsMac::RemovableDeviceNotificationsMac() {
+StorageMonitorMac::StorageMonitorMac() {
   session_.reset(DASessionCreate(NULL));
 
   DASessionScheduleWithRunLoop(
@@ -72,14 +71,13 @@ RemovableDeviceNotificationsMac::RemovableDeviceNotificationsMac() {
       this);
 }
 
-RemovableDeviceNotificationsMac::~RemovableDeviceNotificationsMac() {
+StorageMonitorMac::~StorageMonitorMac() {
   DASessionUnscheduleFromRunLoop(
       session_, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 }
 
-void RemovableDeviceNotificationsMac::UpdateDisk(
-    const DiskInfoMac& info,
-    UpdateType update_type) {
+void StorageMonitorMac::UpdateDisk(const DiskInfoMac& info,
+                                   UpdateType update_type) {
   if (info.bsd_name().empty())
     return;
 
@@ -110,9 +108,8 @@ void RemovableDeviceNotificationsMac::UpdateDisk(
   }
 }
 
-bool RemovableDeviceNotificationsMac::GetStorageInfoForPath(
-    const base::FilePath& path,
-    StorageInfo* device_info) const {
+bool StorageMonitorMac::GetStorageInfoForPath(const base::FilePath& path,
+                                              StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -132,8 +129,7 @@ bool RemovableDeviceNotificationsMac::GetStorageInfoForPath(
   return false;
 }
 
-uint64 RemovableDeviceNotificationsMac::GetStorageSize(
-    const std::string& location) const {
+uint64 StorageMonitorMac::GetStorageSize(const std::string& location) const {
   DiskInfoMac info;
   if (!FindDiskWithMountPoint(base::FilePath(location), &info))
     return 0;
@@ -141,40 +137,26 @@ uint64 RemovableDeviceNotificationsMac::GetStorageSize(
 }
 
 // static
-void RemovableDeviceNotificationsMac::DiskAppearedCallback(
-    DADiskRef disk,
-    void* context) {
-  RemovableDeviceNotificationsMac* notifications =
-      static_cast<RemovableDeviceNotificationsMac*>(context);
-  GetDiskInfoAndUpdate(notifications,
-                       disk,
-                       UPDATE_DEVICE_ADDED);
+void StorageMonitorMac::DiskAppearedCallback(DADiskRef disk, void* context) {
+  StorageMonitorMac* monitor = static_cast<StorageMonitorMac*>(context);
+  GetDiskInfoAndUpdate(monitor, disk, UPDATE_DEVICE_ADDED);
 }
 
 // static
-void RemovableDeviceNotificationsMac::DiskDisappearedCallback(
-    DADiskRef disk,
-    void* context) {
-  RemovableDeviceNotificationsMac* notifications =
-      static_cast<RemovableDeviceNotificationsMac*>(context);
-  GetDiskInfoAndUpdate(notifications,
-                       disk,
-                       UPDATE_DEVICE_REMOVED);
+void StorageMonitorMac::DiskDisappearedCallback(DADiskRef disk, void* context) {
+  StorageMonitorMac* monitor = static_cast<StorageMonitorMac*>(context);
+  GetDiskInfoAndUpdate(monitor, disk, UPDATE_DEVICE_REMOVED);
 }
 
 // static
-void RemovableDeviceNotificationsMac::DiskDescriptionChangedCallback(
-    DADiskRef disk,
-    CFArrayRef keys,
-    void *context) {
-  RemovableDeviceNotificationsMac* notifications =
-      static_cast<RemovableDeviceNotificationsMac*>(context);
-  GetDiskInfoAndUpdate(notifications,
-                       disk,
-                       UPDATE_DEVICE_CHANGED);
+void StorageMonitorMac::DiskDescriptionChangedCallback(DADiskRef disk,
+                                                       CFArrayRef keys,
+                                                       void *context) {
+  StorageMonitorMac* monitor = static_cast<StorageMonitorMac*>(context);
+  GetDiskInfoAndUpdate(monitor, disk, UPDATE_DEVICE_CHANGED);
 }
 
-bool RemovableDeviceNotificationsMac::ShouldPostNotificationForDisk(
+bool StorageMonitorMac::ShouldPostNotificationForDisk(
     const DiskInfoMac& info) const {
   // Only post notifications about disks that have no empty fields and
   // are removable. Also exclude disk images (DMGs).
@@ -187,7 +169,7 @@ bool RemovableDeviceNotificationsMac::ShouldPostNotificationForDisk(
           info.type() == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
 }
 
-bool RemovableDeviceNotificationsMac::FindDiskWithMountPoint(
+bool StorageMonitorMac::FindDiskWithMountPoint(
     const base::FilePath& mount_point,
     DiskInfoMac* info) const {
   for (std::map<std::string, DiskInfoMac>::const_iterator

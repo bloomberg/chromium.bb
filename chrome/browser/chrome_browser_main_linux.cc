@@ -10,7 +10,7 @@
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/storage_monitor/removable_device_notifications_linux.h"
+#include "chrome/browser/storage_monitor/storage_monitor_linux.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -133,9 +133,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 
 #if !defined(OS_CHROMEOS)
   const base::FilePath kDefaultMtabPath("/etc/mtab");
-  removable_device_notifications_linux_ =
-      new chrome::RemovableDeviceNotificationsLinux(kDefaultMtabPath);
-  removable_device_notifications_linux_->Init();
+  storage_monitor_ = new chrome::StorageMonitorLinux(kDefaultMtabPath);
+  storage_monitor_->Init();
 #endif
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
@@ -152,7 +151,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 }
 
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
-  // TODO(gbillock): Make this owned by RemovableDeviceNotificationsLinux.
+  // TODO(gbillock): Make this owned by StorageMonitorLinux.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     media_transfer_protocol_device_observer_.reset(
         new chrome::MediaTransferProtocolDeviceObserverLinux());
@@ -168,7 +167,7 @@ void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
   // Release it now. Otherwise the FILE thread would be gone when we try to
   // release it in the dtor and Valgrind would report a leak on almost ever
   // single browser_test.
-  removable_device_notifications_linux_ = NULL;
+  storage_monitor_ = NULL;
 #endif
 
   media_transfer_protocol_device_observer_.reset();

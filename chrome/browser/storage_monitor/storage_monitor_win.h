@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
-#define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
+#ifndef CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_
+#define CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -17,27 +17,26 @@ class FilePath;
 namespace chrome {
 
 namespace test {
-class TestRemovableDeviceNotificationsWindowWin;
+class TestStorageMonitorWin;
 }
 
 class PortableDeviceWatcherWin;
 class VolumeMountWatcherWin;
 
-class RemovableDeviceNotificationsWindowWin : public StorageMonitor {
+class StorageMonitorWin : public StorageMonitor {
  public:
-  // Creates an instance of RemovableDeviceNotificationsWindowWin. Should only
-  // be called by browser start up code. Use GetInstance() instead.
-  static RemovableDeviceNotificationsWindowWin* Create();
+  // Creates an instance of StorageMonitorWin. Should only be called by browser
+  // start up code. Use GetInstance() instead.
+  static StorageMonitorWin* Create();
 
-  virtual ~RemovableDeviceNotificationsWindowWin();
+  virtual ~StorageMonitorWin();
 
   // Must be called after the file thread is created.
   void Init();
 
   // StorageMonitor:
-  virtual bool GetStorageInfoForPath(
-      const base::FilePath& path,
-      StorageInfo* device_info) const OVERRIDE;
+  virtual bool GetStorageInfoForPath(const base::FilePath& path,
+                                     StorageInfo* device_info) const OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
       string16* device_location,
@@ -48,14 +47,13 @@ class RemovableDeviceNotificationsWindowWin : public StorageMonitor {
 
  private:
   class PortableDeviceNotifications;
-  friend class test::TestRemovableDeviceNotificationsWindowWin;
+  friend class test::TestStorageMonitorWin;
 
   // To support unit tests, this constructor takes |volume_mount_watcher| and
   // |portable_device_watcher| objects. These params are either constructed in
-  // unit tests or in RemovableDeviceNotificationsWindowWin::Create() function.
-  RemovableDeviceNotificationsWindowWin(
-      VolumeMountWatcherWin* volume_mount_watcher,
-      PortableDeviceWatcherWin* portable_device_watcher);
+  // unit tests or in StorageMonitorWin::Create() function.
+  StorageMonitorWin(VolumeMountWatcherWin* volume_mount_watcher,
+                    PortableDeviceWatcherWin* portable_device_watcher);
 
   // Gets the removable storage information given a |device_path|. On success,
   // returns true and fills in |device_location|, |unique_id|, |name| and
@@ -89,9 +87,9 @@ class RemovableDeviceNotificationsWindowWin : public StorageMonitor {
   // devices.
   scoped_ptr<PortableDeviceWatcherWin> portable_device_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsWindowWin);
+  DISALLOW_COPY_AND_ASSIGN(StorageMonitorWin);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
+#endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_

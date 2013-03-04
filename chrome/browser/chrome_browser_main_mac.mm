@@ -23,7 +23,7 @@
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
-#include "chrome/browser/storage_monitor/removable_device_notifications_mac.h"
+#include "chrome/browser/storage_monitor/storage_monitor_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -282,14 +282,12 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {
-  removable_device_notifications_mac_ =
-      new chrome::RemovableDeviceNotificationsMac();
-  // TODO(gbillock): Make the ImageCapture manager owned by
-  // RemovableDeviceNotificationsMac.
+  storage_monitor_ = new chrome::StorageMonitorMac();
+  // TODO(gbillock): Make the ImageCapture manager owned by StorageMonitorMac.
   if (base::mac::IsOSLionOrLater()) {
     image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
     image_capture_device_manager_->SetNotifications(
-        removable_device_notifications_mac_->receiver());
+        storage_monitor_->receiver());
   }
 
   ChromeBrowserMainPartsPosix::PreProfileInit();

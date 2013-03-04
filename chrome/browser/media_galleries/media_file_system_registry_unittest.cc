@@ -49,7 +49,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
-#include "chrome/browser/storage_monitor/test_removable_device_notifications_window_win.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor_win.h"
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
 #include "chrome/common/chrome_switches.h"
 #endif
@@ -394,7 +394,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
 // TODO(gbillock): Eliminate windows-specific code from this test.
 #if defined(OS_WIN)
-  scoped_ptr<test::TestRemovableDeviceNotificationsWindowWin> window_;
+  scoped_ptr<test::TestStorageMonitorWin> monitor_;
 #else
   chrome::test::TestStorageMonitor monitor_;
 #endif
@@ -746,9 +746,10 @@ void MediaFileSystemRegistryTest::SetUp() {
   test::TestPortableDeviceWatcherWin* portable_device_watcher =
       new test::TestPortableDeviceWatcherWin;
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
-  window_.reset(new test::TestRemovableDeviceNotificationsWindowWin(
-      new test::TestVolumeMountWatcherWin, portable_device_watcher));
-  window_->Init();
+  monitor_.reset(
+      new test::TestStorageMonitorWin(new test::TestVolumeMountWatcherWin,
+                                      portable_device_watcher));
+  monitor_->Init();
 #endif
 
   ChromeRenderViewHostTestHarness::SetUp();

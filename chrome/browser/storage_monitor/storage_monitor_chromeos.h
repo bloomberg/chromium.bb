@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::RemovableDeviceNotificationsCros listens for mount point changes
-// and notifies listeners about the addition and deletion of media
-// devices.
+// chromeos::StorageMonitorCros listens for mount point changes and notifies
+// listeners about the addition and deletion of media devices.
 
-#ifndef CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_
-#define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#ifndef CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_
+#define CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_
 
 #if !defined(OS_CHROMEOS)
 #error "Should only be used on ChromeOS."
@@ -24,13 +23,13 @@
 
 namespace chromeos {
 
-class RemovableDeviceNotificationsCros
+class StorageMonitorCros
     : public chrome::StorageMonitor,
-      public base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>,
+      public base::RefCountedThreadSafe<StorageMonitorCros>,
       public disks::DiskMountManager::Observer {
  public:
   // Should only be called by browser start up code. Use GetInstance() instead.
-  RemovableDeviceNotificationsCros();
+  StorageMonitorCros();
 
   virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
                            const disks::DiskMountManager::Disk* disk) OVERRIDE;
@@ -63,13 +62,13 @@ class RemovableDeviceNotificationsCros
     uint64 storage_size_in_bytes;
   };
 
-  friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>;
+  friend class base::RefCountedThreadSafe<StorageMonitorCros>;
 
   // Mapping of mount path to removable mass storage info.
   typedef std::map<std::string, StorageObjectInfo> MountMap;
 
   // Private to avoid code deleting the object.
-  virtual ~RemovableDeviceNotificationsCros();
+  virtual ~StorageMonitorCros();
 
   // Checks existing mount points map for media devices. For each mount point,
   // call CheckMountedPathOnFileThread() below.
@@ -91,9 +90,9 @@ class RemovableDeviceNotificationsCros
   // Only accessed on the UI thread.
   MountMap mount_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsCros);
+  DISALLOW_COPY_AND_ASSIGN(StorageMonitorCros);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_

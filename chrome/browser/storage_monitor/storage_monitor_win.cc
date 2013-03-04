@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/storage_monitor/removable_device_notifications_window_win.h"
+#include "chrome/browser/storage_monitor/storage_monitor_win.h"
 
 #include <windows.h>
 #include <dbt.h>
@@ -18,22 +18,20 @@ namespace chrome {
 
 namespace {
 
-const char16 kWindowClassName[] = L"Chrome_RemovableDeviceNotificationWindow";
+const char16 kWindowClassName[] = L"Chrome_StorageMonitorWindow";
 
 }  // namespace
 
 
-// RemovableDeviceNotificationsWindowWin --------------------------------------
+// StorageMonitorWin -------------------------------------------------------
 
 // static
-RemovableDeviceNotificationsWindowWin*
-    RemovableDeviceNotificationsWindowWin::Create() {
-  return new RemovableDeviceNotificationsWindowWin(
-      new VolumeMountWatcherWin(), new PortableDeviceWatcherWin());
+StorageMonitorWin* StorageMonitorWin::Create() {
+  return new StorageMonitorWin(new VolumeMountWatcherWin(),
+                               new PortableDeviceWatcherWin());
 }
 
-RemovableDeviceNotificationsWindowWin::
-    RemovableDeviceNotificationsWindowWin(
+StorageMonitorWin::StorageMonitorWin(
     VolumeMountWatcherWin* volume_mount_watcher,
     PortableDeviceWatcherWin* portable_device_watcher)
     : window_class_(0),
@@ -47,8 +45,7 @@ RemovableDeviceNotificationsWindowWin::
   portable_device_watcher_->SetNotifications(receiver());
 }
 
-RemovableDeviceNotificationsWindowWin::
-    ~RemovableDeviceNotificationsWindowWin() {
+StorageMonitorWin::~StorageMonitorWin() {
   volume_mount_watcher_->SetNotifications(NULL);
   portable_device_watcher_->SetNotifications(NULL);
 
@@ -59,12 +56,11 @@ RemovableDeviceNotificationsWindowWin::
     UnregisterClass(MAKEINTATOM(window_class_), instance_);
 }
 
-void RemovableDeviceNotificationsWindowWin::Init() {
+void StorageMonitorWin::Init() {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       kWindowClassName,
-      &base::win::WrappedWindowProc<
-          RemovableDeviceNotificationsWindowWin::WndProcThunk>,
+      &base::win::WrappedWindowProc<StorageMonitorWin::WndProcThunk>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);
   instance_ = window_class.hInstance;
@@ -78,9 +74,8 @@ void RemovableDeviceNotificationsWindowWin::Init() {
   portable_device_watcher_->Init(window_);
 }
 
-bool RemovableDeviceNotificationsWindowWin::GetStorageInfoForPath(
-    const base::FilePath& path,
-    StorageInfo* device_info) const {
+bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
+                                              StorageInfo* device_info) const {
   string16 location;
   std::string unique_id;
   string16 name;
@@ -125,12 +120,12 @@ bool RemovableDeviceNotificationsWindowWin::GetStorageInfoForPath(
   return true;
 }
 
-uint64 RemovableDeviceNotificationsWindowWin::GetStorageSize(
+uint64 StorageMonitorWin::GetStorageSize(
     const base::FilePath::StringType& location) const {
   return volume_mount_watcher_->GetStorageSize(location);
 }
 
-bool RemovableDeviceNotificationsWindowWin::GetMTPStorageInfoFromDeviceId(
+bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(
     const std::string& storage_device_id,
     string16* device_location,
     string16* storage_object_id) const {
@@ -142,18 +137,17 @@ bool RemovableDeviceNotificationsWindowWin::GetMTPStorageInfoFromDeviceId(
 }
 
 // static
-LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProcThunk(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
-  RemovableDeviceNotificationsWindowWin* msg_wnd =
-      reinterpret_cast<RemovableDeviceNotificationsWindowWin*>(
-          GetWindowLongPtr(hwnd, GWLP_USERDATA));
+LRESULT CALLBACK StorageMonitorWin::WndProcThunk(HWND hwnd, UINT message,
+                                                 WPARAM wparam, LPARAM lparam) {
+  StorageMonitorWin* msg_wnd = reinterpret_cast<StorageMonitorWin*>(
+      GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if (msg_wnd)
     return msg_wnd->WndProc(hwnd, message, wparam, lparam);
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
 
-LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProc(
-    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK StorageMonitorWin::WndProc(HWND hwnd, UINT message,
+                                            WPARAM wparam, LPARAM lparam) {
   switch (message) {
     case WM_DEVICECHANGE:
       OnDeviceChange(static_cast<UINT>(wparam), lparam);
@@ -165,10 +159,12 @@ LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProc(
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
 
-bool RemovableDeviceNotificationsWindowWin::GetDeviceInfo(
-    const base::FilePath& device_path, string16* device_location,
-    std::string* unique_id, string16* name, bool* removable,
-    uint64* total_size_in_bytes) const {
+bool StorageMonitorWin::GetDeviceInfo(const base::FilePath& device_path,
+                                      string16* device_location,
+                                      std::string* unique_id,
+                                      string16* name,
+                                      bool* removable,
+                                      uint64* total_size_in_bytes) const {
   // TODO(kmadhusu) Implement PortableDeviceWatcherWin::GetDeviceInfo()
   // function when we have the functionality to add a sub directory of
   // portable device as a media gallery.
@@ -177,8 +173,7 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfo(
                                               total_size_in_bytes);
 }
 
-void RemovableDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
-                                                           LPARAM data) {
+void StorageMonitorWin::OnDeviceChange(UINT event_type, LPARAM data) {
   volume_mount_watcher_->OnWindowMessage(event_type, data);
   portable_device_watcher_->OnWindowMessage(event_type, data);
 }

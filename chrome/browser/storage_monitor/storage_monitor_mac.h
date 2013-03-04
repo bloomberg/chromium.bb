@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_MAC_H_
-#define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_MAC_H_
+#ifndef CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_MAC_H_
+#define CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_MAC_H_
 
 #include <DiskArbitration/DiskArbitration.h>
 #include <map>
@@ -17,9 +17,9 @@ namespace chrome {
 
 // This class posts notifications to listeners when a new disk
 // is attached, removed, or changed.
-class RemovableDeviceNotificationsMac
+class StorageMonitorMac
     : public StorageMonitor,
-      public base::RefCountedThreadSafe<RemovableDeviceNotificationsMac> {
+      public base::RefCountedThreadSafe<StorageMonitorMac> {
  public:
   enum UpdateType {
     UPDATE_DEVICE_ADDED,
@@ -28,7 +28,7 @@ class RemovableDeviceNotificationsMac
   };
 
   // Should only be called by browser start up code.  Use GetInstance() instead.
-  RemovableDeviceNotificationsMac();
+  StorageMonitorMac();
 
   void UpdateDisk(const DiskInfoMac& info, UpdateType update_type);
 
@@ -42,8 +42,8 @@ class RemovableDeviceNotificationsMac
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsMac>;
-  virtual ~RemovableDeviceNotificationsMac();
+  friend class base::RefCountedThreadSafe<StorageMonitorMac>;
+  virtual ~StorageMonitorMac();
 
   static void DiskAppearedCallback(DADiskRef disk, void* context);
   static void DiskDisappearedCallback(DADiskRef disk, void* context);
@@ -61,9 +61,9 @@ class RemovableDeviceNotificationsMac
   // posted.
   std::map<std::string, DiskInfoMac> disk_info_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsMac);
+  DISALLOW_COPY_AND_ASSIGN(StorageMonitorMac);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_MAC_H_
+#endif  // CHROME_BROWSER_STORAGE_MONITOR_STORAGE_MONITOR_MAC_H_

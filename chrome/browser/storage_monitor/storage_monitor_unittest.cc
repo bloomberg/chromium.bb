@@ -65,8 +65,7 @@ TEST(StorageMonitorTest, GetAttachedStorageEmpty) {
   EXPECT_EQ(0U, devices.size());
 }
 
-TEST(StorageMonitorTest,
-     GetRemovableStorageAttachDetach) {
+TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
   MessageLoop message_loop;
   test::TestStorageMonitor monitor;
   const std::string kDeviceId1 = "42";
