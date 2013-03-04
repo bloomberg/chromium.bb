@@ -122,6 +122,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   void TimeoutHandler();
   void DiscardMainWindow(WhetherToQuitMessageLoop quit_message_loop);
+  void SendTestConfiguration();
 
   // Message handlers.
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);

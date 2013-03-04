@@ -311,17 +311,7 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   // later when the RenderProcessHost was created.
   if (render_view_host->GetProcess()->GetHandle() != base::kNullProcessHandle)
     current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
-  ShellViewMsg_SetTestConfiguration_Params params;
-  params.current_working_directory = current_working_directory_;
-  params.temp_path = temp_path_;
-  params.test_url = test_url_;
-  params.enable_pixel_dumping = enable_pixel_dumping_;
-  params.layout_test_timeout = kTestTimeoutMilliseconds;
-  params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowExternalPages);
-  params.expected_pixel_hash = expected_pixel_hash_;
-  render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
-      render_view_host->GetRoutingID(), params));
+  SendTestConfiguration();
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
@@ -380,6 +370,22 @@ void WebKitTestController::DiscardMainWindow(
   Shell::CloseAllWindows();
   if (quit_message_loop == QUIT_MESSAGE_LOOP)
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
+void WebKitTestController::SendTestConfiguration() {
+  RenderViewHost* render_view_host =
+      main_window_->web_contents()->GetRenderViewHost();
+  ShellViewMsg_SetTestConfiguration_Params params;
+  params.current_working_directory = current_working_directory_;
+  params.temp_path = temp_path_;
+  params.test_url = test_url_;
+  params.enable_pixel_dumping = enable_pixel_dumping_;
+  params.layout_test_timeout = kTestTimeoutMilliseconds;
+  params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowExternalPages);
+  params.expected_pixel_hash = expected_pixel_hash_;
+  render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
+      render_view_host->GetRoutingID(), params));
 }
 
 void WebKitTestController::OnTestFinished(bool did_timeout) {
