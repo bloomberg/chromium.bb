@@ -46,11 +46,11 @@ LOCAL_SRC_FILES += \
 # Java files generated from .template rules. This list should match list of java dependencies in
 # android_webview/all_webview.gyp
 LOCAL_GENERATED_SOURCES := \
-$(call intermediates-dir-for,GYP,shared)/templates/org.chromium.content.browser/PageTransitionTypes.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org.chromium.net/CertificateMimeType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org.chromium.net/CertVerifyResultAndroid.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org.chromium.net/NetError.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org.chromium.net/PrivateKeyType.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/PageTransitionTypes.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyResultAndroid.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/NetError.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/PrivateKeyType.java \
 
 # content dependencies on java components that are provided by the system on
 # android
