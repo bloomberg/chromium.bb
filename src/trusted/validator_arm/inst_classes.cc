@@ -112,15 +112,4 @@ dynamic_code_replacement_sentinel(Instruction i) const {
   return i;
 }
 
-// UnsafeClassDecoder
-SafetyLevel UnsafeClassDecoder::safety(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return safety_;
-}
-
-RegisterList UnsafeClassDecoder::defs(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return RegisterList();
-}
-
 }  // namespace nacl_arm_dec

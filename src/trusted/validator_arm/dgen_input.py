@@ -147,6 +147,18 @@ _ID_PATTERN = re.compile(r'^[a-zA-z][a-zA-z0-9_]*$')
 # When true, catch all bugs when parsing and report line.
 _CATCH_EXCEPTIONS = True
 
+# List of file level decoder actions that must be specified in every
+# specification file, because they are used somewhere else than in table rows.
+_REQUIRED_FILE_DECODER_ACTIONS = [
+    # Defiles the decoder action that handles instructions that are
+    # not defined by rows in the instruction tables.
+    'NotImplemented',
+    # Defines the decoder action that handles the fictitious instruction
+    # inserted before the code segment, acting as the previous instruction
+    # for the first instruction in the bundle.
+    'FictitiousFirst'
+    ]
+
 class Parser(object):
   """Parses a set of tables from the input file."""
 
@@ -165,12 +177,13 @@ class Parser(object):
 
   def _parse(self, decoder):
     # Read global decoder actions.
-    if self._next_token().kind == '*':
-      self._file_actions = self._decoder_actions()
+    self._global_decoder_actions(decoder)
+
     # Read tables while there are tables to read.
     while self._next_token().kind == '+':
       self._table(decoder)
 
+    # Check that we read everything.
     if not self._next_token().kind == 'eof':
       self._unexpected('unrecognized input found')
     if not decoder.primary:
@@ -691,6 +704,16 @@ class Parser(object):
     self._read_token('-')
     self._read_token('-')
 
+  def _global_decoder_actions(self, decoder):
+    """Read in file level decoder actions, and install required predefined
+       file decoder actions."""
+    self._file_actions = self._decoder_actions()
+    for required_action in _REQUIRED_FILE_DECODER_ACTIONS:
+      action = self._file_actions.get(required_action)
+      if not action:
+        self._unexpected("File level action '%s' not defined" % required_action)
+      decoder.define_value(required_action, action)
+
   def _header(self, table):
     """ header ::= "|" column+ """
     self._read_token('|')
@@ -890,8 +913,7 @@ class Parser(object):
        is sufficient.
        """
     matches = False
-    if self._next_token().kind in ['pattern', 'rule', 'safety', 'arch', 'word',
-                                   'actual', 'baseline']:
+    if self._next_token().kind == 'word':
       token = self._read_token()
       if self._next_token().kind == ':=':
         matches = True
@@ -999,7 +1021,7 @@ class Parser(object):
     return matches
 
   def _check_action_is_well_defined(self, action):
-    if not (action.baseline() or dgen_decoder.ActionDefinesDecoder(action)):
+    if not dgen_decoder.ActionDefinesDecoder(action):
       self._unexpected("No virtual fields defined for decoder")
 
   #------ Helper functions.

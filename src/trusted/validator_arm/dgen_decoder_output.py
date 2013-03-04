@@ -65,6 +65,13 @@ class %(decoder_name)s : DecoderState {
    // Parses the given instruction, returning the decoder to use.
    virtual const ClassDecoder& decode(const Instruction) const;
 
+   // Returns the class decoder to use to process the fictitious instruction
+   // that is inserted before the first instruction in the code block by
+   // the validator.
+   const ClassDecoder &fictitious_decoder() const {
+     return %(fictitious_decoder)s_instance_;
+   }
+
  private:
 """
 
@@ -95,7 +102,6 @@ DECODER_DECLARE_FIELD="""
   const %(decoder)s %(decoder)s_instance_;"""
 
 DECODER_DECLARE_FOOTER="""
-  const NotImplemented not_implemented_;
 };
 """
 
@@ -131,6 +137,8 @@ def generate_h(decoder, decoder_name, filename, out, cl_args):
         'decoder_name': decoder_name,
         }
     out.write(H_HEADER % values)
+    values['fictitious_decoder'] = (
+        decoder.get_value('FictitiousFirst').actual())
     out.write(DECODER_DECLARE_HEADER % values)
     out.write(DECODER_DECLARE_METHOD_COMMENTS)
     for table in decoder.tables():
@@ -159,7 +167,6 @@ CONSTRUCTOR_FIELD_INIT="""
   , %(decoder)s_instance_()"""
 
 CONSTRUCTOR_FOOTER="""
-  , not_implemented_()
 {}
 """
 
@@ -197,7 +204,7 @@ METHOD_DISPATCH_CLOSE="""
 
 METHOD_FOOTER="""
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return %(not_implemented)s_instance_;
 }
 """
 
@@ -315,4 +322,5 @@ def _generate_methods(decoder, values, out):
       else:
         raise Exception('Bad table action: %s' % repr(row.action))
       out.write(METHOD_DISPATCH_CLOSE % values)
+    values['not_implemented'] = decoder.get_value('NotImplemented').actual()
     out.write(METHOD_FOOTER % values)

@@ -1565,6 +1565,16 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Baseline:
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: FICTITIOUS_FIRST_case_0,
+//    constraints: ,
+//    defs: {},
+//    rule: FICTITIOUS_FIRST,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v7VE,
 //    baseline: HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0,
 //    constraints: ,
@@ -5118,6 +5128,35 @@ class Actual_NOP_cccc0011001000001111000000000000_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_NOP_cccc0011001000001111000000000000_case_1);
+};
+
+// Actual_NOT_IMPLEMENTED_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => NOT_IMPLEMENTED],
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_NOT_IMPLEMENTED_case_1,
+//    baseline: NOT_IMPLEMENTED_case_0,
+//    constraints: ,
+//    defs: {},
+//    rule: NOT_IMPLEMENTED,
+//    safety: [true => NOT_IMPLEMENTED],
+//    true: true,
+//    uses: {}}
+class Actual_NOT_IMPLEMENTED_case_1
+     : public ClassDecoder {
+ public:
+  Actual_NOT_IMPLEMENTED_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_NOT_IMPLEMENTED_case_1);
 };
 
 // Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1

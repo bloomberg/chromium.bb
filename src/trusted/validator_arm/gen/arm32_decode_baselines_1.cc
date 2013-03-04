@@ -2511,6 +2511,40 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// FICTITIOUS_FIRST_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    rule: FICTITIOUS_FIRST,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList FICTITIOUS_FIRST_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel FICTITIOUS_FIRST_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList FICTITIOUS_FIRST_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0:
 //
 //   {arch: v7VE,
@@ -7269,6 +7303,40 @@ safety(Instruction inst) const {
 
 
 RegisterList NOP_cccc0011001000001111000000000000_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// NOT_IMPLEMENTED_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    rule: NOT_IMPLEMENTED,
+//    safety: [true => NOT_IMPLEMENTED],
+//    true: true,
+//    uses: {}}
+RegisterList NOT_IMPLEMENTED_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel NOT_IMPLEMENTED_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => NOT_IMPLEMENTED
+  if (true)
+    return NOT_IMPLEMENTED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList NOT_IMPLEMENTED_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

@@ -79,7 +79,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_ARMv7(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -205,7 +205,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -509,7 +509,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -594,7 +594,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_branch_branch_with_link_
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -722,7 +722,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_coprocessor_instructions
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -852,7 +852,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_and_misc
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -974,7 +974,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_immediat
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1133,7 +1133,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_register
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1266,7 +1266,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_register
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1425,7 +1425,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extension_register_load_
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1583,7 +1583,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1655,7 +1655,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_floating_point_data_proc
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1700,7 +1700,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_halfword_multiply_and_mu
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1886,7 +1886,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -1979,7 +1979,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -2193,7 +2193,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -2365,7 +2365,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -2490,7 +2490,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_immediate_and_hints(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -2554,7 +2554,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_multiply_and_multiply_ac
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -2654,7 +2654,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_other_floating_point_dat
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -2886,7 +2886,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_packing_unpacking_satura
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3064,7 +3064,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3242,7 +3242,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3282,7 +3282,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_saturating_addition_and_
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3391,7 +3391,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3487,7 +3487,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3766,7 +3766,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -3858,7 +3858,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4011,7 +4011,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4104,7 +4104,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4656,7 +4656,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4735,7 +4735,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_synchronization_primitiv
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4828,7 +4828,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4858,7 +4858,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 
@@ -4954,7 +4954,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
   }
 
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return NOT_IMPLEMENTED_case_0_NOT_IMPLEMENTED_instance_;
 }
 
 

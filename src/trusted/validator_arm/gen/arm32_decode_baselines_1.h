@@ -1441,6 +1441,27 @@ class ERET_cccc0001011000000000000001101110_case_0
       ERET_cccc0001011000000000000001101110_case_0);
 };
 
+// FICTITIOUS_FIRST_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    rule: FICTITIOUS_FIRST,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class FICTITIOUS_FIRST_case_0
+     : public ClassDecoder {
+ public:
+  FICTITIOUS_FIRST_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      FICTITIOUS_FIRST_case_0);
+};
+
 // HVC_cccc00010100iiiiiiiiiiii0111iiii_case_0:
 //
 //   {arch: v7VE,
@@ -3957,6 +3978,27 @@ class NOP_cccc0011001000001111000000000000_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       NOP_cccc0011001000001111000000000000_case_0);
+};
+
+// NOT_IMPLEMENTED_case_0:
+//
+//   {constraints: ,
+//    defs: {},
+//    rule: NOT_IMPLEMENTED,
+//    safety: [true => NOT_IMPLEMENTED],
+//    true: true,
+//    uses: {}}
+class NOT_IMPLEMENTED_case_0
+     : public ClassDecoder {
+ public:
+  NOT_IMPLEMENTED_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      NOT_IMPLEMENTED_case_0);
 };
 
 // ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0:

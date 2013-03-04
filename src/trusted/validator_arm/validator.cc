@@ -721,12 +721,11 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
                                         AddressSet* critical) {
   bool complete_success = true;
 
-  nacl_arm_dec::Forbidden initial_decoder;
   // Initialize the previous instruction so it always fails validation.
   DecodedInstruction pred(
       0,  // Virtual address 0, which will be in a different bundle;
       Instruction(nacl_arm_dec::kFailValidation),
-      initial_decoder);  // and ensure that it decodes as Forbidden.
+      decode_state_.fictitious_decoder());
 
   for (uint32_t va = segment.begin_addr(); va < segment.end_addr(); va += 4) {
     DecodedInstruction inst(va, segment[va],
@@ -881,6 +880,13 @@ bool SfiValidator::apply_patterns(
   //    first - The first instruction in the instruction pair.
   //    second - The second instruction in the instruction pair.
   //    match_data - The data collected about the pattern being applied.
+  //
+  // Also note that we call the first instruction in the code segment
+  // with the special instruction NACL_INSTR_ARM_FAIL_VALIDATION (
+  // in native_client/src/include/arm_sandbox.h). In this context, the
+  // NACL_INSTR_ARM_FAIL_VALIDATION is argument 'first' while the first
+  // instruction in the code segment is argument 'second'. The
+  // check rules should always handle this case.
   typedef void (*TwoInstPattern)(
       const SfiValidator& sfi,
       const DecodedInstruction& first,

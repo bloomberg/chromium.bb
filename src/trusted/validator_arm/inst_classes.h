@@ -244,48 +244,6 @@ class ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(ClassDecoder);
 };
 
-//----------------------------------------------------------------
-// The following class decoders define common cases, defining a
-// concept that simply associates a non MAY_BE_SAFE with the
-// instructions it processes. As such, they provide default
-// implementation that returns the corresponding safety value, and
-// assumes nothing else interesting happens.
-//----------------------------------------------------------------
-
-class UnsafeClassDecoder : public ClassDecoder {
- public:
-  // Return the safety associated with this class.
-  virtual SafetyLevel safety(Instruction i) const;
-
-  // Switch off the def warnings -- it's already forbidden!
-  virtual RegisterList defs(Instruction i) const;
-
- protected:
-  explicit UnsafeClassDecoder(SafetyLevel safety)
-      : safety_(safety) {}
-
- private:
-  SafetyLevel safety_;
-  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(UnsafeClassDecoder);
-};
-
-class Forbidden : public UnsafeClassDecoder {
- public:
-  Forbidden() : UnsafeClassDecoder(FORBIDDEN) {}
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Forbidden);
-};
-
-// Represents that the instruction is not implemented.
-class NotImplemented : public UnsafeClassDecoder {
- public:
-  NotImplemented() : UnsafeClassDecoder(NOT_IMPLEMENTED) {}
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(NotImplemented);
-};
-
 }  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_H_

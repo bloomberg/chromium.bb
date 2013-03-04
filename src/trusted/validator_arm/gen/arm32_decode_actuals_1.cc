@@ -3104,6 +3104,39 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// Actual_NOT_IMPLEMENTED_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => NOT_IMPLEMENTED],
+//    uses: {}}
+
+RegisterList Actual_NOT_IMPLEMENTED_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_NOT_IMPLEMENTED_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => NOT_IMPLEMENTED
+  if (true)
+    return NOT_IMPLEMENTED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_NOT_IMPLEMENTED_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1
 //
 // Actual:

@@ -23,6 +23,13 @@ class Arm32DecoderState : DecoderState {
    // Parses the given instruction, returning the decoder to use.
    virtual const ClassDecoder& decode(const Instruction) const;
 
+   // Returns the class decoder to use to process the fictitious instruction
+   // that is inserted before the first instruction in the code block by
+   // the validator.
+   const ClassDecoder &fictitious_decoder() const {
+     return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
+   }
+
  private:
 
   // The following list of methods correspond to each decoder table,
@@ -193,6 +200,7 @@ class Arm32DecoderState : DecoderState {
   const Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1 Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1_instance_;
   const Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1 Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1_instance_;
   const Actual_NOP_cccc0011001000001111000000000000_case_1 Actual_NOP_cccc0011001000001111000000000000_case_1_instance_;
+  const Actual_NOT_IMPLEMENTED_case_1 Actual_NOT_IMPLEMENTED_case_1_instance_;
   const Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1 Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_instance_;
   const Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1 Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   const Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1 Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1_instance_;
@@ -293,7 +301,6 @@ class Arm32DecoderState : DecoderState {
   const Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1 Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1_instance_;
   const Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1 Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1_instance_;
   const Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1 Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1_instance_;
-  const NotImplemented not_implemented_;
 };
 
 }  // namespace nacl_arm_dec

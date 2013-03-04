@@ -62,6 +62,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1_instance_()
   , Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1_instance_()
   , Actual_NOP_cccc0011001000001111000000000000_case_1_instance_()
+  , Actual_NOT_IMPLEMENTED_case_1_instance_()
   , Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_instance_()
   , Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_()
   , Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1_instance_()
@@ -162,7 +163,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1_instance_()
   , Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1_instance_()
   , Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1_instance_()
-  , not_implemented_()
 {}
 
 // Implementation of table: ARMv7.
@@ -222,7 +222,7 @@ const ClassDecoder& Arm32DecoderState::decode_ARMv7(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: advanced_simd_data_processing_instructions.
@@ -345,7 +345,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: advanced_simd_element_or_structure_load_store_instructions.
@@ -493,7 +493,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: branch_branch_with_link_and_block_data_transfer.
@@ -546,7 +546,7 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: coprocessor_instructions_and_supervisor_call.
@@ -631,7 +631,7 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: data_processing_and_miscellaneous_instructions.
@@ -751,7 +751,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_and_miscellaneous_
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: data_processing_immediate.
@@ -847,7 +847,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: data_processing_register.
@@ -943,7 +943,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: data_processing_register_shifted_register.
@@ -977,7 +977,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register_shifted_r
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: extension_register_load_store_instructions.
@@ -1115,7 +1115,7 @@ const ClassDecoder& Arm32DecoderState::decode_extension_register_load_store_inst
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: extra_load_store_instructions.
@@ -1242,7 +1242,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store_instructions(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: floating_point_data_processing_instructions.
@@ -1283,7 +1283,7 @@ const ClassDecoder& Arm32DecoderState::decode_floating_point_data_processing_ins
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: halfword_multiply_and_multiply_accumulate.
@@ -1326,7 +1326,7 @@ const ClassDecoder& Arm32DecoderState::decode_halfword_multiply_and_multiply_acc
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: load_store_word_and_unsigned_byte.
@@ -1462,7 +1462,7 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_and_unsigned_byte(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: media_instructions.
@@ -1545,7 +1545,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: memory_hints_advanced_simd_instructions_and_miscellaneous_instructions.
@@ -1729,7 +1729,7 @@ const ClassDecoder& Arm32DecoderState::decode_memory_hints_advanced_simd_instruc
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: miscellaneous_instructions.
@@ -1898,7 +1898,7 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: msr_immediate_and_hints.
@@ -1999,7 +1999,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: multiply_and_multiply_accumulate.
@@ -2046,7 +2046,7 @@ const ClassDecoder& Arm32DecoderState::decode_multiply_and_multiply_accumulate(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: other_floating_point_data_processing_instructions.
@@ -2123,7 +2123,7 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: packing_unpacking_saturation_and_reversal.
@@ -2222,7 +2222,7 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: parallel_addition_and_subtraction_signed.
@@ -2290,7 +2290,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: parallel_addition_and_subtraction_unsigned.
@@ -2358,7 +2358,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: saturating_addition_and_subtraction.
@@ -2373,7 +2373,7 @@ const ClassDecoder& Arm32DecoderState::decode_saturating_addition_and_subtractio
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: signed_multiply_signed_and_unsigned_divide.
@@ -2446,7 +2446,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: simd_dp_1imm.
@@ -2522,7 +2522,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: simd_dp_2misc.
@@ -2685,7 +2685,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2misc(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: simd_dp_2scalar.
@@ -2743,7 +2743,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: simd_dp_2shift.
@@ -2822,7 +2822,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: simd_dp_3diff.
@@ -2880,7 +2880,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3diff(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: simd_dp_3same.
@@ -3094,7 +3094,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: synchronization_primitives.
@@ -3157,7 +3157,7 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: transfer_between_arm_core_and_extension_register_8_16_and_32_bit.
@@ -3235,7 +3235,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: transfer_between_arm_core_and_extension_registers_64_bit.
@@ -3263,7 +3263,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 // Implementation of table: unconditional_instructions.
@@ -3324,7 +3324,7 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional_instructions(
   }
 
   // Catch any attempt to fall though ...
-  return not_implemented_;
+  return Actual_NOT_IMPLEMENTED_case_1_instance_;
 }
 
 const ClassDecoder& Arm32DecoderState::decode(const Instruction inst) const {

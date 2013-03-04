@@ -2365,7 +2365,15 @@ class Decoder(object):
     """Returns a new set of tables, with actions reduced to the set of
       specified field names.
     """
-    return self.table_filter(lambda tbl: tbl.action_filter(names))
+    # Filter actions in tables.
+    decoder = self.table_filter(lambda tbl: tbl.action_filter(names))
+
+    # Now filter other decoders associated with the specification.
+    for key in decoder.value_keys():
+      action = decoder.get_value(key)
+      if isinstance(action, DecoderAction):
+        decoder.define_value(key, action.action_filter(names))
+    return decoder
 
   def base_class(self, cls):
     """Returns the base-most class of cls (or cls if no base class). """
@@ -2380,6 +2388,14 @@ class Decoder(object):
   def decoders(self):
     """Returns the sorted sequence of DecoderAction's defined in the tables."""
     decoders = set()
+
+    # Add other decoders associated with specification, but not in tables.
+    for key in self.value_keys():
+      action = self.get_value(key)
+      if isinstance(action, DecoderAction):
+        decoders.add(action)
+
+    # Add decoders specified in the tables.
     for t in self._tables:
         for r in t.rows(True):
             if isinstance(r.action, DecoderAction):

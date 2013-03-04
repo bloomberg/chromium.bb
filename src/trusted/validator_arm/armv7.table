@@ -97,7 +97,6 @@
 # overrides the field in the template.
 ##############################################################
 
-
 ##############################################################
 # Special actions needed by the validator.
 ##############################################################
@@ -117,6 +116,18 @@
 
 *Unpredictable *Nop
   safety := true => UNPREDICTABLE;
+
+*NotImplemented *Nop
+  # Used when instruction is not defined by any table entries.
+  safety := true => NOT_IMPLEMENTED;
+  rule := NOT_IMPLEMENTED;
+
+*FictitiousFirst *Nop
+  # Used to process the fictitious instruction before the "first" instruction
+  # in the code segment. The contents of this fictitious instruction is defined
+  # by macro src/include/arm_sandbox.h:NACL_INSTR_ARM_FAIL_VALIDATION
+  safety := true => FORBIDDEN;
+  rule := FICTITIOUS_FIRST;
 
 ##############################################################
 # The following define decoder tables.

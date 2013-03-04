@@ -422,19 +422,6 @@ NAMED_CLASS_DECLARE="""class %(named_DECODER_class)s
 NAMED_CLASS_DECLARE_SYM="%(named_DECODER_class)s"
 
 NAMED_CLASSES_H_FOOTER="""
-// Defines the default parse action if the table doesn't define
-// an action.
-class NotImplementedNamed : public NamedClassDecoder {
- public:
-  NotImplementedNamed()
-    : NamedClassDecoder(decoder_, "not implemented")
-  {}
-
- private:
-  nacl_arm_dec::NotImplemented decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NotImplementedNamed);
-};
-
 } // namespace nacl_arm_test
 #endif  // %(IFDEF_NAME)s
 """
@@ -524,9 +511,6 @@ DECODER_STATE_DECODER="""
       const nacl_arm_dec::Instruction inst) const;"""
 
 NAMED_DECODER_H_FOOTER="""
-  // Defines default action if parse tables don't define what action
-  // to take.
-  const NotImplementedNamed not_implemented_;
 };
 
 } // namespace nacl_arm_test
@@ -610,7 +594,7 @@ METHOD_DISPATCH_CLOSE="""  }
 
 PARSE_TABLE_METHOD_FOOTER="""
   // Catch any attempt to fall through...
-  return not_implemented_;
+  return %(not_implemented)s;
 }
 
 """
@@ -714,6 +698,8 @@ def _generate_decoder_method_bodies(decoder, values, out):
       values['action'] = action
       out.write(PARSE_TABLE_METHOD_ROW % values)
       out.write(METHOD_DISPATCH_CLOSE)
+    _install_action(decoder, decoder.get_value('NotImplemented'), values)
+    values['not_implemented'] = '%(baseline_instance)s' % values
     out.write(PARSE_TABLE_METHOD_FOOTER % values)
 
 # Define the source for DECODER_tests.cc
