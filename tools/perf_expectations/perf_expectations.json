@@ -796,8 +796,8 @@
  "xp-release-single-core/moz/times/t": {"reva": 75758, "revb": 76221, "improve": -1705, "regress": 3304, "sha1": "b615a416"},
  "xp-release-single-core/startup/times/t": {"improve": -9, "regress": 9, "sha1": "b1bf03da"},
  "xp-release/sizes/chrome.dll/chrome.dll": {"reva": 172272, "revb": 172301, "type": "absolute", "improve": 49887616, "regress": 55142708, "sha1": "1ed51bc2"},
- "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 166155, "revb": 166515, "type": "absolute", "improve": 1176601, "regress": 1304218, "sha1": "a5245848"},
- "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 181127, "revb": 183249, "type": "absolute", "better": "lower", "improve": 26597811, "regress": 29650253, "sha1": "1dec7ece"},
- "xp-release/sizes/setup.exe/setup.exe": {"reva": 129392, "revb": 164056, "type": "absolute", "improve": 1428556, "regress": 1668711, "sha1": "6ac28f4d"},
+ "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 720358, "regress": 796186, "sha1": "b5aa4523"},
+ "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 26480102, "regress": 29465319, "sha1": "7d9a453f"},
+ "xp-release/sizes/setup.exe/setup.exe": {"reva": 183841, "revb": 184954, "type": "absolute", "better": "lower", "improve": 1080780, "regress": 1195085, "sha1": "c56e884e"},
  "load": true
 }
