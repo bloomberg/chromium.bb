@@ -209,6 +209,9 @@ bool AppWindowCreateFunction::RunImpl() {
 
     if (options->hidden.get())
       create_params.hidden = *options->hidden.get();
+
+    if (options->resizable.get())
+      create_params.resizable = *options->resizable.get();
   }
 
   create_params.creator_process_id =

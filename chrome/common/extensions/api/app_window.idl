@@ -78,6 +78,9 @@ namespace app.window {
     // the window to show it once it has been created. Defaults to false.
     boolean? hidden;
 
+    // If true, the window will be resizable by the user. Defaults to true.
+    boolean? resizable;
+
     // By default if you specify an id for the window, the window will only be
     // created if another window with the same id doesn't already exist. If a
     // window with the same id already exists that window is activated instead.
