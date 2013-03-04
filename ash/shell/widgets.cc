@@ -8,8 +8,8 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -40,8 +40,8 @@ class WidgetsWindow : public views::WidgetDelegateView {
   virtual bool CanResize() const OVERRIDE;
 
  private:
-  views::NativeTextButton* button_;
-  views::NativeTextButton* disabled_button_;
+  views::LabelButton* button_;
+  views::LabelButton* disabled_button_;
   views::Checkbox* checkbox_;
   views::Checkbox* checkbox_disabled_;
   views::Checkbox* checkbox_checked_;
@@ -53,9 +53,9 @@ class WidgetsWindow : public views::WidgetDelegateView {
 };
 
 WidgetsWindow::WidgetsWindow()
-    : button_(new views::NativeTextButton(NULL, ASCIIToUTF16("Button"))),
+    : button_(new views::LabelButton(NULL, ASCIIToUTF16("Button"))),
       disabled_button_(
-          new views::NativeTextButton(NULL, ASCIIToUTF16("Disabled button"))),
+          new views::LabelButton(NULL, ASCIIToUTF16("Disabled button"))),
       checkbox_(new views::Checkbox(ASCIIToUTF16("Checkbox"))),
       checkbox_disabled_(new views::Checkbox(
           ASCIIToUTF16("Checkbox disabled"))),
@@ -69,8 +69,10 @@ WidgetsWindow::WidgetsWindow()
           ASCIIToUTF16("Radio button selected"), 0)),
       radio_button_selected_disabled_(new views::RadioButton(
           ASCIIToUTF16("Radio button selected disabled"), 1)) {
+  button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(button_);
   disabled_button_->SetEnabled(false);
+  disabled_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(disabled_button_);
   AddChildView(checkbox_);
   checkbox_disabled_->SetEnabled(false);

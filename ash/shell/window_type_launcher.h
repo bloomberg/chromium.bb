@@ -12,7 +12,7 @@
 
 namespace views {
 class MenuRunner;
-class NativeTextButton;
+class LabelButton;
 }
 
 namespace ash {
@@ -64,21 +64,21 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                                       const gfx::Point& point) OVERRIDE;
 #endif  // !defined(OS_MACOSX)
 
-  views::NativeTextButton* create_button_;
-  views::NativeTextButton* create_persistant_button_;
-  views::NativeTextButton* panel_button_;
-  views::NativeTextButton* create_nonresizable_button_;
-  views::NativeTextButton* bubble_button_;
-  views::NativeTextButton* lock_button_;
-  views::NativeTextButton* widgets_button_;
-  views::NativeTextButton* system_modal_button_;
-  views::NativeTextButton* window_modal_button_;
-  views::NativeTextButton* child_modal_button_;
-  views::NativeTextButton* transient_button_;
-  views::NativeTextButton* examples_button_;
-  views::NativeTextButton* show_hide_window_button_;
-  views::NativeTextButton* show_screensaver_;
-  views::NativeTextButton* show_web_notification_;
+  views::LabelButton* create_button_;
+  views::LabelButton* create_persistant_button_;
+  views::LabelButton* panel_button_;
+  views::LabelButton* create_nonresizable_button_;
+  views::LabelButton* bubble_button_;
+  views::LabelButton* lock_button_;
+  views::LabelButton* widgets_button_;
+  views::LabelButton* system_modal_button_;
+  views::LabelButton* window_modal_button_;
+  views::LabelButton* child_modal_button_;
+  views::LabelButton* transient_button_;
+  views::LabelButton* examples_button_;
+  views::LabelButton* show_hide_window_button_;
+  views::LabelButton* show_screensaver_;
+  views::LabelButton* show_web_notification_;
 #if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> menu_runner_;
 #endif

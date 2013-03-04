@@ -23,7 +23,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/notification_types.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/corewm/shadow_types.h"
@@ -53,8 +53,9 @@ class ModalWindow : public views::WidgetDelegateView,
       : modal_type_(modal_type),
         color_(g_colors[g_color_index]),
         ALLOW_THIS_IN_INITIALIZER_LIST(open_button_(
-            new views::NativeTextButton(this, ASCIIToUTF16("Moar!")))) {
+            new views::LabelButton(this, ASCIIToUTF16("Moar!")))) {
     ++g_color_index %= arraysize(g_colors);
+    open_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     AddChildView(open_button_);
   }
   virtual ~ModalWindow() {
@@ -107,7 +108,7 @@ class ModalWindow : public views::WidgetDelegateView,
  private:
   ui::ModalType modal_type_;
   SkColor color_;
-  views::NativeTextButton* open_button_;
+  views::LabelButton* open_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ModalWindow);
 };
@@ -198,47 +199,63 @@ void InitWindowTypeLauncher() {
 
 WindowTypeLauncher::WindowTypeLauncher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(create_button_(
-          new views::NativeTextButton(this, ASCIIToUTF16("Create Window")))),
+          new views::LabelButton(this, ASCIIToUTF16("Create Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(create_persistant_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Create Persistant Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(panel_button_(
-          new views::NativeTextButton(this, ASCIIToUTF16("Create Panel")))),
+          new views::LabelButton(this, ASCIIToUTF16("Create Panel")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(create_nonresizable_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Create Non-Resizable Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(bubble_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Create Pointy Bubble")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(lock_button_(
-          new views::NativeTextButton(this, ASCIIToUTF16("Lock Screen")))),
+          new views::LabelButton(this, ASCIIToUTF16("Lock Screen")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(widgets_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Show Example Widgets")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(system_modal_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Open System Modal Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_modal_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Open Window Modal Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(child_modal_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Open Child Modal Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(transient_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Open Non-Modal Transient Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(examples_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Open Views Examples Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_hide_window_button_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Show/Hide a Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_screensaver_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Show the Screensaver [for 5 seconds]")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_web_notification_(
-          new views::NativeTextButton(
+          new views::LabelButton(
               this, ASCIIToUTF16("Show a web/app notification")))) {
+  create_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  create_persistant_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  panel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  create_nonresizable_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  bubble_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  lock_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  widgets_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  system_modal_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  window_modal_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  child_modal_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  transient_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  examples_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  show_hide_window_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  show_screensaver_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  show_web_notification_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);
