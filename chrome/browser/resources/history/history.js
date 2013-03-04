@@ -521,8 +521,14 @@ Object.defineProperty(HistoryModel.prototype, 'requestedPage', {
 HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false;  // Whether a query is inflight.
   this.searchText_ = '';
+  // Whether this user is a managed user.
+  this.isManagedProfile = loadTimeData.getBoolean('isManagedProfile');
+
   // Flag to show that the results are grouped by domain or not.
   this.groupByDomain_ = false;
+  // Group domains by default for managed users.
+  if (this.isManagedProfile)
+    this.groupByDomain_ = true;
 
   this.visits_ = [];  // Date-sorted list of visits (most recent first).
   this.nextVisitId_ = 0;
@@ -542,9 +548,6 @@ HistoryModel.prototype.clearModel_ = function() {
   // Keeps track of whether or not there are more results available than are
   // currently held in |this.visits_|.
   this.isQueryFinished_ = false;
-
-  // Whether this user is a managed user.
-  this.isManagedProfile = loadTimeData.getBoolean('isManagedProfile');
 
   if (this.view_)
     this.view_.clear_();
