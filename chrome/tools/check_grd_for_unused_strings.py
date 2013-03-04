@@ -166,6 +166,7 @@ def main():
       os.path.join(src_dir, 'chrome'),
       os.path.join(src_dir, 'chrome_frame'),
       os.path.join(src_dir, 'content'),
+      os.path.join(src_dir, 'device'),
       os.path.join(src_dir, 'ui'),
       os.path.join(src_dir, 'views'),
       # nsNSSCertHelper.cpp has a bunch of ids
