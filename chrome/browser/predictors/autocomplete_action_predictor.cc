@@ -140,8 +140,10 @@ void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
     const content::SessionStorageNamespaceMap& session_storage_namespace_map,
     const gfx::Size& size) {
-  if (prerender_handle_)
-    prerender_handle_->OnCancel();
+  // Only cancel the old prerender after starting the new one, so if the URLs
+  // are the same, the underlying prerender will be reused.
+  scoped_ptr<prerender::PrerenderHandle> old_prerender_handle(
+      prerender_handle_.release());
   if (prerender::PrerenderManager* prerender_manager =
           prerender::PrerenderManagerFactory::GetForProfile(profile_)) {
     content::SessionStorageNamespace* session_storage_namespace = NULL;
@@ -152,9 +154,9 @@ void AutocompleteActionPredictor::StartPrerendering(
     prerender_handle_.reset(
         prerender_manager->AddPrerenderFromOmnibox(
             url, session_storage_namespace, size));
-  } else {
-    prerender_handle_.reset();
   }
+  if (old_prerender_handle)
+    old_prerender_handle->OnCancel();
 }
 
 // Given a match, return a recommended action.
