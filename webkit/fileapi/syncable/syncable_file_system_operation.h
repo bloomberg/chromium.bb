@@ -12,23 +12,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 class FileSystemContext;
-class FileSystemOperation;
+class FileSystemOperationContext;
 class SandboxMountPointProvider;
 }
 
 namespace sync_file_system {
 
-class FileSystemContext;
 class SyncableFileOperationRunner;
 
 // A wrapper class of LocalFileSystemOperation for syncable file system.
 class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
-    : public NON_EXPORTED_BASE(fileapi::FileSystemOperation),
+    : public fileapi::LocalFileSystemOperation,
       public base::NonThreadSafe {
  public:
   virtual ~SyncableFileSystemOperation();
@@ -74,8 +73,6 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
-  virtual fileapi::LocalFileSystemOperation*
-      AsLocalFileSystemOperation() OVERRIDE;
   virtual void CreateSnapshotFile(
       const fileapi::FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
@@ -86,9 +83,11 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
 
   // Only MountPointProviders can create a new operation directly.
   friend class fileapi::SandboxMountPointProvider;
+  friend class SandboxMountPointProvider;
   SyncableFileSystemOperation(
       fileapi::FileSystemContext* file_system_context,
-      fileapi::FileSystemOperation* file_system_operation);
+      scoped_ptr<fileapi::FileSystemOperationContext> operation_context);
+  fileapi::LocalFileSystemOperation* NewOperation();
 
   void DidFinish(base::PlatformFileError status);
   void DidWrite(const WriteCallback& callback,
@@ -100,13 +99,8 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
   void AbortOperation(const StatusCallback& callback,
                       base::PlatformFileError error);
 
-  // Just destruct this; used when we 9simply delegate the operation
-  // to the owning file_system_operation_.
-  // (See the comment at AsLocalFileSystemOperation())
-  void Destruct();
-
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
-  fileapi::LocalFileSystemOperation* file_system_operation_;
+  fileapi::LocalFileSystemOperation* inflight_operation_;
   std::vector<fileapi::FileSystemURL> target_paths_;
 
   StatusCallback completion_callback_;

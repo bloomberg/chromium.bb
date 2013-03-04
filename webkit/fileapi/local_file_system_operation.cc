@@ -37,8 +37,6 @@ LocalFileSystemOperation::~LocalFileSystemOperation() {
     operation_context()->update_observers()->Notify(
         &FileUpdateObserver::OnEndUpdate, MakeTuple(write_target_url_));
   }
-  if (!termination_callback_.is_null())
-    termination_callback_.Run();
 }
 
 void LocalFileSystemOperation::CreateFile(const FileSystemURL& url,
@@ -83,40 +81,37 @@ void LocalFileSystemOperation::Copy(const FileSystemURL& src_url,
                                     const FileSystemURL& dest_url,
                                     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCopy));
+  scoped_ptr<LocalFileSystemOperation> deleter(this);
 
   // Setting up this (source) operation.
   base::PlatformFileError result = SetUp(src_url, OPERATION_MODE_READ);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
-    delete this;
     return;
   }
 
   // Setting up a new operation for dest.
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
-      file_system_context()->CreateFileSystemOperation(dest_url, &error);
-  if (error != base::PLATFORM_FILE_OK) {
-    DCHECK(!operation);
-    callback.Run(error);
-    delete this;
+      file_system_context()->CreateFileSystemOperation(dest_url, &result);
+  if (result != base::PLATFORM_FILE_OK) {
+    callback.Run(result);
     return;
   }
-  LocalFileSystemOperation* dest_operation =
-      operation->AsLocalFileSystemOperation();
+  scoped_ptr<LocalFileSystemOperation> dest_operation(
+      operation->AsLocalFileSystemOperation());
   DCHECK(dest_operation);
   result = dest_operation->SetUp(dest_url, OPERATION_MODE_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
-    delete dest_operation;
-    delete this;
     return;
   }
 
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_.reset(
       new CrossOperationDelegate(
-          this, dest_operation, src_url, dest_url,
+          file_system_context(),
+          deleter.release(), dest_operation.Pass(),
+          src_url, dest_url,
           CrossOperationDelegate::OPERATION_COPY,
           base::Bind(&LocalFileSystemOperation::DidFinishDelegatedOperation,
                      base::Unretained(this), callback)));
@@ -127,12 +122,12 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
                                     const FileSystemURL& dest_url,
                                     const StatusCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationMove));
+  scoped_ptr<LocalFileSystemOperation> deleter(this);
 
   // Setting up this (source) operation.
   base::PlatformFileError result = SetUp(src_url, OPERATION_MODE_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
-    delete this;
     return;
   }
 
@@ -143,25 +138,23 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
   if (error != base::PLATFORM_FILE_OK) {
     DCHECK(!operation);
     callback.Run(error);
-    delete this;
     return;
   }
-  LocalFileSystemOperation* dest_operation =
-      operation->AsLocalFileSystemOperation();
+  scoped_ptr<LocalFileSystemOperation> dest_operation(
+      operation->AsLocalFileSystemOperation());
   DCHECK(dest_operation);
-
   result = dest_operation->SetUp(dest_url, OPERATION_MODE_WRITE);
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
-    delete dest_operation;
-    delete this;
     return;
   }
 
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_.reset(
       new CrossOperationDelegate(
-          this, dest_operation, src_url, dest_url,
+          file_system_context(),
+          deleter.release(), dest_operation.Pass(),
+          src_url, dest_url,
           CrossOperationDelegate::OPERATION_MOVE,
           base::Bind(&LocalFileSystemOperation::DidFinishDelegatedOperation,
                      base::Unretained(this), callback)));
@@ -251,6 +244,7 @@ void LocalFileSystemOperation::Remove(const FileSystemURL& url,
   DCHECK(!recursive_operation_delegate_);
   recursive_operation_delegate_.reset(
       new RemoveOperationDelegate(
+          file_system_context(),
           this, url,
           base::Bind(&LocalFileSystemOperation::DidFinishDelegatedOperation,
                      base::Unretained(this), callback)));
@@ -430,6 +424,14 @@ void LocalFileSystemOperation::CreateSnapshotFile(
                  base::Owned(this), callback));
 }
 
+LocalFileSystemOperation* LocalFileSystemOperation::CreateNestedOperation() {
+  LocalFileSystemOperation* operation = new LocalFileSystemOperation(
+      file_system_context(),
+      make_scoped_ptr(new FileSystemOperationContext(file_system_context())));
+  operation->parent_operation_ = this;
+  return operation;
+}
+
 void LocalFileSystemOperation::CopyInForeignFile(
     const base::FilePath& src_local_disk_file_path,
     const FileSystemURL& dest_url,
@@ -537,7 +539,7 @@ LocalFileSystemOperation::LocalFileSystemOperation(
     : file_system_context_(file_system_context),
       operation_context_(operation_context.Pass()),
       async_file_util_(NULL),
-      overriding_operation_context_(NULL),
+      parent_operation_(NULL),
       peer_handle_(base::kNullProcessHandle),
       pending_operation_(kOperationNone),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -844,9 +846,8 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   // If this operation is created for recursive sub-operations (i.e.
-  // operation context is overridden from another operation) we skip
-  // some duplicated notifications.
-  if (overriding_operation_context_)
+  // it has the parent operation) we skip duplicated notifications.
+  if (parent_operation_)
     return base::PLATFORM_FILE_OK;
 
   switch (mode) {

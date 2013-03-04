@@ -82,6 +82,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
       const FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
 
+  // Creates a nestable operation that inherits operation context
+  // from this operation.  The operation created by this method have to
+  // be die before this operation goes away.
+  virtual LocalFileSystemOperation* CreateNestedOperation();
+
   // Copies in a single file from a different filesystem.
   //
   // This returns:
@@ -186,8 +191,8 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   }
 
   FileSystemOperationContext* operation_context() const {
-    if (overriding_operation_context_)
-      return overriding_operation_context_;
+    if (parent_operation_)
+      return parent_operation_->operation_context();
     return operation_context_.get();
   }
 
@@ -302,31 +307,16 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);
 
-  // Overrides this operation's operation context by given |context|.
-  // This operation won't own |context| and the |context| needs to outlive
-  // this operation.
-  //
-  // Called only from operation delegates when they create sub-operations
-  // for performing a recursive operation.
-  void set_overriding_operation_context(FileSystemOperationContext* context) {
-    overriding_operation_context_ = context;
-  }
-
-  // Sets a termination callback which is called when this instance goes away
-  // (indicates the operation is finished).
-  void set_termination_callback(const base::Closure& closure) {
-    termination_callback_ = closure;
-  }
-
   scoped_refptr<FileSystemContext> file_system_context_;
 
   scoped_ptr<FileSystemOperationContext> operation_context_;
   AsyncFileUtil* async_file_util_;  // Not owned.
 
-  FileSystemOperationContext* overriding_operation_context_;
-
-  // A callback that is called when this instance goes away.
-  base::Closure termination_callback_;
+  // If this operation is created as a sub-operation for nested operation,
+  // this holds non-null value and points to the parent operation.
+  // TODO(kinuko): Cleanup this when we finish cleaning up the
+  // FileSystemOperation lifetime issue.
+  LocalFileSystemOperation* parent_operation_;
 
   // These are all used only by Write().
   friend class FileWriterDelegate;

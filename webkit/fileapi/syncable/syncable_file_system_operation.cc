@@ -7,13 +7,14 @@
 #include "base/logging.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 
 using fileapi::FileSystemURL;
+using fileapi::FileSystemOperationContext;
 using fileapi::LocalFileSystemOperation;
 
 namespace sync_file_system {
@@ -81,7 +82,7 @@ void SyncableFileSystemOperation::CreateFile(
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
       base::Bind(&FileSystemOperation::CreateFile,
-                 base::Unretained(file_system_operation_),
+                 base::Unretained(NewOperation()),
                  url, exclusive,
                  base::Bind(&self::DidFinish, base::Owned(this)))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -107,7 +108,7 @@ void SyncableFileSystemOperation::CreateDirectory(
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
       base::Bind(&FileSystemOperation::CreateDirectory,
-                 base::Unretained(file_system_operation_),
+                 base::Unretained(NewOperation()),
                  url, exclusive, recursive,
                  base::Bind(&self::DidFinish, base::Owned(this)))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -128,7 +129,7 @@ void SyncableFileSystemOperation::Copy(
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
       base::Bind(&FileSystemOperation::Copy,
-                 base::Unretained(file_system_operation_),
+                 base::Unretained(NewOperation()),
                  src_url, dest_url,
                  base::Bind(&self::DidFinish, base::Owned(this)))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -150,7 +151,7 @@ void SyncableFileSystemOperation::Move(
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
       base::Bind(&FileSystemOperation::Move,
-                 base::Unretained(file_system_operation_),
+                 base::Unretained(NewOperation()),
                  src_url, dest_url,
                  base::Bind(&self::DidFinish, base::Owned(this)))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -164,7 +165,7 @@ void SyncableFileSystemOperation::DirectoryExists(
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
-  file_system_operation_->DirectoryExists(url, callback);
+  NewOperation()->DirectoryExists(url, callback);
   delete this;
 }
 
@@ -176,7 +177,7 @@ void SyncableFileSystemOperation::FileExists(
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
-  file_system_operation_->FileExists(url, callback);
+  NewOperation()->FileExists(url, callback);
   delete this;
 }
 
@@ -187,11 +188,10 @@ void SyncableFileSystemOperation::GetMetadata(
   if (!operation_runner_) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
                  base::PlatformFileInfo(), base::FilePath());
-    delete file_system_operation_;
     delete this;
     return;
   }
-  file_system_operation_->GetMetadata(url, callback);
+  NewOperation()->GetMetadata(url, callback);
   delete this;
 }
 
@@ -201,14 +201,13 @@ void SyncableFileSystemOperation::ReadDirectory(
   DCHECK(CalledOnValidThread());
   if (!operation_runner_) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FileEntryList(), false);
-    delete file_system_operation_;
     delete this;
     return;
   }
   // This is a read operation and there'd be no hard to let it go even if
   // directory operation is disabled. (And we should allow this if it's made
   // on the root directory)
-  file_system_operation_->ReadDirectory(url, callback);
+  NewOperation()->ReadDirectory(url, callback);
   delete this;
 }
 
@@ -226,7 +225,7 @@ void SyncableFileSystemOperation::Remove(
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
       base::Bind(&FileSystemOperation::Remove,
-                 base::Unretained(file_system_operation_),
+                 base::Unretained(NewOperation()),
                  url, recursive,
                  base::Bind(&self::DidFinish, base::Owned(this)))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -241,7 +240,6 @@ void SyncableFileSystemOperation::Write(
   DCHECK(CalledOnValidThread());
   if (!operation_runner_) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, 0, true);
-    delete file_system_operation_;
     delete this;
     return;
   }
@@ -250,7 +248,7 @@ void SyncableFileSystemOperation::Write(
   completion_callback_ = base::Bind(&WriteCallbackAdapter, callback);
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
-      file_system_operation_->GetWriteClosure(
+      NewOperation()->GetWriteClosure(
           url_request_context, url, blob_url, offset,
           base::Bind(&self::DidWrite, base::Owned(this), callback))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -270,7 +268,7 @@ void SyncableFileSystemOperation::Truncate(
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       this,
       base::Bind(&FileSystemOperation::Truncate,
-                 base::Unretained(file_system_operation_),
+                 base::Unretained(NewOperation()),
                  url, length,
                  base::Bind(&self::DidFinish, base::Owned(this)))));
   operation_runner_->PostOperationTask(task.Pass());
@@ -286,8 +284,8 @@ void SyncableFileSystemOperation::TouchFile(
     AbortOperation(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
-  file_system_operation_->TouchFile(url, last_access_time,
-                                    last_modified_time, callback);
+  NewOperation()->TouchFile(url, last_access_time,
+                            last_modified_time, callback);
   delete this;
 }
 
@@ -309,22 +307,9 @@ void SyncableFileSystemOperation::NotifyCloseFile(
 void SyncableFileSystemOperation::Cancel(
     const StatusCallback& cancel_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(file_system_operation_);
+  DCHECK(inflight_operation_);
   completion_callback_ = cancel_callback;
-  file_system_operation_->Cancel(
-      base::Bind(&self::DidFinish, base::Owned(this)));
-}
-
-LocalFileSystemOperation*
-SyncableFileSystemOperation::AsLocalFileSystemOperation() {
-  // This must be called for nested sub-task operations
-  // where we don't need extra task queueing.
-  // Just return the internal file_system_operation_ and let this
-  // instance goes away when the operation dies.
-  file_system_operation_->set_termination_callback(
-      base::Bind(&SyncableFileSystemOperation::Destruct,
-                 base::Unretained(this)));
-  return file_system_operation_;
+  NewOperation()->Cancel(base::Bind(&self::DidFinish, base::Owned(this)));
 }
 
 void SyncableFileSystemOperation::CreateSnapshotFile(
@@ -334,21 +319,20 @@ void SyncableFileSystemOperation::CreateSnapshotFile(
   if (!operation_runner_) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
                  base::PlatformFileInfo(), base::FilePath(), NULL);
-    delete file_system_operation_;
     delete this;
     return;
   }
-  file_system_operation_->CreateSnapshotFile(path, callback);
+  NewOperation()->CreateSnapshotFile(path, callback);
   delete this;
 }
 
 SyncableFileSystemOperation::SyncableFileSystemOperation(
     fileapi::FileSystemContext* file_system_context,
-    fileapi::FileSystemOperation* file_system_operation) {
+    scoped_ptr<FileSystemOperationContext> operation_context)
+    : LocalFileSystemOperation(file_system_context,
+                               operation_context.Pass()),
+      inflight_operation_(NULL) {
   DCHECK(file_system_context);
-  DCHECK(file_system_operation);
-  file_system_operation_ = file_system_operation->AsLocalFileSystemOperation();
-  DCHECK(file_system_operation_);
   if (!file_system_context->sync_context()) {
     // Syncable FileSystem is opened in a file system context which doesn't
     // support (or is not initialized for) the API.
@@ -358,6 +342,15 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
   operation_runner_ = file_system_context->sync_context()->operation_runner();
   is_directory_operation_enabled_ = file_system_context->sandbox_provider()->
       is_sync_directory_operation_enabled();
+}
+
+LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {
+  DCHECK(operation_context_);
+  inflight_operation_ = new LocalFileSystemOperation(
+      file_system_context(),
+      operation_context_.Pass());
+  DCHECK(inflight_operation_);
+  return inflight_operation_;
 }
 
 void SyncableFileSystemOperation::DidFinish(base::PlatformFileError status) {
@@ -386,18 +379,14 @@ void SyncableFileSystemOperation::DidWrite(
 void SyncableFileSystemOperation::OnCancelled() {
   DCHECK(!completion_callback_.is_null());
   completion_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT);
-  delete file_system_operation_;
+  delete inflight_operation_;
 }
 
 void SyncableFileSystemOperation::AbortOperation(
     const StatusCallback& callback,
     base::PlatformFileError error) {
   callback.Run(error);
-  delete file_system_operation_;
-  delete this;
-}
-
-void SyncableFileSystemOperation::Destruct() {
+  delete inflight_operation_;
   delete this;
 }
 

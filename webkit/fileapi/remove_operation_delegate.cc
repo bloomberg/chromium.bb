@@ -12,10 +12,11 @@
 namespace fileapi {
 
 RemoveOperationDelegate::RemoveOperationDelegate(
-    LocalFileSystemOperation* original_operation,
+    FileSystemContext* file_system_context,
+    LocalFileSystemOperation* operation,
     const FileSystemURL& url,
     const StatusCallback& callback)
-    : RecursiveOperationDelegate(original_operation),
+    : RecursiveOperationDelegate(file_system_context, operation),
       url_(url),
       callback_(callback) {
 }
@@ -23,13 +24,7 @@ RemoveOperationDelegate::RemoveOperationDelegate(
 RemoveOperationDelegate::~RemoveOperationDelegate() {}
 
 void RemoveOperationDelegate::Run() {
-  base::PlatformFileError error;
-  LocalFileSystemOperation* operation = NewOperation(url_, &error);
-  if (!operation) {
-    callback_.Run(error);
-    return;
-  }
-  operation->RemoveFile(url_, base::Bind(
+  NewNestedOperation()->RemoveFile(url_, base::Bind(
       &RemoveOperationDelegate::DidTryRemoveFile, AsWeakPtr()));
 }
 
@@ -41,18 +36,12 @@ void RemoveOperationDelegate::RunRecursively() {
 
 void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
                                           const StatusCallback& callback) {
-  base::PlatformFileError error;
-  LocalFileSystemOperation* operation = NewOperation(url, &error);
-  if (!operation) {
-    callback.Run(error);
-    return;
-  }
   if (to_remove_directories_.size() == 1u &&
       to_remove_directories_.top() == url) {
     // We seem to have been re-directed from ProcessDirectory.
     to_remove_directories_.pop();
   }
-  operation->RemoveFile(url, base::Bind(
+  NewNestedOperation()->RemoveFile(url, base::Bind(
       &RemoveOperationDelegate::DidRemoveFile, AsWeakPtr(), callback));
 }
 
@@ -69,12 +58,7 @@ void RemoveOperationDelegate::DidTryRemoveFile(
     callback_.Run(error);
     return;
   }
-  LocalFileSystemOperation* operation = NewOperation(url_, &error);
-  if (!operation) {
-    callback_.Run(error);
-    return;
-  }
-  operation->RemoveDirectory(url_, callback_);
+  NewNestedOperation()->RemoveDirectory(url_, callback_);
 }
 
 void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
@@ -95,12 +79,7 @@ void RemoveOperationDelegate::RemoveNextDirectory(
   }
   FileSystemURL url = to_remove_directories_.top();
   to_remove_directories_.pop();
-  LocalFileSystemOperation* operation = NewOperation(url, &error);
-  if (!operation) {
-    callback_.Run(error);
-    return;
-  }
-  operation->RemoveDirectory(url, base::Bind(
+  NewNestedOperation()->RemoveDirectory(url, base::Bind(
       &RemoveOperationDelegate::RemoveNextDirectory,
       AsWeakPtr()));
 }

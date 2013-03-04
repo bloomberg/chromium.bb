@@ -16,25 +16,26 @@
 namespace fileapi {
 
 class FileSystemContext;
-class LocalFileSystemOperation;
 
 // A base class for recursive operation delegates.
 // This also provides some convenient default implementations for subclasses
-// like StartRecursiveOperation() and  NewOperation().
+// like StartRecursiveOperation() and  NewNestedOperation().
 //
 // In short, each subclass should override ProcessFile and ProcessDirectory
 // to process a directory or a file. To start the recursive operation it
 // should also call StartRecursiveOperation.
 //
-// Each subclass can call NewOperation to create a new file system operation
-// to perform a sub-operations, e.g. can call RemoveFile for recursive Remove.
+// Each subclass can call NewNestedOperation to create a new file system
+// operation to perform a sub-operations, e.g. can call RemoveFile for
+// recursive Remove.
 class RecursiveOperationDelegate
     : public base::SupportsWeakPtr<RecursiveOperationDelegate> {
  public:
   typedef FileSystemOperation::StatusCallback StatusCallback;
   typedef FileSystemOperation::FileEntryList FileEntryList;
 
-  RecursiveOperationDelegate(LocalFileSystemOperation* original_operation);
+  RecursiveOperationDelegate(FileSystemContext* file_system_context,
+                             LocalFileSystemOperation* operation);
   virtual ~RecursiveOperationDelegate();
 
   // This is called when the consumer of this instance starts a non-recursive
@@ -65,14 +66,13 @@ class RecursiveOperationDelegate
   void StartRecursiveOperation(const FileSystemURL& root,
                                const StatusCallback& callback);
 
-  // Returns new sub-operation for a given |url|.
-  // This may return NULL if any error has happened.
-  // If non-null |error| is given it is set to the error code.
-  LocalFileSystemOperation* NewOperation(const FileSystemURL& url,
-                                         base::PlatformFileError* error);
+  // Returns new nested sub-operation.
+  LocalFileSystemOperation* NewNestedOperation();
 
-  FileSystemContext* file_system_context();
-  const FileSystemContext* file_system_context() const;
+  FileSystemContext* file_system_context() { return file_system_context_; }
+  const FileSystemContext* file_system_context() const {
+    return file_system_context_;
+  }
 
  private:
   void ProcessNextDirectory();
@@ -88,7 +88,8 @@ class RecursiveOperationDelegate
   void DidTryProcessFile(base::PlatformFileError previous_error,
                          base::PlatformFileError error);
 
-  LocalFileSystemOperation* original_operation_;
+  FileSystemContext* file_system_context_;
+  LocalFileSystemOperation* operation_;
   StatusCallback callback_;
   std::queue<FileSystemURL> pending_directories_;
   std::queue<FileSystemURL> pending_files_;

@@ -15,7 +15,8 @@ class RemoveOperationDelegate
     : public RecursiveOperationDelegate,
       public base::SupportsWeakPtr<RemoveOperationDelegate> {
  public:
-  RemoveOperationDelegate(LocalFileSystemOperation* original_operation,
+  RemoveOperationDelegate(FileSystemContext* file_system_context,
+                          LocalFileSystemOperation* operation,
                           const FileSystemURL& url,
                           const StatusCallback& callback);
   virtual ~RemoveOperationDelegate();

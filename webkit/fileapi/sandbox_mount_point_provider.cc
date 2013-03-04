@@ -281,8 +281,7 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     operation_context->set_change_observers(syncable_change_observers_);
     operation_context->set_access_observers(access_observers_);
     return new sync_file_system::SyncableFileSystemOperation(
-        context,
-        new LocalFileSystemOperation(context, operation_context.Pass()));
+        context, operation_context.Pass());
   }
 
   // For regular sandboxed types.

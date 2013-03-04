@@ -28,8 +28,9 @@ class CrossOperationDelegate
   };
 
   CrossOperationDelegate(
+      FileSystemContext* file_system_context,
       LocalFileSystemOperation* src_root_operation,
-      LocalFileSystemOperation* dest_root_operation,
+      scoped_ptr<LocalFileSystemOperation> dest_root_operation,
       const FileSystemURL& src_root,
       const FileSystemURL& dest_root,
       OperationType operation_type,
@@ -83,8 +84,8 @@ class CrossOperationDelegate
   //   separate FileSystemOperationContext, so it creates a new operation
   //   which inherits context from dest_root_operation_.
   //
-  LocalFileSystemOperation* NewSourceOperation(const FileSystemURL& url);
-  LocalFileSystemOperation* NewDestOperation(const FileSystemURL& url);
+  LocalFileSystemOperation* NewSourceOperation();
+  LocalFileSystemOperation* NewDestOperation();
 
   FileSystemURL src_root_;
   FileSystemURL dest_root_;

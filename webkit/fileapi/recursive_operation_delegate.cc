@@ -17,12 +17,15 @@ const int kMaxInflightOperations = 5;
 }
 
 RecursiveOperationDelegate::RecursiveOperationDelegate(
-    LocalFileSystemOperation* original_operation)
-    : original_operation_(original_operation),
+    FileSystemContext* file_system_context,
+    LocalFileSystemOperation* operation)
+    : file_system_context_(file_system_context),
+      operation_(operation),
       inflight_operations_(0) {
 }
 
-RecursiveOperationDelegate::~RecursiveOperationDelegate() {}
+RecursiveOperationDelegate::~RecursiveOperationDelegate() {
+}
 
 void RecursiveOperationDelegate::StartRecursiveOperation(
     const FileSystemURL& root,
@@ -32,36 +35,8 @@ void RecursiveOperationDelegate::StartRecursiveOperation(
   ProcessNextDirectory();
 }
 
-LocalFileSystemOperation* RecursiveOperationDelegate::NewOperation(
-    const FileSystemURL& url,
-    base::PlatformFileError* error_out) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation = original_operation_->file_system_context()->
-      CreateFileSystemOperation(url, &error);
-  if (error != base::PLATFORM_FILE_OK) {
-    if (error_out)
-      *error_out = error;
-    return NULL;
-  }
-  LocalFileSystemOperation* local_operation =
-      operation->AsLocalFileSystemOperation();
-  DCHECK(local_operation);
-
-  // Let the new operation inherit from the original operation.
-  local_operation->set_overriding_operation_context(
-      original_operation_->operation_context());
-  if (error_out)
-    *error_out = base::PLATFORM_FILE_OK;
-  return local_operation;
-}
-
-FileSystemContext* RecursiveOperationDelegate::file_system_context() {
-  return original_operation_->file_system_context();
-}
-
-const FileSystemContext* RecursiveOperationDelegate::file_system_context()
-    const {
-  return original_operation_->file_system_context();
+LocalFileSystemOperation* RecursiveOperationDelegate::NewNestedOperation() {
+  return operation_->CreateNestedOperation();
 }
 
 void RecursiveOperationDelegate::ProcessNextDirectory() {
@@ -116,12 +91,7 @@ void RecursiveOperationDelegate::DidProcessDirectory(
     callback_.Run(error);
     return;
   }
-  LocalFileSystemOperation* operation = NewOperation(url, &error);
-  if (!operation) {
-    callback_.Run(error);
-    return;
-  }
-  operation->ReadDirectory(
+  NewNestedOperation()->ReadDirectory(
       url, base::Bind(&RecursiveOperationDelegate::DidReadDirectory,
                       AsWeakPtr(), url));
 }
@@ -143,7 +113,7 @@ void RecursiveOperationDelegate::DidReadDirectory(
     return;
   }
   for (size_t i = 0; i < entries.size(); i++) {
-    FileSystemURL url = file_system_context()->CreateCrackedFileSystemURL(
+    FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         parent.origin(),
         parent.mount_type(),
         parent.virtual_path().Append(entries[i].name));
