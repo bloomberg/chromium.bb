@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/files/file_path.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
@@ -45,8 +46,10 @@ TEST(CrosMountPointProviderTest, DefaultMountPoints) {
 
   // By default there should be 3 mount points (in system mount points):
   EXPECT_EQ(3u, root_dirs.size());
-  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/media/removable"))));
-  EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/media/archive"))));
+  EXPECT_TRUE(root_dirs_set.count(
+      chromeos::CrosDisksClient::GetRemovableDiskMountPoint()));
+  EXPECT_TRUE(root_dirs_set.count(
+      chromeos::CrosDisksClient::GetArchiveMountPoint()));
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/usr/share/oem"))));
 }
 
@@ -63,6 +66,8 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
       storage_policy,
       mount_points.get(),
       system_mount_points.get());
+
+  const size_t initial_root_dirs_size = provider.GetRootDirectories().size();
 
   // Register 'local' test mount points.
   mount_points->RegisterFileSystem("c",
@@ -82,7 +87,7 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
 
   std::vector<base::FilePath> root_dirs = provider.GetRootDirectories();
   std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
-  EXPECT_EQ(4u, root_dirs.size());
+  EXPECT_EQ(initial_root_dirs_size + 4, root_dirs.size());
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/a/b/c"))));
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/b/c/d"))));
   EXPECT_TRUE(root_dirs_set.count(base::FilePath(FPL("/g/c/d"))));

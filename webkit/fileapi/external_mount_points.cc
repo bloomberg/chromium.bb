@@ -37,7 +37,6 @@ class SystemMountPointsLazyWrapper {
  public:
   SystemMountPointsLazyWrapper()
       : system_mount_points_(fileapi::ExternalMountPoints::CreateRefCounted()) {
-    RegisterDefaultMountPoints();
   }
 
   ~SystemMountPointsLazyWrapper() {}
@@ -47,24 +46,6 @@ class SystemMountPointsLazyWrapper {
   }
 
  private:
-  void RegisterDefaultMountPoints() {
-#if defined(OS_CHROMEOS)
-    // Add default system mount points.
-    system_mount_points_->RegisterFileSystem(
-        "archive",
-        fileapi::kFileSystemTypeNativeLocal,
-        base::FilePath(FILE_PATH_LITERAL("/media/archive")));
-    system_mount_points_->RegisterFileSystem(
-        "removable",
-        fileapi::kFileSystemTypeNativeLocal,
-        base::FilePath(FILE_PATH_LITERAL("/media/removable")));
-    system_mount_points_->RegisterFileSystem(
-        "oem",
-        fileapi::kFileSystemTypeRestrictedNativeLocal,
-        base::FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
-#endif  // defined(OS_CHROMEOS)
-  }
-
   scoped_refptr<fileapi::ExternalMountPoints> system_mount_points_;
 };
 
@@ -351,4 +332,3 @@ ScopedExternalFileSystem::~ScopedExternalFileSystem() {
 }
 
 }  // namespace fileapi
-

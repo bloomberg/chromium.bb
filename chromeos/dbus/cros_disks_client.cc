@@ -7,6 +7,8 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
+#include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "dbus/bus.h"
@@ -608,6 +610,20 @@ CrosDisksClient* CrosDisksClient::Create(DBusClientImplementationType type,
     return new CrosDisksClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new CrosDisksClientStubImpl();
+}
+
+// static
+base::FilePath CrosDisksClient::GetArchiveMountPoint() {
+  return base::FilePath(base::chromeos::IsRunningOnChromeOS() ?
+                        FILE_PATH_LITERAL("/media/archive") :
+                        FILE_PATH_LITERAL("/tmp/chromeos/media/archive"));
+}
+
+// static
+base::FilePath CrosDisksClient::GetRemovableDiskMountPoint() {
+  return base::FilePath(base::chromeos::IsRunningOnChromeOS() ?
+                        FILE_PATH_LITERAL("/media/removable") :
+                        FILE_PATH_LITERAL("/tmp/chromeos/media/removable"));
 }
 
 }  // namespace chromeos

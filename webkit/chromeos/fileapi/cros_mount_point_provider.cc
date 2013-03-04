@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -57,6 +58,19 @@ CrosMountPointProvider::CrosMountPointProvider(
           new fileapi::IsolatedFileUtil())),
       mount_points_(mount_points),
       system_mount_points_(system_mount_points) {
+  // Add default system mount points.
+  system_mount_points_->RegisterFileSystem(
+      "archive",
+      fileapi::kFileSystemTypeNativeLocal,
+      chromeos::CrosDisksClient::GetArchiveMountPoint());
+  system_mount_points_->RegisterFileSystem(
+      "removable",
+      fileapi::kFileSystemTypeNativeLocal,
+      chromeos::CrosDisksClient::GetRemovableDiskMountPoint());
+  system_mount_points_->RegisterFileSystem(
+      "oem",
+      fileapi::kFileSystemTypeRestrictedNativeLocal,
+      base::FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
 }
 
 CrosMountPointProvider::~CrosMountPointProvider() {

@@ -13,6 +13,10 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace dbus {
 class Bus;
 class Response;
@@ -287,6 +291,12 @@ class CHROMEOS_EXPORT CrosDisksClient {
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static CrosDisksClient* Create(DBusClientImplementationType type,
                                  dbus::Bus* bus);
+
+  // Returns the path of the mount point for archive files.
+  static base::FilePath GetArchiveMountPoint();
+
+  // Returns the path of the mount point for removable disks.
+  static base::FilePath GetRemovableDiskMountPoint();
 
  protected:
   // Create() should be used instead.
