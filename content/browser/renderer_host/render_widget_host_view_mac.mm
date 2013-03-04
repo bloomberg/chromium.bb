@@ -3351,6 +3351,20 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   }
 }
 
+- (void)selectAll:(id)sender {
+  // editCommand_helper_ adds implementations for most NSResponder methods
+  // dynamically. But the renderer side only sends selection results back to
+  // the browser if they were triggered by a keyboard event or went through
+  // one of the Select methods on RWH. Since selectAll: is called from the
+  // menu handler, neither is true.
+  // Explicitly call SelectAll() here to make sure the renderer returns
+  // selection results.
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->SelectAll();
+  }
+}
+
 - (void)startSpeaking:(id)sender {
   renderWidgetHostView_->SpeakSelection();
 }
