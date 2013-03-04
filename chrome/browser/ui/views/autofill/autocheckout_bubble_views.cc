@@ -4,43 +4,28 @@
 
 #include "chrome/browser/ui/views/autofill/autocheckout_bubble_views.h"
 
-#include "base/callback.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble.h"
+#include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/rect_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// TODO(ahutter): I18n these strings. See http://crbug.com/172116.
-const char kPromptText[] = "Complete this form without typing?";
-const char kAcceptText[] = "Auto-Checkout";
-const char kCancelText[] = "No, Thanks";
-
-}  // namespace
-
 namespace autofill {
 
-AutocheckoutBubbleViews::AutocheckoutBubbleViews(const gfx::RectF& bounding_box,
-                                                 const base::Closure& callback)
-  : views::BubbleDelegateView(NULL, views::BubbleBorder::TOP_LEFT),
+AutocheckoutBubbleViews::AutocheckoutBubbleViews(
+    scoped_ptr<AutocheckoutBubbleController> controller)
+  : views::BubbleDelegateView(),
+    controller_(controller.Pass()),
     ok_button_(NULL),
-    cancel_button_(NULL),
-    bounding_box_(bounding_box),
-    callback_(callback) {
-  set_use_focusless(true);
-  // TODO(ahutter): Add UMA stats here when they are finalized. See
-  // http://crbug.com/172118.
+    cancel_button_(NULL) {
+  controller_->BubbleCreated();
 }
 
 AutocheckoutBubbleViews::~AutocheckoutBubbleViews() {
-  // TODO(ahutter): Add UMA stats here when they are finalized. See
-  // http://crbug.com/172118.
+  controller_->BubbleDestroyed();
 }
 
 void AutocheckoutBubbleViews::Init() {
@@ -49,8 +34,8 @@ void AutocheckoutBubbleViews::Init() {
 
   // Add the message label to the first row.
   views::ColumnSet* cs = layout->AddColumnSet(1);
-  views::Label* message_label =
-      new views::Label(ASCIIToUTF16(kPromptText));
+  views::Label* message_label = new views::Label(
+      AutocheckoutBubbleController::PromptText());
 
   // Maximum width for the message field in pixels. The message text will be
   // wrapped when its width is wider than this.
@@ -89,27 +74,28 @@ void AutocheckoutBubbleViews::Init() {
                 0,
                 0);
   layout->StartRow(0, 2);
-  ok_button_ = new views::LabelButton(this, ASCIIToUTF16(kAcceptText));
+  ok_button_ =
+      new views::LabelButton(this, AutocheckoutBubbleController::AcceptText());
   ok_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(ok_button_);
-  cancel_button_ = new views::LabelButton(this, ASCIIToUTF16(kCancelText));
+  cancel_button_ =
+      new views::LabelButton(this, AutocheckoutBubbleController::CancelText());
   cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(cancel_button_);
 }
 
 gfx::Rect AutocheckoutBubbleViews::GetAnchorRect() {
-  return gfx::ToEnclosingRect(bounding_box_);
+  return controller_->anchor_rect();
 }
 
 void AutocheckoutBubbleViews::ButtonPressed(views::Button* sender,
                                             const ui::Event& event)  {
   if (sender == ok_button_) {
-    // TODO(ahutter): Add UMA stats here when they are finalized. See
-    // http://crbug.com/172118.
-    callback_.Run();
+    controller_->BubbleAccepted();
   } else if (sender == cancel_button_) {
-    // TODO(ahutter): Add UMA stats here when they are finalized. See
-    // http://crbug.com/172118.
+    controller_->BubbleCanceled();
+  } else {
+    NOTREACHED();
   }
   GetWidget()->Close();
 }
@@ -117,8 +103,10 @@ void AutocheckoutBubbleViews::ButtonPressed(views::Button* sender,
 void ShowAutocheckoutBubble(const gfx::RectF& anchor,
                             const gfx::NativeView& native_view,
                             const base::Closure& callback) {
-  AutocheckoutBubbleViews* delegate = new AutocheckoutBubbleViews(anchor,
-                                                                  callback);
+  AutocheckoutBubbleViews* delegate =
+      new AutocheckoutBubbleViews(
+          scoped_ptr<AutocheckoutBubbleController>(
+              new AutocheckoutBubbleController(anchor, callback)));
   delegate->set_parent_window(native_view);
   views::BubbleDelegateView::CreateBubble(delegate);
   delegate->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);

@@ -267,6 +267,12 @@ AutofillMetrics::AutofillMetrics() {
 AutofillMetrics::~AutofillMetrics() {
 }
 
+void AutofillMetrics::LogAutocheckoutBubbleMetric(BubbleMetric metric) const {
+  DCHECK(metric < NUM_BUBBLE_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("Autocheckout.Bubble", metric, NUM_BUBBLE_METRICS);
+}
+
 void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
   DCHECK(metric < NUM_INFO_BAR_METRICS);
 

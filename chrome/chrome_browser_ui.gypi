@@ -212,6 +212,8 @@
         'browser/ui/aura/tabs/dock_info_aurax11.cc',
         'browser/ui/autofill/autocheckout_bubble.h',
         'browser/ui/autofill/autocheckout_bubble.cc',
+        'browser/ui/autofill/autocheckout_bubble_controller.cc',
+        'browser/ui/autofill/autocheckout_bubble_controller.h',
         'browser/ui/autofill/autofill_dialog_controller.h',
         'browser/ui/autofill/autofill_dialog_controller_impl.cc',
         'browser/ui/autofill/autofill_dialog_controller_impl.h',

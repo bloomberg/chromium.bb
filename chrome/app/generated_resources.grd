@@ -10733,6 +10733,15 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS" desc="Menu item for adding new shipping address in the autofill dialog.">
         Add shipping address...
       </message>
+      <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT" desc="Text for prompting a user to start an Autocheckout flow.">
+        Complete this form without typing?
+      </message>
+      <message name="IDS_AUTOCHECKOUT_BUBBLE_ACCEPT" desc="Label for the button a user clicks to start an Autocheckout flow.">
+        Auto-Checkout
+      </message>
+      <message name="IDS_AUTOCHECKOUT_BUBBLE_CANCEL" desc="Label for the button a user clicks to cancel an Autocheckout flow.">
+        No, Thanks
+      </message>
 
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
         Appearance
