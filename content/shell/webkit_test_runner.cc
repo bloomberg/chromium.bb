@@ -460,9 +460,6 @@ void WebKitTestRunner::Reset() {
   // The proxy_ is always non-NULL, it is set right after construction.
   proxy_->reset();
   prefs_.reset();
-  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
-  ExportLayoutTestSpecificPreferences(prefs_, &prefs);
-  render_view()->SetWebkitPreferences(prefs);
   enable_pixel_dumping_ = true;
   layout_test_timeout_ = kDefaultLayoutTestTimeoutMs;
   allow_external_pages_ = false;
