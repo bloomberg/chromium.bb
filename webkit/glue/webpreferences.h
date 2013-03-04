@@ -160,6 +160,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool text_autosizing_enabled;
   float font_scale_factor;
   bool force_enable_zoom;
+  bool double_tap_to_zoom_enabled;
   bool user_gesture_required_for_media_playback;
 #endif
 

@@ -140,6 +140,7 @@ WebPreferences::WebPreferences()
       text_autosizing_enabled(true),
       font_scale_factor(1.0f),
       force_enable_zoom(false),
+      double_tap_to_zoom_enabled(true),
       user_gesture_required_for_media_playback(true)
 #endif
 {
@@ -458,7 +459,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setTextAutosizingFontScaleFactor(font_scale_factor);
   web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
-  settings->setDoubleTapToZoomEnabled(true);
+  settings->setDoubleTapToZoomEnabled(double_tap_to_zoom_enabled);
   settings->setMediaPlaybackRequiresUserGesture(
       user_gesture_required_for_media_playback);
 #endif

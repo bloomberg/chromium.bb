@@ -406,6 +406,7 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.viewport_enabled = env->GetBooleanField(
       obj, field_ids_->use_wide_viewport);
+  prefs.double_tap_to_zoom_enabled = prefs.viewport_enabled;
 
   prefs.initialize_at_minimum_page_scale = env->GetBooleanField(
       obj, field_ids_->load_with_overview_mode);

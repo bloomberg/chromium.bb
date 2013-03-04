@@ -6,9 +6,12 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.SystemClock;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
+import android.view.MotionEvent;
 import android.webkit.WebSettings;
 
 import org.apache.http.Header;
@@ -2362,6 +2365,35 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         assertEquals(viewportTagSpecifiedWidth, getTitleOnUiThread(awContents));
     }
 
+    @MediumTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testUseWideViewportControlsDoubleTabToZoom() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        ContentSettings settings = getContentSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+
+        final String page = "<html><body>Page Text</body></html>";
+        assertFalse(settings.getUseWideViewPort());
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        final float initialScale = getScaleOnUiThread(awContents);
+        simulateDoubleTapCenterOfWebViewOnUiThread(testContainerView);
+        Thread.sleep(1000);
+        assertEquals(initialScale, getScaleOnUiThread(awContents));
+
+        settings.setUseWideViewPort(true);
+        awContents.getSettings().setEnableFixedLayoutMode(true);
+        loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        int onScaleChangedCallCount = contentClient.getOnScaleChangedHelper().getCallCount();
+        simulateDoubleTapCenterOfWebViewOnUiThread(testContainerView);
+        contentClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        final float zoomedOutScale = getScaleOnUiThread(awContents);
+        assertTrue("zoomedOut: " + zoomedOutScale + ", initial: " + initialScale,
+                zoomedOutScale < initialScale);
+    }
+
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testLoadWithOverviewModeWithTwoViews() throws Throwable {
@@ -2659,6 +2691,32 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             @Override
             public Float call() throws Exception {
                 return awContents.getScale();
+            }
+        });
+    }
+
+    private void simulateDoubleTapCenterOfWebViewOnUiThread(final AwTestContainerView webView)
+            throws Throwable {
+        final AwContents awContents = webView.getAwContents();
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                long firstTapTime = SystemClock.uptimeMillis();
+                float x = (float)(webView.getRight() - webView.getLeft()) / 2;
+                float y = (float)(webView.getBottom() - webView.getTop()) / 2;
+                awContents.onTouchEvent(MotionEvent.obtain(
+                        firstTapTime, firstTapTime, MotionEvent.ACTION_DOWN,
+                        x, y, 0));
+                awContents.onTouchEvent(MotionEvent.obtain(
+                        firstTapTime, firstTapTime, MotionEvent.ACTION_UP,
+                        x, y, 0));
+                long secondTapTime = firstTapTime + 200;
+                awContents.onTouchEvent(MotionEvent.obtain(
+                        secondTapTime, secondTapTime, MotionEvent.ACTION_DOWN,
+                        x, y, 0));
+                awContents.onTouchEvent(MotionEvent.obtain(
+                        secondTapTime, secondTapTime, MotionEvent.ACTION_UP,
+                        x, y, 0));
             }
         });
     }
