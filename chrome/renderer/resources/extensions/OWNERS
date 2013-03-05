@@ -15,3 +15,6 @@ yoz@chromium.org
 per-file searchbox_api.js=dcblack@chromium.org
 per-file searchbox_api.js=sreeram@chromium.org
 per-file web_view.js=fsamuel@chromium.org
+per-file web_view.js=lazyboy@chromium.org
+per-file web_view_experimental.js=fsamuel@chromium.org
+per-file web_view_experimental.js=lazyboy@chromium.org
