@@ -46,10 +46,11 @@ struct gl_shader {
 	GLint color_uniform;
 };
 
+#define BUFFER_DAMAGE_COUNT 2
+
 struct gl_output_state {
 	EGLSurface egl_surface;
-	int current_buffer;
-	pixman_region32_t buffer_damage[2];
+	pixman_region32_t buffer_damage[BUFFER_DAMAGE_COUNT];
 };
 
 struct gl_surface_state {
@@ -94,6 +95,8 @@ struct gl_renderer {
 	int has_bind_display;
 
 	int has_egl_image_external;
+
+	int has_egl_buffer_age;
 
 	struct gl_shader texture_shader_rgba;
 	struct gl_shader texture_shader_rgbx;
@@ -742,12 +745,10 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	struct weston_compositor *ec = es->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	struct gl_surface_state *gs = get_surface_state(es);
-	struct gl_output_state *go = get_output_state(output);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
 	/* non-opaque region in surface coordinates: */
 	pixman_region32_t surface_blend;
-	pixman_region32_t *buffer_damage;
 	GLint filter;
 	int i;
 
@@ -758,9 +759,6 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
-
-	buffer_damage = &go->buffer_damage[go->current_buffer];
-	pixman_region32_subtract(buffer_damage, buffer_damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -948,6 +946,51 @@ draw_border(struct weston_output *output)
 }
 
 static void
+output_get_buffer_damage(struct weston_output *output,
+			 pixman_region32_t *buffer_damage)
+{
+	struct gl_output_state *go = get_output_state(output);
+	struct gl_renderer *gr = get_renderer(output->compositor);
+	EGLint buffer_age = 0;
+	EGLBoolean ret;
+	int i;
+
+	if (gr->has_egl_buffer_age) {
+		ret = eglQuerySurface(gr->egl_display, go->egl_surface,
+				      EGL_BUFFER_AGE_EXT, &buffer_age);
+		if (ret == EGL_FALSE) {
+			weston_log("buffer age query failed.\n");
+			gl_renderer_print_egl_error_state();
+		}
+	}
+
+	if (buffer_age == 0 || buffer_age - 1 > BUFFER_DAMAGE_COUNT)
+		pixman_region32_copy(buffer_damage, &output->region);
+	else
+		for (i = 0; i < buffer_age - 1; i++)
+			pixman_region32_union(buffer_damage, buffer_damage,
+					      &go->buffer_damage[i]);
+}
+
+static void
+output_rotate_damage(struct weston_output *output,
+		     pixman_region32_t *output_damage)
+{
+	struct gl_output_state *go = get_output_state(output);
+	struct gl_renderer *gr = get_renderer(output->compositor);
+	int i;
+
+	if (!gr->has_egl_buffer_age)
+		return;
+
+	for (i = BUFFER_DAMAGE_COUNT - 1; i >= 1; i--)
+		pixman_region32_copy(&go->buffer_damage[i],
+				     &go->buffer_damage[i - 1]);
+
+	pixman_region32_copy(&go->buffer_damage[0], output_damage);
+}
+
+static void
 gl_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage)
 {
@@ -956,8 +999,8 @@ gl_renderer_repaint_output(struct weston_output *output,
 	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
-	int32_t width, height, i;
-	pixman_region32_t total_damage;
+	int32_t width, height;
+	pixman_region32_t buffer_damage, total_damage;
 
 	width = output->current->width +
 		output->border.left + output->border.right;
@@ -983,18 +1026,18 @@ gl_renderer_repaint_output(struct weston_output *output,
 		pixman_region32_fini(&undamaged);
 	}
 
-	for (i = 0; i < 2; i++)
-		pixman_region32_union(&go->buffer_damage[i],
-				      &go->buffer_damage[i],
-				      output_damage);
-
 	pixman_region32_init(&total_damage);
-	pixman_region32_copy(&total_damage,
-			     &go->buffer_damage[go->current_buffer]);
+	pixman_region32_init(&buffer_damage);
+
+	output_get_buffer_damage(output, &buffer_damage);
+	output_rotate_damage(output, output_damage);
+
+	pixman_region32_union(&total_damage, &buffer_damage, output_damage);
 
 	repaint_surfaces(output, &total_damage);
 
 	pixman_region32_fini(&total_damage);
+	pixman_region32_fini(&buffer_damage);
 
 	if (gr->border.texture)
 		draw_border(output);
@@ -1008,8 +1051,6 @@ gl_renderer_repaint_output(struct weston_output *output,
 		weston_log("Failed in eglSwapBuffers.\n");
 		gl_renderer_print_egl_error_state();
 	}
-
-	go->current_buffer ^= 1;
 
 }
 
@@ -1620,8 +1661,7 @@ gl_renderer_output_create(struct weston_output *output,
 			return -1;
 		}
 
-	go->current_buffer = 0;
-	for (i = 0; i < 2; i++)
+	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
 		pixman_region32_init(&go->buffer_damage[i]);
 
 	output->renderer_state = go;
@@ -1930,6 +1970,12 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 		if (!ret)
 			gr->has_bind_display = 0;
 	}
+
+	if (strstr(extensions, "EGL_EXT_buffer_age"))
+		gr->has_egl_buffer_age = 1;
+	else
+		weston_log("warning: EGL_EXT_buffer_age not supported. "
+			   "Performance could be affected.\n");
 
 	glActiveTexture(GL_TEXTURE0);
 
