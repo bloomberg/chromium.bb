@@ -106,11 +106,6 @@
 // that the dialog should be closed, at which point things are torn
 // down and released.
 
-// TODO(scottbyer):
-// http://code.google.com/p/chromium/issues/detail?id=44093 The
-// high-level flow (where the data is generated before even
-// bringing up the dialog) isn't what we want.
-
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -196,46 +191,16 @@ void CloudPrintDataSender::CancelPrintDataFile() {
 CloudPrintDataSender::CloudPrintDataSender(CloudPrintDataSenderHelper* helper,
                                            const string16& print_job_title,
                                            const string16& print_ticket,
-                                           const std::string& file_type)
+                                           const std::string& file_type,
+                                           const base::RefCountedMemory* data)
     : helper_(helper),
       print_job_title_(print_job_title),
       print_ticket_(print_ticket),
-      file_type_(file_type) {
+      file_type_(file_type),
+      data_(data) {
 }
 
 CloudPrintDataSender::~CloudPrintDataSender() {}
-
-// Grab the raw file contents and massage them into shape for
-// sending to the dialog contents (and up to the cloud print server)
-// by encoding it and prefixing it with the appropriate mime type.
-// Once that is done, kick off the next part of the task on the IO
-// thread.
-void CloudPrintDataSender::ReadPrintDataFile(
-    const base::FilePath& path_to_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  int64 file_size = 0;
-  if (file_util::GetFileSize(path_to_file, &file_size) && file_size != 0) {
-    std::string file_data;
-    if (file_size < kuint32max) {
-      file_data.reserve(static_cast<unsigned int>(file_size));
-    } else {
-      DLOG(WARNING) << " print data file too large to reserve space";
-    }
-    if (helper_ && file_util::ReadFileToString(path_to_file, &file_data)) {
-      std::string base64_data;
-      base::Base64Encode(file_data, &base64_data);
-      std::string header("data:");
-      header.append(file_type_);
-      header.append(";base64,");
-      base64_data.insert(0, header);
-      scoped_ptr<StringValue> new_data(new StringValue(base64_data));
-      print_data_.swap(new_data);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&CloudPrintDataSender::SendPrintDataFile, this));
-    }
-  }
-}
 
 // We have the data in hand that needs to be pushed into the dialog
 // contents; do so from the IO thread.
@@ -245,10 +210,24 @@ void CloudPrintDataSender::ReadPrintDataFile(
 // large data to google docs and set the URL in the printing
 // JavaScript to that location, and make sure it gets deleted when not
 // needed. - 4/1/2010
-void CloudPrintDataSender::SendPrintDataFile() {
+void CloudPrintDataSender::SendPrintData() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!data_ || !data_->size())
+    return;
+
+  std::string base64_data;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(data_->front()),
+                        data_->size()),
+      &base64_data);
+  data_ = NULL;
+  std::string header("data:");
+  header.append(file_type_);
+  header.append(";base64,");
+  base64_data.insert(0, header);
+
   base::AutoLock lock(lock_);
-  if (helper_ && print_data_.get()) {
+  if (helper_) {
     StringValue title(print_job_title_);
     StringValue ticket(print_ticket_);
     // TODO(abodenha): Change Javascript call to pass in print ticket
@@ -258,19 +237,19 @@ void CloudPrintDataSender::SendPrintDataFile() {
     // function is a preliminary API for prototyping purposes and is
     // subject to change.
     const_cast<CloudPrintDataSenderHelper*>(helper_)->CallJavascriptFunction(
-        L"printApp._printDataUrl", *print_data_, title);
+        L"printApp._printDataUrl", StringValue(base64_data), title);
   }
 }
 
 
-CloudPrintFlowHandler::CloudPrintFlowHandler(const base::FilePath& path_to_file,
+CloudPrintFlowHandler::CloudPrintFlowHandler(const base::RefCountedMemory* data,
                                              const string16& print_job_title,
                                              const string16& print_ticket,
                                              const std::string& file_type,
                                              bool close_after_signin,
                                              const base::Closure& callback)
     : dialog_delegate_(NULL),
-      path_to_file_(path_to_file),
+      data_(data),
       print_job_title_(print_job_title),
       print_ticket_(print_ticket),
       file_type_(file_type),
@@ -399,10 +378,11 @@ scoped_refptr<CloudPrintDataSender>
 CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   DCHECK(web_ui());
   print_data_helper_.reset(new CloudPrintDataSenderHelper(web_ui()));
-  return new CloudPrintDataSender(print_data_helper_.get(),
-                                  print_job_title_,
-                                  print_ticket_,
-                                  file_type_);
+  scoped_refptr<CloudPrintDataSender> sender(
+      new CloudPrintDataSender(print_data_helper_.get(), print_job_title_,
+                               print_ticket_, file_type_, data_));
+  data_ = NULL;
+  return sender;
 }
 
 void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
@@ -415,9 +395,8 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
   if (web_ui()) {
     print_data_sender_ = CreateCloudPrintDataSender();
     BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
-                   print_data_sender_.get(), path_to_file_));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&CloudPrintDataSender::SendPrintData, print_data_sender_));
   }
 }
 
@@ -500,36 +479,27 @@ bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
     content::BrowserContext* browser_context,
     gfx::NativeWindow modal_parent,
-    const base::FilePath& path_to_file,
+    const base::RefCountedMemory* data,
     const std::string& json_arguments,
     const string16& print_job_title,
     const string16& print_ticket,
     const std::string& file_type,
-    bool delete_on_close,
     bool close_after_signin,
     const base::Closure& callback)
-    : delete_on_close_(delete_on_close),
-      flow_handler_(new CloudPrintFlowHandler(path_to_file,
-                                              print_job_title,
-                                              print_ticket,
-                                              file_type,
-                                              close_after_signin,
-                                              callback)),
+    : flow_handler_(
+          new CloudPrintFlowHandler(data, print_job_title, print_ticket,
+                                    file_type, close_after_signin, callback)),
       modal_parent_(modal_parent),
       owns_flow_handler_(true),
-      path_to_file_(path_to_file),
       keep_alive_when_non_modal_(true) {
   Init(browser_context, json_arguments);
 }
 
 // For unit testing.
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
-    const base::FilePath& path_to_file,
     CloudPrintFlowHandler* flow_handler,
-    const std::string& json_arguments,
-    bool delete_on_close)
-    : delete_on_close_(delete_on_close),
-      flow_handler_(flow_handler),
+    const std::string& json_arguments)
+    : flow_handler_(flow_handler),
       modal_parent_(NULL),
       owns_flow_handler_(true),
       keep_alive_when_non_modal_(false) {
@@ -614,12 +584,6 @@ void CloudPrintWebDialogDelegate::OnDialogClosed(
   // Get the final dialog size and store it.
   flow_handler_->StoreDialogClientSize();
 
-  if (delete_on_close_) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&internal_cloud_print_helpers::Delete, path_to_file_));
-  }
-
   // If we're modal we can show the dialog with no browser.
   // End the keep-alive so that Chrome can exit.
   if (!modal_parent_ && keep_alive_when_non_modal_)
@@ -649,54 +613,20 @@ bool CloudPrintWebDialogDelegate::HandleOpenURLFromTab(
   return flow_handler_->NavigationToURLDidCloseDialog(params.url);
 }
 
-void CreatePrintDialogForBytesImpl(content::BrowserContext* browser_context,
-                                   gfx::NativeWindow modal_parent,
-                                   scoped_refptr<base::RefCountedBytes> data,
-                                   const string16& print_job_title,
-                                   const string16& print_ticket,
-                                   const std::string& file_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // TODO(abodenha@chromium.org) Writing the PDF to a file before printing
-  // is wasteful.  Modify the dialog flow to pull PDF data from memory.
-  // See http://code.google.com/p/chromium/issues/detail?id=44093
-  base::FilePath path;
-  if (file_util::CreateTemporaryFile(&path)) {
-    file_util::WriteFile(path,
-                         reinterpret_cast<const char*>(data->front()),
-                         data->size());
-  }
-  print_dialog_cloud::CreatePrintDialogForFile(browser_context,
-                                               modal_parent,
-                                               path,
-                                               print_job_title,
-                                               print_ticket,
-                                               file_type,
-                                               true);
-}
-
 // Called from the UI thread, starts up the dialog.
 void CreateDialogImpl(content::BrowserContext* browser_context,
                       gfx::NativeWindow modal_parent,
-                      const base::FilePath& path_to_file,
+                      const base::RefCountedMemory* data,
                       const string16& print_job_title,
                       const string16& print_ticket,
                       const std::string& file_type,
-                      bool delete_on_close,
                       bool close_after_signin,
                       const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WebDialogDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintWebDialogDelegate(
-          browser_context,
-          modal_parent,
-          path_to_file,
-          std::string(),
-          print_job_title,
-          print_ticket,
-          file_type,
-          delete_on_close,
-          close_after_signin,
-          callback);
+          browser_context, modal_parent, data, std::string(), print_job_title,
+          print_ticket, file_type, close_after_signin, callback);
 #if defined(OS_WIN)
   gfx::NativeWindow window =
 #endif
@@ -704,7 +634,7 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
                             Profile::FromBrowserContext(browser_context),
                             dialog_delegate);
 #if defined(OS_WIN)
-  if (!path_to_file.empty() && window) {
+  if (window) {
     HWND dialog_handle;
 #if defined(USE_AURA)
     dialog_handle = window->GetRootWindow()->GetAcceleratedWidget();
@@ -721,27 +651,39 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
 void CreateDialogSigninImpl(content::BrowserContext* browser_context,
                             gfx::NativeWindow modal_parent,
                             const base::Closure& callback) {
-  CreateDialogImpl(browser_context, modal_parent, base::FilePath(), string16(),
-                   string16(), std::string(), false, true, callback);
+  CreateDialogImpl(browser_context, modal_parent, NULL, string16(),
+                   string16(), std::string(), true, callback);
 }
 
-void CreateDialogFullImpl(content::BrowserContext* browser_context,
-                          gfx::NativeWindow modal_parent,
-                          const base::FilePath& path_to_file,
-                          const string16& print_job_title,
-                          const string16& print_ticket,
-                          const std::string& file_type,
-                          bool delete_on_close) {
-  CreateDialogImpl(browser_context, modal_parent, path_to_file, print_job_title,
-                   print_ticket, file_type, delete_on_close, false,
-                   base::Closure());
-}
-
-
-
-// Provides a runnable function to delete a file.
-void Delete(const base::FilePath& file_path) {
-  file_util::Delete(file_path, false);
+void CreateDialogForFileImpl(content::BrowserContext* browser_context,
+                             gfx::NativeWindow modal_parent,
+                             const base::FilePath& path_to_file,
+                             const string16& print_job_title,
+                             const string16& print_ticket,
+                             const std::string& file_type,
+                             bool delete_on_close) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  scoped_refptr<base::RefCountedMemory> data;
+  int64 file_size = 0;
+  if (file_util::GetFileSize(path_to_file, &file_size) && file_size != 0) {
+    std::string file_data;
+    if (file_size < kuint32max) {
+      file_data.reserve(static_cast<unsigned int>(file_size));
+    } else {
+      DLOG(WARNING) << " print data file too large to reserve space";
+    }
+    if (file_util::ReadFileToString(path_to_file, &file_data)) {
+      data = base::RefCountedString::TakeString(&file_data);
+    }
+  }
+  // Proceed even for empty data to simplify testing.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&print_dialog_cloud::CreatePrintDialogForBytes,
+                 browser_context, modal_parent, data, print_job_title,
+                 print_ticket, file_type));
+  if (delete_on_close)
+    file_util::Delete(path_to_file, false);
 }
 
 }  // namespace internal_cloud_print_helpers
@@ -762,9 +704,6 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
 // Called on the FILE or UI thread.  This is the main entry point into creating
 // the dialog.
 
-// TODO(scottbyer): The signature here will need to change as the
-// workflow through the printing code changes to allow for dynamically
-// changing page setup parameters while the dialog is active.
 void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               gfx::NativeWindow modal_parent,
                               const base::FilePath& path_to_file,
@@ -775,8 +714,8 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&internal_cloud_print_helpers::CreateDialogFullImpl,
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&internal_cloud_print_helpers::CreateDialogForFileImpl,
                  browser_context, modal_parent, path_to_file, print_job_title,
                  print_ticket, file_type, delete_on_close));
 }
@@ -789,27 +728,19 @@ void CreateCloudPrintSigninDialog(content::BrowserContext* browser_context,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&internal_cloud_print_helpers::CreateDialogSigninImpl,
-                 browser_context,
-                 modal_parent,
-                 callback));
+                 browser_context, modal_parent, callback));
 }
 
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
                                gfx::NativeWindow modal_parent,
-                               const base::RefCountedBytes* data,
+                               const base::RefCountedMemory* data,
                                const string16& print_job_title,
                                const string16& print_ticket,
                                const std::string& file_type) {
-  // TODO(abodenha@chromium.org) Avoid cloning the PDF data.  Make use of a
-  // shared memory object instead.
-  // http://code.google.com/p/chromium/issues/detail?id=44093
-  scoped_refptr<base::RefCountedBytes> cloned_data =
-      new base::RefCountedBytes(data->data());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&internal_cloud_print_helpers::CreatePrintDialogForBytesImpl,
-                 browser_context, modal_parent, cloned_data, print_job_title,
-                 print_ticket, file_type));
+  internal_cloud_print_helpers::CreateDialogImpl(browser_context, modal_parent,
+                                                 data, print_job_title,
+                                                 print_ticket, file_type, false,
+                                                 base::Closure());
 }
 
 bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
