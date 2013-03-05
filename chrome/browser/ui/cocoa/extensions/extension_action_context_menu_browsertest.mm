@@ -149,9 +149,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, RunInspectPopup) {
                from:inspectItem];
   devtools_attached_observer.Wait();
 
-  // Hide the popup to prevent racy crashes at test cleanup.
-  BrowserActionTestUtil test_util(browser());
-  test_util.HidePopup();
-
   service->SetBoolean(prefs::kExtensionsUIDeveloperMode, original);
 }
