@@ -60,18 +60,19 @@ void __asan_init() {
   }
 }
 
-void __asan_register_globals() { }
-void __asan_unregister_globals() { }
 void __asan_handle_no_return() { }
+void __asan_init_v1() { }
+void __asan_register_globals() { }
 void __asan_report_load1() { }
+void __asan_report_load16() { }
 void __asan_report_load2() { }
 void __asan_report_load4() { }
 void __asan_report_load8() { }
-void __asan_report_load16() { }
 void __asan_report_store1() { }
+void __asan_report_store16() { }
 void __asan_report_store2() { }
 void __asan_report_store4() { }
 void __asan_report_store8() { }
-void __asan_report_store16() { }
 void __asan_set_error_report_callback() { }
+void __asan_unregister_globals() { }
 void __sanitizer_sandbox_on_notify() { }
