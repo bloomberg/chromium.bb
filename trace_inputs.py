@@ -274,10 +274,12 @@ elif sys.platform == 'darwin':
       # The OSX underlying code uses NFD but python strings are in NFC. This
       # will cause issues with os.listdir() for example. Since the dtrace log
       # *is* in NFC, normalize it here.
-      out = unicodedata.normalize(
-          'NFC', rel_ref.FSRefMakePath().decode('utf-8'))
+      raw_nfd_path = rel_ref.FSRefMakePath().decode('utf-8')
+      logging.debug('raw NFD path: %s' % raw_nfd_path)
+      out = unicodedata.normalize(raw_nfd_path)
       if p.endswith(os.path.sep) and not out.endswith(os.path.sep):
         return out + os.path.sep
+      logging.debug('_native_case(%s) = %s' % (p, out))
       return out
     except MacOS.Error, e:
       if e.args[0] in (-43, -120):
@@ -286,7 +288,9 @@ elif sys.platform == 'darwin':
         # -120 means directory not found.
         base = os.path.dirname(p)
         rest = os.path.basename(p)
-        return os.path.join(_native_case(base), rest)
+        out = os.path.join(_native_case(base), rest)
+        logging.debug('_native_case(%s) = %s' % (p, out))
+        return out
       raise OSError(
           e.args[0], 'Failed to get native path for %s' % p, p, e.args[1])
 
