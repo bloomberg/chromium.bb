@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
@@ -279,10 +280,10 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
 void DriveFileSyncClient::GetLargestChangeStamp(
     const ChangeStampCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DVLOG(2) << "Getting largest changestamp";
+  DVLOG(2) << "Getting largest change id";
 
-  drive_service_->GetAccountMetadata(
-      base::Bind(&DriveFileSyncClient::DidGetAccountMetadata,
+  drive_service_->GetAboutResource(
+      base::Bind(&DriveFileSyncClient::DidGetAboutResource,
                  AsWeakPtr(), callback));
 }
 
@@ -298,22 +299,22 @@ void DriveFileSyncClient::GetResourceEntry(
                  AsWeakPtr(), callback));
 }
 
-void DriveFileSyncClient::DidGetAccountMetadata(
+void DriveFileSyncClient::DidGetAboutResource(
     const ChangeStampCallback& callback,
     google_apis::GDataErrorCode error,
-    scoped_ptr<google_apis::AccountMetadata> metadata) {
+    scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(CalledOnValidThread());
 
-  int64 largest_changestamp = 0;
+  int64 largest_change_id = 0;
   if (error == google_apis::HTTP_SUCCESS) {
-    DCHECK(metadata);
-    largest_changestamp = metadata->largest_changestamp();
-    DVLOG(2) << "Got largest changestamp: " << largest_changestamp;
+    DCHECK(about_resource);
+    largest_change_id = about_resource->largest_change_id();
+    DVLOG(2) << "Got largest change id: " << largest_change_id;
   } else {
-    DVLOG(2) << "Error on getting largest changestamp: " << error;
+    DVLOG(2) << "Error on getting largest change id: " << error;
   }
 
-  callback.Run(error, largest_changestamp);
+  callback.Run(error, largest_change_id);
 }
 
 void DriveFileSyncClient::SearchFilesInDirectory(

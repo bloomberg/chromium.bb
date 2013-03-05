@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/mock_drive_service.h"
@@ -155,12 +156,12 @@ class DriveFileSyncClientTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientTest);
 };
 
-// Invokes |arg0| as a GetAccountMetadataCallback.
-ACTION_P2(InvokeGetAccountMetadataCallback0, error, result) {
-  scoped_ptr<google_apis::AccountMetadata> account_metadata(result.Pass());
+// Invokes |arg0| as a GetAboutResourceCallback.
+ACTION_P2(InvokeGetAboutResourceCallback0, error, result) {
+  scoped_ptr<google_apis::AboutResource> about_resource(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg0, error, base::Passed(&account_metadata)));
+      base::Bind(arg0, error, base::Passed(&about_resource)));
 }
 
 // Invokes |arg1| as a GetResourceEntryCallback.
@@ -571,14 +572,16 @@ TEST_F(DriveFileSyncClientTest, CreateOriginDirectory_Conflict) {
 TEST_F(DriveFileSyncClientTest, GetLargestChangeStamp) {
   scoped_ptr<base::Value> result(
       LoadJSONFile("sync_file_system/account_metadata.json").Pass());
-  scoped_ptr<google_apis::AccountMetadata> account_metadata(
-      google_apis::AccountMetadata::CreateFrom(*result));
+  scoped_ptr<google_apis::AboutResource> about_resource(
+      google_apis::AboutResource::CreateFromAccountMetadata(
+          *google_apis::AccountMetadata::CreateFrom(*result),
+          "folder:root"));
 
-  // Expect to call GetAccountMetadata from GetLargestChangeStamp.
-  EXPECT_CALL(*mock_drive_service(), GetAccountMetadata(_))
-      .WillOnce(InvokeGetAccountMetadataCallback0(
+  // Expect to call GetAboutResource from GetLargestChangeStamp.
+  EXPECT_CALL(*mock_drive_service(), GetAboutResource(_))
+      .WillOnce(InvokeGetAboutResourceCallback0(
           google_apis::HTTP_SUCCESS,
-          base::Passed(&account_metadata)))
+          base::Passed(&about_resource)))
       .RetiresOnSaturation();
 
   bool done = false;

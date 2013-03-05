@@ -11,6 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -108,11 +109,11 @@ ACTION(InvokeCompletionCallback) {
 }
 
 // Invokes |arg0| as a GetDataCallback.
-ACTION_P2(InvokeGetAccountMetadataCallback0, error, result) {
-  scoped_ptr<google_apis::AccountMetadata> account_metadata(result.Pass());
+ACTION_P2(InvokeGetAboutResourceCallback0, error, result) {
+  scoped_ptr<google_apis::AboutResource> about_resource(result.Pass());
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(arg0, error, base::Passed(&account_metadata)));
+      base::Bind(arg0, error, base::Passed(&about_resource)));
 }
 
 // Invokes |arg1| as a GetResourceEntryCallback.
@@ -468,16 +469,17 @@ class DriveFileSyncServiceTest : public testing::Test {
         std::string());
   }
 
-  void SetUpDriveServiceExpectCallsForGetAccountMetadata() {
+  void SetUpDriveServiceExpectCallsForGetAboutResource() {
     scoped_ptr<Value> account_metadata_value(LoadJSONFile(
         "gdata/account_metadata.json"));
-    scoped_ptr<google_apis::AccountMetadata> account_metadata(
-        google_apis::AccountMetadata::CreateFrom(*account_metadata_value));
-    EXPECT_CALL(*mock_drive_service(),
-                GetAccountMetadata(_))
-        .WillOnce(InvokeGetAccountMetadataCallback0(
+    scoped_ptr<google_apis::AboutResource> about_resource(
+        google_apis::AboutResource::CreateFromAccountMetadata(
+            *google_apis::AccountMetadata::CreateFrom(*account_metadata_value),
+            "folder:root"));
+    EXPECT_CALL(*mock_drive_service(), GetAboutResource(_))
+        .WillOnce(InvokeGetAboutResourceCallback0(
             google_apis::HTTP_SUCCESS,
-            base::Passed(&account_metadata)))
+            base::Passed(&about_resource)))
         .RetiresOnSaturation();
   }
 
@@ -585,7 +587,7 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
 
   InSequence sequence;
 
-  SetUpDriveServiceExpectCallsForGetAccountMetadata();
+  SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceList(
       "sync_file_system/listing_files_in_directory.json",
       std::string(),
@@ -636,9 +638,9 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
       kSyncRootResourceId,
       DriveFileSyncClient::OriginToDirectoryTitle(kOrigin));
 
-  // Once the directory is created GetAccountMetadata should be called to get
+  // Once the directory is created GetAboutResource should be called to get
   // the largest changestamp for the origin as a prepariation of the batch sync.
-  SetUpDriveServiceExpectCallsForGetAccountMetadata();
+  SetUpDriveServiceExpectCallsForGetAboutResource();
 
   SetUpDriveServiceExpectCallsForGetResourceList(
       "sync_file_system/listing_files_in_empty_directory.json",
@@ -678,7 +680,7 @@ TEST_F(DriveFileSyncServiceTest, RegisterExistingOrigin) {
       FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
       kSyncRootResourceId);
 
-  SetUpDriveServiceExpectCallsForGetAccountMetadata();
+  SetUpDriveServiceExpectCallsForGetAboutResource();
 
   // DriveFileSyncService should fetch the list of the directory content
   // to start the batch sync.
@@ -724,7 +726,7 @@ TEST_F(DriveFileSyncServiceTest, UnregisterOrigin) {
 
   InSequence sequence;
 
-  SetUpDriveServiceExpectCallsForGetAccountMetadata();
+  SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceList(
       "sync_file_system/listing_files_in_directory.json",
       std::string(),
