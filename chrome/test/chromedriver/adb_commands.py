@@ -5,26 +5,31 @@
 
 """A wrapper around adb commands called by chromedriver.
 
-Prerequisites:
+Preconditions:
   - A single device is attached.
   - adb is in PATH.
 
 This script should write everything (including stacktraces) to stdout.
 """
 
+import collections
 import optparse
 import subprocess
 import sys
 import traceback
 
 
-# {<package name>: (<activity name>, <device abstract socket>)}
-PACKAGE_INFO = {'org.chromium.chrome.testshell':
-                ('org.chromium.chrome.testshell.ChromiumTestShellActivity',
-                 'chromium_testshell_devtools_remote'),
-                'com.google.android.apps.chrome':
-                ('com.google.android.apps.chrome.Main',
-                 'chrome_devtools_remote')}
+PackageInfo = collections.namedtuple('PackageInfo', ['activity', 'socket'])
+CHROME_INFO = PackageInfo('Main', 'chrome_devtools_remote')
+PACKAGE_INFO = {
+    'org.chromium.chrome.testshell':
+        PackageInfo('ChromiumTestShellActivity',
+                    'chromium_testshell_devtools_remote'),
+    'com.google.android.apps.chrome': CHROME_INFO,
+    'com.chrome.dev': CHROME_INFO,
+    'com.chrome.beta': CHROME_INFO,
+    'com.android.chrome': CHROME_INFO,
+}
 
 
 class AdbError(Exception):
@@ -38,29 +43,26 @@ class AdbError(Exception):
             (self.message, self.cmd, self.output))
 
 
-def RunAdbCommand(args, cwd=None):
+def RunAdbCommand(args):
   """Executes an ADB command and returns its output.
 
   Args:
     args: A sequence of program arguments supplied to adb.
-    cwd: If not None, the subprocess's current directory will be changed to
-         |cwd| before it's executed.
 
   Returns:
-    A tuple: (stdout + stderr, command string)
+    output of the command (stdout + stderr).
 
   Raises:
     AdbError: if exit code is non-zero.
   """
   args = ['adb', '-d'] + args
   try:
-    p = subprocess.Popen(args, cwd=cwd, stdout=subprocess.PIPE,
+    p = subprocess.Popen(args, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
-    stdout, _ = p.communicate()
-    args = ' '.join(args)
+    out, _ = p.communicate()
     if p.returncode:
-      raise AdbError('Command failed.', stdout, args)
-    return stdout, args
+      raise AdbError('Command failed.', out, args)
+    return out
   except OSError as e:
     print 'Make sure adb command is in PATH.'
     raise e
@@ -72,12 +74,14 @@ def SetChromeFlags():
   Raises:
     AdbError: If failed to write the flags file to device.
   """
-  out, cmd = RunAdbCommand([
+  cmd = [
       'shell',
       'echo chrome --disable-fre --metrics-recording-only '
-      '--enable-remote-debugging > /data/local/chrome-command-line'
-      ])
-  if out.strip():
+      '--enable-remote-debugging > /data/local/chrome-command-line;'
+      'echo $?'
+      ]
+  out = RunAdbCommand(cmd).strip()
+  if out != '0':
     raise AdbError('Failed to set the command line flags.', out, cmd)
 
 
@@ -90,14 +94,15 @@ def ClearAppData(package):
   Raises:
     AdbError: if any step fails.
   """
-  out, cmd = RunAdbCommand(['shell', 'pm clear %s' % package])
+  cmd = ['shell', 'pm clear %s' % package]
   # am/pm package do not return valid exit codes.
+  out = RunAdbCommand(cmd)
   if 'Success' not in out:
     raise AdbError('Failed to clear the profile.', out, cmd)
 
 
-def LaunchApp(package):
-  """Launches the application.
+def StartActivity(package):
+  """Start the activity in the package.
 
   Args:
     package: Application package name.
@@ -105,13 +110,14 @@ def LaunchApp(package):
   Raises:
     AdbError: if any step fails.
   """
-  out, cmd = RunAdbCommand([
+  cmd = [
       'shell',
-      'am start -a android.intent.action.VIEW -S -W -n %s/%s '
+      'am start -a android.intent.action.VIEW -S -W -n %s/.%s '
       '-d "data:text/html;charset=utf-8,"' %
-      (package, PACKAGE_INFO[package][0])])
+      (package, PACKAGE_INFO[package].activity)]
+  out = RunAdbCommand(cmd)
   if 'Complete' not in out:
-    raise AdbError('Failed to start the app. %s', out, cmd)
+    raise AdbError('Failed to start the activity. %s', out, cmd)
 
 
 def Forward(package, host_port):
@@ -124,8 +130,9 @@ def Forward(package, host_port):
   Raises:
     AdbError: if command fails.
   """
-  RunAdbCommand(['forward', 'tcp:%d' % host_port, 'localabstract:%s' %
-                 PACKAGE_INFO[package][1]])
+  cmd = ['forward', 'tcp:%d' % host_port,
+         'localabstract:%s' % PACKAGE_INFO[package].socket]
+  RunAdbCommand(cmd)
 
 
 if __name__ == '__main__':
@@ -145,13 +152,13 @@ if __name__ == '__main__':
       raise Exception('No package specified.')
 
     if options.package not in PACKAGE_INFO:
-      raise Exception('Unkown package provided. Supported packages are:\n %s' %
+      raise Exception('Unknown package provided. Supported packages are:\n %s' %
                       PACKAGE_INFO.keys())
 
     if options.launch:
       SetChromeFlags()
       ClearAppData(options.package)
-      LaunchApp(options.package)
+      StartActivity(options.package)
       Forward(options.package, options.port)
     else:
       raise Exception('No options provided.')
