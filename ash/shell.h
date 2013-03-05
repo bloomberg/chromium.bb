@@ -64,10 +64,6 @@ class WindowModalityController;
 }
 }
 
-namespace message_center {
-class MessageCenter;
-}
-
 namespace ash {
 
 class AcceleratorController;
@@ -444,9 +440,6 @@ class ASH_EXPORT Shell
     return root_window_host_factory_.get();
   }
 
-  // MessageCenter is a global list of currently displayed notifications.
-  message_center::MessageCenter* message_center();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -588,8 +581,6 @@ class ASH_EXPORT Shell
   // Receives output change events and udpates the display manager.
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;
 #endif  // defined(OS_CHROMEOS)
-
-  scoped_ptr<message_center::MessageCenter> message_center_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

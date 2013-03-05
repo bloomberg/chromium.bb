@@ -10,12 +10,8 @@
 namespace message_center {
 
 bool IsRichNotificationEnabled() {
-#if defined(OS_WIN) && defined(USE_AURA)
-  return false;
-#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableRichNotifications);
-#endif
 }
 
 }  // namespace message_center

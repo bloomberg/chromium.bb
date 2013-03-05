@@ -30,6 +30,15 @@ namespace message_center {
 
 class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
  public:
+  // Creates the global message center object.
+  static void Initialize();
+
+  // Returns the global message center object. Initialize must be called first.
+  static MessageCenter* Get();
+
+  // Destroys the global message_center object.
+  static void Shutdown();
+
   // Class that hosts the message center.
   class MESSAGE_CENTER_EXPORT Observer {
    public:
@@ -77,9 +86,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
    protected:
     virtual ~Delegate() {}
   };
-
-  MessageCenter();
-  virtual ~MessageCenter();
 
   // Called to set the delegate.  Generally called only once, except in tests.
   // Changing the delegate does not affect notifications in its
@@ -152,6 +158,10 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   virtual void OnButtonClicked(const std::string& id, int button_index)
       OVERRIDE;
   virtual NotificationList* GetNotificationList() OVERRIDE;
+
+ protected:
+  MessageCenter();
+  virtual ~MessageCenter();
 
  private:
   // Calls OnMessageCenterChanged on each observer.

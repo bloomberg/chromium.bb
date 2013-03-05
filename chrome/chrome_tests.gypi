@@ -1857,7 +1857,7 @@
             ['exclude', '^browser/ui/app_list/'],
           ],
         }],
-        ['enable_message_center==0 or use_ash==1', {
+        ['enable_message_center==0', {
           'sources!': [
             'browser/notifications/message_center_notifications_browsertest.cc',
             'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',

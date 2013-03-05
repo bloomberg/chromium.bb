@@ -858,12 +858,6 @@ void Shell::DoInitialWorkspaceAnimation() {
       DoInitialAnimation();
 }
 
-message_center::MessageCenter* Shell::message_center() {
-  if (!message_center_.get())
-    message_center_.reset(new message_center::MessageCenter());
-  return message_center_.get();
-}
-
 void Shell::InitRootWindowController(
     internal::RootWindowController* controller) {
   aura::RootWindow* root_window = controller->root_window();

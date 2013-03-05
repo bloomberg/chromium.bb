@@ -12,6 +12,29 @@
 
 namespace message_center {
 
+namespace {
+static MessageCenter* g_message_center;
+}
+
+// static
+void MessageCenter::Initialize() {
+  DCHECK(g_message_center == NULL);
+  g_message_center = new MessageCenter();
+}
+
+// static
+MessageCenter* MessageCenter::Get() {
+  DCHECK(g_message_center);
+  return g_message_center;
+}
+
+// static
+void MessageCenter::Shutdown() {
+  DCHECK(g_message_center);
+  delete g_message_center;
+  g_message_center = NULL;
+}
+
 //------------------------------------------------------------------------------
 MessageCenter::MessageCenter()
     : delegate_(NULL) {

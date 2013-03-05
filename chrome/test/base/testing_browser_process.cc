@@ -34,10 +34,6 @@
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
-#if defined(ENABLE_MESSAGE_CENTER) && defined(USE_ASH)
-#include "ash/shell.h"
-#endif
-
 #if defined(ENABLE_MESSAGE_CENTER)
 #include "ui/message_center/message_center.h"
 #endif
@@ -201,13 +197,7 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 
 #if defined(ENABLE_MESSAGE_CENTER)
 message_center::MessageCenter* TestingBrowserProcess::message_center() {
-#if defined(USE_ASH)
-    return ash::Shell::GetInstance()->message_center();
-#else
-  if (!message_center_.get())
-    message_center_.reset(new message_center::MessageCenter());
-  return message_center_.get();
-#endif
+  return message_center::MessageCenter::Get();
 }
 #endif
 

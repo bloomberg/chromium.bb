@@ -98,7 +98,7 @@ WebNotificationTray::WebNotificationTray(
   SetVisible(false);
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
-      Shell::GetInstance()->message_center()));
+      message_center::MessageCenter::Get()));
   OnMessageCenterTrayChanged();
 }
 

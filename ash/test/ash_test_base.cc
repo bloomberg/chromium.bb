@@ -30,6 +30,10 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ash/test/test_metro_viewer_process_host.h"
 #include "base/test/test_process_killer_win.h"
@@ -96,6 +100,12 @@ void AshTestBase::SetUp() {
 
   // Creates Shell and hook with Desktop.
   test_shell_delegate_ = new TestShellDelegate;
+
+#if defined(ENABLE_MESSAGE_CENTER)
+  // Creates MessageCenter since g_browser_process is not created in AshTestBase
+  // tests.
+  message_center::MessageCenter::Initialize();
+#endif
   ash::Shell::CreateInstance(test_shell_delegate_);
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->ShowRootWindow();
@@ -130,6 +140,12 @@ void AshTestBase::TearDown() {
 
   // Tear down the shell.
   Shell::DeleteInstance();
+
+#if defined(ENABLE_MESSAGE_CENTER)
+  // Remove global message center state.
+  message_center::MessageCenter::Shutdown();
+#endif
+
   aura::Env::DeleteInstance();
   ui::TextInputTestSupport::Shutdown();
 
