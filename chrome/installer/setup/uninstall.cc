@@ -764,16 +764,13 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
 
   // Delete Software\Classes\ChromeHTML.
-  // For user-level installs we now only write these entries in HKCU, but since
-  // old installs did install them to HKLM we will try to remove them in HKLM as
-  // well anyways.
   const string16 prog_id(ShellUtil::kChromeHTMLProgId + browser_entry_suffix);
   string16 reg_prog_id(ShellUtil::kRegClasses);
   reg_prog_id.push_back(base::FilePath::kSeparators[0]);
   reg_prog_id.append(prog_id);
   InstallUtil::DeleteRegistryKey(root, reg_prog_id);
 
-  // Delete Software\Classes\Chrome (Same comment as above applies for this too)
+  // Delete Software\Classes\Chrome.
   string16 reg_app_id(ShellUtil::kRegClasses);
   reg_app_id.push_back(base::FilePath::kSeparators[0]);
   // Append the requested suffix manually here (as ShellUtil::GetBrowserModelId
