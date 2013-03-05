@@ -2072,9 +2072,8 @@ WebKit::WebTouchPoint* WebTouchState::AddTouchPoint(
 bool WebTouchState::UpdateTouchPoint(
     WebKit::WebTouchPoint* touch_point,
     TOUCHINPUT* touch_input) {
-  CPoint coordinates(
-    TOUCH_COORD_TO_PIXEL(touch_input->x) / ui::win::GetDPIScaleFromRegistry(),
-    TOUCH_COORD_TO_PIXEL(touch_input->y) / ui::win::GetDPIScaleFromRegistry());
+  CPoint coordinates(TOUCH_COORD_TO_PIXEL(touch_input->x),
+                     TOUCH_COORD_TO_PIXEL(touch_input->y));
   int radius_x = 1;
   int radius_y = 1;
   if (touch_input->dwMask & TOUCHINPUTMASKF_CONTACTAREA) {
@@ -2141,8 +2140,8 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
   if (total == 1 && (points[0].dwFlags & TOUCHEVENTF_DOWN)) {
     pointer_down_context_ = true;
     last_touch_location_ = gfx::Point(
-        TOUCH_COORD_TO_PIXEL(points[0].x) / ui::win::GetDPIScaleFromRegistry(),
-        TOUCH_COORD_TO_PIXEL(points[0].y) / ui::win::GetDPIScaleFromRegistry());
+        TOUCH_COORD_TO_PIXEL(points[0].x),
+        TOUCH_COORD_TO_PIXEL(points[0].y));
   }
 
   bool should_forward = render_widget_host_->ShouldForwardTouchEvent() &&

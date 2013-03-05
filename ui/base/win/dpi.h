@@ -38,8 +38,6 @@ UI_EXPORT gfx::Size ScreenToDIPSize(const gfx::Size& size_in_pixels);
 
 UI_EXPORT gfx::Size DIPToScreenSize(const gfx::Size& dip_size);
 
-UI_EXPORT double GetDPIScaleFromRegistry();
-
 }  // namespace win
 
 }  // namespace ui
