@@ -38,9 +38,25 @@ cr.define('options', function() {
       $('managed-user-passphrase').oninput = this.updateDisplay_;
       $('passphrase-confirm').oninput = this.updateDisplay_;
 
-      $('save-passphrase').onclick = function() {
-        chrome.send('setPassphrase', [$('managed-user-passphrase').value]);
-        closePage();
+      $('save-passphrase').onclick = this.setPassphrase_;
+
+      $('managed-user-passphrase').onkeypress = function(event) {
+        // Check if the user pressed enter and advance to the
+        // confirmation field since that was probably the intention.
+        if (event.keyCode == 13)
+          $('passphrase-confirm').focus();
+      };
+
+      var self = this;
+      $('passphrase-confirm').onkeypress = function(event) {
+        // Allow submitting only valid information.
+        if (!$('passphrase-confirm').validity.valid ||
+            !$('managed-user-passphrase').validity.valid) {
+          return;
+        }
+        // Check if the user pressed enter.
+        if (event.keyCode == 13)
+          self.setPassphrase_(event);
       };
 
       $('cancel-passphrase').onclick = closePage;
@@ -57,12 +73,25 @@ cr.define('options', function() {
           !$('passphrase-confirm').validity.valid ||
           !$('managed-user-passphrase').validity.valid;
     },
+    /**
+     * Sets the passphrase and closes the overlay.
+     * @param {Event} event The event that triggered the call to this function.
+     */
+    setPassphrase_: function(event) {
+      chrome.send('setPassphrase', [$('managed-user-passphrase').value]);
+      closePage();
+    },
 
     /** @override */
     canShowPage: function() {
       return ManagedUserSettings.getInstance().authenticationState ==
           options.ManagedUserAuthentication.AUTHENTICATED;
     },
+
+    /** @override */
+    didShowPage: function() {
+      $('managed-user-passphrase').focus();
+    }
   };
 
   /** Used for browsertests. */

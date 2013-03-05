@@ -20,8 +20,6 @@ function load() {
     $('incorrect-passphrase-warning').hidden = true;
   };
   $('passphrase-entry').onkeypress = function(event) {
-    if (!event)
-      return;
     // Check if the user pressed enter.
     if (event.keyCode == 13)
       checkPassphrase(event);
@@ -29,8 +27,6 @@ function load() {
 
   // Pressing escape anywhere in the frame should work.
   document.onkeyup = function(event) {
-    if (!event)
-      return;
     // Check if the user pressed escape.
     if (event.keyCode == 27)
       closeDialog(event);
