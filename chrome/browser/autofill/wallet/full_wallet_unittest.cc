@@ -21,7 +21,6 @@ const char kFullWalletValidResponse[] =
     "  \"rest\":\"rest\","
     "  \"billing_address\":"
     "  {"
-    "    \"id\":\"id\","
     "    \"phone_number\":\"phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -304,7 +303,6 @@ const char kFullWalletMalformedBillingAddress[] =
     "  \"rest\":\"rest\","
     "  \"billing_address\":"
     "  {"
-    "    \"id\":\"id\","
     "    \"phone_number\":\"phone_number\","
     "    \"postal_address\":"
     "    {"
@@ -427,6 +425,7 @@ TEST_F(FullWalletTest, CreateFullWalletWithInvalidRequiredActions) {
 
 TEST_F(FullWalletTest, CreateFullWallet) {
   SetUpDictionary(kFullWalletValidResponse);
+  // NOTE: FullWallet billing address doesn't require an ID.
   scoped_ptr<Address> billing_address(new Address(
       "country_name_code",
       ASCIIToUTF16("recipient_name"),
@@ -436,7 +435,7 @@ TEST_F(FullWalletTest, CreateFullWallet) {
       ASCIIToUTF16("administrative_area_name"),
       ASCIIToUTF16("postal_code_number"),
       ASCIIToUTF16("phone_number"),
-      "id"));
+      ""));
   scoped_ptr<Address> shipping_address(new Address(
       "ship_country_name_code",
       ASCIIToUTF16("ship_recipient_name"),

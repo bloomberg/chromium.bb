@@ -99,7 +99,7 @@ scoped_ptr<FullWallet>
   }
 
   scoped_ptr<Address> billing_address =
-      Address::CreateAddressWithID(*billing_address_dict);
+      Address::CreateAddress(*billing_address_dict);
   if (!billing_address.get()) {
     DLOG(ERROR) << "Response from Google wallet has malformed billing address";
     return scoped_ptr<FullWallet>();

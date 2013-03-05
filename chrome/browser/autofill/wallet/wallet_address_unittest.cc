@@ -166,23 +166,40 @@ class WalletAddressTest : public testing::Test {
   scoped_ptr<const DictionaryValue> dict_;
 };
 
+TEST_F(WalletAddressTest, CreateAddressMissingObjectId) {
+  SetUpDictionary(kAddressMissingObjectId);
+  Address address("country_name_code",
+                  ASCIIToUTF16("recipient_name"),
+                  ASCIIToUTF16("address_line_1"),
+                  ASCIIToUTF16("address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("administrative_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("phone_number"),
+                  "");
+  ASSERT_EQ(address, *Address::CreateAddress(*dict_));
+}
+
 TEST_F(WalletAddressTest, CreateAddressWithIDMissingObjectId) {
   SetUpDictionary(kAddressMissingObjectId);
   ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
-TEST_F(WalletAddressTest, CreateAddressWithIDMissingCountryNameCode) {
+TEST_F(WalletAddressTest, CreateAddressMissingCountryNameCode) {
   SetUpDictionary(kAddressMissingCountryNameCode);
+  ASSERT_EQ(NULL, Address::CreateAddress(*dict_).get());
   ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
-TEST_F(WalletAddressTest, CreateAddressWithIDMissingRecipientName) {
+TEST_F(WalletAddressTest, CreateAddressMissingRecipientName) {
   SetUpDictionary(kAddressMissingRecipientName);
+  ASSERT_EQ(NULL, Address::CreateAddress(*dict_).get());
   ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
-TEST_F(WalletAddressTest, CreateAddressWithIDMissingPostalCodeNumber) {
+TEST_F(WalletAddressTest, CreateAddressMissingPostalCodeNumber) {
   SetUpDictionary(kAddressMissingPostalCodeNumber);
+  ASSERT_EQ(NULL, Address::CreateAddress(*dict_).get());
   ASSERT_EQ(NULL, Address::CreateAddressWithID(*dict_).get());
 }
 
@@ -197,6 +214,7 @@ TEST_F(WalletAddressTest, CreateAddressWithID) {
                   ASCIIToUTF16("postal_code_number"),
                   ASCIIToUTF16("phone_number"),
                   "id");
+  ASSERT_EQ(address, *Address::CreateAddress(*dict_));
   ASSERT_EQ(address, *Address::CreateAddressWithID(*dict_));
 }
 

@@ -100,14 +100,21 @@ class Address {
   string16 GetInfo(AutofillFieldType type) const;
 
   // Returns an empty scoped_ptr if input is invalid or a valid address that is
-  // selectable for Google Wallet use.
-  static scoped_ptr<Address>
-      CreateAddressWithID(const base::DictionaryValue& dictionary);
+  // selectable for Google Wallet use. Does not require "id" in |dictionary|.
+  // IDs are not required for billing addresses.
+  static scoped_ptr<Address> CreateAddress(
+      const base::DictionaryValue& dictionary);
+
+  // Returns an empty scoped_ptr if input is invalid or a valid address that is
+  // selectable for Google Wallet use. Requires "id" in |dictionary|. IDs are
+  // required for shipping addresses.
+  static scoped_ptr<Address> CreateAddressWithID(
+      const base::DictionaryValue& dictionary);
 
   // Returns an empty scoped_ptr if input in invalid or a valid address that
   // can only be used for displaying to the user.
-  static scoped_ptr<Address>
-      CreateDisplayAddress(const base::DictionaryValue& dictionary);
+  static scoped_ptr<Address> CreateDisplayAddress(
+      const base::DictionaryValue& dictionary);
 
   bool operator==(const Address& other) const;
   bool operator!=(const Address& other) const;
