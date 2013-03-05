@@ -53,7 +53,7 @@ def RunPythonTests(chromedriver, chrome=None, android_package=None):
     os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
   code = util.RunCommand(cmd)
   if code:
-    print '@@@STEP_FAILURE@@@'
+    print '\n@@@STEP_FAILURE@@@'
   return code
 
 
