@@ -14,11 +14,10 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.ObserverList;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import java.util.ArrayList;
 
 /**
  * A helper class to handle the current status of sync for Chrome in Android-land.
@@ -52,7 +51,7 @@ public class SyncStatusHelper {
 
     private static SyncStatusHelper sSyncStatusHelper;
 
-    private ArrayList<Listener> mListeners;
+    private ObserverList<Listener> mListeners;
 
     /**
      * @param context the context
@@ -62,7 +61,7 @@ public class SyncStatusHelper {
             SyncContentResolverDelegate syncContentResolverWrapper) {
         mApplicationContext = context.getApplicationContext();
         mSyncContentResolverWrapper = syncContentResolverWrapper;
-        mListeners = new ArrayList<Listener>();
+        mListeners = new ObserverList<Listener>();
     }
 
     /**
@@ -327,15 +326,14 @@ public class SyncStatusHelper {
      * @param listener Listener to add.
      */
     public void addListener(Listener listener) {
-        mListeners.add(listener);
+        mListeners.addObserver(listener);
     }
 
     /**
      * Removes a Listener.
      * @param listener Listener to remove from the list.
-     * @returns whether or not the Listener was removed.
      */
-    public boolean removeListener(Listener listener) {
-        return mListeners.remove(listener);
+    public void removeListener(Listener listener) {
+        mListeners.removeObserver(listener);
     }
 }

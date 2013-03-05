@@ -9,9 +9,9 @@ import android.content.Context;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.NativeClassQualifiedName;
+import org.chromium.base.ObserverList;
 
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Triggers updates to the underlying network state in Chrome.
@@ -44,7 +44,7 @@ public class NetworkChangeNotifier {
 
     private final Context mContext;
     private final ArrayList<Integer> mNativeChangeNotifiers;
-    private final CopyOnWriteArrayList<ConnectionTypeObserver> mConnectionTypeObservers;
+    private final ObserverList<ConnectionTypeObserver> mConnectionTypeObservers;
     private NetworkChangeNotifierAutoDetect mAutoDetector;
     private int mCurrentConnectionType = CONNECTION_UNKNOWN;
 
@@ -53,7 +53,7 @@ public class NetworkChangeNotifier {
     private NetworkChangeNotifier(Context context) {
         mContext = context;
         mNativeChangeNotifiers = new ArrayList<Integer>();
-        mConnectionTypeObservers = new CopyOnWriteArrayList<ConnectionTypeObserver>();
+        mConnectionTypeObservers = new ObserverList<ConnectionTypeObserver>();
     }
 
     /**
@@ -183,20 +183,20 @@ public class NetworkChangeNotifier {
     }
 
     private void addConnectionTypeObserverInternal(ConnectionTypeObserver observer) {
-        if (!mConnectionTypeObservers.contains(observer)) {
-            mConnectionTypeObservers.add(observer);
+        if (!mConnectionTypeObservers.hasObserver(observer)) {
+            mConnectionTypeObservers.addObserver(observer);
         }
     }
 
     /**
      * Removes an observer for any connection type changes.
      */
-    public static boolean removeConnectionTypeObserver(ConnectionTypeObserver observer) {
-        return getInstance().removeConnectionTypeObserverInternal(observer);
+    public static void removeConnectionTypeObserver(ConnectionTypeObserver observer) {
+        getInstance().removeConnectionTypeObserverInternal(observer);
     }
 
-    private boolean removeConnectionTypeObserverInternal(ConnectionTypeObserver observer) {
-        return mConnectionTypeObservers.remove(observer);
+    private void removeConnectionTypeObserverInternal(ConnectionTypeObserver observer) {
+        mConnectionTypeObservers.removeObserver(observer);
     }
 
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")

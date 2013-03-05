@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.search_engines;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class TemplateUrlService {
     }
 
     private final int mNativeTemplateUrlServiceAndroid;
-    private final List<LoadListener> mLoadListeners = new ArrayList<LoadListener>();
+    private final ObserverList<LoadListener> mLoadListeners = new ObserverList<LoadListener>();
 
     private TemplateUrlService() {
         // Note that this technically leaks the native object, however, TemlateUrlService
@@ -129,8 +130,8 @@ public class TemplateUrlService {
      */
     public void registerLoadListener(LoadListener listener) {
         ThreadUtils.assertOnUiThread();
-        assert !mLoadListeners.contains(listener);
-        mLoadListeners.add(listener);
+        assert !mLoadListeners.hasObserver(listener);
+        mLoadListeners.addObserver(listener);
     }
 
     /**
@@ -138,9 +139,8 @@ public class TemplateUrlService {
      */
     public void unregisterLoadListener(LoadListener listener) {
         ThreadUtils.assertOnUiThread();
-        assert (mLoadListeners.size() > 0);
-        assert (mLoadListeners.contains(listener));
-        mLoadListeners.remove(listener);
+        assert (mLoadListeners.hasObserver(listener));
+        mLoadListeners.removeObserver(listener);
     }
 
     private native int nativeInit();

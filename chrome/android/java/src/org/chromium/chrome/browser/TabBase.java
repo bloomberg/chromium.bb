@@ -7,12 +7,12 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.chromium.base.ObserverList;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.ui.gfx.NativeWindow;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,7 +23,7 @@ public class TabBase {
     private ContentView mContentView;
     private ChromeWebContentsDelegateAndroid mWebContentsDelegate;
     private int mNativeTabBaseAndroidImpl;
-    private List<TabObserver> mObservers = new ArrayList<TabObserver>();
+    private ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
 
     private CleanupReference mCleanupReference;
 
@@ -70,8 +70,8 @@ public class TabBase {
      * be used.
      */
     public void destroy() {
-        for (int i = 0; i < mObservers.size(); ++i) {
-            mObservers.get(i).onCloseTab(TabBase.this);
+        for (TabObserver observer : mObservers) {
+            observer.onCloseTab(TabBase.this);
         }
         destroyContentView();
         if (mNativeTabBaseAndroidImpl != 0) {
@@ -84,14 +84,14 @@ public class TabBase {
      * @param observer The {@link TabObserver} that should be notified of changes.
      */
     public void addObserver(TabObserver observer) {
-        mObservers.add(observer);
+        mObservers.addObserver(observer);
     }
 
     /**
      * @param observer The {@link TabObserver} that should no longer be notified of changes.
      */
     public void removeObserver(TabObserver observer) {
-        mObservers.remove(observer);
+        mObservers.removeObserver(observer);
     }
 
     /**
@@ -157,15 +157,15 @@ public class TabBase {
             extends ChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadProgressChanged(int progress) {
-            for (int i = 0; i < mObservers.size(); ++i) {
-                mObservers.get(i).onLoadProgressChanged(TabBase.this, progress);
+            for (TabObserver observer : mObservers) {
+                observer.onLoadProgressChanged(TabBase.this, progress);
             }
         }
 
         @Override
         public void onUpdateUrl(String url) {
-            for (int i = 0; i < mObservers.size(); ++i) {
-                mObservers.get(i).onUpdateUrl(TabBase.this, url);
+            for (TabObserver observer : mObservers) {
+                observer.onUpdateUrl(TabBase.this, url);
             }
         }
 

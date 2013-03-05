@@ -7,8 +7,6 @@ package org.chromium.base;
 import android.app.Activity;
 import android.os.Looper;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * Provides information about the parent activity's status.
  */
@@ -29,10 +27,8 @@ public class ActivityStatus {
     // testing.
     private static int sActivityState;
 
-    // Use CopyOnWriteArrayList to avoid ConcurrentModificationException when a listener tries to
-    // remove itself while being notified of a state change.
-    private static final CopyOnWriteArrayList<StateListener> sStateListeners =
-            new CopyOnWriteArrayList<StateListener>();
+    private static final ObserverList<StateListener> sStateListeners =
+            new ObserverList<StateListener>();
 
     /**
      * Interface to be implemented by listeners.
@@ -96,7 +92,7 @@ public class ActivityStatus {
      * @param listener Listener to receive state changes.
      */
     public static void registerStateListener(StateListener listener) {
-        sStateListeners.add(listener);
+        sStateListeners.addObserver(listener);
     }
 
     /**
@@ -104,6 +100,6 @@ public class ActivityStatus {
      * @param listener Listener that doesn't want to receive state changes.
      */
     public static void unregisterStateListener(StateListener listener) {
-        sStateListeners.remove(listener);
+        sStateListeners.removeObserver(listener);
     }
 }
