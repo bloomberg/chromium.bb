@@ -193,7 +193,7 @@ AudioDeviceThread::Callback::~Callback() {}
 
 void AudioDeviceThread::Callback::InitializeOnAudioThread() {
   MapSharedMemory();
-  DCHECK(shared_memory_.memory() != NULL);
+  CHECK(shared_memory_.memory());
 }
 
 }  // namespace media.

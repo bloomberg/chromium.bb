@@ -121,6 +121,8 @@ AudioBus::AudioBus(int channels, int frames)
 AudioBus::AudioBus(int channels, int frames, float* data)
     : frames_(frames),
       can_set_channel_data_(false) {
+  // Since |data| may have come from an external source, ensure it's valid.
+  CHECK(data);
   ValidateConfig(channels, frames_);
 
   int aligned_frames = 0;
@@ -187,6 +189,7 @@ scoped_ptr<AudioBus> AudioBus::WrapMemory(const AudioParameters& params,
 
 void AudioBus::SetChannelData(int channel, float* data) {
   CHECK(can_set_channel_data_);
+  CHECK(data);
   CHECK_GE(channel, 0);
   CHECK_LT(static_cast<size_t>(channel), channel_data_.size());
   DCHECK(IsAligned(data));

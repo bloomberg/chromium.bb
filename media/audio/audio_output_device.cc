@@ -265,7 +265,7 @@ AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }
 
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
-  shared_memory_.Map(TotalSharedMemorySizeInBytes(memory_length_));
+  CHECK(shared_memory_.Map(TotalSharedMemorySizeInBytes(memory_length_)));
 
   // Calculate output and input memory size.
   int output_memory_size = AudioBus::CalculateMemorySize(audio_parameters_);
