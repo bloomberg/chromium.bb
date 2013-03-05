@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,6 +45,12 @@ function cloneShallow(object) {
       clone[key] = object[key];
   return clone;
 }
+
+
+/**
+ * Mock for |chrome| namespace.
+ */
+var chrome = window.chrome || {};
 
 /**
  * Mock out the chrome.fileBrowserPrivate API for use in the harness.
