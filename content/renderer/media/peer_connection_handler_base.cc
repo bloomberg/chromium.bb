@@ -89,9 +89,9 @@ PeerConnectionHandlerBase::CreateRemoteWebKitMediaStream(
 }
 
 webrtc::MediaStreamTrackInterface*
-PeerConnectionHandlerBase::GetLocalNativeMediaStreamTrack(
-      const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& track) {
+PeerConnectionHandlerBase::GetNativeMediaStreamTrack(
+    const WebKit::WebMediaStream& stream,
+    const WebKit::WebMediaStreamTrack& track) {
   std::string track_id = UTF16ToUTF8(track.id());
   webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
   if (!native_stream) {

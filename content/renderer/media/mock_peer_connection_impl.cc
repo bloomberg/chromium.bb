@@ -183,6 +183,7 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
       hint_video_(false),
+      getstats_result_(true),
       sdp_mline_index_(-1) {
 }
 
@@ -231,6 +232,9 @@ MockPeerConnectionImpl::CreateDataChannel(const std::string& label,
 bool MockPeerConnectionImpl::GetStats(
     webrtc::StatsObserver* observer,
     webrtc::MediaStreamTrackInterface* track) {
+  if (!getstats_result_)
+    return false;
+
   std::vector<webrtc::StatsReport> reports;
   webrtc::StatsReport report;
   report.id = "1234";

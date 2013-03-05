@@ -58,12 +58,14 @@ void MockWebRTCPeerConnectionHandlerClient::didChangeICEGatheringState(
 void MockWebRTCPeerConnectionHandlerClient::didAddRemoteStream(
     const WebKit::WebMediaStream& stream_descriptor) {
   stream_label_ = UTF16ToUTF8(stream_descriptor.label());
+  remote_steam_ = stream_descriptor;
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didRemoveRemoteStream(
     const WebKit::WebMediaStream& stream_descriptor) {
   DCHECK(stream_label_ == UTF16ToUTF8(stream_descriptor.label()));
   stream_label_.clear();
+  remote_steam_.reset();
 }
 
 }  // namespace content

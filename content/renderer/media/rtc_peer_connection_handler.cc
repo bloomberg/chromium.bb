@@ -550,24 +550,9 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
   talk_base::scoped_refptr<webrtc::StatsObserver> observer(
       new talk_base::RefCountedObject<StatsResponse>(request));
   webrtc::MediaStreamTrackInterface* track = NULL;
-  if (!native_peer_connection_) {
-    DVLOG(1) << "GetStats cannot verify selector on closed connection";
-    // TODO(hta): Consider how to get an error back.
-    std::vector<webrtc::StatsReport> no_reports;
-    observer->OnComplete(no_reports);
-    return;
-  }
-
   if (request->hasSelector()) {
-    // Verify that stream is a member of local_streams
-    if (native_peer_connection_->local_streams()
-            ->find(UTF16ToUTF8(request->stream().label()))) {
-      track = GetLocalNativeMediaStreamTrack(request->stream(),
-                                             request->component());
-    } else {
-      DVLOG(1) << "GetStats: Stream label not present in PC";
-    }
-
+      track = GetNativeMediaStreamTrack(request->stream(),
+                                        request->component());
     if (!track) {
       DVLOG(1) << "GetStats: Track not found.";
       // TODO(hta): Consider how to get an error back.
@@ -582,8 +567,13 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
 void RTCPeerConnectionHandler::GetStats(
     webrtc::StatsObserver* observer,
     webrtc::MediaStreamTrackInterface* track) {
-  if (native_peer_connection_)
-    native_peer_connection_->GetStats(observer, track);
+  if (!native_peer_connection_->GetStats(observer, track)) {
+    DVLOG(1) << "GetStats failed.";
+    // TODO(hta): Consider how to get an error back.
+    std::vector<webrtc::StatsReport> no_reports;
+    observer->OnComplete(no_reports);
+    return;
+  }
 }
 
 WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
@@ -617,7 +607,7 @@ WebKit::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
 
   webrtc::AudioTrackInterface* audio_track =
       static_cast<webrtc::AudioTrackInterface*>(
-          GetLocalNativeMediaStreamTrack(track.stream(), track));
+          GetNativeMediaStreamTrack(track.stream(), track));
 
   talk_base::scoped_refptr<webrtc::DtmfSenderInterface> sender(
       native_peer_connection_->CreateDtmfSender(audio_track));
@@ -630,10 +620,10 @@ WebKit::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
 
 void RTCPeerConnectionHandler::stop() {
   DVLOG(1) << "RTCPeerConnectionHandler::stop";
-  native_peer_connection_ = NULL;
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackStop(this);
+  native_peer_connection_->Close();
 }
 
 void RTCPeerConnectionHandler::OnError() {

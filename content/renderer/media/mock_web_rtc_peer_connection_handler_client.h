@@ -47,11 +47,13 @@ class MockWebRTCPeerConnectionHandlerClient
   ICEGatheringState ice_gathering_state() const {
     return ice_gathering_state_;
   }
+  const WebKit::WebMediaStream& remote_stream() const { return remote_steam_;}
   const std::string& stream_label() const { return stream_label_; }
 
  private:
   bool renegotiate_;
   std::string stream_label_;
+  WebKit::WebMediaStream remote_steam_;
   SignalingState signaling_state_;
   ICEConnectionState ice_connection_state_;
   ICEGatheringState ice_gathering_state_;
