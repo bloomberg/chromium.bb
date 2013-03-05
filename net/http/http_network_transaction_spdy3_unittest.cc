@@ -105,7 +105,7 @@ std::vector<std::string> MakeNextProtos(const char* a, ...) {
 // SpdyNextProtos returns a vector of NPN protocol strings for negotiating
 // SPDY.
 std::vector<std::string> SpdyNextProtos() {
-  return MakeNextProtos("http/1.1", "spdy/2", "spdy/3", NULL);
+  return MakeNextProtos("http/1.1", "spdy/2", "spdy/3", "spdy/3.1", NULL);
 }
 
 int GetIdleSocketCountInTransportSocketPool(net::HttpNetworkSession* session) {
@@ -9558,7 +9558,7 @@ TEST_F(HttpNetworkTransactionSpdy3Test, SpdyAlternateProtocolThroughProxy) {
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(
       MakeNextProtos(
-          "http/1.1", "http1.1", "spdy/2", "spdy/3", "spdy", NULL));
+          "http/1.1", "http1.1", "spdy/2", "spdy/3", "spdy/3.1", "spdy", NULL));
 
   SpdySessionDependencies session_deps(
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));

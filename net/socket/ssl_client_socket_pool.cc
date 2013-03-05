@@ -301,12 +301,11 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     NextProto protocol_negotiated =
         SSLClientSocket::NextProtoFromString(proto);
     ssl_socket_->set_protocol_negotiated(protocol_negotiated);
-    // If we negotiated either version of SPDY, we must have
-    // advertised it, so allow it.
-    // TODO(mbelshe): verify it was a protocol we advertised?
-    if (protocol_negotiated == kProtoSPDY1 ||
-        protocol_negotiated == kProtoSPDY2 ||
-        protocol_negotiated == kProtoSPDY3) {
+    // If we negotiated a SPDY version, it must have been present in
+    // SSLConfig::next_protos.
+    // TODO(mbelshe): Verify this.
+    if (protocol_negotiated >= kProtoSPDYMinimumVersion &&
+        protocol_negotiated <= kProtoSPDYMaximumVersion) {
       ssl_socket_->set_was_spdy_negotiated(true);
     }
   }

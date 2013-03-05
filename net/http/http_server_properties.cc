@@ -16,6 +16,7 @@ const char* const kAlternateProtocolStrings[] = {
   "npn-spdy/1",
   "npn-spdy/2",
   "npn-spdy/3",
+  "npn-spdy/3.1",
   "quic/1"
 };
 const char kBrokenAlternateProtocol[] = "Broken";

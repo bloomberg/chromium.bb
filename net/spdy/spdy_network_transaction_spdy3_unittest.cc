@@ -132,6 +132,7 @@ class SpdyNetworkTransactionSpdy3Test
       next_protos.push_back("http/1.1");
       next_protos.push_back("spdy/2");
       next_protos.push_back("spdy/3");
+      next_protos.push_back("spdy/3.1");
 
       switch (test_type_) {
         case SPDYNPN:
