@@ -46,7 +46,7 @@ KILL_PROC_MAX_WAIT = 10
 POST_KILL_WAIT = 2
 
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
-LSOF_COMMAND = 'lsof /opt/google/chrome/chrome'
+LSOF_COMMAND = 'lsof %s/chrome'
 
 _CHROME_DIR = '/opt/google/chrome'
 
@@ -77,7 +77,8 @@ class DeployChrome(object):
     self._rootfs_is_still_readonly = multiprocessing.Event()
 
   def _ChromeFileInUse(self):
-    result = self.host.RemoteSh(LSOF_COMMAND, error_code_ok=True)
+    result = self.host.RemoteSh(LSOF_COMMAND % (self.options.target_dir,),
+                                error_code_ok=True)
     return result.returncode == 0
 
   def _DisableRootfsVerification(self):
@@ -165,9 +166,10 @@ class DeployChrome(object):
       self._rootfs_is_still_readonly.set()
 
   def _Deploy(self):
-    logging.info('Copying Chrome to device...')
+    logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # Show the output (status) for this command.
-    self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), _CHROME_DIR,
+    self.host.Rsync('%s/' % os.path.abspath(self.staging_dir),
+                    self.options.target_dir,
                     inplace=True, debug_level=logging.INFO,
                     verbose=self.options.verbose)
     if self.options.startui:
@@ -239,6 +241,9 @@ def _CreateParser():
                          'from.  Typically of format <chrome_root>/out/Debug. '
                          'When this option is used, the GYP_DEFINES '
                          'environment variable must be set.')
+  parser.add_option('--target-dir', type='path',
+                    help='Target directory on device to deploy Chrome into.',
+                    default=_CHROME_DIR)
   parser.add_option('-g', '--gs-path', type='gs_path',
                     help='GS path that contains the chrome to deploy.')
   parser.add_option('--nostartui', action='store_false', dest='startui',

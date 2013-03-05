@@ -94,7 +94,8 @@ class DeployChromeMock(partial_mock.PartialMock):
     self.rsh_mock = remote_access_unittest.RemoteShMock()
     self.rsh_mock.SetDefaultCmdResult(0)
     self.MockMountCmd(1)
-    self.rsh_mock.AddCmdResult(deploy_chrome.LSOF_COMMAND, 1)
+    self.rsh_mock.AddCmdResult(
+        deploy_chrome.LSOF_COMMAND % (deploy_chrome._CHROME_DIR,), 1)
 
   def MockMountCmd(self, returnvalue):
     self.rsh_mock.AddCmdResult(deploy_chrome.MOUNT_RW_COMMAND,
