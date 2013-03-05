@@ -35,12 +35,6 @@ cr.define('options', function() {
   ExtensionsList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /**
-     * @type {number} Appended to icon URL as a query string to prevent
-     * the icon from caching. Increments each time an extension is reloaded.
-     */
-    iconQueryId_: 0,
-
     /** @override */
     decorate: function() {
       this.textContent = '';
@@ -103,8 +97,7 @@ cr.define('options', function() {
         node.classList.add('extension-highlight');
 
       var item = node.querySelector('.extension-list-item');
-      item.style.backgroundImage = 'url(' + extension.icon + '?' +
-                                   this.iconQueryId_++ + ')';
+      item.style.backgroundImage = 'url(' + extension.icon + ')';
 
       var title = node.querySelector('.extension-title');
       title.textContent = extension.name;
