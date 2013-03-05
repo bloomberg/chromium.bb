@@ -350,7 +350,7 @@ cd -
 if [[ -n "${with_android}" ]]; then
   # Make a standalone Android toolchain.
   ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
-      --platform=android-9 \
+      --platform=android-14 \
       --install-dir="${LLVM_BUILD_DIR}/android-toolchain"
 
   # Fixup mismatching version numbers in android-ndk-r8b.
