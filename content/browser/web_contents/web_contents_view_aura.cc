@@ -990,10 +990,8 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
 }
 
 void WebContentsViewAura::PrepareContentWindowForOverscroll() {
-  if (!content_container_ || !GetContentNativeView() ||
-      GetContentNativeView()->parent() != content_container_) {
-    return;
-  }
+  DCHECK(content_container_);
+  DCHECK_EQ(content_container_, GetContentNativeView()->parent());
 
   aura::Window* content = content_container_;
   ui::ScopedLayerAnimationSettings settings(content->layer()->GetAnimator());
@@ -1421,7 +1419,15 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
   // Reset any in-progress overscroll animation first.
   ResetOverscrollTransform();
 
+  // Make sure the content window has been prepared correctly before allowing
+  // overscroll.
+  bool content_window_ready =
+      content_container_ &&
+      GetContentNativeView() &&
+      GetContentNativeView()->parent() == content_container_;
+
   if (new_mode == OVERSCROLL_NONE ||
+      !content_window_ready ||
       (navigation_overlay_.get() && navigation_overlay_->has_window())) {
     current_overscroll_gesture_ = OVERSCROLL_NONE;
   } else {
