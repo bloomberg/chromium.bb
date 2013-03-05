@@ -48,6 +48,9 @@ class DriveApiUrlGenerator {
   // Returns a URL to fetch a file content.
   GURL GetFileUrl(const std::string& file_id) const;
 
+  // Returns a URL to copy a file specified by |resource_id|.
+  GURL GetFileCopyUrl(const std::string& resource_id) const;
+
   // Returns a URL to trash a resource with the given |resource_id|.
   // Note that the |resource_id| is corresponding to the "file id" in the
   // document: https://developers.google.com/drive/v2/reference/files/trash
