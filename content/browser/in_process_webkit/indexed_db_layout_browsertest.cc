@@ -63,8 +63,7 @@ static const char* kKeyTests[] = {
   "keyrange-required-arguments.html",
   "key-sort-order-across-types.html",
   "key-sort-order-date.html",
-  // Flaky: http://crbug.com/165671
-  //"key-type-array.html",
+  "key-type-array.html",
   "key-type-infinity.html",
   "invalid-keys.html",
   NULL
@@ -122,10 +121,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
   RunLayoutTests(kComplexTests);
 }
 
-// TODO(dgrogan): times out flakily. http://crbug.com/153064
-// Marking FLAKY to diagnose if this is just a test duration
-// issue (and we need to split it up) or something else.
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FLAKY_IndexTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
@@ -147,11 +143,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IntVersionTests2) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, RegressionTests) {
   RunLayoutTests(kRegressionTests);
-}
-
-// TODO(jsbell): Remove this when data has been gathered.
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FLAKY_FlakyTests) {
-  RunLayoutTest("key-type-array.html");
 }
 
 }  // namespace content
