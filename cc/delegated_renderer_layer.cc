@@ -26,7 +26,7 @@ scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(
 }
 
 bool DelegatedRendererLayer::drawsContent() const {
-  return !frame_size_.IsEmpty();
+  return Layer::drawsContent() && !frame_size_.IsEmpty();
 }
 
 void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
