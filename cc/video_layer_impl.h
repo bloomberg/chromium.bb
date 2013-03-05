@@ -46,7 +46,7 @@ public:
         gfx::Size size;
         GLenum format;
 
-        FramePlane() : resourceId(0) { }
+        FramePlane() : resourceId(0), format(GL_LUMINANCE) { }
 
         bool allocateData(ResourceProvider*);
         void freeData(ResourceProvider*);
