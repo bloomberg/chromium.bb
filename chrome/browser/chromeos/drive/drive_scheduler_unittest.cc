@@ -342,7 +342,8 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
 }
 
 TEST_F(DriveSchedulerTest, GetResourceEntryPriority) {
-  ConnectToWifi();
+  // Disconnect from the network to prevent jobs from starting.
+  ConnectToNone();
 
   std::string resource_1("file:1_file_resource_id");
   std::string resource_2("file:2_file_resource_id");
@@ -374,6 +375,9 @@ TEST_F(DriveSchedulerTest, GetResourceEntryPriority) {
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource_4));
+
+  // Reconnect to the network to start all jobs.
+  ConnectToWifi();
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(resource_ids.size(), 4ul);

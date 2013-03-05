@@ -25,6 +25,11 @@ namespace {
 const int kMaxThrottleCount = 5;
 }
 
+const int DriveScheduler::kMaxJobCount[] = {
+  5,  // METADATA_QUEUE
+  1,  // FILE_QUEUE
+};
+
 DriveScheduler::JobInfo::JobInfo(JobType in_job_type)
     : job_type(in_job_type),
       job_id(-1),
@@ -64,7 +69,7 @@ DriveScheduler::DriveScheduler(
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (int i = 0; i < NUM_QUEUES; ++i) {
-    job_loop_is_running_[i] = false;
+    jobs_running_[i] = 0;
   }
 }
 
@@ -328,7 +333,7 @@ void DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
 void DriveScheduler::StartJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!job_loop_is_running_[queue_type])
+  if (jobs_running_[queue_type] < kMaxJobCount[queue_type])
     DoJobLoop(queue_type);
 }
 
@@ -336,18 +341,16 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (queue_[queue_type].empty()) {
-    // Note that |queue_| is not cleared so the sync loop can resume.
-    job_loop_is_running_[queue_type] = false;
     return;
   }
 
   // Check if we should defer based on the first item in the queue
   if (ShouldStopJobLoop(queue_type, queue_[queue_type].front()->context)) {
-    job_loop_is_running_[queue_type] = false;
     return;
   }
 
-  job_loop_is_running_[queue_type] = true;
+  // Increment the number of jobs.
+  ++jobs_running_[queue_type];
 
   // Should copy before calling queue_.pop_front().
   scoped_ptr<QueueEntry> queue_entry(queue_[queue_type].front());
@@ -576,6 +579,9 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   QueueType queue_type = GetJobQueueType(queue_entry->job_info.job_type);
+
+  // Decrement the number of jobs for this queue.
+  --jobs_running_[queue_type];
 
   // Retry, depending on the error.
   if (error == DRIVE_FILE_ERROR_THROTTLED) {

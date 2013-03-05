@@ -175,6 +175,8 @@ class DriveScheduler
     NUM_QUEUES
   };
 
+  static const int kMaxJobCount[NUM_QUEUES];
+
   // Represents a single entry in the job queue.
   struct QueueEntry {
     explicit QueueEntry(JobType in_job_type);
@@ -370,9 +372,8 @@ class DriveScheduler
   // For testing only.  Disables throttling so that testing is faster.
   void SetDisableThrottling(bool disable) { disable_throttling_ = disable; }
 
-  // True when there is a job running.  Indicates that new jobs should wait to
-  // be executed.
-  bool job_loop_is_running_[NUM_QUEUES];
+  // Number of jobs in flight for each queue.
+  int jobs_running_[NUM_QUEUES];
 
   // Next value that should be assigned as a job id.
   int next_job_id_;
