@@ -304,8 +304,9 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
 }
 
 void MenuScrollViewContainer::CreateBubbleBorder() {
-  bubble_border_ =
-      new BubbleBorder(arrow_location_, BubbleBorder::NO_SHADOW, SK_ColorWHITE);
+  bubble_border_ = new BubbleBorder(arrow_location_,
+                                    BubbleBorder::SMALL_SHADOW,
+                                    SK_ColorWHITE);
   set_border(bubble_border_);
   set_background(new BubbleBackground(bubble_border_));
 }
