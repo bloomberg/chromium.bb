@@ -409,11 +409,9 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
   const wchar_t* kUsageKey = L"dr";
   // Set appropriate key to 1 to let Omaha record usage.
   base::win::RegKey key;
-  if (key.Create(HKEY_CURRENT_USER, kKeyLocation,
-                 KEY_SET_VALUE) != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to open key to log usage";
-  }
-  if (key.WriteValue(kUsageKey, L"1") != ERROR_SUCCESS) {
+  if (key.Create(HKEY_CURRENT_USER, kGoogleUpdateClientStateKey,
+                 KEY_SET_VALUE) != ERROR_SUCCESS ||
+      key.WriteValue(kUsageKey, L"1") != ERROR_SUCCESS) {
     LOG(ERROR) << "Unable to set usage key";
   }
   if (port_handle == NULL) {

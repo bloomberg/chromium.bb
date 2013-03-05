@@ -6,11 +6,13 @@
 #define CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_CONSTS_H_
 
 namespace cloud_print {
+
 extern const wchar_t kPortName[];
 extern const size_t kPortNameSize;
-extern const wchar_t kKeyLocation[];
-}  // namespace cloud_print
+extern const wchar_t kGoogleUpdateClientsKey[];
+extern const wchar_t kGoogleUpdateClientStateKey[];
 
+}  // namespace cloud_print
 
 #endif  // CLOUD_PRINT_VIRTUAL_DRIVER_WIN_VIRTUAL_DRIVER_CONSTS_H_
 

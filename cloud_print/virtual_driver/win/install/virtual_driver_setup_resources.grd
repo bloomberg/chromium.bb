@@ -128,6 +128,10 @@ file.
                meaning="Driver Name" desc="The user visible name of the printer we create and its associated driver.">
         Google Cloud Printer
       </message>
+      <message name="IDS_ERROR_NO_XPS"
+               meaning="Error message" desc="XPS driver is not installed.">
+        &lt;a=&quot;http://www.microsoft.com/download/details.aspx?id=11816&quot;&gt;XPS driver&lt;/a&gt; is not installed.
+      </message>
     </messages>
   </release>
 </grit>

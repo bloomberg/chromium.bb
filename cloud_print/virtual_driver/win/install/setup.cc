@@ -30,8 +30,6 @@
 
 namespace {
 
-const wchar_t kVersionKey[] = L"pv";
-const wchar_t kNameKey[] = L"name";
 const wchar_t kNameValue[] = L"GCP Virtual Driver";
 const wchar_t kUninstallRegistry[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
@@ -62,9 +60,17 @@ const char kRegisterSwitch[] = "register";
 const char kUninstallSwitch[] = "uninstall";
 const char kUnregisterSwitch[] = "unregister";
 
+// Google update related constants.
+const wchar_t kVersionKey[] = L"pv";
+const wchar_t kNameKey[] = L"name";
+const DWORD kInstallerResultFailedCustomError = 1;
+const wchar_t kRegValueLastInstallerResult[] = L"LastInstallerResult";
+const wchar_t kRegValueLastInstallerResultUIString[] =
+    L"LastInstallerResultUIString";
+
 void SetGoogleUpdateKeys() {
   base::win::RegKey key;
-  if (key.Create(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
+  if (key.Create(HKEY_LOCAL_MACHINE, cloud_print::kGoogleUpdateClientsKey,
                  KEY_SET_VALUE) != ERROR_SUCCESS) {
     LOG(ERROR) << "Unable to open key";
   }
@@ -90,9 +96,24 @@ void SetGoogleUpdateKeys() {
   }
 }
 
+void SetGoogleUpdateError(const string16& message) {
+  base::win::RegKey key;
+  if (key.Create(HKEY_LOCAL_MACHINE, cloud_print::kGoogleUpdateClientStateKey,
+                 KEY_SET_VALUE) != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to open key";
+  }
+
+  if (key.WriteValue(kRegValueLastInstallerResult,
+                     kInstallerResultFailedCustomError) != ERROR_SUCCESS ||
+      key.WriteValue(kRegValueLastInstallerResultUIString,
+                     message.c_str()) != ERROR_SUCCESS) {
+      LOG(ERROR) << "Unable to set registry keys";
+  }
+}
+
 void DeleteGoogleUpdateKeys() {
   base::win::RegKey key;
-  if (key.Open(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
+  if (key.Open(HKEY_LOCAL_MACHINE, cloud_print::kGoogleUpdateClientsKey,
                DELETE) != ERROR_SUCCESS) {
     LOG(ERROR) << "Unable to open key to delete";
     return;
@@ -251,8 +272,7 @@ UINT CALLBACK CabinetCallback(PVOID data,
 }
 
 void ReadyPpdDependencies(const base::FilePath& destination) {
-  base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // GetCorePrinterDrivers and GetPrinterDriverPackagePath only exist on
     // Vista and later. Winspool.drv must be delayloaded so these calls don't
     // create problems on XP.
@@ -300,6 +320,11 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   base::FilePath xps_path = temp_path.path().Append(kDriverName);
   base::FilePath ui_path = temp_path.path().Append(kUiDriverName);
   base::FilePath ui_help_path = temp_path.path().Append(kHelpName);
+
+  if (!file_util::PathExists(xps_path)) {
+    SetGoogleUpdateError(cloud_print::LoadLocalString(IDS_ERROR_NO_XPS));
+    return HRESULT_FROM_WIN32(ERROR_BAD_DRIVER);
+  }
 
   DRIVER_INFO_6 driver_info = {0};
   // Set up supported print system version.  Must be 3.
