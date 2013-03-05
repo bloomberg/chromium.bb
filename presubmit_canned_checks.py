@@ -793,25 +793,19 @@ def CheckOwners(input_api, output_api, source_file_filter=None,
       owners_db.email_regexp,
       approval_needed=input_api.is_committing)
 
-  if author_counts_as_owner:
-    if owner_email:
-      message = ''
-      reviewers_plus_owner = reviewers.union(set([owner_email]))
-    else:
-      message = ('\nUntil the issue is uploaded, this list will include '
-                 'files for which you are an OWNER.')
-      owner_email = ''
-      reviewers_plus_owner = set()
+  owner_email = owner_email or input_api.change.author_email
+
+  if author_counts_as_owner and owner_email:
+    reviewers_plus_owner = set([owner_email]).union(reviewers or set())
     missing_files = owners_db.files_not_covered_by(affected_files,
-                                                   reviewers_plus_owner)
+        reviewers_plus_owner)
   else:
-    message = ''
     missing_files = owners_db.files_not_covered_by(affected_files, reviewers)
 
   if missing_files:
     output_list = [
-        output('Missing %s for these files:\n    %s%s' %
-               (needed, '\n    '.join(missing_files), message))]
+        output('Missing %s for these files:\n    %s' %
+               (needed, '\n    '.join(missing_files)))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(affected_files, owner_email)
       output_list.append(output('Suggested OWNERS:\n    %s' %

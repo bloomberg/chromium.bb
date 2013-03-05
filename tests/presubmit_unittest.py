@@ -2233,6 +2233,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     change = self.mox.CreateMock(presubmit.Change)
     change.issue = issue
+    change.author_email = 'john@example.com'
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api = self.MockInputApi(change, False)
     fake_db = self.mox.CreateMock(owners.Database)
@@ -2244,10 +2245,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     if not is_committing or (not tbr and issue):
       affected_file.LocalPath().AndReturn('foo/xyz.cc')
       change.AffectedFiles(file_filter=None).AndReturn([affected_file])
-      owner_email = 'john@example.com'
       if not rietveld_response:
         rietveld_response = {
-          "owner_email": owner_email,
+          "owner_email": change.author_email,
           "messages": [
             {"sender": a, "text": "I approve", "approval": True}
             for a in approvers
@@ -2264,17 +2264,18 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api.rietveld.get_issue_properties(
             issue=int(input_api.change.issue), messages=True).AndReturn(
                 rietveld_response)
-        people.add(owner_email)
 
       if author_counts_as_owner:
+        people.add(change.author_email)
         fake_db.files_not_covered_by(set(['foo/xyz.cc']),
             people).AndReturn(uncovered_files)
       else:
+        people.discard(change.author_email)
         fake_db.files_not_covered_by(set(['foo/xyz.cc']),
-            people.difference(set([owner_email]))).AndReturn(uncovered_files)
+            people).AndReturn(uncovered_files)
       if not is_committing and uncovered_files:
         fake_db.reviewers_for(set(['foo/xyz.cc']),
-            owner_email if issue else '').AndReturn(owner_email)
+            change.author_email).AndReturn(change.author_email)
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
@@ -2367,9 +2368,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         is_committing=False,
         uncovered_files=set(['foo']),
         expected_output='Missing OWNER reviewers for these files:\n'
-                        '    foo\n'
-                        'Until the issue is uploaded, this list will include '
-                        'files for which you are an OWNER.\n')
+                        '    foo\n')
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '
