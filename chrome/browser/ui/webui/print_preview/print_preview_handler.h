@@ -178,8 +178,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Gets the initiator tab for the print preview dialog.
   content::WebContents* GetInitiatorTab() const;
 
-  // Closes the preview dialog and activates the initiator tab.
-  void ClosePreviewDialogAndActivateInitiatorTab();
+  // Closes the preview dialog.
+  void ClosePreviewDialog();
 
   // Adds all the recorded stats taken so far to histogram counts.
   void ReportStats();

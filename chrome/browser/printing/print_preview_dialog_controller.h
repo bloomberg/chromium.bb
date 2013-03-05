@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "content/public/browser/notification_observer.h"
@@ -81,11 +80,6 @@ class PrintPreviewDialogController
     return is_creating_print_preview_dialog_;
   }
 
-  void set_print_preview_tab_created_callback_for_testing(
-      const base::Closure& callback) {
-    print_preview_tab_created_callback_ = callback;
-  }
-
  private:
   friend class base::RefCounted<PrintPreviewDialogController>;
 
@@ -139,8 +133,6 @@ class PrintPreviewDialogController
   // Whether the PrintPreviewDialogController is in the middle of creating a
   // print preview dialog.
   bool is_creating_print_preview_dialog_;
-
-  base::Closure print_preview_tab_created_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogController);
 };

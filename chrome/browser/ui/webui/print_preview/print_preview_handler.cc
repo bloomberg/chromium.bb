@@ -50,7 +50,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/backend/print_backend.h"
@@ -611,7 +610,7 @@ void PrintPreviewHandler::PrintWithCloudPrintDialog(
   // printing situation.  Close the print preview.
   // TODO(abodenha@chromium.org) The flow should be changed as described in
   // http://code.google.com/p/chromium/issues/detail?id=44093
-  ClosePreviewDialogAndActivateInitiatorTab();
+  ClosePreviewDialog();
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
@@ -782,15 +781,10 @@ void PrintPreviewHandler::SendInitialSettings(
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
 }
 
-void PrintPreviewHandler::ClosePreviewDialogAndActivateInitiatorTab() {
-  // Need to get the initiator tab before closing the print preview dialog.
-  WebContents* initiator_tab = GetInitiatorTab();
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-
+void PrintPreviewHandler::ClosePreviewDialog() {
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(web_ui()->GetController());
   print_preview_ui->OnClosePrintPreviewDialog();
-  if (initiator_tab)
-    initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
@@ -845,7 +839,7 @@ WebContents* PrintPreviewHandler::GetInitiatorTab() const {
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
-  ClosePreviewDialogAndActivateInitiatorTab();
+  ClosePreviewDialog();
 }
 
 void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
@@ -938,7 +932,7 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
 #endif
 
   print_to_pdf_path_.reset();
-  ClosePreviewDialogAndActivateInitiatorTab();
+  ClosePreviewDialog();
 }
 
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {

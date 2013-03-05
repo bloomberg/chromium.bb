@@ -431,9 +431,6 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewTab(
   AddObservers(initiator_tab);
   AddObservers(preview_tab);
 
-  if (!print_preview_tab_created_callback_.is_null())
-    print_preview_tab_created_callback_.Run();
-
   return preview_tab;
 }
 
