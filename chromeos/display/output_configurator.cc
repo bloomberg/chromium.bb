@@ -1070,8 +1070,11 @@ bool OutputConfigurator::FindOrCreateMirrorMode(Display* display,
     for (int j = 0; j < internal_info->nmode; j++) {
       internal_mode_id = internal_info->modes[j];
       XRRModeInfo* internal_mode = ModeInfoForID(screen, internal_mode_id);
+      bool is_internal_interlaced = internal_mode->modeFlags & RR_Interlace;
+      bool is_external_interlaced = external_mode->modeFlags & RR_Interlace;
       if (internal_mode->width == external_mode->width &&
-          internal_mode->height == external_mode->height) {
+          internal_mode->height == external_mode->height &&
+          is_internal_interlaced == is_external_interlaced) {
         *internal_mirror_mode = internal_mode_id;
         *external_mirror_mode = external_mode_id;
         return true;  // Mirror mode found
@@ -1082,9 +1085,11 @@ bool OutputConfigurator::FindOrCreateMirrorMode(Display* display,
     if (try_creating) {
       // We can downscale by 1.125, and upscale indefinitely
       // Downscaling looks ugly, so, can fit == can upscale
+      // Also, internal panels don't support fitting interlaced modes
       bool can_fit =
           internal_native_mode->width >= external_mode->width &&
-          internal_native_mode->height >= external_mode->height;
+          internal_native_mode->height >= external_mode->height &&
+          !(external_mode->modeFlags & RR_Interlace);
       if (can_fit) {
         XRRAddOutputMode(display, internal_output_id, external_mode_id);
         *internal_mirror_mode = *external_mirror_mode = external_mode_id;
