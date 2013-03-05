@@ -158,11 +158,15 @@ gfx::NativeWindow NativeAppWindowGtk::GetNativeWindow() {
 }
 
 gfx::Rect NativeAppWindowGtk::GetRestoredBounds() const {
-  return restored_bounds_;
+  gfx::Rect window_bounds = restored_bounds_;
+  window_bounds.Inset(-GetFrameInsets());
+  return window_bounds;
 }
 
 gfx::Rect NativeAppWindowGtk::GetBounds() const {
-  return bounds_;
+  gfx::Rect window_bounds = bounds_;
+  window_bounds.Inset(-GetFrameInsets());
+  return window_bounds;
 }
 
 void NativeAppWindowGtk::Show() {
@@ -220,7 +224,9 @@ void NativeAppWindowGtk::Restore() {
 }
 
 void NativeAppWindowGtk::SetBounds(const gfx::Rect& bounds) {
-  gtk_window_move(window_, bounds.x(), bounds.y());
+  gfx::Rect content_bounds = bounds;
+  content_bounds.Inset(GetFrameInsets());
+  gtk_window_move(window_, content_bounds.x(), content_bounds.y());
   gtk_window_util::SetWindowSize(window_,
       gfx::Size(bounds.width(), bounds.height()));
 }
