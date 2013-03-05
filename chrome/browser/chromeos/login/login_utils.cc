@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -771,8 +772,8 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
 };
 
 void LoginUtilsImpl::PrewarmAuthentication() {
-  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  if (network->Connected()) {
+  ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
+  if (csh->IsConnected()) {
     const int kConnectionsNeeded = 1;
     chrome_browser_net::PreconnectOnUIThread(
         GURL(GaiaUrls::GetInstance()->client_login_url()),

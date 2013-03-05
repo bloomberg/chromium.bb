@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -44,20 +44,18 @@ OAuth2TokenFetcher::~OAuth2TokenFetcher() {
 
 void OAuth2TokenFetcher::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (CrosLibrary::Get()->libcros_loaded()) {
-    // Delay the verification if the network is not connected or on a captive
-    // portal.
-    const Network* network =
-        CrosLibrary::Get()->GetNetworkLibrary()->active_network();
-    if (!network || !network->connected() || network->restricted_pool()) {
-      // If network is offline, defer the token fetching until online.
-      VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&OAuth2TokenFetcher::Start, AsWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
-      return;
-    }
+
+  // Delay the verification if the network is not connected or on a captive
+  // portal.
+  ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
+  if (!csh->DefaultNetworkOnline()) {
+    // If network is offline, defer the token fetching until online.
+    VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&OAuth2TokenFetcher::Start, AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
+    return;
   }
   auth_fetcher_.StartCookieForOAuthLoginTokenExchange(EmptyString());
 }

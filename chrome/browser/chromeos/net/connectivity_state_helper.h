@@ -22,8 +22,16 @@ class ConnectivityStateHelper {
   // handler) implementation or the network library implementation based
   // on the value of command line flag.
   static void Initialize();
+
+  // Similar to initialize, but can be used to inject an alternative
+  // (say,a MockConnectivityStateHelper) implementation.
+  static void InitializeForTesting(ConnectivityStateHelper* csh);
+
   static void Shutdown();
   static ConnectivityStateHelper* Get();
+
+  // Returns true if we are in a connected state.
+  virtual bool IsConnected() = 0;
 
   // Returns true if there's a network of |type| in connected state.
   virtual bool IsConnectedType(const std::string& type) = 0;
@@ -34,6 +42,12 @@ class ConnectivityStateHelper {
   // Get the name for the primary network of type |type| which is not
   // in non-idle state (i.e. connecting or connected state).
   virtual std::string NetworkNameForType(const std::string& type) = 0;
+
+  // Returns the name of the default network.
+  virtual std::string DefaultNetworkName() = 0;
+
+  // Returns true if we have a default network and are in online state.
+  virtual bool DefaultNetworkOnline() = 0;
 
  protected:
   ConnectivityStateHelper() {}

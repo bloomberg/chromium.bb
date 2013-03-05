@@ -1092,6 +1092,8 @@
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/memory/oom_priority_manager_browsertest.cc',
+	'browser/chromeos/net/mock_connectivity_state_helper.cc',
+	'browser/chromeos/net/mock_connectivity_state_helper.h',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
         'browser/chromeos/screensaver/screensaver_controller_browsertest.cc',
         'browser/chromeos/system/tray_accessibility_browsertest.cc',

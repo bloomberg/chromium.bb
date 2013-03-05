@@ -24,9 +24,12 @@ class ConnectivityStateHelperImpl
   ConnectivityStateHelperImpl();
   virtual ~ConnectivityStateHelperImpl();
 
+  virtual bool IsConnected() OVERRIDE;
   virtual bool IsConnectedType(const std::string& type) OVERRIDE;
   virtual bool IsConnectingType(const std::string& type) OVERRIDE;
   virtual std::string NetworkNameForType(const std::string& type) OVERRIDE;
+  virtual std::string DefaultNetworkName() OVERRIDE;
+  virtual bool DefaultNetworkOnline() OVERRIDE;
 
  private:
   NetworkStateHandler* network_state_handler_;
@@ -40,9 +43,12 @@ class ConnectivityStateHelperNetworkLibrary
   ConnectivityStateHelperNetworkLibrary();
   virtual ~ConnectivityStateHelperNetworkLibrary();
 
+  virtual bool IsConnected() OVERRIDE;
   virtual bool IsConnectedType(const std::string& type) OVERRIDE;
   virtual bool IsConnectingType(const std::string& type) OVERRIDE;
   virtual std::string NetworkNameForType(const std::string& type) OVERRIDE;
+  virtual std::string DefaultNetworkName() OVERRIDE;
+  virtual bool DefaultNetworkOnline() OVERRIDE;
 
  private:
   NetworkLibrary* network_library_;
@@ -61,6 +67,14 @@ void ConnectivityStateHelper::Initialize() {
 }
 
 // static
+void ConnectivityStateHelper::InitializeForTesting(
+    ConnectivityStateHelper* connectivity_state_helper) {
+  CHECK(!g_connectivity_state_helper);
+  CHECK(connectivity_state_helper);
+  g_connectivity_state_helper = connectivity_state_helper;
+}
+
+// static
 void ConnectivityStateHelper::Shutdown() {
   CHECK(g_connectivity_state_helper);
   delete g_connectivity_state_helper;
@@ -69,7 +83,7 @@ void ConnectivityStateHelper::Shutdown() {
 
 // static
 ConnectivityStateHelper* ConnectivityStateHelper::Get() {
-  DCHECK(g_connectivity_state_helper)
+  CHECK(g_connectivity_state_helper)
       << "ConnectivityStateHelper: Get() called before Initialize()";
   return g_connectivity_state_helper;
 }
@@ -79,6 +93,11 @@ ConnectivityStateHelperImpl::ConnectivityStateHelperImpl() {
 }
 
 ConnectivityStateHelperImpl::~ConnectivityStateHelperImpl() {}
+
+bool ConnectivityStateHelperImpl::IsConnected() {
+  return network_state_handler_->ConnectedNetworkByType(
+      NetworkStateHandler::kMatchTypeDefault) != NULL;
+}
 
 bool ConnectivityStateHelperImpl::IsConnectedType(
     const std::string& type) {
@@ -99,6 +118,26 @@ std::string ConnectivityStateHelperImpl::NetworkNameForType(
   return network ? network->name() : std::string();
 }
 
+std::string ConnectivityStateHelperImpl::DefaultNetworkName() {
+  const NetworkState* default_network = network_state_handler_->
+      DefaultNetwork();
+  return default_network ? default_network->name() : std::string();
+}
+
+bool ConnectivityStateHelperImpl::DefaultNetworkOnline() {
+  const NetworkState* network = network_state_handler_->DefaultNetwork();
+  if (!network)
+    return false;
+  if (!network->IsConnectedState())
+    return false;
+  if (network->connection_state() == flimflam::kStatePortal)
+    return false;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkLibrary implementation.
+//
 
 ConnectivityStateHelperNetworkLibrary::ConnectivityStateHelperNetworkLibrary() {
   network_library_ = CrosLibrary::Get()->GetNetworkLibrary();
@@ -106,6 +145,10 @@ ConnectivityStateHelperNetworkLibrary::ConnectivityStateHelperNetworkLibrary() {
 
 ConnectivityStateHelperNetworkLibrary::~ConnectivityStateHelperNetworkLibrary()
 {}
+
+bool ConnectivityStateHelperNetworkLibrary::IsConnected() {
+  return network_library_->Connected();
+}
 
 bool ConnectivityStateHelperNetworkLibrary::IsConnectedType(
     const std::string& type) {
@@ -144,6 +187,23 @@ std::string ConnectivityStateHelperNetworkLibrary::NetworkNameForType(
   if (type == flimflam::kTypeWimax && network_library_->wimax_network())
     return network_library_->wimax_network()->name();
   return std::string();
+}
+
+std::string ConnectivityStateHelperNetworkLibrary::DefaultNetworkName() {
+  if (network_library_->active_network())
+    return network_library_->active_network()->name();
+  return std::string();
+}
+
+bool ConnectivityStateHelperNetworkLibrary::DefaultNetworkOnline() {
+  const Network* active_network = network_library_->active_network();
+  if (!active_network)
+    return false;
+  if (!active_network->connected())
+    return false;
+  if (active_network->restricted_pool())
+    return false;
+  return true;
 }
 
 }  // namespace chromeos

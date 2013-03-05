@@ -103,7 +103,7 @@
         '../sync/sync.gyp:sync',
       ],
       'sources': [
-        # All .cc, .h, .m, and .mm files unde browser/chromeos, except for tests
+        # All .cc, .h, .m, and .mm files under browser/chromeos, except for tests
         # and mocks.
         'browser/chromeos/accessibility/accessibility_util.cc',
         'browser/chromeos/accessibility/accessibility_util.h',

@@ -6,8 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -45,12 +45,13 @@ ui::ModalType CaptivePortalView::GetModalType() const {
 
 string16 CaptivePortalView::GetWindowTitle() const {
   string16 network_name;
-  const Network* active_network =
-      CrosLibrary::Get()->GetNetworkLibrary()->active_network();
-  if (active_network) {
-    network_name = ASCIIToUTF16(active_network->name());
+  ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
+  std::string default_network_name = csh->DefaultNetworkName();
+  if (!default_network_name.empty()) {
+    network_name = ASCIIToUTF16(default_network_name);
   } else {
-    DLOG(ERROR) << "No active network, but captive portal window is shown.";
+    DLOG(ERROR)
+        << "No active/default network, but captive portal window is shown.";
   }
 
   return l10n_util::GetStringFUTF16(IDS_LOGIN_CAPTIVE_PORTAL_WINDOW_TITLE,

@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chrome/browser/chromeos/net/mock_connectivity_state_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
@@ -202,6 +204,9 @@ class LoginUtilsTest : public testing::Test,
     // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
+
+    ConnectivityStateHelper::InitializeForTesting(
+        &mock_connectivity_state_helper_);
 
     input_method::InitializeForTesting(&mock_input_method_manager_);
     disks::DiskMountManager::InitializeForTesting(&mock_disk_mount_manager_);
@@ -497,6 +502,7 @@ class LoginUtilsTest : public testing::Test,
   input_method::MockInputMethodManager mock_input_method_manager_;
   disks::MockDiskMountManager mock_disk_mount_manager_;
   net::TestURLFetcherFactory test_url_fetcher_factory_;
+  MockConnectivityStateHelper mock_connectivity_state_helper_;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
 

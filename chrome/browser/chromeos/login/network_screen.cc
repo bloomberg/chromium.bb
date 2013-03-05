@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -96,8 +97,7 @@ void NetworkScreen::OnActorDestroyed(NetworkScreenActor* actor) {
 }
 
 void NetworkScreen::OnContinuePressed() {
-  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  if (network && network->Connected()) {
+  if (ConnectivityStateHelper::Get()->IsConnected()) {
     NotifyOnConnection();
   } else {
     continue_pressed_ = true;
@@ -133,10 +133,7 @@ void NetworkScreen::NotifyOnConnection() {
 
 void NetworkScreen::OnConnectionTimeout() {
   StopWaitingForConnection(network_id_);
-  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  bool is_connected = network && network->Connected();
-
-  if (!is_connected && actor_) {
+  if (!ConnectivityStateHelper::Get()->IsConnected() && actor_) {
     // Show error bubble.
     actor_->ShowError(
         l10n_util::GetStringFUTF16(
@@ -164,8 +161,7 @@ void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
 }
 
 void NetworkScreen::StopWaitingForConnection(const string16& network_id) {
-  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  bool is_connected = network && network->Connected();
+  bool is_connected = ConnectivityStateHelper::Get()->IsConnected();
   if (is_connected && continue_pressed_) {
     NotifyOnConnection();
     return;

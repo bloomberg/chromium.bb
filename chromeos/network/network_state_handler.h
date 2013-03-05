@@ -116,7 +116,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Like ConnectedNetworkByType() but returns any matching network or NULL.
   // Mostly useful for mobile networks where there is generally only one
-  // netowrk. Note: O(N).
+  // network. Note: O(N).
   const NetworkState* FirstNetworkByType(const std::string& type) const;
 
   // Returns the hardware (MAC) address for the first connected network
