@@ -1904,15 +1904,19 @@ int SSLClientSocketNSS::Core::DoHandshake() {
     // inject TCP reset packets to break the connections when they see
     // TLS 1.1 in ClientHello or ServerHello. See http://crbug.com/130293.
     //
-    // Only allow ERR_CONNECTION_RESET to trigger a TLS 1.1 -> TLS 1.0
-    // fallback. We don't lose much in this fallback because the explicit
-    // IV for CBC mode in TLS 1.1 is approximated by record splitting in
-    // TLS 1.0.
+    // Only allow ERR_CONNECTION_RESET/ABORTED to trigger a TLS 1.1 -> TLS 1.0
+    // fallback. We don't lose much in this fallback because the explicit IV
+    // for CBC mode in TLS 1.1 is approximated by record splitting in TLS 1.0.
     //
-    // ERR_CONNECTION_RESET is a common network error, so we don't want it
-    // to trigger a version fallback in general, especially the TLS 1.0 ->
+    // ERR_CONNECTION_RESET/ABORTED are common network errors, so we don't want
+    // them to trigger a version fallback in general, especially the TLS 1.0 ->
     // SSL 3.0 fallback, which would drop TLS extensions.
-    if (prerr == PR_CONNECT_RESET_ERROR &&
+    //
+    // ERR_CONNECTION_ABORTED was added because we get this error message when
+    // using non-blocking reads instead of async/overlapped reads. See
+    // crbug.com/178672.
+    if ((prerr == PR_CONNECT_RESET_ERROR ||
+         prerr == PR_CONNECT_ABORTED_ERROR) &&
         ssl_config_.version_max == SSL_PROTOCOL_VERSION_TLS1_1) {
       net_error = ERR_SSL_PROTOCOL_ERROR;
     }
