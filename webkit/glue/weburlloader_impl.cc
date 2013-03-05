@@ -164,11 +164,6 @@ void PopulateURLResponse(
   response->setAppCacheManifestURL(info.appcache_manifest_url);
   response->setWasCached(!info.load_timing.base_time.is_null() &&
       info.response_time < info.load_timing.base_time);
-  response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
-  response->setWasNpnNegotiated(info.was_npn_negotiated);
-  response->setWasAlternateProtocolAvailable(
-      info.was_alternate_protocol_available);
-  response->setWasFetchedViaProxy(info.was_fetched_via_proxy);
   response->setRemoteIPAddress(
       WebString::fromUTF8(info.socket_address.host()));
   response->setRemotePort(info.socket_address.port());
@@ -176,8 +171,14 @@ void PopulateURLResponse(
   response->setConnectionReused(info.connection_reused);
   response->setDownloadFilePath(
       webkit_base::FilePathToWebString(info.download_file_path));
-  response->setExtraData(new WebURLResponseExtraDataImpl(
-      info.npn_negotiated_protocol));
+  WebURLResponseExtraDataImpl* extra_data =
+      new WebURLResponseExtraDataImpl(info.npn_negotiated_protocol);
+  response->setExtraData(extra_data);
+  extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
+  extra_data->set_was_npn_negotiated(info.was_npn_negotiated);
+  extra_data->set_was_alternate_protocol_available(
+      info.was_alternate_protocol_available);
+  extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
 
   const ResourceLoadTimingInfo& timing_info = info.load_timing;
   if (!timing_info.base_time.is_null()) {

@@ -1610,7 +1610,10 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   params.frame_id = frame->identifier();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
   params.socket_address.set_port(response.remotePort());
-  params.was_fetched_via_proxy = response.wasFetchedViaProxy();
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
+  if (extra_data) {
+    params.was_fetched_via_proxy = extra_data->was_fetched_via_proxy();
+  }
   params.was_within_same_page = navigation_state->was_within_same_page();
   if (!document_state->security_info().empty()) {
     // SSL state specified in the request takes precedence over the one in the
@@ -3889,16 +3892,19 @@ void RenderViewImpl::didReceiveResponse(
   int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
-  document_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
-  document_state->set_was_npn_negotiated(response.wasNpnNegotiated());
   WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
   if (extra_data) {
+    document_state->set_was_fetched_via_spdy(
+        extra_data->was_fetched_via_spdy());
+    document_state->set_was_npn_negotiated(
+        extra_data->was_npn_negotiated());
     document_state->set_npn_negotiated_protocol(
         extra_data->npn_negotiated_protocol());
+    document_state->set_was_alternate_protocol_available(
+        extra_data->was_alternate_protocol_available());
+    document_state->set_was_fetched_via_proxy(
+        extra_data->was_fetched_via_proxy());
   }
-  document_state->set_was_alternate_protocol_available(
-      response.wasAlternateProtocolAvailable());
-  document_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
   document_state->set_http_status_code(http_status_code);
   // Whether or not the http status code actually corresponds to an error is
   // only checked when the page is done loading, if |use_error_page| is
