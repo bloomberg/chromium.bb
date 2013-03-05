@@ -1580,24 +1580,6 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
   return breakpad;
 }
 
-// We renamed "Google Chrome App Host" to "Google Chrome App Launcher",
-// and need to do the same in the Windows\CurrentVersion\Uninstall registry key.
-// The addition / removal of the new key is handled elsewhere.
-// It remains to remove the old key where appropriate.
-// TODO(huangs): Remove this in early March.
-void RemoveDeprecatedAppHostUninstallEntry(
-    const InstallerState& installer_state) {
-  const Product* app_host =
-      installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST);
-  if (app_host) {
-    const string16 kDeprecatedUninstallRegPath(L"Software\\Microsoft\\Windows\\"
-        L"CurrentVersion\\Uninstall\\Google Chrome App Host");
-    InstallUtil::DeleteRegistryKey(installer_state.root_key(),
-                                   kDeprecatedUninstallRegPath);
-  }
-}
-
-
 }  // namespace
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
@@ -1700,11 +1682,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     install_status =
         InstallProducts(original_state, cmd_line, prefs, &installer_state);
   }
-
-  // TODO(huangs): Remove this in early March.
-  if (!InstallUtil::GetInstallReturnCode(install_status))
-    RemoveDeprecatedAppHostUninstallEntry(installer_state);
-
 
   // Validate that the machine is now in a good state following the operation.
   // TODO(grt): change this to log at DFATAL once we're convinced that the
