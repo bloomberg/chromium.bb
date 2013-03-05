@@ -48,6 +48,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
       content_margins_(content_margins),
       title_(NULL),
       close_(NULL),
+      titlebar_extra_view_(NULL),
       can_drag_(false) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new Label(string16(), rb.GetFont(ui::ResourceBundle::MediumFont));
@@ -118,10 +119,24 @@ void BubbleFrameView::Layout() {
   // Small additional insets yield the desired 10px visual close button insets.
   bounds.Inset(0, 2, close_->width() + 1, 0);
   close_->SetPosition(gfx::Point(bounds.right(), bounds.y()));
+
+  gfx::Rect title_bounds = bounds;
   // Small additional insets yield the desired 20px visual title label insets.
-  bounds.Inset(19, 10, 0, 0);
-  bounds.set_height(title_->font().GetHeight());
-  title_->SetBoundsRect(bounds);
+  title_bounds.Inset(19, 10, 0, 0);
+
+  title_bounds.set_size(title_->GetPreferredSize());
+  title_->SetBoundsRect(title_bounds);
+
+  if (titlebar_extra_view_) {
+    const gfx::Size size = titlebar_extra_view_->GetPreferredSize();
+    gfx::Rect titlebar_extra_view_bounds(
+        bounds.right() - size.width(),
+        title_bounds.y(),
+        size.width(),
+        title_bounds.height());
+    titlebar_extra_view_bounds.Subtract(title_bounds);
+    titlebar_extra_view_->SetBoundsRect(titlebar_extra_view_bounds);
+  }
 }
 
 std::string BubbleFrameView::GetClassName() const {
@@ -147,6 +162,13 @@ void BubbleFrameView::SetTitle(const string16& title) {
 
 void BubbleFrameView::SetShowCloseButton(bool show) {
   close_->SetVisible(show);
+}
+
+void BubbleFrameView::SetTitlebarExtraView(View* view) {
+  DCHECK(view);
+  DCHECK(!titlebar_extra_view_);
+  AddChildView(view);
+  titlebar_extra_view_ = view;
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,

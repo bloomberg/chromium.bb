@@ -168,6 +168,8 @@ void AutofillDialogViews::AccountChooser::Update() {
   link_->SetVisible(show_link);
 
   menu_runner_.reset();
+
+  InvalidateLayout();
 }
 
 bool AutofillDialogViews::AccountChooser::OnMousePressed(
@@ -717,6 +719,10 @@ views::View* AutofillDialogViews::CreateExtraView() {
   return button_strip_extra_view_;
 }
 
+views::View* AutofillDialogViews::CreateTitlebarExtraView() {
+  return account_chooser_;
+}
+
 views::View* AutofillDialogViews::CreateFootnoteView() {
   // TODO(estade): add a view to contain the terms of service.
   return NULL;
@@ -885,11 +891,9 @@ views::View* AutofillDialogViews::CreateMainContainer() {
                         0);
 
   layout->StartRow(0, single_column_set);
-  // TODO(abodenha) Create a chooser control to allow account selection.
-  // See http://crbug.com/169858
   account_chooser_ = new AccountChooser(controller_);
-  // TODO(estade): |account_chooser_| should be in the title bar.
-  layout->AddView(account_chooser_);
+  if (!views::DialogDelegate::UseNewStyle())
+    layout->AddView(account_chooser_);
 
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kRelatedControlVerticalSpacing);

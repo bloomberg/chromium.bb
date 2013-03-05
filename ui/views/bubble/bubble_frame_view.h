@@ -53,6 +53,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   void SetTitle(const string16& title);
   void SetShowCloseButton(bool show);
+  void SetTitlebarExtraView(View* view);
 
   void set_can_drag(bool can_drag) { can_drag_ = can_drag; }
 
@@ -91,6 +92,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // The optional title and (x) close button.
   Label* title_;
   LabelButton* close_;
+
+  // When supplied, this view is placed in the titlebar between the title and
+  // (x) close button.
+  View* titlebar_extra_view_;
 
   // A flag controlling the ability to drag this frame.
   bool can_drag_;
