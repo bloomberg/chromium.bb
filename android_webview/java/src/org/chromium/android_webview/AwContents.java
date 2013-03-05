@@ -768,6 +768,8 @@ public class AwContents {
      */
     public void onSizeChanged(int w, int h, int ow, int oh) {
         if (mNativeAwContents == 0) return;
+
+        mContentViewCore.onPhysicalBackingSizeChanged(w, h);
         mContentViewCore.onSizeChanged(w, h, ow, oh);
         nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
     }
