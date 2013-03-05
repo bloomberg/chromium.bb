@@ -178,6 +178,12 @@ void P2PInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
 }
 
+void P2PInvalidator::Acknowledge(const invalidation::ObjectId& id,
+                                 const AckHandle& ack_handle) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // Do nothing for the P2P implementation.
+}
+
 InvalidatorState P2PInvalidator::GetInvalidatorState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return registrar_.GetInvalidatorState();

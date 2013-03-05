@@ -7,7 +7,7 @@
 // up to the invalidation client.
 //
 // You probably don't want to use this directly; use
-// NonBlockingInvalidationNotifier.
+// NonBlockingInvalidator.
 
 #ifndef SYNC_NOTIFIER_INVALIDATION_NOTIFIER_H_
 #define SYNC_NOTIFIER_INVALIDATION_NOTIFIER_H_
@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/default_tick_clock.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -55,6 +56,8 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const AckHandle& ack_handle) OVERRIDE;
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void UpdateCredentials(
@@ -96,6 +99,10 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
 
   // The initial bootstrap data to pass to |invalidation_listener_|.
   const std::string invalidation_bootstrap_data_;
+
+  // TODO(akalin): Clean up this reference to DefaultTickClock. Ideally, we
+  // should simply be using TaskRunner's tick clock. See http://crbug.com/179211
+  base::DefaultTickClock tick_clock_;
 
   // The invalidation listener.
   SyncInvalidationListener invalidation_listener_;

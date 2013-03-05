@@ -165,6 +165,11 @@ void AndroidInvalidatorBridge::UnregisterHandler(
   core_->UnregisterHandler(handler);
 }
 
+void AndroidInvalidatorBridge::Acknowledge(
+    const invalidation::ObjectId& id, const syncer::AckHandle& ack_handle) {
+  // Do nothing.
+}
+
 syncer::InvalidatorState AndroidInvalidatorBridge::GetInvalidatorState() const {
   return syncer::INVALIDATIONS_ENABLED;
 }

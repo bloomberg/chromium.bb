@@ -46,6 +46,8 @@ class AndroidInvalidatorBridge
   virtual void UpdateRegisteredIds(syncer::InvalidationHandler* handler,
                                    const syncer::ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(syncer::InvalidationHandler* handler) OVERRIDE;
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
 
   // The following members of the Invalidator interface are not applicable to

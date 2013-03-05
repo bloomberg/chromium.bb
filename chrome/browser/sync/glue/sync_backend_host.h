@@ -191,6 +191,10 @@ class SyncBackendHost
   // notifier.  This lasts until StopSyncingForShutdown() is called.
   void UpdateRegisteredInvalidationIds(const syncer::ObjectIdSet& ids);
 
+  // Forwards an invalidation acknowledgement to the underlying notifier.
+  void AcknowledgeInvalidation(const invalidation::ObjectId& id,
+                               const syncer::AckHandle& ack_handle);
+
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
   // browser from the cloud / sync servers.

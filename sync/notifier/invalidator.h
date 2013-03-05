@@ -69,6 +69,10 @@ class SYNC_EXPORT Invalidator {
   // associated with |handler|.
   virtual void UnregisterHandler(InvalidationHandler* handler) = 0;
 
+  // Acknowledge that an invalidation for |id| was handled.
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const AckHandle& ack_handle) = 0;
+
   // Returns the current invalidator state.  When called from within
   // InvalidationHandler::OnInvalidatorStateChange(), this must return
   // the updated state.

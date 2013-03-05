@@ -82,6 +82,11 @@ class InvalidationFrontend {
   virtual void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) = 0;
 
+  // Sends an acknowledgement that an invalidation for |id| was successfully
+  // handled.
+  virtual void AcknowledgeInvalidation(const invalidation::ObjectId& id,
+                                       const syncer::AckHandle& ack_handle) = 0;
+
   // Returns the current invalidator state.  When called from within
   // InvalidationHandler::OnInvalidatorStateChange(), this must return
   // the updated state.

@@ -40,6 +40,12 @@ void AndroidInvalidatorBridgeProxy::UnregisterHandler(
   bridge_->UnregisterHandler(handler);
 }
 
+void AndroidInvalidatorBridgeProxy::Acknowledge(
+    const invalidation::ObjectId& id,
+    const syncer::AckHandle& ack_handle) {
+  bridge_->Acknowledge(id, ack_handle);
+}
+
 void AndroidInvalidatorBridgeProxy::SetUniqueId(const string& unique_id) {
   bridge_->SetUniqueId(unique_id);
 }

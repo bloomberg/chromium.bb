@@ -635,6 +635,13 @@ void SyncManagerImpl::UnregisterInvalidationHandler(
   invalidator_->UnregisterHandler(handler);
 }
 
+void SyncManagerImpl::AcknowledgeInvalidation(
+    const invalidation::ObjectId& id, const syncer::AckHandle& ack_handle) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
+  invalidator_->Acknowledge(id, ack_handle);
+}
+
 void SyncManagerImpl::AddObserver(SyncManager::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.AddObserver(observer);
@@ -1238,6 +1245,16 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
 void SyncManagerImpl::OnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(dcheng): Acknowledge immediately for now. Fix this once the
+  // invalidator doesn't repeatedly ping for unacknowledged invaliations, since
+  // it conflicts with the sync scheduler's internal backoff algorithm.
+  // See http://crbug.com/124149 for more information.
+  for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
+       it != invalidation_map.end(); ++it) {
+    invalidator_->Acknowledge(it->first, it->second.ack_handle);
+  }
+
   const ModelTypeInvalidationMap& type_invalidation_map =
       ObjectIdInvalidationMapToModelTypeInvalidationMap(invalidation_map);
   if (type_invalidation_map.empty()) {

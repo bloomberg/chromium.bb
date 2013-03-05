@@ -479,6 +479,16 @@ void ChromeToMobileService::OnIncomingInvalidation(
   DCHECK_EQ(1U, invalidation_map.count(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
       kSyncInvalidationObjectIdChromeToMobileDeviceList)));
+  // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service) {
+    // TODO(dcheng): Only acknowledge the invalidation once the device search
+    // has finished. http://crbug.com/156843.
+    profile_sync_service->AcknowledgeInvalidation(
+        invalidation_map.begin()->first,
+        invalidation_map.begin()->second.ack_handle);
+  }
   RequestDeviceSearch();
 }
 

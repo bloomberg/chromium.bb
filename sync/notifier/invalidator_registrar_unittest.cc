@@ -43,6 +43,11 @@ class RegistrarInvalidator : public Invalidator {
     registrar_.UnregisterHandler(handler);
   }
 
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const AckHandle& ack_handle) OVERRIDE {
+    // Do nothing.
+  }
+
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE {
     return registrar_.GetInvalidatorState();
   }

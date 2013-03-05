@@ -28,7 +28,7 @@ InvalidationNotifier::InvalidationNotifier(
       invalidation_state_tracker_(invalidation_state_tracker),
       client_info_(client_info),
       invalidation_bootstrap_data_(invalidation_bootstrap_data),
-      invalidation_listener_(push_client.Pass()) {
+      invalidation_listener_(&tick_clock_, push_client.Pass()) {
 }
 
 InvalidationNotifier::~InvalidationNotifier() {
@@ -50,6 +50,12 @@ void InvalidationNotifier::UpdateRegisteredIds(InvalidationHandler* handler,
 void InvalidationNotifier::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(CalledOnValidThread());
   registrar_.UnregisterHandler(handler);
+}
+
+void InvalidationNotifier::Acknowledge(const invalidation::ObjectId& id,
+                                       const AckHandle& ack_handle) {
+  DCHECK(CalledOnValidThread());
+  invalidation_listener_.Acknowledge(id, ack_handle);
 }
 
 InvalidatorState InvalidationNotifier::GetInvalidatorState() const {

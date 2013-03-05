@@ -7,6 +7,8 @@
 
 #include <list>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -599,6 +601,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
       const syncer::ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;
+  virtual void AcknowledgeInvalidation(
+      const invalidation::ObjectId& id,
+      const syncer::AckHandle& ack_handle) OVERRIDE;
+
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
 
   // ProfileKeyedService implementation.  This must be called exactly
@@ -673,6 +679,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
     ERROR_REASON_ACTIONABLE_ERROR,
     ERROR_REASON_LIMIT
   };
+  typedef std::vector<std::pair<invalidation::ObjectId,
+                                syncer::AckHandle> > AckHandleReplayQueue;
   friend class ProfileSyncServicePasswordTest;
   friend class SyncTest;
   friend class TestProfileSyncService;
@@ -900,6 +908,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Dispatches invalidations to handlers.  Set in Initialize() and
   // unset in Shutdown().
   scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
+  // Queues any acknowledgements received while the backend is uninitialized.
+  AckHandleReplayQueue ack_replay_queue_;
 
   // Sync's internal debug info listener. Used to record datatype configuration
   // and association information.

@@ -50,12 +50,17 @@ void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {
 }
 
 void FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
-                                           const ObjectIdSet& ids) {
+                                          const ObjectIdSet& ids) {
   registrar_.UpdateRegisteredIds(handler, ids);
 }
 
 void FakeInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
+}
+
+void FakeInvalidator::Acknowledge(const invalidation::ObjectId& id,
+                                  const AckHandle& ack_handle) {
+  // Do nothing.
 }
 
 InvalidatorState FakeInvalidator::GetInvalidatorState() const {

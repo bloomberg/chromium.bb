@@ -153,6 +153,11 @@ class SyncBackendHost::Core
   // SyncBackendHost::UpdateRegisteredInvalidationIds.
   void DoUpdateRegisteredInvalidationIds(const syncer::ObjectIdSet& ids);
 
+  // Called to acknowledge an invalidation on behalf of
+  // SyncBackendHost::AcknowledgeInvalidation.
+  void DoAcknowledgeInvalidation(const invalidation::ObjectId& id,
+                                 const syncer::AckHandle& ack_handle);
+
   // Called to tell the syncapi to start syncing (generally after
   // initialization and authentication).
   void DoStartSyncing(const syncer::ModelSafeRoutingInfo& routing_info);
@@ -475,6 +480,15 @@ void SyncBackendHost::UpdateRegisteredInvalidationIds(
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds,
                  core_.get(), ids));
+}
+
+void SyncBackendHost::AcknowledgeInvalidation(
+    const invalidation::ObjectId& id, const syncer::AckHandle& ack_handle) {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  DCHECK(sync_thread_.IsRunning());
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoAcknowledgeInvalidation,
+                 core_.get(), id, ack_handle));
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
@@ -1235,6 +1249,18 @@ void SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds(
   // TODO(akalin): Fix this behavior (see http://crbug.com/140354).
   if (sync_manager_.get()) {
     sync_manager_->UpdateRegisteredInvalidationIds(this, ids);
+  }
+}
+
+void SyncBackendHost::Core::DoAcknowledgeInvalidation(
+    const invalidation::ObjectId& id, const syncer::AckHandle& ack_handle) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  // |sync_manager_| may end up being NULL here in tests (in
+  // synchronous initialization mode).
+  //
+  // TODO(akalin): Fix this behavior (see http://crbug.com/140354).
+  if (sync_manager_.get()) {
+    sync_manager_->AcknowledgeInvalidation(id, ack_handle);
   }
 }
 

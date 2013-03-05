@@ -125,6 +125,7 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
                                          &subchannel)) {
       delegate_->OnMessage(extension_id, subchannel, it->second.payload);
     }
+    service_->AcknowledgeInvalidation(it->first, it->second.ack_handle);
   }
 }
 

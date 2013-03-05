@@ -8,10 +8,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
+#include "base/time.h"
+#include "base/time/tick_clock.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
+#include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/notifier/ack_tracker.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/sync_invalidation_listener.h"
@@ -131,7 +136,9 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 // and state.
 class FakeDelegate : public SyncInvalidationListener::Delegate {
  public:
-  FakeDelegate() : state_(TRANSIENT_INVALIDATION_ERROR) {}
+  explicit FakeDelegate(SyncInvalidationListener* listener)
+      : listener_(listener),
+        state_(TRANSIENT_INVALIDATION_ERROR) {}
   virtual ~FakeDelegate() {}
 
   int GetInvalidationCount(const ObjectId& id) const {
@@ -146,6 +153,10 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
 
   InvalidatorState GetInvalidatorState() const {
     return state_;
+  }
+
+  void Acknowledge(const ObjectId& id) {
+    listener_->Acknowledge(id, invalidations_[id].ack_handle);
   }
 
   // SyncInvalidationListener::Delegate implementation.
@@ -167,6 +178,7 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
   typedef std::map<ObjectId, int, ObjectIdLessThan> ObjectIdCountMap;
   ObjectIdCountMap invalidation_counts_;
   ObjectIdInvalidationMap invalidations_;
+  SyncInvalidationListener* listener_;
   InvalidatorState state_;
 };
 
@@ -181,6 +193,50 @@ invalidation::InvalidationClient* CreateFakeInvalidationClient(
   return *fake_invalidation_client;
 }
 
+// TODO(dcheng): FakeTickClock and FakeBackoffEntry ought to be factored out
+// into a helpers file so it can be shared with the AckTracker unittest.
+class FakeTickClock : public base::TickClock {
+ public:
+  FakeTickClock() {}
+  virtual ~FakeTickClock() {}
+
+  void LeapForward(int seconds) {
+    ASSERT_GT(seconds, 0);
+    fake_now_ticks_ += base::TimeDelta::FromSeconds(seconds);
+  }
+
+  virtual base::TimeTicks NowTicks() OVERRIDE {
+    return fake_now_ticks_;
+  }
+
+ private:
+  base::TimeTicks fake_now_ticks_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeTickClock);
+};
+
+class FakeBackoffEntry : public net::BackoffEntry {
+ public:
+  FakeBackoffEntry(const Policy *const policy, base::TickClock* tick_clock)
+      : BackoffEntry(policy), tick_clock_(tick_clock) {
+  }
+
+ protected:
+  virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE {
+    return tick_clock_->NowTicks();
+  }
+
+ private:
+  base::TickClock* const tick_clock_;
+};
+
+scoped_ptr<net::BackoffEntry> CreateMockEntry(
+    base::TickClock* tick_clock,
+    const net::BackoffEntry::Policy *const policy) {
+  return scoped_ptr<net::BackoffEntry>(
+      new FakeBackoffEntry(policy, tick_clock));
+}
+
 class SyncInvalidationListenerTest : public testing::Test {
  protected:
   SyncInvalidationListenerTest()
@@ -190,14 +246,16 @@ class SyncInvalidationListenerTest : public testing::Test {
         kAppsId_(kChromeSyncSourceId, "APP"),
         fake_push_client_(new notifier::FakePushClient()),
         fake_invalidation_client_(NULL),
-        client_(scoped_ptr<notifier::PushClient>(fake_push_client_)) {}
+        listener_(&tick_clock_,
+                  scoped_ptr<notifier::PushClient>(fake_push_client_)),
+        fake_delegate_(&listener_) {}
 
   virtual void SetUp() {
     StartClient();
 
     registered_ids_.insert(kBookmarksId_);
     registered_ids_.insert(kPreferencesId_);
-    client_.UpdateRegisteredIds(registered_ids_);
+    listener_.UpdateRegisteredIds(registered_ids_);
   }
 
   virtual void TearDown() {
@@ -208,6 +266,34 @@ class SyncInvalidationListenerTest : public testing::Test {
   void RestartClient() {
     StopClient();
     StartClient();
+  }
+
+  void StartClient() {
+    fake_invalidation_client_ = NULL;
+    listener_.Start(base::Bind(&CreateFakeInvalidationClient,
+                               &fake_invalidation_client_),
+                    kClientId, kClientInfo, kState,
+                    fake_tracker_.GetAllInvalidationStates(),
+                    MakeWeakHandle(fake_tracker_.AsWeakPtr()),
+                    &fake_delegate_);
+    DCHECK(fake_invalidation_client_);
+
+    // TODO(rlarocque): This is necessary for the deferred write of the client
+    // ID to take place.  We can remove this statement when we remove the
+    // WriteInvalidatorClientId test.  See crbug.com/124142.
+    message_loop_.RunUntilIdle();
+  }
+
+  void StopClient() {
+    // listener_.StopForTest() stops the invalidation scheduler, which
+    // deletes any pending tasks without running them.  Some tasks
+    // "run and delete" another task, so they must be run in order to
+    // avoid leaking the inner task.  listener_.StopForTest() does not
+    // schedule any tasks, so it's both necessary and sufficient to
+    // drain the task queue before calling it.
+    message_loop_.RunUntilIdle();
+    fake_invalidation_client_ = NULL;
+    listener_.StopForTest();
   }
 
   int GetInvalidationCount(const ObjectId& id) const {
@@ -249,31 +335,37 @@ class SyncInvalidationListenerTest : public testing::Test {
     }
     const AckHandle ack_handle("fakedata");
     fake_invalidation_client_->ClearAckedHandles();
-    client_.Invalidate(fake_invalidation_client_, inv, ack_handle);
-    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
-    // Pump message loop to trigger
-    // InvalidationStateTracker::SetMaxVersion().
+    listener_.Invalidate(fake_invalidation_client_, inv, ack_handle);
+    // Pump message loop to trigger InvalidationStateTracker::SetMaxVersion()
+    // and callback from InvalidationStateTracker::GenerateAckHandles().
     message_loop_.RunUntilIdle();
+    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
   }
 
   // |payload| can be NULL, but not |type_name|.
   void FireInvalidateUnknownVersion(const ObjectId& object_id) {
     const AckHandle ack_handle("fakedata_unknown");
     fake_invalidation_client_->ClearAckedHandles();
-    client_.InvalidateUnknownVersion(fake_invalidation_client_, object_id,
+    listener_.InvalidateUnknownVersion(fake_invalidation_client_, object_id,
                                      ack_handle);
+    // Pump message loop to trigger callback from
+    // InvalidationStateTracker::GenerateAckHandles().
+    message_loop_.RunUntilIdle();
     EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
   }
 
   void FireInvalidateAll() {
     const AckHandle ack_handle("fakedata_all");
     fake_invalidation_client_->ClearAckedHandles();
-    client_.InvalidateAll(fake_invalidation_client_, ack_handle);
+    listener_.InvalidateAll(fake_invalidation_client_, ack_handle);
+    // Pump message loop to trigger callback from
+    // InvalidationStateTracker::GenerateAckHandles().
+    message_loop_.RunUntilIdle();
     EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
   }
 
   void WriteState(const std::string& new_state) {
-    client_.WriteState(new_state);
+    listener_.WriteState(new_state);
     // Pump message loop to trigger
     // InvalidationStateTracker::WriteState().
     message_loop_.RunUntilIdle();
@@ -287,6 +379,29 @@ class SyncInvalidationListenerTest : public testing::Test {
     fake_push_client_->DisableNotifications(reason);
   }
 
+  void VerifyUnacknowledged(const ObjectId& object_id) {
+    InvalidationStateMap state_map = fake_tracker_.GetAllInvalidationStates();
+    EXPECT_THAT(state_map[object_id].current,
+                Not(Eq(state_map[object_id].expected)));
+    EXPECT_EQ(listener_.GetStateMapForTest(), state_map);
+  }
+
+  void VerifyAcknowledged(const ObjectId& object_id) {
+    InvalidationStateMap state_map = fake_tracker_.GetAllInvalidationStates();
+    EXPECT_THAT(state_map[object_id].current,
+                Eq(state_map[object_id].expected));
+    EXPECT_EQ(listener_.GetStateMapForTest(), state_map);
+  }
+
+  void AcknowledgeAndVerify(const ObjectId& object_id) {
+    VerifyUnacknowledged(object_id);
+    fake_delegate_.Acknowledge(object_id);
+    // Pump message loop to trigger
+    // InvalidationStateTracker::Acknowledge().
+    message_loop_.RunUntilIdle();
+    VerifyAcknowledged(object_id);
+  }
+
   const ObjectId kBookmarksId_;
   const ObjectId kPreferencesId_;
   const ObjectId kExtensionsId_;
@@ -295,44 +410,18 @@ class SyncInvalidationListenerTest : public testing::Test {
   ObjectIdSet registered_ids_;
 
  private:
-  void StartClient() {
-    fake_invalidation_client_ = NULL;
-    client_.Start(base::Bind(&CreateFakeInvalidationClient,
-                             &fake_invalidation_client_),
-                  kClientId, kClientInfo, kState,
-                  fake_tracker_.GetAllInvalidationStates(),
-                  MakeWeakHandle(fake_tracker_.AsWeakPtr()),
-                  &fake_delegate_);
-    DCHECK(fake_invalidation_client_);
-
-    // TODO(rlarocque): This is necessary for the deferred write of the client
-    // ID to take place.  We can remove this statement when we remove the
-    // WriteInvalidatorClientId test.  See crbug.com/124142.
-    message_loop_.RunUntilIdle();
-  }
-
-  void StopClient() {
-    // client_.StopForTest() stops the invalidation scheduler, which
-    // deletes any pending tasks without running them.  Some tasks
-    // "run and delete" another task, so they must be run in order to
-    // avoid leaking the inner task.  client_.StopForTest() does not
-    // schedule any tasks, so it's both necessary and sufficient to
-    // drain the task queue before calling it.
-    message_loop_.RunUntilIdle();
-    fake_invalidation_client_ = NULL;
-    client_.StopForTest();
-  }
-
   MessageLoop message_loop_;
-
-  FakeDelegate fake_delegate_;
   FakeInvalidationStateTracker fake_tracker_;
   notifier::FakePushClient* const fake_push_client_;
 
  protected:
   // Tests need to access these directly.
   FakeInvalidationClient* fake_invalidation_client_;
-  SyncInvalidationListener client_;
+  FakeTickClock tick_clock_;
+  SyncInvalidationListener listener_;
+
+ private:
+  FakeDelegate fake_delegate_;
 };
 
 // Verify the client ID is written to the state tracker on client start.
@@ -363,6 +452,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidateNoPayload) {
   EXPECT_EQ(1, GetInvalidationCount(id));
   EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kVersion1, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 }
 
 // Fire an invalidation with an empty payload.  It should be
@@ -376,6 +466,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidateEmptyPayload) {
   EXPECT_EQ(1, GetInvalidationCount(id));
   EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kVersion1, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 }
 
 // Fire an invalidation with a payload.  It should be processed, and
@@ -388,11 +479,12 @@ TEST_F(SyncInvalidationListenerTest, InvalidateWithPayload) {
   EXPECT_EQ(1, GetInvalidationCount(id));
   EXPECT_EQ(kPayload1, GetPayload(id));
   EXPECT_EQ(kVersion1, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 }
 
-// Fire an invalidation with a payload.  It should still be processed,
-// and both the payload and the version should be updated.
-TEST_F(SyncInvalidationListenerTest, InvalidateUnregistered) {
+// Fire an invalidation for an unregistered object ID with a payload.  It should
+// still be processed, and both the payload and the version should be updated.
+TEST_F(SyncInvalidationListenerTest, InvalidateUnregisteredWithPayload) {
   const ObjectId kUnregisteredId(
       kChromeSyncSourceId, "unregistered");
   const ObjectId& id = kUnregisteredId;
@@ -401,11 +493,12 @@ TEST_F(SyncInvalidationListenerTest, InvalidateUnregistered) {
   EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kMinVersion, GetMaxVersion(id));
 
-  FireInvalidate(id, kVersion1, NULL);
+  FireInvalidate(id, kVersion1, "unregistered payload");
 
   EXPECT_EQ(1, GetInvalidationCount(id));
-  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ("unregistered payload", GetPayload(id));
   EXPECT_EQ(kVersion1, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 }
 
 // Fire an invalidation, then fire another one with a lower version.
@@ -419,12 +512,14 @@ TEST_F(SyncInvalidationListenerTest, InvalidateVersion) {
   EXPECT_EQ(1, GetInvalidationCount(id));
   EXPECT_EQ(kPayload2, GetPayload(id));
   EXPECT_EQ(kVersion2, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 
   FireInvalidate(id, kVersion1, kPayload1);
 
   EXPECT_EQ(1, GetInvalidationCount(id));
   EXPECT_EQ(kPayload2, GetPayload(id));
   EXPECT_EQ(kVersion2, GetMaxVersion(id));
+  VerifyAcknowledged(id);
 }
 
 // Fire an invalidation with an unknown version twice.  It shouldn't
@@ -438,12 +533,14 @@ TEST_F(SyncInvalidationListenerTest, InvalidateUnknownVersion) {
   EXPECT_EQ(1, GetInvalidationCount(id));
   EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kMinVersion, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 
   FireInvalidateUnknownVersion(id);
 
   EXPECT_EQ(2, GetInvalidationCount(id));
   EXPECT_EQ("", GetPayload(id));
   EXPECT_EQ(kMinVersion, GetMaxVersion(id));
+  AcknowledgeAndVerify(id);
 }
 
 // Fire an invalidation for all enabled IDs.  It shouldn't update the
@@ -456,6 +553,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidateAll) {
     EXPECT_EQ(1, GetInvalidationCount(*it));
     EXPECT_EQ("", GetPayload(*it));
     EXPECT_EQ(kMinVersion, GetMaxVersion(*it));
+    AcknowledgeAndVerify(*it);
   }
 }
 
@@ -466,12 +564,14 @@ TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
   EXPECT_EQ(1, GetInvalidationCount(kBookmarksId_));
   EXPECT_EQ("", GetPayload(kBookmarksId_));
   EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+  AcknowledgeAndVerify(kBookmarksId_);
 
   FireInvalidate(kExtensionsId_, 2, NULL);
 
   EXPECT_EQ(1, GetInvalidationCount(kExtensionsId_));
   EXPECT_EQ("", GetPayload(kExtensionsId_));
   EXPECT_EQ(2, GetMaxVersion(kExtensionsId_));
+  AcknowledgeAndVerify(kExtensionsId_);
 
   // Invalidations with lower version numbers should be ignored.
 
@@ -494,14 +594,19 @@ TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
   EXPECT_EQ(2, GetInvalidationCount(kBookmarksId_));
   EXPECT_EQ("", GetPayload(kBookmarksId_));
   EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+  AcknowledgeAndVerify(kBookmarksId_);
 
   EXPECT_EQ(1, GetInvalidationCount(kPreferencesId_));
   EXPECT_EQ("", GetPayload(kPreferencesId_));
   EXPECT_EQ(kMinVersion, GetMaxVersion(kPreferencesId_));
+  AcknowledgeAndVerify(kPreferencesId_);
 
+  // Note that kExtensionsId_ is not registered, so InvalidateAll() shouldn't
+  // affect it.
   EXPECT_EQ(1, GetInvalidationCount(kExtensionsId_));
   EXPECT_EQ("", GetPayload(kExtensionsId_));
   EXPECT_EQ(2, GetMaxVersion(kExtensionsId_));
+  VerifyAcknowledged(kExtensionsId_);
 
   // Invalidations with higher version numbers should be processed.
 
@@ -509,16 +614,101 @@ TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
   EXPECT_EQ(2, GetInvalidationCount(kPreferencesId_));
   EXPECT_EQ("", GetPayload(kPreferencesId_));
   EXPECT_EQ(5, GetMaxVersion(kPreferencesId_));
+  AcknowledgeAndVerify(kPreferencesId_);
 
   FireInvalidate(kExtensionsId_, 3, NULL);
   EXPECT_EQ(2, GetInvalidationCount(kExtensionsId_));
   EXPECT_EQ("", GetPayload(kExtensionsId_));
   EXPECT_EQ(3, GetMaxVersion(kExtensionsId_));
+  AcknowledgeAndVerify(kExtensionsId_);
 
   FireInvalidate(kBookmarksId_, 4, NULL);
   EXPECT_EQ(3, GetInvalidationCount(kBookmarksId_));
   EXPECT_EQ("", GetPayload(kBookmarksId_));
   EXPECT_EQ(4, GetMaxVersion(kBookmarksId_));
+  AcknowledgeAndVerify(kBookmarksId_);
+}
+
+// Various tests for the local invalidation feature.
+// Tests a "normal" scenario. We allow one timeout period to expire by sending
+// ack handles that are not the "latest" ack handle. Once the timeout expires,
+// we verify that we get a second callback and then acknowledge it. Once
+// acknowledged, no further timeouts should occur.
+TEST_F(SyncInvalidationListenerTest, InvalidateOneTimeout) {
+  listener_.GetAckTrackerForTest()->SetCreateBackoffEntryCallbackForTest(
+      base::Bind(&CreateMockEntry, &tick_clock_));
+
+  // Trigger the initial invalidation.
+  FireInvalidate(kBookmarksId_, 3, NULL);
+  EXPECT_EQ(1, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+  VerifyUnacknowledged(kBookmarksId_);
+
+  // Trigger one timeout.
+  tick_clock_.LeapForward(60);
+  EXPECT_TRUE(listener_.GetAckTrackerForTest()->TriggerTimeoutAtForTest(
+      tick_clock_.NowTicks()));
+  EXPECT_EQ(2, GetInvalidationCount(kBookmarksId_));
+  // Other properties should remain the same.
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+
+  AcknowledgeAndVerify(kBookmarksId_);
+
+  // No more invalidations should remain in the queue.
+  EXPECT_TRUE(listener_.GetAckTrackerForTest()->IsQueueEmptyForTest());
+}
+
+// Test that an unacknowledged invalidation triggers reminders if the listener
+// is restarted.
+TEST_F(SyncInvalidationListenerTest, InvalidationTimeoutRestart) {
+  listener_.GetAckTrackerForTest()->SetCreateBackoffEntryCallbackForTest(
+      base::Bind(&CreateMockEntry, &tick_clock_));
+
+  FireInvalidate(kBookmarksId_, 3, NULL);
+  EXPECT_EQ(1, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+
+  // Trigger one timeout.
+  tick_clock_.LeapForward(60);
+  EXPECT_TRUE(listener_.GetAckTrackerForTest()->TriggerTimeoutAtForTest(
+      tick_clock_.NowTicks()));
+  EXPECT_EQ(2, GetInvalidationCount(kBookmarksId_));
+  // Other properties should remain the same.
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+
+  // Restarting the client should reset the retry count and the timeout period
+  // (e.g. it shouldn't increase to 120 seconds). Skip ahead 1200 seconds to be
+  // on the safe side.
+  StopClient();
+  tick_clock_.LeapForward(1200);
+  StartClient();
+
+  // The bookmark invalidation state should not have changed.
+  EXPECT_EQ(2, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+
+  // Now trigger the invalidation reminder after the client restarts.
+  tick_clock_.LeapForward(60);
+  EXPECT_TRUE(listener_.GetAckTrackerForTest()->TriggerTimeoutAtForTest(
+      tick_clock_.NowTicks()));
+  EXPECT_EQ(3, GetInvalidationCount(kBookmarksId_));
+  // Other properties should remain the same.
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+
+  AcknowledgeAndVerify(kBookmarksId_);
+
+  // No more invalidations should remain in the queue.
+  EXPECT_TRUE(listener_.GetAckTrackerForTest()->IsQueueEmptyForTest());
+
+  // The queue should remain empty when we restart now.
+  RestartClient();
+  EXPECT_TRUE(listener_.GetAckTrackerForTest()->IsQueueEmptyForTest());
 }
 
 // Registration tests.
@@ -533,7 +723,7 @@ TEST_F(SyncInvalidationListenerTest, RegisterEnableReady) {
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
@@ -544,7 +734,7 @@ TEST_F(SyncInvalidationListenerTest, RegisterEnableReady) {
 TEST_F(SyncInvalidationListenerTest, RegisterReadyEnable) {
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 
@@ -557,7 +747,7 @@ TEST_F(SyncInvalidationListenerTest, RegisterReadyEnable) {
 // ready the client.  The IDs should be registered only after the
 // client is readied.
 TEST_F(SyncInvalidationListenerTest, EnableRegisterReady) {
-  client_.UpdateRegisteredIds(ObjectIdSet());
+  listener_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
@@ -565,11 +755,11 @@ TEST_F(SyncInvalidationListenerTest, EnableRegisterReady) {
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.UpdateRegisteredIds(registered_ids_);
+  listener_.UpdateRegisteredIds(registered_ids_);
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
@@ -578,7 +768,7 @@ TEST_F(SyncInvalidationListenerTest, EnableRegisterReady) {
 // re-register the IDs.  The IDs should be registered only after the
 // client is readied.
 TEST_F(SyncInvalidationListenerTest, EnableReadyRegister) {
-  client_.UpdateRegisteredIds(ObjectIdSet());
+  listener_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
@@ -586,11 +776,11 @@ TEST_F(SyncInvalidationListenerTest, EnableReadyRegister) {
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.UpdateRegisteredIds(registered_ids_);
+  listener_.UpdateRegisteredIds(registered_ids_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
@@ -599,7 +789,7 @@ TEST_F(SyncInvalidationListenerTest, EnableReadyRegister) {
 // re-register the IDs.  The IDs should be registered only after the
 // client is readied.
 TEST_F(SyncInvalidationListenerTest, ReadyEnableRegister) {
-  client_.UpdateRegisteredIds(ObjectIdSet());
+  listener_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
@@ -607,11 +797,11 @@ TEST_F(SyncInvalidationListenerTest, ReadyEnableRegister) {
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.UpdateRegisteredIds(registered_ids_);
+  listener_.UpdateRegisteredIds(registered_ids_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
@@ -622,15 +812,15 @@ TEST_F(SyncInvalidationListenerTest, ReadyEnableRegister) {
 //
 // This test is important: see http://crbug.com/139424.
 TEST_F(SyncInvalidationListenerTest, ReadyRegisterEnable) {
-  client_.UpdateRegisteredIds(ObjectIdSet());
+  listener_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.UpdateRegisteredIds(registered_ids_);
+  listener_.UpdateRegisteredIds(registered_ids_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 
@@ -644,7 +834,7 @@ TEST_F(SyncInvalidationListenerTest, ReadyRegisterEnable) {
 TEST_F(SyncInvalidationListenerTest, RegisterTypesPreserved) {
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 
@@ -652,7 +842,7 @@ TEST_F(SyncInvalidationListenerTest, RegisterTypesPreserved) {
 
   EXPECT_TRUE(GetRegisteredIds().empty());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
@@ -660,21 +850,22 @@ TEST_F(SyncInvalidationListenerTest, RegisterTypesPreserved) {
 // Make sure that state is correctly purged from the local invalidation state
 // map cache when an ID is unregistered.
 TEST_F(SyncInvalidationListenerTest, UnregisterCleansUpStateMapCache) {
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
-  InvalidationStateMap state_map;
-  state_map[kBookmarksId_].version = 1;
+  EXPECT_TRUE(listener_.GetStateMapForTest().empty());
   FireInvalidate(kBookmarksId_, 1, "hello");
-  EXPECT_EQ(state_map, client_.GetStateMapForTest());
-  state_map[kPreferencesId_].version = 2;
+  EXPECT_EQ(1U, listener_.GetStateMapForTest().size());
+  EXPECT_TRUE(ContainsKey(listener_.GetStateMapForTest(), kBookmarksId_));
   FireInvalidate(kPreferencesId_, 2, "world");
-  EXPECT_EQ(state_map, client_.GetStateMapForTest());
+  EXPECT_EQ(2U, listener_.GetStateMapForTest().size());
+  EXPECT_TRUE(ContainsKey(listener_.GetStateMapForTest(), kBookmarksId_));
+  EXPECT_TRUE(ContainsKey(listener_.GetStateMapForTest(), kPreferencesId_));
 
   ObjectIdSet ids;
   ids.insert(kBookmarksId_);
-  client_.UpdateRegisteredIds(ids);
-  state_map.erase(kPreferencesId_);
-  EXPECT_EQ(state_map, client_.GetStateMapForTest());
+  listener_.UpdateRegisteredIds(ids);
+  EXPECT_EQ(1U, listener_.GetStateMapForTest().size());
+  EXPECT_TRUE(ContainsKey(listener_.GetStateMapForTest(), kBookmarksId_));
 }
 
 // Without readying the client, disable notifications, then enable
@@ -706,7 +897,7 @@ TEST_F(SyncInvalidationListenerTest, EnableNotificationsThenReady) {
 
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }
@@ -716,7 +907,7 @@ TEST_F(SyncInvalidationListenerTest, EnableNotificationsThenReady) {
 TEST_F(SyncInvalidationListenerTest, ReadyThenEnableNotifications) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
@@ -730,7 +921,7 @@ TEST_F(SyncInvalidationListenerTest, ReadyThenEnableNotifications) {
 // delegate should go into an auth error mode and then back out.
 TEST_F(SyncInvalidationListenerTest, PushClientAuthError) {
   EnableNotifications();
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 
@@ -750,11 +941,11 @@ TEST_F(SyncInvalidationListenerTest, PushClientAuthError) {
 // auth error mode and come out of it only after the client is ready.
 TEST_F(SyncInvalidationListenerTest, InvalidationClientAuthError) {
   EnableNotifications();
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 
-  client_.InformError(
+  listener_.InformError(
       fake_invalidation_client_,
       invalidation::ErrorInfo(
           invalidation::ErrorReason::AUTH_FAILURE,
@@ -776,7 +967,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidationClientAuthError) {
 
   EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
-  client_.Ready(fake_invalidation_client_);
+  listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }

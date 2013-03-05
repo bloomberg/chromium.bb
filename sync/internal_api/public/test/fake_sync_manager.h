@@ -102,6 +102,9 @@ class FakeSyncManager : public SyncManager {
       const ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterInvalidationHandler(
       InvalidationHandler* handler) OVERRIDE;
+  virtual void AcknowledgeInvalidation(
+      const invalidation::ObjectId& id,
+      const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void ConfigureSyncer(

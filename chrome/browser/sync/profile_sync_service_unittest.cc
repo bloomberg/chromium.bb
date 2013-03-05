@@ -547,6 +547,11 @@ class ProfileSyncServiceInvalidator : public syncer::Invalidator {
     service_->UnregisterInvalidationHandler(handler);
   }
 
+  virtual void Acknowledge(const invalidation::ObjectId& id,
+                           const syncer::AckHandle& ack_handle) OVERRIDE {
+    // Do nothing.
+  }
+
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE {
     return service_->GetInvalidatorState();
   }

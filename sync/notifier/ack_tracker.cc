@@ -97,6 +97,7 @@ void AckTracker::Clear() {
 
 void AckTracker::Track(const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!ids.empty());
 
   scoped_ptr<Entry> entry(new Entry(
       create_backoff_entry_callback_.Run(&kDefaultBackoffPolicy), ids));

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "chrome/browser/sync/invalidation_frontend.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,6 +32,8 @@ class MockInvalidationFrontend : public InvalidationFrontend {
                void(syncer::InvalidationHandler*, const syncer::ObjectIdSet&));
   MOCK_METHOD1(UnregisterInvalidationHandler,
                void(syncer::InvalidationHandler*));
+  MOCK_METHOD2(AcknowledgeInvalidation, void(const invalidation::ObjectId&,
+                                             const syncer::AckHandle&));
   MOCK_CONST_METHOD0(GetInvalidatorState, syncer::InvalidatorState());
 
  private:
@@ -111,6 +114,11 @@ TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
               OnMessage("dddddddddddddddddddddddddddddddd", 0, "payload"));
   EXPECT_CALL(delegate_,
               OnMessage("dddddddddddddddddddddddddddddddd", 3, "payload"));
+  for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
+       ++it) {
+    EXPECT_CALL(service_, AcknowledgeInvalidation(
+        *it, syncer::AckHandle::InvalidAckHandle()));
+  }
   handler_->OnIncomingInvalidation(
       ObjectIdSetToInvalidationMap(ids, "payload"));
 }
@@ -142,6 +150,12 @@ TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
   ids.insert(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
       "U/dddddddddddddddddddddddddddddddd/4"));
+  // Invalid object IDs should still be acknowledged.
+  for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
+       ++it) {
+    EXPECT_CALL(service_, AcknowledgeInvalidation(
+        *it, syncer::AckHandle::InvalidAckHandle()));
+  }
   handler_->OnIncomingInvalidation(
       ObjectIdSetToInvalidationMap(ids, "payload"));
 }

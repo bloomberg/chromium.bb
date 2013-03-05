@@ -354,6 +354,11 @@ class SYNC_EXPORT SyncManager {
   virtual void UnregisterInvalidationHandler(
       InvalidationHandler* handler) = 0;
 
+  // Forwards to the underlying notifier (see comments in invalidator.h).
+  virtual void AcknowledgeInvalidation(
+      const invalidation::ObjectId& id,
+      const syncer::AckHandle& ack_handle) = 0;
+
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) = 0;

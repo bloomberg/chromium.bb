@@ -497,6 +497,11 @@ void ProfileSyncService::StartUp() {
   if (backend_.get()) {
     backend_->UpdateRegisteredInvalidationIds(
         invalidator_registrar_->GetAllRegisteredIds());
+    for (AckHandleReplayQueue::const_iterator it = ack_replay_queue_.begin();
+         it != ack_replay_queue_.end(); ++it) {
+      backend_->AcknowledgeInvalidation(it->first, it->second);
+    }
+    ack_replay_queue_.clear();
   }
 
   if (!sync_global_error_.get()) {
@@ -530,6 +535,18 @@ void ProfileSyncService::UpdateRegisteredInvalidationIds(
 void ProfileSyncService::UnregisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
   invalidator_registrar_->UnregisterHandler(handler);
+}
+
+void ProfileSyncService::AcknowledgeInvalidation(
+    const invalidation::ObjectId& id,
+    const syncer::AckHandle& ack_handle) {
+  if (backend_.get()) {
+    backend_->AcknowledgeInvalidation(id, ack_handle);
+  } else {
+    // If |backend_| is NULL, save the acknowledgements to replay when
+    // it's created and initialized.
+    ack_replay_queue_.push_back(std::make_pair(id, ack_handle));
+  }
 }
 
 syncer::InvalidatorState ProfileSyncService::GetInvalidatorState() const {

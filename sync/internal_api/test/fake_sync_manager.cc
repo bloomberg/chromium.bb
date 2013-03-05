@@ -172,6 +172,11 @@ void FakeSyncManager::UnregisterInvalidationHandler(
   registrar_.UnregisterHandler(handler);
 }
 
+void FakeSyncManager::AcknowledgeInvalidation(const invalidation::ObjectId& id,
+                                              const AckHandle& ack_handle) {
+  // Do nothing.
+}
+
 void FakeSyncManager::StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) {
   // Do nothing.
