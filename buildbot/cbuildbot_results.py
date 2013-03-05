@@ -296,8 +296,9 @@ class _Results(object):
     if archive_urls:
       out.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
       for board, url in sorted(archive_urls.iteritems()):
-        out.write('%s  %s: %s\n' % (edge, board, url))
-        out.write('@@@STEP_LINK@Artifacts[%s]@%s@@@\n' % (board, url))
+        out.write('%s  %s: %s' % (edge, board, url))
+        cros_build_lib.PrintBuildbotLink('Artifacts[%s]' % board, url,
+                                         handle=out)
       out.write(line)
 
     for x in self.GetTracebacks():

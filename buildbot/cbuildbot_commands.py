@@ -918,6 +918,57 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   return os.path.basename(debug_tgz)
 
 
+def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
+  """Generate a simple index.html file given a set of filenames
+
+  Args:
+    index: The file to write the html index to.
+    files: The list of files to create the index of.  If a string, then it
+           may be a path to a file (with one file per line), or a directory
+           (which will be listed).
+    url_base: The URL to prefix to all elements (otherwise they'll be relative).
+    head: All the content before the listing.  '<html><body>' if not specified.
+    tail: All the content after the listing.  '</body></html>' if not specified.
+  """
+  def GenLink(target, name=None):
+    if name == '':
+      return ''
+    return ('<li><a href="%s%s">%s</a></li>'
+            % (url_base, target, name if name else target))
+
+  if isinstance(files, (unicode, str)):
+    if os.path.isdir(files):
+      files = os.listdir(files)
+    else:
+      files = osutils.ReadFile(files).splitlines()
+  url_base = url_base + '/' if url_base else ''
+
+  if not head:
+    head = '<html><body>'
+  html = head + '<ul>'
+
+  dot = ('.',)
+  dot_dot = ('..',)
+  links = []
+  for a in sorted(set(files)):
+    a = a.split('|')
+    if a[0] == '.':
+      dot = a
+    elif a[0] == '..':
+      dot_dot = a
+    else:
+      links.append(GenLink(*a))
+  links.insert(0, GenLink(*dot_dot))
+  links.insert(0, GenLink(*dot))
+  html += '\n'.join(links)
+
+  if not tail:
+    tail = '</body></html>'
+  html += '</ul>' + tail
+
+  osutils.WriteFile(index, html)
+
+
 def AppendToFile(file_path, string):
   """Append the string to the given file.
 

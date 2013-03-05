@@ -1671,8 +1671,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     if self._options.buildbot or self._options.remote_trybot:
       upload_location = self.GetGSUploadLocation()
-      url_prefix = 'https://sandbox.google.com/storage/'
-      return upload_location.replace('gs://', url_prefix)
+      return upload_location.replace('gs://', gs.PRIVATE_BASE_HTTPS_URL)
     else:
       return self.GetArchivePath()
 
@@ -2286,3 +2285,51 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
     _, push_overlays = self._ExtractOverlays()
     if push_overlays:
       commands.UprevPush(self._build_root, push_overlays, self._options.debug)
+
+
+class ResultsStage(bs.BuilderStage):
+  """Summarize all the builds."""
+
+  _HTML_HEAD = """<html>
+<head>
+ <title>Archive Index: %(board)s / %(version)s</title>
+</head>
+<body>
+<h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
+
+  def __init__(self, options, build_config, archive_stages, version):
+    bs.BuilderStage.__init__(self, options, build_config)
+    self._archive_stages = archive_stages
+    self._version = version if version else ''
+
+  def _PerformStage(self):
+    acl = None if self._build_config['internal'] else 'public-read'
+    archive_urls = {}
+
+    for board, archive_stage in sorted(self._archive_stages.iteritems()):
+      head_data = {
+          'board': board,
+          'config': self._build_config['name'],
+          'version': archive_stage.GetVersion(),
+      }
+      head = self._HTML_HEAD % head_data
+
+      url = archive_stage.GetDownloadUrl()
+      path = archive_stage.GetArchivePath()
+      upload_url = archive_stage.GetGSUploadLocation()
+
+      # Generate the index page needed for public reading.
+      uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)
+      files = osutils.ReadFile(uploaded).splitlines() + [
+          '.|Google Storage Index',
+          '..|',
+      ]
+      index = os.path.join(path, 'index.html')
+      commands.GenerateHtmlIndex(index, files, url_base=url, head=head)
+      commands.UploadArchivedFile(path, upload_url, os.path.basename(index),
+                                  debug=archive_stage.debug, acl=acl)
+
+      archive_urls[board] = archive_stage.GetDownloadUrl() + '/index.html'
+
+    results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
+                               current_version=self._version)

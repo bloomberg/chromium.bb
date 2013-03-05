@@ -54,7 +54,7 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase):
     """Returns an instance of the stage to be tested.
     Implement in subclasses.
     """
-    raise NotImplementedError(self, "ConstructStage")
+    raise NotImplementedError(self, "ConstructStage: Implement in your test")
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
@@ -97,7 +97,6 @@ class AbstractStageTest(cros_test_lib.MoxTempDirTestCase):
     stage = self.ConstructStage()
     stage.Run()
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
-
 
 
 class BuilderStageTest(AbstractStageTest):
@@ -1186,6 +1185,7 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.assertEquals(json_data['metadata-version'], '1')
     self.assertEquals(json_data['toolchain-tuple'], ['i686-pc-linux-gnu',
                                                      'arm-none-eabi'])
+
   def testChromeEnvironment(self):
     """Test that the Chrome environment is built."""
     # Create the chrome environment compressed file.
@@ -1624,6 +1624,30 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         ('Fail', self.failException)]
 
     self._verifyRunResults(expectedResults)
+
+
+class ResultsStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
+
+  def setUp(self):
+    for cmd in ((osutils, 'ReadFile'), (osutils, 'WriteFile'),
+                (commands, 'UploadArchivedFile'),):
+      self.StartPatcher(mock.patch.object(*cmd, autospec=True))
+    self.StartPatcher(ArchiveStageMock())
+
+  def ConstructStage(self):
+    archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                        self._current_board)
+    archive_stages = {
+        'board': archive_stage,
+        'zororororor': archive_stage,
+        'matress-man': archive_stage,
+    }
+    return stages.ResultsStage(self.options, self.build_config,
+                               archive_stages, None)
+
+  def testCheckResults(self):
+    """Basic sanity check for results stage functionality"""
+    self.RunStage()
 
 
 class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
