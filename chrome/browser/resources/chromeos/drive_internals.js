@@ -134,29 +134,38 @@ function updateInFlightOperations(inFlightOperations) {
 }
 
 /**
- * Updates the summary about account metadata.
- * @param {Object} accountMetadata Dictionary describing account metadata.
+ * Updates the summary about about resource.
+ * @param {Object} aboutResource Dictionary describing about resource.
  */
-function updateAccountMetadata(accountMetadata) {
-  var quotaTotalInMb = accountMetadata['account-quota-total'] / (1 << 20);
-  var quotaUsedInMb = accountMetadata['account-quota-used'] / (1 << 20);
+function updateAboutResource(aboutResource) {
+  var quotaTotalInMb = aboutResource['account-quota-total'] / (1 << 20);
+  var quotaUsedInMb = aboutResource['account-quota-used'] / (1 << 20);
 
   $('account-quota-info').textContent =
       quotaUsedInMb + ' / ' + quotaTotalInMb + ' (MB)';
   $('account-largest-changestamp-remote').textContent =
-      accountMetadata['account-largest-changestamp-remote'];
+      aboutResource['account-largest-changestamp-remote'];
+  $('root-resource-id').textContent = aboutResource['root-resource-id'];
+}
 
-  var installedAppContainer = $('account-installed-apps');
-  for (var i = 0; i < accountMetadata['installed-apps'].length; i++) {
-    var app = accountMetadata['installed-apps'][i];
+/**
+ * Updates the summary about app list.
+ * @param {Object} appList Dictionary describing app list.
+ */
+function updateAppList(appList) {
+  $('app-list-etag').textContent = appList['etag'];
+
+  var itemContainer = $('app-list-items');
+  for (var i = 0; i < appList['items'].length; i++) {
+    var app = appList['items'][i];
     var tr = document.createElement('tr');
     tr.className = 'installed-app';
-    tr.appendChild(createElementFromText('td', app.app_name));
-    tr.appendChild(createElementFromText('td', app.app_id));
+    tr.appendChild(createElementFromText('td', app.name));
+    tr.appendChild(createElementFromText('td', app.application_id));
     tr.appendChild(createElementFromText('td', app.object_type));
     tr.appendChild(createElementFromText('td', app.supports_create));
 
-    installedAppContainer.appendChild(tr);
+    itemContainer.appendChild(tr);
   }
 }
 

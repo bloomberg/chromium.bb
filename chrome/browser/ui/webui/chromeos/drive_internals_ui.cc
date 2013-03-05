@@ -194,7 +194,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateDriveRelatedPreferencesSection();
   void UpdateAuthStatusSection(
       google_apis::DriveServiceInterface* drive_service);
-  void UpdateAccountMetadataSection(
+  void UpdateAboutResourceSection(
+      google_apis::DriveServiceInterface* drive_service);
+  void UpdateAppListSection(
       google_apis::DriveServiceInterface* drive_service);
   void UpdateLocalMetadataSection(
       google_apis::DriveServiceInterface* drive_service);
@@ -230,10 +232,15 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetFreeDiskSpace() is complete.
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
 
-  // Called when GetAccountMetadata() call to DriveService is complete.
-  void OnGetAccountMetadata(
+  // Called when GetAboutResource() call to DriveService is complete.
+  void OnGetAboutResource(
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AccountMetadata> account_metadata);
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
+  // Called when GetAppList() call to DriveService is complete.
+  void OnGetAppList(
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AppList> app_list);
 
   // Callback for DriveFilesystem::GetMetadata for local update.
   void OnGetFilesystemMetadataForLocal(
@@ -258,37 +265,54 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
 
-void DriveInternalsWebUIHandler::OnGetAccountMetadata(
+void DriveInternalsWebUIHandler::OnGetAboutResource(
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AccountMetadata> parsed_metadata) {
+    scoped_ptr<google_apis::AboutResource> parsed_about_resource) {
   if (status != google_apis::HTTP_SUCCESS) {
-    LOG(ERROR) << "Failed to get account metadata";
+    LOG(ERROR) << "Failed to get about resource";
     return;
   }
-  DCHECK(parsed_metadata);
+  DCHECK(parsed_about_resource);
 
-  base::DictionaryValue account_metadata;
-  account_metadata.SetDouble("account-quota-total",
-                             parsed_metadata->quota_bytes_total());
-  account_metadata.SetDouble("account-quota-used",
-                             parsed_metadata->quota_bytes_used());
-  account_metadata.SetDouble("account-largest-changestamp-remote",
-                             parsed_metadata->largest_changestamp());
+  base::DictionaryValue about_resource;
+  about_resource.SetDouble("account-quota-total",
+                           parsed_about_resource->quota_bytes_total());
+  about_resource.SetDouble("account-quota-used",
+                           parsed_about_resource->quota_bytes_used());
+  about_resource.SetDouble("account-largest-changestamp-remote",
+                           parsed_about_resource->largest_change_id());
+  about_resource.SetString("root-resource-id",
+                           parsed_about_resource->root_folder_id());
 
-  base::ListValue* installed_apps = new base::ListValue();
-  for (size_t i = 0; i < parsed_metadata->installed_apps().size(); ++i) {
-    const google_apis::InstalledApp* app = parsed_metadata->installed_apps()[i];
+  web_ui()->CallJavascriptFunction("updateAboutResource", about_resource);
+}
+
+void DriveInternalsWebUIHandler::OnGetAppList(
+    google_apis::GDataErrorCode status,
+    scoped_ptr<google_apis::AppList> parsed_app_list) {
+  if (status != google_apis::HTTP_SUCCESS) {
+    LOG(ERROR) << "Failed to get app list";
+    return;
+  }
+  DCHECK(parsed_app_list);
+
+  base::DictionaryValue app_list;
+  app_list.SetString("etag", parsed_app_list->etag());
+
+  base::ListValue* items = new base::ListValue();
+  for (size_t i = 0; i < parsed_app_list->items().size(); ++i) {
+    const google_apis::AppResource* app = parsed_app_list->items()[i];
     base::DictionaryValue* app_data = new base::DictionaryValue();
-    app_data->SetString("app_name", app->app_name());
-    app_data->SetString("app_id", app->app_id());
+    app_data->SetString("name", app->name());
+    app_data->SetString("application_id", app->application_id());
     app_data->SetString("object_type", app->object_type());
     app_data->SetBoolean("supports_create", app->supports_create());
 
-    installed_apps->Append(app_data);
+    items->Append(app_data);
   }
-  account_metadata.Set("installed-apps", installed_apps);
+  app_list.Set("items", items);
 
-  web_ui()->CallJavascriptFunction("updateAccountMetadata", account_metadata);
+  web_ui()->CallJavascriptFunction("updateAppList", app_list);
 }
 
 void DriveInternalsWebUIHandler::RegisterMessages() {
@@ -332,7 +356,8 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateDriveRelatedFlagsSection();
   UpdateDriveRelatedPreferencesSection();
   UpdateAuthStatusSection(drive_service);
-  UpdateAccountMetadataSection(drive_service);
+  UpdateAboutResourceSection(drive_service);
+  UpdateAppListSection(drive_service);
   UpdateLocalMetadataSection(drive_service);
   UpdateDeltaUpdateStatusSection();
   UpdateInFlightOperationsSection(drive_service);
@@ -410,12 +435,21 @@ void DriveInternalsWebUIHandler::UpdateAuthStatusSection(
   web_ui()->CallJavascriptFunction("updateAuthStatus", auth_status);
 }
 
-void DriveInternalsWebUIHandler::UpdateAccountMetadataSection(
+void DriveInternalsWebUIHandler::UpdateAboutResourceSection(
     google_apis::DriveServiceInterface* drive_service) {
   DCHECK(drive_service);
 
-  drive_service->GetAccountMetadata(
-      base::Bind(&DriveInternalsWebUIHandler::OnGetAccountMetadata,
+  drive_service->GetAboutResource(
+      base::Bind(&DriveInternalsWebUIHandler::OnGetAboutResource,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveInternalsWebUIHandler::UpdateAppListSection(
+    google_apis::DriveServiceInterface* drive_service) {
+  DCHECK(drive_service);
+
+  drive_service->GetAppList(
+      base::Bind(&DriveInternalsWebUIHandler::OnGetAppList,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
