@@ -10,7 +10,6 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
-#include "base/debug/trace_event.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -451,6 +450,21 @@ void WebKitPlatformSupportImpl::histogramEnumeration(
 const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
     const char* category_name) {
   return TRACE_EVENT_API_GET_CATEGORY_ENABLED(category_name);
+}
+
+long* WebKitPlatformSupportImpl::getTraceSamplingState(
+    const unsigned thread_bucket) {
+  switch(thread_bucket) {
+  case 0:
+    return reinterpret_cast<long*>(&TRACE_EVENT_API_THREAD_BUCKET(0));
+  case 1:
+    return reinterpret_cast<long*>(&TRACE_EVENT_API_THREAD_BUCKET(1));
+  case 2:
+    return reinterpret_cast<long*>(&TRACE_EVENT_API_THREAD_BUCKET(2));
+  default:
+    NOTREACHED() << "Unknown thread bucket type.";
+  }
+  return NULL;
 }
 
 void WebKitPlatformSupportImpl::addTraceEvent(
