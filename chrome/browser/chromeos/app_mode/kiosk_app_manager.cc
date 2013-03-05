@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/stl_util.h"
@@ -13,12 +14,19 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_prefs_local_state.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/cryptohome/async_method_caller.h"
 
 namespace chromeos {
 
 namespace {
 
-void CreateDirectory(const base::FilePath& dir) {
+void OnRemoveAppCryptohomeComplete(const std::string& app,
+                                   bool success,
+                                   cryptohome::MountError return_code) {
+  if (!success) {
+    LOG(ERROR) << "Remove cryptohome for " << app
+        << " failed, return code: " << return_code;
+  }
 }
 
 }  // namespace
@@ -153,6 +161,8 @@ void KioskAppManager::UpdateAppData() {
   for (std::map<std::string, KioskAppData*>::iterator it = old_apps.begin();
        it != old_apps.end(); ++it) {
     it->second->ClearCache();
+    cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
+        it->first, base::Bind(&OnRemoveAppCryptohomeComplete, it->first));
   }
   STLDeleteValues(&old_apps);
 }
