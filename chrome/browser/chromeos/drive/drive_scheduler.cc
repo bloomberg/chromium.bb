@@ -102,6 +102,19 @@ void DriveScheduler::GetAccountMetadata(
   StartJobLoop(GetJobQueueType(TYPE_GET_ACCOUNT_METADATA));
 }
 
+void DriveScheduler::GetAboutResource(
+    const google_apis::GetAboutResourceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_ABOUT_RESOURCE));
+  new_job->get_about_resource_callback = callback;
+
+  QueueJob(new_job.Pass());
+
+  StartJobLoop(GetJobQueueType(TYPE_GET_ABOUT_RESOURCE));
+}
+
 void DriveScheduler::GetAppList(
     const google_apis::GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -348,6 +361,14 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
   QueueEntry* entry = queue_entry.get();
 
   switch (job_info.job_type) {
+    case TYPE_GET_ABOUT_RESOURCE: {
+      drive_service_->GetAboutResource(
+          base::Bind(&DriveScheduler::OnGetAboutResourceJobDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&queue_entry)));
+    }
+    break;
+
     case TYPE_GET_ACCOUNT_METADATA: {
       drive_service_->GetAccountMetadata(
           base::Bind(&DriveScheduler::OnGetAccountMetadataJobDone,
@@ -616,6 +637,23 @@ void DriveScheduler::OnGetResourceEntryJobDone(
                  base::Passed(&entry)));
 }
 
+void DriveScheduler::OnGetAboutResourceJobDone(
+    scoped_ptr<QueueEntry> queue_entry,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileError drive_error(util::GDataToDriveFileError(error));
+
+  scoped_ptr<QueueEntry> job_info = OnJobDone(queue_entry.Pass(), drive_error);
+
+  if (!job_info)
+    return;
+
+  // Handle the callback.
+  job_info->get_about_resource_callback.Run(error, about_resource.Pass());
+}
+
 void DriveScheduler::OnGetAccountMetadataJobDone(
     scoped_ptr<QueueEntry> queue_entry,
     google_apis::GDataErrorCode error,
@@ -716,6 +754,7 @@ void DriveScheduler::OnConnectionTypeChanged(
 
 DriveScheduler::QueueType DriveScheduler::GetJobQueueType(JobType type) {
   switch (type) {
+    case TYPE_GET_ABOUT_RESOURCE:
     case TYPE_GET_ACCOUNT_METADATA:
     case TYPE_GET_APP_LIST:
     case TYPE_GET_RESOURCE_LIST:

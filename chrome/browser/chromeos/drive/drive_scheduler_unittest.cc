@@ -148,6 +148,22 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<FakeDriveUploader> fake_uploader_;
 };
 
+TEST_F(DriveSchedulerTest, GetAboutResource) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::AboutResource> about_resource;
+  scheduler_->GetAboutResource(
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAboutResourceCallback,
+          &error,
+          &about_resource));
+
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(about_resource);
+}
+
 TEST_F(DriveSchedulerTest, GetAppList) {
   ConnectToWifi();
 

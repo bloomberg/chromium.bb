@@ -28,6 +28,7 @@ class DriveScheduler
  public:
   // Enum representing the type of job.
   enum JobType {
+    TYPE_GET_ABOUT_RESOURCE,
     TYPE_GET_ACCOUNT_METADATA,
     TYPE_GET_APP_LIST,
     TYPE_GET_RESOURCE_LIST,
@@ -94,6 +95,10 @@ class DriveScheduler
   // Adds a GetAppList operation to the queue.
   // |callback| must not be null.
   void GetAppList(const google_apis::GetAppListCallback& callback);
+
+  // Adds a GetAboutResource operation to the queue.
+  // |callback| must not be null.
+  void GetAboutResource(const google_apis::GetAboutResourceCallback& callback);
 
   // Adds a GetResourceList operation to the queue.
   // |callback| must not be null.
@@ -242,6 +247,11 @@ class DriveScheduler
     //   TYPE_GET_ACCOUNT_METADATA,
     google_apis::GetAccountMetadataCallback get_account_metadata_callback;
 
+    // Callback for operations that take a GetAboutResourceCallback.
+    // Used by:
+    //   TYPE_GET_ABOUT_RESOURCE,
+    google_apis::GetAboutResourceCallback get_about_resource_callback;
+
     // Callback for operations that take a GetAppListCallback.
     // Used by:
     //   TYPE_GET_APP_LIST,
@@ -314,6 +324,12 @@ class DriveScheduler
       scoped_ptr<QueueEntry> queue_entry,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
+
+  // Callback for job finishing with a GetAboutResourceCallback.
+  void OnGetAboutResourceJobDone(
+      scoped_ptr<QueueEntry> queue_entry,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Callback for job finishing with a GetAccountMetadataCallback.
   void OnGetAccountMetadataJobDone(
