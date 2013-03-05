@@ -15,7 +15,6 @@
   font-size: 12px;
 }
 
-
 /*  For touch-optimized UI, make the links bigger. */
 @media (pointer:coarse) {
   #signin-right {
@@ -44,23 +43,29 @@
   outline-color: rgb(77, 144, 254);
 }
 
+#gaia-signin-form-container,
 #signin-frame {
-  /* TODO(nkostylev): Figure out why height: 100% stopped working (gives
-    same resalt as not specifying it). Specifying content size from
-    .step-contents for now. Working at r182673, broken at r183121. */
-  background-color: transparent;
-  border-right: 1px solid lightgray;
-  height: 470px;
-  width: 340px;
+  height: 100%;
 }
 
-html[dir=rtl] #signin-frame {
-  border-left: 1px solid lightgray;
-  border-right: none;
-}
-
-.no-right-panel #signin-frame {
+#gaia-signin-divider {
+  background: -webkit-gradient(
+                   linear, left top, left bottom,
+                   color-stop(0, #e3e3e3),
+                   color-stop(0.5, #cacaca),
+                   color-stop(1, #e3e3e3));
   border: none;
+  width: 1px;
+}
+
+.no-right-panel #gaia-signin-divider {
+  display: none;
+}
+
+#signin-frame {
+  background-color: transparent;
+  vertical-align: top;
+  width: 340px;
 }
 
 /* Position to be aligned with the login box in iframe  */
