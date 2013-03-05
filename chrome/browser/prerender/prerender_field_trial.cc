@@ -218,8 +218,6 @@ void ConfigureOmniboxPrerender() {
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
-  return false;
-
   if (!profile)
     return false;
 
