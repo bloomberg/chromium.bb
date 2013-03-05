@@ -520,14 +520,11 @@ std::string PanelFrameView::GetClassName() const {
 }
 
 gfx::Size PanelFrameView::GetMinimumSize() {
-  // Only if the panel is minimized, it could be shruk to very small.
-  return panel_view_->panel()->IsMinimized() ? gfx::Size() :
-      panel_view_->panel()->min_size();
+  return panel_view_->GetMinimumSize();
 }
 
 gfx::Size PanelFrameView::GetMaximumSize() {
-  // When the user resizes the panel, there is no max size limit.
-  return gfx::Size();
+  return panel_view_->GetMaximumSize();
 }
 
 void PanelFrameView::Layout() {

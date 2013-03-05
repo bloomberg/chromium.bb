@@ -11,6 +11,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/hwnd_subclass.h"
+#endif
+
 class Panel;
 class PanelBoundsAnimation;
 class PanelFrameView;
@@ -23,6 +27,9 @@ class WebView;
 class PanelView : public NativePanel,
                   public views::WidgetObserver,
                   public views::WidgetDelegateView,
+#if defined(OS_WIN)
+                  public ui::HWNDMessageFilter,
+#endif
                   public ui::AnimationDelegate {
  public:
   // The size of inside area used for mouse resizing.
@@ -72,6 +79,10 @@ class PanelView : public NativePanel,
   virtual void MinimizePanelBySystem() OVERRIDE;
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
+  // Overridden from views::View:
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() OVERRIDE;
+
   // Return true if the mouse event is handled.
   // |mouse_location| is in screen coordinate system.
   bool OnTitlebarMousePressed(const gfx::Point& mouse_location);
@@ -93,7 +104,6 @@ class PanelView : public NativePanel,
   bool force_to_paint_as_inactive() const {
     return force_to_paint_as_inactive_;
   }
-
  private:
   enum MouseDraggingState {
     NO_DRAGGING,
@@ -122,8 +132,6 @@ class PanelView : public NativePanel,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
@@ -132,6 +140,15 @@ class PanelView : public NativePanel,
                                          bool active) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+
+  // Overridden from ui::HWNDMessageFilter:
+#if defined(OS_WIN)
+  virtual bool FilterMessage(HWND hwnd,
+                             UINT message,
+                             WPARAM w_param,
+                             LPARAM l_param,
+                             LRESULT* l_result) OVERRIDE;
+#endif
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -181,6 +198,19 @@ class PanelView : public NativePanel,
 
   // True if the user is resizing the panel.
   bool user_resizing_;
+
+#if defined(OS_WIN)
+  // True if the user is resizing the interior edge of a stack.
+  bool user_resizing_interior_stacked_panel_edge_;
+
+  // The original full size of the resizing panel before the resizing states.
+  gfx::Size original_full_size_of_resizing_panel_;
+
+  // The original full size of the panel below the resizing panel before the
+  // resizing starts.
+  gfx::Size original_full_size_of_panel_below_resizing_panel_;
+#endif
+
 
   // Is the mouse button currently down?
   bool mouse_pressed_;

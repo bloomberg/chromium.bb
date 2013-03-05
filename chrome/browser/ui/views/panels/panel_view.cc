@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/ui/views/panels/panel_frame_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -35,6 +36,11 @@
 #endif
 
 namespace {
+
+// If the height of a stacked panel shrinks below this threshold during the
+// user resizing, it will be treated as minimized.
+const int kStackedPanelHeightShrinkThresholdToBecomeMinimized =
+    panel::kTitlebarHeight + 20;
 
 // Supported accelerators.
 // Note: We can't use the acclerator table defined in chrome/browser/ui/views
@@ -239,6 +245,9 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
       always_on_top_(true),
       focused_(false),
       user_resizing_(false),
+#if defined(OS_WIN)
+      user_resizing_interior_stacked_panel_edge_(false),
+#endif
       mouse_pressed_(false),
       mouse_dragging_state_(NO_DRAGGING),
       is_drawing_attention_(false),
@@ -334,6 +343,22 @@ void PanelView::SetBoundsInternal(const gfx::Rect& new_bounds, bool animate) {
       this, panel_.get(), animation_start_bounds_, new_bounds));
   bounds_animator_->Start();
 }
+
+#if defined(OS_WIN)
+bool PanelView::FilterMessage(HWND hwnd,
+                              UINT message,
+                              WPARAM w_param,
+                              LPARAM l_param,
+                              LRESULT* l_result) {
+  switch (message) {
+    case WM_SIZING:
+      if (w_param == WMSZ_BOTTOM)
+        user_resizing_interior_stacked_panel_edge_ = true;
+      break;
+  }
+  return false;
+}
+#endif
 
 void PanelView::AnimationEnded(const ui::Animation* animation) {
   panel_->manager()->OnPanelAnimationEnded(panel_.get());
@@ -699,6 +724,32 @@ void PanelView::DeleteDelegate() {
 void PanelView::OnWindowBeginUserBoundsChange() {
   user_resizing_ = true;
   panel_->OnPanelStartUserResizing();
+
+#if defined(OS_WIN)
+  StackedPanelCollection* stack = panel_->stack();
+  if (stack) {
+    // Listen to WM_SIZING message in order to find out whether the interior
+    // edge is being resized such that the specific maximum size could be
+    // passed to the system.
+    if (panel_->stack()->GetPanelBelow(panel_.get())) {
+      ui::HWNDSubclass::AddFilterToTarget(views::HWNDForWidget(window_), this);
+      user_resizing_interior_stacked_panel_edge_ = false;
+    }
+
+    // Keep track of the original full size of the resizing panel such that it
+    // can be restored to this size once it is shrunk to minimized state.
+    original_full_size_of_resizing_panel_ = panel_->full_size();
+
+    // Keep track of the original full size of the panel below the resizing
+    // panel such that it can be restored to this size once it is shrunk to
+    // minimized state.
+    Panel* below_panel = stack->GetPanelBelow(panel_.get());
+    if (below_panel && !below_panel->IsMinimized()) {
+      original_full_size_of_panel_below_resizing_panel_ =
+          below_panel->full_size();
+    }
+  }
+#endif
 }
 
 void PanelView::OnWindowEndUserBoundsChange() {
@@ -713,6 +764,37 @@ void PanelView::OnWindowEndUserBoundsChange() {
 
   panel_->IncreaseMaxSize(bounds_.size());
   panel_->set_full_size(bounds_.size());
+
+#if defined(OS_WIN)
+  StackedPanelCollection* stack = panel_->stack();
+  if (stack) {
+    // No need to listen to WM_SIZING message any more.
+    ui::HWNDSubclass::RemoveFilterFromAllTargets(this);
+
+    // If the height of resizing panel shrinks close to the titlebar height,
+    // treate it as minimized. This could occur when the user is dragging
+    // 1) the top edge of the top panel downward to shrink it; or
+    // 2) the bottom edge of any panel upward to shrink it.
+    if (panel_->GetBounds().height() <
+            kStackedPanelHeightShrinkThresholdToBecomeMinimized) {
+      stack->MinimizePanel(panel_.get());
+      panel_->set_full_size(original_full_size_of_resizing_panel_);
+    }
+
+    // If the height of panel below the resizing panel shrinks close to the
+    // titlebar height, treat it as minimized. This could occur when the user
+    // is dragging the bottom edge of non-bottom panel downward to expand it
+    // and also shrink the panel below.
+    Panel* below_panel = stack->GetPanelBelow(panel_.get());
+    if (below_panel && !below_panel->IsMinimized() &&
+        below_panel->GetBounds().height() <
+            kStackedPanelHeightShrinkThresholdToBecomeMinimized) {
+      stack->MinimizePanel(below_panel);
+      below_panel->set_full_size(
+          original_full_size_of_panel_below_resizing_panel_);
+    }
+  }
+#endif
 
   panel_->collection()->RefreshLayout();
 }
@@ -747,10 +829,28 @@ void PanelView::Layout() {
 }
 
 gfx::Size PanelView::GetMinimumSize() {
-  return gfx::Size();
+  // If the panel is minimized, it can be rendered to very small size, like
+  // 4-pixel lines when it is docked. Otherwise, its height should not be less
+  // than its titlebar height.
+  return panel_->IsMinimized() ? gfx::Size() :
+      gfx::Size(panel_->min_size().width(), panel::kTitlebarHeight);
 }
 
 gfx::Size PanelView::GetMaximumSize() {
+  // If the user is resizing a stacked panel by its bottom edge, make sure its
+  // height cannot grow more than what the panel below it could offer. This is
+  // because growing a stacked panel by y amount will shrink the panel below it
+  // by same amount and we do not want the panel below it being shrunk to be
+  // smaller than the titlebar.
+#if defined(OS_WIN)
+  if (panel_->stack() && user_resizing_interior_stacked_panel_edge_) {
+    Panel* below_panel = panel_->stack()->GetPanelBelow(panel_.get());
+    if (below_panel && !below_panel->IsMinimized()) {
+      return gfx::Size(0, below_panel->GetBounds().bottom() -
+          panel_->GetBounds().y() - panel::kTitlebarHeight);
+    }
+  }
+#endif
   return gfx::Size();
 }
 

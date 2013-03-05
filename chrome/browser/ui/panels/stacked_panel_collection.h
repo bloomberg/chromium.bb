@@ -60,6 +60,7 @@ class StackedPanelCollection : public PanelCollection {
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   Panel* GetPanelAbove(Panel* panel) const;
+  Panel* GetPanelBelow(Panel* panel) const;
   bool HasPanel(Panel* panel) const;
 
   void MoveAllDraggingPanelsInstantly(const gfx::Vector2d& delta_origin);

@@ -474,7 +474,9 @@ void StackedPanelCollection::OnPanelResizedByMouse(
     Panel* panel = *iter;
     gfx::Rect bounds = panel->GetBounds();
     if (panel == resized_panel) {
-      previous_bounds = bounds;
+      // |new_bounds| should be used since the panel bounds have not been
+      // updated yet.
+      previous_bounds = new_bounds;
       resized_panel_found = true;
       continue;
     }
@@ -571,6 +573,19 @@ Panel* StackedPanelCollection::GetPanelAbove(Panel* panel) const {
     above_panel = *iter;
   }
   return NULL;
+}
+
+Panel* StackedPanelCollection::GetPanelBelow(Panel* panel) const {
+  DCHECK(panel);
+
+  if (panels_.size() < 2)
+    return NULL;
+  Panels::const_iterator iter =
+      std::find(panels_.begin(), panels_.end(), panel);
+  if (iter == panels_.end())
+    return NULL;
+  ++iter;
+  return iter == panels_.end() ? NULL : *iter;
 }
 
 void StackedPanelCollection::MoveAllDraggingPanelsInstantly(
