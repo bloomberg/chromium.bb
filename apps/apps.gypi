@@ -36,53 +36,57 @@
         'switches.h',
       ],
       'conditions': [
-        ['enable_extensions==0', {
-          'sources/': [
-            ['exclude', '^apps/'],
-          ],
-        }],
+        ['enable_extensions==0',
+          {
+            'sources/': [
+              ['exclude', '^apps/'],
+            ],
+          }
+        ],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
   ],
   'conditions': [
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'app_host',
-          'type': 'executable',
-          'include_dirs': [
-            '..',
-          ],
-          'direct_dependent_settings': {
+    ['OS=="win"',
+      {
+        'targets': [
+          {
+            'target_name': 'app_host',
+            'type': 'executable',
             'include_dirs': [
               '..',
             ],
-          },
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/chrome/chrome.gyp:chrome_version_resources',
-            '<(DEPTH)/chrome/chrome.gyp:launcher_support',
-            '<(DEPTH)/google_update/google_update.gyp:google_update',
-          ],
-          'sources': [
-            'app_host/app_host.rc',
-            'app_host/app_host_main.cc',
-            'app_host/app_host_resource.h',
-            'app_host/binaries_installer.cc',
-            'app_host/binaries_installer.h',
-            'app_host/update.cc',
-            'app_host/update.h',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_version/app_host_exe_version.rc',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+            'direct_dependent_settings': {
+              'include_dirs': [
+                '..',
+              ],
+            },
+            'dependencies': [
+              '../base/base.gyp:base',
+              '../chrome/chrome.gyp:chrome_version_resources',
+              '../chrome/chrome.gyp:launcher_support',
+              '../google_update/google_update.gyp:google_update',
+            ],
+            'sources': [
+              'app_host/app_host.rc',
+              'app_host/app_host_main.cc',
+              'app_host/app_host_resource.h',
+              'app_host/binaries_installer.cc',
+              'app_host/binaries_installer.h',
+              'app_host/update.cc',
+              'app_host/update.h',
+              '<(SHARED_INTERMEDIATE_DIR)/chrome_version/app_host_exe_version.rc',
+            ],
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+              },
             },
           },
-        },
-      ],
-    },],  # 'OS=="win"'
+        ],
+      },
+    ],  # 'OS=="win"'
   ],  # 'conditions'
 }
