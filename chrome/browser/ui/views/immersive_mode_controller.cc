@@ -38,10 +38,11 @@ namespace {
 // after the mouse stops moving.
 const int kTopEdgeRevealDelayMs = 200;
 
-// Duration for the reveal show/hide slide animation.
-// TODO(jamescook): Use a longer duration for the initial slide out (400?) and
-// a shorter duration for subsequent in/out (200?).
-const int kRevealAnimationDurationMs = 250;
+// Duration for the reveal show/hide slide animation. The slower duration is
+// used for the initial slide out to give the user more change to see what
+// happened.
+const int kRevealSlowAnimationDurationMs = 400;
+const int kRevealFastAnimationDurationMs = 200;
 
 }  // namespace
 
@@ -265,7 +266,7 @@ void ImmersiveModeController::RevealView::OnCompositingEnded(
     // Pixels should be on the screen, so slide out the layer.
     end_reveal_state_ = END_REVEAL_NONE;
     layer()->GetCompositor()->RemoveObserver(this);
-    controller_->EndReveal(ANIMATE_YES, LAYOUT_YES);
+    controller_->EndReveal(ANIMATE_SLOW, LAYOUT_YES);
   }
 }
 
@@ -403,7 +404,7 @@ void ImmersiveModeController::MaybeStackViewAtTop() {
 
 void ImmersiveModeController::MaybeStartReveal() {
   if (enabled_ && !revealed_)
-    StartReveal(ANIMATE_YES);
+    StartReveal(ANIMATE_FAST);
 }
 
 void ImmersiveModeController::CancelReveal() {
@@ -425,7 +426,7 @@ void ImmersiveModeController::OnMouseEvent(ui::MouseEvent* event) {
                      base::TimeDelta::FromMilliseconds(kTopEdgeRevealDelayMs),
                      base::Bind(&ImmersiveModeController::StartReveal,
                                 base::Unretained(this),
-                                ANIMATE_YES));
+                                ANIMATE_FAST));
   } else {
     // Cursor left the top edge.
     top_timer_.Stop();
@@ -505,8 +506,8 @@ void ImmersiveModeController::StartReveal(Animate animate) {
   reveal_view_->AcquireTopViews();
 
   // Slide in the reveal view.
-  if (animate == ANIMATE_YES)
-    AnimateShowRevealView();
+  if (animate != ANIMATE_NO)
+    AnimateShowRevealView();  // Show is always fast.
 }
 
 void ImmersiveModeController::AnimateShowRevealView() {
@@ -519,7 +520,7 @@ void ImmersiveModeController::AnimateShowRevealView() {
       reveal_view_->layer()->GetAnimator());
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kRevealAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(kRevealFastAnimationDurationMs));
   reveal_view_->SetTransform(gfx::Transform());
 }
 
@@ -529,13 +530,13 @@ void ImmersiveModeController::OnRevealViewLostMouse() {
   // isn't using a MouseWatcher because it needs to know if the mouse re-enters
   // the RevealView before focus is lost.
   if (!reveal_view_->ContainsFocusedView())
-    EndReveal(ANIMATE_YES, LAYOUT_YES);
+    EndReveal(ANIMATE_FAST, LAYOUT_YES);
 }
 
 void ImmersiveModeController::OnRevealViewLostFocus() {
   // Stop the reveal if the mouse is outside the reveal view.
   if (!reveal_view_->hovered())
-    EndReveal(ANIMATE_YES, LAYOUT_YES);
+    EndReveal(ANIMATE_FAST, LAYOUT_YES);
 }
 
 void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
@@ -544,14 +545,18 @@ void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
   revealed_ = false;
 
   if (reveal_view_.get()) {
-    if (animate == ANIMATE_YES) {
-      // Animation resets the reveal view when complete.
-      AnimateHideRevealView();
-    } else {
-      // Deleting the reveal view also removes it from its parent.
-      reveal_view_->ReleaseTopViews();
+    // Always reparent the views when triggering a hide, otherwise tooltip
+    // position lookup during the slide-out will get confused about view
+    // parenting and crash.
+    reveal_view_->ReleaseTopViews();
+    // Animations reset the reveal view when complete, which also removes
+    // it from its parent BrowserView.
+    if (animate == ANIMATE_FAST)
+      AnimateHideRevealView(kRevealFastAnimationDurationMs);
+    else if (animate == ANIMATE_SLOW)
+      AnimateHideRevealView(kRevealSlowAnimationDurationMs);
+    else
       reveal_view_.reset();
-    }
   }
 
   if (layout == LAYOUT_YES)
@@ -566,7 +571,7 @@ void ImmersiveModeController::LayoutBrowserView(bool immersive_style) {
   browser_view_->Layout();
 }
 
-void ImmersiveModeController::AnimateHideRevealView() {
+void ImmersiveModeController::AnimateHideRevealView(int duration_ms) {
   ui::Layer* layer = reveal_view_->layer();
   // Stop any show animation in progress, but don't skip to the end. This
   // avoids a visual "pop" when starting a hide in the middle of a show.
@@ -578,7 +583,7 @@ void ImmersiveModeController::AnimateHideRevealView() {
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetTweenType(ui::Tween::EASE_OUT);
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kRevealAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(duration_ms));
   settings.AddObserver(this);  // Resets |reveal_view_| on completion.
   gfx::Transform transform;
   transform.Translate(0, -layer->bounds().height());
@@ -586,6 +591,5 @@ void ImmersiveModeController::AnimateHideRevealView() {
 }
 
 void ImmersiveModeController::OnHideAnimationCompleted() {
-  reveal_view_->ReleaseTopViews();
   reveal_view_.reset();  // Also removes from parent.
 }

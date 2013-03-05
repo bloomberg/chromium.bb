@@ -876,8 +876,10 @@ bool Tab::HasHitTestMask() const {
 void Tab::GetHitTestMask(gfx::Path* path) const {
   // When the window is maximized we don't want to shave off the edges or top
   // shadow of the tab, such that the user can click anywhere along the top
-  // edge of the screen to select a tab.
-  bool include_top_shadow = GetWidget() && GetWidget()->IsMaximized();
+  // edge of the screen to select a tab. Ditto for immersive fullscreen.
+  const views::Widget* widget = GetWidget();
+  bool include_top_shadow =
+      widget && (widget->IsMaximized() || widget->IsFullscreen());
   TabResources::GetHitTestMask(width(), height(), include_top_shadow, path);
 }
 
@@ -1113,10 +1115,10 @@ void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
 
   // Paint network activity indicator.
   // TODO(jamescook): Replace this placeholder animation with a real one.
-  // For now, let's go with a Cylon red eye effect.
+  // For now, let's go with a Cylon eye effect, but in blue.
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
-    const SkColor kEyeColor = SkColorSetRGB(230, 0, 0);
-    int eye_width = bar_rect.width() / 4;
+    const SkColor kEyeColor = SkColorSetRGB(71, 138, 217);
+    int eye_width = bar_rect.width() / 3;
     int eye_offset = bar_rect.width() * immersive_loading_step_ /
         kImmersiveLoadingStepCount;
     if (eye_offset + eye_width < bar_rect.width()) {

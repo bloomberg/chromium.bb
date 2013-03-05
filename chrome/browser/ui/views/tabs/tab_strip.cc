@@ -662,8 +662,10 @@ gfx::Rect TabStrip::GetNewTabButtonBounds() {
 }
 
 bool TabStrip::SizeTabButtonToTopOfTabStrip() {
+  // Extend the button to the screen edge in maximized and immersive fullscreen.
+  views::Widget* widget = GetWidget();
   return browser_defaults::kSizeTabButtonToTopOfTabStrip ||
-      (GetWidget() && GetWidget()->IsMaximized());
+      (widget && (widget->IsMaximized() || widget->IsFullscreen()));
 }
 
 void TabStrip::StartHighlight(int model_index) {

@@ -171,7 +171,8 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   int hit_test = frame_painter_->NonClientHitTest(this, point);
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
-  if (hit_test == HTCLIENT && !frame()->IsMaximized()) {
+  if (hit_test == HTCLIENT &&
+      !(frame()->IsMaximized() || frame()->IsFullscreen())) {
     // Convert point to client coordinates.
     gfx::Point client_point(point);
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);

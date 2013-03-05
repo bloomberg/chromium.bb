@@ -425,7 +425,9 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // TODO(sky): this isn't quite right. What we really want is a method that
   // returns bounds ignoring transforms on certain windows (such as workspaces)
   // and is relative to the root.
-  if (frame_->GetNativeWindow()->bounds().y() == 0 || frame_->IsMaximized())
+  if (frame_->GetNativeWindow()->bounds().y() == 0 ||
+      frame_->IsMaximized() ||
+      frame_->IsFullscreen())
     return;
 
   // Draw the top corners and edge.

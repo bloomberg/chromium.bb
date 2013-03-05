@@ -79,7 +79,8 @@ class ImmersiveModeController : public ui::EventHandler,
 
   enum Animate {
     ANIMATE_NO,
-    ANIMATE_YES,
+    ANIMATE_SLOW,
+    ANIMATE_FAST,
   };
   enum Layout {
     LAYOUT_NO,
@@ -91,7 +92,7 @@ class ImmersiveModeController : public ui::EventHandler,
 
   // Temporarily reveals the top-of-window views while in immersive mode,
   // hiding them when the cursor exits the area of the top views. If |animate|
-  // is ANIMATE_YES, slides in the view, otherwise shows it immediately.
+  // is not ANIMATE_NO, slides in the view, otherwise shows it immediately.
   void StartReveal(Animate animate);
 
   // Slide in the reveal view.
@@ -112,7 +113,7 @@ class ImmersiveModeController : public ui::EventHandler,
   void LayoutBrowserView(bool immersive_style);
 
   // Slide out the reveal view. Deletes the view when complete.
-  void AnimateHideRevealView();
+  void AnimateHideRevealView(int duration_ms);
 
   // Cleans up the reveal view when the hide animation completes.
   void OnHideAnimationCompleted();
