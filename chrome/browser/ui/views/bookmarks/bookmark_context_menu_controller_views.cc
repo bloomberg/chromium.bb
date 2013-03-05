@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
@@ -145,6 +146,14 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
       chrome::ToggleBookmarkBarWhenVisible(profile_);
       break;
 
+    case IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT: {
+      PrefService* prefs = profile_->GetPrefs();
+      prefs->SetBoolean(
+          prefs::kShowAppsShortcutInBookmarkBar,
+          !prefs->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar));
+      break;
+    }
+
     case IDC_BOOKMARK_MANAGER: {
       content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
       if (selection_.size() != 1)
@@ -185,8 +194,14 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 }
 
 bool BookmarkContextMenuControllerViews::IsItemChecked(int id) const {
-  DCHECK_EQ(IDC_BOOKMARK_BAR_ALWAYS_SHOW, id);
-  return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  if (id == IDC_BOOKMARK_BAR_ALWAYS_SHOW)
+    return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+
+  // This should only be available when instant extended is enabled.
+  DCHECK(chrome::search::IsInstantExtendedAPIEnabled(profile_));
+  DCHECK_EQ(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT, id);
+  return profile_->GetPrefs()->GetBoolean(
+      prefs::kShowAppsShortcutInBookmarkBar);
 }
 
 bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
@@ -228,6 +243,10 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
       return !profile_->GetPrefs()->IsManagedPreference(
           prefs::kShowBookmarkBar);
+
+    case IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT:
+      return !profile_->GetPrefs()->IsManagedPreference(
+          prefs::kShowAppsShortcutInBookmarkBar);
 
     case IDC_COPY:
     case IDC_CUT:
@@ -287,6 +306,10 @@ void BookmarkContextMenuControllerViews::BuildMenu() {
 
   delegate_->AddSeparator();
   delegate_->AddItemWithStringId(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
+  if (chrome::search::IsInstantExtendedAPIEnabled(profile_)) {
+    delegate_->AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT,
+                               IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
+  }
   delegate_->AddCheckboxItem(IDC_BOOKMARK_BAR_ALWAYS_SHOW,
                              IDS_SHOW_BOOKMARK_BAR);
 }

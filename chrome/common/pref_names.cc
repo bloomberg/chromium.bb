@@ -323,6 +323,10 @@ const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 
+// Boolean which specifies whether the apps shortcut is visible on the bookmark
+// bar.
+const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
+
 // Boolean which specifies the ids of the bookmark nodes that are expanded in
 // the bookmark editor.
 const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";

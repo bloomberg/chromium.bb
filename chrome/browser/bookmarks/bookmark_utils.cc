@@ -440,6 +440,9 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kEditBookmarksEnabled,
                                 true,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kShowAppsShortcutInBookmarkBar,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 const BookmarkNode* GetParentForNewNodes(
@@ -518,6 +521,13 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
     content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location, LAUNCH_LIMIT);
+}
+
+void RecordAppsPageOpen(BookmarkLaunchLocation location) {
+  if (location == LAUNCH_DETACHED_BAR || location == LAUNCH_ATTACHED_BAR) {
+    content::RecordAction(
+        UserMetricsAction("ClickedBookmarkBarAppsShortcutButton"));
+  }
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)

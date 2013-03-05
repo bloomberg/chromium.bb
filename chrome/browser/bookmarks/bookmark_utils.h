@@ -220,6 +220,9 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation location);
 // Records the user opening a folder of bookmarks for UMA purposes.
 void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
 
+// Records the user opening the apps page for UMA purposes.
+void RecordAppsPageOpen(BookmarkLaunchLocation location);
+
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
 void DisableBookmarkBarViewAnimationsForTesting(bool disabled);
 bool IsBookmarkBarViewAnimationsDisabled();

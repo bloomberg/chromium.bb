@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -250,6 +251,10 @@ class BookmarkBarView : public DetachableToolbarView,
 
   friend class BookmarkBarViewEventTestBase;
   FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest, SwitchProfile);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewTest,
+                           NoAppsShortcutWithoutInstantExtended);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarViewInstantExtendedTest,
+                           AppsShortcutVisibility);
 
   // Used to identify what the user is dropping onto.
   enum DropButtonType {
@@ -292,6 +297,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Creates the button for rendering the specified bookmark node.
   views::View* CreateBookmarkButton(const BookmarkNode* node);
+
+  // Creates the button for rendering the apps page shortcut.
+  views::TextButton* CreateAppsPageShortcutButton();
 
   // Configures the button from the specified node. This sets the text,
   // and icon.
@@ -345,15 +353,27 @@ class BookmarkBarView : public DetachableToolbarView,
   // Updates the colors for all the child objects in the bookmarks bar.
   void UpdateColors();
 
-  // Updates the visibility of |other_bookmarked_button_| and
-  // |bookmarks_separator_view_|.
+  // Updates the visibility of |other_bookmarked_button_|. Also shows or hide
+  // the separator if required.
   void UpdateOtherBookmarksVisibility();
+
+  // Updates the visibility of |bookmarks_separator_view_|.
+  void UpdateBookmarksSeparatorVisibility();
 
   // This method computes the bounds for the bookmark bar items. If
   // |compute_bounds_only| = TRUE, the bounds for the items are just computed,
   // but are not set. This mode is used by GetPreferredSize() to obtain the
   // desired bounds. If |compute_bounds_only| = FALSE, the bounds are set.
   gfx::Size LayoutItems(bool compute_bounds_only);
+
+  // Returns true if we should show the apps shortcut.
+  bool ShouldShowAppsShortcut() const;
+
+  // Updates the visibility of the apps shortcut based on the pref value.
+  void OnAppsPageShortcutVisibilityChanged();
+
+  // Needed to react to kShowAppsShortcutInBookmarkBar changes.
+  PrefChangeRegistrar profile_pref_registrar_;
 
   // Used for opening urls.
   content::PageNavigator* page_navigator_;
@@ -377,6 +397,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Shows the other bookmark entries.
   views::MenuButton* other_bookmarked_button_;
+
+  // Shows the Apps page shortcut.
+  views::TextButton* apps_page_shortcut_;
 
   // Task used to delay showing of the drop menu.
   base::WeakPtrFactory<BookmarkBarView> show_folder_method_factory_;

@@ -68,6 +68,7 @@ extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];
 extern const char kShowBookmarkBar[];
+extern const char kShowAppsShortcutInBookmarkBar[];
 extern const char kBookmarkEditorExpandedNodes[];
 extern const char kWebKitCommonScript[];
 extern const char kWebKitStandardFontFamily[];
