@@ -6,6 +6,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/dom_actions.h"
+#include "chrome/browser/history/url_database.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -130,4 +131,3 @@ DOMAction::DOMActionType DOMAction::StringAsDOMActionType(
 }
 
 }  // namespace extensions
-

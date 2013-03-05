@@ -27,6 +27,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"

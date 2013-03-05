@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/common/context_menu_params.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/image.h"
 
 namespace extensions {
 

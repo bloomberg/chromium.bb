@@ -130,6 +130,9 @@ class OmniboxAPI : public ProfileKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(OmniboxAPI);
 };
 
+template <>
+void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies();
+
 class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("omnibox.setDefaultSuggestion",

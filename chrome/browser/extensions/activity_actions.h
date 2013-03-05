@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/history/url_database.h"
 #include "sql/connection.h"
+#include "sql/statement.h"
 #include "sql/transaction.h"
 
 namespace extensions {
@@ -58,4 +58,3 @@ class Action : public base::RefCountedThreadSafe<Action> {
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_ACTIONS_H_
-

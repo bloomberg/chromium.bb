@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -55,4 +54,3 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, ExtensionEndToEnd) {
 }
 
 }  // namespace extensions
-

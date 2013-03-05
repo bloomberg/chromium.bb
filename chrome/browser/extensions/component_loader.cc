@@ -11,7 +11,6 @@
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"

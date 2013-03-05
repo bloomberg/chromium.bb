@@ -8,7 +8,6 @@
 #include "base/stringprintf.h"
 #include "base/time/clock.h"
 #include "chrome/browser/extensions/activity_database.h"
-#include "chrome/browser/history/url_database.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/transaction.h"
 

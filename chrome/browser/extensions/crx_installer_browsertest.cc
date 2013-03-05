@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -20,6 +18,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/test/download_test_observer.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

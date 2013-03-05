@@ -219,6 +219,12 @@ gfx::Image OmniboxAPI::GetOmniboxPopupIcon(const std::string& extension_id) {
       omnibox_popup_icon_manager_.GetIcon(extension_id));
 }
 
+template <>
+void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(TemplateURLServiceFactory::GetInstance());
+}
+
 bool OmniboxSendSuggestionsFunction::RunImpl() {
   ExtensionOmniboxSuggestions suggestions;
   ListValue* suggestions_value;

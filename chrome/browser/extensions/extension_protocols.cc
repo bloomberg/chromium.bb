@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/image_loader.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
 #include "chrome/common/extensions/background_info.h"

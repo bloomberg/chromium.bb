@@ -99,7 +99,7 @@ void GetDownloadFilePath(
   base::FilePath directory(g_download_directory_for_tests ?
                      *g_download_directory_for_tests : download_directory);
 
-#if defined (OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   // Do not use drive for extension downloads.
   if (drive::util::IsUnderDriveMountPoint(directory))
     directory = download_util::GetDefaultDownloadDirectory();
@@ -256,7 +256,7 @@ void WebstoreInstaller::Observe(int type,
         return;
 
       // TODO(rdevlin.cronin): Continue removing std::string errors and
-      // replacing with string16
+      // replacing with string16. See crbug.com/71980.
       const string16* error = content::Details<const string16>(details).ptr();
       const std::string utf8_error = UTF16ToUTF8(*error);
       if (download_url_ == crx_installer->original_download_url())

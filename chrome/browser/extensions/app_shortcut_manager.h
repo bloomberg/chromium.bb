@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_APP_SHORTCUT_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

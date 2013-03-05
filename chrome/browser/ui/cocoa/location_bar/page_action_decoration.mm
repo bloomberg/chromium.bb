@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/image/image.h"
 
 using content::WebContents;
 using extensions::Extension;
