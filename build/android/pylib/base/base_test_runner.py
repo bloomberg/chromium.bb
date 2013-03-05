@@ -32,7 +32,7 @@ class BaseTestRunner(object):
   the Run() method will set up tests, run them and tear them down.
   """
 
-  def __init__(self, device, tool, shard_index, build_type):
+  def __init__(self, device, tool, build_type):
     """
       Args:
         device: Tests will run on the device of this ID.
@@ -48,7 +48,6 @@ class BaseTestRunner(object):
     self.forwarder_base_url = ('http://localhost:%d' %
         self._forwarder_device_port)
     self.flags = FlagChanger(self.adb)
-    self.shard_index = shard_index
     self.flags.AddFlags(['--disable-fre'])
     self._spawning_server = None
     self._spawner_forwarder = None
@@ -66,34 +65,23 @@ class BaseTestRunner(object):
                              '%d:%d' % (self.test_server_spawner_port,
                                         self.test_server_port))
 
-  def Run(self):
-    """Calls subclass functions to set up tests, run them and tear them down.
+  def RunTest(self, test):
+    """Runs a test. Needs to be overridden.
+
+    Args:
+      test: A test to run.
 
     Returns:
-      Test results returned from RunTests().
+      Tuple containing: (test_result.TestResults, tests to rerun or None)
     """
-    if not self.HasTests():
-      return True
-    self.SetUp()
-    try:
-      return self.RunTests()
-    finally:
-      self.TearDown()
-
-  def SetUp(self):
-    """Called before tests run."""
-    Forwarder.KillDevice(self.adb, self.tool)
-
-  def HasTests(self):
-    """Whether the test suite has tests to run."""
-    return True
-
-  def RunTests(self):
-    """Runs the tests. Need to be overridden."""
     raise NotImplementedError
 
+  def SetUp(self):
+    """Run once before all tests are run."""
+    Forwarder.KillDevice(self.adb, self.tool)
+
   def TearDown(self):
-    """Called when tests finish running."""
+    """Run once after all tests are run."""
     self.ShutdownHelperToolsForTestSuite()
 
   def CopyTestData(self, test_data_paths, dest_dir):
@@ -170,6 +158,8 @@ class BaseTestRunner(object):
     # to as they are clients potentially with open connections and to allow for
     # proper hand-shake/shutdown.
     Forwarder.KillDevice(self.adb, self.tool)
+    if self._forwarder:
+      self._forwarder.Close()
     if self._http_server:
       self._http_server.ShutdownHttpServer()
     if self._spawning_server:

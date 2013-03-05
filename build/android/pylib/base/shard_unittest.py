@@ -25,8 +25,9 @@ class TestException(Exception):
 
 class MockRunner(object):
   """A mock TestRunner."""
-  def __init__(self, device='0'):
+  def __init__(self, device='0', shard_index=0):
     self.device = device
+    self.shard_index = shard_index
     self.setups = 0
     self.teardowns = 0
 
@@ -50,8 +51,8 @@ class MockRunnerFail(MockRunner):
 
 
 class MockRunnerFailTwice(MockRunner):
-  def __init__(self, device='0'):
-    super(MockRunnerFailTwice, self).__init__(device)
+  def __init__(self, device='0', shard_index=0):
+    super(MockRunnerFailTwice, self).__init__(device, shard_index)
     self._fails = 0
 
   def RunTest(self, test):
@@ -97,9 +98,15 @@ class TestFunctions(unittest.TestCase):
 
   def testSetUp(self):
     runners = []
-    shard._SetUp(MockRunner, '0', runners)
+    counter = shard._ThreadSafeCounter()
+    shard._SetUp(MockRunner, '0', runners, counter)
     self.assertEqual(len(runners), 1)
     self.assertEqual(runners[0].setups, 1)
+
+  def testThreadSafeCounter(self):
+    counter = shard._ThreadSafeCounter()
+    for i in xrange(5):
+      self.assertEqual(counter.GetAndIncrement(), i)
 
 
 class TestThreadGroupFunctions(unittest.TestCase):
@@ -111,6 +118,10 @@ class TestThreadGroupFunctions(unittest.TestCase):
     runners = shard._CreateRunners(MockRunner, ['0', '1'])
     for runner in runners:
       self.assertEqual(runner.setups, 1)
+    self.assertEqual(set([r.device for r in runners]),
+                     set(['0', '1']))
+    self.assertEqual(set([r.shard_index for r in runners]),
+                     set([0, 1]))
 
   def testRun(self):
     runners = [MockRunner('0'), MockRunner('1')]

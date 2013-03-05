@@ -91,7 +91,7 @@ def GetAllEnabledTests(runner_factory, devices):
   for device in devices:
     try:
       logging.info('Obtaining tests from %s', device)
-      runner = runner_factory(device)
+      runner = runner_factory(device, 0)
       return GetTestsFromDevice(runner)
     except Exception as e:
       logging.warning('Failed obtaining tests from %s with exception: %s',
@@ -136,7 +136,7 @@ def _RunATestSuite(options, suite_name):
     raise Exception('Failed to reset test server port.')
 
   # Constructs a new TestRunner with the current options.
-  def RunnerFactory(device):
+  def RunnerFactory(device, shard_index):
     return test_runner.TestRunner(
         device,
         options.test_suite,

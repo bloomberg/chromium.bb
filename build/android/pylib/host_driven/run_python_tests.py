@@ -85,8 +85,8 @@ def DispatchPythonTests(options):
   for device_id in attached_devices:
     logging.debug('Pushing files to device %s', device_id)
     apks = [apk_info.ApkInfo(options.test_apk_path, options.test_apk_jar_path)]
-    test_files_copier = test_runner.TestRunner(options, device_id, None, False,
-                                               0, apks, [])
+    test_files_copier = test_runner.TestRunner(options, device_id, 0, False,
+                                               apks, [])
     test_files_copier.CopyTestFilesOnce()
 
   # Actually run the tests.

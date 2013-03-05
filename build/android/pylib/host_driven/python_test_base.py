@@ -78,9 +78,13 @@ class PythonTestBase(object):
     apks = [apk_info.ApkInfo(self.options.test_apk_path,
             self.options.test_apk_jar_path)]
     java_test_runner = test_runner.TestRunner(self.options, self.device_id,
-                                              [test], False, self.shard_index,
-                                              apks, self.ports_to_forward)
-    return java_test_runner.Run()
+                                              self.shard_index, False, apks,
+                                              self.ports_to_forward)
+    try:
+      java_test_runner.SetUp()
+      return java_test_runner.RunTest(test)[0]
+    finally:
+      java_test_runner.TearDown()
 
   def _RunJavaTests(self, fname, tests):
     """Calls a list of tests and stops at the first test failure.

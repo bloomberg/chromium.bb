@@ -8,10 +8,11 @@ import logging
 import os
 
 from pylib import android_commands
+from pylib.base import shard
 from pylib.base import test_result
 
 import apk_info
-import test_sharder
+import test_runner
 
 
 def Dispatch(options, apks):
@@ -71,16 +72,15 @@ def Dispatch(options, apks):
     tests = available_tests
 
   if not tests:
-    logging.warning('No Java tests to run with current args.')
+    logging.warning('No instrumentation tests to run with current args.')
     return test_result.TestResults()
 
   tests *= options.number_of_runs
 
   attached_devices = android_commands.GetAttachedDevices()
-  test_results = test_result.TestResults()
 
   if not attached_devices:
-    raise Exception('You have no devices attached or visible!')
+    raise Exception('There are no devices online.')
   if options.device:
     attached_devices = [options.device]
 
@@ -90,6 +90,9 @@ def Dispatch(options, apks):
     logging.warning('Coverage / debugger can not be sharded, '
                     'using first available device')
     attached_devices = attached_devices[:1]
-  sharder = test_sharder.TestSharder(attached_devices, options, tests, apks)
-  test_results = sharder.RunShardedTests()
-  return test_results
+
+  def TestRunnerFactory(device, shard_index):
+    return test_runner.TestRunner(options, device, shard_index, False, apks, [])
+
+  return shard.ShardAndRunTests(TestRunnerFactory, attached_devices, tests,
+                                options.build_type)

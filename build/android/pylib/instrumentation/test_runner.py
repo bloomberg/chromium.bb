@@ -19,7 +19,6 @@ from pylib import json_perf_parser
 from pylib import perf_tests_helper
 from pylib import valgrind_tools
 from pylib.base import base_test_runner
-from pylib.base import base_test_sharder
 from pylib.base import test_result
 
 import apk_info
@@ -48,7 +47,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                        '/chrome-profile*')
   _DEVICE_HAS_TEST_FILES = {}
 
-  def __init__(self, options, device, tests_iter, coverage, shard_index, apks,
+  def __init__(self, options, device, shard_index, coverage, apks,
                ports_to_forward):
     """Create a new TestRunner.
 
@@ -63,10 +62,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       -  wait_for_debugger: blocks until the debugger is connected.
       -  disable_assertions: Whether to disable java assertions on the device.
       device: Attached android device.
-      tests_iter: A list of tests to be run.
+      shard_index: Shard index.
       coverage: Collects coverage information if opted.
-      shard_index: shard # for this TestRunner, used to create unique port
-          numbers.
       apks: A list of ApkInfo objects need to be installed. The first element
             should be the tests apk, the rests could be the apks used in test.
             The default is ChromeTest.apk.
@@ -75,8 +72,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Raises:
       Exception: if coverage metadata is not available.
     """
-    super(TestRunner, self).__init__(
-        device, options.tool, shard_index, options.build_type)
+    super(TestRunner, self).__init__(device, options.tool, options.build_type)
+    self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
 
     if not apks:
       apks = [apk_info.ApkInfo(options.test_apk_path,
@@ -90,14 +87,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.wait_for_debugger = options.wait_for_debugger
     self.disable_assertions = options.disable_assertions
 
-    self.tests_iter = tests_iter
     self.coverage = coverage
     self.apks = apks
     self.test_apk = apks[0]
     self.instrumentation_class_path = self.test_apk.GetPackageName()
     self.ports_to_forward = ports_to_forward
 
-    self.test_results = test_result.TestResults()
     self.forwarder = None
 
     if self.coverage:
@@ -114,14 +109,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
                         ' : Path specified in $EMMA_WEB_ROOTDIR [' +
                         TestRunner._COVERAGE_WEB_ROOT_DIR +
                         '] does not exist.')
-
-  def _GetTestsIter(self):
-    if not self.tests_iter:
-      # multiprocessing.Queue can't be pickled across processes if we have it as
-      # a member set during constructor.  Grab one here instead.
-      self.tests_iter = (base_test_sharder.BaseTestSharder.tests_container)
-    assert self.tests_iter
-    return self.tests_iter
 
   def CopyTestFilesOnce(self):
     """Pushes the test data files to the device. Installs the apk if opted."""
@@ -226,8 +213,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # because it may have race condition when multiple processes are trying to
     # launch lighttpd with same port at same time.
     http_server_ports = self.LaunchTestHttpServer(
-        os.path.join(constants.CHROME_DIR),
-        (constants.LIGHTTPD_RANDOM_PORT_FIRST + self.shard_index))
+        os.path.join(constants.CHROME_DIR), self._lighttp_port)
     if self.ports_to_forward:
       port_pairs = [(port, port) for port in self.ports_to_forward]
       # We need to remember which ports the HTTP server is using, since the
@@ -390,8 +376,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return 3 * 60
     return 1 * 60
 
-  def RunTests(self):
-    """Runs the tests, generating the coverage if needed.
+  def RunTest(self, test):
+    """Runs the test, generating the coverage if needed.
 
     Returns:
       A test_result.TestResults object.
@@ -399,54 +385,53 @@ class TestRunner(base_test_runner.BaseTestRunner):
     instrumentation_path = (self.instrumentation_class_path +
                             '/android.test.InstrumentationTestRunner')
     instrumentation_args = self._GetInstrumentationArgs()
-    for test in self._GetTestsIter():
-      raw_result = None
-      start_date_ms = None
-      try:
-        self.TestSetup(test)
-        start_date_ms = int(time.time()) * 1000
-        args_with_filter = dict(instrumentation_args)
-        args_with_filter['class'] = test
-        # |raw_results| is a list that should contain
-        # a single TestResult object.
-        logging.warn(args_with_filter)
-        (raw_results, _) = self.adb.Adb().StartInstrumentation(
-            instrumentation_path=instrumentation_path,
-            instrumentation_args=args_with_filter,
-            timeout_time=(self._GetIndividualTestTimeoutSecs(test) *
-                          self._GetIndividualTestTimeoutScale(test) *
-                          self.tool.GetTimeoutScale()))
+    raw_result = None
+    start_date_ms = None
+    test_results = test_result.TestResults()
+    try:
+      self.TestSetup(test)
+      start_date_ms = int(time.time()) * 1000
+      args_with_filter = dict(instrumentation_args)
+      args_with_filter['class'] = test
+      # |raw_results| is a list that should contain
+      # a single TestResult object.
+      logging.warn(args_with_filter)
+      (raw_results, _) = self.adb.Adb().StartInstrumentation(
+          instrumentation_path=instrumentation_path,
+          instrumentation_args=args_with_filter,
+          timeout_time=(self._GetIndividualTestTimeoutSecs(test) *
+                        self._GetIndividualTestTimeoutScale(test) *
+                        self.tool.GetTimeoutScale()))
+      duration_ms = int(time.time()) * 1000 - start_date_ms
+      assert len(raw_results) == 1
+      raw_result = raw_results[0]
+      status_code = raw_result.GetStatusCode()
+      if status_code:
+        log = raw_result.GetFailureReason()
+        if not log:
+          log = 'No information.'
+        if self.screenshot_failures or log.find('INJECT_EVENTS perm') >= 0:
+          self._TakeScreenshot(test)
+        test_results.failed = [test_result.SingleTestResult(
+            test, start_date_ms, duration_ms, log)]
+      else:
+        test_results.ok = [test_result.SingleTestResult(test, start_date_ms,
+                                                        duration_ms)]
+    # Catch exceptions thrown by StartInstrumentation().
+    # See ../../third_party/android/testrunner/adb_interface.py
+    except (android_commands.errors.WaitForResponseTimedOutError,
+            android_commands.errors.DeviceUnresponsiveError,
+            android_commands.errors.InstrumentationError), e:
+      if start_date_ms:
         duration_ms = int(time.time()) * 1000 - start_date_ms
-        assert len(raw_results) == 1
-        raw_result = raw_results[0]
-        status_code = raw_result.GetStatusCode()
-        if status_code:
-          log = raw_result.GetFailureReason()
-          if not log:
-            log = 'No information.'
-          if self.screenshot_failures or log.find('INJECT_EVENTS perm') >= 0:
-            self._TakeScreenshot(test)
-          self.test_results.failed += [test_result.SingleTestResult(
-              test, start_date_ms, duration_ms, log)]
-        else:
-          result = [test_result.SingleTestResult(test, start_date_ms,
-                                                 duration_ms)]
-          self.test_results.ok += result
-      # Catch exceptions thrown by StartInstrumentation().
-      # See ../../third_party/android/testrunner/adb_interface.py
-      except (android_commands.errors.WaitForResponseTimedOutError,
-              android_commands.errors.DeviceUnresponsiveError,
-              android_commands.errors.InstrumentationError), e:
-        if start_date_ms:
-          duration_ms = int(time.time()) * 1000 - start_date_ms
-        else:
-          start_date_ms = int(time.time()) * 1000
-          duration_ms = 0
-        message = str(e)
-        if not message:
-          message = 'No information.'
-        self.test_results.crashed += [test_result.SingleTestResult(
-            test, start_date_ms, duration_ms, message)]
-        raw_result = None
-      self.TestTeardown(test, raw_result)
-    return self.test_results
+      else:
+        start_date_ms = int(time.time()) * 1000
+        duration_ms = 0
+      message = str(e)
+      if not message:
+        message = 'No information.'
+      test_results.crashed = [test_result.SingleTestResult(
+          test, start_date_ms, duration_ms, message)]
+      raw_result = None
+    self.TestTeardown(test, raw_result)
+    return (test_results, None if test_results.ok else test)
