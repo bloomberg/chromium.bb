@@ -773,6 +773,10 @@ void Panel::SetWindowCornerStyle(panel::CornerStyle corner_style) {
   native_panel_->SetWindowCornerStyle(corner_style);
 }
 
+void Panel::MinimizeBySystem() {
+  native_panel_->MinimizePanelBySystem();
+}
+
 Panel::Panel(const std::string& app_name,
              const gfx::Size& min_size, const gfx::Size& max_size)
     : app_name_(app_name),

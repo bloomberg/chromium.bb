@@ -156,23 +156,24 @@ void DetachedPanelCollection::RestorePanel(Panel* panel) {
 
 void DetachedPanelCollection::OnMinimizeButtonClicked(
     Panel* panel, panel::ClickModifier modifier) {
-  // Detached panels do not minimize.
-  NOTREACHED();
+  panel->MinimizeBySystem();
 }
 
 void DetachedPanelCollection::OnRestoreButtonClicked(
     Panel* panel, panel::ClickModifier modifier) {
-  // Detached panels do not minimize.
+  // No restore button is present.
   NOTREACHED();
 }
 
 bool DetachedPanelCollection::CanShowMinimizeButton(const Panel* panel) const {
-  // Detached panels do not minimize.
-  return false;
+  // We also show minimize button for detached panel when stacking mode is
+  // enabled.
+  return PanelManager::IsPanelStackingEnabled();
 }
 
 bool DetachedPanelCollection::CanShowRestoreButton(const Panel* panel) const {
-  // Detached panels do not minimize.
+  // The minimize button is used for system minimize and thus there is no
+  // restore button.
   return false;
 }
 

@@ -81,6 +81,7 @@ class PanelGtk : public NativePanel,
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
   virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) OVERRIDE;
+  virtual void MinimizePanelBySystem() OVERRIDE;
 
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 

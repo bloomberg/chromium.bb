@@ -317,6 +317,10 @@ void PanelGtk::SetWindowCornerStyle(panel::CornerStyle corner_style) {
   UpdateWindowShape();
 }
 
+void PanelGtk::MinimizePanelBySystem() {
+  NOTIMPLEMENTED();
+}
+
 void PanelGtk::UpdateWindowShape() {
   int width = configure_size_.width();
   int height = configure_size_.height();

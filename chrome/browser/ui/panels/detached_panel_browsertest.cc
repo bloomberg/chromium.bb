@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   EXPECT_FALSE(panel->IsAlwaysOnTop());
 
   EXPECT_TRUE(panel_testing->IsButtonVisible(panel::CLOSE_BUTTON));
-  EXPECT_FALSE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(panel::RESTORE_BUTTON));
 
   EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());

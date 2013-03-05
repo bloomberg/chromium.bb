@@ -69,6 +69,7 @@ class PanelView : public NativePanel,
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
+  virtual void MinimizePanelBySystem() OVERRIDE;
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   // Return true if the mouse event is handled.

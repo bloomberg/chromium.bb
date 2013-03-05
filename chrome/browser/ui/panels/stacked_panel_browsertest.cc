@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, MinimizeButtonVisibility) {
   ASSERT_EQ(1, panel_manager->num_stacks());
   ASSERT_EQ(2, stack->num_panels());
 
-  EXPECT_FALSE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel3_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
 

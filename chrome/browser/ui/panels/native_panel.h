@@ -81,6 +81,8 @@ class NativePanel {
   // Sets how the panel window displays its 4 corners, rounded or not.
   virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) = 0;
 
+  virtual void MinimizePanelBySystem() = 0;
+
   // Create testing interface for native panel. (Keep this last to separate
   // it from regular API.)
   virtual NativePanelTesting* CreateNativePanelTesting() = 0;

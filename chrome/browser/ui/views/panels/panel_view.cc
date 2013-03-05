@@ -613,6 +613,10 @@ int PanelView::TitleOnlyHeight() const {
   return panel::kTitlebarHeight;
 }
 
+void PanelView::MinimizePanelBySystem() {
+  window_->Minimize();
+}
+
 void PanelView::AttachWebContents(content::WebContents* contents) {
   web_view_->SetWebContents(contents);
 }

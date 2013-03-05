@@ -240,6 +240,10 @@ void PanelCocoa::SetWindowCornerStyle(panel::CornerStyle corner_style) {
   // TODO(dimich): investigate how to support it on Mac.
 }
 
+void PanelCocoa::MinimizePanelBySystem() {
+  NOTIMPLEMENTED();
+}
+
 void PanelCocoa::PanelExpansionStateChanging(
     Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
   [controller_ updateWindowLevel:(new_state != Panel::EXPANDED)];

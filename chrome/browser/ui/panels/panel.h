@@ -304,6 +304,9 @@ class Panel : public BaseWindow,
   // Applies |corner_style| to the panel window.
   void SetWindowCornerStyle(panel::CornerStyle corner_style);
 
+  // Performs the system minimize for the panel, i.e. hide the panel.
+  void MinimizeBySystem();
+
  protected:
   // Panel can only be created using PanelManager::CreatePanel() or subclass.
   // |app_name| is the default title for Panels when the page content does not

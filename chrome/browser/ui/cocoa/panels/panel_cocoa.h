@@ -62,6 +62,7 @@ class PanelCocoa : public NativePanel {
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
 
+  virtual void MinimizePanelBySystem() OVERRIDE;
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   Panel* panel() const;
