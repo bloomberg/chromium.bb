@@ -159,17 +159,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncPasswords)) {
-#if !defined(OS_ANDROID)
     pss->RegisterDataTypeController(
         new PasswordDataTypeController(this, profile_, pss));
-#else
-    // On Android, enable password sync only when Keystore encryption
-    // is enabled.
-    if (command_line_->HasSwitch(switches::kSyncKeystoreEncryption)) {
-      pss->RegisterDataTypeController(
-          new PasswordDataTypeController(this, profile_, pss));
-    }
-#endif
   }
 }
 
