@@ -51,8 +51,6 @@ class ConstrainedWebDialogDelegate {
 //
 // Since the web contents modal dialog requires platform-specific delegate
 // implementations, this class is just a factory stub.
-// TODO(thestig): Refactor the platform-independent code out of the
-// platform-specific implementations.
 class ConstrainedWebDialogUI
     : public content::WebUIController {
  public:
