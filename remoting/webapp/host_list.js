@@ -422,6 +422,9 @@ remoting.HostList.prototype.onLocalHostStarted = function(
   // and we hope that the directory will have been updated by that point.
   var localHost = new remoting.Host();
   localHost.hostName = hostName;
+  // Provide a version number to avoid warning about this dummy host being
+  // out-of-date.
+  localHost.hostVersion = String(this.webappMajorVersion_) + ".x"
   localHost.hostId = hostId;
   localHost.publicKey = publicKey;
   localHost.status = 'ONLINE';
