@@ -26,6 +26,13 @@
 #include "content/test/content_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(dmazzoni): Disabled accessibility tests on Win64. crbug.com/179717
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 namespace content {
 
 namespace {
@@ -264,7 +271,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaInvalid) {
   RunTest(FILE_PATH_LITERAL("aria-invalid.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLevel) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       MAYBE(AccessibilityAriaLevel)) {
   RunTest(FILE_PATH_LITERAL("aria-level.html"));
 }
 
@@ -365,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHR) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeCoordinates) {
+                       MAYBE(AccessibilityIframeCoordinates)) {
   RunTest(FILE_PATH_LITERAL("iframe-coordinates.html"));
 }
 

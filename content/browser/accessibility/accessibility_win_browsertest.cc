@@ -29,6 +29,13 @@ using std::string;
 using std::vector;
 using std::wstring;
 
+// TODO(dmazzoni): Disabled accessibility tests on Win64. crbug.com/179717
+#if defined(ARCH_CPU_X86_64)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 namespace content {
 
 namespace {
@@ -412,7 +419,7 @@ string16 AccessibleChecker::RoleVariantToString(VARIANT* role_variant) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestBusyAccessibilityTree) {
+                       MAYBE(TestBusyAccessibilityTree)) {
   NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
 
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
@@ -517,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationCheckedStateChanged) {
+                       MAYBE(TestNotificationCheckedStateChanged)) {
   LoadInitialAccessibilityTreeFromHtml(
       "<body><input type='checkbox' /></body>");
 
@@ -547,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged) {
+                       MAYBE(TestNotificationChildrenChanged)) {
   // The role attribute causes the node to be in the accessibility tree.
   LoadInitialAccessibilityTreeFromHtml("<body role=group></body>");
 
@@ -574,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged2) {
+                       MAYBE(TestNotificationChildrenChanged2)) {
   // The role attribute causes the node to be in the accessibility tree.
   LoadInitialAccessibilityTreeFromHtml(
       "<div role=group style='visibility: hidden'>text</div>");
@@ -602,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationFocusChanged) {
+                       MAYBE(TestNotificationFocusChanged)) {
   // The role attribute causes the node to be in the accessibility tree.
   LoadInitialAccessibilityTreeFromHtml("<div role=group tabindex='-1'></div>");
 
@@ -650,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationValueChanged) {
+                       MAYBE(TestNotificationValueChanged)) {
   LoadInitialAccessibilityTreeFromHtml(
       "<body><input type='text' value='old value'/></body>");
 
@@ -687,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 // that wraps the tab contents returns the IAccessible implementation
 // provided by RenderWidgetHostViewWin in GetNativeViewAccessible().
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       ContainsRendererAccessibilityTree) {
+                       MAYBE(ContainsRendererAccessibilityTree)) {
   LoadInitialAccessibilityTreeFromHtml(
       "<html><head><title>MyDocument</title></head>"
       "<body>Content</body></html>");
@@ -782,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       SupportsISimpleDOM) {
+                       MAYBE(SupportsISimpleDOM)) {
   LoadInitialAccessibilityTreeFromHtml(
       "<body><input type='checkbox' /></body>");
 
@@ -842,7 +849,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(0, num_children);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, MAYBE(TestRoleGroup)) {
   LoadInitialAccessibilityTreeFromHtml(
       "<fieldset></fieldset><div role=group></div>");
 

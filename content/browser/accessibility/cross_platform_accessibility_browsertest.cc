@@ -23,6 +23,13 @@
 #include "ui/base/win/atl_module.h"
 #endif
 
+// TODO(dmazzoni): Disabled accessibility tests on Win64. crbug.com/179717
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_TableSpan DISABLED_TableSpan
+#else
+#define MAYBE_TableSpan TableSpan
+#endif
+
 namespace content {
 
 class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
@@ -376,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       TableSpan) {
+                       MAYBE_TableSpan) {
   // +---+---+---+
   // |   1   | 2 |
   // +---+---+---+
