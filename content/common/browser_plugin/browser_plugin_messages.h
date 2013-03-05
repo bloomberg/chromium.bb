@@ -10,7 +10,7 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/values.h"
-#include "content/common/browser_plugin_message_enums.h"
+#include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/public/common/common_param_traits.h"

@@ -39,7 +39,7 @@
 #include "content/browser/webui/generic_handler.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/icon_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"

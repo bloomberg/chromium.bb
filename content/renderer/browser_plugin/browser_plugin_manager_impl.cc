@@ -4,7 +4,7 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ui/gfx/point.h"

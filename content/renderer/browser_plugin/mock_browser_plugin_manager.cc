@@ -5,7 +5,7 @@
 #include "content/renderer/browser_plugin/mock_browser_plugin_manager.h"
 
 #include "base/message_loop.h"
-#include "content/common/browser_plugin_messages.h"
+#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/renderer/browser_plugin/mock_browser_plugin.h"
 #include "ipc/ipc_message.h"
 

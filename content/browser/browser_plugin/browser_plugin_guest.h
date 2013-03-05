@@ -27,7 +27,7 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
-#include "content/common/browser_plugin_message_enums.h"
+#include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

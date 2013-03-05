@@ -1,0 +1,11 @@
+fsamuel@chromium.org
+lazyboy@chromium.org
+
+# For security review of IPC message files.
+per-file *_messages.h=set noparent
+per-file *_messages.h=cdn@chromium.org
+per-file *_messages.h=cevans@chromium.org
+per-file *_messages.h=inferno@chromium.org
+per-file *_messages.h=jschuh@chromium.org
+per-file *_messages.h=palmer@chromium.org
+per-file *_messages.h=tsepez@chromium.org
