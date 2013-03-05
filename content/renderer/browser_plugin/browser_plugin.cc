@@ -106,9 +106,6 @@ BrowserPlugin::BrowserPlugin(
 }
 
 BrowserPlugin::~BrowserPlugin() {
-  // Will be a no-op if we are not currently locked to.
-  render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
-
   // If the BrowserPlugin has never navigated then the browser process and
   // BrowserPluginManager don't know about it and so there is nothing to do
   // here.
@@ -1080,6 +1077,9 @@ void BrowserPlugin::destroy() {
   container_ = NULL;
   if (compositing_helper_)
     compositing_helper_->OnContainerDestroy();
+  // Will be a no-op if the mouse is not currently locked.
+  if (render_view_)
+    render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
