@@ -67,12 +67,6 @@
         '--result', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
       ],
-      'conditions': [
-        ['test_isolation_fail_on_missing == 0', {
-            'action': ['--ignore_broken_items']
-          },
-        ],
-      ],
       'msvs_cygwin_shell': 0,
     },
   ],
