@@ -4366,6 +4366,20 @@ TEST_F(GLES2FormatTest, AsyncTexImage2DCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, WaitAsyncTexImage2DCHROMIUM) {
+  cmds::WaitAsyncTexImage2DCHROMIUM& cmd =
+      *GetBufferAs<cmds::WaitAsyncTexImage2DCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11));
+  EXPECT_EQ(static_cast<uint32>(cmds::WaitAsyncTexImage2DCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, DiscardFramebufferEXT) {
   cmds::DiscardFramebufferEXT& cmd =
       *GetBufferAs<cmds::DiscardFramebufferEXT>();

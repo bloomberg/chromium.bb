@@ -205,6 +205,7 @@ GL_APICALL void         GL_APIENTRY glTraceBeginCHROMIUM (const char* name);
 GL_APICALL void         GL_APIENTRY glTraceEndCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glAsyncTexSubImage2DCHROMIUM (GLenumTextureTarget target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenumTextureFormat format, GLenumPixelType type, const void* data);
 GL_APICALL void         GL_APIENTRY glAsyncTexImage2DCHROMIUM (GLenumTextureTarget target, GLint level, GLintTextureInternalFormat internalformat, GLsizei width, GLsizei height, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glWaitAsyncTexImage2DCHROMIUM (GLenumTextureTarget target);
 GL_APICALL void         GL_APIENTRY glDiscardFramebufferEXT (GLenum target, GLsizei count, const GLenum* attachments);
 GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenum current, GLenum other);
 GL_APICALL void         GL_APIENTRY glWaitSyncPointCHROMIUM (GLuint sync_point);

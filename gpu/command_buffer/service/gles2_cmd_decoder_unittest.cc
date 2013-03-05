@@ -7979,6 +7979,8 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   AsyncTexSubImage2DCHROMIUM texsubimage_cmd;
   texsubimage_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 8, 8, GL_RGBA,
                       GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
+  WaitAsyncTexImage2DCHROMIUM wait_cmd;
+  wait_cmd.Init(GL_TEXTURE_2D);
   gfx::AsyncTexImage2DParams teximage_params =
       {GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE};
 
@@ -8083,6 +8085,14 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_TRUE(info->GetAsyncTransferState());
     EXPECT_TRUE(info->IsImmutable());
     EXPECT_TRUE(info->SafeToRenderFrom());
+  }
+
+  // WaitAsyncTexSubImage2D
+  {
+    // Command succeeds.
+    EXPECT_CALL(*delegate, WaitForTransferCompletion(state));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(wait_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
 
   decoder_->SetAsyncPixelTransferDelegate(NULL);

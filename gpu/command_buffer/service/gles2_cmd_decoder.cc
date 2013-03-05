@@ -10151,6 +10151,26 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleWaitAsyncTexImage2DCHROMIUM(
+    uint32 immediate_data_size, const cmds::WaitAsyncTexImage2DCHROMIUM& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleWaitAsyncTexImage2DCHROMIUM");
+  GLenum target = static_cast<GLenum>(c.target);
+
+  if (GL_TEXTURE_2D != target) {
+    SetGLError(GL_INVALID_ENUM, "glWaitAsyncTexImage2DCHROMIUM", "target");
+    return error::kNoError;
+  }
+  Texture* info = GetTextureInfoForTarget(target);
+  if (!info) {
+      SetGLError(GL_INVALID_OPERATION,
+                 "glWaitAsyncTexImage2DCHROMIUM", "unknown texture");
+    return error::kNoError;
+  }
+  async_pixel_transfer_delegate_->WaitForTransferCompletion(
+      info->GetAsyncTransferState());
+  return error::kNoError;
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

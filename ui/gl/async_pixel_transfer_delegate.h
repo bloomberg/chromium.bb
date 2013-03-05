@@ -106,6 +106,10 @@ class GL_EXPORT AsyncPixelTransferDelegate {
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) = 0;
 
+  // Block until the specified transfer completes.
+  virtual void WaitForTransferCompletion(
+      AsyncPixelTransferState* state) = 0;
+
   virtual uint32 GetTextureUploadCount() = 0;
   virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
 

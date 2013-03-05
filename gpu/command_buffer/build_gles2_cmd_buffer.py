@@ -2296,6 +2296,13 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'WaitAsyncTexImage2DCHROMIUM': {
+    'type': 'Manual',
+    'immediate': False,
+    'client_test': False,
+    'extension': True,
+    'chromium': True,
+  },
   'DiscardFramebufferEXT': {
     'type': 'PUTn',
     'count': 1,

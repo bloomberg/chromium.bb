@@ -331,6 +331,7 @@ virtual void AsyncTexImage2DCHROMIUM(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) OVERRIDE;
+virtual void WaitAsyncTexImage2DCHROMIUM(GLenum target) OVERRIDE;
 virtual void DiscardFramebufferEXT(
     GLenum target, GLsizei count, const GLenum* attachments) OVERRIDE;
 virtual void LoseContextCHROMIUM(GLenum current, GLenum other) OVERRIDE;

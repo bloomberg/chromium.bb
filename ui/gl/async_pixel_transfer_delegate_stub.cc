@@ -139,6 +139,11 @@ void AsyncPixelTransferDelegateStub::AsyncTexSubImage2D(
   total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
 }
 
+void AsyncPixelTransferDelegateStub::WaitForTransferCompletion(
+    AsyncPixelTransferState* state) {
+  // Already done.
+}
+
 uint32 AsyncPixelTransferDelegateStub::GetTextureUploadCount() {
   return texture_upload_count_;
 }

@@ -1153,6 +1153,11 @@ void GLES2TraceImplementation::AsyncTexImage2DCHROMIUM(
       pixels);
 }
 
+void GLES2TraceImplementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WaitAsyncTexImage2DCHROMIUM");  // NOLINT
+  gl_->WaitAsyncTexImage2DCHROMIUM(target);
+}
+
 void GLES2TraceImplementation::DiscardFramebufferEXT(
     GLenum target, GLsizei count, const GLenum* attachments) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DiscardFramebufferEXT");

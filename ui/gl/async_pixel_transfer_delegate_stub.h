@@ -47,6 +47,8 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
       AsyncPixelTransferState* transfer_state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) OVERRIDE;
+  virtual void WaitForTransferCompletion(
+      AsyncPixelTransferState* state) OVERRIDE;
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
  private:

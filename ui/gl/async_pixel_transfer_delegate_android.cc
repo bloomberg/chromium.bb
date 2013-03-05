@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
@@ -32,32 +33,6 @@ using base::SharedMemoryHandle;
 namespace gfx {
 
 namespace {
-
-// Quick and dirty Atomic flag, that we use for
-// marking completion from the upload thread.
-class AtomicFlag {
- public:
-  AtomicFlag() {
-    base::subtle::Acquire_Store(&value_, 0);
-  }
-  void Set() {
-    base::subtle::Atomic32 old_value = base::subtle::Acquire_CompareAndSwap(
-        &value_, 0, 1);
-    DCHECK_EQ(old_value, 0);
-  }
-  void Unset() {
-    base::subtle::Atomic32 old_value = base::subtle::Release_CompareAndSwap(
-        &value_, 1, 0);
-    DCHECK_EQ(old_value, 1);
-  }
-  bool IsSet() {
-    return base::subtle::Acquire_Load(&value_) == 1;
-  }
- private:
-  base::subtle::Atomic32 value_;
-  DISALLOW_COPY_AND_ASSIGN(AtomicFlag);
-};
-
 
 class TextureUploadStats
     : public base::RefCountedThreadSafe<TextureUploadStats> {
@@ -213,6 +188,7 @@ class TransferStateInternal
       : texture_id_(texture_id),
         thread_texture_id_(0),
         needs_late_bind_(false),
+        transfer_completion_(true, true),
         egl_image_(EGL_NO_IMAGE_KHR),
         wait_for_uploads_(wait_for_uploads),
         use_image_preserved_(use_image_preserved) {
@@ -222,7 +198,7 @@ class TransferStateInternal
 
   // Implement AsyncPixelTransferState:
   bool TransferIsInProgress() {
-    return transfer_in_progress_.IsSet();
+    return !transfer_completion_.IsSignaled();
   }
 
   void BindTransfer(AsyncTexImage2DParams* bound_params) {
@@ -294,11 +270,15 @@ class TransferStateInternal
   }
 
   void MarkAsTransferIsInProgress() {
-    transfer_in_progress_.Set();
+    transfer_completion_.Reset();
   }
 
   void MarkAsCompleted() {
-    transfer_in_progress_.Unset();
+    transfer_completion_.Signal();
+  }
+
+  void WaitForTransferCompletion() {
+    transfer_completion_.Wait();
   }
 
  protected:
@@ -334,7 +314,7 @@ class TransferStateInternal
   AsyncTexImage2DParams late_bind_define_params_;
 
   // Indicates that an async transfer is in progress.
-  AtomicFlag transfer_in_progress_;
+  base::WaitableEvent transfer_completion_;
 
   // It would be nice if we could just create a new EGLImage for
   // every upload, but I found that didn't work, so this stores
@@ -358,10 +338,10 @@ class AsyncTransferStateAndroid : public AsyncPixelTransferState {
                                             use_image_preserved)) {
   }
   virtual ~AsyncTransferStateAndroid() {}
-  virtual bool TransferIsInProgress() {
+  virtual bool TransferIsInProgress() OVERRIDE {
       return internal_->TransferIsInProgress();
   }
-  virtual void BindTransfer(AsyncTexImage2DParams* bound_params) {
+  virtual void BindTransfer(AsyncTexImage2DParams* bound_params) OVERRIDE {
       internal_->BindTransfer(bound_params);
   }
   scoped_refptr<TransferStateInternal> internal_;
@@ -388,6 +368,8 @@ class AsyncPixelTransferDelegateAndroid
       AsyncPixelTransferState* state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) OVERRIDE;
+  virtual void WaitForTransferCompletion(
+      AsyncPixelTransferState* state) OVERRIDE;
   virtual uint32 GetTextureUploadCount() OVERRIDE;
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
 
@@ -502,6 +484,32 @@ void AsyncPixelTransferDelegateAndroid::AsyncNotifyCompletion(
                                                 mem_params.shared_memory,
                                                 mem_params.shm_size)),
                  callback));
+}
+
+void AsyncPixelTransferDelegateAndroid::WaitForTransferCompletion(
+      AsyncPixelTransferState* transfer_state) {
+  TRACE_EVENT0("gpu", "WaitForTransferCompletion");
+  scoped_refptr<TransferStateInternal> state =
+      static_cast<AsyncTransferStateAndroid*>(transfer_state)->internal_.get();
+  DCHECK(state);
+  DCHECK(state->texture_id_);
+
+  if (state->TransferIsInProgress()) {
+    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+    int default_nice_value = 0;  // Default priority.
+    int idle_nice_value    = 10; // Idle priority.
+    setpriority(PRIO_PROCESS,
+                g_transfer_thread.Pointer()->thread_id(),
+                default_nice_value);
+
+    state->WaitForTransferCompletion();
+    DCHECK(!state->TransferIsInProgress());
+
+    // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
+    setpriority(PRIO_PROCESS,
+                g_transfer_thread.Pointer()->thread_id(),
+                idle_nice_value);
+  }
 }
 
 void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(

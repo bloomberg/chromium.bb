@@ -1698,6 +1698,11 @@ void WebGraphicsContext3DCommandBufferImpl::asyncTexSubImage2DCHROMIUM(
       width, height, format, type, pixels);
 }
 
+void WebGraphicsContext3DCommandBufferImpl::waitAsyncTexImage2DCHROMIUM(
+    WGC3Denum target) {
+  return gl_->WaitAsyncTexImage2DCHROMIUM(target);
+}
+
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit::gpu::CreateCommandBufferSkiaGLBinding();
 }

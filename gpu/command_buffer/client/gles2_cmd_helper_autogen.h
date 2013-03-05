@@ -2035,6 +2035,14 @@
     }
   }
 
+  void WaitAsyncTexImage2DCHROMIUM(GLenum target) {
+    gles2::cmds::WaitAsyncTexImage2DCHROMIUM* c =
+        GetCmdSpace<gles2::cmds::WaitAsyncTexImage2DCHROMIUM>();
+    if (c) {
+      c->Init(target);
+    }
+  }
+
   void DiscardFramebufferEXT(
       GLenum target, GLsizei count, uint32 attachments_shm_id,
       uint32 attachments_shm_offset) {

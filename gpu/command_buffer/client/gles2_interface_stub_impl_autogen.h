@@ -623,6 +623,8 @@ void GLES2InterfaceStub::AsyncTexImage2DCHROMIUM(
     GLsizei /* width */, GLsizei /* height */, GLint /* border */,
     GLenum /* format */, GLenum /* type */, const void* /* pixels */) {
 }
+void GLES2InterfaceStub::WaitAsyncTexImage2DCHROMIUM(GLenum /* target */) {
+}
 void GLES2InterfaceStub::DiscardFramebufferEXT(
     GLenum /* target */, GLsizei /* count */,
     const GLenum* /* attachments */) {

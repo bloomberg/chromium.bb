@@ -3439,6 +3439,14 @@ void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
   return;
 }
 
+void GLES2Implementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glWaitAsyncTexImage2DCHROMIUM("
+      << GLES2Util::GetStringTextureTarget(target) << ")");
+  helper_->WaitAsyncTexImage2DCHROMIUM(target);
+  CheckGLError();
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
