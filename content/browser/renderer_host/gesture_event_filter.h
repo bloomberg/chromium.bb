@@ -16,7 +16,7 @@
 namespace content {
 class MockRenderWidgetHost;
 class RenderWidgetHostImpl;
-class TapSuppressionController;
+class TouchpadTapSuppressionController;
 
 // Applies a sequence of filters to WebGestureEvents instances.
 // First: the sequence is filtered for bounces. A bounce is when the finger
@@ -50,8 +50,8 @@ class GestureEventFilter {
   // definitely not in progress.
   void FlingHasBeenHalted();
 
-  // Return the |TapSuppressionController| instance.
-  TapSuppressionController* GetTapSuppressionController();
+  // Return the |TouchpadTapSuppressionController| instance.
+  TouchpadTapSuppressionController* GetTapSuppressionController();
 
   // Returns whether there are any gesture event in the queue.
   bool HasQueuedGestureEvents() const;
@@ -129,7 +129,7 @@ class GestureEventFilter {
   // An object tracking the state of touchpad action on the delivery of mouse
   // events to the renderer to filter mouse  immediately after a touchpad
   // fling canceling tap.
-  scoped_ptr<TapSuppressionController> tap_suppression_controller_;
+  scoped_ptr<TouchpadTapSuppressionController> tap_suppression_controller_;
 
   typedef std::deque<WebKit::WebGestureEvent> GestureEventQueue;
 

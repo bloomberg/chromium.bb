@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/tap_suppression_controller.h"
+#include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
 #include "content/public/common/content_switches.h"
 
 using WebKit::WebGestureEvent;
@@ -63,7 +63,7 @@ GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)
        scrolling_in_progress_(false),
        ignore_next_ack_(false),
        combined_scroll_pinch_(gfx::Transform()),
-       tap_suppression_controller_(new TapSuppressionController(rwhv)),
+       tap_suppression_controller_(new TouchpadTapSuppressionController(rwhv)),
        maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()),
        debounce_interval_time_ms_(kDebouncingIntervalTimeMs) {
 }
@@ -143,8 +143,7 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       if (!ShouldDiscardFlingCancelEvent(gesture_event)) {
         coalesced_gesture_events_.push_back(gesture_event);
         fling_in_progress_ = false;
-        tap_suppression_controller_->GestureFlingCancel(
-            gesture_event.timeStampSeconds);
+        tap_suppression_controller_->GestureFlingCancel();
         return ShouldHandleEventNow();
       }
       return false;
@@ -246,7 +245,8 @@ void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
     ignore_next_ack_ = false;
 }
 
-TapSuppressionController*  GestureEventFilter::GetTapSuppressionController() {
+TouchpadTapSuppressionController*
+    GestureEventFilter::GetTapSuppressionController() {
   return tap_suppression_controller_.get();
 }
 

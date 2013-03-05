@@ -7,59 +7,58 @@
 
 #include "base/time.h"
 #include "base/timer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace content {
 
-class MockRenderWidgetHost;
-class RenderWidgetHostImpl;
+class TapSuppressionControllerClient;
 
-// Controls the suppression of taps (rapid mousedown/mouseup sequences)
-// immediately following the dispatch of a WebGestureFlingCancel event.
-// Only mousedown/mouseup of sufficient speed and within a specified time
-// window after a WebGestureFlingCancel are suppressed.
+// The core controller for suppression of taps (touchpad or touchscreen)
+// immediately following a GestureFlingCancel event (caused by the same tap).
+// Only taps of sufficient speed and within a specified time window after a
+// GestureFlingCancel are suppressed.
 class TapSuppressionController {
  public:
+  explicit TapSuppressionController(TapSuppressionControllerClient* client);
+  virtual ~TapSuppressionController();
 
-  explicit TapSuppressionController(RenderWidgetHostImpl*);
-  ~TapSuppressionController();
+  // Should be called whenever a GestureFlingCancel event is received.
+  void GestureFlingCancel();
 
-  // Called on the arrival of a mouse up event. Returns true if the hosting RWHV
-  // should suppress  the remaining mouseup handling at this time.
-  bool ShouldSuppressMouseUp();
+  // Should be called whenever an ACK for a GestureFlingCancel event is
+  // received. |processed| is true when the GestureFlingCancel actually stopped
+  // a fling and therefore should suppress the forwarding of the following tap.
+  // |event_time| is the time ACK was received.
+  void GestureFlingCancelAck(bool processed, const base::TimeTicks& event_time);
 
-  // Called on a mouse down. Returns true if the hosting RWHV should not
-  // continue with handling the mouse down event at this time.
-  bool ShouldDeferMouseDown(
-      const WebKit::WebMouseEvent& event);
+  // Should be called whenever a tap down (touchpad or touchscreen) is received.
+  // Returns true if the tap down should be deferred. The caller is responsible
+  // for keeping the event for later release, if needed. |event_time| is the
+  // time tap down occured.
+  bool ShouldDeferTapDown(const base::TimeTicks& event_time);
 
-  // Called on an ack of WebGestureFlingCancel event. |processed| is true when
-  // the GestureFlingCancel actually stopped a fling and therefore should
-  // suppress the forwarding of the following tap.
-  void GestureFlingCancelAck(bool processed);
+  // Should be called whenever a tap up (touchpad or touchscreen) is received.
+  // Returns true if the tap up should be suppressed.
+  bool ShouldSuppressTapUp();
 
-  // Called on the dispatch of a WebGestureFlingCancel event.
-  void GestureFlingCancel(double cancel_time);
+  // Should be called whenever a tap cancel is received. Returns true if the tap
+  // cancel should be suppressed.
+  bool ShouldSuppressTapCancel();
 
  private:
   friend class MockRenderWidgetHost;
 
-   enum State {
-     NOTHING,
-     GFC_IN_PROGRESS,
-     MD_STASHED,
-     LAST_CANCEL_STOPPED_FLING,
+  enum State {
+    NOTHING,
+    GFC_IN_PROGRESS,
+    TAP_DOWN_STASHED,
+    LAST_CANCEL_STOPPED_FLING,
   };
 
-  // Invoked once the maximum time deemed a tap from a mouse down event
-  // has expired. If the mouse up has not yet arrived, indicates that the mouse
-  // down / mouse up pair do not form a tap.
-  void MouseDownTimerExpired();
+  void StartTapDownTimer();
+  void TapDownTimerExpired();
 
-  // Only a RenderWidgetHostViewImpl can own an instance.
-  RenderWidgetHostImpl* render_widget_host_;
-  base::OneShotTimer<TapSuppressionController> mouse_down_timer_;
-  WebKit::WebMouseEvent stashed_mouse_down_;
+  TapSuppressionControllerClient* client_;
+  base::OneShotTimer<TapSuppressionController> tap_down_timer_;
   State state_;
 
   // TODO(rjkroege): During debugging, the event times did not prove reliable.
@@ -70,6 +69,6 @@ class TapSuppressionController {
   DISALLOW_COPY_AND_ASSIGN(TapSuppressionController);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_TAP_SUPPRESSION_CONTROLLER_H_

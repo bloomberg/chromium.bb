@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/renderer_host/touch_event_queue.h"
+#include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/notification_details.h"
@@ -127,7 +128,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   enum TapSuppressionState {
     TSC_NOTHING = TapSuppressionController::NOTHING,
     TSC_GFC_IN_PROGRESS = TapSuppressionController::GFC_IN_PROGRESS,
-    TSC_MD_STASHED = TapSuppressionController::MD_STASHED,
+    TSC_TAP_DOWN_STASHED = TapSuppressionController::TAP_DOWN_STASHED,
     TSC_LAST_CANCEL_STOPPED_FLING =
       TapSuppressionController::LAST_CANCEL_STOPPED_FLING,
   };
@@ -178,8 +179,9 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   TapSuppressionState TapSuppressionControllerState() {
-    return static_cast<TapSuppressionState>(
-        gesture_event_filter_->tap_suppression_controller_->state_);
+    TouchpadTapSuppressionController* tsc =
+        gesture_event_filter_->tap_suppression_controller_.get();
+    return static_cast<TapSuppressionState>(tsc->controller_->state_);
   }
 
   void SetupForOverscrollControllerTest() {
@@ -1862,8 +1864,8 @@ TEST_F(RenderWidgetHostTest, DebounceDropsDeferredEvents) {
 }
 
 #if defined(USE_AURA)
-// Test TapSuppressionController for when GestureFlingCancel Ack comes before
-// MouseDown and everything happens without any delays.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// before MouseDown and everything happens without any delays.
 TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseFast) {
   process_->sink().ClearMessages();
 
@@ -1912,7 +1914,7 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseFast) {
   SimulateMouseEvent(WebInputEvent::MouseDown);
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -1925,8 +1927,8 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseFast) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when GestureFlingCancel Ack comes before
-// MouseDown, but there is a small delay between MouseDown and MouseUp.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// before MouseDown, but there is a small delay between MouseDown and MouseUp.
 TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseUp) {
   process_->sink().ClearMessages();
 
@@ -1975,7 +1977,7 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseUp) {
   SimulateMouseEvent(WebInputEvent::MouseDown);
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -1990,7 +1992,7 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseUp) {
   MessageLoop::current()->Run();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2003,8 +2005,8 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseUp) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when GestureFlingCancel Ack comes before
-// MouseDown, but there is a long delay between MouseDown and MouseUp.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// before MouseDown, but there is a long delay between MouseDown and MouseUp.
 TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseUp) {
   process_->sink().ClearMessages();
 
@@ -2053,7 +2055,7 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseUp) {
   SimulateMouseEvent(WebInputEvent::MouseDown);
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2082,8 +2084,8 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseUp) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when GestureFlingCancel Ack comes before
-// MouseDown, but there is a small delay between the Ack and MouseDown.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// before MouseDown, but there is a small delay between the Ack and MouseDown.
 TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseDown) {
   process_->sink().ClearMessages();
 
@@ -2148,7 +2150,7 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseDown) {
   SimulateMouseEvent(WebInputEvent::MouseDown);
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2161,8 +2163,8 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseInsufficientlyLateMouseDown) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when GestureFlingCancel Ack comes before
-// MouseDown, but there is a long delay between the Ack and MouseDown.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// before MouseDown, but there is a long delay between the Ack and MouseDown.
 TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseDown) {
   process_->sink().ClearMessages();
 
@@ -2239,8 +2241,8 @@ TEST_F(RenderWidgetHostTest, GFCAckBeforeMouseSufficientlyLateMouseDown) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when unprocessed GestureFlingCancel Ack
-// comes after MouseDown and everything happens without any delay.
+// Test TouchpadTapSuppressionController for when unprocessed GestureFlingCancel
+// Ack comes after MouseDown and everything happens without any delay.
 TEST_F(RenderWidgetHostTest, GFCAckUnprocessedAfterMouseFast) {
   process_->sink().ClearMessages();
 
@@ -2281,7 +2283,7 @@ TEST_F(RenderWidgetHostTest, GFCAckUnprocessedAfterMouseFast) {
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureFlingCancel,
             host_->GestureEventLastQueueEvent().type);
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2305,8 +2307,8 @@ TEST_F(RenderWidgetHostTest, GFCAckUnprocessedAfterMouseFast) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when processed GestureFlingCancel Ack
-// comes after MouseDown and everything happens without any delay.
+// Test TouchpadTapSuppressionController for when processed GestureFlingCancel
+// Ack comes after MouseDown and everything happens without any delay.
 TEST_F(RenderWidgetHostTest, GFCAckProcessedAfterMouseFast) {
   process_->sink().ClearMessages();
 
@@ -2347,7 +2349,7 @@ TEST_F(RenderWidgetHostTest, GFCAckProcessedAfterMouseFast) {
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureFlingCancel,
             host_->GestureEventLastQueueEvent().type);
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2357,7 +2359,7 @@ TEST_F(RenderWidgetHostTest, GFCAckProcessedAfterMouseFast) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2370,8 +2372,8 @@ TEST_F(RenderWidgetHostTest, GFCAckProcessedAfterMouseFast) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when GestureFlingCancel Ack comes after
-// MouseDown and there is a small delay between the Ack and MouseUp.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// after MouseDown and there is a small delay between the Ack and MouseUp.
 TEST_F(RenderWidgetHostTest, GFCAckAfterMouseInsufficientlyLateMouseUp) {
   process_->sink().ClearMessages();
 
@@ -2412,7 +2414,7 @@ TEST_F(RenderWidgetHostTest, GFCAckAfterMouseInsufficientlyLateMouseUp) {
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureFlingCancel,
             host_->GestureEventLastQueueEvent().type);
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2422,7 +2424,7 @@ TEST_F(RenderWidgetHostTest, GFCAckAfterMouseInsufficientlyLateMouseUp) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2437,7 +2439,7 @@ TEST_F(RenderWidgetHostTest, GFCAckAfterMouseInsufficientlyLateMouseUp) {
   MessageLoop::current()->Run();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2450,8 +2452,8 @@ TEST_F(RenderWidgetHostTest, GFCAckAfterMouseInsufficientlyLateMouseUp) {
   EXPECT_FALSE(host_->FlingInProgress());
 }
 
-// Test TapSuppressionController for when GestureFlingCancel Ack comes after
-// MouseDown and there is a long delay between the Ack and MouseUp.
+// Test TouchpadTapSuppressionController for when GestureFlingCancel Ack comes
+// after MouseDown and there is a long delay between the Ack and MouseUp.
 TEST_F(RenderWidgetHostTest, GFCAckAfterMouseSufficientlyLateMouseUp) {
   process_->sink().ClearMessages();
 
@@ -2492,7 +2494,7 @@ TEST_F(RenderWidgetHostTest, GFCAckAfterMouseSufficientlyLateMouseUp) {
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureFlingCancel,
             host_->GestureEventLastQueueEvent().type);
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
@@ -2502,7 +2504,7 @@ TEST_F(RenderWidgetHostTest, GFCAckAfterMouseSufficientlyLateMouseUp) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
-  EXPECT_EQ(MockRenderWidgetHost::TSC_MD_STASHED,
+  EXPECT_EQ(MockRenderWidgetHost::TSC_TAP_DOWN_STASHED,
             host_->TapSuppressionControllerState());
   EXPECT_FALSE(host_->FlingInProgress());
 
