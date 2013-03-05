@@ -45,17 +45,17 @@ void ResourceBundle::LoadCommonResources() {
   float scale = ui::win::GetDeviceScaleFactor();
   bool force_touch_resources = false;
   switch(ui::GetScaleFactorFromScale(scale)) {
-  case ui::SCALE_FACTOR_180P:
-    AddDataPackFromPath(GetResourcesPakFilePath(
-        "chrome_touch_180_percent.pak"),
-        SCALE_FACTOR_180P);
-    force_touch_resources = true;
-    break;
-  case ui::SCALE_FACTOR_140P:
-    AddDataPackFromPath(GetResourcesPakFilePath(
-        "chrome_touch_140_percent.pak"),
-        SCALE_FACTOR_140P);
-    force_touch_resources = true;
+    case ui::SCALE_FACTOR_180P:
+      AddDataPackFromPath(GetResourcesPakFilePath(
+          "chrome_touch_180_percent.pak"),
+          SCALE_FACTOR_180P);
+      force_touch_resources = true;
+      break;
+    case ui::SCALE_FACTOR_140P:
+      AddDataPackFromPath(GetResourcesPakFilePath(
+          "chrome_touch_140_percent.pak"),
+          SCALE_FACTOR_140P);
+      force_touch_resources = true;
   }
   // TODO(kevers|girard): Remove loading of 1x resources when in high-DPI
   // mode once all resources are available at 140% and 180%.
