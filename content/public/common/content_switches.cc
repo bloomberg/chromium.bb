@@ -290,6 +290,9 @@ const char kEnableHighDpiCompositingForFixedPosition[] =
 // Enables CSS3 custom filters
 const char kEnableCssShaders[]              = "enable-css-shaders";
 
+// Enables delegated renderer.
+const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
+
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 

@@ -4,11 +4,13 @@
 
 #include "content/renderer/gpu/compositor_output_surface.h"
 
+#include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "cc/compositor_frame.h"
 #include "cc/compositor_frame_ack.h"
 #include "cc/output_surface_client.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
@@ -60,7 +62,9 @@ CompositorOutputSurface::CompositorOutputSurface(
       prefers_smoothness_(false),
       main_thread_id_(base::PlatformThread::CurrentId()) {
   DCHECK(output_surface_filter_);
-  capabilities_.has_parent_compositor = false;
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  capabilities_.has_parent_compositor = command_line->HasSwitch(
+      switches::kEnableDelegatedRenderer);
   DetachFromThread();
 }
 
