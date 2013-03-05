@@ -302,12 +302,16 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
       output_params.GetBytesPerSecond();
 }
 
-OnMoreDataConverter::~OnMoreDataConverter() {}
+OnMoreDataConverter::~OnMoreDataConverter() {
+  // Ensure Stop() has been called so we don't end up with an AudioOutputStream
+  // calling back into OnMoreData() after destruction.
+  CHECK(!source_callback_);
+}
 
 void OnMoreDataConverter::Start(
     AudioOutputStream::AudioSourceCallback* callback) {
   base::AutoLock auto_lock(source_lock_);
-  DCHECK(!source_callback_);
+  CHECK(!source_callback_);
   source_callback_ = callback;
 
   // While AudioConverter can handle multiple inputs, we're using it only with
@@ -318,6 +322,7 @@ void OnMoreDataConverter::Start(
 
 void OnMoreDataConverter::Stop() {
   base::AutoLock auto_lock(source_lock_);
+  CHECK(source_callback_);
   source_callback_ = NULL;
   audio_converter_.RemoveInput(this);
 }
