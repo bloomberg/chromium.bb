@@ -600,6 +600,26 @@ TEST_F(FormAutofillTest, ExtractFormsTooFewFields) {
   EXPECT_EQ(0U, forms.size());
 }
 
+// We should not extract a form if it has too few fillable fields.
+// Make sure radio and checkbox fields don't count.
+TEST_F(FormAutofillTest, ExtractFormsTooFewFieldsSkipsCheckable) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+           "  <INPUT type=\"radio\" id=\"a_radio\" value=\"0\"/>"
+           "  <INPUT type=\"checkbox\" id=\"a_check\" value=\"1\"/>"
+           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormCache form_cache;
+  std::vector<FormData> forms;
+  form_cache.ExtractForms(*web_frame, &forms);
+  EXPECT_EQ(0U, forms.size());
+}
+
 TEST_F(FormAutofillTest, WebFormElementToFormDataAutocomplete) {
   {
     // Form is not auto-completable due to autocomplete=off.

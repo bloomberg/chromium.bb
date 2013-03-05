@@ -103,6 +103,8 @@ void FormCache::ExtractFormsAndFormElements(
     std::vector<WebFormControlElement> control_elements;
     ExtractAutofillableElements(form_element, autofill::REQUIRE_NONE,
                                 &control_elements);
+
+    size_t num_editable_elements = 0;
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
 
@@ -113,19 +115,23 @@ void FormCache::ExtractFormsAndFormElements(
             element.toConst<WebSelectElement>();
         initial_select_values_.insert(std::make_pair(select_element,
                                                      select_element.value()));
+        ++num_editable_elements;
       } else {
         const WebInputElement input_element =
             element.toConst<WebInputElement>();
-        if (IsCheckableElement(&input_element))
+        if (IsCheckableElement(&input_element)) {
           initial_checked_state_.insert(
               std::make_pair(input_element, input_element.isChecked()));
+        } else {
+          ++num_editable_elements;
+        }
       }
     }
 
     // To avoid overly expensive computation, we impose a minimum number of
     // allowable fields.  The corresponding maximum number of allowable fields
     // is imposed by WebFormElementToFormData().
-    if (control_elements.size() < kRequiredAutofillFields)
+    if (num_editable_elements < kRequiredAutofillFields)
       continue;
 
     FormData form;
