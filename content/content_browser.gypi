@@ -10,6 +10,7 @@
     '../google_apis/google_apis.gyp:google_apis',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
+    '../third_party/re2/re2.gyp:re2',
     '../third_party/zlib/zlib.gyp:zlib',
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/ui.gyp:ui',
