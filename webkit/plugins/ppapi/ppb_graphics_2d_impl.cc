@@ -508,56 +508,6 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   ImageDataAutoMapper auto_mapper(image_data_);
   const SkBitmap& backing_bitmap = *image_data_->GetMappedBitmap();
 
-#if defined(OS_MACOSX) && !defined(USE_SKIA)
-  SkAutoLockPixels lock(backing_bitmap);
-
-  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
-      CGDataProviderCreateWithData(
-          NULL, backing_bitmap.getAddr32(0, 0),
-          backing_bitmap.rowBytes() * backing_bitmap.height(), NULL));
-  base::mac::ScopedCFTypeRef<CGImageRef> image(
-      CGImageCreate(
-          backing_bitmap.width(), backing_bitmap.height(),
-          8, 32, backing_bitmap.rowBytes(),
-          base::mac::GetSystemColorSpace(),
-          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-          data_provider, NULL, false, kCGRenderingIntentDefault));
-
-  // Flip the transform
-  gfx::ScopedCGContextSaveGState save_gstate(canvas)
-  float window_height = static_cast<float>(CGBitmapContextGetHeight(canvas));
-  CGContextTranslateCTM(canvas, 0, window_height);
-  CGContextScaleCTM(canvas, 1.0, -1.0);
-
-  // To avoid painting outside the plugin boundaries and clip instead of
-  // scaling, CGContextDrawImage() must draw the full image using |bitmap_rect|
-  // but the context must be clipped to the plugin using |bounds|.
-
-  CGRect bitmap_rect;
-  bitmap_rect.origin.x = plugin_rect.origin().x();
-  bitmap_rect.origin.y = window_height - plugin_rect.origin().y() -
-      backing_bitmap.height();
-  bitmap_rect.size.width = backing_bitmap.width();
-  bitmap_rect.size.height = backing_bitmap.height();
-
-  CGRect bounds;
-  bounds.origin.x = plugin_rect.origin().x();
-  bounds.origin.y = window_height - plugin_rect.origin().y() -
-      plugin_rect.height();
-  bounds.size.width = plugin_rect.width();
-  bounds.size.height = plugin_rect.height();
-  // TODO(yzshen): We should take |paint_rect| into consideration as well.
-  CGContextClipToRect(canvas, bounds);
-
-  // TODO(jhorwich) Figure out if this code is even active anymore, and if so
-  // how to properly handle scaling.
-  DCHECK_EQ(1.0f, scale_);
-
-  // TODO(brettw) bug 56673: do a direct memcpy instead of going through CG
-  // if the is_always_opaque_ flag is set. Must ensure bitmap is still clipped.
-
-  CGContextDrawImage(canvas, bitmap_rect, image);
-#else
   gfx::Rect invalidate_rect = gfx::IntersectRects(plugin_rect, paint_rect);
   SkRect sk_invalidate_rect = gfx::RectToSkRect(invalidate_rect);
   SkAutoCanvasRestore auto_restore(canvas, true);
@@ -612,7 +562,6 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     canvas->scale(scale_, scale_);
   }
   canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
-#endif
 }
 
 void PPB_Graphics2D_Impl::ViewWillInitiatePaint() {
