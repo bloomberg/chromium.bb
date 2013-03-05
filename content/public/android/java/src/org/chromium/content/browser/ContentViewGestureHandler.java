@@ -293,9 +293,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             float velocityX, float velocityY) {
                         if (mSnapScrollController.isSnappingScrolls()) {
                             if (mSnapScrollController.isSnapHorizontal()) {
-                                velocityX = 0;
-                            } else {
                                 velocityY = 0;
+                            } else {
+                                velocityX = 0;
                             }
                         }
 
