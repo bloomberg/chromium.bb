@@ -205,6 +205,7 @@ class DriveFileSystemTest : public testing::Test {
         "gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
@@ -551,7 +552,7 @@ TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   // GetEntryInfoByPath() was called twice, but the account metadata and the
   // resource list should only be loaded once. In the past, there was a bug
   // that caused them to be loaded twice.
-  EXPECT_EQ(1, fake_drive_service_->account_metadata_load_count());
+  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
@@ -890,7 +891,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetResourceList) should happen.
-  EXPECT_EQ(1, fake_drive_service_->account_metadata_load_count());
+  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 
 
@@ -899,7 +900,7 @@ TEST_F(DriveFileSystemTest, CachedFeedLoadingThenServerFeedLoading) {
   // To test it, call CheckForUpdates and verify it does try to check updates.
   file_system_->CheckForUpdates();
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(2, fake_drive_service_->account_metadata_load_count());
+  EXPECT_EQ(2, fake_drive_service_->about_resource_load_count());
 }
 
 TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
@@ -925,7 +926,7 @@ TEST_F(DriveFileSystemTest, OfflineCachedFeedLoading) {
       .Times(AtLeast(1));
 
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(1, fake_drive_service_->account_metadata_load_count());
+  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
@@ -2097,7 +2098,7 @@ TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
   // No apps should be found as the webapps registry is empty.
   ScopedVector<DriveWebAppInfo> apps;
   drive_webapps_registry_->GetWebAppsForFile(
-      base::FilePath::FromUTF8Unsafe("foo.ext_1"),
+      base::FilePath::FromUTF8Unsafe("foo.exe"),
       "" /* mime_type */,
       &apps);
   EXPECT_TRUE(apps.empty());
@@ -2107,9 +2108,9 @@ TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
   // changestamp, and the webapps registry will be loaded at the same time.
   EXPECT_TRUE(EntryExists(base::FilePath(FILE_PATH_LITERAL("drive/File1"))));
 
-  // An app for foo.ext_1 should now be found, as the registry was loaded.
+  // An app for foo.exe should now be found, as the registry was loaded.
   drive_webapps_registry_->GetWebAppsForFile(
-      base::FilePath(FILE_PATH_LITERAL("foo.ext_1")),
+      base::FilePath(FILE_PATH_LITERAL("foo.exe")),
       "" /* mime_type */,
       &apps);
   EXPECT_EQ(1U, apps.size());

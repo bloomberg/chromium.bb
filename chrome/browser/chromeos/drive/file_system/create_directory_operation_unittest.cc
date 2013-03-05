@@ -43,6 +43,7 @@ class CreateDirectoryOperationTest
     fake_drive_service_->LoadResourceListForWapi("gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     metadata_.reset(
         new DriveResourceMetadata(fake_drive_service_->GetRootResourceId()));

@@ -1011,16 +1011,16 @@ void DriveFileSystem::GetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scheduler_->GetAccountMetadata(
-      base::Bind(&DriveFileSystem::OnGetAccountMetadata,
+  scheduler_->GetAboutResource(
+      base::Bind(&DriveFileSystem::OnGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void DriveFileSystem::OnGetAccountMetadata(
+void DriveFileSystem::OnGetAboutResource(
     const GetAvailableSpaceCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AccountMetadata> account_metadata) {
+    scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1029,11 +1029,11 @@ void DriveFileSystem::OnGetAccountMetadata(
     callback.Run(error, -1, -1);
     return;
   }
-  DCHECK(account_metadata);
+  DCHECK(about_resource);
 
   callback.Run(DRIVE_FILE_OK,
-               account_metadata->quota_bytes_total(),
-               account_metadata->quota_bytes_used());
+               about_resource->quota_bytes_total(),
+               about_resource->quota_bytes_used());
 }
 
 void DriveFileSystem::OnSearch(

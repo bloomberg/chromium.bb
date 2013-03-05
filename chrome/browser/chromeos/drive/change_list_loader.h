@@ -19,8 +19,8 @@ class Value;
 }
 
 namespace google_apis {
+class AboutResource;
 class AppList;
-class AccountMetadata;
 class ResourceList;
 }
 
@@ -115,10 +115,10 @@ class ChangeListLoader {
   // Helper callback for handling results of metadata retrieval initiated from
   // ReloadFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
-  void OnGetAccountMetadata(
+  void OnGetAboutResource(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AccountMetadata> account_metadata);
+      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Callback for DriveResourceMetadata::GetLargestChangestamp.
   // Compares |remote_changestamp| and |local_changestamp| and triggers

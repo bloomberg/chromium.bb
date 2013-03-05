@@ -259,41 +259,48 @@ void ChangeListLoader::ReloadFromServerIfNeeded(
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::CheckForUpdates). Corresponding
-  // "refresh_ = false" is in OnGetAccountMetadata when the cached feed is up to
+  // "refresh_ = false" is in OnGetAboutResource when the cached feed is up to
   // date, or in OnFeedFromServerLoaded called back from LoadFromServer().
   refreshing_ = true;
 
-  if (google_apis::util::IsDriveV2ApiEnabled()) {
-    // Drive v2 needs a separate application list fetch operation.
-    // TODO(haruki): Application list rarely changes and is not necessarily
-    // refreshed as often as files.
-    scheduler_->GetAppList(
-        base::Bind(&ChangeListLoader::OnGetAppList,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  // Drive v2 needs a separate application list fetch operation.
+  // On GData WAPI, it is not necessary in theory, because the response
+  // of account metadata can include both about account information (such as
+  // quota) and an application list at once.
+  // However, for Drive API v2 migration, we connect to the server twice
+  // (one for about account information and another for an application list)
+  // regardless of underlying API, so that we can simplify the code.
+  // Note that the size of account metadata on GData WAPI seems small enough
+  // and (by controlling the query parameter) the response for GetAboutResource
+  // operation doesn't contain application list. Thus, the effect should be
+  // small cost.
+  // TODO(haruki): Application list rarely changes and is not necessarily
+  // refreshed as often as files.
+  scheduler_->GetAppList(
+      base::Bind(&ChangeListLoader::OnGetAppList,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
-  scheduler_->GetAccountMetadata(
-      base::Bind(&ChangeListLoader::OnGetAccountMetadata,
+  scheduler_->GetAboutResource(
+      base::Bind(&ChangeListLoader::OnGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void ChangeListLoader::OnGetAccountMetadata(
+void ChangeListLoader::OnGetAboutResource(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AccountMetadata> account_metadata) {
+    scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(refreshing_);
 
   int64 remote_changestamp = 0;
-  // When account metadata successfully fetched, parse the latest changestamp.
+  // When about resource successfully fetched, parse the latest change id.
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
-    DCHECK(account_metadata);
-    webapps_registry_->UpdateFromFeed(*account_metadata);
-    remote_changestamp = account_metadata->largest_changestamp();
+    DCHECK(about_resource);
+    remote_changestamp = about_resource->largest_change_id();
   }
 
   resource_metadata_->GetLargestChangestamp(

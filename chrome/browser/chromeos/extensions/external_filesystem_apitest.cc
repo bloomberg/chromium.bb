@@ -344,6 +344,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     fake_drive_service_->LoadResourceListForWapi(kTestRootFeed);
     fake_drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     return new drive::DriveSystemService(profile,
                                          fake_drive_service_,

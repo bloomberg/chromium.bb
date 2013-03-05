@@ -63,6 +63,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
         "gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 

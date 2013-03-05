@@ -27,11 +27,11 @@ class SequencedTaskRunner;
 }
 
 namespace google_apis {
-class ResourceEntry;
-class AccountMetadata;
-class ResourceList;
+class AboutResource;
 class DriveServiceInterface;
 class DriveUploaderInterface;
+class ResourceEntry;
+class ResourceList;
 }
 
 namespace drive {
@@ -144,7 +144,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // ChangeListLoader::Observer overrides.
   // Used to propagate events from ChangeListLoader.
-  virtual void OnDirectoryChanged(const base::FilePath& directory_path) OVERRIDE;
+  virtual void OnDirectoryChanged(
+      const base::FilePath& directory_path) OVERRIDE;
   virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
@@ -271,11 +272,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetFileCompleteForOpenParams& params,
       DriveFileError error);
 
-  // Callback for handling account metadata fetch.
-  void OnGetAccountMetadata(
+  // Callback for handling about resource fetch.
+  void OnGetAboutResource(
       const GetAvailableSpaceCallback& callback,
       google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AccountMetadata> account_metadata);
+      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
@@ -290,10 +291,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.
-  void OnFileDownloadedAndSpaceChecked(const GetFileFromCacheParams& params,
-                                       google_apis::GDataErrorCode status,
-                                       const base::FilePath& downloaded_file_path,
-                                       bool has_enough_space);
+  void OnFileDownloadedAndSpaceChecked(
+      const GetFileFromCacheParams& params,
+      google_apis::GDataErrorCode status,
+      const base::FilePath& downloaded_file_path,
+      bool has_enough_space);
 
   // FileMoveCallback for directory changes. Notifies of directory changes.
   void OnDirectoryChangeFileMoveCallback(DriveFileError error,
