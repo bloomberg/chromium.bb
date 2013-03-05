@@ -15,8 +15,10 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 
 using content::OpenURLParams;
@@ -101,6 +103,9 @@ void BookmarkNodeMenuModel::AddSubMenuForNode(const BookmarkNode* node) {
       new BookmarkNodeMenuModel(NULL, model_, node, page_navigator_);
   // No command id. Nothing happens if you click on the submenu itself.
   AddSubMenu(kBookmarkItemCommandId, label, submenu);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Image& folder_icon = rb.GetImageNamed(IDR_BOOKMARK_BAR_FOLDER);
+  SetIcon(GetItemCount() - 1, folder_icon);
   submenus_.push_back(submenu);
 }
 
