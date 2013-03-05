@@ -2525,6 +2525,10 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       group_->max_fragment_uniform_vectors();
   resources.MaxDrawBuffers = 1;
 
+#if (ANGLE_SH_VERSION >= 110)
+  resources.FragmentPrecisionHigh = 1;
+#endif
+
   if (force_webgl_glsl_validation_) {
     resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
   } else {
