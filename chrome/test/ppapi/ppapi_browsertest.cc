@@ -927,24 +927,34 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(AudioConfig)) {
       LIST_TEST(AudioConfig_InvalidConfigs));
 }
 
-// Only run audio output tests if we have an audio device available.
-// TODO(raymes): We should probably test scenarios where there is no audio
-// device available.
-TEST_PPAPI_IN_PROCESS(Audio_Creation)
-TEST_PPAPI_IN_PROCESS(Audio_DestroyNoStop)
-TEST_PPAPI_IN_PROCESS(Audio_Failures)
-TEST_PPAPI_IN_PROCESS(Audio_AudioCallback1)
-TEST_PPAPI_IN_PROCESS(Audio_AudioCallback2)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_Creation)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_DestroyNoStop)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_Failures)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_AudioCallback1)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_AudioCallback2)
-TEST_PPAPI_NACL(Audio_Creation)
-TEST_PPAPI_NACL(Audio_DestroyNoStop)
-TEST_PPAPI_NACL(Audio_Failures)
-TEST_PPAPI_NACL(Audio_AudioCallback1)
-TEST_PPAPI_NACL(Audio_AudioCallback2)
+IN_PROC_BROWSER_TEST_F(PPAPITest, Audio) {
+  RunTest(LIST_TEST(Audio_Creation)
+          LIST_TEST(Audio_DestroyNoStop)
+          LIST_TEST(Audio_Failures)
+          LIST_TEST(Audio_AudioCallback1)
+          LIST_TEST(Audio_AudioCallback2));
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Audio) {
+  RunTest(LIST_TEST(Audio_Creation)
+          LIST_TEST(Audio_DestroyNoStop)
+          LIST_TEST(Audio_Failures)
+          LIST_TEST(Audio_AudioCallback1)
+          LIST_TEST(Audio_AudioCallback2));
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, Audio) {
+  RunTestViaHTTP(LIST_TEST(Audio_Creation)
+                 LIST_TEST(Audio_DestroyNoStop)
+                 LIST_TEST(Audio_Failures)
+                 LIST_TEST(Audio_AudioCallback1)
+                 LIST_TEST(Audio_AudioCallback2));
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(Audio)) {
+  RunTestViaHTTP(LIST_TEST(Audio_Creation)
+                 LIST_TEST(Audio_DestroyNoStop)
+                 LIST_TEST(Audio_Failures)
+                 LIST_TEST(Audio_AudioCallback1)
+                 LIST_TEST(Audio_AudioCallback2));
+}
 
 TEST_PPAPI_IN_PROCESS(View_CreatedVisible);
 TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible);
@@ -1012,26 +1022,44 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
   }
 }
 
-TEST_PPAPI_IN_PROCESS(View_SizeChange);
-TEST_PPAPI_OUT_OF_PROCESS(View_SizeChange);
-TEST_PPAPI_NACL(View_SizeChange);
-TEST_PPAPI_IN_PROCESS(View_ClipChange);
-TEST_PPAPI_OUT_OF_PROCESS(View_ClipChange);
-TEST_PPAPI_NACL(View_ClipChange);
+IN_PROC_BROWSER_TEST_F(PPAPITest, View) {
+  RunTest(LIST_TEST(View_SizeChange)
+          LIST_TEST(View_ClipChange));
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View) {
+  RunTest(LIST_TEST(View_SizeChange)
+          LIST_TEST(View_ClipChange));
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, View) {
+  RunTestViaHTTP(LIST_TEST(View_SizeChange)
+                 LIST_TEST(View_ClipChange));
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, View) {
+  RunTestViaHTTP(LIST_TEST(View_SizeChange)
+                 LIST_TEST(View_ClipChange));
+}
 
-TEST_PPAPI_IN_PROCESS(ResourceArray_Basics)
-TEST_PPAPI_IN_PROCESS(ResourceArray_OutOfRangeAccess)
-TEST_PPAPI_IN_PROCESS(ResourceArray_EmptyArray)
-TEST_PPAPI_IN_PROCESS(ResourceArray_InvalidElement)
-TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_Basics)
-TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_OutOfRangeAccess)
-TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_EmptyArray)
-TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_InvalidElement)
+IN_PROC_BROWSER_TEST_F(PPAPITest, ResourceArray) {
+  RunTest(LIST_TEST(ResourceArray_Basics)
+          LIST_TEST(ResourceArray_OutOfRangeAccess)
+          LIST_TEST(ResourceArray_EmptyArray)
+          LIST_TEST(ResourceArray_InvalidElement));
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, ResourceArray) {
+  RunTest(LIST_TEST(ResourceArray_Basics)
+          LIST_TEST(ResourceArray_OutOfRangeAccess)
+          LIST_TEST(ResourceArray_EmptyArray)
+          LIST_TEST(ResourceArray_InvalidElement));
+}
 
-TEST_PPAPI_IN_PROCESS(FlashMessageLoop_Basics)
-TEST_PPAPI_IN_PROCESS(FlashMessageLoop_RunWithoutQuit)
-TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_Basics)
-TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_RunWithoutQuit)
+IN_PROC_BROWSER_TEST_F(PPAPITest, FlashMessageLoop) {
+  RunTest(LIST_TEST(FlashMessageLoop_Basics)
+          LIST_TEST(FlashMessageLoop_RunWithoutQuit));
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashMessageLoop) {
+  RunTest(LIST_TEST(FlashMessageLoop_Basics)
+          LIST_TEST(FlashMessageLoop_RunWithoutQuit));
+}
 
 TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
