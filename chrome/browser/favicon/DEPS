@@ -24,6 +24,10 @@
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service.h",
   "!chrome/browser/profiles/profile_keyed_service_factory.h",
+  # TODO(samarth): search.h will be moved to chrome/browser/search. Update this
+  # dependency and move to list of permanently-allowed DEPS when that happens.
+  # See http://crbug.com/179184.
+  "!chrome/browser/ui/search/search.h",
   "!chrome/browser/ui/webui/chrome_web_ui_controller_factory.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.

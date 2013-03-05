@@ -4,7 +4,6 @@
 
 #include "chrome/browser/instant/instant_ntp.h"
 
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
@@ -24,8 +23,6 @@ void InstantNTP::InitContents(Profile* profile,
   loader_.Init(GURL(instant_url_), profile, active_tab, on_stale_callback);
   SetContents(loader_.contents());
   loader_.Load();
-  contents()->GetController().GetPendingEntry()->SetVirtualURL(
-      GURL(chrome::kChromeUINewTabURL));
 }
 
 scoped_ptr<content::WebContents> InstantNTP::ReleaseContents() {
@@ -35,8 +32,6 @@ scoped_ptr<content::WebContents> InstantNTP::ReleaseContents() {
 
 void InstantNTP::OnSwappedContents() {
   SetContents(loader_.contents());
-  contents()->GetController().GetPendingEntry()->SetVirtualURL(
-      GURL(chrome::kChromeUINewTabURL));
 }
 
 void InstantNTP::OnFocus() {

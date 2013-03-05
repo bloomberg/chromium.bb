@@ -10,9 +10,9 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -91,8 +91,8 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
   if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
     return true;
 
-  // No favicon on New Tab Pages.
-  if (web_contents()->GetURL() == GURL(chrome::kChromeUINewTabURL))
+  // No favicon on Instant New Tab Pages.
+  if (chrome::search::IsInstantNTP(web_contents()))
     return false;
 
   content::WebUI* web_ui = web_contents()->GetWebUIForCurrentState();

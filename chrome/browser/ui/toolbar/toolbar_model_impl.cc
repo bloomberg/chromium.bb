@@ -151,7 +151,7 @@ bool ToolbarModelImpl::ShouldDisplayURL() const {
     return false;
 #endif
 
-  if (entry && entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL))
+  if (chrome::search::IsInstantNTP(web_contents))
     return false;
 
   return true;

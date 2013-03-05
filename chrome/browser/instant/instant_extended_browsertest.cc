@@ -377,6 +377,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(ntp_contents, active_tab);
+  EXPECT_TRUE(chrome::search::IsInstantNTP(active_tab));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
@@ -398,6 +399,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(ntp_contents, active_tab);
+  EXPECT_TRUE(chrome::search::IsInstantNTP(active_tab));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxHasFocusOnNewTab) {

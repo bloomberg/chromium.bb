@@ -25,7 +25,10 @@ bool IsNTP(const content::WebContents* contents) {
   // whereas we want the visible entry.
   const content::NavigationEntry* entry =
       contents->GetController().GetVisibleEntry();
-  return entry && entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL);
+  if (entry && entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL))
+    return true;
+
+  return chrome::search::IsInstantNTP(contents);
 }
 
 bool IsSearchResults(const content::WebContents* contents) {

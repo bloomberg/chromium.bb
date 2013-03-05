@@ -149,7 +149,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/search_types.h"
 #include "chrome/common/startup_metric_utils.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/devtools_manager.h"
@@ -1381,7 +1380,7 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 }
 
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
-  return source->GetURL() == GURL(chrome::kChromeUINewTabURL);
+  return chrome::search::IsInstantNTP(source);
 }
 
 void Browser::SetFocusToLocationBar(bool select_all) {

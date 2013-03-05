@@ -73,6 +73,17 @@ string16 GetSearchTerms(const content::WebContents* contents);
 // Returns true if |url| should be rendered in the Instant renderer process.
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);
 
+// Returns true if the visible entry of |contents| is a New Tab Page rendered
+// by Instant. A page that matches the search or Instant URL of the default
+// search provider but does not have any search terms is considered an Instant
+// New Tab Page.
+bool IsInstantNTP(const content::WebContents* contents);
+
+// Same as IsInstantNTP but uses |nav_entry| to determine the URL for the page
+// instead of using the visible entry.
+bool NavEntryIsInstantNTP(const content::WebContents* contents,
+                          const content::NavigationEntry* nav_entry);
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------

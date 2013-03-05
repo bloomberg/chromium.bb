@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -29,7 +30,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
 
   // For non-first loads, we want to use the committed entry. This is so the
   // bookmarks bar disappears at the same time the page does.
-  content::NavigationEntry* entry =
+  const content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = web_contents()->GetController().GetVisibleEntry();
@@ -37,8 +38,8 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
     return false;
 
   GURL url = entry->GetVirtualURL();
-  if (url != GURL(chrome::kChromeUINewTabURL) ||
-      url.SchemeIs(chrome::kViewSourceScheme)) {
+  if (url != GURL(chrome::kChromeUINewTabURL) &&
+      !chrome::search::NavEntryIsInstantNTP(web_contents(), entry)) {
     return false;
   }
 

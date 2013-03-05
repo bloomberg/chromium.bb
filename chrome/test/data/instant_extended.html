@@ -37,8 +37,7 @@ function handleNativeSuggestions() {
 }
 
 function handleSubmit() {
-  // Currently a NOOP in this testing framework, but needs to be defined
-  // so Chrome can correctly determine Instant support for the page.
+  location.hash = 'q=' + encodeURIComponent(apiHandle.value);
 }
 
 function handleOnChange() {
