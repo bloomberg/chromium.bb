@@ -8,16 +8,19 @@
 }
 
 #passphrase-missmatch,
-#save-passphrase,
 .managed-user-passphrase-container {
   margin-top: 15px;
-}
-
-#save-passphrase {
-  margin-bottom: 11px;
 }
 
 #managed-user-passphrase:invalid,
 #passphrase-confirm:invalid {
   background-color: pink;
+}
+
+#passphrase-mismatch {
+  float: right;
+}
+
+html[dir=rtl] #passphrase-mismatch {
+  float: left;
 }

@@ -28,7 +28,7 @@ ManagedUserSettingsTest.prototype = {
 
   /** @inheritDoc */
   preLoad: function() {
-    this.makeAndRegisterMockHandler(['displayPassphraseDialog']);
+    this.makeAndRegisterMockHandler(['setElevated']);
   },
 
 };
@@ -37,7 +37,7 @@ ManagedUserSettingsTest.prototype = {
 TEST_F('ManagedUserSettingsTest', 'PageLocked',
     function() {
       // Check that the user is not authenticated when a passphrase is set.
-      ManagedUserSettings.initializeSetPassphraseButton(true);
+      ManagedUserSettings.passphraseChanged(true);
       var instance = ManagedUserSettings.getInstance();
       expectEquals(instance.authenticationState,
                    options.ManagedUserAuthentication.UNAUTHENTICATED);
@@ -45,18 +45,22 @@ TEST_F('ManagedUserSettingsTest', 'PageLocked',
       var unlockButton =
           options.ManagedUserSettingsForTesting.getUnlockButton();
       expectFalse(unlockButton.disabled);
-      this.mockHandler.expects((once())).displayPassphraseDialog(
-          ['options.ManagedUserSettings.isAuthenticated']);
+      this.mockHandler.expects(once()).setElevated([true]);
       unlockButton.click();
+      // When closing the page, we expect the elevation to be reset.
+      this.mockHandler.expects(once()).setElevated([false]);
+      OptionsPage.closeOverlay();
     });
 
-// Verify that the settings page is not locked when no passphrase is specified.
-TEST_F('ManagedUserSettingsTest', 'PageUnlocked',
+// Verify that the settings page is also locked when no passphrase is specified.
+TEST_F('ManagedUserSettingsTest', 'PageLockedNoPassphrase',
     function() {
       var instance = ManagedUserSettings.getInstance();
       expectEquals(instance.authenticationState,
-                   options.ManagedUserAuthentication.AUTHENTICATED);
+                   options.ManagedUserAuthentication.UNAUTHENTICATED);
       var unlockButton =
           options.ManagedUserSettingsForTesting.getUnlockButton();
-      expectTrue(unlockButton.disabled);
+      expectFalse(unlockButton.disabled);
+      this.mockHandler.expects(once()).setElevated([false]);
+      OptionsPage.closeOverlay();
     });

@@ -9,16 +9,21 @@
     <div class="managed-user-passphrase-container">
       <input id="managed-user-passphrase" type="password" align="center"
           i18n-values=".placeholder:enterPassphrase" required>
+      <div id="passphrase-mismatch" i18n-content="passphraseMismatch" hidden>
+      </div>
     </div>
     <div class="managed-user-passphrase-container">
       <input id="passphrase-confirm" class="equal_passphrases" type="password"
           i18n-values=".placeholder:confirmPassphrase" required>
     </div>
-    <div id="passphrase-mismatch" i18n-content="passphraseMismatch" hidden>
-    </div>
-    <div>
-      <button id="save-passphrase" i18n-content="savePassphrase" disabled>
-      </button>
+    <div class="action-area">
+      <div class="button-strip">
+        <button id="cancel-passphrase" i18n-content="cancel" type="submit">
+        </button>
+        <button id="save-passphrase" i18n-content="savePassphrase" type="submit"
+            disabled>
+        </button>
+      </div>
     </div>
   </div>
 </div>

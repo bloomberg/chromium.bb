@@ -11,3 +11,13 @@
   margin-bottom: 10px;
   min-height: 0;
 }
+
+#spacer {
+  -webkit-box-flex: 1;
+  display: block;
+}
+
+.locked #lock-settings,
+#managed-user-settings-page:not(.locked) #unlock-settings {
+  display: none;
+}

@@ -32,18 +32,15 @@ class ManagedUserPassphraseHandler : public OptionsPageUIHandler {
   // passphrase is expected as the parameter and is passed in from the UI.
   void SetLocalPassphrase(const base::ListValue* args);
 
-  // Displays the passphrase dialog where the manager of the managed account
-  // can enter the passphrase which allows him to modify the settings. It
-  // expects as parameter the name of the Javascript function which should be
-  // called after the passphrase has been checked.
-  void DisplayPassphraseDialog(const base::ListValue* args);
+  // Changes the elevation state of the managed user. Before changing the
+  // elevation state to true, the passphrase dialog is displayed where the
+  // manager of the managed account can enter the passphrase which allows him
+  // to modify the settings. It expects as parameter the new elevation state.
+  void SetElevated(const base::ListValue* args);
 
   // Calls the UI with the result of the authentication. |success| is true if
   // the authentication was successful.
   void PassphraseDialogCallback(bool success);
-
-  // Resets the authentication state of the manager of the managed account.
-  void EndAuthentication(const base::ListValue* args);
 
   // Checks if there is already a passphrase specified. It expects as parameter
   // the name of the Javascript function which should be called with the results

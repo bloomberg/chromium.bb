@@ -47,7 +47,7 @@ void ManagedUserSettingsHandler::InitializePage() {
     base::FundamentalValue is_passphrase_set(!pref_service->GetString(
         prefs::kManagedModeLocalPassphrase).empty());
     web_ui()->CallJavascriptFunction(
-        "ManagedUserSettings.initializeSetPassphraseButton",
+        "ManagedUserSettings.passphraseChanged",
         is_passphrase_set);
   }
 }
@@ -59,6 +59,7 @@ void ManagedUserSettingsHandler::GetLocalizedValues(
   static OptionsStringResource resources[] = {
     // Unlock the settings page to allow editing.
     { "unlockSettings", IDS_UNLOCK_PASSPHRASE_BUTTON },
+    { "lockSettings", IDS_LOCK_MANAGED_USER_BUTTON },
     // Installed content packs.
     { "installedContentPacks", IDS_INSTALLED_CONTENT_PACKS_LABEL },
     { "getContentPacks", IDS_GET_CONTENT_PACKS_BUTTON },

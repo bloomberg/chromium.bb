@@ -7983,6 +7983,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UNLOCK_PASSPHRASE_BUTTON" desc="A button for unlocking the managed user settings page.">
         Unlock
       </message>
+      <message name="IDS_LOCK_MANAGED_USER_BUTTON" desc="A button for locking the managed user settings page.">
+        Lock
+      </message>
       <message name="IDS_INCORRECT_PASSPHRASE_WARNING" desc="A warning for the passphrase page if the incorrect passphrase was entered.">
         The passphrase you entered is incorrect.
       </message>

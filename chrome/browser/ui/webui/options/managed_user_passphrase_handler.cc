@@ -36,12 +36,8 @@ void ManagedUserPassphraseHandler::RegisterMessages() {
       base::Bind(&ManagedUserPassphraseHandler::SetLocalPassphrase,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
-      "displayPassphraseDialog",
-      base::Bind(&ManagedUserPassphraseHandler::DisplayPassphraseDialog,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback(
-      "endAuthentication",
-      base::Bind(&ManagedUserPassphraseHandler::EndAuthentication,
+      "setElevated",
+      base::Bind(&ManagedUserPassphraseHandler::SetElevated,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "isPassphraseSet",
@@ -73,16 +69,22 @@ void ManagedUserPassphraseHandler::GetLocalizedValues(
 
 void ManagedUserPassphraseHandler::PassphraseDialogCallback(bool success) {
   base::FundamentalValue unlock_success(success);
-  web_ui()->CallJavascriptFunction(callback_function_name_, unlock_success);
+  web_ui()->CallJavascriptFunction("ManagedUserSettings.isAuthenticated",
+                                   unlock_success);
 }
 
-void ManagedUserPassphraseHandler::DisplayPassphraseDialog(
+void ManagedUserPassphraseHandler::SetElevated(
     const base::ListValue* args) {
-  // Store the name of the callback function.
-  args->GetString(0, &callback_function_name_);
+  bool elevated;
+  args->GetBoolean(0, &elevated);
+
   Profile* profile = Profile::FromWebUI(web_ui());
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile);
+  if (!elevated) {
+    managed_user_service->SetElevated(false);
+    return;
+  }
   if (managed_user_service->IsElevated()) {
     // If the custodian is already authenticated, skip the passphrase dialog.
     PassphraseDialogCallback(true);
@@ -93,14 +95,6 @@ void ManagedUserPassphraseHandler::DisplayPassphraseDialog(
       web_ui()->GetWebContents(),
       base::Bind(&ManagedUserPassphraseHandler::PassphraseDialogCallback,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ManagedUserPassphraseHandler::EndAuthentication(
-    const base::ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  managed_user_service->SetElevated(false);
 }
 
 void ManagedUserPassphraseHandler::IsPassphraseSet(

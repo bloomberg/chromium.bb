@@ -22,6 +22,13 @@ cr.define('options', function() {
 
   cr.addSingletonGetter(ManagedUserSetPassphraseOverlay);
 
+  /** Closes the page and resets the passphrase fields */
+  var closePage = function() {
+    $('managed-user-passphrase').value = '';
+    $('passphrase-confirm').value = '';
+    OptionsPage.closeOverlay();
+  };
+
   ManagedUserSetPassphraseOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
@@ -33,11 +40,13 @@ cr.define('options', function() {
 
       $('save-passphrase').onclick = function() {
         chrome.send('setPassphrase', [$('managed-user-passphrase').value]);
-        $('managed-user-passphrase').value = '';
-        $('passphrase-confirm').value = '';
-        OptionsPage.closeOverlay();
+        closePage();
       };
+
+      $('cancel-passphrase').onclick = closePage;
     },
+
+    /** Updates the display according to the validity of the user input. */
     updateDisplay_: function() {
       var valid =
           $('passphrase-confirm').value == $('managed-user-passphrase').value;
@@ -56,7 +65,7 @@ cr.define('options', function() {
     },
   };
 
-  // This is a class used for browsertests.
+  /** Used for browsertests. */
   var ManagedUserSetPassphraseForTesting = {
     getPassphraseInput: function() {
       return $('managed-user-passphrase');
