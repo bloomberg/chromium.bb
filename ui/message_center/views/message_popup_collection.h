@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/timer.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_list.h"
@@ -16,6 +17,10 @@
 
 namespace views {
 class Widget;
+}
+
+namespace ash {
+FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManyPopupNotifications);
 }
 
 namespace message_center {
@@ -42,6 +47,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void OnMouseExited();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest,
+                           ManyPopupNotifications);
   typedef std::map<std::string, ToastContentsView*> ToastContainer;
 
   void CloseAllWidgets();

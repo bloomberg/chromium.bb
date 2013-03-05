@@ -13,10 +13,12 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/message_center/message_center_tray.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_center_bubble.h"
 #include "ui/message_center/views/message_popup_bubble.h"
+#include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -219,8 +221,16 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   EXPECT_TRUE(tray->IsPopupVisible());
   EXPECT_EQ(notifications_to_add,
             get_message_center()->NotificationCount());
-  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications,
-            tray->GetPopupBubbleForTest()->NumMessageViewsForTest());
+  if (message_center::IsRichNotificationEnabled()) {
+    NotificationList::Delegate* list_delegate =
+        tray->popup_collection_.get()->list_delegate_;
+    NotificationList::PopupNotifications popups =
+        list_delegate->GetNotificationList()->GetPopupNotifications();
+    EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
+  } else {
+    EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications,
+              tray->GetPopupBubbleForTest()->NumMessageViewsForTest());
+  }
   get_message_center()->SetDelegate(NULL);
   get_message_center()->notification_list()->RemoveAllNotifications();
 }
