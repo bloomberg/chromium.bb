@@ -351,8 +351,10 @@ bool LaunchProcess(const string16& cmdline,
     flags |= CREATE_UNICODE_ENVIRONMENT;
     void* enviroment_block = NULL;
 
-    if (!CreateEnvironmentBlock(&enviroment_block, options.as_user, FALSE))
+    if (!CreateEnvironmentBlock(&enviroment_block, options.as_user, FALSE)) {
+      DPLOG(ERROR);
       return false;
+    }
 
     BOOL launched =
         CreateProcessAsUser(options.as_user, NULL,
@@ -361,13 +363,16 @@ bool LaunchProcess(const string16& cmdline,
                             enviroment_block, NULL, &startup_info,
                             process_info.Receive());
     DestroyEnvironmentBlock(enviroment_block);
-    if (!launched)
+    if (!launched) {
+      DPLOG(ERROR);
       return false;
+    }
   } else {
     if (!CreateProcess(NULL,
                        const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
                        options.inherit_handles, flags, NULL, NULL,
                        &startup_info, process_info.Receive())) {
+      DPLOG(ERROR);
       return false;
     }
   }
