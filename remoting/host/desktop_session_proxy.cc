@@ -94,6 +94,7 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
                         DisconnectSession);
   IPC_END_MESSAGE_MAP()
 
+  CHECK(handled) << "Received unexpected IPC type: " << message.type();
   return handled;
 }
 

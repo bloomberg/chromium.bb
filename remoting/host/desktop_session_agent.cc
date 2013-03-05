@@ -103,12 +103,7 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_END_MESSAGE_MAP()
   }
 
-  // Close the channel if the received message wasn't expected.
-  if (!handled) {
-    LOG(ERROR) << "An unexpected IPC message received: type=" << message.type();
-    OnChannelError();
-  }
-
+  CHECK(handled) << "Received unexpected IPC type: " << message.type();
   return handled;
 }
 

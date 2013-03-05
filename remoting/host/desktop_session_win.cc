@@ -82,6 +82,12 @@ bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
                         OnInjectSas)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (!handled) {
+    LOG(ERROR) << "Received unexpected IPC type: " << message.type();
+    RestartDesktopProcess(FROM_HERE);
+  }
+
   return handled;
 }
 

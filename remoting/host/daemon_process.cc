@@ -98,6 +98,12 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
                         OnHostShutdown)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
+  if (!handled) {
+    LOG(ERROR) << "Received unexpected IPC type: " << message.type();
+    CrashNetworkProcess(FROM_HERE);
+  }
+
   return handled;
 }
 
