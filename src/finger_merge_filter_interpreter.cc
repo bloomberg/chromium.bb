@@ -86,15 +86,17 @@ void FingerMergeFilterInterpreter::UpdateFingerMergeState(
   // Append GESTURES_FINGER_MERGE flag for close fingers and
   // fingers marked with the same flag previously
   for (short i = 0; i < hwstate.finger_cnt; i++) {
-    FingerState *fs = &hwstate.fingers[i];
+    FingerState *fs = hwstate.fingers;
 
     // If it's a new contact, add the initial info
-    if (!MapContainsKey(start_info_, fs->tracking_id)) {
-      Start start_info = { fs->position_x, fs->position_y, hwstate.timestamp };
-      start_info_[fs->tracking_id] = start_info;
+    if (!MapContainsKey(start_info_, fs[i].tracking_id)) {
+      Start start_info = { fs[i].position_x,
+                           fs[i].position_y,
+                           hwstate.timestamp };
+      start_info_[fs[i].tracking_id] = start_info;
     }
 
-    if (SetContainsValue(never_merge_ids_, fs->tracking_id))
+    if (SetContainsValue(never_merge_ids_, fs[i].tracking_id))
       continue;
     if (SetContainsValue(merge_tracking_ids_, fs[i].tracking_id))
       fs[i].flags |= GESTURES_FINGER_MERGE;
