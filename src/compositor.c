@@ -1097,6 +1097,38 @@ surface_accumulate_damage(struct weston_surface *surface,
 }
 
 static void
+compositor_accumulate_damage(struct weston_compositor *ec)
+{
+	struct weston_plane *plane;
+	struct weston_surface *es;
+	pixman_region32_t opaque;
+
+	pixman_region32_init(&opaque);
+
+	wl_list_for_each(plane, &ec->plane_list, link) {
+		pixman_region32_fini(&plane->opaque);
+		pixman_region32_init(&plane->opaque);
+	}
+
+	wl_list_for_each(es, &ec->surface_list, link) {
+		surface_accumulate_damage(es, &opaque);
+
+		/* Both the renderer and the backend have seen the buffer
+		 * by now. If renderer needs the buffer, it has its own
+		 * reference set. If the backend wants to keep the buffer
+		 * around for migrating the surface into a non-primary plane
+		 * later, keep_buffer is true. Otherwise, drop the core
+		 * reference now, and allow early buffer release. This enables
+		 * clients to use single-buffering.
+		 */
+		if (!es->keep_buffer)
+			weston_buffer_reference(&es->buffer_ref, NULL);
+	}
+
+	pixman_region32_fini(&opaque);
+}
+
+static void
 weston_output_repaint(struct weston_output *output, uint32_t msecs)
 {
 	struct weston_compositor *ec = output->compositor;
@@ -1105,7 +1137,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
-	pixman_region32_t opaque, output_damage;
+	pixman_region32_t output_damage;
 
 	weston_compositor_update_drag_surfaces(ec);
 
@@ -1130,27 +1162,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		wl_list_for_each(es, &ec->surface_list, link)
 			weston_surface_move_to_plane(es, &ec->primary_plane);
 
-	pixman_region32_init(&opaque);
-
-	pixman_region32_fini(&ec->primary_plane.opaque);
-	pixman_region32_init(&ec->primary_plane.opaque);
-
-	wl_list_for_each(es, &ec->surface_list, link) {
-		surface_accumulate_damage(es, &opaque);
-
-		/* Both the renderer and the backend have seen the buffer
-		 * by now. If renderer needs the buffer, it has its own
-		 * reference set. If the backend wants to keep the buffer
-		 * around for migrating the surface into a non-primary plane
-		 * later, keep_buffer is true. Otherwise, drop the core
-		 * reference now, and allow early buffer release. This enables
-		 * clients to use single-buffering.
-		 */
-		if (!es->keep_buffer)
-			weston_buffer_reference(&es->buffer_ref, NULL);
-	}
-
-	pixman_region32_fini(&opaque);
+	compositor_accumulate_damage(ec);
 
 	pixman_region32_init(&output_damage);
 	pixman_region32_intersect(&output_damage,
@@ -1670,6 +1682,17 @@ weston_plane_release(struct weston_plane *plane)
 {
 	pixman_region32_fini(&plane->damage);
 	pixman_region32_fini(&plane->opaque);
+}
+
+WL_EXPORT void
+weston_compositor_stack_plane(struct weston_compositor *ec,
+			      struct weston_plane *plane,
+			      struct weston_plane *above)
+{
+	if (above)
+		wl_list_insert(above->link.prev, &plane->link);
+	else
+		wl_list_insert(&ec->plane_list, &plane->link);
 }
 
 static  void
@@ -3059,6 +3082,7 @@ weston_compositor_init(struct weston_compositor *ec,
 		return -1;
 
 	wl_list_init(&ec->surface_list);
+	wl_list_init(&ec->plane_list);
 	wl_list_init(&ec->layer_list);
 	wl_list_init(&ec->seat_list);
 	wl_list_init(&ec->output_list);
@@ -3068,6 +3092,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->debug_binding_list);
 
 	weston_plane_init(&ec->primary_plane, 0, 0);
+	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);
 
 	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
 		return -1;

@@ -269,6 +269,7 @@ struct weston_plane {
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
 	int32_t x, y;
+	struct wl_list link;
 };
 
 struct weston_renderer {
@@ -314,6 +315,7 @@ struct weston_compositor {
 	struct wl_list seat_list;
 	struct wl_list layer_list;
 	struct wl_list surface_list;
+	struct wl_list plane_list;
 	struct wl_list key_binding_list;
 	struct wl_list button_binding_list;
 	struct wl_list axis_binding_list;
@@ -575,6 +577,11 @@ void
 weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y);
 void
 weston_plane_release(struct weston_plane *plane);
+
+void
+weston_compositor_stack_plane(struct weston_compositor *ec,
+			      struct weston_plane *plane,
+			      struct weston_plane *above);
 
 void
 weston_output_finish_frame(struct weston_output *output, uint32_t msecs);
