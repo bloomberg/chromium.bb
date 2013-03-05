@@ -172,6 +172,10 @@ static void GLibLogHandler(const gchar* log_domain,
              strstr(log_domain, "<unknown>")) {
     LOG(ERROR) << "DBus call timeout or out of memory: "
                << "http://crosbug.com/15496";
+  } else if (strstr(message, "Could not connect: Connection refused") &&
+             strstr(log_domain, "<unknown>")) {
+    LOG(ERROR) << "DConf settings backend could not connect to session bus: "
+               << "http://crbug.com/179797";
   } else if (strstr(message, "XDG_RUNTIME_DIR variable not set")) {
     LOG(ERROR) << message << " (http://bugs.chromium.org/97293)";
   } else if (strstr(message, "Attempting to store changes into") ||
