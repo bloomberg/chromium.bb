@@ -76,6 +76,21 @@ bool LoadAudiosesDll() {
   return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
 }
 
+bool CanCreateDeviceEnumerator() {
+  ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
+  HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator),
+                                NULL,
+                                CLSCTX_INPROC_SERVER,
+                                __uuidof(IMMDeviceEnumerator),
+                                device_enumerator.ReceiveVoid());
+
+  // If we hit CO_E_NOTINITIALIZED, CoInitialize has not been called and it
+  // must be called at least once for each thread that uses the COM library.
+  CHECK_NE(hr, CO_E_NOTINITIALIZED);
+
+  return SUCCEEDED(hr);
+}
+
 bool CoreAudioUtil::IsSupported() {
   // Microsoft does not plan to make the Core Audio APIs available for use
   // with earlier versions of Windows, including Microsoft Windows Server 2003,
@@ -90,7 +105,18 @@ bool CoreAudioUtil::IsSupported() {
   // See http://crbug.com/166397 why this extra step is required to guarantee
   // Core Audio support.
   static bool g_audioses_dll_available = LoadAudiosesDll();
-  return g_audioses_dll_available;
+  if (!g_audioses_dll_available)
+    return false;
+
+  // Being able to load the Audioses.dll does not seem to be sufficient for
+  // all devices to guarantee Core Audio support. To be 100%, we also verify
+  // that it is possible to a create the IMMDeviceEnumerator interface. If this
+  // works as well we should be home free.
+  static bool g_can_create_device_enumerator = CanCreateDeviceEnumerator();
+  LOG_IF(ERROR, !g_can_create_device_enumerator)
+      << "Failed to create Core Audio device enumerator on thread with ID "
+      << GetCurrentThreadId();
+  return g_can_create_device_enumerator;
 }
 
 base::TimeDelta CoreAudioUtil::RefererenceTimeToTimeDelta(REFERENCE_TIME time) {
@@ -141,9 +167,8 @@ ScopedComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
                                 CLSCTX_INPROC_SERVER,
                                 __uuidof(IMMDeviceEnumerator),
                                 device_enumerator.ReceiveVoid());
-  // CO_E_NOTINITIALIZED is the most likely reason for failure and if that
-  // happens we might as well die here.
-  CHECK(SUCCEEDED(hr));
+  LOG_IF(ERROR, FAILED(hr)) << "IMMDeviceEnumerator::CreateDeviceEnumerator: "
+                            << std::hex << hr;
   return device_enumerator;
 }
 
