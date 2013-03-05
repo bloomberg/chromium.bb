@@ -90,6 +90,15 @@
             "Authentication": "None"
         }
     },
+    "network-state-field": {
+        "GUID": "guid",
+        "Type": "Ethernet",
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        },
+        "ConnectionState": "NotConnected"
+    },
     "network-unknown-value": {
         "GUID": "guid",
         "Type": "LTE",
@@ -124,6 +133,27 @@
         "Name": "name",
         "Ethernet": {
             "Authentication": "None"
+        }
+    },
+    "network-nested-state-field-repaired": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "SSID": "ssid",
+            "Security": "WPA-PSK"
+        }
+    },
+    "network-nested-state-field": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "SSID": "ssid",
+            "Security": "WPA-PSK",
+            "SignalStrength": 123
         }
     },
     "network-with-illegal-recommended": {

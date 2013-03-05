@@ -17,7 +17,6 @@ struct OncValueSignature;
 
 struct OncFieldSignature {
   const char* onc_field_name;
-  const char* shill_property_name;
   const OncValueSignature* value_signature;
 };
 
@@ -25,6 +24,7 @@ struct CHROMEOS_EXPORT OncValueSignature {
   base::Value::Type onc_type;
   const OncFieldSignature* fields;
   const OncValueSignature* onc_array_entry_signature;
+  const OncValueSignature* base_signature;
 };
 
 CHROMEOS_EXPORT const OncFieldSignature* GetFieldSignature(
@@ -45,13 +45,17 @@ CHROMEOS_EXPORT extern const OncValueSignature kProxyLocationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxyManualSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxySettingsSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kWiFiSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCertificateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kNetworkConfigurationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCertificateListSignature;
 CHROMEOS_EXPORT extern const OncValueSignature
     kNetworkConfigurationListSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kToplevelConfigurationSignature;
+
+// Derived "ONC with State" signatures.
+CHROMEOS_EXPORT extern const OncValueSignature kNetworkWithStateSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kWiFiWithStateSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kCellularWithStateSignature;
 
 }  // namespace onc
 }  // namespace chromeos

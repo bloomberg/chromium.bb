@@ -142,7 +142,7 @@ void ResultList::ServicePropertiesCallback(
     scoped_ptr<base::DictionaryValue> onc_properties(
         onc::TranslateShillServiceToONCPart(
             result,
-            &onc::kNetworkConfigurationSignature));
+            &onc::kNetworkWithStateSignature));
 
     scoped_ptr<api::NetworkProperties> filtered_result(
         CreateFilteredResult(*onc_properties));
@@ -206,7 +206,7 @@ void NetworkingPrivateGetPropertiesFunction::ResultCallback(
   scoped_ptr<base::DictionaryValue> onc_properties(
       onc::TranslateShillServiceToONCPart(
           result,
-          &onc::kNetworkConfigurationSignature));
+          &onc::kNetworkWithStateSignature));
   GetPropertiesSuccess(service_path,
                        *onc_properties);
 }

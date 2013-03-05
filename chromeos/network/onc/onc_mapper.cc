@@ -67,7 +67,6 @@ void Mapper::MapFields(const OncValueSignature& object_signature,
                        bool* found_unknown_field,
                        bool* nested_error,
                        base::DictionaryValue* result) {
-
   for (base::DictionaryValue::Iterator it(onc_object); it.HasNext();
        it.Advance()) {
     bool current_field_unknown = false;

@@ -7,8 +7,20 @@
 
 #include <string>
 
+#include "chromeos/network/onc/onc_signature.h"
+
 namespace chromeos {
 namespace onc {
+
+struct FieldTranslationEntry {
+  const char* onc_field_name;
+  const char* shill_property_name;
+};
+
+struct OncValueTranslationEntry {
+  const OncValueSignature* onc_signature;
+  const FieldTranslationEntry* field_translation_table;
+};
 
 struct StringTranslationEntry {
   const char* onc_value;
@@ -23,6 +35,13 @@ extern const StringTranslationEntry kWiFiSecurityTable[];
 extern const StringTranslationEntry kEAPOuterTable[];
 extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
 extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
+
+const FieldTranslationEntry* GetFieldTranslationTable(
+    const OncValueSignature& onc_signature);
+
+bool GetShillPropertyName(const std::string& onc_field_name,
+                          const FieldTranslationEntry table[],
+                          std::string* shill_property_name);
 
 // Translate individual strings to Shill using the above tables.
 bool TranslateStringToShill(const StringTranslationEntry table[],

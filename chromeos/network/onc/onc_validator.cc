@@ -113,35 +113,35 @@ scoped_ptr<base::DictionaryValue> Validator::MapObject(
     bool* error) {
   scoped_ptr<base::DictionaryValue> repaired(new base::DictionaryValue);
 
-  bool valid;
-  if (&signature == &kToplevelConfigurationSignature)
-    valid = ValidateToplevelConfiguration(onc_object, repaired.get());
-  else if (&signature == &kNetworkConfigurationSignature)
-    valid = ValidateNetworkConfiguration(onc_object, repaired.get());
-  else if (&signature == &kEthernetSignature)
-    valid = ValidateEthernet(onc_object, repaired.get());
-  else if (&signature == &kIPConfigSignature)
-    valid = ValidateIPConfig(onc_object, repaired.get());
-  else if (&signature == &kWiFiSignature)
-    valid = ValidateWiFi(onc_object, repaired.get());
-  else if (&signature == &kVPNSignature)
-    valid = ValidateVPN(onc_object, repaired.get());
-  else if (&signature == &kIPsecSignature)
-    valid = ValidateIPsec(onc_object, repaired.get());
-  else if (&signature == &kOpenVPNSignature)
-    valid = ValidateOpenVPN(onc_object, repaired.get());
-  else if (&signature == &kCertificatePatternSignature)
-    valid = ValidateCertificatePattern(onc_object, repaired.get());
-  else if (&signature == &kProxySettingsSignature)
-    valid = ValidateProxySettings(onc_object, repaired.get());
-  else if (&signature == &kProxyLocationSignature)
-    valid = ValidateProxyLocation(onc_object, repaired.get());
-  else if (&signature == &kEAPSignature)
-    valid = ValidateEAP(onc_object, repaired.get());
-  else if (&signature == &kCertificateSignature)
-    valid = ValidateCertificate(onc_object, repaired.get());
-  else
-    valid = ValidateObjectDefault(signature, onc_object, repaired.get());
+  bool valid = ValidateObjectDefault(signature, onc_object, repaired.get());
+  if (valid) {
+    if (&signature == &kToplevelConfigurationSignature)
+      valid = ValidateToplevelConfiguration(onc_object, repaired.get());
+    else if (&signature == &kNetworkConfigurationSignature)
+      valid = ValidateNetworkConfiguration(onc_object, repaired.get());
+    else if (&signature == &kEthernetSignature)
+      valid = ValidateEthernet(onc_object, repaired.get());
+    else if (&signature == &kIPConfigSignature)
+      valid = ValidateIPConfig(onc_object, repaired.get());
+    else if (&signature == &kWiFiSignature)
+      valid = ValidateWiFi(onc_object, repaired.get());
+    else if (&signature == &kVPNSignature)
+      valid = ValidateVPN(onc_object, repaired.get());
+    else if (&signature == &kIPsecSignature)
+      valid = ValidateIPsec(onc_object, repaired.get());
+    else if (&signature == &kOpenVPNSignature)
+      valid = ValidateOpenVPN(onc_object, repaired.get());
+    else if (&signature == &kCertificatePatternSignature)
+      valid = ValidateCertificatePattern(onc_object, repaired.get());
+    else if (&signature == &kProxySettingsSignature)
+      valid = ValidateProxySettings(onc_object, repaired.get());
+    else if (&signature == &kProxyLocationSignature)
+      valid = ValidateProxyLocation(onc_object, repaired.get());
+    else if (&signature == &kEAPSignature)
+      valid = ValidateEAP(onc_object, repaired.get());
+    else if (&signature == &kCertificateSignature)
+      valid = ValidateCertificate(onc_object, repaired.get());
+  }
 
   if (valid) {
     return repaired.Pass();
@@ -398,11 +398,6 @@ bool Validator::ValidateToplevelConfiguration(
     base::DictionaryValue* result) {
   using namespace onc::toplevel_config;
 
-  if (!ValidateObjectDefault(kToplevelConfigurationSignature,
-                             onc_object, result)) {
-    return false;
-  }
-
   static const char* kValidTypes[] = { kUnencryptedConfiguration,
                                        kEncryptedConfiguration,
                                        NULL };
@@ -436,11 +431,6 @@ bool Validator::ValidateNetworkConfiguration(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace onc::network_config;
-
-  if (!ValidateObjectDefault(kNetworkConfigurationSignature,
-                             onc_object, result)) {
-    return false;
-  }
 
   static const char* kValidTypes[] = { network_type::kEthernet,
                                        network_type::kVPN,
@@ -493,8 +483,6 @@ bool Validator::ValidateEthernet(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace onc::ethernet;
-  if (!ValidateObjectDefault(kEthernetSignature, onc_object, result))
-    return false;
 
   static const char* kValidAuthentications[] = { kNone, k8021X, NULL };
   if (FieldExistsAndHasNoValidValue(*result, kAuthentication,
@@ -515,8 +503,6 @@ bool Validator::ValidateIPConfig(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace onc::ipconfig;
-  if (!ValidateObjectDefault(kIPConfigSignature, onc_object, result))
-    return false;
 
   static const char* kValidTypes[] = { kIPv4, kIPv6, NULL };
   if (FieldExistsAndHasNoValidValue(*result, ipconfig::kType, kValidTypes))
@@ -543,8 +529,6 @@ bool Validator::ValidateWiFi(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace onc::wifi;
-  if (!ValidateObjectDefault(kWiFiSignature, onc_object, result))
-    return false;
 
   static const char* kValidSecurities[] =
       { kNone, kWEP_PSK, kWEP_8021X, kWPA_PSK, kWPA_EAP, NULL };
@@ -568,8 +552,6 @@ bool Validator::ValidateVPN(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace vpn;
-  if (!ValidateObjectDefault(kVPNSignature, onc_object, result))
-    return false;
 
   static const char* kValidTypes[] =
       { kIPsec, kTypeL2TP_IPsec, kOpenVPN, NULL };
@@ -596,8 +578,6 @@ bool Validator::ValidateIPsec(
     base::DictionaryValue* result) {
   using namespace onc::vpn;
   using namespace onc::certificate;
-  if (!ValidateObjectDefault(kIPsecSignature, onc_object, result))
-    return false;
 
   static const char* kValidAuthentications[] = { kPSK, kCert, NULL };
   static const char* kValidCertTypes[] = { kRef, kPattern, NULL };
@@ -637,8 +617,6 @@ bool Validator::ValidateOpenVPN(
   using namespace onc::vpn;
   using namespace onc::openvpn;
   using namespace onc::certificate;
-  if (!ValidateObjectDefault(kOpenVPNSignature, onc_object, result))
-    return false;
 
   static const char* kValidAuthRetryValues[] =
       { openvpn::kNone, kInteract, kNoInteract, NULL };
@@ -675,8 +653,6 @@ bool Validator::ValidateCertificatePattern(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace onc::certificate;
-  if (!ValidateObjectDefault(kCertificatePatternSignature, onc_object, result))
-    return false;
 
   bool allRequiredExist = true;
   if (!result->HasKey(kSubject) && !result->HasKey(kIssuer) &&
@@ -698,8 +674,6 @@ bool Validator::ValidateCertificatePattern(
 bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
                                       base::DictionaryValue* result) {
   using namespace onc::proxy;
-  if (!ValidateObjectDefault(kProxySettingsSignature, onc_object, result))
-    return false;
 
   static const char* kValidTypes[] = { kDirect, kManual, kPAC, kWPAD, NULL };
   if (FieldExistsAndHasNoValidValue(*result, proxy::kType, kValidTypes))
@@ -719,8 +693,6 @@ bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
 bool Validator::ValidateProxyLocation(const base::DictionaryValue& onc_object,
                                       base::DictionaryValue* result) {
   using namespace onc::proxy;
-  if (!ValidateObjectDefault(kProxyLocationSignature, onc_object, result))
-    return false;
 
   bool allRequiredExist = RequireField(*result, kHost) &
       RequireField(*result, kPort);
@@ -732,8 +704,6 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
                             base::DictionaryValue* result) {
   using namespace onc::eap;
   using namespace onc::certificate;
-  if (!ValidateObjectDefault(kEAPSignature, onc_object, result))
-    return false;
 
   static const char* kValidInnerValues[] =
       { kAutomatic, kMD5, kMSCHAPv2, kPAP, NULL };
@@ -769,8 +739,6 @@ bool Validator::ValidateCertificate(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
   using namespace onc::certificate;
-  if (!ValidateObjectDefault(kCertificateSignature, onc_object, result))
-    return false;
 
   static const char* kValidTypes[] = { kClient, kServer, kAuthority, NULL };
   if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes) ||

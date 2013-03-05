@@ -156,7 +156,10 @@ INSTANTIATE_TEST_CASE_P(
                                 true),
                       OncParams("managed_ethernet.onc",
                                 &kNetworkConfigurationSignature,
-                                true)));
+                                true),
+                      OncParams("translation_of_shill_wifi_with_state.onc",
+                                &kNetworkWithStateSignature,
+                                false)));
 
 namespace {
 
@@ -271,7 +274,18 @@ INSTANTIATE_TEST_CASE_P(
          std::make_pair(OncParams("managed-network-missing-required",
                                   &kNetworkConfigurationSignature,
                                   true),
-                        RepairParams("", "managed-network-missing-required"))));
+                        RepairParams("", "managed-network-missing-required")),
+         // Ensure that state values from Shill aren't accepted as
+         // configuration.
+         std::make_pair(OncParams("network-state-field",
+                                  &kNetworkConfigurationSignature,
+                                  false),
+                        RepairParams("", "network-repaired")),
+         std::make_pair(OncParams("network-nested-state-field",
+                                  &kNetworkConfigurationSignature,
+                                  false),
+                        RepairParams("",
+                                     "network-nested-state-field-repaired"))));
 
 // Strict and liberal validator repair identically.
 INSTANTIATE_TEST_CASE_P(

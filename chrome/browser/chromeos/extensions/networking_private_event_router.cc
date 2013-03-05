@@ -29,36 +29,6 @@ namespace api = extensions::api::networking_private;
 
 namespace chromeos {
 
-namespace {
-
-// Translates the current connection state of the network into the ONC
-// equivalent.
-std::string GetConnectionState(const NetworkState* state) {
-  if (state->IsConnectedState())
-    return onc::connection_state::kConnected;
-  else if (state->IsConnectingState())
-    return onc::connection_state::kConnecting;
-  else
-    return onc::connection_state::kNotConnected;
-}
-
-// Translate from the Shill network type to the ONC network type.
-std::string GetConnectionType(const std::string& shill_type) {
-  base::DictionaryValue shill_type_dict;
-  shill_type_dict.SetStringWithoutPathExpansion(flimflam::kTypeProperty,
-                                                shill_type);
-  scoped_ptr<base::DictionaryValue> onc_type_dict =
-      onc::TranslateShillServiceToONCPart(
-          shill_type_dict,
-          &onc::kNetworkConfigurationSignature);
-  std::string onc_type;
-  if (onc_type_dict->GetString(onc::network_config::kType, &onc_type))
-    return onc_type;
-  return std::string();
-}
-
-}  // namespace
-
 NetworkingPrivateEventRouter::NetworkingPrivateEventRouter(Profile* profile)
     : profile_(profile), listening_(false) {
   // Register with the event router so we know when renderers are listening to
