@@ -296,23 +296,8 @@ class SearchProvider : public AutocompleteProvider,
   // Gets the relevance score for the verbatim result; this value may be
   // provided by the suggest server; otherwise it is calculated locally.
   int GetVerbatimRelevance() const;
-  // Calculates the relevance score for the verbatim result from the
-  // default search engine.  This version takes into account context:
-  // i.e., whether the user has entered a keyword-based search or not.
+  // Calculates the relevance score for the verbatim result.
   int CalculateRelevanceForVerbatim() const;
-  // Calculates the relevance score for the verbatim result from the default
-  // search engine *ignoring* whether the input is a keyword-based search
-  // or not.  This function should only be used to determine the minimum
-  // relevance score that the best result from this provider should have.
-  // For normal use, prefer the above function.
-  int CalculateRelevanceForVerbatimIgnoringKeywordModeState() const;
-  // Gets the relevance score for the keyword verbatim result; this
-  // value may be provided by the suggest server; otherwise it is
-  // calculated locally.
-  // TODO(mpearson): Refactor so this duplication isn't necesary or
-  // restructure so one static function takes all the parameters it needs
-  // (rather than looking at internal state).
-  int GetKeywordVerbatimRelevance() const;
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).
   static int CalculateRelevanceForKeywordVerbatim(AutocompleteInput::Type type,
@@ -385,15 +370,12 @@ class SearchProvider : public AutocompleteProvider,
   NavigationResults keyword_navigation_results_;
   NavigationResults default_navigation_results_;
 
-  // Flags indicating server supplied relevance scores.
-  bool has_default_suggested_relevance_;
-  bool has_keyword_suggested_relevance_;
+  // A flag indicating use of server supplied relevance scores.
+  bool has_suggested_relevance_;
 
-  // The server supplied verbatim relevance scores. Negative values
-  // indicate that there is no suggested score; a value of 0
-  // suppresses the verbatim result.
-  int default_verbatim_relevance_;
-  int keyword_verbatim_relevance_;
+  // The server supplied verbatim relevance score. Negative values indicate that
+  // there is no suggested score; a value of 0 suppresses the verbatim result.
+  int verbatim_relevance_;
 
   // Whether suggest_results_ is valid.
   bool have_suggest_results_;
