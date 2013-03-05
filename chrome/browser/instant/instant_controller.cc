@@ -846,6 +846,10 @@ void InstantController::LogDebugEvent(const std::string& info) const {
     debug_events_.pop_back();
 }
 
+void InstantController::ClearDebugEvents() {
+  debug_events_.clear();
+}
+
 void InstantController::DeleteMostVisitedItem(const GURL& url) {
   history::TopSites* top_sites = browser_->profile()->GetTopSites();
   if (!top_sites)

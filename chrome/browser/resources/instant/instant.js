@@ -121,22 +121,6 @@ var instantConfig = (function() {
   }
 
   /**
-   * Handle processing of "Reset" button.
-   * Causes off form values to be updated based on current preference values.
-   */
-  function onReset() {
-    for (var i = 0; i < FIELDS.length; i++) {
-      var field = FIELDS[i];
-      if ($(field.key).type == 'checkbox')
-        $(field.key).checked = field.default;
-      else
-        $(field.key).value = field.default;
-      setPreferenceValue(field.key);
-    }
-    return false;
-  }
-
-  /**
    * Saves data back into Chrome preferences.
    */
   function onSave() {
@@ -170,6 +154,14 @@ var instantConfig = (function() {
     }
   }
 
+  /**
+   * Resets list of debug events.
+   */
+  function clearDebugInfo() {
+    $('instant-debug-info').innerHTML = '';
+    chrome.send('clearDebugInfo');
+  }
+
   function loadForm() {
     for (var i = 0; i < FIELDS.length; i++)
       getPreferenceValue(FIELDS[i].key);
@@ -184,8 +176,8 @@ var instantConfig = (function() {
     initForm();
     getDebugInfo();
 
-    $('reset-button').onclick = onReset.bind(this);
     $('save-button').onclick = onSave.bind(this);
+    $('clear-button').onclick = clearDebugInfo.bind(this);
   }
 
   return {

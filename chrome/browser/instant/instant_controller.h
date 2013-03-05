@@ -174,6 +174,9 @@ class InstantController : public InstantPage::Delegate,
   // |debug_events_| doesn't get too large.
   void LogDebugEvent(const std::string& info) const;
 
+  // Resets list of debug events.
+  void ClearDebugEvents();
+
   // See comments for |debug_events_| below.
   const std::list<std::pair<int64, std::string> >& debug_events() {
     return debug_events_;
