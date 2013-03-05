@@ -26,8 +26,7 @@ namespace remoting {
 class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
     : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
       public ATL::CComCoClass<RdpDesktopSession, &__uuidof(RdpDesktopSession)>,
-      public ATL::IDispatchImpl<IRdpDesktopSession, &IID_IRdpDesktopSession,
-                                &LIBID_ChromotingLib, 1, 0>,
+      public IRdpDesktopSession,
       public RdpClient::EventHandler {
  public:
   // Declare a class factory which must not lock the ATL module. This is the
@@ -58,7 +57,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
 
   BEGIN_COM_MAP(RdpDesktopSession)
     COM_INTERFACE_ENTRY(IRdpDesktopSession)
-    COM_INTERFACE_ENTRY(IDispatch)
+    COM_INTERFACE_ENTRY(IUnknown)
   END_COM_MAP()
 
   // Implements loading and instantiation of the RDP ActiveX client.

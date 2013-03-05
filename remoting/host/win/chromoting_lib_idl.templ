@@ -67,12 +67,11 @@ interface IDaemonControl2 : IDaemonControl {
 [
   object,
   uuid(987bca97-9d40-42fc-a00d-e6a701261af5),
-  dual,
   nonextensible,
   helpstring("IRdpDesktopSessionEventHandler Interface"),
   pointer_default(unique)
 ]
-interface IRdpDesktopSessionEventHandler : IDispatch {
+interface IRdpDesktopSessionEventHandler : IUnknown {
   [ id(1), helpstring("Notifies that an RDP connection has been established "
                       "successfully. The client's address and port are "
                       " returned in |client_endpoint| as |SOCKADDR_STORAGE| "
@@ -90,12 +89,11 @@ interface IRdpDesktopSessionEventHandler : IDispatch {
 [
   object,
   uuid(126c22bc-34ef-4cfb-83ef-9b8ada3391e8),
-  dual,
   nonextensible,
   helpstring("IRdpDesktopSession Interface"),
   pointer_default(unique)
 ]
-interface IRdpDesktopSession : IDispatch {
+interface IRdpDesktopSession : IUnknown {
   [ id(1), helpstring("Initiates a loopback RDP connection to spawn a new "
                       "Windows session. |width| and |height| specify the "
                       "initial screen resolution.") ]

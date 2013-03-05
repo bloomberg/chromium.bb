@@ -34,7 +34,11 @@
 
   <?define ControllerClass = "ElevatedController Class" ?>
   <?define ControllerProgid =
-    "ChromotingElevatedController.ElevatedController" ?>
+      "ChromotingElevatedController.ElevatedController" ?>
+
+  <?define IRdpDesktopSessionId = "{126c22bc-34ef-4cfb-83ef-9b8ada3391e8}" ?>
+  <?define IRdpDesktopSessionEventHandlerId =
+      "{987bca97-9d40-42fc-a00d-e6a701261af5}" ?>
 
   <!--
     The long hex values below are security descriptors generated from SDDL
@@ -363,39 +367,35 @@
                                Value="$(var.ChromotingTypelib)"/>
               </RegistryKey>
             </RegistryKey>
+
+            <!-- IRdpDesktopSession PSFactory -->
+            <RegistryKey Key="$(var.IRdpDesktopSessionId)"
+                         Action="create">
+              <RegistryValue Type="string"
+                             Value="IRdpDesktopSession PSFactory"/>
+
+              <RegistryKey Key="InprocServer32" Action="create">
+                <RegistryValue Type="string"
+                               Value="[binaries]$(var.CoreBinary)"/>
+              </RegistryKey>
+            </RegistryKey>
+
+            <!-- IRdpDesktopSessionEventHandler PSFactory -->
+            <RegistryKey Key="$(var.IRdpDesktopSessionEventHandlerId)"
+                         Action="create">
+              <RegistryValue Type="string"
+                             Value="IRdpDesktopSessionEventHandler PSFactory"/>
+
+              <RegistryKey Key="InprocServer32" Action="create">
+                <RegistryValue Type="string"
+                               Value="[binaries]$(var.CoreBinary)"/>
+              </RegistryKey>
+            </RegistryKey>
           </RegistryKey>
 
           <RegistryKey Key="Interface">
-            <!-- IRdpDesktopSession interface -->
-            <RegistryKey Key="{126c22bc-34ef-4cfb-83ef-9b8ada3391e8}"
-                         Action="create">
-              <RegistryKey Key="ProxyStubClsid32" Action="create">
-                <RegistryValue Type="string"
-                               Value="{00020424-0000-0000-C000-000000000046}"/>
-              </RegistryKey>
-
-              <RegistryKey Key="TypeLib" Action="create">
-                <RegistryValue Type="string"
-                               Value="$(var.ChromotingTypelib)"/>
-              </RegistryKey>
-            </RegistryKey>
-
             <!-- IDaemonControl2 interface -->
             <RegistryKey Key="{655bd819-c08c-4b04-80c2-f160739ff6ef}"
-                         Action="create">
-              <RegistryKey Key="ProxyStubClsid32" Action="create">
-                <RegistryValue Type="string"
-                               Value="{00020424-0000-0000-C000-000000000046}"/>
-              </RegistryKey>
-
-              <RegistryKey Key="TypeLib" Action="create">
-                <RegistryValue Type="string"
-                               Value="$(var.ChromotingTypelib)"/>
-              </RegistryKey>
-            </RegistryKey>
-
-            <!-- IRdpDesktopSessionEventHandler interface -->
-            <RegistryKey Key="{987bca97-9d40-42fc-a00d-e6a701261af5}"
                          Action="create">
               <RegistryKey Key="ProxyStubClsid32" Action="create">
                 <RegistryValue Type="string"
@@ -414,6 +414,33 @@
               <RegistryKey Key="ProxyStubClsid32" Action="create">
                 <RegistryValue Type="string"
                                Value="{00020424-0000-0000-C000-000000000046}"/>
+              </RegistryKey>
+
+              <RegistryKey Key="TypeLib" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.ChromotingTypelib)"/>
+              </RegistryKey>
+            </RegistryKey>
+
+            <!-- IRdpDesktopSession interface -->
+            <RegistryKey Key="$(var.IRdpDesktopSessionId)"
+                         Action="create">
+              <RegistryValue Type="string"
+                             Value="IRdpDesktopSession"/>
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.IRdpDesktopSessionId)"/>
+              </RegistryKey>
+            </RegistryKey>
+
+            <!-- IRdpDesktopSessionEventHandler interface -->
+            <RegistryKey Key="$(var.IRdpDesktopSessionEventHandlerId)"
+                         Action="create">
+              <RegistryValue Type="string"
+                             Value="IRdpDesktopSessionEventHandler"/>
+              <RegistryKey Key="ProxyStubClsid32" Action="create">
+                <RegistryValue Type="string"
+                               Value="$(var.IRdpDesktopSessionEventHandlerId)"/>
               </RegistryKey>
 
               <RegistryKey Key="TypeLib" Action="create">
