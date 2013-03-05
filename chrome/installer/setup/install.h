@@ -80,10 +80,9 @@ void CreateOrUpdateShortcuts(
     InstallShortcutOperation install_operation);
 
 // Registers Chrome on this machine.
-// If |make_chrome_default|, also attempts to make Chrome default (potentially
-// popping a UAC if the user is not an admin and HKLM registrations are required
-// to register Chrome's capabilities on this version of Windows (i.e.
-// pre-Win8)).
+// If |make_chrome_default|, also attempts to make Chrome default where doing so
+// requires no more user interaction than a UAC prompt. In practice, this means
+// on versions of Windows prior to Windows 8.
 void RegisterChromeOnMachine(const InstallerState& installer_state,
                              const Product& product,
                              bool make_chrome_default);

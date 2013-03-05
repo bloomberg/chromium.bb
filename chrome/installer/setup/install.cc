@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <time.h>
-#include <winuser.h>
 
 #include <string>
 
@@ -146,27 +145,6 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
     VLOG(1) << "Failed to copy master preferences from:"
             << prefs_source_path.value() << " gle: " << ::GetLastError();
   }
-}
-
-// Returns true if the current process is running on the interactive window
-// station.  This cares not whether the input desktop is the default or not
-// (i.e., the screen saver is running, or what have you).
-bool IsInteractiveProcess() {
-  static const wchar_t kWinSta0[] = L"WinSta0";
-  HWINSTA window_station = ::GetProcessWindowStation();
-  if (window_station == NULL) {
-    PLOG(ERROR) << "Failed to get window station";
-    return false;
-  }
-
-  // Make the buffer one char longer and zero it to be certain it's terminated.
-  wchar_t name[arraysize(kWinSta0) + 1] = {};
-  DWORD buffer_length = sizeof(kWinSta0);
-  DWORD name_length = 0;
-  return (GetUserObjectInformation(window_station, UOI_NAME, &name[0],
-                                   buffer_length, &name_length) &&
-          name_length == buffer_length &&
-          lstrcmpi(kWinSta0, name) == 0);
 }
 
 // This function installs a new version of Chrome to the specified location.
@@ -483,17 +461,11 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
   const string16 chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe).value());
   VLOG(1) << "Registering Chrome as browser: " << chrome_exe;
-  if (make_chrome_default) {
-    if (ShellUtil::CanMakeChromeDefaultUnattended()) {
-      int level = ShellUtil::CURRENT_USER;
-      if (installer_state.system_install())
-        level = level | ShellUtil::SYSTEM_LEVEL;
-      ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
-    } else if (IsInteractiveProcess()) {
-      ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe);
-    } else {
-      ShellUtil::RegisterChromeBrowser(dist, chrome_exe, string16(), false);
-    }
+  if (make_chrome_default && ShellUtil::CanMakeChromeDefaultUnattended()) {
+    int level = ShellUtil::CURRENT_USER;
+    if (installer_state.system_install())
+      level = level | ShellUtil::SYSTEM_LEVEL;
+    ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
   } else {
     ShellUtil::RegisterChromeBrowser(dist, chrome_exe, string16(), false);
   }
