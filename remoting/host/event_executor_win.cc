@@ -277,6 +277,17 @@ void EventExecutorWin::Core::HandleMouse(const MouseEvent& event) {
 
     MouseEvent::MouseButton button = event.button();
     bool down = event.button_down();
+
+    // If the host is configured to swap left & right buttons, inject swapped
+    // events to un-do that re-mapping.
+    if (GetSystemMetrics(SM_SWAPBUTTON)) {
+      if (button == MouseEvent::BUTTON_LEFT) {
+        button = MouseEvent::BUTTON_RIGHT;
+      } else if (button == MouseEvent::BUTTON_RIGHT) {
+        button = MouseEvent::BUTTON_LEFT;
+      }
+    }
+
     if (button == MouseEvent::BUTTON_LEFT) {
       button_event.mi.dwFlags =
           down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
