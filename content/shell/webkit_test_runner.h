@@ -110,6 +110,8 @@ class WebKitTestRunner : public RenderViewObserver,
 
   ::WebTestRunner::WebTestProxyBase* proxy_;
 
+  RenderView* focused_view_;
+
   ::WebTestRunner::WebPreferences prefs_;
 
   bool enable_pixel_dumping_;

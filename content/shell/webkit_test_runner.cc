@@ -126,12 +126,42 @@ class SyncNavigationStateVisitor : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(SyncNavigationStateVisitor);
 };
 
+class ProxyToRenderViewVisitor : public RenderViewVisitor {
+ public:
+  explicit ProxyToRenderViewVisitor(WebTestProxyBase* proxy)
+      : proxy_(proxy),
+        render_view_(NULL) {
+  }
+  virtual ~ProxyToRenderViewVisitor() {}
+
+  RenderView* render_view() const { return render_view_; }
+
+  virtual bool Visit(RenderView* render_view) OVERRIDE {
+    WebKitTestRunner* test_runner = WebKitTestRunner::Get(render_view);
+    if (!test_runner) {
+      NOTREACHED();
+      return true;
+    }
+    if (test_runner->proxy() == proxy_) {
+      render_view_ = render_view;
+      return false;
+    }
+    return true;
+  }
+ private:
+  WebTestProxyBase* proxy_;
+  RenderView* render_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyToRenderViewVisitor);
+};
+
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<WebKitTestRunner>(render_view),
       proxy_(NULL),
+      focused_view_(NULL),
       enable_pixel_dumping_(true),
       layout_test_timeout_(kDefaultLayoutTestTimeoutMs),
       allow_external_pages_(false),
@@ -316,13 +346,34 @@ void WebKitTestRunner::setDeviceScaleFactor(float factor) {
 }
 
 void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
-  // TODO(jochen): Implement once it's possible to synchronously set the focus
-  // from the renderer.
+  ProxyToRenderViewVisitor visitor(proxy);
+  RenderView::ForEach(&visitor);
+  if (!visitor.render_view()) {
+    NOTREACHED();
+    return;
+  }
+
+  // Check whether the focused view was closed meanwhile.
+  if (!WebKitTestRunner::Get(focused_view_))
+    focused_view_ = NULL;
+
+  if (focus) {
+    if (focused_view_ != visitor.render_view()) {
+      if (focused_view_)
+        SetFocusAndActivate(focused_view_, false);
+      SetFocusAndActivate(visitor.render_view(), true);
+      focused_view_ = visitor.render_view();
+    }
+  } else {
+    if (focused_view_ == visitor.render_view()) {
+      SetFocusAndActivate(visitor.render_view(), false);
+      focused_view_ = NULL;
+    }
+  }
 }
 
 void WebKitTestRunner::setFocus(bool focus) {
   // TODO(jochen): Remove once the new WebKit API is rolled.
-  SetFocusAndActivate(render_view(), focus);
 }
 
 void WebKitTestRunner::setAcceptAllCookies(bool accept) {
@@ -542,6 +593,8 @@ void WebKitTestRunner::OnSetTestConfiguration(
   allow_external_pages_ = params.allow_external_pages;
   expected_pixel_hash_ = params.expected_pixel_hash;
   is_main_window_ = true;
+
+  setFocus(proxy_, true);
 
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
