@@ -71,7 +71,7 @@
             }],
             ['target_arch=="arm"', {
               'variables': {
-                'check_tls_arch': 'arm-pnacl',
+                'check_tls_arch': 'arm',
                 'nexe_suffix': 'newlib_arm',
                 'nacl_irt_name': 'nacl_irt_arm',
               },

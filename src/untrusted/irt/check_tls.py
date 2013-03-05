@@ -22,8 +22,8 @@ def Main(args):
   obj_file = args[2]
 
   whitelist_regex = None
+  objdump_args = [objdump, '-d', obj_file]
   if arch == 'x86-32':
-    objdump_args = [objdump, '-d', obj_file]
     # "%gs:4" is allowed but all other uses of %gs are suspect.
     register = '%gs'
     regex = re.compile(register + r'(?!:0x4\b)')
@@ -31,13 +31,6 @@ def Main(args):
     # Nothing to check.
     regex = None
   elif arch.startswith('arm'):
-    if arch == 'arm-gcc':
-      objdump_flags = ['-d']
-    elif arch == 'arm-pnacl':
-      # TODO(mcgrathr): Just use -d when PNaCl compiler is fixed so it works.
-      # See http://code.google.com/p/nativeclient/issues/detail?id=2818
-      objdump_flags = ['-D', '--section=.text']
-    objdump_args = [objdump] + objdump_flags + [obj_file]
     # A real reference to r9 should probably be preceded by some character
     # that is not legal for an identifier (e.g., spaces, commas, brackets).
     register = 'r9'

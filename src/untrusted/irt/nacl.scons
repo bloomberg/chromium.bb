@@ -144,10 +144,7 @@ if ((env.Bit('build_arm') or env.Bit('build_x86_32'))
     and not env.Bit('built_elsewhere')):
   check_tls_arch = '${TARGET_FULLARCH}'
   if env.Bit('build_arm'):
-    if env.Bit('bitcode'):
-      check_tls_arch = 'arm-pnacl'
-    else:
-      check_tls_arch = 'arm-gcc'
+    check_tls_arch = 'arm'
   node = env.CommandTest('irt_core_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
                           check_tls_arch, '${OBJDUMP}', irt_core_library],
