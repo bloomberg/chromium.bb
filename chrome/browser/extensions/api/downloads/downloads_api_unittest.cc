@@ -3100,7 +3100,7 @@ IN_PROC_BROWSER_TEST_F(
 // TODO(rdsmith): FILE_OPERATION_INITIALIZE is not right for this test.
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    FAILS_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
+    DISABLED_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
   LoadExtension("downloads_split");
   CHECK(StartTestServer());
   std::string download_url = test_server()->GetURL("slow?0").spec();
