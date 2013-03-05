@@ -185,6 +185,8 @@ Gallery.prototype.initListeners_ = function() {
   this.keyDownBound_ = this.onKeyDown_.bind(this);
   this.document_.body.addEventListener('keydown', this.keyDownBound_);
 
+  util.disableBrowserShortcutKeys(this.document_);
+
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
 

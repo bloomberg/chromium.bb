@@ -1247,3 +1247,18 @@ util.boardIs = function(boardPrefix) {
   var pattern = new RegExp('^' + boardPrefix, 'i');
   return board.match(pattern) != null;
 };
+
+/**
+ * Disabled browser shortcus key events on the given document.
+ * @param {Element} element Element to be disabled browser shortcut keys on.
+ */
+util.disableBrowserShortcutKeys = function(element) {
+  element.addEventListener('keydown', function(e) {
+    switch (util.getKeyModifiers(e) + e.keyCode) {
+      case 'Ctrl-79':  // Disable native Ctrl-O (open file).
+      case 'Ctrl-83':  // Disable native Ctrl-S (save as).
+      case 'Ctrl-85':  // Disable native Ctrl-U (view source).
+        e.preventDefault();
+    }
+  });
+};

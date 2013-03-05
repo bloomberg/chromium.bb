@@ -64,6 +64,8 @@ function FullWindowVideoControls(
     }
   }.bind(this));
 
+  util.disableBrowserShortcutKeys(document);
+
   videoContainer.addEventListener('click',
       this.togglePlayStateWithFeedback.bind(this));
 

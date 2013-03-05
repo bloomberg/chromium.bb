@@ -842,6 +842,8 @@ DialogType.isModal = function(type) {
     this.fileTypeSelector_ = this.dialogDom_.querySelector('#file-type');
     this.initFileTypeFilter_();
 
+    util.disableBrowserShortcutKeys(this.document_);
+
     this.updateWindowState_();
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
@@ -2408,12 +2410,6 @@ DialogType.isModal = function(type) {
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
         var dm = this.directoryModel_;
         dm.setFilterHidden(!dm.isFilterHiddenOn());
-        event.preventDefault();
-        return;
-
-      case 'Ctrl-79':  // Disable native Ctrl-O (open file).
-      case 'Ctrl-83':  // Disable native Ctrl-S (save as).
-      case 'Ctrl-85':  // Disable native Ctrl-U (view source).
         event.preventDefault();
         return;
 

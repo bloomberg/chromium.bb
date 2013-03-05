@@ -87,6 +87,8 @@ ActionChoice.prototype.initDom_ = function() {
   this.dom_.setAttribute('loading', '');
 
   this.document_.querySelectorAll('.choices input')[0].focus();
+
+  util.disableBrowserShortcutKeys(this.document_);
 };
 
 /**
