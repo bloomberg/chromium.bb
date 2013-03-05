@@ -9,7 +9,6 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/win/dpi.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/size_conversions.h"
@@ -35,6 +34,7 @@ float GetForcedDeviceScaleFactorImpl() {
 
 const int64 kInvalidDisplayIDForCompileTimeInit = -1;
 int64 internal_display_id_ = kInvalidDisplayIDForCompileTimeInit;
+
 }  // namespace
 
 const int64 Display::kInvalidDisplayID = kInvalidDisplayIDForCompileTimeInit;

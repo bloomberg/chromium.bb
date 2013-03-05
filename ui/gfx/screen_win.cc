@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "ui/base/win/dpi.h"
 #include "ui/gfx/display.h"
 
 namespace {
@@ -20,8 +21,10 @@ MONITORINFO GetMonitorInfoForMonitor(HMONITOR monitor) {
 
 gfx::Display GetDisplay(MONITORINFO& monitor_info) {
   // TODO(oshima): Implement ID and Observer.
-  gfx::Display display(0, gfx::Rect(monitor_info.rcMonitor));
+  gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
+  gfx::Display display(0, bounds);
   display.set_work_area(gfx::Rect(monitor_info.rcWork));
+  display.SetScaleAndBounds(ui::win::GetDeviceScaleFactor(), bounds);
   return display;
 }
 
