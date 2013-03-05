@@ -17,10 +17,15 @@ export THISDIR=`dirname $0`
 
 setup_memcheck() {
   RUN_COMMAND="valgrind"
-  # Prefer a 32-bit gdb if it's available.
-  GDB="/usr/bin/gdb32";
-  if [ ! -x $GDB ]; then
-    GDB="gdb"
+  GDB=gdb
+  EXE_INFO=$(file $1)
+  if [[ $? -eq 0 ]]; then
+    # Prefer a gdb that matches the executable if it's available.
+    if [[ "$EXE_INFO" == *32-bit* && -x /usr/bin/gdb32 ]]; then
+      GDB="/usr/bin/gdb32";
+    elif [[ "$EXE_INFO" == *64-bit* && -x /usr/bin/gdb64 ]]; then
+      GDB="/usr/bin/gdb64";
+    fi
   fi
 
   # Prompt to attach gdb when there was an error detected.
@@ -69,7 +74,7 @@ if echo "$@" | grep "\-\-tool" ; then
 fi
 
 case $TOOL_NAME in
-  memcheck*)  setup_memcheck;;
+  memcheck*)  setup_memcheck "$1";;
   tsan*)      setup_tsan;;
   *)          setup_unknown;;
 esac
