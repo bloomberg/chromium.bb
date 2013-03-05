@@ -21,7 +21,7 @@ from chromite.lib import osutils
 # exists.
 GSUTIL_BIN = None
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
-PRIVATE_BASE_HTTPS_URL = 'https://sandbox.google.com/storage/'
+PRIVATE_BASE_HTTPS_URL = 'https://storage.cloud.google.com/'
 BASE_GS_URL = 'gs://'
 
 

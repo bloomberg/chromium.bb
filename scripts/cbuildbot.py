@@ -136,10 +136,9 @@ class Builder(object):
   use is builder_instance.Run().
 
   Vars:
-    build_config:  The configuration dictionary from cbuildbot_config.
-    options:  The options provided from optparse in main().
-    archive_urls:  Where our artifacts for this builder will be archived.
-    release_tag:  The associated "chrome os version" of this build.
+    build_config: The configuration dictionary from cbuildbot_config.
+    options: The options provided from optparse in main().
+    release_tag: The associated "chrome os version" of this build.
   """
 
   def __init__(self, options, build_config):
@@ -152,7 +151,6 @@ class Builder(object):
       os.environ['CHROMEOS_OFFICIAL'] = '1'
 
     self.archive_stages = {}
-    self.archive_urls = {}
     self.release_tag = None
     self.patch_pool = trybot_patch_pool.TrybotPatchPool()
 
@@ -322,9 +320,8 @@ class Builder(object):
     finally:
       if print_report:
         results_lib.WriteCheckpoint(self.options.buildroot)
-        print '\n\n\n@@@BUILD_STEP Report@@@\n'
-        results_lib.Results.Report(sys.stdout, self.archive_urls,
-                                   self.release_tag)
+        self._RunStage(stages.ReportStage, self.archive_stages,
+                       self.release_tag)
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
@@ -414,7 +411,6 @@ class SimpleBuilder(Builder):
           config = configs.get(board, self.build_config)
           self._RunStage(stages.BuildTargetStage, board, archive_stage,
                          config=config)
-          self.archive_urls[board] = archive_stage.GetDownloadUrl()
 
           # Kick off task(board) in the background.
           queue.put([board])
