@@ -40,9 +40,9 @@ if env.Bit('target_x86'):
   caller_lib = 'dfa_validate_caller_x86_%s' % env.get('TARGET_SUBARCH')
   env.ComponentLibrary(
       caller_lib,
-      ['unreviewed/dfa_validate_%s.c' % env.get('TARGET_SUBARCH'),
+      ['dfa_validate_%s.c' % env.get('TARGET_SUBARCH'),
        {'32': validator32, '64': validator64}[env.get('TARGET_SUBARCH')],
-       'unreviewed/dfa_validate_common.c',
+       'dfa_validate_common.c',
        features])
 
 env.ComponentLibrary('dfa_decode_x86_32',

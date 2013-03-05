@@ -9,16 +9,17 @@
 #include <string.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/dfa_validate_common.h"
+#include "native_client/src/trusted/validator_ragel/dfa_validate_common.h"
 #include "native_client/src/trusted/validator_ragel/validator.h"
 
-/* Be sure the correct compile flags are defined for this. */
-#if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86
-# error("Can't compile, target is for x86-64")
-#else
-# if NACL_TARGET_SUBARCH != 64
-#  error("Can't compile, target is for x86-64")
-# endif
+/*
+ * Be sure the correct compile flags are defined for this.
+ * TODO(khim): Try to figure out if these checks actually make any sense.
+ *             I don't foresee any use in cross-environment, but it should work
+ *             and may be useful in some case so why not?
+ */
+#if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86 || NACL_TARGET_SUBARCH != 64
+# error "Can't compile, target is for x86-64"
 #endif
 
 
@@ -44,8 +45,8 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
     return NaClValidationFailed;
   if (ValidateChunkAMD64(data, size, 0 /*options*/, cpu_features,
                          readonly_text ?
-                           ProcessError :
-                           StubOutCPUUnsupportedInstruction,
+                           NaClDfaProcessValidationError :
+                           NaClDfaStubOutCPUUnsupportedInstruction,
                          &status))
     return NaClValidationSucceeded;
   if (errno == ENOMEM)
@@ -69,9 +70,9 @@ static NaClValidationStatus ValidatorCodeCopy_x86_64(
   if (size & kBundleMask)
     return NaClValidationFailed;
   callback_data.copy_func = copy_func;
-  callback_data.delta = data_existing - data_new;
+  callback_data.existing_minus_new = data_existing - data_new;
   if (ValidateChunkAMD64(data_new, size, CALL_USER_CALLBACK_ON_EACH_INSTRUCTION,
-                         cpu_features, ProcessCodeCopyInstruction,
+                         cpu_features, NaClDfaProcessCodeCopyInstruction,
                          &callback_data))
     return NaClValidationSucceeded;
   if (errno == ENOMEM)
@@ -82,31 +83,34 @@ static NaClValidationStatus ValidatorCodeCopy_x86_64(
 
 static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
                                               const uint8_t *end_new,
-                                              uint32_t info,
+                                              uint32_t info_new,
                                               void *callback_data) {
-  ptrdiff_t delta = (ptrdiff_t)callback_data;
-  size_t instruction_length = end_new - begin_new + 1;
-  const uint8_t *begin_existing = begin_new + delta;
-  const uint8_t *end_existing = end_new + delta;
+  ptrdiff_t existing_minus_new = (ptrdiff_t)callback_data;
+  /* TODO(khim): change ABI to pass next_existing instead.  */
+  const uint8_t *next_new = end_new + 1;
+  size_t instruction_length = next_new - begin_new;
+  const uint8_t *begin_existing = begin_new + existing_minus_new;
+  const uint8_t *next_existing = next_new + existing_minus_new;
 
-  /* Sanity check: instruction must be shorter then 15 bytes.  */
+  /* Sanity check: instruction must be no longer than 17 bytes.  */
   CHECK(instruction_length <= MAX_INSTRUCTION_LENGTH);
 
   /* Unsupported instruction must have been replaced with HLTs.  */
-  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION)
-    return CodeReplacementIsStubouted(begin_existing, instruction_length);
+  if ((info_new & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION)
+    return NaClDfaCodeReplacementIsStubouted(begin_existing,
+                                             instruction_length);
 
   /* If we have jump which jumps out of it's range...  */
-  if (info & DIRECT_JUMP_OUT_OF_RANGE) {
+  if (info_new & DIRECT_JUMP_OUT_OF_RANGE) {
     /* then everything is fine if it's the only error and jump is unchanged!  */
-    if ((info & VALIDATION_ERRORS_MASK) == DIRECT_JUMP_OUT_OF_RANGE &&
+    if ((info_new & VALIDATION_ERRORS_MASK) == DIRECT_JUMP_OUT_OF_RANGE &&
         memcmp(begin_new, begin_existing, instruction_length) == 0)
       return TRUE;
     return FALSE;
   }
 
   /* If instruction is not accepted then we have nothing to do here.  */
-  if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+  if (info_new & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
     return FALSE;
 
   /* Instruction is untouched: we are done.  */
@@ -114,27 +118,54 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
     return TRUE;
 
   /* Only some instructions can be modified.  */
-  if (!(info & MODIFIABLE_INSTRUCTION))
+  if (!(info_new & MODIFIABLE_INSTRUCTION))
     return FALSE;
 
   /*
-   * Instruction with two-bit immediate can only change these these two bits and
+   * In order to understand where the following three cases came from you need
+   * to understand that there are three kinds of instructions:
+   *  - "normal" x86 instructions
+   *  - x86 instructions which [ab]use "immediate" field in the instructions
+   *     - 3DNow! x86 instructions use it as an opcode extentions
+   *     - four-operand instructions encode fourth register in it
+   *  - five-operands instructions encode 2bit immediate and fourth register
+   *
+   * For the last two cases we need to keep either the whole last byte or at
+   * least non-immediate part of it intact.
+   *
+   * See Figure 1-1 "Instruction Encoding Syntax" in AMDs third volume
+   * "General-Purpose and System Instructions" for the information about
+   * "normal" x86 instructions and 3DNow! instructions.
+   *
+   * See Figure 1-1 "Typical Descriptive Synopsis - Extended SSE Instructions"
+   * in AMDs fourth volume "128-Bit and 256-Bit Media Instructions" and the
+   * "Immediate Byte Usage Unique to the SSE instructions" for the information
+   * about four-operand and five-operand instructions.
+   */
+
+  /*
+   * Instruction with two-bit immediate can only change these two bits and
    * immediate/displacement.
    */
-  if ((info & IMMEDIATE_2BIT) == IMMEDIATE_2BIT)
+  if ((info_new & IMMEDIATE_2BIT) == IMMEDIATE_2BIT)
     return memcmp(begin_new, begin_existing,
-                  instruction_length - INFO_IMMEDIATES_SIZE(info) - 1) == 0 &&
-           (*end_new & 0xfc) == (*end_existing & 0xfc);
+                  instruction_length -
+                  INFO_ANYFIELDS_SIZE(info_new) - 1) == 0 &&
+           (next_new[-1] & 0xfc) == (next_existing[-1] & 0xfc);
 
   /* Instruction's last byte is not immediate, thus it must be unchanged.  */
-  if (info & LAST_BYTE_IS_NOT_IMMEDIATE)
+  if (info_new & LAST_BYTE_IS_NOT_IMMEDIATE)
     return memcmp(begin_new, begin_existing,
-                  instruction_length - INFO_IMMEDIATES_SIZE(info) - 1) == 0 &&
-           (*end_new) == (*end_existing);
+                  instruction_length -
+                  INFO_ANYFIELDS_SIZE(info_new) - 1) == 0 &&
+           next_new[-1] == next_existing[-1];
 
-  /* Normal instruction can only change an immediate.  */
+  /*
+   * Normal instruction can only change an anyfied: immediate, displacement or
+   * relative offset.
+   */
   return memcmp(begin_new, begin_existing,
-                instruction_length - INFO_IMMEDIATES_SIZE(info)) == 0;
+                instruction_length - INFO_ANYFIELDS_SIZE(info_new)) == 0;
 }
 
 static NaClValidationStatus ValidatorCodeReplacement_x86_64(

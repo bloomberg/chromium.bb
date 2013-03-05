@@ -92,7 +92,7 @@ enum validation_callback_info {
   BAD_JUMP_TARGET               = 0x40000000
 };
 
-#define INFO_IMMEDIATES_SIZE(info) \
+#define INFO_ANYFIELDS_SIZE(info) \
   ((info) & IMMEDIATES_SIZE_MASK)
 /*
  * 0: no displacement
@@ -104,14 +104,15 @@ enum validation_callback_info {
   (((info) & DISPLACEMENT_SIZE_MASK) >> DISPLACEMENT_SIZE_SHIFT)
 #define INFO_DISPLACEMENT_SIZE(info) \
   ((1 << INFO_DISPLACEMENT_CODE(info)) >> 1)
+/* Instructions with relative offsets don't include any other anyfields.  */
 #define INFO_RELATIVE_SIZE(info) \
-  ((info) & RELATIVE_PRESENT ? INFO_IMMEDIATES_SIZE(info) : 0)
+  ((info) & RELATIVE_PRESENT ? INFO_ANYFIELDS_SIZE(info) : 0)
 /* If we have the second immediate, the first immediate is always one byte.  */
 #define INFO_SECOND_IMMEDIATE_SIZE(info) \
   ((info) & IMMEDIATE_2BIT == SECOND_IMMEDIATE_PRESENT ? \
-    INFO_IMMEDIATES_SIZE(info) - INFO_DISPLACEMENT_SIZE(info) - 1 : 0)
+    INFO_ANYFIELDS_SIZE(info) - INFO_DISPLACEMENT_SIZE(info) - 1 : 0)
 #define INFO_IMMEDIATE_SIZE(info) \
-  INFO_IMMEDIATES_SIZE(info) - \
+  INFO_ANYFIELDS_SIZE(info) - \
   INFO_DISPLACEMENT_SIZE(info) - \
   INFO_RELATIVE_SIZE(info) - \
   INFO_SECOND_IMMEDIATE_SIZE(info)

@@ -15,8 +15,8 @@
           'target_name': 'dfa_validate_x86_32',
           'type': 'static_library',
           'sources' : [
-            'unreviewed/dfa_validate_32.c',
-            'unreviewed/dfa_validate_common.c',
+            'dfa_validate_32.c',
+            'dfa_validate_common.c',
             'unreviewed/validator_features_validator.c',
             'gen/validator_x86_32.c',
           ],
