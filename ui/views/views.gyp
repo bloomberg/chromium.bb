@@ -659,6 +659,7 @@
         'controls/combobox/native_combobox_views_unittest.cc',
         'controls/label_unittest.cc',
         'controls/menu/menu_model_adapter_unittest.cc',
+        'controls/native/native_view_host_aura_unittest.cc',
         'controls/native/native_view_host_unittest.cc',
         'controls/progress_bar_unittest.cc',
         'controls/scrollbar/scrollbar_unittest.cc',
@@ -729,6 +730,7 @@
           ],
         }, {  # use_aura==0
           'sources!': [
+            'controls/native/native_view_host_aura_unittest.cc',
             'widget/native_widget_aura_unittest.cc',
           ],
           'sources/': [

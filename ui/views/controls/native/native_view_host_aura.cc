@@ -18,6 +18,8 @@ NativeViewHostAura::NativeViewHostAura(NativeViewHost* host)
 }
 
 NativeViewHostAura::~NativeViewHostAura() {
+  if (host_->native_view())
+    host_->native_view()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

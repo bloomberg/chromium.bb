@@ -12,6 +12,7 @@
 
 namespace views {
 
+class NativeViewHostAuraTest;
 class NativeViewHostWrapper;
 
 // A View type that hosts a gfx::NativeView. The bounds of the native view are
@@ -91,6 +92,8 @@ class VIEWS_EXPORT NativeViewHost : public View {
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
+  friend class NativeViewHostAuraTest;
+
   // Detach the native view. |destroyed| is true if the native view is
   // detached because it's being destroyed, or false otherwise.
   void Detach(bool destroyed);
