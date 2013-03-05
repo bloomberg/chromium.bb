@@ -957,6 +957,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 	EGLBoolean ret;
 	static int errored;
 	int32_t width, height, i;
+	pixman_region32_t total_damage;
 
 	width = output->current->width +
 		output->border.left + output->border.right;
@@ -987,10 +988,13 @@ gl_renderer_repaint_output(struct weston_output *output,
 				      &go->buffer_damage[i],
 				      output_damage);
 
-	pixman_region32_union(output_damage, output_damage,
-			      &go->buffer_damage[go->current_buffer]);
+	pixman_region32_init(&total_damage);
+	pixman_region32_copy(&total_damage,
+			     &go->buffer_damage[go->current_buffer]);
 
-	repaint_surfaces(output, output_damage);
+	repaint_surfaces(output, &total_damage);
+
+	pixman_region32_fini(&total_damage);
 
 	if (gr->border.texture)
 		draw_border(output);
