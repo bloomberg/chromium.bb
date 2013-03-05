@@ -130,13 +130,6 @@ def expand_symlinks(indir, relfile):
   if sys.platform == 'win32':
     return relfile, []
 
-  filepath = os.path.join(indir, relfile)
-  native_filepath = trace_inputs.get_native_path_case(filepath)
-  if filepath != native_filepath:
-    raise run_isolated.MappingError('File path doesn\'t equal native file '
-                                    'path\n%s!=%s' % (filepath,
-                                                      native_filepath))
-
   is_directory = relfile.endswith(os.path.sep)
   done = indir
   todo = relfile.strip(os.path.sep)
@@ -204,6 +197,13 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
   if not infile.startswith(indir):
     raise run_isolated.MappingError(
         'Can\'t map file %s outside %s' % (infile, indir))
+
+  filepath = os.path.join(indir, relfile)
+  native_filepath = trace_inputs.get_native_path_case(filepath)
+  if filepath != native_filepath:
+    raise run_isolated.MappingError('File path doesn\'t equal native file '
+                                    'path\n%s!=%s' % (filepath,
+                                                      native_filepath))
 
   relfile, symlinks = expand_symlinks(indir, relfile)
 
