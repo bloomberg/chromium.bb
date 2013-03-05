@@ -66,6 +66,9 @@
         '--variable', 'chromeos', '<(chromeos)',
         '--result', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
+        # Remove once mac compiles are fixed.
+        '-v',
+        '-v',
       ],
       'msvs_cygwin_shell': 0,
     },
