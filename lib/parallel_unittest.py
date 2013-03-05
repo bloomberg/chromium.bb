@@ -232,7 +232,6 @@ class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
     self.failed.set()
 
   def testExceptionRaising(self):
-    self.StartPatcher(BackgroundTaskVerifier())
     steps = [self._Exit, self._Fail, self._Pass]
     output_str = None
     with self.OutputCapturer() as capture:

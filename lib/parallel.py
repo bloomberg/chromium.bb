@@ -6,6 +6,7 @@
 
 import collections
 import contextlib
+import errno
 import functools
 import multiprocessing
 import os
@@ -52,19 +53,22 @@ class _BackgroundSteps(multiprocessing.Process):
     output = tempfile.NamedTemporaryFile(delete=False, bufsize=0)
     self._steps.append((step, output))
 
-  def WaitForStartup(self):
-    """Wait for the process to start up."""
+  def Kill(self):
+    """Kill a running task."""
     self._started.wait()
+    # Kill the children nicely with a KeyboardInterrupt.
+    try:
+      os.kill(self.pid, signal.SIGINT)
+    except OSError as ex:
+      if ex.errno != errno.ESRCH:
+        raise
 
-  def WaitForStep(self, silent=False):
+  def WaitForStep(self):
     """Wait for the next step to complete.
 
     Output from the step is printed as the step runs.
 
     If an exception occurs, return a string containing the traceback.
-
-    Arguments:
-      silent: If True, squelch all output from the step.
     """
     assert not self.Empty()
     _step, output = self._steps.popleft()
@@ -92,8 +96,7 @@ class _BackgroundSteps(multiprocessing.Process):
         output.seek(pos)
         buf = output.read(_BUFSIZE)
         while len(buf) > 0:
-          if not silent:
-            sys.stdout.write(buf)
+          sys.stdout.write(buf)
           pos += len(buf)
           if len(buf) < _BUFSIZE:
             break
@@ -219,14 +222,13 @@ def _ParallelSteps(steps, max_parallel=None, halt_on_error=False):
     tracebacks = []
     for bg in bg_steps:
       while not bg.Empty():
-        halt = tracebacks and halt_on_error
-        if halt:
-          # Kill the children nicely with a KeyboardInterrupt.
-          bg.WaitForStartup()
-          os.kill(bg.pid, signal.SIGINT)
-        error = bg.WaitForStep(silent=halt)
-        if not halt and error is not None:
-          tracebacks.append(error)
+        if tracebacks and halt_on_error:
+          bg.Kill()
+          break
+        else:
+          error = bg.WaitForStep()
+          if error is not None:
+            tracebacks.append(error)
       bg.join()
 
     # Propagate any exceptions.
