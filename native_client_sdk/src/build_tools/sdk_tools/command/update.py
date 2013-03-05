@@ -212,8 +212,11 @@ def _GetRequestedBundleNamesFromArgs(remote_manifest, requested_bundles):
 
 
 def _GetRecommendedBundleNames(remote_manifest):
-  return [bundle.name for bundle in remote_manifest.GetBundles() if
-      bundle.recommended]
+  result = []
+  for bundle in remote_manifest.GetBundles():
+    if bundle.recommended == 'yes' and bundle.name != SDK_TOOLS:
+      result.append(bundle.name)
+  return result
 
 
 def _BundleNeedsUpdate(delegate, local_manifest, bundle):

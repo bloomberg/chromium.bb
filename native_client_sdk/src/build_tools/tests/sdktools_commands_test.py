@@ -227,10 +227,18 @@ class TestCommands(SdkToolsTestCase):
     """The update command should update only recommended bundles when run
     without args.
     """
-    bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
-    bundle.recommended = 'yes'
+    bundle_25 = self._AddDummyBundle(self.manifest, 'pepper_25')
+    bundle_25.recommended = 'no'
+    bundle_26 = self._AddDummyBundle(self.manifest, 'pepper_26')
+    bundle_26.recommended = 'yes'
+
     self._WriteManifest()
     output = self._Run(['update'])
+
+    # Should not try to update sdk_tools (even though it is recommended)
+    self.assertTrue('Ignoring manual update request.' not in output)
+    self.assertFalse(os.path.exists(
+        os.path.join(self.basedir, 'nacl_sdk', 'pepper_25')))
     self.assertTrue(os.path.exists(
         os.path.join(self.basedir, 'nacl_sdk', 'pepper_26', 'dummy.txt')))
 
@@ -241,7 +249,7 @@ class TestCommands(SdkToolsTestCase):
     bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
     bundle.name = 'pepper_canary'
     self._WriteManifest()
-    output = self._Run(['update'])
+    output = self._Run(['update', 'pepper_canary'])
     self.assertTrue(os.path.exists(
         os.path.join(self.basedir, 'nacl_sdk', 'pepper_canary', 'dummy.txt')))
 
@@ -255,7 +263,7 @@ class TestCommands(SdkToolsTestCase):
     archive2.host_os = 'all'
     bundle.AddArchive(archive2)
     self._WriteManifest()
-    output = self._Run(['update'])
+    output = self._Run(['update', 'pepper_26'])
     self.assertTrue(os.path.exists(
         os.path.join(self.basedir, 'nacl_sdk', 'pepper_26', 'dummy.txt')))
     self.assertTrue(os.path.exists(
