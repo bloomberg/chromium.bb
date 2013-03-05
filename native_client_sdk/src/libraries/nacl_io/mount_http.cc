@@ -418,7 +418,7 @@ int MountNodeHttp::DownloadToCache() {
 }
 
 int MountNodeHttp::ReadPartialFromCache(size_t offs, void* buf, size_t count) {
-  if (offs >= cached_data_.size()) {
+  if (offs > cached_data_.size()) {
     errno = EINVAL;
     return -1;
   }
