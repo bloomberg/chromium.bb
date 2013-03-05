@@ -151,7 +151,7 @@ string16 Address::GetInfo(AutofillFieldType type) const {
       return locality_name();
 
     case ADDRESS_HOME_STATE:
-      return admin_area_name();
+      return administrative_area_name();
 
     case ADDRESS_HOME_ZIP:
       return postal_code_number();
