@@ -414,15 +414,6 @@
       'spdy_proxy_auth_property%' : '',
 
       'conditions': [
-        # TODO(epoger): Figure out how to set use_skia=1 for Mac outside of
-        # the 'conditions' clause.  Initial attempts resulted in chromium and
-        # webkit disagreeing on its setting.
-        ['OS=="mac"', {
-          'use_skia%': 1,
-        }, {
-          'use_skia%': 1,
-        }],
-
         # A flag for POSIX platforms
         ['OS=="win"', {
           'os_posix%': 0,
@@ -680,7 +671,6 @@
     'os_posix%': '<(os_posix)',
     'use_glib%': '<(use_glib)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
-    'use_skia%': '<(use_skia)',
     'use_x11%': '<(use_x11)',
     'use_gnome_keyring%': '<(use_gnome_keyring)',
     'linux_fpic%': '<(linux_fpic)',
@@ -1659,6 +1649,9 @@
         }],
       ],
     },
+    # TODO(teravest): Remove this define once uses of USE_SKIA are cleaned up
+    # throughout the codebase.
+    'defines' : ['USE_SKIA'],
     'conditions': [
       ['OS=="linux" and linux_use_tcmalloc==1 and clang_type_profiler==1', {
         'cflags_cc!': ['-fno-rtti'],
@@ -1862,11 +1855,6 @@
       ['enable_eglimage==1', {
         'defines': [
           'ENABLE_EGLIMAGE=1',
-        ],
-      }],
-      ['use_skia==1', {
-        'defines': [
-          'USE_SKIA=1',
         ],
       }],
       ['asan==1 and OS=="win"', {
