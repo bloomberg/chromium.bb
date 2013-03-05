@@ -19,7 +19,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_file_writer.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -80,6 +80,7 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       upload_content_set_(false),
       is_chunked_upload_(false),
       was_cancelled_(false),
+      file_writer_(NULL),
       response_destination_(STRING),
       stop_on_redirect_(false),
       stopped_on_redirect_(false),
@@ -310,7 +311,7 @@ bool URLFetcherCore::FileErrorOccurred(
     base::PlatformFileError* out_error_code) const {
 
   // Can't have a file error if no file is being created or written to.
-  if (!file_writer_.get())
+  if (!file_writer_)
     return false;
 
   base::PlatformFileError error_code = file_writer_->error_code();
@@ -347,7 +348,7 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   const bool destination_is_file =
       response_destination_ == URLFetcherCore::TEMP_FILE ||
       response_destination_ == URLFetcherCore::PERMANENT_FILE;
-  if (!destination_is_file || !file_writer_.get())
+  if (!destination_is_file || !file_writer_)
     return false;
 
   *out_response_path = file_writer_->file_path();
@@ -424,10 +425,13 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     InformDelegateDownloadProgress();
     InformDelegateDownloadDataIfNecessary(bytes_read);
 
-    if (!WriteBuffer(bytes_read)) {
-      // If WriteBuffer() returns false, we have a pending write to
-      // wait on before reading further.
-      waiting_on_write = true;
+    const int result = response_writer_->Write(
+        buffer_, bytes_read,
+        base::Bind(&URLFetcherCore::DidWriteBuffer, this));
+    if (result < 0) {
+      // Write failed or waiting for write completion.
+      if (result == ERR_IO_PENDING)
+        waiting_on_write = true;
       break;
     }
   } while (request_->Read(buffer_, kBufferSize, &bytes_read));
@@ -443,15 +447,11 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     status_ = status;
     ReleaseRequest();
 
-    // If a file is open, close it.
-    if (file_writer_.get()) {
-      // If the file is open, close it.  After closing the file,
-      // RetryOrCompleteUrlFetch() will be called.
-      file_writer_->CloseFile(base::Bind(&URLFetcherCore::DidCloseFile, this));
-    } else {
-      // Otherwise, complete or retry the URL request directly.
-      RetryOrCompleteUrlFetch();
-    }
+    // No more data to write.
+    const int result = response_writer_->Finish(
+        base::Bind(&URLFetcherCore::DidFinishWriting, this));
+    if (result != ERR_IO_PENDING)
+      DidFinishWriting(result);
   }
 }
 
@@ -482,7 +482,7 @@ void URLFetcherCore::StartOnIOThread() {
 
   switch (response_destination_) {
     case STRING:
-      StartURLRequestWhenAppropriate();
+      response_writer_.reset(new URLFetcherStringWriter(&data_));
       break;
 
     case PERMANENT_FILE:
@@ -490,28 +490,25 @@ void URLFetcherCore::StartOnIOThread() {
       DCHECK(file_task_runner_.get())
           << "Need to set the file task runner.";
 
-      file_writer_.reset(new URLFetcherFileWriter(file_task_runner_));
+      file_writer_ = new URLFetcherFileWriter(file_task_runner_);
 
       // If the file is successfully created,
       // URLFetcherCore::StartURLRequestWhenAppropriate() will be called.
-      switch (response_destination_) {
-        case PERMANENT_FILE:
-          file_writer_->CreateFileAtPath(
-              response_destination_file_path_,
-              base::Bind(&URLFetcherCore::DidCreateFile, this));
-          break;
-        case TEMP_FILE:
-          file_writer_->CreateTempFile(
-              base::Bind(&URLFetcherCore::DidCreateFile, this));
-          break;
-        default:
-          NOTREACHED();
+      if (response_destination_ == PERMANENT_FILE) {
+        file_writer_->set_destination_file_path(
+            response_destination_file_path_);
       }
+      response_writer_.reset(file_writer_);
       break;
 
     default:
       NOTREACHED();
   }
+  DCHECK(response_writer_);
+  const int result = response_writer_->Initialize(
+      base::Bind(&URLFetcherCore::DidInitializeWriter, this));
+  if (result != ERR_IO_PENDING)
+    DidInitializeWriter(result);
 }
 
 void URLFetcherCore::StartURLRequest() {
@@ -611,12 +608,12 @@ void URLFetcherCore::StartURLRequest() {
 
   // If we are writing the response to a file, the only caller
   // of this function should have created it and not written yet.
-  DCHECK(!file_writer_.get() || file_writer_->total_bytes_written() == 0);
+  DCHECK(!file_writer_ || file_writer_->total_bytes_written() == 0);
 
   request_->Start();
 }
 
-void URLFetcherCore::DidCreateFile(int result) {
+void URLFetcherCore::DidInitializeWriter(int result) {
   if (result != OK) {
     delegate_task_runner_->PostTask(
         FROM_HERE,
@@ -673,7 +670,8 @@ void URLFetcherCore::CancelURLRequest() {
   url_request_data_key_ = NULL;
   url_request_create_data_callback_.Reset();
   was_cancelled_ = true;
-  file_writer_.reset();
+  response_writer_.reset();
+  file_writer_ = NULL;
 }
 
 void URLFetcherCore::OnCompletedURLRequest(
@@ -709,7 +707,7 @@ void URLFetcherCore::NotifyMalformedContent() {
   }
 }
 
-void URLFetcherCore::DidCloseFile(int result) {
+void URLFetcherCore::DidFinishWriting(int result) {
   if (result != OK) {
     delegate_task_runner_->PostTask(
         FROM_HERE,
@@ -816,32 +814,6 @@ void URLFetcherCore::CompleteAddingUploadDataChunk(
                                 is_last_chunk);
 }
 
-// Return true if the write was done and reading may continue.
-// Return false if the write is pending, and the next read will
-// be done later.
-bool URLFetcherCore::WriteBuffer(int num_bytes) {
-  bool write_complete = false;
-  switch (response_destination_) {
-    case STRING:
-      data_.append(buffer_->data(), num_bytes);
-      write_complete = true;
-      break;
-
-    case PERMANENT_FILE:
-    case TEMP_FILE:
-      file_writer_->Write(buffer_, num_bytes,
-                          base::Bind(&URLFetcherCore::DidWriteBuffer, this));
-      // WriteBuffer() sends a request the file thread.
-      // The write is not done yet.
-      write_complete = false;
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  return write_complete;
-}
-
 void URLFetcherCore::DidWriteBuffer(int result) {
   if (result < 0) {
     delegate_task_runner_->PostTask(
@@ -866,6 +838,7 @@ void URLFetcherCore::ReadResponse() {
 }
 
 void URLFetcherCore::DisownFile() {
+  DCHECK(file_writer_);
   file_writer_->DisownFile();
 }
 

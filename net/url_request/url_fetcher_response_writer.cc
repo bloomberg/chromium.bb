@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_fetcher_file_writer.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 
 #include "base/files/file_util_proxy.h"
 #include "base/single_thread_task_runner.h"
@@ -11,11 +11,36 @@
 
 namespace net {
 
+URLFetcherStringWriter::URLFetcherStringWriter(std::string* string)
+    : string_(string) {
+}
+
+URLFetcherStringWriter::~URLFetcherStringWriter() {
+}
+
+int URLFetcherStringWriter::Initialize(const CompletionCallback& callback) {
+  // Do nothing.
+  return OK;
+}
+
+int URLFetcherStringWriter::Write(IOBuffer* buffer,
+                                  int num_bytes,
+                                  const CompletionCallback& callback) {
+  string_->append(buffer->data(), num_bytes);
+  return num_bytes;
+}
+
+int URLFetcherStringWriter::Finish(const CompletionCallback& callback) {
+  // Do nothing.
+  return OK;
+}
+
 URLFetcherFileWriter::URLFetcherFileWriter(
     scoped_refptr<base::TaskRunner> file_task_runner)
     : error_code_(base::PLATFORM_FILE_OK),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_task_runner_(file_task_runner),
+      owns_file_(false),
       file_handle_(base::kInvalidPlatformFileValue),
       total_bytes_written_(0) {
   DCHECK(file_task_runner_.get());
@@ -25,33 +50,52 @@ URLFetcherFileWriter::~URLFetcherFileWriter() {
   CloseAndDeleteFile();
 }
 
-void URLFetcherFileWriter::CreateFileAtPath(
-    const base::FilePath& file_path,
-    const CompletionCallback& callback) {
-  base::FileUtilProxy::CreateOrOpen(
-      file_task_runner_,
-      file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-      base::Bind(&URLFetcherFileWriter::DidCreateFile,
-                 weak_factory_.GetWeakPtr(),
-                 callback,
-                 file_path));
+int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
+  DCHECK_EQ(base::kInvalidPlatformFileValue, file_handle_);
+  DCHECK(!owns_file_);
+
+  if (file_path_.empty()) {
+    base::FileUtilProxy::CreateTemporary(
+        file_task_runner_,
+        0,  // No additional file flags.
+        base::Bind(&URLFetcherFileWriter::DidCreateTempFile,
+                   weak_factory_.GetWeakPtr(),
+                   callback));
+  } else {
+    base::FileUtilProxy::CreateOrOpen(
+        file_task_runner_,
+        file_path_,
+        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+        base::Bind(&URLFetcherFileWriter::DidCreateFile,
+                   weak_factory_.GetWeakPtr(),
+                   callback,
+                   file_path_));
+  }
+  return ERR_IO_PENDING;
 }
 
-void URLFetcherFileWriter::CreateTempFile(const CompletionCallback& callback) {
-  base::FileUtilProxy::CreateTemporary(
-      file_task_runner_,
-      0,  // No additional file flags.
-      base::Bind(&URLFetcherFileWriter::DidCreateTempFile,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
-}
+int URLFetcherFileWriter::Write(IOBuffer* buffer,
+                                int num_bytes,
+                                const CompletionCallback& callback) {
+  DCHECK_NE(base::kInvalidPlatformFileValue, file_handle_);
+  DCHECK(owns_file_);
 
-void URLFetcherFileWriter::Write(scoped_refptr<IOBuffer> buffer,
-                                 int num_bytes,
-                                 const CompletionCallback& callback) {
   ContinueWrite(new DrainableIOBuffer(buffer, num_bytes), callback,
                 base::PLATFORM_FILE_OK, 0);
+  return ERR_IO_PENDING;
+}
+
+int URLFetcherFileWriter::Finish(const CompletionCallback& callback) {
+  if (file_handle_ != base::kInvalidPlatformFileValue) {
+    base::FileUtilProxy::Close(
+        file_task_runner_, file_handle_,
+        base::Bind(&URLFetcherFileWriter::DidCloseFile,
+                   weak_factory_.GetWeakPtr(),
+                   callback));
+    file_handle_ = base::kInvalidPlatformFileValue;
+    return ERR_IO_PENDING;
+  }
+  return OK;
 }
 
 void URLFetcherFileWriter::ContinueWrite(
@@ -88,31 +132,22 @@ void URLFetcherFileWriter::ContinueWrite(
                    callback));
   } else {
     // Finished writing buffer to the file.
-    callback.Run(OK);
+    callback.Run(buffer->size());
   }
 }
 
 void URLFetcherFileWriter::DisownFile() {
   // Disowning is done by the delegate's OnURLFetchComplete method.
   // The file should be closed by the time that method is called.
-  DCHECK(file_handle_ == base::kInvalidPlatformFileValue);
+  DCHECK_EQ(base::kInvalidPlatformFileValue, file_handle_);
 
-  // Forget about any file by reseting the path.
-  file_path_.clear();
-}
-
-void URLFetcherFileWriter::CloseFile(const CompletionCallback& callback) {
-  if (file_handle_ != base::kInvalidPlatformFileValue) {
-    base::FileUtilProxy::Close(
-        file_task_runner_, file_handle_,
-        base::Bind(&URLFetcherFileWriter::DidCloseFile,
-                   weak_factory_.GetWeakPtr(),
-                   callback));
-    file_handle_ = base::kInvalidPlatformFileValue;
-  }
+  owns_file_ = false;
 }
 
 void URLFetcherFileWriter::CloseAndDeleteFile() {
+  if (!owns_file_)
+    return;
+
   if (file_handle_ == base::kInvalidPlatformFileValue) {
     DeleteFile(base::PLATFORM_FILE_OK);
     return;
@@ -125,8 +160,7 @@ void URLFetcherFileWriter::CloseAndDeleteFile() {
   file_handle_ = base::kInvalidPlatformFileValue;
 }
 
-void URLFetcherFileWriter::DeleteFile(
-    base::PlatformFileError error_code) {
+void URLFetcherFileWriter::DeleteFile(base::PlatformFileError error_code) {
   if (file_path_.empty())
     return;
 
@@ -163,9 +197,9 @@ void URLFetcherFileWriter::DidCreateFileInternal(
     file_path_ = file_path;
     file_handle_ = file_handle.ReleaseValue();
     total_bytes_written_ = 0;
+    owns_file_ = true;
   } else {
     error_code_ = error_code;
-    CloseAndDeleteFile();
   }
   callback.Run(PlatformFileErrorToNetError(error_code));
 }
