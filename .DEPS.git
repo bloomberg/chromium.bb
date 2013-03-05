@@ -80,7 +80,7 @@ deps = {
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@fa43a22c16ae2b81f2532c907fb9eb2c1cd2a373',
     'src/third_party/libyuv':
-        Var('git_url') + '/external/libyuv.git@a9c9242a557c0202454733bab66521bff2e35fc9',
+        Var('git_url') + '/external/libyuv.git@e1bb5d94302dfa31c305bd8d0e3083a70cac5d77',
     'src/third_party/opus/src':
         Var('git_url') + '/chromium/deps/opus.git@6b6bee25314cfac02cc555cddedb9680c63a26d6',
     'src/third_party/ots':
