@@ -13,6 +13,7 @@
 
 namespace remoting {
 
+typedef TypedBuffer<ACL> ScopedAcl;
 typedef TypedBuffer<SECURITY_DESCRIPTOR> ScopedSd;
 typedef TypedBuffer<SID> ScopedSid;
 
@@ -25,6 +26,15 @@ std::string ConvertSidToString(SID* sid);
 // Returns the logon SID of a token. Returns NULL if the token does not specify
 // a logon SID or in case of an error.
 ScopedSid GetLogonSid(HANDLE token);
+
+// Converts a security descriptor in self-relative format to a security
+// descriptor in absolute format.
+bool MakeScopedAbsoluteSd(const ScopedSd& relative_sd,
+                          ScopedSd* absolute_sd,
+                          ScopedAcl* dacl,
+                          ScopedSid* group,
+                          ScopedSid* owner,
+                          ScopedAcl* sacl);
 
 }  // namespace remoting
 

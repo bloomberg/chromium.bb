@@ -65,4 +65,61 @@ ScopedSid GetLogonSid(HANDLE token) {
   return ScopedSid();
 }
 
+bool MakeScopedAbsoluteSd(const ScopedSd& relative_sd,
+                          ScopedSd* absolute_sd,
+                          ScopedAcl* dacl,
+                          ScopedSid* group,
+                          ScopedSid* owner,
+                          ScopedAcl* sacl) {
+  // Get buffer sizes.
+  DWORD absolute_sd_size = 0;
+  DWORD dacl_size = 0;
+  DWORD group_size = 0;
+  DWORD owner_size = 0;
+  DWORD sacl_size = 0;
+  if (MakeAbsoluteSD(relative_sd.get(),
+                     NULL,
+                     &absolute_sd_size,
+                     NULL,
+                     &dacl_size,
+                     NULL,
+                     &sacl_size,
+                     NULL,
+                     &owner_size,
+                     NULL,
+                     &group_size) ||
+      GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+    return false;
+  }
+
+  // Allocate buffers.
+  ScopedSd local_absolute_sd(absolute_sd_size);
+  ScopedAcl local_dacl(dacl_size);
+  ScopedSid local_group(group_size);
+  ScopedSid local_owner(owner_size);
+  ScopedAcl local_sacl(sacl_size);
+
+  // Do the conversion.
+  if (!MakeAbsoluteSD(relative_sd.get(),
+                      local_absolute_sd.get(),
+                      &absolute_sd_size,
+                      local_dacl.get(),
+                      &dacl_size,
+                      local_sacl.get(),
+                      &sacl_size,
+                      local_owner.get(),
+                      &owner_size,
+                      local_group.get(),
+                      &group_size)) {
+    return false;
+  }
+
+  absolute_sd->Swap(local_absolute_sd);
+  dacl->Swap(local_dacl);
+  group->Swap(local_group);
+  owner->Swap(local_owner);
+  sacl->Swap(local_sacl);
+  return true;
+}
+
 }  // namespace remoting

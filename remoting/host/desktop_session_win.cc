@@ -23,7 +23,7 @@ using base::win::ScopedHandle;
 namespace {
 
 // The security descriptor of the daemon IPC endpoint. It gives full access
-// to LocalSystem and denies access by anyone else.
+// to SYSTEM and denies access by anyone else.
 const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
 
 // The command line parameters that should be copied from the service's command

@@ -7,6 +7,7 @@
 
 #include "remoting/host/win/host_service.h"
 
+#include <sddl.h>
 #include <windows.h>
 #include <wtsapi32.h>
 
@@ -21,6 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/wrapped_window_proc.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/scoped_sc_handle_win.h"
@@ -28,6 +30,7 @@
 #include "remoting/host/branding.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
+#include "remoting/host/win/security_descriptor.h"
 
 #if defined(REMOTING_MULTI_PROCESS)
 #include "remoting/host/daemon_process.h"
@@ -39,6 +42,8 @@
 #if !defined(REMOTING_MULTI_PROCESS)
 #include "remoting/host/win/wts_console_session_process_driver.h"
 #endif  // !defined(REMOTING_MULTI_PROCESS)
+
+namespace remoting {
 
 namespace {
 
@@ -60,9 +65,78 @@ const wchar_t kSessionNotificationWindowClass[] =
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
 
-}  // namespace
+// Concatenates ACE type, permissions and sid given as SDDL strings into an ACE
+// definition in SDDL form.
+#define SDDL_ACE(type, permissions, sid) \
+    L"(" type L";;" permissions L";;;" sid L")"
 
-namespace remoting {
+// Text representation of COM_RIGHTS_EXECUTE and COM_RIGHTS_EXECUTE_LOCAL
+// permission bits that is used in the SDDL definition below.
+#define SDDL_COM_EXECUTE_LOCAL L"0x3"
+
+// A security descriptor allowing local processes running under SYSTEM or
+// LocalService accounts at medium integrity level or higher to call COM
+// methods exposed by the daemon.
+const wchar_t kComProcessSd[] =
+    SDDL_OWNER L":" SDDL_LOCAL_SYSTEM
+    SDDL_GROUP L":" SDDL_LOCAL_SYSTEM
+    SDDL_DACL L":"
+    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_LOCAL_SYSTEM)
+    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_LOCAL_SERVICE)
+    SDDL_SACL L":"
+    SDDL_ACE(SDDL_MANDATORY_LABEL, SDDL_NO_EXECUTE_UP, SDDL_ML_MEDIUM);
+
+#undef SDDL_ACE
+#undef SDDL_COM_EXECUTE_LOCAL
+
+// Allows incoming calls from clients running under SYSTEM or LocalService at
+// medium integrity level.
+bool InitializeComSecurity() {
+  // Convert the SDDL description into a security descriptor in absolute format.
+  ScopedSd relative_sd = ConvertSddlToSd(WideToUTF8(kComProcessSd));
+  if (!relative_sd) {
+    LOG_GETLASTERROR(ERROR) << "Failed to create a security descriptor";
+    return false;
+  }
+  ScopedSd absolute_sd;
+  ScopedAcl dacl;
+  ScopedSid group;
+  ScopedSid owner;
+  ScopedAcl sacl;
+  if (!MakeScopedAbsoluteSd(relative_sd, &absolute_sd, &dacl, &group, &owner,
+                            &sacl)) {
+    LOG_GETLASTERROR(ERROR) << "MakeScopedAbsoluteSd() failed";
+    return false;
+  }
+
+  // Apply the security descriptor and the following settings:
+  //   - The daemon authenticates that all data received is from the expected
+  //     client.
+  //   - The daemon can impersonate clients to check their identity but cannot
+  //     act on their behalf.
+  //   - The caller's identity on every call (Dynamic cloaking).
+  //   - Activations where the activated COM server would run under the daemon's
+  //     identity are prohibited.
+  HRESULT result = CoInitializeSecurity(
+      absolute_sd.get(),
+      -1,       // Let COM choose which authentication services to register.
+      NULL,     // See above.
+      NULL,     // Reserved, must be NULL.
+      RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
+      RPC_C_IMP_LEVEL_IDENTIFY,
+      NULL,     // Default authentication information is not provided.
+      EOAC_DYNAMIC_CLOAKING | EOAC_DISABLE_AAA,
+      NULL);    /// Reserved, must be NULL
+  if (FAILED(result)) {
+    LOG(ERROR) << "CoInitializeSecurity() failed, result=0x"
+               << std::hex << result << std::dec << ".";
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 HostService* HostService::GetInstance() {
   return Singleton<HostService>::get();
@@ -388,7 +462,7 @@ int HostService::RunAsService() {
 }
 
 void HostService::RunAsServiceImpl() {
-  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
 
@@ -416,6 +490,14 @@ void HostService::RunAsServiceImpl() {
     return;
   }
 
+  // Initialize COM.
+  base::win::ScopedCOMInitializer com_initializer;
+  if (!com_initializer.succeeded())
+    return;
+
+  if (!InitializeComSecurity())
+    return;
+
   CreateLauncher(scoped_refptr<AutoThreadTaskRunner>(
       new AutoThreadTaskRunner(main_task_runner_,
                                run_loop.QuitClosure())));
@@ -439,6 +521,14 @@ int HostService::RunInConsole() {
   main_task_runner_ = message_loop.message_loop_proxy();
 
   int result = kInitializationFailed;
+
+  // Initialize COM.
+  base::win::ScopedCOMInitializer com_initializer;
+  if (!com_initializer.succeeded())
+    return result;
+
+  if (!InitializeComSecurity())
+    return result;
 
   // Subscribe to Ctrl-C and other console events.
   if (!SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, TRUE)) {

@@ -56,7 +56,7 @@
 
   <!--
     A security descriptor that gives SYSTEM, built-in administrators and
-    LocalSystem accounts COM_RIGHTS_EXECUTE, COM_RIGHTS_EXECUTE_LOCAL, and
+    LocalService accounts COM_RIGHTS_EXECUTE, COM_RIGHTS_EXECUTE_LOCAL, and
     COM_RIGHTS_ACTIVATE_LOCAL rights. It specifies a mandatory label that
     specifies "no execute up" policy for medium integrity level.
 
