@@ -188,7 +188,9 @@ class CONTENT_EXPORT WebContentsDelegate {
                                  bool* proceed_to_fire_unload);
 
   // Returns true if the location bar should be focused by default rather than
-  // the page contents.
+  // the page contents. NOTE: this is only used if WebContents can't determine
+  // for itself whether the location bar should be focused by default. For a
+  // complete check, you should use WebContents::FocusLocationBarByDefault().
   virtual bool ShouldFocusLocationBarByDefault(WebContents* source);
 
   // Sets focus to the location bar or some other place that is appropriate.
