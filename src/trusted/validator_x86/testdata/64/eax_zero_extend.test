@@ -1,0 +1,15 @@
+@hex:
+  # Attempt to zero-extend implicit eax operand:
+  #   or $0, %eax
+  #   xor %ebx, (%r15,%rax,1)
+  0d 00 00 00 00 \\
+  41 31 1c 07
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 0d 00 00 00 00                               or %eax, 0x0
+  0000000000000005: 41 31 1c 07                                  xor [%r15+%rax*1], %ebx
+@rdfa_output:
+  return code: 0

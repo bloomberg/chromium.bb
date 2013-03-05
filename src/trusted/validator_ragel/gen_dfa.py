@@ -668,7 +668,10 @@ class InstructionPrinter(object):
             def_format.OperandType.REGISTER_IN_OPCODE,
             def_format.OperandType.REGISTER_IN_VVVV,
             def_format.OperandType.REGISTER_IN_REG,
-            def_format.OperandType.REGISTER_IN_RM] and
+            def_format.OperandType.REGISTER_IN_RM,
+            def_format.OperandType.AX,
+            def_format.OperandType.CX,
+            def_format.OperandType.DX] and
         operand.GetFormat() in ['8bit', '16bit', '32bit', '64bit', 'regsize'])
 
   def _PrintOperandSource(self, operand, source):
