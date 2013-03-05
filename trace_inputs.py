@@ -276,7 +276,7 @@ elif sys.platform == 'darwin':
       # *is* in NFC, normalize it here.
       raw_nfd_path = rel_ref.FSRefMakePath().decode('utf-8')
       logging.debug('raw NFD path: %s' % raw_nfd_path)
-      out = unicodedata.normalize(raw_nfd_path)
+      out = unicodedata.normalize('NFC', raw_nfd_path)
       if p.endswith(os.path.sep) and not out.endswith(os.path.sep):
         return out + os.path.sep
       logging.debug('_native_case(%s) = %s' % (p, out))
