@@ -7245,7 +7245,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Chrome's language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
         </message>
         <message name="IDS_LOCALE_CHANGE_REVERT_MESSAGE" desc="Link to revert a change.">
-          Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
+          Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires sign out)
         </message>
 
         <!-- 3G data Notifications -->
