@@ -128,7 +128,8 @@ WebRequestConditionAttributeResourceType::Create(
 
   size_t number_types = value_as_list->GetSize();
 
-  std::vector<ResourceType::Type> passed_types(number_types);
+  std::vector<ResourceType::Type> passed_types;
+  passed_types.reserve(number_types);
   for (size_t i = 0; i < number_types; ++i) {
     std::string resource_type_string;
     ResourceType::Type type = ResourceType::LAST_TYPE;

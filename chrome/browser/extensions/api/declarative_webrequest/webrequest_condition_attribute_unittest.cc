@@ -76,7 +76,9 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
 
   std::string error;
   ListValue resource_types;
-  resource_types.Append(Value::CreateStringValue("main_frame"));
+  // The 'sub_frame' value is chosen arbitrarily, so as the corresponding
+  // ResourceType::Type is not 0, the default value.
+  resource_types.Append(Value::CreateStringValue("sub_frame"));
 
   scoped_ptr<WebRequestConditionAttribute> attribute =
       WebRequestConditionAttribute::Create(
@@ -88,14 +90,14 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   net::TestURLRequest url_request_ok(
       GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
-      ResourceType::MAIN_FRAME, NULL, -1, -1);
+      ResourceType::SUB_FRAME, NULL, -1, -1);
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(&url_request_ok,
                                                     ON_BEFORE_REQUEST)));
 
   net::TestURLRequest url_request_fail(
       GURL("http://www.example.com"), NULL, &context);
-  content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
-      ResourceType::SUB_FRAME, NULL, -1, -1);
+  content::ResourceRequestInfo::AllocateForTesting(&url_request_fail,
+      ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(&url_request_fail,
                                                      ON_BEFORE_REQUEST)));
 }
