@@ -661,53 +661,107 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DirectoryReader)
 // runs in process, so there's currently no need for a proxy.
 TEST_PPAPI_IN_PROCESS(UMA)
 
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreEqual)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreHostsEqual)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_Describe)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_ReplacePort)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetAnyAddress)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_DescribeIPv6)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetFamily)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetPort)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetAddress)
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetScopeID)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_AreEqual)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_AreHostsEqual)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_Describe)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_ReplacePort)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetAnyAddress)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_DescribeIPv6)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetFamily)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetPort)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetAddress)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetScopeID)
+// NetAddress tests
+IN_PROC_BROWSER_TEST_F(PPAPITest, NetAddress) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivate_AreEqual)
+      LIST_TEST(NetAddressPrivate_AreHostsEqual)
+      LIST_TEST(NetAddressPrivate_Describe)
+      LIST_TEST(NetAddressPrivate_ReplacePort)
+      LIST_TEST(NetAddressPrivate_GetAnyAddress)
+      LIST_TEST(NetAddressPrivate_DescribeIPv6)
+      LIST_TEST(NetAddressPrivate_GetFamily)
+      LIST_TEST(NetAddressPrivate_GetPort)
+      LIST_TEST(NetAddressPrivate_GetAddress)
+      LIST_TEST(NetAddressPrivate_GetScopeID)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddress) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivate_AreEqual)
+      LIST_TEST(NetAddressPrivate_AreHostsEqual)
+      LIST_TEST(NetAddressPrivate_Describe)
+      LIST_TEST(NetAddressPrivate_ReplacePort)
+      LIST_TEST(NetAddressPrivate_GetAnyAddress)
+      LIST_TEST(NetAddressPrivate_DescribeIPv6)
+      LIST_TEST(NetAddressPrivate_GetFamily)
+      LIST_TEST(NetAddressPrivate_GetPort)
+      LIST_TEST(NetAddressPrivate_GetAddress)
+      LIST_TEST(NetAddressPrivate_GetScopeID)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddress) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
+      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
+      LIST_TEST(NetAddressPrivateUntrusted_Describe)
+      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
+      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
+      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
+      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
+      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetAddress)) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
+      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
+      LIST_TEST(NetAddressPrivateUntrusted_Describe)
+      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
+      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
+      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
+      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
+      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
+  );
+}
 
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_AreEqual)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_AreHostsEqual)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_Describe)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_ReplacePort)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetAnyAddress)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetFamily)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetPort)
-TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetAddress)
+// NetworkMonitor tests.
+IN_PROC_BROWSER_TEST_F(PPAPITest, NetworkMonitor) {
+  RunTestViaHTTP(
+      LIST_TEST(NetworkMonitorPrivate_Basic)
+      LIST_TEST(NetworkMonitorPrivate_2Monitors)
+      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitorPrivate_ListObserver)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
+  RunTestViaHTTP(
+      LIST_TEST(NetworkMonitorPrivate_Basic)
+      LIST_TEST(NetworkMonitorPrivate_2Monitors)
+      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitorPrivate_ListObserver)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkMonitor) {
+  RunTestViaHTTP(
+      LIST_TEST(NetworkMonitorPrivate_Basic)
+      LIST_TEST(NetworkMonitorPrivate_2Monitors)
+      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitorPrivate_ListObserver)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetworkMonitor)) {
+  RunTestViaHTTP(
+      LIST_TEST(NetworkMonitorPrivate_Basic)
+      LIST_TEST(NetworkMonitorPrivate_2Monitors)
+      LIST_TEST(NetworkMonitorPrivate_DeleteInCallback)
+      LIST_TEST(NetworkMonitorPrivate_ListObserver)
+  );
+}
 
-TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_Basic)
-TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_2Monitors)
-TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
-TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_ListObserver)
-TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_Basic)
-TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_2Monitors)
-TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
-TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_ListObserver)
-TEST_PPAPI_NACL(NetworkMonitorPrivate_Basic)
-TEST_PPAPI_NACL(NetworkMonitorPrivate_2Monitors)
-TEST_PPAPI_NACL(NetworkMonitorPrivate_DeleteInCallback)
-TEST_PPAPI_NACL(NetworkMonitorPrivate_ListObserver)
-
-TEST_PPAPI_IN_PROCESS(Flash_SetInstanceAlwaysOnTop)
-TEST_PPAPI_IN_PROCESS(Flash_GetCommandLineArgs)
-TEST_PPAPI_OUT_OF_PROCESS(Flash_SetInstanceAlwaysOnTop)
-TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
+// Flash tests.
+IN_PROC_BROWSER_TEST_F(PPAPITest, Flash) {
+  RunTestViaHTTP(
+      LIST_TEST(Flash_SetInstanceAlwaysOnTop)
+      LIST_TEST(Flash_GetCommandLineArgs)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
+  RunTestViaHTTP(
+      LIST_TEST(Flash_SetInstanceAlwaysOnTop)
+      LIST_TEST(Flash_GetCommandLineArgs)
+  );
+}
 
 // In-process WebSocket tests
 IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket) {
