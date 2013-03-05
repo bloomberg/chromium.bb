@@ -7,9 +7,11 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
+#include "media/audio/audio_parameters.h"
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/pulse_output.h"
 #endif
+#include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
@@ -19,6 +21,9 @@ namespace media {
 
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
+
+// Default sample rate for input and output streams.
+static const int kDefaultSampleRate = 48000;
 
 // Implementation of AudioManager.
 static bool HasAudioHardware() {
@@ -41,6 +46,15 @@ bool AudioManagerOpenBSD::HasAudioOutputDevices() {
 
 bool AudioManagerOpenBSD::HasAudioInputDevices() {
   return HasAudioHardware();
+}
+
+AudioParameters AudioManagerOpenBSD::GetInputStreamParameters(
+    const std::string& device_id) {
+  static const int kDefaultInputBufferSize = 1024;
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
 AudioManagerOpenBSD::AudioManagerOpenBSD() {
@@ -77,6 +91,29 @@ AudioInputStream* AudioManagerOpenBSD::MakeLowLatencyInputStream(
   return NULL;
 }
 
+AudioParameters AudioManagerOpenBSD::GetPreferredOutputStreamParameters(
+    const AudioParameters& input_params) {
+  static const int kDefaultOutputBufferSize = 512;
+
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  int sample_rate = kDefaultSampleRate;
+  int buffer_size = kDefaultOutputBufferSize;
+  int bits_per_sample = 16;
+  int input_channels = 0;
+  if (input_params.IsValid()) {
+    sample_rate = input_params.sample_rate();
+    bits_per_sample = input_params.bits_per_sample();
+    channel_layout = input_params.channel_layout();
+    input_channels = input_params.input_channels();
+    buffer_size = std::min(buffer_size, input_params.frames_per_buffer());
+  }
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      sample_rate, bits_per_sample, buffer_size);
+}
+
+
 AudioOutputStream* AudioManagerOpenBSD::MakeOutputStream(
     const AudioParameters& params) {
 #if defined(USE_PULSEAUDIO)
@@ -89,6 +126,7 @@ AudioOutputStream* AudioManagerOpenBSD::MakeOutputStream(
   return NULL;
 }
 
+// TODO(xians): Merge AudioManagerOpenBSD with AudioManagerPulse;
 // static
 AudioManager* CreateAudioManager() {
   return new AudioManagerOpenBSD();

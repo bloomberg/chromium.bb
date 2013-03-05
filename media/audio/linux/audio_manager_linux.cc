@@ -11,7 +11,7 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
-#include "media/audio/audio_util.h"
+#include "media/audio/audio_parameters.h"
 #if defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
 #endif
@@ -21,6 +21,7 @@
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #endif
+#include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
@@ -28,6 +29,9 @@ namespace media {
 
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
+
+// Default sample rate for input and output streams.
+static const int kDefaultSampleRate = 48000;
 
 // Since "default", "pulse" and "dmix" devices are virtual devices mapped to
 // real devices, we remove them from the list to avoiding duplicate counting.
@@ -92,6 +96,15 @@ void AudioManagerLinux::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
   GetAlsaAudioInputDevices(device_names);
+}
+
+AudioParameters AudioManagerLinux::GetInputStreamParameters(
+    const std::string& device_id) {
+  static const int kDefaultInputBufferSize = 1024;
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
 void AudioManagerLinux::GetAlsaAudioInputDevices(
@@ -251,6 +264,32 @@ AudioInputStream* AudioManagerLinux::MakeLowLatencyInputStream(
   return MakeInputStream(params, device_id);
 }
 
+AudioParameters AudioManagerLinux::GetPreferredOutputStreamParameters(
+    const AudioParameters& input_params) {
+  static const int kDefaultOutputBufferSize = 512;
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  int sample_rate = kDefaultSampleRate;
+  int buffer_size = kDefaultOutputBufferSize;
+  int bits_per_sample = 16;
+  int input_channels = 0;
+  if (input_params.IsValid()) {
+    // Some clients, such as WebRTC, have a more limited use case and work
+    // acceptably with a smaller buffer size.  The check below allows clients
+    // which want to try a smaller buffer size on Linux to do so.
+    // TODO(dalecurtis): This should include bits per channel and channel layout
+    // eventually.
+    sample_rate = input_params.sample_rate();
+    bits_per_sample = input_params.bits_per_sample();
+    channel_layout = input_params.channel_layout();
+    input_channels = input_params.input_channels();
+    buffer_size = std::min(input_params.frames_per_buffer(), buffer_size);
+  }
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      sample_rate, bits_per_sample, buffer_size);
+}
+
 AudioOutputStream* AudioManagerLinux::MakeOutputStream(
     const AudioParameters& params) {
   std::string device_name = AlsaPcmOutputStream::kAutoSelectDevice;
@@ -290,24 +329,6 @@ AudioManager* CreateAudioManager() {
 #endif
 
   return new AudioManagerLinux();
-}
-
-AudioParameters AudioManagerLinux::GetPreferredLowLatencyOutputStreamParameters(
-    const AudioParameters& input_params) {
-  // Since Linux doesn't actually have a low latency path the hardware buffer
-  // size is quite large in order to prevent glitches with general usage.  Some
-  // clients, such as WebRTC, have a more limited use case and work acceptably
-  // with a smaller buffer size.  The check below allows clients which want to
-  // try a smaller buffer size on Linux to do so.
-  int buffer_size = GetAudioHardwareBufferSize();
-  if (input_params.frames_per_buffer() < buffer_size)
-    buffer_size = input_params.frames_per_buffer();
-
-  // TODO(dalecurtis): This should include bits per channel and channel layout
-  // eventually.
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, input_params.channel_layout(),
-      input_params.sample_rate(), 16, buffer_size);
 }
 
 }  // namespace media

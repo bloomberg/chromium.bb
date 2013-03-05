@@ -12,7 +12,7 @@
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_util.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 
 namespace content {
@@ -158,15 +158,13 @@ void AudioInputDeviceManager::EnumerateOnDeviceThread(
        it != device_names.end(); ++it) {
     // Get the preferred sample rate and channel configuration for the
     // current audio device.
-    int sample_rate =
-        media::GetAudioInputHardwareSampleRate(it->unique_id);
-    media::ChannelLayout channel_layout =
-        media::GetAudioInputHardwareChannelLayout(it->unique_id);
+    media::AudioParameters default_params =
+        audio_manager_->GetInputStreamParameters(it->unique_id);
 
     // Add device information to device vector.
     devices->push_back(StreamDeviceInfo(
-        stream_type, it->device_name, it->unique_id, sample_rate,
-        channel_layout, false));
+        stream_type, it->device_name, it->unique_id,
+        default_params.sample_rate(), default_params.channel_layout(), false));
   }
 
   // Return the device list through the listener by posting a task on

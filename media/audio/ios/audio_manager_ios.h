@@ -25,6 +25,8 @@ class MEDIA_EXPORT AudioManagerIOS : public AudioManagerBase {
       const AudioParameters& params) OVERRIDE;
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
   // Implementation of AudioManagerBase.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -40,6 +42,9 @@ class MEDIA_EXPORT AudioManagerIOS : public AudioManagerBase {
 
  protected:
   virtual ~AudioManagerIOS();
+
+  virtual AudioParameters GetPreferredOutputStreamParameters(
+      const AudioParameters& input_params) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioManagerIOS);

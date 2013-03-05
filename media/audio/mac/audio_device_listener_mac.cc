@@ -125,8 +125,8 @@ AudioDeviceListenerMac::AudioDeviceListenerMac(const base::Closure& listener_cb)
   // by pausing and resuming the dispatch queue before and after each pumped
   // task.  This is not ideal and long term we should replace the audio thread
   // on OSX with a dispatch queue.  See http://crbug.com/158170 for discussion.
-  // TODO(dalecurtis): Does not fix the cases where GetAudioHardwareSampleRate()
-  // and GetAudioInputHardwareSampleRate() are called by the browser process.
+  // TODO(dalecurtis): Does not fix the cases where
+  // GetDefaultOutputStreamParameters() are called by the browser process.
   // These are one time events due to renderer side cache and thus unlikely to
   // occur at the same time as a device callback.  Should be fixed along with
   // http://crbug.com/137326 using a forced PostTask.

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "media/audio/audio_parameters.h"
 
 namespace media {
 
@@ -68,6 +69,15 @@ void MockAudioManager::AddOutputDeviceChangeListener(
 
 void MockAudioManager::RemoveOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
+}
+
+AudioParameters MockAudioManager::GetDefaultOutputStreamParameters() {
+  return AudioParameters();
+}
+
+AudioParameters MockAudioManager::GetInputStreamParameters(
+    const std::string& device_id) {
+  return AudioParameters();
 }
 
 }  // namespace media.

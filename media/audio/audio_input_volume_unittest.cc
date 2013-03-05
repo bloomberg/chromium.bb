@@ -51,29 +51,10 @@ class AudioInputVolumeTest : public ::testing::Test {
   }
 
   AudioInputStream* CreateAndOpenStream(const std::string& device_id) {
-    AudioParameters::Format format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-    ChannelLayout channel_layout =
-        media::GetAudioInputHardwareChannelLayout(device_id);
-    int bits_per_sample = 16;
-    int sample_rate =
-        static_cast<int>(media::GetAudioInputHardwareSampleRate(device_id));
-    int samples_per_packet = 0;
-#if defined(OS_MACOSX)
-    samples_per_packet = (sample_rate / 100);
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
-    samples_per_packet = (sample_rate / 100);
-#elif defined(OS_WIN)
-    if (sample_rate == 44100)
-      samples_per_packet = 448;
-    else
-      samples_per_packet = (sample_rate / 100);
-#else
-#error Unsupported platform
-#endif
+    const AudioParameters& params =
+        audio_manager_->GetInputStreamParameters(device_id);
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
-        AudioParameters(format, channel_layout, sample_rate, bits_per_sample,
-                        samples_per_packet),
-        device_id);
+        params, device_id);
     EXPECT_TRUE(NULL != ais);
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)

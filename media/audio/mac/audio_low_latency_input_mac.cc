@@ -67,7 +67,10 @@ AUAudioInputStream::AUAudioInputStream(
   // Note that we  use the same native buffer size as for the output side here
   // since the AUHAL implementation requires that both capture and render side
   // use the same buffer size. See http://crbug.com/154352 for more details.
-  number_of_frames_ = GetAudioHardwareBufferSize();
+  // TODO(xians): Get the audio parameters from the right device.
+  const AudioParameters parameters =
+      manager_->GetInputStreamParameters(AudioManagerBase::kDefaultDeviceId);
+  number_of_frames_ = parameters.frames_per_buffer();
   DVLOG(1) << "Size of data buffer in frames : " << number_of_frames_;
 
   // Derive size (in bytes) of the buffers that we will render to.
@@ -225,7 +228,8 @@ bool AUAudioInputStream::Open() {
   // Set the desired number of frames in the IO buffer (output scope).
   // WARNING: Setting this value changes the frame size for all audio units in
   // the current process.  It's imperative that the input and output frame sizes
-  // be the same as audio_util::GetAudioHardwareBufferSize().
+  // be the same as the frames_per_buffer() returned by
+  // GetInputStreamParameters().
   // TODO(henrika): Due to http://crrev.com/159666 this is currently not true
   // and should be fixed, a CHECK() should be added at that time.
   result = AudioUnitSetProperty(audio_unit_,

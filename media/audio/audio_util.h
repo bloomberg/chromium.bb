@@ -39,22 +39,6 @@ MEDIA_EXPORT bool AdjustVolume(void* buf,
                                int bytes_per_sample,
                                float volume);
 
-// Returns the default audio output hardware sample-rate.
-MEDIA_EXPORT int GetAudioHardwareSampleRate();
-
-// Returns the audio input hardware sample-rate for the specified device.
-MEDIA_EXPORT int GetAudioInputHardwareSampleRate(
-    const std::string& device_id);
-
-// Returns the optimal low-latency buffer size for the audio hardware.
-// This is the smallest buffer size the system can comfortably render
-// at without glitches.  The buffer size is in sample-frames.
-MEDIA_EXPORT size_t GetAudioHardwareBufferSize();
-
-// Returns the channel layout for the specified audio input device.
-MEDIA_EXPORT ChannelLayout GetAudioInputHardwareChannelLayout(
-    const std::string& device_id);
-
 // Computes a buffer size based on the given |sample_rate|. Must be used in
 // conjunction with AUDIO_PCM_LINEAR.
 MEDIA_EXPORT size_t GetHighLatencyOutputBufferSize(int sample_rate);

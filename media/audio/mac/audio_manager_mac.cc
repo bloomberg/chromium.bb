@@ -12,7 +12,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
-#include "media/audio/audio_util.h"
+#include "media/audio/audio_parameters.h"
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
 #include "media/audio/mac/audio_low_latency_output_mac.h"
@@ -20,6 +20,7 @@
 #include "media/audio/mac/audio_synchronized_mac.h"
 #include "media/audio/mac/audio_unified_mac.h"
 #include "media/base/bind_to_loop.h"
+#include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
@@ -27,6 +28,9 @@ namespace media {
 
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
+
+// Default buffer size in samples for low-latency input and output streams.
+static const int kDefaultLowLatencyBufferSize = 128;
 
 static bool HasAudioHardware(AudioObjectPropertySelector selector) {
   AudioDeviceID output_device_id = kAudioObjectUnknown;
@@ -273,6 +277,15 @@ void AudioManagerMac::GetAudioInputDeviceNames(
   }
 }
 
+AudioParameters AudioManagerMac::GetInputStreamParameters(
+    const std::string& device_id) {
+  // TODO(xians): query the native channel layout for the specific device.
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      AUAudioInputStream::HardwareSampleRate(), 16,
+      kDefaultLowLatencyBufferSize);
+}
+
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
@@ -321,22 +334,28 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
   return stream;
 }
 
-AudioParameters AudioManagerMac::GetPreferredLowLatencyOutputStreamParameters(
+AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     const AudioParameters& input_params) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebAudioInput)) {
-    // TODO(crogers): given the limitations of the AudioOutputStream
-    // back-ends used with kEnableWebAudioInput, we hard-code to stereo.
-    // Specifically, this is a limitation of AudioSynchronizedStream which
-    // can be removed as part of the work to consolidate these back-ends.
-    return AudioParameters(
-        AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        CHANNEL_LAYOUT_STEREO, input_params.input_channels(),
-        GetAudioHardwareSampleRate(), 16, GetAudioHardwareBufferSize());
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  int input_channels = 0;
+  if (input_params.IsValid()) {
+    channel_layout = input_params.channel_layout();
+    input_channels = input_params.input_channels();
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableWebAudioInput)) {
+      // TODO(crogers): given the limitations of the AudioOutputStream
+      // back-ends used with kEnableWebAudioInput, we hard-code to stereo.
+      // Specifically, this is a limitation of AudioSynchronizedStream which
+      // can be removed as part of the work to consolidate these back-ends.
+      channel_layout = CHANNEL_LAYOUT_STEREO;
+    }
   }
 
-  return AudioManagerBase::GetPreferredLowLatencyOutputStreamParameters(
-      input_params);
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      AUAudioOutputStream::HardwareSampleRate(), 16,
+      kDefaultLowLatencyBufferSize);
 }
 
 void AudioManagerMac::CreateDeviceListener() {

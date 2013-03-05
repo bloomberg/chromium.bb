@@ -8,9 +8,11 @@
 #import <AVFoundation/AVFoundation.h>
 
 #include "base/sys_info.h"
+#include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/ios/audio_session_util_ios.h"
 #include "media/audio/mac/audio_input_mac.h"
+#include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -45,6 +47,18 @@ bool AudioManagerIOS::HasAudioInputDevices() {
                                   &property_size,
                                   &audio_input_is_available);
   return error == kAudioSessionNoError ? audio_input_is_available : false;
+}
+
+AudioParameters AudioManagerIOS::GetInputStreamParameters(
+    const std::string& device_id) {
+  // TODO(xians): figure out the right input sample rate and buffer size to
+  // achieve the best audio performance for iOS devices.
+  // TODO(xians): query the native channel layout for the specific device.
+  static const int kDefaultSampleRate = 48000;
+  static const int kDefaultBufferSize = 2048;
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      kDefaultSampleRate, 16, kDefaultBufferSize);
 }
 
 AudioOutputStream* AudioManagerIOS::MakeAudioOutputStream(
@@ -88,6 +102,22 @@ AudioInputStream* AudioManagerIOS::MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) {
   NOTIMPLEMENTED();  // Only linear audio input is supported on iOS.
   return MakeAudioInputStream(params, device_id);
+}
+
+
+AudioParameters AudioManagerIOS::GetPreferredOutputStreamParameters(
+    const AudioParameters& input_params) {
+  // TODO(xians): handle the case when input_params is valid.
+  // TODO(xians): figure out the right output sample rate and sample rate to
+  // achieve the best audio performance for iOS devices.
+  static const int kDefaultSampleRate = 48000;
+  static const int kDefaultBufferSize = 2048;
+  if (input_params.IsValid()) {
+    NOTREACHED();
+  }
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      kDefaultSampleRate, 16, kDefaultBufferSize);
 }
 
 // Called by the stream when it has been released by calling Close().

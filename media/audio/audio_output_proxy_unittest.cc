@@ -117,6 +117,8 @@ class MockAudioManager : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD2(MakeLowLatencyInputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
+  MOCK_METHOD1(GetPreferredOutputStreamParameters, AudioParameters(
+      const AudioParameters& params));
 };
 
 class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {

@@ -19,6 +19,8 @@ class MEDIA_EXPORT AudioManagerOpenBSD : public AudioManagerBase {
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
   // Implementation of AudioManagerBase.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -32,6 +34,9 @@ class MEDIA_EXPORT AudioManagerOpenBSD : public AudioManagerBase {
 
  protected:
   virtual ~AudioManagerOpenBSD();
+
+  virtual AudioParameters GetPreferredOutputStreamParameters(
+      const AudioParameters& input_params) OVERRIDE;
 
  private:
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.

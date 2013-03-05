@@ -23,6 +23,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   virtual void ShowAudioInputSettings() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
   // AudioManagerBase implementation.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -33,11 +35,12 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
-  virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
-      const AudioParameters& input_params) OVERRIDE;
 
  protected:
   virtual ~AudioManagerCras();
+
+  virtual AudioParameters GetPreferredOutputStreamParameters(
+      const AudioParameters& input_params) OVERRIDE;
 
  private:
   // Gets a list of available cras input devices.

@@ -20,6 +20,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "media/audio/audio_parameters.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/win/audio_device_listener_win.h"
 #include "media/audio/win/audio_low_latency_input_win.h"
@@ -31,6 +32,7 @@
 #include "media/audio/win/wavein_input_win.h"
 #include "media/audio/win/waveout_output_win.h"
 #include "media/base/bind_to_loop.h"
+#include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
@@ -60,6 +62,10 @@ static const int kWinMaxChannels = 8;
 // where you first need to fill in that number of buffers before starting to
 // play.
 static const int kNumInputBuffers = 3;
+
+// Buffer size to use for input and output stream when a proper size can't be
+// determined from the system
+static const int kFallbackBufferSize = 2048;
 
 static int GetVersionPartAsInt(DWORDLONG num) {
   return static_cast<int>(num & 0xffff);
@@ -255,6 +261,26 @@ void AudioManagerWin::GetAudioInputDeviceNames(
   }
 }
 
+AudioParameters AudioManagerWin::GetInputStreamParameters(
+    const std::string& device_id) {
+  int sample_rate = 0;
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
+  if (!CoreAudioUtil::IsSupported()) {
+    sample_rate = 48000;
+    channel_layout = CHANNEL_LAYOUT_STEREO;
+  } else {
+    sample_rate = WASAPIAudioInputStream::HardwareSampleRate(device_id);
+    channel_layout =
+        WASAPIAudioInputStream::HardwareChannelCount(device_id) == 1 ?
+            CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
+  }
+
+  // TODO(Henrika): improve the default buffer size value for input stream.
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+      sample_rate, 16, kFallbackBufferSize);
+}
+
 // Factory for the implementations of AudioOutputStream for AUDIO_PCM_LINEAR
 // mode.
 // - PCMWaveOutAudioOutputStream: Based on the waveOut API.
@@ -329,6 +355,60 @@ AudioInputStream* AudioManagerWin::MakeLowLatencyInputStream(
   return stream;
 }
 
+AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
+    const AudioParameters& input_params) {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  int sample_rate = 0;
+  int buffer_size = 0;
+  int bits_per_sample = 16;
+  int input_channels = 0;
+  if (!CoreAudioUtil::IsSupported()) {
+    // Fall back to Windows Wave implementation on Windows XP or lower.
+    // Use 48kHz as default input sample rate, kFallbackBufferSize as
+    // default buffer size.
+    sample_rate = 48000;
+    buffer_size = kFallbackBufferSize;
+  } else if (cmd_line->HasSwitch(switches::kEnableExclusiveAudio)) {
+    // TODO(crogers): tune these values for best possible WebAudio performance.
+    // WebRTC works well at 48kHz and a buffer size of 480 samples will be used
+    // for this case. Note that exclusive mode is experimental.
+    // This sample rate will be combined with a buffer size of 256 samples,
+    // which corresponds to an output delay of ~5.33ms.
+    sample_rate = 48000;
+    buffer_size = 256;
+  } else {
+    // Hardware sample-rate on Windows can be configured, so we must query.
+    // TODO(henrika): improve possibility to specify an audio endpoint.
+    // Use the default device (same as for Wave) for now to be compatible.
+    sample_rate = WASAPIAudioOutputStream::HardwareSampleRate();
+
+    AudioParameters params;
+    HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
+                                                            &params);
+    buffer_size = FAILED(hr) ? kFallbackBufferSize : params.frames_per_buffer();
+    channel_layout = WASAPIAudioOutputStream::HardwareChannelLayout();
+  }
+
+  if (input_params.IsValid()) {
+    input_channels = input_params.input_channels();
+    if (!CoreAudioUtil::IsSupported()) {
+      // If WASAPI isn't supported we'll fallback to WaveOut, which will take
+      // care of resampling and bits per sample changes.  By setting these
+      // equal to the input values, AudioOutputResampler will skip resampling
+      // and bit per sample differences (since the input parameters will match
+      // the output parameters).
+      sample_rate = input_params.sample_rate();
+      bits_per_sample = input_params.bits_per_sample();
+      channel_layout = input_params.channel_layout();
+    }
+  }
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      sample_rate, bits_per_sample, buffer_size);
+}
+
 AudioInputStream* AudioManagerWin::CreatePCMWaveInAudioInputStream(
     const AudioParameters& params,
     const std::string& device_id) {
@@ -350,28 +430,6 @@ AudioInputStream* AudioManagerWin::CreatePCMWaveInAudioInputStream(
 /// static
 AudioManager* CreateAudioManager() {
   return new AudioManagerWin();
-}
-
-AudioParameters AudioManagerWin::GetPreferredLowLatencyOutputStreamParameters(
-    const AudioParameters& input_params) {
-  // If WASAPI isn't supported we'll fallback to WaveOut, which will take care
-  // of resampling and bits per sample changes.  By setting these equal to the
-  // input values, AudioOutputResampler will skip resampling and bit per sample
-  // differences (since the input parameters will match the output parameters).
-  int sample_rate = input_params.sample_rate();
-  int bits_per_sample = input_params.bits_per_sample();
-  ChannelLayout channel_layout = input_params.channel_layout();
-  int input_channels = input_params.input_channels();
-  if (CoreAudioUtil::IsSupported()) {
-    sample_rate = GetAudioHardwareSampleRate();
-    bits_per_sample = 16;
-    channel_layout = WASAPIAudioOutputStream::HardwareChannelLayout();
-  }
-
-  // TODO(dalecurtis): This should include hardware bits per channel eventually.
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
-      sample_rate, bits_per_sample, GetAudioHardwareBufferSize());
 }
 
 }  // namespace media
