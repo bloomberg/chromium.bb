@@ -7,12 +7,14 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
@@ -137,6 +139,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
+  virtual void OnSwapCompositorFrame(const cc::CompositorFrame& frame) OVERRIDE;
   virtual void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                                float page_scale_factor,
                                const gfx::Vector2dF& page_scale_factor_limits,
@@ -175,6 +178,10 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   void MoveCaret(const gfx::Point& point);
 
  private:
+  void BuffersSwapped(const gpu::Mailbox& mailbox,
+                      const gfx::Size size,
+                      const base::Closure& ack_callback);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -209,8 +216,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // Used for image transport when needing to share resources across threads.
   scoped_ptr<SurfaceTextureTransportClient> surface_texture_transport_;
 
-  // The mailbox name of the previously received frame.
-  std::string current_mailbox_name_;
+  // The mailbox of the previously received frame.
+  gpu::Mailbox current_mailbox_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

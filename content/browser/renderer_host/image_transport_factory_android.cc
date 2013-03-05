@@ -26,6 +26,7 @@ class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual ~DirectGLImageTransportFactory();
 
   virtual uint32_t InsertSyncPoint() OVERRIDE { return 0; }
+  virtual void WaitSyncPoint(uint32_t sync_point) OVERRIDE {}
   virtual uint32_t CreateTexture() OVERRIDE {
     return context_->createTexture();
   }
@@ -67,6 +68,7 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual ~CmdBufferImageTransportFactory();
 
   virtual uint32_t InsertSyncPoint() OVERRIDE;
+  virtual void WaitSyncPoint(uint32_t sync_point) OVERRIDE;
   virtual uint32_t CreateTexture() OVERRIDE;
   virtual void DeleteTexture(uint32_t id) OVERRIDE;
   virtual void AcquireTexture(
@@ -105,7 +107,19 @@ CmdBufferImageTransportFactory::~CmdBufferImageTransportFactory() {
 }
 
 uint32_t CmdBufferImageTransportFactory::InsertSyncPoint() {
+  if (!context_->makeContextCurrent()) {
+    LOG(ERROR) << "Failed to make helper context current.";
+    return 0;
+  }
   return context_->insertSyncPoint();
+}
+
+void CmdBufferImageTransportFactory::WaitSyncPoint(uint32_t sync_point) {
+  if (!context_->makeContextCurrent()) {
+    LOG(ERROR) << "Failed to make helper context current.";
+    return;
+  }
+  context_->waitSyncPoint(sync_point);
 }
 
 uint32_t CmdBufferImageTransportFactory::CreateTexture() {
