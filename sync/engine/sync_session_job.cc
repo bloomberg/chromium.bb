@@ -20,7 +20,6 @@ SyncSessionJob::SyncSessionJob(
     : purpose_(purpose),
       scheduled_start_(start),
       session_(session.Pass()),
-      is_canary_(false),
       config_params_(config_params),
       finished_(NOT_FINISHED) {
 }
@@ -104,10 +103,6 @@ scoped_ptr<sessions::SyncSession> SyncSessionJob::CloneSession() const {
           session_->delegate(), session_->source()));
 }
 
-bool SyncSessionJob::is_canary() const {
-  return is_canary_;
-}
-
 SyncSessionJob::Purpose SyncSessionJob::purpose() const {
   return purpose_;
 }
@@ -130,12 +125,6 @@ sessions::SyncSession* SyncSessionJob::mutable_session() {
 
 ConfigurationParams SyncSessionJob::config_params() const {
   return config_params_;
-}
-
-void SyncSessionJob::GrantCanaryPrivilege() {
-  DCHECK_EQ(finished_, NOT_FINISHED);
-  DVLOG(2) << "Granting canary priviliege to " << session_.get();
-  is_canary_ = true;
 }
 
 SyncerStep SyncSessionJob::start_step() const {

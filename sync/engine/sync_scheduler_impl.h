@@ -94,6 +94,13 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
     DROP,
   };
 
+  enum JobPriority {
+    // Non-canary jobs respect exponential backoff.
+    NORMAL_PRIORITY,
+    // Canary jobs bypass exponential backoff, so use with extreme caution.
+    CANARY_PRIORITY
+  };
+
   friend class SyncSchedulerTest;
   friend class SyncSchedulerWhiteboxTest;
   friend class SyncerTest;
@@ -172,7 +179,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
                               scoped_ptr<SyncSessionJob> job);
 
   // Invoke the Syncer to perform a sync.
-  bool DoSyncSessionJob(scoped_ptr<SyncSessionJob> job);
+  bool DoSyncSessionJob(scoped_ptr<SyncSessionJob> job,
+                        JobPriority priority);
 
   // Called after the Syncer has performed the sync represented by |job|, to
   // reset our state.  |exited_prematurely| is true if the Syncer did not
@@ -196,7 +204,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
   void HandleContinuationError(scoped_ptr<SyncSessionJob> old_job);
 
   // Decide whether we should CONTINUE, SAVE or DROP the job.
-  JobProcessDecision DecideOnJob(const SyncSessionJob& job);
+  JobProcessDecision DecideOnJob(const SyncSessionJob& job,
+                                 JobPriority priority);
 
   // If DecideOnJob decides that |job| should be SAVEd, this function will
   // carry out the task of actually "saving" (or coalescing) the job.
@@ -204,7 +213,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
 
   // Decide on whether to CONTINUE, SAVE or DROP the job when we are in
   // backoff mode.
-  JobProcessDecision DecideWhileInWaitInterval(const SyncSessionJob& job);
+  JobProcessDecision DecideWhileInWaitInterval(const SyncSessionJob& job,
+                                               JobPriority priority);
 
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.

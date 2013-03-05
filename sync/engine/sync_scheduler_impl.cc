@@ -259,7 +259,7 @@ void SyncSchedulerImpl::Start(Mode mode) {
     scoped_ptr<SyncSessionJob> pending(TakePendingJobForCurrentMode());
     if (pending.get()) {
       SDVLOG(2) << "Executing pending job. Good luck!";
-      DoSyncSessionJob(pending.Pass());
+      DoSyncSessionJob(pending.Pass(), NORMAL_PRIORITY);
     }
   }
 }
@@ -328,7 +328,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
         session.Pass(),
         params));
     job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
-    bool succeeded = DoSyncSessionJob(job.Pass());
+    bool succeeded = DoSyncSessionJob(job.Pass(), NORMAL_PRIORITY);
 
     // If we failed, the job would have been saved as the pending configure
     // job and a wait interval would have been set.
@@ -345,14 +345,15 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
 }
 
 SyncSchedulerImpl::JobProcessDecision
-SyncSchedulerImpl::DecideWhileInWaitInterval(const SyncSessionJob& job) {
+SyncSchedulerImpl::DecideWhileInWaitInterval(const SyncSessionJob& job,
+                                             JobPriority priority) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(wait_interval_.get());
 
   SDVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
             << WaitInterval::GetModeString(wait_interval_->mode)
             << (wait_interval_->had_nudge ? " (had nudge)" : "")
-            << (job.is_canary() ? " (canary)" : "");
+            << ((priority == CANARY_PRIORITY) ? " (canary)" : "");
 
   if (job.purpose() == SyncSessionJob::POLL)
     return DROP;
@@ -375,16 +376,17 @@ SyncSchedulerImpl::DecideWhileInWaitInterval(const SyncSessionJob& job) {
 
     // If we already had one nudge then just drop this nudge. We will retry
     // later when the timer runs out.
-    if (!job.is_canary())
+    if (priority == NORMAL_PRIORITY)
       return wait_interval_->had_nudge ? DROP : CONTINUE;
     else // We are here because timer ran out. So retry.
       return CONTINUE;
   }
-  return job.is_canary() ? CONTINUE : SAVE;
+  return (priority == CANARY_PRIORITY) ? CONTINUE : SAVE;
 }
 
 SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
-    const SyncSessionJob& job) {
+    const SyncSessionJob& job,
+    JobPriority priority) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
   // See if our type is throttled.
@@ -411,7 +413,7 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
   }
 
   if (wait_interval_.get())
-    return DecideWhileInWaitInterval(job);
+    return DecideWhileInWaitInterval(job, priority);
 
   if (mode_ == CONFIGURATION_MODE) {
     if (job.purpose() == SyncSessionJob::NUDGE)
@@ -473,7 +475,6 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
 }
 
 void SyncSchedulerImpl::HandleSaveJobDecision(scoped_ptr<SyncSessionJob> job) {
-  DCHECK_EQ(DecideOnJob(*job), SAVE);
   const bool is_nudge = job->purpose() == SyncSessionJob::NUDGE;
   if (is_nudge && pending_nudge_) {
     SDVLOG(2) << "Coalescing a pending nudge";
@@ -599,7 +600,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
       CreateSyncSession(info).Pass(),
       ConfigurationParams()));
   job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
-  JobProcessDecision decision = DecideOnJob(*job);
+  JobProcessDecision decision = DecideOnJob(*job, NORMAL_PRIORITY);
   SDVLOG(2) << "Should run "
             << SyncSessionJob::GetPurposeString(job->purpose())
             << " job " << job->session()
@@ -714,11 +715,13 @@ void SyncSchedulerImpl::ScheduleSyncSessionJob(
   PostDelayedTask(loc, "DoSyncSessionJob",
       base::Bind(base::IgnoreResult(&SyncSchedulerImpl::DoSyncSessionJob),
                                     weak_ptr_factory_.GetWeakPtr(),
-                                    base::Passed(&job)),
+                                    base::Passed(&job),
+                                    NORMAL_PRIORITY),
       delay);
 }
 
-bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job) {
+bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job,
+                                         JobPriority priority) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (job->purpose() == SyncSessionJob::NUDGE) {
     if (pending_nudge_ == NULL ||
@@ -732,7 +735,7 @@ bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job) {
   }
 
   base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
-  JobProcessDecision decision = DecideOnJob(*job);
+  JobProcessDecision decision = DecideOnJob(*job, priority);
   SDVLOG(2) << "Should run "
             << SyncSessionJob::GetPurposeString(job->purpose())
             << " job " << job->session()
@@ -914,11 +917,6 @@ void SyncSchedulerImpl::RestartWaiting(scoped_ptr<SyncSessionJob> job) {
 void SyncSchedulerImpl::HandleContinuationError(
     scoped_ptr<SyncSessionJob> old_job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (DCHECK_IS_ON()) {
-    if (IsBackingOff()) {
-      DCHECK(wait_interval_->timer.IsRunning() || old_job->is_canary());
-    }
-  }
 
   TimeDelta length = delay_provider_->GetDelay(
       IsBackingOff() ? wait_interval_->length :
@@ -983,12 +981,6 @@ void SyncSchedulerImpl::DoCanaryJob(scoped_ptr<SyncSessionJob> to_be_canary) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG(2) << "Do canary job";
 
-  // Only set canary privileges here, when we are about to run the job. This
-  // avoids confusion in managing canary bits during scheduling, when you
-  // consider that mode switches (e.g., to config) can "pre-empt" a NUDGE that
-  // was scheduled as canary, and send it to an "unscheduled" state.
-  to_be_canary->GrantCanaryPrivilege();
-
   if (to_be_canary->purpose() == SyncSessionJob::NUDGE) {
     // TODO(tim): Bug 158313.  Remove this check.
     if (pending_nudge_ == NULL ||
@@ -1000,7 +992,10 @@ void SyncSchedulerImpl::DoCanaryJob(scoped_ptr<SyncSessionJob> to_be_canary) {
     }
     DCHECK_EQ(pending_nudge_->session(), to_be_canary->session());
   }
-  DoSyncSessionJob(to_be_canary.Pass());
+
+  // This is the only place where we invoke DoSyncSessionJob with canary
+  // privileges.  Everyone else should use NORMAL_PRIORITY.
+  DoSyncSessionJob(to_be_canary.Pass(), CANARY_PRIORITY);
 }
 
 scoped_ptr<SyncSessionJob> SyncSchedulerImpl::TakePendingJobForCurrentMode() {

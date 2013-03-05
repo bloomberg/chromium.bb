@@ -45,10 +45,9 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   ~SyncSessionJob();
 
   // Returns a new clone of the job, with a cloned SyncSession ready to be
-  // retried / rescheduled.  The returned job will *never* be a canary,
-  // regardless of |this|. A job can only be cloned once it has finished,
-  // to prevent bugs where multiple jobs are scheduled with the same session.
-  // Use CloneAndAbandon if you want to clone before finishing.
+  // retried / rescheduled.  A job can only be cloned once it has finished, to
+  // prevent bugs where multiple jobs are scheduled with the same session.  Use
+  // CloneAndAbandon if you want to clone before finishing.
   scoped_ptr<SyncSessionJob> Clone() const;
 
   // Same as Clone() above, but also ejects the SyncSession from this job,
@@ -71,15 +70,11 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // notification) has been properly serviced.
   bool Finish(bool early_exit);
 
-  // Causes is_canary() to return true. Use with caution.
-  void GrantCanaryPrivilege();
-
   static const char* GetPurposeString(Purpose purpose);
   static void GetSyncerStepsForPurpose(Purpose purpose,
                                        SyncerStep* start,
                                        SyncerStep* end);
 
-  bool is_canary() const;
   Purpose purpose() const;
   base::TimeTicks scheduled_start() const;
   void set_scheduled_start(base::TimeTicks start);
@@ -106,7 +101,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
 
   base::TimeTicks scheduled_start_;
   scoped_ptr<sessions::SyncSession> session_;
-  bool is_canary_;
 
   // Only used for purpose_ == CONFIGURATION.  This, and different Finish() and
   // Succeeded() behavior may be arguments to subclass in the future.

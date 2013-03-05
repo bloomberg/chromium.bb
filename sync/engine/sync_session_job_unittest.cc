@@ -97,7 +97,6 @@ class SyncSessionJobTest : public testing::Test {
     EXPECT_EQ(job->scheduled_start(), clone->scheduled_start());
     EXPECT_EQ(job->start_step(), clone->start_step());
     EXPECT_EQ(job->end_step(), clone->end_step());
-    EXPECT_FALSE(clone->is_canary());
   }
 
  private:
@@ -125,7 +124,6 @@ TEST_F(SyncSessionJobTest, Clone) {
   EXPECT_NE(job1.session(), clone1->session());
 
   context()->set_routing_info(routes());
-  clone1->GrantCanaryPrivilege();
   sessions::test_util::SimulateSuccess(clone1->mutable_session(),
                                        clone1->start_step(),
                                        clone1->end_step());

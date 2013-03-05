@@ -93,8 +93,9 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   }
 
   SyncSchedulerImpl::JobProcessDecision DecideOnJob(
-      const SyncSessionJob& job) {
-    return scheduler_->DecideOnJob(job);
+      const SyncSessionJob& job,
+      SyncSchedulerImpl::JobPriority priority) {
+    return scheduler_->DecideOnJob(job, priority);
   }
 
   void InitializeSyncerOnNormalMode() {
@@ -107,7 +108,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     scoped_ptr<SyncSession> s(scheduler_->CreateSyncSession(SyncSourceInfo()));
     SyncSessionJob job(purpose, TimeTicks::Now(), s.Pass(),
         ConfigurationParams());
-    return DecideOnJob(job);
+    return DecideOnJob(job, SyncSchedulerImpl::NORMAL_PRIORITY);
   }
 
   SyncSessionContext* context() { return context_.get(); }
@@ -158,7 +159,8 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
                      TimeTicks::Now(),
                      s.Pass(),
                      ConfigurationParams());
-  SyncSchedulerImpl::JobProcessDecision decision = DecideOnJob(job);
+  SyncSchedulerImpl::JobProcessDecision decision =
+      DecideOnJob(job, SyncSchedulerImpl::NORMAL_PRIORITY);
   // TODO(tim): This shouldn't drop. Bug 177659.
   EXPECT_EQ(decision, SyncSchedulerImpl::DROP);
 }
@@ -257,8 +259,8 @@ TEST_F(SyncSchedulerWhiteboxTest, ContinueCanaryJobConfig) {
                      TimeTicks::Now(), scoped_ptr<SyncSession>(),
                      ConfigurationParams());
 
-  job.GrantCanaryPrivilege();
-  SyncSchedulerImpl::JobProcessDecision decision = DecideOnJob(job);
+  SyncSchedulerImpl::JobProcessDecision decision =
+      DecideOnJob(job, SyncSchedulerImpl::CANARY_PRIORITY);
 
   EXPECT_EQ(decision, SyncSchedulerImpl::CONTINUE);
 }
