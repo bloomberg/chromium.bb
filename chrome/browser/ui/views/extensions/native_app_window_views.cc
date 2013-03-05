@@ -78,10 +78,11 @@ NativeAppWindowViews::NativeAppWindowViews(
       window_(NULL),
       is_fullscreen_(false),
       frameless_(create_params.frame == ShellWindow::FRAME_NONE),
-      transparent_background_(create_params.transparent_background) {
+      transparent_background_(create_params.transparent_background),
+      minimum_size_(create_params.minimum_size),
+      maximum_size_(create_params.maximum_size),
+      resizable_(create_params.resizable) {
   Observe(web_contents());
-  minimum_size_ = create_params.minimum_size;
-  maximum_size_ = create_params.maximum_size;
 
   window_ = new views::Widget;
   if (create_params.window_type == ShellWindow::WINDOW_TYPE_PANEL ||
@@ -360,11 +361,12 @@ views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
 }
 
 bool NativeAppWindowViews::CanResize() const {
-  return maximum_size_.IsEmpty() || minimum_size_ != maximum_size_;
+  return resizable_ &&
+      (maximum_size_.IsEmpty() || minimum_size_ != maximum_size_);
 }
 
 bool NativeAppWindowViews::CanMaximize() const {
-  return maximum_size_.IsEmpty();
+  return resizable_ && maximum_size_.IsEmpty();
 }
 
 string16 NativeAppWindowViews::GetWindowTitle() const {

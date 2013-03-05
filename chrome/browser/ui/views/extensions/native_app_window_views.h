@@ -145,6 +145,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
   gfx::Size preferred_size_;
+  bool resizable_;
 
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
