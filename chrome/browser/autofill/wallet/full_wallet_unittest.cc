@@ -279,7 +279,8 @@ const char kFullWalletWithRequiredActions[] =
     "    \"UPGRADE_MIN_ADDRESS\","
     "    \"update_EXPIRATION_date\","
     "    \"INVALID_form_field\","
-    "    \"verify_CVV\""
+    "    \"verify_CVV\","
+    "    \" REQuIrE_PHONE_NumBER\t\n\r \""
     "  ]"
     "}";
 
@@ -395,6 +396,7 @@ TEST_F(FullWalletTest, CreateFullWalletWithRequiredActions) {
   required_actions.push_back(UPDATE_EXPIRATION_DATE);
   required_actions.push_back(INVALID_FORM_FIELD);
   required_actions.push_back(VERIFY_CVV);
+  required_actions.push_back(REQUIRE_PHONE_NUMBER);
 
   FullWallet full_wallet(-1,
                          -1,

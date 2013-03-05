@@ -14,7 +14,8 @@ bool ActionAppliesToFullWallet(RequiredAction action) {
   return action == UPDATE_EXPIRATION_DATE ||
          action == UPGRADE_MIN_ADDRESS ||
          action == INVALID_FORM_FIELD ||
-         action == VERIFY_CVV;
+         action == VERIFY_CVV ||
+         action == REQUIRE_PHONE_NUMBER;
 }
 
 bool ActionAppliesToSaveToWallet(RequiredAction action) {
