@@ -105,7 +105,7 @@ ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser)
       browser_(browser) {
   button_.reset(new CustomDrawButton(
       IDR_ACTION_BOX_BUTTON_NORMAL,
-      IDR_ACTION_BOX_BUTTON_PUSHED,
+      IDR_ACTION_BOX_BUTTON_PRESSED,
       IDR_ACTION_BOX_BUTTON_HOVER,
       0));  // TODO: disabled?
   gtk_widget_set_tooltip_text(widget(),

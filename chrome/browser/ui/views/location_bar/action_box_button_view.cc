@@ -33,7 +33,7 @@ ActionBoxButtonView::ActionBoxButtonView(Browser* browser,
   SetHoverIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_ACTION_BOX_BUTTON_HOVER));
   SetPushedIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_ACTION_BOX_BUTTON_PUSHED));
+      IDR_ACTION_BOX_BUTTON_PRESSED));
   set_accessibility_focusable(true);
   set_border(NULL);
   SizeToPreferredSize();

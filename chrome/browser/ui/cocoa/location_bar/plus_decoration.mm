@@ -46,7 +46,7 @@ void PlusDecoration::ResetIcon() {
   SetIcons(
       IDR_ACTION_BOX_BUTTON_NORMAL,
       IDR_ACTION_BOX_BUTTON_HOVER,
-      IDR_ACTION_BOX_BUTTON_PUSHED);
+      IDR_ACTION_BOX_BUTTON_PRESSED);
 }
 
 void PlusDecoration::SetTemporaryIcon(int image_id) {
