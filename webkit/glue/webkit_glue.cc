@@ -351,7 +351,9 @@ size_t MemoryUsageKB() {
       >> 10;
 
   v8::HeapStatistics stat;
-  v8::V8::GetHeapStatistics(&stat);
+  // TODO(svenpanne) The call below doesn't take web workers into account, this
+  // has to be done manually by iterating over all Isolates involved.
+  v8::Isolate::GetCurrent()->GetHeapStatistics(&stat);
   return mem_usage + (static_cast<uint64_t>(stat.total_heap_size()) >> 10);
 }
 #elif defined(OS_MACOSX)

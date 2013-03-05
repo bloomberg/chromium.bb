@@ -297,7 +297,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // object goes out of scope in JavaScript.
   void OnRequestObjectGarbageCollected(int request_id);
   // V8 garbage collection callback for |object|.
-  static void WeakCallbackForPersistObject(v8::Persistent<v8::Value> object,
+  static void WeakCallbackForPersistObject(v8::Isolate* isolate,
+                                           v8::Persistent<v8::Value> object,
                                            void* param);
 
   // IPC message handlers.

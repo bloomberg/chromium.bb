@@ -11,6 +11,7 @@
 #include "net/proxy/proxy_resolver.h"
 
 namespace v8 {
+class HeapStatistics;
 class Isolate;
 }  // namespace v8
 
@@ -94,6 +95,11 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   // hack can be removed when the "default Isolate" concept is gone.
   static void RememberDefaultIsolate();
   static v8::Isolate* GetDefaultIsolate();
+
+  // Get total/ued heap memory usage of all v8 instances used by the proxy
+  // resolver.
+  static size_t GetTotalHeapSize();
+  static size_t GetUsedHeapSize();
 
  private:
   static v8::Isolate* g_default_isolate_;

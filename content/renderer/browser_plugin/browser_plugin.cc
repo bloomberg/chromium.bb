@@ -880,8 +880,10 @@ void BrowserPlugin::PersistRequestObject(
     return;
   }
 
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::Persistent<v8::Value> weak_request =
-      v8::Persistent<v8::Value>::New(WebKit::WebBindings::toV8Value(request));
+      v8::Persistent<v8::Value>::New(isolate,
+                                     WebKit::WebBindings::toV8Value(request));
 
   AliveV8PermissionRequestItem* new_item =
       new std::pair<int, base::WeakPtr<BrowserPlugin> >(
@@ -892,12 +894,12 @@ void BrowserPlugin::PersistRequestObject(
           std::make_pair(id, new_item));
   CHECK(result.second);  // Inserted in the map.
   AliveV8PermissionRequestItem* request_item = result.first->second;
-  weak_request.MakeWeak(request_item, WeakCallbackForPersistObject);
+  weak_request.MakeWeak(isolate, request_item, WeakCallbackForPersistObject);
 }
 
 // static
 void BrowserPlugin::WeakCallbackForPersistObject(
-    v8::Persistent<v8::Value> object, void* param) {
+    v8::Isolate* isolate, v8::Persistent<v8::Value> object, void* param) {
   v8::Persistent<v8::Object> persistent_object =
       v8::Persistent<v8::Object>::Cast(object);
 
@@ -907,7 +909,7 @@ void BrowserPlugin::WeakCallbackForPersistObject(
   base::WeakPtr<BrowserPlugin> plugin = item_ptr->second;
   delete item_ptr;
 
-  persistent_object.Dispose();
+  persistent_object.Dispose(isolate);
   persistent_object.Clear();
 
   if (plugin) {

@@ -736,4 +736,26 @@ v8::Isolate* ProxyResolverV8::GetDefaultIsolate() {
 
 v8::Isolate* ProxyResolverV8::g_default_isolate_ = NULL;
 
+// static
+size_t ProxyResolverV8::GetTotalHeapSize() {
+  if (!g_default_isolate_)
+    return 0;
+
+  v8::Locker locked(g_default_isolate_);
+  v8::HeapStatistics heap_statistics;
+  g_default_isolate_->GetHeapStatistics(&heap_statistics);
+  return heap_statistics.total_heap_size();
+}
+
+// static
+size_t ProxyResolverV8::GetUsedHeapSize() {
+  if (!g_default_isolate_)
+    return 0;
+
+  v8::Locker locked(g_default_isolate_);
+  v8::HeapStatistics heap_statistics;
+  g_default_isolate_->GetHeapStatistics(&heap_statistics);
+  return heap_statistics.used_heap_size();
+}
+
 }  // namespace net

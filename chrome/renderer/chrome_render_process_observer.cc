@@ -288,7 +288,9 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
 
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
   v8::HeapStatistics heap_stats;
-  v8::V8::GetHeapStatistics(&heap_stats);
+  // TODO(svenpanne) The call below doesn't take web workers into account, this
+  // has to be done manually by iterating over all Isolates involved.
+  v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
   RenderThread::Get()->Send(new ChromeViewHostMsg_V8HeapStats(
       heap_stats.total_heap_size(), heap_stats.used_heap_size()));
 }

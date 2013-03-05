@@ -61,6 +61,7 @@
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/proxy/proxy_resolver_v8.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1687,15 +1688,11 @@ bool TaskManagerBrowserProcessResource::ReportsV8MemoryStats() const {
 }
 
 size_t TaskManagerBrowserProcessResource::GetV8MemoryAllocated() const {
-  v8::HeapStatistics stats;
-  v8::V8::GetHeapStatistics(&stats);
-  return stats.total_heap_size();
+  return net::ProxyResolverV8::GetTotalHeapSize();
 }
 
 size_t TaskManagerBrowserProcessResource::GetV8MemoryUsed() const {
-  v8::HeapStatistics stats;
-  v8::V8::GetHeapStatistics(&stats);
-  return stats.used_heap_size();
+  return net::ProxyResolverV8::GetUsedHeapSize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
