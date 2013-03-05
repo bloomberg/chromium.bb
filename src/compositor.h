@@ -267,7 +267,7 @@ struct weston_layer {
 
 struct weston_plane {
 	pixman_region32_t damage;
-	pixman_region32_t opaque;
+	pixman_region32_t clip;
 	int32_t x, y;
 	struct wl_list link;
 };

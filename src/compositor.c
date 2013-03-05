@@ -1084,15 +1084,11 @@ surface_accumulate_damage(struct weston_surface *surface,
 					  surface->geometry.y - surface->plane->y);
 	}
 
-	pixman_region32_subtract(&surface->damage,
-				 &surface->damage, &surface->plane->opaque);
+	pixman_region32_subtract(&surface->damage, &surface->damage, opaque);
 	pixman_region32_union(&surface->plane->damage,
 			      &surface->plane->damage, &surface->damage);
 	empty_region(&surface->damage);
 	pixman_region32_copy(&surface->clip, opaque);
-	pixman_region32_union(&surface->plane->opaque,
-			      &surface->plane->opaque,
-			      &surface->transform.opaque);
 	pixman_region32_union(opaque, opaque, &surface->transform.opaque);
 }
 
@@ -1101,18 +1097,29 @@ compositor_accumulate_damage(struct weston_compositor *ec)
 {
 	struct weston_plane *plane;
 	struct weston_surface *es;
-	pixman_region32_t opaque;
+	pixman_region32_t opaque, clip;
 
-	pixman_region32_init(&opaque);
+	pixman_region32_init(&clip);
 
 	wl_list_for_each(plane, &ec->plane_list, link) {
-		pixman_region32_fini(&plane->opaque);
-		pixman_region32_init(&plane->opaque);
+		pixman_region32_copy(&plane->clip, &clip);
+
+		pixman_region32_init(&opaque);
+
+		wl_list_for_each(es, &ec->surface_list, link) {
+			if (es->plane != plane)
+				continue;
+
+			surface_accumulate_damage(es, &opaque);
+		}
+
+		pixman_region32_union(&clip, &clip, &opaque);
+		pixman_region32_fini(&opaque);
 	}
 
-	wl_list_for_each(es, &ec->surface_list, link) {
-		surface_accumulate_damage(es, &opaque);
+	pixman_region32_fini(&clip);
 
+	wl_list_for_each(es, &ec->surface_list, link) {
 		/* Both the renderer and the backend have seen the buffer
 		 * by now. If renderer needs the buffer, it has its own
 		 * reference set. If the backend wants to keep the buffer
@@ -1124,8 +1131,6 @@ compositor_accumulate_damage(struct weston_compositor *ec)
 		if (!es->keep_buffer)
 			weston_buffer_reference(&es->buffer_ref, NULL);
 	}
-
-	pixman_region32_fini(&opaque);
 }
 
 static void
@@ -1167,6 +1172,8 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	pixman_region32_init(&output_damage);
 	pixman_region32_intersect(&output_damage,
 				  &ec->primary_plane.damage, &output->region);
+	pixman_region32_subtract(&output_damage,
+				 &output_damage, &ec->primary_plane.clip);
 
 	if (output->dirty)
 		weston_output_update_matrix(output);
@@ -1672,7 +1679,7 @@ WL_EXPORT void
 weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y)
 {
 	pixman_region32_init(&plane->damage);
-	pixman_region32_init(&plane->opaque);
+	pixman_region32_init(&plane->clip);
 	plane->x = x;
 	plane->y = y;
 }
@@ -1681,7 +1688,7 @@ WL_EXPORT void
 weston_plane_release(struct weston_plane *plane)
 {
 	pixman_region32_fini(&plane->damage);
-	pixman_region32_fini(&plane->opaque);
+	pixman_region32_fini(&plane->clip);
 }
 
 WL_EXPORT void
