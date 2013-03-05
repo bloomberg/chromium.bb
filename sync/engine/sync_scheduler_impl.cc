@@ -171,7 +171,6 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       mode_(NORMAL_MODE),
       // Start with assuming everything is fine with the connection.
       // At the end of the sync cycle we would have the correct status.
-      connection_code_(HttpResponse::SERVER_CONNECTION_OK),
       pending_nudge_(NULL),
       delay_provider_(delay_provider),
       syncer_(syncer),
@@ -193,17 +192,6 @@ void SyncSchedulerImpl::OnJobDestroyed(SyncSessionJob* job) {
 void SyncSchedulerImpl::OnCredentialsUpdated() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
-  // TODO(lipalani): crbug.com/106262. One issue here is that if after
-  // the auth error we happened to do gettime and it succeeded then
-  // the |connection_code_| would be briefly OK however it would revert
-  // back to SYNC_AUTH_ERROR at the end of the sync cycle. The
-  // referenced bug explores the option of removing gettime calls
-  // altogethere
-  // TODO(rogerta): this code no longer checks |connection_code_|.  It uses
-  // ServerConnectionManager::server_status() instead.  This is to resolve a
-  // missing notitification during re-auth.  |connection_code_| is a duplicate
-  // value and should probably be removed, see comment in the function
-  // SyncSchedulerImpl::FinishSyncSessionJob() below.
   if (HttpResponse::SYNC_AUTH_ERROR ==
       session_context_->connection_manager()->server_status()) {
     OnServerConnectionErrorFixed();
@@ -211,7 +199,8 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
 }
 
 void SyncSchedulerImpl::OnConnectionStatusChange() {
-  if (HttpResponse::CONNECTION_UNAVAILABLE  == connection_code_) {
+  if (HttpResponse::CONNECTION_UNAVAILABLE  ==
+      session_context_->connection_manager()->server_status()) {
     // Optimistically assume that the connection is fixed and try
     // connecting.
     OnServerConnectionErrorFixed();
@@ -219,7 +208,6 @@ void SyncSchedulerImpl::OnConnectionStatusChange() {
 }
 
 void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
-  connection_code_ = HttpResponse::SERVER_CONNECTION_OK;
   // There could be a pending nudge or configuration job in several cases:
   //
   // 1. We're in exponential backoff.
@@ -239,15 +227,6 @@ void SyncSchedulerImpl::OnServerConnectionErrorFixed() {
            base::Bind(&SyncSchedulerImpl::DoCanaryJob,
                       weak_ptr_factory_.GetWeakPtr(),
                       base::Passed(&pending)));
-}
-
-void SyncSchedulerImpl::UpdateServerConnectionManagerStatus(
-    HttpResponse::ServerConnectionCode code) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SDVLOG(2) << "New server connection code: "
-            << HttpResponse::GetServerConnectionCodeString(code);
-
-  connection_code_ = code;
 }
 
 void SyncSchedulerImpl::Start(Mode mode) {
@@ -807,16 +786,6 @@ void SyncSchedulerImpl::UpdateNudgeTimeRecords(const SyncSourceInfo& info) {
 bool SyncSchedulerImpl::FinishSyncSessionJob(scoped_ptr<SyncSessionJob> job,
                                              bool exited_prematurely) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  // Now update the status of the connection from SCM. We need this to decide
-  // whether we need to save/run future jobs. The notifications from SCM are
-  // not reliable.
-  //
-  // TODO(rlarocque): crbug.com/110954
-  // We should get rid of the notifications and it is probably not needed to
-  // maintain this status variable in 2 places. We should query it directly
-  // from SCM when needed.
-  ServerConnectionManager* scm = session_context_->connection_manager();
-  UpdateServerConnectionManagerStatus(scm->server_status());
 
   // Let job know that we're through syncing (calling SyncShare) at this point.
   bool succeeded = false;

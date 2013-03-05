@@ -1343,7 +1343,7 @@ TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
   auth_error_details.SetString("status", "CONNECTION_AUTH_ERROR");
 
   EXPECT_CALL(manager_observer_,
-              OnConnectionStatusChange(CONNECTION_AUTH_ERROR)).Times(3);
+              OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
 
   EXPECT_CALL(
       event_handler,
@@ -1357,11 +1357,20 @@ TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
   EXPECT_CALL(
       event_handler,
       HandleJsEvent("onNotificationStateChange",
-                    HasDetailsAsDictionary(credentials_rejected_details)));
+                    HasDetailsAsDictionary(credentials_rejected_details)))
+      .Times(2);
 
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
                             HasDetailsAsDictionary(transient_error_details)));
+
+  // Test needs to simulate INVALIDATION_CREDENTIALS_REJECTED with event handler
+  // attached because this is the only time when CONNECTION_AUTH_ERROR
+  // notification will be generated, therefore the only chance to verify that
+  // "onConnectionStatusChange" event is delivered
+  SetJsEventHandler(event_handler.AsWeakHandle());
+  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
+  SetJsEventHandler(WeakHandle<JsEventHandler>());
 
   SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
   SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);

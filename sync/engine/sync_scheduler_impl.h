@@ -250,10 +250,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
 
-  // Used to update |connection_code_|, see below.
-  void UpdateServerConnectionManagerStatus(
-      HttpResponse::ServerConnectionCode code);
-
   // Called once the first time thread_ is started to broadcast an initial
   // session snapshot containing data like initial_sync_ended.  Important when
   // the client starts up and does not need to perform an initial sync.
@@ -301,9 +297,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
 
   // The mode of operation.
   Mode mode_;
-
-  // The latest connection code we got while trying to connect.
-  HttpResponse::ServerConnectionCode connection_code_;
 
   // Tracks (does not own) in-flight nudges (scheduled or unscheduled),
   // so we can coalesce. NULL if there is no pending nudge.

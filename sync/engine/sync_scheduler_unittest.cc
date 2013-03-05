@@ -1192,9 +1192,9 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   // Should save the nudge for until after the server is reachable.
   MessageLoop::current()->RunUntilIdle();
 
+  scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  scheduler()->OnConnectionStatusChange();
   MessageLoop::current()->RunUntilIdle();
 }
 
@@ -1220,9 +1220,9 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
   ASSERT_TRUE(scheduler()->IsBackingOff());
 
   // Before we run the scheduled canary, trigger a server connection change.
+  scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  scheduler()->OnConnectionStatusChange();
   MessageLoop::current()->RunUntilIdle();
 }
 
@@ -1248,9 +1248,9 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   ASSERT_TRUE(scheduler()->IsBackingOff());
 
   // Before we run the scheduled canary, trigger a server connection change.
+  scheduler()->OnConnectionStatusChange();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  scheduler()->OnConnectionStatusChange();
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   MessageLoop::current()->RunUntilIdle();

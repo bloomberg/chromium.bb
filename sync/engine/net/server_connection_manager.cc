@@ -28,11 +28,6 @@ using std::vector;
 
 static const char kSyncServerSyncPath[] = "/command/";
 
-// At the /time/ path of the sync server, we expect to find a very simple
-// time of day service that we can use to synchronize the local clock with
-// server time.
-static const char kSyncServerGetTimePath[] = "/time";
-
 HttpResponse::HttpResponse()
     : response_code(kUnsetResponseCode),
       content_length(kUnsetContentLength),
@@ -175,11 +170,7 @@ ScopedServerStatusWatcher::ScopedServerStatusWatcher(
 }
 
 ScopedServerStatusWatcher::~ScopedServerStatusWatcher() {
-  if (conn_mgr_->server_status_ != response_->server_status) {
-    conn_mgr_->server_status_ = response_->server_status;
-    conn_mgr_->NotifyStatusChanged();
-    return;
-  }
+  conn_mgr_->SetServerStatus(response_->server_status);
 }
 
 ServerConnectionManager::ServerConnectionManager(
@@ -190,7 +181,6 @@ ServerConnectionManager::ServerConnectionManager(
       sync_server_port_(port),
       use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
-      get_time_path_(kSyncServerGetTimePath),
       server_status_(HttpResponse::NONE),
       terminated_(false),
       active_connection_(NULL) {
@@ -224,7 +214,7 @@ void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
 
 void ServerConnectionManager::OnInvalidationCredentialsRejected() {
   InvalidateAndClearAuthToken();
-  server_status_ = HttpResponse::SYNC_AUTH_ERROR;
+  SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
 }
 
 void ServerConnectionManager::InvalidateAndClearAuthToken() {
@@ -234,6 +224,14 @@ void ServerConnectionManager::InvalidateAndClearAuthToken() {
     previously_invalidated_token.assign(auth_token_);
     auth_token_ = std::string();
   }
+}
+
+void ServerConnectionManager::SetServerStatus(
+    HttpResponse::ServerConnectionCode server_status) {
+  if (server_status_ == server_status)
+    return;
+  server_status_ = server_status;
+  NotifyStatusChanged();
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
