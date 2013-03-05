@@ -465,4 +465,18 @@ void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
 }
 
+bool RenderWidgetHostViewBase::CanSubscribeFrame() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void RenderWidgetHostViewBase::BeginFrameSubscription(
+    RenderWidgetHostViewFrameSubscriber* subscriber) {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewBase::EndFrameSubscription() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace content

@@ -47,6 +47,7 @@ struct WebScreenInfo;
 
 namespace content {
 class BackingStore;
+class RenderWidgetHostViewFrameSubscriber;
 class SmoothScrollGesture;
 struct NativeWebKeyboardEvent;
 
@@ -197,6 +198,19 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // should be renamed to HasCompositingSurface(), or unified with
   // IsSurfaceAvailableForCopy() and HasAcceleratedSurface().
   virtual bool CanCopyToVideoFrame() const = 0;
+
+  // Return true if frame subscription is supported on this platform.
+  virtual bool CanSubscribeFrame() const = 0;
+
+  // Begin subscribing for presentation events and captured frames.
+  // |subscriber| is now owned by this object, it will be called only on the
+  // UI thread.
+  virtual void BeginFrameSubscription(
+      RenderWidgetHostViewFrameSubscriber* subscriber) = 0;
+
+  // End subscribing for frame presentation events. FrameSubscriber will be
+  // deleted after this call.
+  virtual void EndFrameSubscription() = 0;
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;

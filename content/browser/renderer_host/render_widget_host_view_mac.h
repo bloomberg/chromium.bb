@@ -274,6 +274,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool CanCopyToVideoFrame() const OVERRIDE;
+  virtual bool CanSubscribeFrame() const OVERRIDE;
+  virtual void BeginFrameSubscription(
+      RenderWidgetHostViewFrameSubscriber* subscriber) OVERRIDE;
+  virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params
@@ -425,6 +429,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
     return fullscreen_parent_host_view_;
   }
 
+  RenderWidgetHostViewFrameSubscriber* frame_subscriber() const {
+    return frame_subscriber_.get();
+  }
+
  private:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
@@ -508,6 +516,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   // The current caret bounds.
   gfx::Rect caret_rect_;
+
+  // Subscriber that listens to frame presentation events.
+  scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

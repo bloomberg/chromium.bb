@@ -67,6 +67,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual SmoothScrollGesture* CreateSmoothScrollGesture(
       bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) OVERRIDE;
+  virtual bool CanSubscribeFrame() const OVERRIDE;
+  virtual void BeginFrameSubscription(
+      RenderWidgetHostViewFrameSubscriber* subscriber) OVERRIDE;
+  virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnSwapCompositorFrame(
       const cc::CompositorFrame& frame) OVERRIDE {}
 

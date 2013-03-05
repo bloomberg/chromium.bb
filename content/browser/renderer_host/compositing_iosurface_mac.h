@@ -30,6 +30,8 @@ class Rect;
 
 namespace content {
 
+class RenderWidgetHostViewFrameSubscriber;
+
 // This class manages an OpenGL context and IOSurface for the accelerated
 // compositing code path. The GL context is attached to
 // RenderWidgetHostViewCocoa for blitting the IOSurface.
@@ -55,7 +57,10 @@ class CompositingIOSurfaceMac {
   // Blit the IOSurface at the upper-left corner of the |view|. If |view| window
   // size is larger than the IOSurface, the remaining right and bottom edges
   // will be white. |scaleFactor| is 1 in normal views, 2 in HiDPI views.
-  void DrawIOSurface(NSView* view, float scale_factor);
+  // |frame_subscriber| listens to this draw event and provides output buffer
+  // for copying this frame into.
+  void DrawIOSurface(NSView* view, float scale_factor,
+                     RenderWidgetHostViewFrameSubscriber* frame_subscriber);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
   // into |out|. The copied region is specified with |src_pixel_subrect| and
@@ -227,6 +232,15 @@ class CompositingIOSurfaceMac {
 
   void StartOrContinueDisplayLink();
   void StopDisplayLink();
+
+  // Copy current frame to |target| video frame. This method must be called
+  // within a CGL context. Returns a callback that should be called outside
+  // of the CGL context.
+  base::Closure CopyToVideoFrameInternal(
+      const gfx::Rect& src_subrect,
+      float src_scale_factor,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback);
 
   // Two implementations of CopyTo() in synchronous and asynchronous mode.
   // These may copy regions smaller than the requested |src_pixel_subrect| if

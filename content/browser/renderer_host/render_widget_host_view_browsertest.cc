@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -12,6 +13,7 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "media/base/video_frame.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/compositor/compositor_setup.h"
@@ -75,6 +77,25 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   gfx::Size size_;
 };
 
+class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
+ public:
+  FakeFrameSubscriber(
+    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback)
+      : callback_(callback) {
+  }
+
+  virtual bool ShouldCaptureFrame(
+      scoped_refptr<media::VideoFrame>* storage,
+      DeliverFrameCallback* callback) OVERRIDE {
+    *storage = media::VideoFrame::CreateBlackFrame(gfx::Size(100, 100));
+    *callback = callback_;
+    return true;
+  }
+
+ private:
+  DeliverFrameCallback callback_;
+};
+
 #if defined(OS_MACOSX)
 // Tests that the callback passed to CopyFromBackingStore is always called, even
 // when the RenderWidgetHost is deleting in the middle of an async copy.
@@ -125,6 +146,43 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
 
   ASSERT_TRUE(finish_called_);
 }
+
+static void DeliverFrameFunc(base::Closure quit_closure,
+                             bool* frame_captured_out,
+                             base::Time timestamp,
+                             bool frame_captured) {
+  *frame_captured_out = frame_captured;
+  quit_closure.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
+                       MacFrameSubscriberTest) {
+  if (!IOSurfaceSupport::Initialize())
+    return;
+
+  SetupCompositingSurface();
+
+  base::RunLoop run_loop;
+  RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
+      shell()->web_contents()->GetRenderViewHost()->GetView());
+  ASSERT_TRUE(view);
+
+  EXPECT_TRUE(view->CanSubscribeFrame());
+
+  bool frame_captured = false;
+  view->BeginFrameSubscription(
+      new FakeFrameSubscriber(base::Bind(&DeliverFrameFunc,
+                                         run_loop.QuitClosure(),
+                                         &frame_captured)));
+
+  // Do a resize of the window to trigger a repaint and present.
+  SetWindowBounds(shell()->window(), gfx::Rect(size_));
+  run_loop.Run();
+  view->EndFrameSubscription();
+
+  EXPECT_TRUE(frame_captured);
+}
+
 #endif
 
 }  // namespace content

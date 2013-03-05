@@ -38,6 +38,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
@@ -1021,6 +1022,19 @@ bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
           compositing_iosurface_->HasIOSurface());
 }
 
+bool RenderWidgetHostViewMac::CanSubscribeFrame() const {
+  return true;
+}
+
+void RenderWidgetHostViewMac::BeginFrameSubscription(
+    RenderWidgetHostViewFrameSubscriber* subscriber) {
+  frame_subscriber_.reset(subscriber);
+}
+
+void RenderWidgetHostViewMac::EndFrameSubscription() {
+  frame_subscriber_.reset();
+}
+
 // Sets whether or not to accept first responder status.
 void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
   [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];
@@ -1134,7 +1148,8 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
   // later.
   if (!about_to_validate_and_paint_) {
     compositing_iosurface_->DrawIOSurface(cocoa_view_,
-                                          ScaleFactor(cocoa_view_));
+                                          ScaleFactor(cocoa_view_),
+                                          frame_subscriber_.get());
   }
   return true;
 }
@@ -2460,7 +2475,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     }
 
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
-        self, ScaleFactor(self));
+        self, ScaleFactor(self), renderWidgetHostView_->frame_subscriber());
     return;
   }
 

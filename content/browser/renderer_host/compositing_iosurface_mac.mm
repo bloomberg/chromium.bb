@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/content_constants_internal.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/video_util.h"
 #include "ui/gfx/rect.h"
@@ -348,7 +349,9 @@ void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
   CGLSetCurrentContext(0);
 }
 
-void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
+void CompositingIOSurfaceMac::DrawIOSurface(
+    NSView* view, float scale_factor,
+    RenderWidgetHostViewFrameSubscriber* frame_subscriber) {
   CGLSetCurrentContext(cglContext_);
 
   bool has_io_surface = MapIOSurfaceToTexture(io_surface_handle_);
@@ -449,12 +452,28 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
     glFinish();
   }
 
+  base::Closure copy_done_callback;
+  if (frame_subscriber) {
+    scoped_refptr<media::VideoFrame> frame;
+    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
+    bool should_copy = frame_subscriber->ShouldCaptureFrame(&frame, &callback);
+
+    if (should_copy) {
+      copy_done_callback = CopyToVideoFrameInternal(
+          gfx::Rect(io_surface_size_), scale_factor, frame,
+          base::Bind(callback, base::Time::Now()));
+    }
+  }
+
   CGLFlushDrawable(cglContext_);
 
   // For latency_tests.cc:
   UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
 
   CGLSetCurrentContext(0);
+
+  if (!copy_done_callback.is_null())
+    copy_done_callback.Run();
 
   StartOrContinueDisplayLink();
 
@@ -504,7 +523,21 @@ void CompositingIOSurfaceMac::CopyToVideoFrame(
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
   CGLSetCurrentContext(cglContext_);
+  base::Closure done_callback = CopyToVideoFrameInternal(requested_src_subrect,
+                                                         src_scale_factor,
+                                                         target, callback);
+  CGLSetCurrentContext(0);
 
+  if (done_callback.is_null())
+    return;
+  done_callback.Run();
+}
+
+base::Closure CompositingIOSurfaceMac::CopyToVideoFrameInternal(
+    const gfx::Rect& requested_src_subrect,
+    float src_scale_factor,
+    const scoped_refptr<media::VideoFrame>& target,
+    const base::Callback<void(bool)>& callback) {
   // Using PBO crashes on Intel drivers but not on newer Mountain Lion
   // systems. See bug http://crbug.com/152225.
   const bool async_copy = HasPixelBufferObjectExtension() &&
@@ -546,18 +579,21 @@ void CompositingIOSurfaceMac::CopyToVideoFrame(
     }
   }
 
-  CGLSetCurrentContext(0);
-
   if (!ret) {
     VLOG(1) << "Failed to copy IOSurface to video frame, asynchronous mode: "
             << async_copy;
   }
 
   if (async_copy) {
+    // Asynchronous copy failed, return a callback to be executed now.
     if (!ret)
-      callback.Run(false);
+      return base::Bind(callback, false);
+
+    // Asynchronous copy started, return a null closure.
+    return base::Closure();
   } else {
-    callback.Run(ret);
+    // Synchronous copy, return a callback to be executed now.
+    return base::Bind(callback, ret);
   }
 }
 
