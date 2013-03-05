@@ -17,6 +17,9 @@ class CC_EXPORT CompositorFrameMetadata
   CompositorFrameMetadata();
   ~CompositorFrameMetadata();
 
+  // The device scale factor used to generate this compositor frame.
+  float device_scale_factor;
+
   // Scroll offset and scale of the root layer. This can be used for tasks
   // like positioning windowed plugins.
   gfx::Vector2dF root_scroll_offset;

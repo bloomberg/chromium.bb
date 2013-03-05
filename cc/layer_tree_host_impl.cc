@@ -775,6 +775,7 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)
 CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
 {
     CompositorFrameMetadata metadata;
+    metadata.device_scale_factor = m_deviceScaleFactor;
     metadata.page_scale_factor = activeTree()->total_page_scale_factor();
     metadata.viewport_size = activeTree()->ScrollableViewportSize();
     metadata.root_layer_size = activeTree()->ScrollableSize();

@@ -7,7 +7,8 @@
 namespace cc {
 
 CompositorFrameMetadata::CompositorFrameMetadata()
-    : page_scale_factor(0),
+    : device_scale_factor(0),
+      page_scale_factor(0),
       min_page_scale_factor(0),
       max_page_scale_factor(0) {
 }

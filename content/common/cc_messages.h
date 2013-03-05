@@ -221,6 +221,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(viewport_size)
