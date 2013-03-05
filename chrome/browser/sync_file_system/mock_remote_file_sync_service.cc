@@ -31,6 +31,9 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
   ON_CALL(*this, UnregisterOriginForTrackingChanges(_, _))
       .WillByDefault(
           Invoke(this, &self::UnregisterOriginForTrackingChangesStub));
+  ON_CALL(*this, DeleteOriginDirectory(_, _))
+      .WillByDefault(
+          Invoke(this, &self::DeleteOriginDirectoryStub));
   ON_CALL(*this, ProcessRemoteChange(_, _))
       .WillByDefault(Invoke(this, &self::ProcessRemoteChangeStub));
   ON_CALL(*this, GetLocalChangeProcessor())
@@ -89,6 +92,14 @@ void MockRemoteFileSyncService::RegisterOriginForTrackingChangesStub(
 }
 
 void MockRemoteFileSyncService::UnregisterOriginForTrackingChangesStub(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, SYNC_STATUS_OK));
+}
+
+void MockRemoteFileSyncService::DeleteOriginDirectoryStub(
     const GURL& origin,
     const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

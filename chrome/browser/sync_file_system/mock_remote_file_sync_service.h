@@ -37,6 +37,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(UnregisterOriginForTrackingChanges,
                void(const GURL& origin, const SyncStatusCallback& callback));
+  MOCK_METHOD2(DeleteOriginDirectory,
+               void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(ProcessRemoteChange,
                void(RemoteChangeProcessor* processor,
                     const SyncFileCallback& callback));
@@ -85,6 +87,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void RegisterOriginForTrackingChangesStub(
       const GURL& origin, const SyncStatusCallback& callback);
   void UnregisterOriginForTrackingChangesStub(
+      const GURL& origin, const SyncStatusCallback& callback);
+  void DeleteOriginDirectoryStub(
       const GURL& origin, const SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(
       RemoteChangeProcessor* processor, const SyncFileCallback& callback);

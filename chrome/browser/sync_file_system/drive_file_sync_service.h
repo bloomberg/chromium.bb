@@ -77,6 +77,9 @@ class DriveFileSyncService
   virtual void UnregisterOriginForTrackingChanges(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
+  virtual void DeleteOriginDirectory(
+      const GURL& origin,
+      const SyncStatusCallback& callback) OVERRIDE;
   virtual void ProcessRemoteChange(
       RemoteChangeProcessor* processor,
       const SyncFileCallback& callback) OVERRIDE;
@@ -270,6 +273,9 @@ class DriveFileSyncService
                                 const SyncStatusCallback& callback,
                                 google_apis::GDataErrorCode error,
                                 const std::string& resource_id);
+  void DidDeleteOriginDirectory(scoped_ptr<TaskToken> token,
+                                const SyncStatusCallback& callback,
+                                google_apis::GDataErrorCode error);
   void DidGetLargestChangeStampForBatchSync(scoped_ptr<TaskToken> token,
                                             const GURL& origin,
                                             const std::string& resource_id,

@@ -81,8 +81,10 @@ void EmptyStatusCallback(SyncStatusCode code) {}
 void DidRemoveOrigin(const GURL& origin, SyncStatusCode status) {
   // TODO(calvinlo): Disable syncing if status not ok (http://crbug.com/171611).
   DCHECK_EQ(SYNC_STATUS_OK, status);
-  LOG(WARNING) << "Remove origin failed for: " << origin.spec()
-               << " status=" << status;
+  if (status != SYNC_STATUS_OK) {
+    LOG(WARNING) << "Remove origin failed for: " << origin.spec()
+                 << " status=" << status;
+  }
 }
 
 FileChange CreateFileChange(bool is_deleted) {
@@ -402,6 +404,28 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
   metadata_store_->RemoveOrigin(origin, base::Bind(
       &DriveFileSyncService::DidRemoveOriginOnMetadataStore,
       AsWeakPtr(), base::Passed(&token), callback));
+}
+
+void DriveFileSyncService::DeleteOriginDirectory(
+    const GURL& origin,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<TaskToken> token(GetToken(
+      FROM_HERE, TASK_TYPE_DATABASE, "Delete Origin Directory"));
+  if (!token) {
+    pending_tasks_.push_back(base::Bind(
+        &DriveFileSyncService::DeleteOriginDirectory,
+        AsWeakPtr(), origin, callback));
+    return;
+  }
+
+  // Convert origin's directory GURL to ResourceID and delete it. Expected MD5
+  // is empty to force delete (i.e. skip conflict resolution).
+  std::string resource_id = metadata_store_->GetResourceIdForOrigin(origin);
+  sync_client_->DeleteFile(
+      resource_id,
+      std::string(),
+      base::Bind(&DriveFileSyncService::DidDeleteOriginDirectory,
+                 AsWeakPtr(), base::Passed(&token), callback));
 }
 
 void DriveFileSyncService::ProcessRemoteChange(
@@ -972,6 +996,15 @@ void DriveFileSyncService::DidGetDirectoryForOrigin(
 
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
   callback.Run(SYNC_STATUS_OK);
+}
+
+void DriveFileSyncService::DidDeleteOriginDirectory(
+    scoped_ptr<TaskToken> token,
+    const SyncStatusCallback& callback,
+    google_apis::GDataErrorCode error) {
+  SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
+  NotifyTaskDone(status, token.Pass());
+  callback.Run(status);
 }
 
 void DriveFileSyncService::DidGetLargestChangeStampForBatchSync(

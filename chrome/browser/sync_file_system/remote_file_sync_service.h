@@ -99,6 +99,11 @@ class RemoteFileSyncService {
       const GURL& origin,
       const SyncStatusCallback& callback) = 0;
 
+  // Deletes the |origin| directory from the remote backing service.
+  virtual void DeleteOriginDirectory(
+      const GURL& origin,
+      const SyncStatusCallback& callback) = 0;
+
   // Called by the sync engine to process one remote change.
   // After a change is processed |callback| will be called (to return
   // the control to the sync engine).
