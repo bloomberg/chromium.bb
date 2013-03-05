@@ -459,12 +459,14 @@ bool TemplateURLRef::HasGoogleBaseURLs() const {
   return false;
 }
 
-bool TemplateURLRef::ExtractSearchTermsFromURL(const GURL& url,
-                                               string16* search_terms) const {
+bool TemplateURLRef::ExtractSearchTermsFromURL(
+    const GURL& url,
+    string16* search_terms,
+    const SearchTermsData& search_terms_data) const {
   DCHECK(search_terms);
   search_terms->clear();
 
-  ParseIfNecessary();
+  ParseIfNecessaryUsingTermsData(search_terms_data);
 
   // We need a search term in the template URL to extract something.
   if (search_term_key_.empty())
@@ -475,7 +477,8 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(const GURL& url,
 
   // Fill-in the replacements. We don't care about search terms in the pattern,
   // so we use the empty string.
-  GURL pattern(ReplaceSearchTerms(SearchTermsArgs(string16())));
+  GURL pattern(ReplaceSearchTermsUsingTermsData(SearchTermsArgs(string16()),
+                                                search_terms_data));
   // Host, path and port must match.
   if (url.port() != pattern.port() ||
       url.host() != host_ ||
@@ -817,15 +820,25 @@ const std::string& TemplateURL::GetURL(size_t index) const {
       data_.alternate_urls[index] : url();
 }
 
-bool TemplateURL::ExtractSearchTermsFromURL(const GURL& url,
-                                            string16* search_terms) {
+bool TemplateURL::ExtractSearchTermsFromURL(
+    const GURL& url,
+    string16* search_terms) {
+  UIThreadSearchTermsData search_terms_data(profile_);
+  return ExtractSearchTermsFromURLUsingTermsData(url, search_terms,
+                                                 search_terms_data);
+}
+
+bool TemplateURL::ExtractSearchTermsFromURLUsingTermsData(
+    const GURL& url,
+    string16* search_terms,
+    const SearchTermsData& search_terms_data) {
   DCHECK(search_terms);
   search_terms->clear();
 
   // Then try to match with every pattern.
   for (size_t i = 0; i < URLCount(); ++i) {
     TemplateURLRef ref(this, i);
-    if (ref.ExtractSearchTermsFromURL(url, search_terms)) {
+    if (ref.ExtractSearchTermsFromURL(url, search_terms, search_terms_data)) {
       // If ExtractSearchTermsFromURL() returns true and |search_terms| is empty
       // it means the pattern matched but no search terms were present. In this
       // case we fail immediately without looking for matches in subsequent
@@ -838,6 +851,19 @@ bool TemplateURL::ExtractSearchTermsFromURL(const GURL& url,
     }
   }
   return false;
+}
+
+bool TemplateURL::IsSearchURL(const GURL& url) {
+  UIThreadSearchTermsData search_terms_data(profile_);
+  return IsSearchURLUsingTermsData(url, search_terms_data);
+}
+
+bool TemplateURL::IsSearchURLUsingTermsData(
+    const GURL& url,
+    const SearchTermsData& search_terms_data) {
+  string16 search_terms;
+  return ExtractSearchTermsFromURLUsingTermsData(
+      url, &search_terms, search_terms_data) && !search_terms.empty();
 }
 
 bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {

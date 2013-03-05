@@ -24,6 +24,8 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -133,6 +135,74 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
 }  // namespace
 
 // -----------------------------------------------------------------
+// SearchTermsDataSnapshot
+
+// Implementation of SearchTermsData that takes a snapshot of another
+// SearchTermsData by copying all the responses to the different getters into
+// member strings, then returning those strings when its own getters are called.
+// This will typically be constructed on the UI thread from
+// UIThreadSearchTermsData but is subsequently safe to use on any thread.
+class SearchTermsDataSnapshot : public SearchTermsData {
+ public:
+  explicit SearchTermsDataSnapshot(const SearchTermsData& search_terms_data);
+  virtual ~SearchTermsDataSnapshot();
+
+  virtual std::string GoogleBaseURLValue() const OVERRIDE;
+  virtual std::string GetApplicationLocale() const OVERRIDE;
+  virtual string16 GetRlzParameterValue() const OVERRIDE;
+  virtual std::string GetSearchClient() const OVERRIDE;
+  virtual std::string InstantEnabledParam() const OVERRIDE;
+  virtual std::string InstantExtendedEnabledParam() const OVERRIDE;
+
+ private:
+  std::string google_base_url_value_;
+  std::string application_locale_;
+  string16 rlz_parameter_value_;
+  std::string search_client_;
+  std::string instant_enabled_param_;
+  std::string instant_extended_enabled_param_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchTermsDataSnapshot);
+};
+
+SearchTermsDataSnapshot::SearchTermsDataSnapshot(
+    const SearchTermsData& search_terms_data)
+    : google_base_url_value_(search_terms_data.GoogleBaseURLValue()),
+      application_locale_(search_terms_data.GetApplicationLocale()),
+      rlz_parameter_value_(search_terms_data.GetRlzParameterValue()),
+      search_client_(search_terms_data.GetSearchClient()),
+      instant_enabled_param_(search_terms_data.InstantEnabledParam()),
+      instant_extended_enabled_param_(
+          search_terms_data.InstantExtendedEnabledParam()) {}
+
+SearchTermsDataSnapshot::~SearchTermsDataSnapshot() {
+}
+
+std::string SearchTermsDataSnapshot::GoogleBaseURLValue() const {
+  return google_base_url_value_;
+}
+
+std::string SearchTermsDataSnapshot::GetApplicationLocale() const {
+  return application_locale_;
+}
+
+string16 SearchTermsDataSnapshot::GetRlzParameterValue() const {
+  return rlz_parameter_value_;
+}
+
+std::string SearchTermsDataSnapshot::GetSearchClient() const {
+  return search_client_;
+}
+
+std::string SearchTermsDataSnapshot::InstantEnabledParam() const {
+  return instant_enabled_param_;
+}
+
+std::string SearchTermsDataSnapshot::InstantExtendedEnabledParam() const {
+  return instant_extended_enabled_param_;
+}
+
+// -----------------------------------------------------------------
 // HistoryURLProvider
 
 // These ugly magic numbers will go away once we switch all scoring
@@ -232,14 +302,20 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
 HistoryURLProviderParams::HistoryURLProviderParams(
     const AutocompleteInput& input,
     bool trim_http,
-    const std::string& languages)
+    const std::string& languages,
+    TemplateURL* default_search_provider,
+    const SearchTermsData& search_terms_data)
     : message_loop(MessageLoop::current()),
       input(input),
       prevent_inline_autocomplete(input.prevent_inline_autocomplete()),
       trim_http(trim_http),
       failed(false),
       languages(languages),
-      dont_suggest_exact_input(false) {
+      dont_suggest_exact_input(false),
+      default_search_provider(default_search_provider ?
+          new TemplateURL(default_search_provider->profile(),
+                          default_search_provider->data()) : NULL),
+      search_terms_data(new SearchTermsDataSnapshot(search_terms_data)) {
 }
 
 HistoryURLProviderParams::~HistoryURLProviderParams() {
@@ -421,7 +497,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   }
 
   // Create sorted list of suggestions.
-  CullPoorMatches(&history_matches);
+  CullPoorMatches(&history_matches, params);
   SortMatches(&history_matches);
   PromoteOrCreateShorterSuggestion(db, *params, have_what_you_typed_match,
                                    what_you_typed_match, &history_matches);
@@ -576,6 +652,15 @@ void HistoryURLProvider::RunAutocompletePasses(
   if (!history_service)
     return;
 
+  // Get the default search provider and search terms data now since we have to
+  // retrieve these on the UI thread, and the second pass runs on the history
+  // thread. |template_url_service| can be NULL when testing.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURL* default_search_provider = template_url_service ?
+      template_url_service->GetDefaultSearchProvider() : NULL;
+  UIThreadSearchTermsData data(profile_);
+
   // Create the data structure for the autocomplete passes.  We'll save this off
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
@@ -585,7 +670,8 @@ void HistoryURLProvider::RunAutocompletePasses(
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   }
   scoped_ptr<HistoryURLProviderParams> params(
-      new HistoryURLProviderParams(input, trim_http, languages));
+      new HistoryURLProviderParams(input, trim_http, languages,
+                                   default_search_provider, data));
 
   params->prevent_inline_autocomplete =
       PreventInlineAutocomplete(input);
@@ -853,14 +939,19 @@ void HistoryURLProvider::SortMatches(history::HistoryMatches* matches) const {
 }
 
 void HistoryURLProvider::CullPoorMatches(
-    history::HistoryMatches* matches) const {
+    history::HistoryMatches* matches,
+    HistoryURLProviderParams* params) const {
   const base::Time& threshold(history::AutocompleteAgeThreshold());
   for (history::HistoryMatches::iterator i(matches->begin());
        i != matches->end(); ) {
-    if (RowQualifiesAsSignificant(i->url_info, threshold))
+    if (RowQualifiesAsSignificant(i->url_info, threshold) &&
+        !(params->default_search_provider &&
+            params->default_search_provider->IsSearchURLUsingTermsData(
+                i->url_info.url(), *params->search_terms_data.get()))) {
       ++i;
-    else
+    } else {
       i = matches->erase(i);
+    }
   }
 }
 

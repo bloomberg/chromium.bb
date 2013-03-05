@@ -15,6 +15,9 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -35,6 +38,8 @@ struct TestEntry {
   {"http://www.google.com/1", "PAGEONE 1",   "FOO some body text"},
   {"http://www.google.com/2", "PAGEONE 2",   "FOO some more blah blah"},
   {"http://www.google.com/3", "PAGETHREE 3", "BAR some hello world for you"},
+  {"http://testsearch.com/?q=thequery", "Search results", "MOO search results"},
+  {"http://testsearch.com/", "Search engine", "MOO best engine ever"},
 };
 
 class HistoryContentsProviderTest : public testing::Test,
@@ -62,6 +67,10 @@ class HistoryContentsProviderTest : public testing::Test,
   virtual bool BodyOnly() { return false; }
 
  private:
+  static ProfileKeyedService* CreateTemplateURLService(Profile* profile) {
+    return new TemplateURLService(profile);
+  }
+
   // testing::Test
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
@@ -91,6 +100,9 @@ class HistoryContentsProviderTest : public testing::Test,
     }
 
     provider_ = new HistoryContentsProvider(this, profile_.get(), BodyOnly());
+
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), &HistoryContentsProviderTest::CreateTemplateURLService);
   }
 
   virtual void TearDown() {
@@ -243,6 +255,30 @@ TEST_F(HistoryContentsProviderTest, DeleteStarredMatch) {
                               AutocompleteInput::ALL_MATCHES);
   RunQuery(you_input, false);
   EXPECT_EQ(0U, matches().size());
+}
+
+TEST_F(HistoryContentsProviderTest, CullSearchResults) {
+  // Set up a default search engine.
+  TemplateURLData data;
+  data.SetKeyword(ASCIIToUTF16("TestEngine"));
+  data.SetURL("http://testsearch.com/?q={searchTerms}");
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURL* template_url = new TemplateURL(profile(), data);
+  template_url_service->Add(template_url);
+  template_url_service->SetDefaultSearchProvider(template_url);
+  template_url_service->Load();
+
+  AutocompleteInput input(ASCIIToUTF16("moo"), string16::npos, string16(), true,
+                          false, true, AutocompleteInput::ALL_MATCHES);
+  RunQuery(input, false);
+
+  // Run a query that is found on a search result page and on the main page
+  // of the default search engine. The result should be the main page, the
+  // SRP should be culled.
+  const ACMatches& m = matches();
+  ASSERT_EQ(1U, m.size());
+  EXPECT_EQ(test_entries[4].url, m[0].destination_url.spec());
 }
 
 }  // namespace

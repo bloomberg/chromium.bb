@@ -19,6 +19,9 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -145,6 +148,10 @@ class HistoryURLProviderTest : public testing::Test,
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
+  static ProfileKeyedService* CreateTemplateURLService(Profile* profile) {
+    return new TemplateURLService(profile);
+  }
+
   // testing::Test
   virtual void SetUp() {
     SetUpImpl(false);
@@ -198,7 +205,8 @@ void HistoryURLProviderTest::SetUpImpl(bool no_db) {
                                            Profile::EXPLICIT_ACCESS);
 
   autocomplete_ = new HistoryURLProvider(this, profile_.get(), "en-US,en,ko");
-
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_.get(), &HistoryURLProviderTest::CreateTemplateURLService);
   FillData();
 }
 
@@ -711,4 +719,49 @@ TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
     if (!autocomplete_->done())
       MessageLoop::current()->Run();
   }
+}
+
+TEST_F(HistoryURLProviderTest, CullSearchResults) {
+  // Set up a default search engine.
+  TemplateURLData data;
+  data.SetKeyword(ASCIIToUTF16("TestEngine"));
+  data.SetURL("http://testsearch.com/?q={searchTerms}");
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_.get());
+  TemplateURL* template_url = new TemplateURL(profile_.get(), data);
+  template_url_service->Add(template_url);
+  template_url_service->SetDefaultSearchProvider(template_url);
+  template_url_service->Load();
+
+  // URLs we will be using, plus the visit counts they will initially get
+  // (the redirect set below will also increment the visit counts). We want
+  // the results to be in A,B,C order. Note also that our visit counts are
+  // all high enough so that domain synthesizing won't get triggered.
+  struct TestCase {
+    const char* url;
+    int count;
+  } test_cases[] = {
+    {"https://testsearch.com/", 30},
+    {"https://testsearch.com/?q=foobar", 20},
+    {"http://foobar.com/", 10}
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+    history_service_->AddPageWithDetails(GURL(test_cases[i].url),
+        UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
+        Time::Now(), false, history::SOURCE_BROWSED);
+  }
+
+  // We should not see search URLs when typing a previously used query.
+  const std::string expected_when_searching_query[] = {
+    test_cases[2].url
+  };
+  RunTest(ASCIIToUTF16("foobar"), string16(), true,
+      expected_when_searching_query, arraysize(expected_when_searching_query));
+
+  // We should not see search URLs when typing the search engine name.
+  const std::string expected_when_searching_site[] = {
+    test_cases[0].url
+  };
+  RunTest(ASCIIToUTF16("testsearch"), string16(), true,
+      expected_when_searching_site, arraysize(expected_when_searching_site));
 }

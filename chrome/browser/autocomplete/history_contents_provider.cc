@@ -15,6 +15,9 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/net_util.h"
@@ -179,13 +182,24 @@ void HistoryContentsProvider::ConvertResults() {
   std::vector<MatchReference> result_refs;
   result_refs.reserve(results_.size());
 
+  // |template_url_service| or |template_url| can be NULL in unit tests.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURL* template_url = template_url_service ?
+      template_url_service->GetDefaultSearchProvider() : NULL;
+
   // Results are sorted in decreasing order so we run the loop backwards so that
   // the relevance increment favors the higher ranked results.
   for (std::vector<history::URLResult*>::const_reverse_iterator i =
        results_.rbegin(); i != results_.rend(); ++i) {
     history::URLResult* result = *i;
-    MatchReference ref(result, CalculateRelevance(*result));
-    result_refs.push_back(ref);
+    // Culls results corresponding to queries from the default search engine.
+    // These are low-quality, difficult-to-understand matches for users, and the
+    // SearchProvider should surface past queries in a better way anyway.
+    if (!template_url || !template_url->IsSearchURL(result->url())) {
+      MatchReference ref(result, CalculateRelevance(*result));
+      result_refs.push_back(ref);
+    }
   }
 
   // Get the top matches and add them.

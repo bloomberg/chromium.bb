@@ -22,6 +22,9 @@
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/url_index_private_data.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -77,7 +80,10 @@ struct TestURLInfo {
   {"https://monkeytrap.org/", "", 3, 1, 0},
   {"http://popularsitewithpathonly.com/moo",
    "popularsitewithpathonly.com/moo", 50, 50, 0},
-  {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0}
+  {"http://popularsitewithroot.com/", "popularsitewithroot.com", 50, 50, 0},
+  {"http://testsearch.com/?q=thequery", "Test Search Engine", 10, 10, 0},
+  {"http://testsearch.com/", "Test Search Engine", 9, 9, 0},
+  {"http://anotherengine.com/?q=thequery", "Another Search Engine", 8, 8, 0}
 };
 
 class HistoryQuickProviderTest : public testing::Test,
@@ -103,6 +109,10 @@ class HistoryQuickProviderTest : public testing::Test,
    private:
     std::set<std::string> matches_;
   };
+
+  static ProfileKeyedService* CreateTemplateURLService(Profile* profile) {
+    return new TemplateURLService(profile);
+  }
 
   virtual void SetUp();
   virtual void TearDown();
@@ -146,6 +156,8 @@ void HistoryQuickProviderTest::SetUp() {
                                            Profile::EXPLICIT_ACCESS);
   EXPECT_TRUE(history_service_);
   provider_ = new HistoryQuickProvider(this, profile_.get());
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();
 }
 
@@ -512,6 +524,30 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
           ASCIIToUTF16("popularsitewithpathonly.com/moo"));
   EXPECT_LT(ac_matches_[0].relevance,
             HistoryURLProvider::kScoreForBestInlineableResult);
+}
+
+TEST_F(HistoryQuickProviderTest, CullSearchResults) {
+  // Set up a default search engine.
+  TemplateURLData data;
+  data.SetKeyword(ASCIIToUTF16("TestEngine"));
+  data.SetURL("http://testsearch.com/?q={searchTerms}");
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_.get());
+  TemplateURL* template_url = new TemplateURL(profile_.get(), data);
+  template_url_service->Add(template_url);
+  template_url_service->SetDefaultSearchProvider(template_url);
+  template_url_service->Load();
+
+  // A search results page should not be returned when typing a query.
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("http://anotherengine.com/?q=thequery");
+  RunTest(ASCIIToUTF16("thequery"), expected_urls, false, string16());
+
+  // A search results page should not be returned when typing the engine URL.
+  expected_urls.clear();
+  expected_urls.push_back("http://testsearch.com/");
+  RunTest(ASCIIToUTF16("testsearch"), expected_urls, true,
+          ASCIIToUTF16("testsearch.com"));
 }
 
 // HQPOrderingTest -------------------------------------------------------------

@@ -28,6 +28,10 @@
 #include "chrome/browser/history/scored_history_match.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -290,6 +294,12 @@ void HistoryQuickProvider::DoAutocomplete() {
   // visited URLs to beat out any longer URLs, no matter how frequently
   // they're visited.)  The strength of this last reduction depends on the
   // likely score for the URL-what-you-typed result.
+
+  // |template_url_service| or |template_url| can be NULL in unit tests.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  TemplateURL* template_url = template_url_service ?
+      template_url_service->GetDefaultSearchProvider() : NULL;
   int max_match_score = (PreventInlineAutocomplete(autocomplete_input_) ||
       !matches.begin()->can_inline) ?
       (AutocompleteResult::kLowestDefaultScore - 1) :
@@ -301,11 +311,17 @@ void HistoryQuickProvider::DoAutocomplete() {
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter) {
     const ScoredHistoryMatch& history_match(*match_iter);
-    // Set max_match_score to the score we'll assign this result:
-    max_match_score = std::min(max_match_score, history_match.raw_score);
-    matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
-    // Mark this max_match_score as being used:
-    max_match_score--;
+    // Culls results corresponding to queries from the default search engine.
+    // These are low-quality, difficult-to-understand matches for users, and the
+    // SearchProvider should surface past queries in a better way anyway.
+    if (!template_url ||
+        !template_url->IsSearchURL(history_match.url_info.url())) {
+      // Set max_match_score to the score we'll assign this result:
+      max_match_score = std::min(max_match_score, history_match.raw_score);
+      matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
+      // Mark this max_match_score as being used:
+      max_match_score--;
+    }
   }
 }
 

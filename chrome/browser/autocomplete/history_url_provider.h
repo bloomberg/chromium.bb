@@ -14,6 +14,8 @@
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
+#include "chrome/browser/search_engines/template_url.h"
 
 class MessageLoop;
 class Profile;
@@ -86,7 +88,9 @@ class URLDatabase;
 struct HistoryURLProviderParams {
   HistoryURLProviderParams(const AutocompleteInput& input,
                            bool trim_http,
-                           const std::string& languages);
+                           const std::string& languages,
+                           TemplateURL* default_search_provider,
+                           const SearchTermsData& search_terms_data);
   ~HistoryURLProviderParams();
 
   MessageLoop* message_loop;
@@ -127,6 +131,16 @@ struct HistoryURLProviderParams {
 
   // When true, we should avoid calling SuggestExactInput().
   bool dont_suggest_exact_input;
+
+  // The default search provider and search terms data necessary to cull results
+  // that correspond to searches (on the default engine).  These can only be
+  // obtained on the UI thread, so we have to copy them into here to pass them
+  // to the history thread.  We use a scoped_ptr<TemplateURL> for the DSP since
+  // TemplateURLs can't be copied by value. We use a scoped_ptr<SearchTermsData>
+  // so that we can store a snapshot of the SearchTermsData accessible from the
+  // history thread.
+  scoped_ptr<TemplateURL> default_search_provider;
+  scoped_ptr<SearchTermsData> search_terms_data;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryURLProviderParams);
@@ -256,8 +270,12 @@ class HistoryURLProvider : public HistoryProvider {
 
   // Removes results that have been rarely typed or visited, and not any time
   // recently.  The exact parameters for this heuristic can be found in the
-  // function body.
-  void CullPoorMatches(history::HistoryMatches* matches) const;
+  // function body. Also culls results corresponding to queries from the default
+  // search engine. These are low-quality, difficult-to-understand matches for
+  // users, and the SearchProvider should surface past queries in a better way
+  // anyway.
+  void CullPoorMatches(history::HistoryMatches* matches,
+                       HistoryURLProviderParams* params) const;
 
   // Removes results that redirect to each other, leaving at most |max_results|
   // results.

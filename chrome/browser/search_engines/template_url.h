@@ -140,8 +140,10 @@ class TemplateURLRef {
   // |url| and extract |search_terms| from it. Returns true if the pattern
   // matches, even if |search_terms| is empty. Returns false and an empty
   // |search_terms| if the pattern does not match.
-  bool ExtractSearchTermsFromURL(const GURL& url,
-                                 string16* search_terms) const;
+  bool ExtractSearchTermsFromURL(
+      const GURL& url,
+      string16* search_terms,
+      const SearchTermsData& search_terms_data) const;
 
  private:
   friend class TemplateURL;
@@ -481,6 +483,23 @@ class TemplateURL {
   // "http://foo/?q=a#q=b", the alternate URL will match first and the decoded
   // search term will be "b".
   bool ExtractSearchTermsFromURL(const GURL& url, string16* search_terms);
+
+  // Like ExtractSearchTermsFromURL but usable on threads other than the UI
+  // thread.
+  bool ExtractSearchTermsFromURLUsingTermsData(
+      const GURL& url,
+      string16* search_terms,
+      const SearchTermsData& search_terms_data);
+
+  // Returns true if non-empty search terms could be extracted from |url| using
+  // ExtractSearchTermsFromURL(). In other words, this returns whether |url|
+  // could be the result of performing a search with |this|.
+  bool IsSearchURL(const GURL& url);
+
+  // Like IsSearchURL but usable on threads other than the UI thread.
+  bool IsSearchURLUsingTermsData(
+      const GURL& url,
+      const SearchTermsData& search_terms_data);
 
   // Returns true if the specified |url| contains the search terms replacement
   // key in either the query or the ref. This method does not verify anything
