@@ -40,6 +40,8 @@
         'gtk2_util.cc',
         'gtk2_util.h',
         'libgtk2ui_export.h',
+        'native_theme_gtk2.cc',
+        'native_theme_gtk2.h',
         'owned_widget_gtk2.cc',
         'owned_widget_gtk2.h',
         'select_file_dialog_impl.cc',

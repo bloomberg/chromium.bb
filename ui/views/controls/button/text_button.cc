@@ -776,6 +776,7 @@ std::string NativeTextButton::GetClassName() const {
 }
 
 void NativeTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  TextButtonBase::OnNativeThemeChanged(theme);
   SetThemeSpecificState(theme);
 }
 

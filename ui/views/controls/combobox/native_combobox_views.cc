@@ -15,6 +15,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -46,12 +47,6 @@ const int kMinComboboxWidth = 148;
 // Size of the combobox arrow margins
 const int kDisclosureArrowLeftPadding = 7;
 const int kDisclosureArrowRightPadding = 7;
-
-// Color settings for text and border.
-// These are tentative, and should be derived from theme, system
-// settings and current settings.
-const SkColor kTextColor = SK_ColorBLACK;
-const SkColor kInvalidTextColor = SK_ColorWHITE;
 
 // Define the id of the first item in the menu (since it needs to be > 0)
 const int kFirstMenuItemId = 1000;
@@ -328,7 +323,9 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = combobox_->invalid() ? kInvalidTextColor : kTextColor;
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      combobox_->invalid() ? ui::NativeTheme::kColorId_LabelDisabledColor :
+      ui::NativeTheme::kColorId_LabelEnabledColor);
 
   int index = GetSelectedIndex();
   if (index < 0 || index > combobox_->model()->GetItemCount())

@@ -792,6 +792,8 @@ void MenuItemView::PaintButtonCommon(gfx::Canvas* canvas,
                                         &override_color)) {
     canvas->DrawColor(override_color);
   } else if (render_selection) {
+    // TODO(erg): The following doesn't actually get the focused menu item
+    // background for times when we want to match the native OS.
     if (ui::NativeTheme::IsNewMenuStyleEnabled()) {
       gfx::Rect item_bounds(0, 0, width(), height());
       AdjustBoundsForRTLUI(&item_bounds);
