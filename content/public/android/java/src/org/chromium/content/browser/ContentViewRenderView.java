@@ -25,6 +25,8 @@ public class ContentViewRenderView extends FrameLayout {
 
     private SurfaceView mSurfaceView;
 
+    private ContentView mCurrentContentView;
+
     /**
      * Constructs a new ContentViewRenderView that should be can to a view hierarchy.
      * Native code should add/remove the layers to be rendered through the ContentViewLayerRenderer.
@@ -41,6 +43,10 @@ public class ContentViewRenderView extends FrameLayout {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
                 nativeSurfaceSetSize(mNativeContentViewRenderView, width, height);
+                if (mCurrentContentView != null) {
+                    mCurrentContentView.getContentViewCore().onPhysicalBackingSizeChanged(
+                            width, height);
+                }
             }
 
             @Override
@@ -75,6 +81,10 @@ public class ContentViewRenderView extends FrameLayout {
     public void setCurrentContentView(ContentView contentView) {
         nativeSetCurrentContentView(mNativeContentViewRenderView,
                 contentView.getContentViewCore().getNativeContentViewCore());
+
+        mCurrentContentView = contentView;
+        mCurrentContentView.getContentViewCore().onPhysicalBackingSizeChanged(
+                getWidth(), getHeight());
     }
 
     /**

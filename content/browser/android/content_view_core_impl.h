@@ -190,7 +190,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   jboolean PopulateBitmapFromCompositor(JNIEnv* env,
                                         jobject obj,
                                         jobject jbitmap);
-  void SetSizePix(JNIEnv* env, jobject obj, jint width_pix, jint height_pix);
+  void WasResized(JNIEnv* env, jobject obj);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
   void ExitFullscreen(JNIEnv* env, jobject obj);
   void EnableHidingTopControls(JNIEnv* env, jobject obj, bool enable);
@@ -257,7 +257,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  gfx::Size GetViewportSizePix() const;
+  gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
@@ -290,6 +290,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   WebKit::WebGestureEvent MakeGestureEvent(
       WebKit::WebInputEvent::Type type, long time_ms,
       float xPix, float yPix) const;
+
+  gfx::Size GetViewportSizePix() const;
 
   void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent* event) const;
 

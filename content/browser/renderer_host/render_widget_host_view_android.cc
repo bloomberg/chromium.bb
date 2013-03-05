@@ -117,24 +117,21 @@ void RenderWidgetHostViewAndroid::WasHidden() {
   host_->WasHidden();
 }
 
-void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
-  if (surface_texture_transport_.get()) {
-    // This method should be called after size updates in ContentViewCore.
-    // However, because of desktop legacy reasons, it can also be called from
-    // WebContents using logical pixels instead of physical ones. Consequently,
-    // the size orgument should always be ignored in favor of the physical size
-    // returned by ContentViewCore.
+void RenderWidgetHostViewAndroid::WasResized() {
+  if (surface_texture_transport_.get() && content_view_core_)
     surface_texture_transport_->SetSize(
-        content_view_core_ ? content_view_core_->GetViewportSizePix() : size);
-  }
+        content_view_core_->GetPhysicalBackingSize());
 
   host_->WasResized();
 }
 
+void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
+  // Ignore the given size as only the Java code has the power to
+  // resize the view on Android.
+  WasResized();
+}
+
 void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
-  if (rect.origin().x() || rect.origin().y()) {
-    VLOG(0) << "SetBounds not implemented for (x,y)!=(0,0)";
-  }
   SetSize(rect.size());
 }
 
@@ -284,7 +281,7 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
   if (!content_view_core_)
     return gfx::Size();
 
-  return content_view_core_->GetViewportSizePix();
+  return content_view_core_->GetPhysicalBackingSize();
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {

@@ -162,6 +162,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   int GetNativeImeAdapter();
 
+  void WasResized();
+
   WebKit::WebGLId GetScaledContentTexture(float scale, gfx::Size* out_size);
   bool PopulateBitmapWithContents(jobject jbitmap);
 

@@ -205,6 +205,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
     private int mViewportHeightPix;
+    private int mPhysicalBackingWidthPix;
+    private int mPhysicalBackingHeightPix;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
@@ -789,6 +791,19 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public int getViewportHeightPix() { return mViewportHeightPix; }
 
     /**
+     * @return Width of underlying physical surface.
+     */
+    @CalledByNative
+    public int getPhysicalBackingWidthPix() { return mPhysicalBackingWidthPix; }
+
+    /**
+     * @return Height of underlying physical surface.
+     */
+    @CalledByNative
+    public int getPhysicalBackingHeightPix() { return mPhysicalBackingHeightPix; }
+
+
+    /**
      * @see android.webkit.WebView#getContentHeight()
      */
     public float getContentHeightCss() {
@@ -1255,20 +1270,35 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      */
     @SuppressWarnings("javadoc")
     public void onSizeChanged(int wPix, int hPix, int owPix, int ohPix) {
-        mPopupZoomer.hide(false);
+        if (getViewportWidthPix() == wPix && getViewportHeightPix() == hPix) return;
 
-        if (getViewportWidthPix() != wPix || getViewportHeightPix() != hPix) {
-            mViewportWidthPix = wPix;
-            mViewportHeightPix = hPix;
-            if (mNativeContentViewCore != 0) {
-                nativeSetSizePix(mNativeContentViewCore, wPix, hPix);
-            }
+        mViewportWidthPix = wPix;
+        mViewportHeightPix = hPix;
+        if (mNativeContentViewCore != 0) {
+            nativeWasResized(mNativeContentViewCore);
         }
 
         updateAfterSizeChanged();
     }
 
-    public void updateAfterSizeChanged() {
+    /**
+     * Called when the underlying surface the compositor draws to changes size.
+     * This may be larger than the viewport size.
+     */
+    public void onPhysicalBackingSizeChanged(int wPix, int hPix) {
+        if (mPhysicalBackingWidthPix == wPix && mPhysicalBackingHeightPix == hPix) return;
+
+        mPhysicalBackingWidthPix = wPix;
+        mPhysicalBackingHeightPix = hPix;
+
+        if (mNativeContentViewCore != 0) {
+            nativeWasResized(mNativeContentViewCore);
+        }
+    }
+
+    private void updateAfterSizeChanged() {
+        mPopupZoomer.hide(false);
+
         // Execute a delayed form focus operation because the OSK was brought
         // up earlier.
         if (!mFocusPreOSKViewportRect.isEmpty()) {
@@ -2680,8 +2710,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native boolean nativePopulateBitmapFromCompositor(int nativeContentViewCoreImpl,
             Bitmap bitmap);
 
-    private native void nativeSetSizePix(int nativeContentViewCoreImpl,
-            int widthPix, int heightPix);
+    private native void nativeWasResized(int nativeContentViewCoreImpl);
 
     private native boolean nativeIsRenderWidgetHostViewReady(int nativeContentViewCoreImpl);
 

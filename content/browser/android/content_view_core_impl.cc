@@ -603,6 +603,16 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
+gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return gfx::Size();
+  return gfx::Size(
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, j_obj.obj()),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, j_obj.obj()));
+}
+
 gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
@@ -1137,13 +1147,10 @@ jboolean ContentViewCoreImpl::PopulateBitmapFromCompositor(JNIEnv* env,
   return view->PopulateBitmapWithContents(jbitmap);
 }
 
-void ContentViewCoreImpl::SetSizePix(JNIEnv* env, jobject obj,
-                                     jint width_pix, jint height_pix) {
+void ContentViewCoreImpl::WasResized(JNIEnv* env, jobject obj) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  if (!view)
-    return;
-
-  view->SetSize(gfx::Size(width_pix, height_pix));
+  if (view)
+    view->WasResized();
 }
 
 void ContentViewCoreImpl::ShowInterstitialPage(
