@@ -60,75 +60,63 @@ void DelegatedRendererLayerImpl::SetFrameData(
     scoped_ptr<DelegatedFrameData> frame_data,
     gfx::RectF damage_in_frame,
     TransferableResourceArray* resources_for_ack) {
-  // A frame with an empty root render pass is invalid.
-  DCHECK(frame_data->render_pass_list.empty() ||
-         !frame_data->render_pass_list.back()->output_rect.IsEmpty());
-
   CreateChildIdIfNeeded();
   DCHECK(child_id_);
 
-  // Display size is already set so we can compute what the damage rect
-  // will be in layer space.
-  if (!frame_data->render_pass_list.empty()) {
-    RenderPass* new_root_pass = frame_data->render_pass_list.back();
-    gfx::RectF damage_in_layer = MathUtil::mapClippedRect(
-        DelegatedFrameToLayerSpaceTransform(new_root_pass->output_rect.size()),
-        damage_in_frame);
-    setUpdateRect(gfx::UnionRects(updateRect(), damage_in_layer));
-  }
-
-  // Save the resources from the last frame.
-  ResourceProvider::ResourceIdSet new_resources;
-
-  // Receive the current frame's resources from the child compositor.
   ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
-  resource_provider->receiveFromChild(child_id_, frame_data->resource_list);
+    const ResourceProvider::ResourceIdMap& resource_map =
+        resource_provider->getChildToParentMap(child_id_);
 
-  // Remap resource ids in the current frame's quads to the parent's namespace.
-  bool invalid_frame = false;
-  DrawQuad::ResourceIteratorCallback remap_callback = base::Bind(
-      &ResourceRemapHelper,
-      &invalid_frame,
-      resource_provider->getChildToParentMap(child_id_),
-      &new_resources);
-  for (size_t i = 0; i < frame_data->render_pass_list.size(); ++i) {
-    RenderPass* pass = frame_data->render_pass_list[i];
-    for (size_t j = 0; j < pass->quad_list.size(); ++j) {
-      DrawQuad* quad = pass->quad_list[j];
-      quad->IterateResources(remap_callback);
+  if (frame_data) {
+    // A frame with an empty root render pass is invalid.
+    DCHECK(frame_data->render_pass_list.empty() ||
+           !frame_data->render_pass_list.back()->output_rect.IsEmpty());
+
+    // Display size is already set so we can compute what the damage rect
+    // will be in layer space.
+    if (!frame_data->render_pass_list.empty()) {
+      RenderPass* new_root_pass = frame_data->render_pass_list.back();
+      gfx::RectF damage_in_layer = MathUtil::mapClippedRect(
+          DelegatedFrameToLayerSpaceTransform(
+              new_root_pass->output_rect.size()),
+          damage_in_frame);
+      setUpdateRect(gfx::UnionRects(updateRect(), damage_in_layer));
+    }
+
+    resource_provider->receiveFromChild(child_id_, frame_data->resource_list);
+
+    bool invalid_frame = false;
+    ResourceProvider::ResourceIdSet used_resources;
+    DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
+        base::Bind(&ResourceRemapHelper,
+                   &invalid_frame,
+                   resource_map,
+                   &used_resources);
+    for (size_t i = 0; i < frame_data->render_pass_list.size(); ++i) {
+      RenderPass* pass = frame_data->render_pass_list[i];
+      for (size_t j = 0; j < pass->quad_list.size(); ++j) {
+        DrawQuad* quad = pass->quad_list[j];
+        quad->IterateResources(remap_resources_to_parent_callback);
+      }
+    }
+
+    if (!invalid_frame) {
+      // Save the remapped quads on the layer. This steals the quads and render
+      // passes from the frame_data.
+      SetRenderPasses(&frame_data->render_pass_list);
+      resources_.swap(used_resources);
     }
   }
 
-  // If the frame has invalid data in it, don't display it.
-  if (invalid_frame) {
-    // Keep the resources given to us this frame.
-    for (ResourceProvider::ResourceIdSet::iterator it = new_resources.begin();
-         it != new_resources.end();
-         ++it)
-      resources_.insert(*it);
-    return;
-  }
-
-  // Save the resources that this layer owns now.
-  ResourceProvider::ResourceIdSet previous_frame_resources;
-  previous_frame_resources.swap(resources_);
-  resources_.swap(new_resources);
-
-  // Save the remapped quads on the layer. This steals the quads and render
-  // passes from the frame_data.
-  SetRenderPasses(&frame_data->render_pass_list);
-
-  // Release the resources from the previous frame to prepare them for transport
-  // back to the child compositor.
   ResourceProvider::ResourceIdArray unused_resources;
-  for (ResourceProvider::ResourceIdSet::iterator it =
-           previous_frame_resources.begin();
-       it != previous_frame_resources.end();
+  for (ResourceProvider::ResourceIdMap::const_iterator it =
+           resource_map.begin();
+       it != resource_map.end();
        ++it) {
-    bool resource_is_not_in_current_frame =
-        resources_.find(*it) == resources_.end();
-    if (resource_is_not_in_current_frame)
-      unused_resources.push_back(*it);
+    bool resource_is_in_current_frame = resources_.count(it->second);
+    bool resource_is_in_use = resource_provider->inUseByConsumer(it->second);
+    if (!resource_is_in_current_frame && !resource_is_in_use)
+      unused_resources.push_back(it->second);
   }
   resource_provider->prepareSendToChild(
       child_id_, unused_resources, resources_for_ack);
