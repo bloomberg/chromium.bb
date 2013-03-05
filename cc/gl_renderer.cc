@@ -722,20 +722,155 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         m_context->flush();
 }
 
+struct SolidColorProgramUniforms {
+    unsigned program;
+    unsigned matrixLocation;
+    unsigned colorLocation;
+    unsigned pointLocation;
+    unsigned texScaleLocation;
+    unsigned edgeLocation;
+};
+
+template<class T>
+static void solidColorUniformLocation(T program, SolidColorProgramUniforms& uniforms)
+{
+    uniforms.program = program->program();
+    uniforms.matrixLocation = program->vertexShader().matrixLocation();
+    uniforms.colorLocation = program->fragmentShader().colorLocation();
+    uniforms.pointLocation = program->vertexShader().pointLocation();
+    uniforms.texScaleLocation = program->vertexShader().texScaleLocation();
+    uniforms.edgeLocation = program->fragmentShader().edgeLocation();
+}
+
+bool GLRenderer::setupQuadForAntialiasing(const gfx::Transform& deviceTransform, const DrawQuad* quad,
+                                          gfx::QuadF* localQuad, float edge[24]) const
+{
+    gfx::Rect tileRect = quad->visible_rect;
+
+    bool clipped = false;
+    gfx::QuadF deviceLayerQuad = MathUtil::mapQuad(deviceTransform, gfx::QuadF(quad->visibleContentRect()), clipped);
+    DCHECK(!clipped);
+
+    // TODO(reveman): Axis-aligned is not enough to avoid anti-aliasing.
+    // Bounding rectangle for quad also needs to be expressible as
+    // an integer rectangle. crbug.com/169374
+    bool isAxisAlignedInTarget = deviceLayerQuad.IsRectilinear();
+    bool useAA = !clipped && !isAxisAlignedInTarget && quad->IsEdge();
+
+    if (!useAA)
+      return false;
+
+    LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
+    deviceLayerBounds.inflateAntiAliasingDistance();
+
+    LayerQuad deviceLayerEdges = LayerQuad(deviceLayerQuad);
+    deviceLayerEdges.inflateAntiAliasingDistance();
+
+    deviceLayerEdges.toFloatArray(edge);
+    deviceLayerBounds.toFloatArray(&edge[12]);
+
+    gfx::PointF bottomRight = tileRect.bottom_right();
+    gfx::PointF bottomLeft = tileRect.bottom_left();
+    gfx::PointF topLeft = tileRect.origin();
+    gfx::PointF topRight = tileRect.top_right();
+
+    // Map points to device space.
+    bottomRight = MathUtil::mapPoint(deviceTransform, bottomRight, clipped);
+    DCHECK(!clipped);
+    bottomLeft = MathUtil::mapPoint(deviceTransform, bottomLeft, clipped);
+    DCHECK(!clipped);
+    topLeft = MathUtil::mapPoint(deviceTransform, topLeft, clipped);
+    DCHECK(!clipped);
+    topRight = MathUtil::mapPoint(deviceTransform, topRight, clipped);
+    DCHECK(!clipped);
+
+    LayerQuad::Edge bottomEdge(bottomRight, bottomLeft);
+    LayerQuad::Edge leftEdge(bottomLeft, topLeft);
+    LayerQuad::Edge topEdge(topLeft, topRight);
+    LayerQuad::Edge rightEdge(topRight, bottomRight);
+
+    // Only apply anti-aliasing to edges not clipped by culling or scissoring.
+    if (quad->IsTopEdge() && tileRect.y() == quad->rect.y())
+        topEdge = deviceLayerEdges.top();
+    if (quad->IsLeftEdge() && tileRect.x() == quad->rect.x())
+        leftEdge = deviceLayerEdges.left();
+    if (quad->IsRightEdge() && tileRect.right() == quad->rect.right())
+        rightEdge = deviceLayerEdges.right();
+    if (quad->IsBottomEdge() && tileRect.bottom() == quad->rect.bottom())
+        bottomEdge = deviceLayerEdges.bottom();
+
+    float sign = gfx::QuadF(tileRect).IsCounterClockwise() ? -1 : 1;
+    bottomEdge.scale(sign);
+    leftEdge.scale(sign);
+    topEdge.scale(sign);
+    rightEdge.scale(sign);
+
+    // Create device space quad.
+    LayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
+
+    // Map device space quad to local space. deviceTransform has no 3d component since it was flattened, so we don't need to project.
+    // We should have already checked that the transform was uninvertible above.
+    gfx::Transform inverseDeviceTransform(gfx::Transform::kSkipInitialization);
+    bool didInvert = deviceTransform.GetInverse(&inverseDeviceTransform);
+    DCHECK(didInvert);
+    *localQuad = MathUtil::mapQuad(inverseDeviceTransform, deviceQuad.ToQuadF(), clipped);
+    // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
+    // clipped. To our knowledge this scenario does not need to be handled differently than the unclipped case.
+
+    return true;
+}
+
 void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
 {
-    setBlendEnabled(quad->ShouldDrawWithBlending());
+    gfx::Rect tileRect = quad->visible_rect;
 
-    const SolidColorProgram* program = solidColorProgram();
-    setUseProgram(program->program());
+    gfx::Transform deviceTransform = frame.windowMatrix * frame.projectionMatrix * quad->quadTransform();
+    deviceTransform.FlattenTo2d();
+    if (!deviceTransform.IsInvertible())
+        return;
+
+    gfx::QuadF localQuad = gfx::QuadF(gfx::RectF(tileRect));
+    float edge[24];
+    bool useAA = setupQuadForAntialiasing(deviceTransform, quad, &localQuad, edge);
+
+    SolidColorProgramUniforms uniforms;
+    if (useAA)
+        solidColorUniformLocation(solidColorProgramAA(), uniforms);
+    else
+        solidColorUniformLocation(solidColorProgram(), uniforms);
+    setUseProgram(uniforms.program);
 
     SkColor color = quad->color;
     float opacity = quad->opacity();
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
-    GLC(context(), context()->uniform4f(program->fragmentShader().colorLocation(), (SkColorGetR(color) * (1.0f / 255.0f)) * alpha, (SkColorGetG(color) * (1.0f / 255.0f)) * alpha, (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha));
+    GLC(context(), context()->uniform4f(uniforms.colorLocation,
+                                        (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
+                                        (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
+                                        (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
+                                        alpha));
 
-    drawQuadGeometry(frame, quad->quadTransform(), quad->rect, program->vertexShader().matrixLocation());
+    GLC(context(), context()->uniform2f(uniforms.texScaleLocation, 1.0f, 1.0f));
+
+    if (useAA) {
+        GLC(context(), context()->uniform3fv(uniforms.edgeLocation, 8, edge));
+    }
+
+    // Enable blending when the quad properties require it or if we decided
+    // to use antialiasing.
+    setBlendEnabled(quad->ShouldDrawWithBlending() || useAA);
+
+    // Normalize to tileRect.
+    localQuad.Scale(1.0f / tileRect.width(), 1.0f / tileRect.height());
+
+    setShaderQuadF(localQuad, uniforms.pointLocation);
+
+    // The transform and vertex data are used to figure out the extents that the
+    // un-antialiased quad should have and which vertex this is and the float
+    // quad passed in via uniform is the actual geometry that gets used to draw
+    // it. This is why this centered rect is used and not the original quadRect.
+    gfx::RectF centeredRect(gfx::PointF(-0.5 * tileRect.width(), -0.5 * tileRect.height()), tileRect.size());
+    drawQuadGeometry(frame, quad->quadTransform(), centeredRect, uniforms.matrixLocation);
 }
 
 struct TileProgramUniforms {
@@ -813,21 +948,14 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float fragmentTexScaleX = clampTexRect.width() / textureSize.width();
     float fragmentTexScaleY = clampTexRect.height() / textureSize.height();
 
-    gfx::QuadF localQuad;
     gfx::Transform deviceTransform = frame.windowMatrix * frame.projectionMatrix * quad->quadTransform();
     deviceTransform.FlattenTo2d();
     if (!deviceTransform.IsInvertible())
         return;
 
-    bool clipped = false;
-    gfx::QuadF deviceLayerQuad = MathUtil::mapQuad(deviceTransform, gfx::QuadF(quad->visibleContentRect()), clipped);
-    DCHECK(!clipped);
-
-    // TODO(reveman): Axis-aligned is not enough to avoid anti-aliasing.
-    // Bounding rectangle for quad also needs to be expressible as
-    // an integer rectangle. crbug.com/169374
-    bool isAxisAlignedInTarget = deviceLayerQuad.IsRectilinear();
-    bool useAA = !clipped && !isAxisAlignedInTarget && quad->IsEdge();
+    gfx::QuadF localQuad = gfx::QuadF(gfx::RectF(tileRect));
+    float edge[24];
+    bool useAA = setupQuadForAntialiasing(deviceTransform, quad, &localQuad, edge);
 
     TileProgramUniforms uniforms;
     if (useAA) {
@@ -856,68 +984,9 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, filter);
 
     if (useAA) {
-        LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
-        deviceLayerBounds.inflateAntiAliasingDistance();
-
-        LayerQuad deviceLayerEdges = LayerQuad(deviceLayerQuad);
-        deviceLayerEdges.inflateAntiAliasingDistance();
-
-        float edge[24];
-        deviceLayerEdges.toFloatArray(edge);
-        deviceLayerBounds.toFloatArray(&edge[12]);
         GLC(context(), context()->uniform3fv(uniforms.edgeLocation, 8, edge));
-
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
         GLC(context(), context()->uniform4f(uniforms.fragmentTexTransformLocation, fragmentTexTranslateX, fragmentTexTranslateY, fragmentTexScaleX, fragmentTexScaleY));
-
-        gfx::PointF bottomRight = tileRect.bottom_right();
-        gfx::PointF bottomLeft = tileRect.bottom_left();
-        gfx::PointF topLeft = tileRect.origin();
-        gfx::PointF topRight = tileRect.top_right();
-
-        // Map points to device space.
-        bottomRight = MathUtil::mapPoint(deviceTransform, bottomRight, clipped);
-        DCHECK(!clipped);
-        bottomLeft = MathUtil::mapPoint(deviceTransform, bottomLeft, clipped);
-        DCHECK(!clipped);
-        topLeft = MathUtil::mapPoint(deviceTransform, topLeft, clipped);
-        DCHECK(!clipped);
-        topRight = MathUtil::mapPoint(deviceTransform, topRight, clipped);
-        DCHECK(!clipped);
-
-        LayerQuad::Edge bottomEdge(bottomRight, bottomLeft);
-        LayerQuad::Edge leftEdge(bottomLeft, topLeft);
-        LayerQuad::Edge topEdge(topLeft, topRight);
-        LayerQuad::Edge rightEdge(topRight, bottomRight);
-
-        // Only apply anti-aliasing to edges not clipped by culling or scissoring.
-        if (quad->IsTopEdge() && tileRect.y() == quad->rect.y())
-            topEdge = deviceLayerEdges.top();
-        if (quad->IsLeftEdge() && tileRect.x() == quad->rect.x())
-            leftEdge = deviceLayerEdges.left();
-        if (quad->IsRightEdge() && tileRect.right() == quad->rect.right())
-            rightEdge = deviceLayerEdges.right();
-        if (quad->IsBottomEdge() && tileRect.bottom() == quad->rect.bottom())
-            bottomEdge = deviceLayerEdges.bottom();
-
-        float sign = gfx::QuadF(tileRect).IsCounterClockwise() ? -1 : 1;
-        bottomEdge.scale(sign);
-        leftEdge.scale(sign);
-        topEdge.scale(sign);
-        rightEdge.scale(sign);
-
-        // Create device space quad.
-        LayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
-
-        // Map device space quad to local space. deviceTransform has no 3d component since it was flattened, so we don't need to project.
-        // We should have already checked that the transform was uninvertible above.
-        gfx::Transform inverseDeviceTransform(gfx::Transform::kSkipInitialization);
-        bool didInvert = deviceTransform.GetInverse(&inverseDeviceTransform);
-        DCHECK(didInvert);
-        localQuad = MathUtil::mapQuad(inverseDeviceTransform, deviceQuad.ToQuadF(), clipped);
-
-        // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
-        // clipped. To our knowledge this scenario does not need to be handled differently than the unclipped case.
     } else {
         // Move fragment shader transform to vertex shader. We can do this while
         // still producing correct results as fragmentTexTransformLocation
@@ -931,8 +1000,6 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         vertexTexTranslateY += fragmentTexTranslateY;
 
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
-
-        localQuad = gfx::RectF(tileRect);
     }
 
     // Enable blending when the quad properties require it or if we decided
@@ -945,7 +1012,6 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     setShaderOpacity(quad->opacity(), uniforms.alphaLocation);
     setShaderQuadF(localQuad, uniforms.pointLocation);
 
-    // The tile quad shader behaves differently compared to all other shaders.
     // The transform and vertex data are used to figure out the extents that the
     // un-antialiased quad should have and which vertex this is and the float
     // quad passed in via uniform is the actual geometry that gets used to draw
@@ -1647,6 +1713,17 @@ const GLRenderer::SolidColorProgram* GLRenderer::solidColorProgram()
     return m_solidColorProgram.get();
 }
 
+const GLRenderer::SolidColorProgramAA* GLRenderer::solidColorProgramAA()
+{
+    if (!m_solidColorProgramAA)
+         m_solidColorProgramAA = make_scoped_ptr(new SolidColorProgramAA(m_context));
+    if (!m_solidColorProgramAA->initialized()) {
+         TRACE_EVENT0("cc", "GLRenderer::solidColorProgramAA::initialize");
+         m_solidColorProgramAA->initialize(m_context, m_isUsingBindUniform);
+    }
+    return m_solidColorProgramAA.get();
+}
+
 const GLRenderer::RenderPassProgram* GLRenderer::renderPassProgram()
 {
     DCHECK(m_renderPassProgram);
@@ -1853,6 +1930,8 @@ void GLRenderer::cleanupSharedObjects()
 
     if (m_solidColorProgram)
         m_solidColorProgram->cleanup(m_context);
+    if (m_solidColorProgramAA)
+      m_solidColorProgramAA->cleanup(m_context);
 
     if (m_offscreenFramebufferId)
         GLC(m_context, m_context->deleteFramebuffer(m_offscreenFramebufferId));

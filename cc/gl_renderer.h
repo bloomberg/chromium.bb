@@ -117,6 +117,12 @@ private:
 
     void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const gfx::Transform& drawMatrix);
 
+    // Check if quad needs antialiasing and if so, inflate the quad and fill edge array for fragment shader.
+    // localQuad is set to inflated quad if antialiasing is required, otherwise it is left unchanged.
+    // edge array is filled with inflated quad's edge data if antialiasing is required, otherwise it is left unchanged.
+    // Returns true if quad requires antialiasing and false otherwise.
+    bool setupQuadForAntialiasing(const gfx::Transform& deviceTransform, const DrawQuad* quad, gfx::QuadF* localQuad, float edge[24]) const;
+
     bool useScopedTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& viewportRect);
 
     bool makeContextCurrent();
@@ -170,7 +176,8 @@ private:
     typedef ProgramBinding<VertexShaderPosTexYUVStretch, FragmentShaderYUVVideo> VideoYUVProgram;
 
     // Special purpose / effects shaders.
-    typedef ProgramBinding<VertexShaderPos, FragmentShaderColor> SolidColorProgram;
+    typedef ProgramBinding<VertexShaderQuad, FragmentShaderColor> SolidColorProgram;
+    typedef ProgramBinding<VertexShaderQuad, FragmentShaderColorAA> SolidColorProgramAA;
 
     const TileProgram* tileProgram();
     const TileProgramOpaque* tileProgramOpaque();
@@ -193,6 +200,7 @@ private:
     const VideoStreamTextureProgram* videoStreamTextureProgram();
 
     const SolidColorProgram* solidColorProgram();
+    const SolidColorProgramAA* solidColorProgramAA();
 
     scoped_ptr<TileProgram> m_tileProgram;
     scoped_ptr<TileProgramOpaque> m_tileProgramOpaque;
@@ -215,6 +223,7 @@ private:
     scoped_ptr<VideoStreamTextureProgram> m_videoStreamTextureProgram;
 
     scoped_ptr<SolidColorProgram> m_solidColorProgram;
+    scoped_ptr<SolidColorProgramAA> m_solidColorProgramAA;
 
     OutputSurface* m_outputSurface;
     WebKit::WebGraphicsContext3D* m_context;

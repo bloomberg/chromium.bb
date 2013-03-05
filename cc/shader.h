@@ -323,9 +323,24 @@ public:
     std::string getShaderString() const;
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
+    int edgeLocation() const { return -1; }
     int colorLocation() const { return m_colorLocation; }
 
 private:
+    int m_colorLocation;
+};
+
+class FragmentShaderColorAA {
+public:
+    FragmentShaderColorAA();
+    std::string getShaderString() const;
+
+    void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
+    int edgeLocation() const { return m_edgeLocation; }
+    int colorLocation() const { return m_colorLocation; }
+
+private:
+    int m_edgeLocation;
     int m_colorLocation;
 };
 
