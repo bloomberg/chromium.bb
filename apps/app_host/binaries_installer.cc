@@ -177,11 +177,18 @@ HRESULT CreateAppBundle(IGoogleUpdate3* update3, IAppBundle** app_bundle) {
 }
 
 HRESULT SelectBinariesApValue(IGoogleUpdate3* update3,
-                              IAppBundle* app_bundle,
                               BSTR* ap_value) {
-  HRESULT hr = GetAppHostApValue(update3, app_bundle, ap_value);
-  if (SUCCEEDED(hr))
-    return hr;
+  // TODO(erikwright): Uncomment this when we correctly propagate the AP value
+  // from the system-level binaries when quick-enabling the app host at
+  // user-level (http://crbug.com/178479).
+  // base::win::ScopedComPtr<IAppBundle> app_bundle;
+  // HRESULT hr = CreateAppBundle(update3, app_bundle.Receive());
+  // if (FAILED(hr))
+  //   return hr;
+
+  // hr = GetAppHostApValue(update3, app_bundle, ap_value);
+  // if (SUCCEEDED(hr))
+  //   return hr;
 
   // TODO(erikwright): distinguish between AppHost not installed and an
   // error in GetAppHostApValue.
@@ -294,13 +301,13 @@ HRESULT InstallBinaries() {
   if (FAILED(hr))
     return hr;
 
-  base::win::ScopedComPtr<IAppBundle> app_bundle;
-  hr = CreateAppBundle(update3, app_bundle.Receive());
+  base::win::ScopedBstr ap_value;
+  hr = SelectBinariesApValue(update3, ap_value.Receive());
   if (FAILED(hr))
     return hr;
 
-  base::win::ScopedBstr ap_value;
-  hr = SelectBinariesApValue(update3, app_bundle, ap_value.Receive());
+  base::win::ScopedComPtr<IAppBundle> app_bundle;
+  hr = CreateAppBundle(update3, app_bundle.Receive());
   if (FAILED(hr))
     return hr;
 
