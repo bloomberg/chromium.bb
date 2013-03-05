@@ -199,6 +199,35 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Gets the GL error for this context.
   virtual uint32 GetGLError() = 0;
 
+  // Sets a GL error.
+  virtual void SetGLError(
+      unsigned error,
+      const char* function_name,
+      const char* msg) = 0;
+  virtual void SetGLErrorInvalidEnum(
+      const char* function_name,
+      unsigned value,
+      const char* label) = 0;
+  virtual void SetGLErrorInvalidParam(
+      unsigned error,
+      const char* function_name,
+      unsigned pname,
+      int param) = 0;
+
+  // Copies the real GL errors to the wrapper. This is so we can
+  // make sure there are no native GL errors before calling some GL function
+  // so that on return we know any error generated was for that specific
+  // command.
+  virtual void CopyRealGLErrorsToWrapper() = 0;
+
+  // Gets the GLError and stores it in our wrapper. Effectively
+  // this lets us peek at the error without losing it.
+  virtual unsigned PeekGLError() = 0;
+
+  // Clear all real GL errors. This is to prevent the client from seeing any
+  // errors caused by GL calls that it was not responsible for issuing.
+  virtual void ClearRealGLErrors() = 0;
+
   // A callback for messages from the decoder.
   virtual void SetMsgCallback(const MsgCallback& callback) = 0;
 

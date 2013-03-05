@@ -573,12 +573,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   }
   virtual bool ProcessPendingQueries() OVERRIDE;
 
-  virtual void SetGLError(GLenum error,
-                          const char* function_name,
-                          const char* msg);
-  virtual void SetGLErrorInvalidEnum(const char* function_name,
-                                     GLenum value,
-                                     const char* label);
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
 
@@ -1345,26 +1339,22 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
 
-  // Gets the GLError and stores it in our wrapper. Effectively
-  // this lets us peek at the error without losing it.
-  GLenum PeekGLError();
-
-  // Copies the real GL errors to the wrapper. This is so we can
-  // make sure there are no native GL errors before calling some GL function
-  // so that on return we know any error generated was for that specific
-  // command.
-  void CopyRealGLErrorsToWrapper();
-
-  // Clear all real GL errors. This is to prevent the client from seeing any
-  // errors caused by GL calls that it was not responsible for issuing.
-  void ClearRealGLErrors();
-
+  virtual void SetGLError(unsigned error,
+                          const char* function_name,
+                          const char* msg) OVERRIDE;
+  virtual void SetGLErrorInvalidEnum(const char* function_name,
+                                     unsigned value,
+                                     const char* label) OVERRIDE;
   // Generates a GL error for a bad parameter.
-  void SetGLErrorInvalidParam(
-      GLenum error,
+  virtual void SetGLErrorInvalidParam(
+      unsigned error,
       const char* function_name,
-      GLenum pname,
-      GLint param);
+      unsigned pname,
+      int param) OVERRIDE;
+
+  virtual unsigned PeekGLError() OVERRIDE;
+  virtual void CopyRealGLErrorsToWrapper() OVERRIDE;
+  virtual void ClearRealGLErrors() OVERRIDE;
 
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(
@@ -5514,7 +5504,7 @@ uint32 GLES2DecoderImpl::GetGLError() {
   return error;
 }
 
-GLenum GLES2DecoderImpl::PeekGLError() {
+unsigned GLES2DecoderImpl::PeekGLError() {
   GLenum error = glGetError();
   if (error != GL_NO_ERROR) {
     SetGLError(error, "", "");
@@ -5523,7 +5513,7 @@ GLenum GLES2DecoderImpl::PeekGLError() {
 }
 
 void GLES2DecoderImpl::SetGLError(
-    GLenum error, const char* function_name, const char* msg) {
+    unsigned error, const char* function_name, const char* msg) {
   if (msg) {
     last_error_ = msg;
     LogMessage(GetLogPrefix() + ": " + std::string("GL ERROR :") +
@@ -5534,17 +5524,17 @@ void GLES2DecoderImpl::SetGLError(
 }
 
 void GLES2DecoderImpl::SetGLErrorInvalidEnum(
-    const char* function_name, GLenum value, const char* label) {
+    const char* function_name, unsigned value, const char* label) {
   SetGLError(GL_INVALID_ENUM, function_name,
              (std::string(label) + " was " +
               GLES2Util::GetStringEnum(value)).c_str());
 }
 
 void GLES2DecoderImpl::SetGLErrorInvalidParam(
-    GLenum error,
+    unsigned error,
     const char* function_name,
-    GLenum pname,
-    GLint param) {
+    unsigned pname,
+    int param) {
   if (error == GL_INVALID_ENUM) {
     SetGLError(
         GL_INVALID_ENUM, function_name,

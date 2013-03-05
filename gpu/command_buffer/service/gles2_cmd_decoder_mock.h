@@ -87,7 +87,20 @@ class MockGLES2Decoder : public GLES2Decoder {
       int width,
       int height,
       bool is_texture_immutable));
-  MOCK_METHOD0(GetGLError,  uint32());
+  MOCK_METHOD0(GetGLError, uint32());
+  MOCK_METHOD3(SetGLError, void(
+      unsigned error, const char* function_name, const char* msg));
+  MOCK_METHOD3(SetGLErrorInvalidEnum, void(
+      const char* function_name, unsigned value, const char* label));
+  MOCK_METHOD4(SetGLErrorInvalidParam, void(
+      unsigned error,
+      const char* function_name,
+      unsigned pname,
+      int param));
+  MOCK_METHOD0(PeekGLError, unsigned());
+  MOCK_METHOD0(CopyRealGLErrorsToWrapper, void());
+  MOCK_METHOD0(ClearRealGLErrors, void());
+
   MOCK_METHOD1(SetMsgCallback, void(const MsgCallback& callback));
   MOCK_METHOD1(SetWaitSyncPointCallback,
                void(const WaitSyncPointCallback& callback));
