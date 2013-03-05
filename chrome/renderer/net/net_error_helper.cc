@@ -4,9 +4,14 @@
 
 #include "chrome/renderer/net/net_error_helper.h"
 
+#include "base/values.h"
+#include "chrome/common/localized_error.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/net_error_info.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
@@ -18,7 +23,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
+using base::DictionaryValue;
 using chrome_common_net::DnsProbeResult;
+using content::GetContentClient;
+using content::RenderThread;
 using content::RenderView;
 using content::RenderViewObserver;
 using content::kUnreachableWebDataURL;
@@ -54,6 +62,36 @@ NetErrorTracker::PageType GetPageType(WebKit::WebFrame* frame) {
 NetErrorTracker::ErrorType GetErrorType(const WebKit::WebURLError& error) {
   return IsDnsError(error.reason) ? NetErrorTracker::ERROR_DNS
                                   : NetErrorTracker::ERROR_OTHER;
+}
+
+// Converts a DNS probe result into a net error.  Returns OK if the error page
+// should not be changed from the original DNS error.
+int DnsProbeResultToNetError(DnsProbeResult result) {
+  switch (result) {
+  case chrome_common_net::DNS_PROBE_UNKNOWN:
+    return net::OK;
+  case chrome_common_net::DNS_PROBE_NO_INTERNET:
+    // TODO(ttuttle): This is not the same error as when NCN returns this;
+    // ideally we should have two separate error codes for "no network" and
+    // "network with no internet".
+    return net::ERR_INTERNET_DISCONNECTED;
+  case chrome_common_net::DNS_PROBE_BAD_CONFIG:
+    // This is unspecific enough that we should still show the full DNS error
+    // page.
+    return net::OK;
+  case chrome_common_net::DNS_PROBE_NXDOMAIN:
+    return net::ERR_NAME_NOT_RESOLVED;
+  default:
+    NOTREACHED();
+    return net::OK;
+  }
+}
+
+WebKit::WebURLError NetErrorToWebURLError(int net_error) {
+  WebKit::WebURLError error;
+  error.domain = WebKit::WebString::fromUTF8(net::kErrorDomain);
+  error.reason = net_error;
+  return error;
 }
 
 }  // namespace
@@ -134,5 +172,17 @@ void NetErrorHelper::TrackerCallback(
 
 void NetErrorHelper::UpdateErrorPage(DnsProbeResult dns_probe_result) {
   DVLOG(1) << "Updating error page with result " << dns_probe_result;
-  // TODO(ttuttle): Update error page.
+
+  int net_error = DnsProbeResultToNetError(dns_probe_result);
+  if (net_error == net::OK)
+    return;
+
+  DVLOG(1) << "net error code is " << net_error;
+
+  DictionaryValue error_strings;
+  LocalizedError::GetStrings(NetErrorToWebURLError(net_error),
+                             &error_strings,
+                             RenderThread::Get()->GetLocale());
+
+  // TODO(ttuttle): Update error page with error_strings.
 }
