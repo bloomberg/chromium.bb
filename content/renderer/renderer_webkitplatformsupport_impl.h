@@ -98,11 +98,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       WebKit::WebRTCPeerConnectionHandlerClient* client);
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client);
-  virtual bool canHyphenate(const WebKit::WebString& locale);
-  virtual size_t computeLastHyphenLocation(const char16* characters,
-      size_t length,
-      size_t before_index,
-      const WebKit::WebString& locale);
   virtual bool processMemorySizesInBytes(
       size_t* private_bytes, size_t* shared_bytes);
 

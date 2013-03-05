@@ -846,20 +846,6 @@ WebKit::WebHyphenator* RendererWebKitPlatformSupportImpl::hyphenator() {
   return hyphenator_.get();
 }
 
-bool RendererWebKitPlatformSupportImpl::canHyphenate(
-    const WebKit::WebString& locale) {
-  return hyphenator()->canHyphenate(locale);
-}
-
-size_t RendererWebKitPlatformSupportImpl::computeLastHyphenLocation(
-    const char16* characters,
-    size_t length,
-    size_t before_index,
-    const WebKit::WebString& locale) {
-  return hyphenator()->computeLastHyphenLocation(
-      characters, length, before_index, locale);
-}
-
 //------------------------------------------------------------------------------
 
 bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(

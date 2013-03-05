@@ -513,19 +513,6 @@ TestWebKitPlatformSupport::createRTCPeerConnectionHandler(
       client);
 }
 
-bool TestWebKitPlatformSupport::canHyphenate(const WebKit::WebString& locale) {
-  return hyphenator()->canHyphenate(locale);
-}
-
-size_t TestWebKitPlatformSupport::computeLastHyphenLocation(
-    const char16* characters,
-    size_t length,
-    size_t before_index,
-    const WebKit::WebString& locale) {
-  return hyphenator()->computeLastHyphenLocation(
-      characters, length, before_index, locale);
-}
-
 WebKit::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
     int device_source,
     const WebKit::WebFloatPoint& velocity,
