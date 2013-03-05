@@ -320,10 +320,6 @@
       # Enable printing support and UI.
       'enable_printing%': 1,
 
-      # Enable Web Intents web content registration via HTML element
-      # and WebUI managing such registrations.
-      'enable_web_intents_tag%': 0,
-
       # Webrtc compilation is enabled by default. Set to 0 to disable.
       'enable_webrtc%': 1,
 
@@ -725,7 +721,6 @@
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
     'enable_extensions%': '<(enable_extensions)',
-    'enable_web_intents_tag%': '<(enable_web_intents_tag)',
     'enable_plugin_installation%': '<(enable_plugin_installation)',
     'enable_plugins%': '<(enable_plugins)',
     'enable_session_service%': '<(enable_session_service)',
@@ -1458,10 +1453,6 @@
         'clang_chrome_plugins_flags': [
           '<!@(<(DEPTH)/tools/clang/scripts/plugin_flags.sh)'
         ],
-      }],
-
-      ['enable_web_intents_tag==1', {
-        'grit_defines': ['-D', 'enable_web_intents_tag'],
       }],
 
       ['asan==1 and OS!="win"', {
