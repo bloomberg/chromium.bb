@@ -455,7 +455,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_FALSE(matches[0].can_inline);
 
   // Search which should result in very poor result.
-  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("z y x"),
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("qui c"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
   // The results should have a poor score.
@@ -586,11 +586,10 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
 
-  // "www.cnn.com" - found, cannot inline
+  // "ww.cnn.com" - not found because we don't allow ww as a mid-term match
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ww.cnn.com"),
                                              string16::npos);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(!matches[0].can_inline);
+  ASSERT_EQ(0U, matches.size());
 
   // "http://www.cnn.com" - found, can inline
   matches =
@@ -599,12 +598,12 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
 
-  // "tp://www.cnn.com" - found, cannot inline
+  // "tp://www.cnn.com" - not found because we don't allow tp as a mid-term
+  // match
   matches =
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("tp://www.cnn.com"),
                                        string16::npos);
-  ASSERT_EQ(1U, matches.size());
-  EXPECT_TRUE(!matches[0].can_inline);
+  ASSERT_EQ(0U, matches.size());
 }
 
 TEST_F(InMemoryURLIndexTest, ProperStringMatching) {

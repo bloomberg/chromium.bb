@@ -128,9 +128,6 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // field trial state.
   static void InitializeNewScoringField();
 
-  // Sets only_count_matches_at_word_boundaries based on the field trial state.
-  static void InitializeOnlyCountMatchesAtWordBoundariesField();
-
   // Sets also_do_hup_like_scoring based on the field trial state.
   static void InitializeAlsoDoHUPLikeScoringField();
 
@@ -173,9 +170,6 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // affect on HistoryURLProvider-like scoring that can happen in this
   // class as well (see boolean below).
   static bool use_new_scoring;
-
-  // If true, we ignore all matches that are in the middle of a word.
-  static bool only_count_matches_at_word_boundaries;
 
   // If true, assign raw scores to be max(whatever it normally would be,
   // a score that's similar to the score HistoryURL provider would assign).

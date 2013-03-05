@@ -31,8 +31,6 @@ static const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 static const char kHQPReplaceHUPScoringFieldTrialName[] =
     "OmniboxHQPReplaceHUPHostFix";
-static const char kHQPOnlyCountMatchesAtWordBoundariesFieldTrialName[] =
-    "OmniboxHQPOnlyCountMatchesAtWordBoundaries";
 static const char kHQPUseCursorPositionFieldTrialName[] =
     "OmniboxHQPUseCursorPosition";
 
@@ -89,13 +87,6 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability
     kHQPReplaceHUPScoringFieldTrialExperimentFraction = 25;
 
-// For the field trial that ignores all mid-term matches in HistoryQuick
-// provider, put 0% ( = 0/100 ) of the users in the experiment group.
-const base::FieldTrial::Probability
-    kHQPOnlyCountMatchesAtWordBoundariesFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentFraction = 0;
-
 // For the field trial that allows HistoryQuick provider to use the
 // cursor position, put 25% ( = 25/100 ) of the users in the experiment group.
 const base::FieldTrial::Probability
@@ -129,10 +120,6 @@ int hup_dont_create_shorter_match_experiment_group = 0;
 // Field trial ID for the HistoryQuick provider replaces HistoryURL provider
 // experiment group.
 int hqp_replace_hup_scoring_experiment_group = 0;
-
-// Field trial ID for the HistoryQuick provider only count matches at
-// word boundaries experiment group.
-int hqp_only_count_matches_at_word_boundaries_experiment_group = 0;
 
 // Field trial ID for the HistoryQuick provider use cursor position
 // experiment group.
@@ -240,18 +227,6 @@ void AutocompleteFieldTrial::ActivateStaticTrials() {
   trial->UseOneTimeRandomization();
   hqp_replace_hup_scoring_experiment_group = trial->AppendGroup("HQPReplaceHUP",
       kHQPReplaceHUPScoringFieldTrialExperimentFraction);
-
-  // Create the field trial that makes HistoryQuick provider score
-  // ignore all matches that happen in the middle of a word.  Make it
-  // expire on June 23, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kHQPOnlyCountMatchesAtWordBoundariesFieldTrialName,
-      kHQPOnlyCountMatchesAtWordBoundariesFieldTrialDivisor,
-      "Standard", 2013, 6, 23, NULL);
-  trial->UseOneTimeRandomization();
-  hqp_only_count_matches_at_word_boundaries_experiment_group =
-      trial->AppendGroup("HQPOnlyCountMatchesAtWordBoundaries",
-          kHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentFraction);
 
   // Create the field trial that allows HistoryQuick provider to break
   // omnibox inputs at the cursor position.  Make it expire on August 23, 2013.
@@ -381,22 +356,6 @@ bool AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kHQPReplaceHUPScoringFieldTrialName);
   return group == hqp_replace_hup_scoring_experiment_group;
-}
-
-bool AutocompleteFieldTrial::InHQPOnlyCountMatchesAtWordBoundariesFieldTrial() {
-  return base::FieldTrialList::TrialExists(
-      kHQPOnlyCountMatchesAtWordBoundariesFieldTrialName);
-}
-
-bool AutocompleteFieldTrial::
-    InHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentGroup() {
-  if (!InHQPOnlyCountMatchesAtWordBoundariesFieldTrial())
-    return false;
-
-  // Return true if we're in the experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kHQPOnlyCountMatchesAtWordBoundariesFieldTrialName);
-  return group == hqp_only_count_matches_at_word_boundaries_experiment_group;
 }
 
 bool AutocompleteFieldTrial::InHQPUseCursorPositionFieldTrial() {

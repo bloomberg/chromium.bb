@@ -108,18 +108,6 @@ class AutocompleteFieldTrial {
   static bool InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 
   // ---------------------------------------------------------
-  // For the HistoryQuick provider only count matches at word boundaries
-  // field trial.
-
-  // Returns whether the user is in any group for this field trial.
-  // (Should always be true unless initialization went wrong.)
-  static bool InHQPOnlyCountMatchesAtWordBoundariesFieldTrial();
-
-  // Returns whether we should ignore all mid-word matches in
-  // HistoryQuick provider.
-  static bool InHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentGroup();
-
-  // ---------------------------------------------------------
   // For the HistoryQuick provider use cursor position field trial.
 
   // Returns whether the user is in any group for this field trial.

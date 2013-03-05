@@ -40,7 +40,6 @@ const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
 bool ScoredHistoryMatch::initialized_ = false;
 bool ScoredHistoryMatch::use_new_scoring = false;
-bool ScoredHistoryMatch::only_count_matches_at_word_boundaries = false;
 bool ScoredHistoryMatch::also_do_hup_like_scoring = false;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
@@ -48,7 +47,6 @@ ScoredHistoryMatch::ScoredHistoryMatch()
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
-    InitializeOnlyCountMatchesAtWordBoundariesField();
     InitializeAlsoDoHUPLikeScoringField();
     initialized_ = true;
   }
@@ -66,7 +64,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
-    InitializeOnlyCountMatchesAtWordBoundariesField();
     InitializeAlsoDoHUPLikeScoringField();
     initialized_ = true;
   }
@@ -285,15 +282,11 @@ int ScoredHistoryMatch::ScoreComponentForMatches(
   if (provided_matches.empty())
     return 0;
 
-  TermMatches matches_at_word_boundaries;
-  if (only_count_matches_at_word_boundaries) {
-    MakeTermMatchesOnlyAtWordBoundaries(provided_matches, word_starts,
-                                        &matches_at_word_boundaries);
-  }
   // The actual matches we'll use for matching.  This is |provided_matches|
-  // with all the matches not at a word boundary removed (if told to do so).
-  const TermMatches& matches = only_count_matches_at_word_boundaries ?
-      matches_at_word_boundaries : provided_matches;
+  // with all the matches not at a word boundary removed.
+  TermMatches matches;
+  MakeTermMatchesOnlyAtWordBoundaries(provided_matches, word_starts,
+                                      &matches);
 
   if (matches.empty())
     return 0;
@@ -721,14 +714,6 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
   UMA_HISTOGRAM_ENUMERATION(
       "Omnibox.HistoryQuickProviderNewScoringFieldTrialBeacon",
       new_scoring_option, NUM_OPTIONS);
-}
-
-void ScoredHistoryMatch::InitializeOnlyCountMatchesAtWordBoundariesField() {
-  only_count_matches_at_word_boundaries =
-      AutocompleteFieldTrial::
-          InHQPOnlyCountMatchesAtWordBoundariesFieldTrial() &&
-      AutocompleteFieldTrial::
-          InHQPOnlyCountMatchesAtWordBoundariesFieldTrialExperimentGroup();
 }
 
 void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringField() {

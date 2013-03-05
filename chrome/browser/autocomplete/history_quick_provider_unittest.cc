@@ -325,8 +325,6 @@ TEST_F(HistoryQuickProviderTest, MultiMatch) {
 TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://xyzabcdefghijklmnopqrstuvw.com/a");
-  expected_urls.push_back("http://abcxyzdefghijklmnopqrstuvw.com/a");
-  expected_urls.push_back("http://abcdefxyzghijklmnopqrstuvw.com/a");
   RunTest(ASCIIToUTF16("xyz"), expected_urls, true,
           ASCIIToUTF16("xyzabcdefghijklmnopqrstuvw.com/a"));
 }
@@ -378,8 +376,13 @@ TEST_F(HistoryQuickProviderTest, EncodingLimitMatch) {
   std::vector<std::string> expected_urls;
   std::string url(
       "http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice");
-  expected_urls.push_back(url);
+  // First check that a mid-word match yield no results.
   RunTest(ASCIIToUTF16("ice"), expected_urls, false,
+          ASCIIToUTF16("cda.com/Dogs Cats Gorillas Sea Slugs and Mice"));
+  // Then check that we get results when the match is at a word start
+  // that is present because of an encoded separate (%20 = space).
+  expected_urls.push_back(url);
+  RunTest(ASCIIToUTF16("Mice"), expected_urls, false,
           ASCIIToUTF16("cda.com/Dogs Cats Gorillas Sea Slugs and Mice"));
   // Verify that the matches' ACMatchClassifications offsets are in range.
   ACMatchClassifications content(ac_matches_[0].contents_class);
