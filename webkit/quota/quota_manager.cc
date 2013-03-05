@@ -168,6 +168,13 @@ const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
 
 const char QuotaManager::kDatabaseName[] = "QuotaManager";
 
+// Preserve kMinimumPreserveForSystem disk space for system book-keeping
+// when returning the quota to unlimited apps/extensions.
+// TODO(kinuko): This should be like 10% of the actual disk space.
+// For now we simply use a constant as getting the disk size needs
+// platform-dependent code. (http://crbug.com/178976)
+const int64 QuotaManager::kMinimumPreserveForSystem = 1024 * kMBytes;
+
 const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
 
 const int QuotaManager::kEvictionIntervalInMilliSeconds =
@@ -178,6 +185,20 @@ const int QuotaManager::kEvictionIntervalInMilliSeconds =
 // and by multiple apps.
 int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
 
+int64 CalculateQuotaForUnlimitedInstalledApp(
+    int64 available_disk_space, int64 usage) {
+  if (available_disk_space < QuotaManager::kMinimumPreserveForSystem) {
+    // No more space; cap the quota to the current usage.
+    return usage;
+  }
+
+  available_disk_space -= QuotaManager::kMinimumPreserveForSystem;
+  if (available_disk_space < kint64max - usage)
+    return available_disk_space + usage;
+
+  return kint64max;
+}
+
 // Callback translators.
 void CallGetUsageAndQuotaCallback(
     const QuotaManager::GetUsageAndQuotaCallback& callback,
@@ -185,19 +206,27 @@ void CallGetUsageAndQuotaCallback(
     bool is_installed_app,
     QuotaStatusCode status,
     const QuotaAndUsage& quota_and_usage) {
-  int64 usage;
-  int64 quota;
-
-  if (unlimited) {
-    usage = quota_and_usage.unlimited_usage;
-    quota = is_installed_app ? quota_and_usage.available_disk_space :
-        QuotaManager::kNoLimit;
-  } else {
-    usage = quota_and_usage.usage;
-    quota = quota_and_usage.quota;
+  // Regular limited case.
+  if (!unlimited) {
+    callback.Run(status, quota_and_usage.usage, quota_and_usage.quota);
+    return;
   }
 
-  callback.Run(status, usage, quota);
+  int64 usage = quota_and_usage.unlimited_usage;
+
+  // Unlimited case: for non-installed apps just return unlimited quota.
+  // TODO(kinuko): We should probably always return the capped disk space
+  // for internal quota clients (while we still would not want to expose
+  // the actual usage to webapps). http://crbug.com/179040
+  if (!is_installed_app) {
+    callback.Run(status, usage, QuotaManager::kNoLimit);
+    return;
+  }
+
+  // For installed unlimited apps.
+  callback.Run(status, usage,
+               CalculateQuotaForUnlimitedInstalledApp(
+                   quota_and_usage.available_disk_space, usage));
 }
 
 void CallQuotaCallback(

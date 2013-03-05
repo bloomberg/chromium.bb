@@ -36,7 +36,7 @@ const int kAllClients = QuotaClient::kAllClientsMask;
 
 // Returns a deterministic value for the amount of available disk space.
 int64 GetAvailableDiskSpaceForTest(const base::FilePath&) {
-  return 13377331;
+  return 13377331 + QuotaManager::kMinimumPreserveForSystem;
 }
 
 class QuotaManagerTest : public testing::Test {
@@ -649,13 +649,15 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1, usage());
-  EXPECT_EQ(available_space(), quota());
+  EXPECT_EQ(available_space() - QuotaManager::kMinimumPreserveForSystem,
+            quota() - usage());
 
   GetUsageAndQuota(GURL("http://installed/"), kPerm);
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1, usage());
-  EXPECT_EQ(available_space(), quota());
+  EXPECT_EQ(available_space() - QuotaManager::kMinimumPreserveForSystem,
+            quota() - usage());
 
   GetGlobalUsage(kTemp);
   MessageLoop::current()->RunUntilIdle();

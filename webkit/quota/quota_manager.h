@@ -201,6 +201,8 @@ class WEBKIT_STORAGE_EXPORT QuotaManager
 
   static const char kDatabaseName[];
 
+  static const int64 kMinimumPreserveForSystem;
+
   static const int kThresholdOfErrorsToBeBlacklisted;
 
   static const int kEvictionIntervalInMilliSeconds;
