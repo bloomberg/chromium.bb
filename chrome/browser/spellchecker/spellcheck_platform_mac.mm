@@ -43,47 +43,6 @@ NSSpellChecker* SharedSpellChecker() {
           @selector(sharedSpellChecker)));
 }
 
-// TextCheckingCallback is reserved for spell checking against large size
-// of text, which possible contains multiple paragrpahs.  Checking
-// that size of text might take time, and should be done as a task on
-// the FILE thread.
-//
-// The result of the check is returned back as a
-// SpellCheckMsg_RespondTextCheck message.
-void TextCheckingCallback(
-    const scoped_refptr<BrowserMessageFilter>& destination,
-    int route_id,
-    int identifier,
-    const string16& text,
-    int document_tag) {
-  // TODO(morrita): Use [NSSpellChecker requestCheckingOfString]
-  // when the build target goes up to 10.6
-  std::vector<SpellCheckResult> check_results;
-  NSString* text_to_check = base::SysUTF16ToNSString(text);
-  size_t starting_at = 0;
-  while (starting_at < text.size()) {
-    NSRange range = [SharedSpellChecker()
-                       checkSpellingOfString:text_to_check
-                                  startingAt:starting_at
-                                    language:nil
-                                        wrap:NO
-                      inSpellDocumentWithTag:document_tag
-                                   wordCount:NULL];
-    if (range.length == 0)
-      break;
-    check_results.push_back(SpellCheckResult(
-        SpellCheckResult::SPELLING,
-        range.location,
-        range.length));
-    starting_at = range.location + range.length;
-  }
-
-  destination->Send(
-      new SpellCheckMsg_RespondTextCheck(route_id,
-                                         identifier,
-                                         check_results));
-}
-
 // A private utility function to convert hunspell language codes to OS X
 // language codes.
 NSString* ConvertLanguageCodeToMac(const std::string& hunspell_lang_code) {
@@ -280,10 +239,36 @@ void RequestTextCheck(int route_id,
                       int identifier,
                       int document_tag,
                       const string16& text, BrowserMessageFilter* destination) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TextCheckingCallback, make_scoped_refptr(destination),
-                 route_id, identifier, text, document_tag));
+  NSString* text_to_check = base::SysUTF16ToNSString(text);
+  NSRange range_to_check = NSMakeRange(0, [text_to_check length]);
+  destination->AddRef();
+
+  [SharedSpellChecker()
+      requestCheckingOfString:text_to_check
+                        range:range_to_check
+                        types:NSTextCheckingTypeSpelling
+                      options:nil
+       inSpellDocumentWithTag:document_tag
+            completionHandler:^(NSInteger,
+                                NSArray *results,
+                                NSOrthography*,
+                                NSInteger) {
+          std::vector<SpellCheckResult> check_results;
+          for (NSTextCheckingResult* result in results) {
+            // In this use case, the spell checker should never
+            // return anything but a single range per result.
+            check_results.push_back(SpellCheckResult(
+                SpellCheckResult::SPELLING,
+                [result range].location,
+                [result range].length));
+          }
+          destination->Send(
+              new SpellCheckMsg_RespondTextCheck(
+                  route_id,
+                  identifier,
+                  check_results));
+          destination->Release();
+      }];
 }
 
 }  // namespace spellcheck_mac
