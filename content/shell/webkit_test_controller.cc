@@ -33,7 +33,6 @@ namespace content {
 
 namespace {
 const int kTestTimeoutMilliseconds = 30 * 1000;
-const int kVirtualWindowBorder = 3;
 }  // namespace
 
 // WebKitTestResultPrinter ----------------------------------------------------
@@ -493,8 +492,7 @@ void WebKitTestController::OnLoadURLForFrame(const GURL& url,
 
 void WebKitTestController::OnSetClientWindowRect(const gfx::Rect& rect) {
 #if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
-  main_window_->SizeTo(rect.width() - 2 * kVirtualWindowBorder,
-                       rect.height() - 2 * kVirtualWindowBorder);
+  main_window_->SizeTo(rect.width(), rect.height());
   main_window_->web_contents()->GetRenderViewHost()->WasResized();
 #endif
 }
