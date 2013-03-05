@@ -177,6 +177,11 @@ WebKitTestController::WebKitTestController()
 WebKitTestController::~WebKitTestController() {
   DCHECK(CalledOnValidThread());
   CHECK(instance_ == this);
+  // We can't invoke DiscardMainWindow() here as the destructor of
+  // WebKitTestController is invoked outside of the message loop, but
+  // DiscardMainWindow interacts with the message loop.
+  if (main_window_)
+    main_window_->Close();
   instance_ = NULL;
 }
 
