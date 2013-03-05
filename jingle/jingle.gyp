@@ -39,11 +39,9 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../net/net.gyp:net',
             '../third_party/libjingle/libjingle.gyp:libjingle',
-            '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
           ],
           'export_dependent_settings': [
             '../third_party/libjingle/libjingle.gyp:libjingle',
-            '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
           ],
         },
         # A library for sending and receiving peer-issued notifications.

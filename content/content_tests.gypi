@@ -196,12 +196,13 @@
             'test/webrtc_audio_device_test.h',
           ],
           'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:audio_device',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
             '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
-            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core'],
+            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core'
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
@@ -563,7 +564,7 @@
             'renderer/media/webrtc_audio_device_unittest.cc',
           ],
           'dependencies': [
-            '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
             '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
             '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',

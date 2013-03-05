@@ -336,8 +336,7 @@
     }],
     ['enable_webrtc==1', {
       'dependencies': [
-        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
-        '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
+        '../third_party/libjingle/libjingle.gyp:libpeerconnection',
         '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
         '../third_party/webrtc/modules/modules.gyp:audio_device',
         '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',

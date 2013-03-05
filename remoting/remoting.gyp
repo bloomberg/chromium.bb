@@ -2289,11 +2289,9 @@
         '../jingle/jingle.gyp:jingle_glue',
         '../jingle/jingle.gyp:notifier',
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'export_dependent_settings': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'sources': [
         'jingle_glue/chromium_socket_factory.cc',
