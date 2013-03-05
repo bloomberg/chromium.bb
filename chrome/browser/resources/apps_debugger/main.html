@@ -26,19 +26,20 @@ found in the LICENSE file.
       <include src="permissions_overlay.html">
       <include src="../../../../ui/webui/resources/html/alert_overlay.html">
     </div>
-    <h1 i18n-content="extensionSettingsAppsDevtool"></h1>
+    <hr>
     <div class="page" id="extension-settings">
+      <h1 i18n-content="extensionSettingsAppsDevtool"></h1>
       <div id="developer-controls">
+        <hr>
         <button id="load-unpacked"
             i18n-content="extensionSettingsLoadUnpackedButton"></button>
         <button id="pack-item"
             i18n-content="extensionSettingsPackButton"></button>
         <button id = "update-items-now"
             i18n-content="extensionSettingsUpdateButton"></button>
-      </div>
-      <div id="search-container">
         <input id="search" type="text" placeholder="type to search"
             spellcheck="false">
+        <hr>
       </div>
       <div id="items"></div>
       <div id="extension-settings-list" class="empty-extension-list"></div>
@@ -60,7 +61,7 @@ found in the LICENSE file.
               <span></span>
               <a class="permissions-link"
                   i18n-content="extensionSettingsPermissions"
-                  href="#">
+                  href="#"></a>
               <a class="site-link" target="_blank"></a>
             </p>
             <div class="item-id">

@@ -4,13 +4,22 @@
 
 body,
 html {
+  color: rgb(48, 57, 66);
+  font-family: Arial, sans-serif;
+  font-size: 90%;
   overflow: visible;
+}
+
+hr {
+  color: rgb(115, 111, 110);
+  margin: 10px 0 10px;
 }
 
 /* Contents */
 
 #extension-settings {
-  max-width: 738px;
+  margin: 30px;
+  max-width: 800px;
 }
 
 #no-extensions-message {
@@ -22,11 +31,17 @@ html {
 }
 
 #developer-controls {
-  margin: 5px;
+  bottom: 15px;
+  max-width: 750px;
+  top: 15px;
 }
 
-#search-container {
-  margin: 5px;
+#search {
+  float: right;
+}
+
+html[dir='rtl'] #search {
+  float: left;
 }
 
 #no-extensions {
@@ -86,6 +101,7 @@ html[dir='rtl'] .extension-list-item {
 .extension-details {
   -webkit-box-flex: 1;
   -webkit-padding-start: 55px;
+  max-width: 600px;
 }
 
 .extension-description,
@@ -99,15 +115,35 @@ html[dir='rtl'] .extension-list-item {
   margin: 4px;
 }
 
+.site-link {
+  font-size: 90%;
+}
+
 .enable-controls {
-  /* Matches right: position of dev controls toggle. */
-  -webkit-margin-end: 20px;
+  float: right;
   position: relative;
+}
+
+html[dir='rtl'] .enable-control {
+  float: left;
+}
+
+.file-access-control,
+.incognito-control {
+  position: relative;
+  right: 0.5em;
+}
+
+html[dir='rtl'] .file-access-control,
+html[dir='rtl'] .incognito-control {
+  left: 0.5em;
+  right: auto;
 }
 
 .enable-checkbox-text {
   /* Matches width of trash. */
   -webkit-margin-end: 30px;
+  min-width: 62px;
 }
 
 .checkbox {
@@ -134,7 +170,8 @@ html[dir='rtl'] .extension-list-item {
 }
 
 .extension-list-item a {
-  -webkit-margin-start: 0.5em;
+  -webkit-margin-end: 0.5em;
+  -webkit-margin-start: 0;
   display: inline-block;
 }
 
@@ -158,6 +195,12 @@ html[dir='rtl'] .extension-list-item {
 .enable-controls > .trash > .can {
   background: url(../../../../../ui/webui/resources/images/trash.png)
       0 0 no-repeat;
+}
+
+.enable-controls > .trash > .can {
+  height: 15px;
+  top: 0;
+  width: 13px;
 }
 
 #extension-settings .trash {
