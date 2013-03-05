@@ -4,7 +4,7 @@
 
 #include "ash/test/test_shell_delegate.h"
 
-#include <algorithm>
+#include <limits>
 
 #include "ash/caps_lock_delegate_stub.h"
 #include "ash/host/root_window_host_factory.h"
@@ -42,6 +42,10 @@ bool TestShellDelegate::IsSessionStarted() const {
 }
 
 bool TestShellDelegate::IsFirstRunAfterBoot() const {
+  return false;
+}
+
+bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
 }
 

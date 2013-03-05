@@ -297,4 +297,43 @@ const AcceleratorAction kNonrepeatableActions[] = {
 const size_t kNonrepeatableActionsLength =
     arraysize(kNonrepeatableActions);
 
+const AcceleratorAction kActionsAllowedInAppMode[] = {
+  BRIGHTNESS_DOWN,
+  BRIGHTNESS_UP,
+#if defined(OS_CHROMEOS)
+  CYCLE_DISPLAY_MODE,
+  DISABLE_GPU_WATCHDOG,
+#endif  // defined(OS_CHROMEOS)
+  DISABLE_CAPS_LOCK,
+  KEYBOARD_BRIGHTNESS_DOWN,
+  KEYBOARD_BRIGHTNESS_UP,
+  MAGNIFY_SCREEN_ZOOM_IN,  // Control+F7
+  MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
+  MEDIA_NEXT_TRACK,
+  MEDIA_PLAY_PAUSE,
+  MEDIA_PREV_TRACK,
+  NEXT_IME,
+  POWER_PRESSED,
+  POWER_RELEASED,
+  PREVIOUS_IME,
+  SWAP_PRIMARY_DISPLAY,
+  SWITCH_IME,  // Switch to another IME depending on the accelerator.
+  TOGGLE_CAPS_LOCK,
+  TOGGLE_SPOKEN_FEEDBACK,
+  TOGGLE_WIFI,
+  TOUCH_HUD_CLEAR,
+  VOLUME_DOWN,
+  VOLUME_MUTE,
+  VOLUME_UP,
+#if !defined(NDEBUG)
+  PRINT_LAYER_HIERARCHY,
+  PRINT_VIEW_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
+  ROTATE_SCREEN,
+#endif
+};
+
+const size_t kActionsAllowedInAppModeLength =
+    arraysize(kActionsAllowedInAppMode);
+
 }  // namespace ash

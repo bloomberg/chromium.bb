@@ -156,6 +156,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::set<int> reserved_actions_;
   // Actions which will not be repeated while holding the accelerator key.
   std::set<int> nonrepeatable_actions_;
+  // Actions allowed in app mode.
+  std::set<int> actions_allowed_in_app_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

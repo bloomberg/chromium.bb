@@ -337,6 +337,8 @@ void AcceleratorController::Init() {
     reserved_actions_.insert(kReservedActions[i]);
   for (size_t i = 0; i < kNonrepeatableActionsLength; ++i)
     nonrepeatable_actions_.insert(kNonrepeatableActions[i]);
+  for (size_t i = 0; i < kActionsAllowedInAppModeLength; ++i)
+    actions_allowed_in_app_mode_.insert(kActionsAllowedInAppMode[i]);
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
@@ -417,6 +419,12 @@ bool AcceleratorController::PerformAction(int action,
     // in the modal window by cycling through its window elements.
     return true;
   }
+  if (shell->delegate()->IsRunningInForcedAppMode() &&
+      actions_allowed_in_app_mode_.find(action) ==
+      actions_allowed_in_app_mode_.end()) {
+    return false;
+  }
+
   const ui::KeyboardCode key_code = accelerator.key_code();
   // PerformAction() is performed from gesture controllers and passes
   // empty Accelerator() instance as the second argument. Such events

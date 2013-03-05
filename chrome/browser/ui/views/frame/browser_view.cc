@@ -2455,10 +2455,16 @@ void BrowserView::LoadAccelerators() {
   DCHECK(focus_manager);
 
   // Let's fill our own accelerator table.
+  const bool is_app_mode = chrome::IsRunningInForcedAppMode();
   const std::vector<chrome::AcceleratorMapping> accelerator_list(
       chrome::GetAcceleratorList());
   for (std::vector<chrome::AcceleratorMapping>::const_iterator it =
            accelerator_list.begin(); it != accelerator_list.end(); ++it) {
+    // In app mode, only allow accelerators of white listed commands to pass
+    // through.
+    if (is_app_mode && !chrome::IsCommandAllowedInAppMode(it->command_id))
+      continue;
+
     ui::Accelerator accelerator(it->keycode, it->modifiers);
     accelerator_table_[accelerator] = it->command_id;
 

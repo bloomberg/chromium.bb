@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_DELEGATE_H_
 #define ASH_SHELL_DELEGATE_H_
 
-#include <vector>
+#include <string>
 
 #include "ash/ash_export.h"
 #include "ash/magnifier/magnifier_constants.h"
@@ -89,6 +89,9 @@ class ASH_EXPORT ShellDelegate {
   // the system has booted.  false is returned after the shell has been
   // restarted, typically due to logging in as a guest or logging out.
   virtual bool IsFirstRunAfterBoot() const = 0;
+
+  // Returns true if we're running in forced app mode.
+  virtual bool IsRunningInForcedAppMode() const = 0;
 
   // Returns true if a user is logged in whose session can be locked (i.e. the
   // user has a password with which to unlock the session).

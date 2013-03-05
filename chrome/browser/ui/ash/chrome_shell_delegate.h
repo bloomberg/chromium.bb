@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_SHELL_DELEGATE_H_
 
+#include <string>
+
 #include "ash/launcher/launcher_types.h"
 #include "ash/shell_delegate.h"
 #include "base/basictypes.h"
@@ -37,6 +39,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual bool IsUserLoggedIn() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual bool IsFirstRunAfterBoot() const OVERRIDE;
+  virtual bool IsRunningInForcedAppMode() const OVERRIDE;
   virtual bool CanLockScreen() const OVERRIDE;
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;

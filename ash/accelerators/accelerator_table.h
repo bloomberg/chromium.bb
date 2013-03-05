@@ -149,6 +149,12 @@ ASH_EXPORT extern const AcceleratorAction kNonrepeatableActions[];
 // The number of elements in kNonrepeatableActions.
 ASH_EXPORT extern const size_t kNonrepeatableActionsLength;
 
+// Actions allowed in app mode.
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedInAppMode[];
+
+// The number of elements in kActionsAllowedInAppMode.
+ASH_EXPORT extern const size_t kActionsAllowedInAppModeLength;
+
 }  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_TABLE_H_

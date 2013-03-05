@@ -7,8 +7,14 @@
 
 namespace chrome {
 
-// Return true if browser process is run in kiosk or forces app mode.
+// Returns true if the given browser command is allowed in app mode.
+bool IsCommandAllowedInAppMode(int command_id);
+
+// Return true if browser process is run in kiosk or forced app mode.
 bool IsRunningInAppMode();
+
+// Return true if browser process is run in forced app mode.
+bool IsRunningInForcedAppMode();
 
 }  // namespace switches
 

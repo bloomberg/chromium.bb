@@ -58,6 +58,10 @@ ChromeShellDelegate::~ChromeShellDelegate() {
     instance_ = NULL;
 }
 
+bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
+  return chrome::IsRunningInForcedAppMode();
+}
+
 void ChromeShellDelegate::UnlockScreen() {
   // This is used only for testing thus far.
   NOTIMPLEMENTED();
