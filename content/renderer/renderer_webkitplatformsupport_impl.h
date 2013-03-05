@@ -71,6 +71,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebFileSystem* fileSystem();
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual bool canAccelerate2dCanvas();
+  virtual bool isThreadedCompositingEnabled();
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
 

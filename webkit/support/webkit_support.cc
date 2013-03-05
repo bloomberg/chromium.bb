@@ -570,6 +570,11 @@ WebKit::WebLayerTreeView* CreateLayerTreeView3d(
   return CreateLayerTreeView(MESA_CONTEXT, client);
 }
 
+void SetThreadedCompositorEnabled(bool enabled) {
+  test_environment->webkit_platform_support()->
+      set_threaded_compositing_enabled(enabled);
+}
+
 void RegisterMockedURL(const WebKit::WebURL& url,
                      const WebKit::WebURLResponse& response,
                      const WebKit::WebString& file_path) {

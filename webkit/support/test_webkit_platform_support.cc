@@ -72,7 +72,8 @@ using WebKit::WebScriptController;
 TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
     WebKit::Platform* shadow_platform_delegate)
     : unit_test_mode_(unit_test_mode),
-      shadow_platform_delegate_(shadow_platform_delegate) {
+      shadow_platform_delegate_(shadow_platform_delegate),
+      threaded_compositing_enabled_(false) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -411,6 +412,10 @@ bool TestWebKitPlatformSupport::canAccelerate2dCanvas() {
   // We supply an OS-MESA based context for accelarated 2d
   // canvas, which should always work.
   return true;
+}
+
+bool TestWebKitPlatformSupport::isThreadedCompositingEnabled() {
+  return threaded_compositing_enabled_;
 }
 
 double TestWebKitPlatformSupport::audioHardwareSampleRate() {

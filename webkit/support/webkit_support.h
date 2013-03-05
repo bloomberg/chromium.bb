@@ -157,6 +157,9 @@ WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
 WebKit::WebLayerTreeView* CreateLayerTreeView3d(
     DRTLayerTreeViewClient* client);
 
+#define WEBKIT_SUPPORT_HAS_SET_THREADING_COMPOSITING_ENABLED 1
+void SetThreadedCompositorEnabled(bool enabled);
+
 // ------- URL load mocking.
 // Registers the file at |file_path| to be served when |url| is requested.
 // |response| is the response provided with the contents.

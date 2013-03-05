@@ -618,6 +618,10 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
   return true;
 }
 
+bool RendererWebKitPlatformSupportImpl::isThreadedCompositingEnabled() {
+  return !!RenderThreadImpl::current()->compositor_thread();
+}
+
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputSampleRate();

@@ -91,6 +91,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebGraphicsContext3D* sharedOffscreenGraphicsContext3D();
   virtual GrContext* sharedOffscreenGrContext();
   virtual bool canAccelerate2dCanvas();
+  virtual bool isThreadedCompositingEnabled();
 
   WebURLLoaderMockFactory* url_loader_factory() {
     return &url_loader_factory_;
@@ -164,6 +165,10 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting(
       TestViewType type);
 
+  void set_threaded_compositing_enabled(bool enabled) {
+    threaded_compositing_enabled_ = enabled;
+  }
+
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -181,6 +186,7 @@ class TestWebKitPlatformSupport :
   bool unit_test_mode_;
   WebKit::WebGamepads gamepad_data_;
   WebKit::Platform* shadow_platform_delegate_;
+  bool threaded_compositing_enabled_;
 
   scoped_refptr<cc::ContextProvider> main_thread_contexts_;
 
