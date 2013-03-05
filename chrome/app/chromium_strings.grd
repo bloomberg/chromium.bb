@@ -235,6 +235,10 @@ be available for now. -->
         <message name="IDS_PRODUCT_APP_LAUNCHER_NAME" desc="The Chrome App Launcher application name">
           Chromium App Launcher
         </message>
+        <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS"
+                 desc="Infobar message to restart chrome in desktop mode to launch Chrome Apps. Aplies to Windows 8 only">
+          You need to switch Chromium to desktop mode to use the App Launcher.
+        </message>
         <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
           Chromium Binaries
         </message>

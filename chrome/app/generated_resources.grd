@@ -15130,6 +15130,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
              desc="Text for the menu item to restart chrome in metro. Aplies to Windows 8 only">
       Relaunch Chrome in Windows 8 mode
     </message>
+    <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_YES_BUTTON"
+             desc="Infobar button 'yes' text to confirm that the user does wish to switch to desktop mode to use Chrome Apps">
+      Yes, go ahead
+    </message>
+    <message name="IDS_WIN8_INFOBAR_DESKTOP_RESTART_TO_LAUNCH_APPS_NO_BUTTON"
+             desc="Infobar button 'no' text to cancel prompt to relaunch in deskop mode to use Chrome Apps">
+      No, stay in Windows 8 mode
+    </message>
 
     <!-- Media Galleries. -->
     <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">

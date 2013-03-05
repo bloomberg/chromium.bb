@@ -5,7 +5,6 @@
 #include "chrome/browser/process_singleton.h"
 
 #include <shellapi.h>
-#include <shobjidl.h>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -16,22 +15,18 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/metro_chrome_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -172,40 +167,6 @@ bool ParseCommandLine(const COPYDATASTRUCT* cds,
     return true;
   }
   return false;
-}
-
-bool ActivateMetroChrome() {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Failed to get chrome exe path";
-    return false;
-  }
-  string16 app_id = ShellUtil::GetBrowserModelId(
-      BrowserDistribution::GetDistribution(),
-      InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()));
-  if (app_id.empty()) {
-    NOTREACHED() << "Failed to get chrome app user model id.";
-    return false;
-  }
-
-  base::win::ScopedComPtr<IApplicationActivationManager> activation_manager;
-  HRESULT hr = activation_manager.CreateInstance(
-      CLSID_ApplicationActivationManager);
-  if (!activation_manager) {
-    NOTREACHED() << "Failed to cocreate activation manager. Error: " << hr;
-    return false;
-  }
-
-  unsigned long pid = 0;
-  hr = activation_manager->ActivateApplication(app_id.c_str(),
-                                               L"open",
-                                               AO_NONE,
-                                               &pid);
-  if (FAILED(hr)) {
-    NOTREACHED() << "Failed to activate metro chrome. Error: " << hr;
-    return false;
-  }
-  return true;
 }
 
 // Returns true if Chrome needs to be relaunched into Windows 8 immersive mode.
@@ -369,7 +330,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
           process_id, PROCESS_QUERY_INFORMATION,
           process_handle.Receive()) &&
       base::win::IsProcessImmersive(process_handle.Get())) {
-    ActivateMetroChrome();
+    chrome::ActivateMetroChrome();
   }
 
   // Allow the current running browser window making itself the foreground
@@ -494,7 +455,7 @@ bool ProcessSingleton::Create(
         // Metro mode: activate and rendez-vous with the activated process.
         metro_activation_event.Set(
             CreateEvent(NULL, TRUE, FALSE, kMetroActivationEventName));
-        if (!ActivateMetroChrome()) {
+        if (!chrome::ActivateMetroChrome()) {
           // Failed to launch immersive Chrome, default to launching on Desktop.
           LOG(ERROR) << "Failed to launch immersive chrome";
           metro_activation_event.Close();

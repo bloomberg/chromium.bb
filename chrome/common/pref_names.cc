@@ -1569,6 +1569,10 @@ const char kWasRestarted[] = "was.restarted";
 #if defined(OS_WIN)
 // On Windows 8 chrome can restart in desktop or in metro mode.
 const char kRestartSwitchMode[] = "restart.switch_mode";
+
+// Whether to show the app list on a browser relaunch. Used when switching out
+// of metro mode after a user gesture requests showing the app list.
+const char kRestartWithAppList[] = "app_list.show_on_relaunch";
 #endif
 
 // Number of keywords.

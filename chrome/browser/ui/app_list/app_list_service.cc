@@ -14,6 +14,9 @@
 // static
 void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAppListProfile, "");
+#if defined(OS_WIN)
+  registry->RegisterBooleanPref(prefs::kRestartWithAppList, false);
+#endif
 }
 
 void AppListService::Init(Profile* initial_profile) {}

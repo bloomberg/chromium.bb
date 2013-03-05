@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
@@ -51,6 +52,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
+#include "win8/util/win8_util.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -156,6 +158,7 @@ class AppListController : public AppListService {
 
   void AppListClosing();
   void AppListActivationChanged(bool active);
+  void ShowAppListDuringModeSwitch(Profile* profile);
 
   app_list::AppListView* GetView() { return current_view_; }
 
@@ -245,6 +248,11 @@ class AppListController : public AppListService {
   // True if the app list is showing. Used to ensure we only ever have 0 or 1
   // browser process keep-alives active.
   bool app_list_is_showing_;
+
+  // True if we are anticipating that the app list will lose focus, and we want
+  // to take it back. This is used when switching out of Metro mode, and the
+  // browser regains focus after showing the app list.
+  bool regain_first_lost_focus_;
 
   // Incremented to indicate that pending profile loads are no longer valid.
   int profile_load_sequence_id_;
@@ -433,6 +441,13 @@ void AppListController::DecrementPendingProfileLoads() {
 void AppListController::ShowAppList(Profile* profile) {
   DCHECK(profile);
 
+  if (win8::IsSingleWindowMetroMode()) {
+    // This request came from Windows 8 in desktop mode, but chrome is currently
+    // running in Metro mode.
+    chrome::AppMetroInfoBarDelegateWin::CreateAndActivateMetro(profile);
+    return;
+  }
+
   // Invalidate any pending profile path loads.
   profile_load_sequence_id_++;
 
@@ -467,6 +482,11 @@ void AppListController::InitView(Profile* profile) {
   if (current_view_)
     return;
   PopulateViewFromProfile(profile);
+}
+
+void AppListController::ShowAppListDuringModeSwitch(Profile* profile) {
+  regain_first_lost_focus_ = true;
+  ShowAppList(profile);
 }
 
 void AppListController::PopulateViewFromProfile(Profile* profile) {
@@ -716,6 +736,12 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
     focused_hwnd = GetParent(focused_hwnd);
   }
 
+  if (regain_first_lost_focus_) {
+    regain_first_lost_focus_ = false;
+    current_view_->GetWidget()->Activate();
+    return;
+  }
+
   // If we get here, the focused window is not the taskbar, it's context menu,
   // or the app list, so close the app list.
   DismissAppList();
@@ -775,7 +801,10 @@ void CheckAppListTaskbarShortcutOnFileThread(
 
     base::win::CreateOrUpdateShortcutLink(shortcut_path, shortcut_properties,
                                           base::win::SHORTCUT_CREATE_ALWAYS);
-    base::win::TaskbarPinShortcutLink(shortcut_path.value().c_str());
+
+    if (!base::win::TaskbarPinShortcutLink(shortcut_path.value().c_str()))
+      LOG(WARNING) << "Failed to pin AppList using " << shortcut_path.value();
+
     return;
   }
 
@@ -792,6 +821,19 @@ void InitView(Profile* profile) {
 }
 
 void AppListController::Init(Profile* initial_profile) {
+  // In non-Ash metro mode, we can not show the app list for this process, so do
+  // not bother performing Init tasks.
+  if (win8::IsSingleWindowMetroMode())
+    return;
+
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->HasPrefPath(prefs::kRestartWithAppList) &&
+      prefs->GetBoolean(prefs::kRestartWithAppList)) {
+    prefs->SetBoolean(prefs::kRestartWithAppList, false);
+    AppListController::GetInstance()->
+        ShowAppListDuringModeSwitch(initial_profile);
+  }
+
   // Check that the app list shortcut matches the flag kShowAppListShortcut.
   // This will either create or delete a shortcut file in the user data
   // directory.

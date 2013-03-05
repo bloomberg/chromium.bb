@@ -548,6 +548,7 @@ extern const char kRestartLastSessionOnShutdown[];
 extern const char kWasRestarted[];
 #if defined(OS_WIN)
 extern const char kRestartSwitchMode[];
+extern const char kRestartWithAppList[];
 #endif
 
 extern const char kNumKeywords[];
