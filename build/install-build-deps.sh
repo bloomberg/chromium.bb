@@ -120,8 +120,6 @@ arm_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
           gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
           libmudflap0-dbg-armel-cross"
 
-# Plugin lists needed for tests.
-plugin_list="flashplugin-installer"
 
 # Some package names have changed over time
 if apt-cache show ttf-mscorefonts-installer >/dev/null 2>&1; then
@@ -241,7 +239,7 @@ sudo apt-get update
 # without accidentally promoting any packages from "auto" to "manual".
 # We then re-run "apt-get" with just the list of missing packages.
 echo "Finding missing packages..."
-packages="${dev_list} ${lib_list} ${dbg_list} ${plugin_list} ${arm_list}"
+packages="${dev_list} ${lib_list} ${dbg_list} ${arm_list}"
 # Intentionally leaving $packages unquoted so it's more readable.
 echo "Packages required: " $packages
 echo
