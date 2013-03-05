@@ -14,6 +14,12 @@ DirectoryEntry_Dev::DirectoryEntry_Dev() {
   memset(&data_, 0, sizeof(data_));
 }
 
+DirectoryEntry_Dev::DirectoryEntry_Dev(
+    PassRef, const PP_DirectoryEntry_Dev& data) {
+  data_.file_ref = data.file_ref;
+  data_.file_type = data.file_type;
+}
+
 DirectoryEntry_Dev::DirectoryEntry_Dev(const DirectoryEntry_Dev& other) {
   data_.file_ref = other.data_.file_ref;
   data_.file_type = other.data_.file_type;

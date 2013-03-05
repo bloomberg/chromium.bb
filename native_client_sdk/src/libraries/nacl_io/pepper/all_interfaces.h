@@ -25,8 +25,8 @@ END_INTERFACE(ConsoleInterface, PPB_Console)
 BEGIN_INTERFACE(DirectoryReaderInterface, PPB_DirectoryReader_Dev,
                 PPB_DIRECTORYREADER_DEV_INTERFACE)
   METHOD1(DirectoryReaderInterface, PP_Resource, Create, PP_Resource)
-  METHOD3(DirectoryReaderInterface, int32_t, GetNextEntry, PP_Resource,
-          PP_DirectoryEntry_Dev*, PP_CompletionCallback)
+  METHOD3(DirectoryReaderInterface, int32_t, ReadEntries, PP_Resource,
+          PP_ArrayOutput, PP_CompletionCallback)
 END_INTERFACE(DirectoryReaderInterface, PPB_DirectoryReader_Dev)
 
 BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE)

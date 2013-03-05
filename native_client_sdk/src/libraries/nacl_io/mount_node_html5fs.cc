@@ -20,6 +20,24 @@
 
 namespace {
 
+struct OutputBuffer {
+  void* data;
+  int element_count;
+};
+
+void* GetOutputBuffer(void* user_data, uint32_t count, uint32_t size) {
+  OutputBuffer* output = static_cast<OutputBuffer*>(user_data);
+  output->element_count = count;
+  if (count) {
+    output->data = malloc(count * size);
+    if (!output->data)
+      output->element_count = 0;
+  } else {
+    output->data = NULL;
+  }
+  return output->data;
+}
+
 int32_t ModeToOpenFlags(int mode) {
   int32_t open_flags = 0;
 
@@ -85,24 +103,27 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
     return -1;
   }
 
+  OutputBuffer output_buf = { NULL, 0 };
+  PP_ArrayOutput output = { &GetOutputBuffer, &output_buf };
+  int32_t result = mount_->ppapi()->GetDirectoryReaderInterface()->ReadEntries(
+      directory_reader.pp_resource(), output,
+      PP_BlockUntilComplete());
+  if (result != PP_OK) {
+    errno = PPErrorToErrno(result);
+    return -1;
+  }
+
   std::vector<struct dirent> dirents;
-  PP_DirectoryEntry_Dev directory_entry = {0};
-  while (1) {
-    int32_t result =
-        mount_->ppapi()->GetDirectoryReaderInterface()->GetNextEntry(
-            directory_reader.pp_resource(), &directory_entry,
-            PP_BlockUntilComplete());
-    if (result != PP_OK) {
-      errno = PPErrorToErrno(result);
-      return -1;
-    }
+  PP_DirectoryEntry_Dev* entries =
+      static_cast<PP_DirectoryEntry_Dev*>(output_buf.data);
 
-    // file_ref == 0 is a sentry marking the end of the directory list.
-    if (!directory_entry.file_ref)
-      break;
-
+  for (int i = 0; i < output_buf.element_count; ++i) {
     PP_Var file_name_var = mount_->ppapi()->GetFileRefInterface()->GetName(
-        directory_entry.file_ref);
+      entries[i].file_ref);
+
+    // Release the file reference.
+    mount_->ppapi()->ReleaseResource(entries[i].file_ref);
+
     if (file_name_var.type != PP_VARTYPE_STRING)
       continue;
 
@@ -124,6 +145,9 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
     strncpy(direntry.d_name, file_name, file_name_length);
     direntry.d_name[file_name_length] = 0;
   }
+
+  // Release the output buffer.
+  free(output_buf.data);
 
   // Force size to a multiple of dirent
   size -= size % sizeof(struct dirent);

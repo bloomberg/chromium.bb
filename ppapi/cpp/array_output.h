@@ -7,8 +7,10 @@
 
 #include <vector>
 
+#include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/cpp/dev/directory_entry_dev.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/var.h"
@@ -265,6 +267,47 @@ class ResourceArrayOutputAdapterWithStorage
   // When asked for the output, the resources above will be converted to the
   // C++ resource objects in this array for passing to the calling code.
   std::vector<T> output_storage_;
+};
+
+class DirectoryEntryArrayOutputAdapterWithStorage
+    : public ArrayOutputAdapter<PP_DirectoryEntry_Dev> {
+ public:
+  DirectoryEntryArrayOutputAdapterWithStorage() {
+    set_output(&temp_storage_);
+  };
+
+  virtual ~DirectoryEntryArrayOutputAdapterWithStorage() {
+    if (!temp_storage_.empty()) {
+      // An easy way to release the resource references held by |temp_storage_|.
+      // A destructor for PP_DirectoryEntry_Dev will release them.
+      output();
+    }
+  };
+
+  // Returns the final array of resource objects, converting the
+  // PP_DirectoryEntry_Dev written by the browser to pp::DirectoryEntry_Dev
+  // objects.
+  //
+  // This function should only be called once or we would end up converting
+  // the array more than once, which would mess up the refcounting.
+  std::vector<pp::DirectoryEntry_Dev>& output() {
+    PP_DCHECK(output_storage_.empty());
+    typedef std::vector<PP_DirectoryEntry_Dev> Entries;
+    for (Entries::iterator it = temp_storage_.begin();
+         it != temp_storage_.end(); ++it)
+      output_storage_.push_back(DirectoryEntry_Dev(PASS_REF, *it));
+    temp_storage_.clear();
+    return output_storage_;
+  }
+
+ private:
+  // The browser will write the PP_DirectoryEntry_Devs into this array.
+  std::vector<PP_DirectoryEntry_Dev> temp_storage_;
+
+  // When asked for the output, the PP_DirectoryEntry_Devs above will be
+  // converted to the pp::DirectoryEntry_Devs in this array for passing to the
+  // calling code.
+  std::vector<pp::DirectoryEntry_Dev> output_storage_;
 };
 
 }  // namespace pp
