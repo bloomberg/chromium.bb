@@ -2318,7 +2318,9 @@
         'app/breakpad_unittest_win.cc',
         'app/crash_analysis_win.cc',
         'app/hard_error_handler_win.cc',
-        'app/run_all_unittests.cc'
+        'app/run_all_unittests.cc',
+        'common/crash_keys.cc',
+        'common/crash_keys.h',
       ],
       'conditions': [
         ['OS=="mac"', {

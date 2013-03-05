@@ -45,7 +45,7 @@ class CrashLoggingTest : public testing::Test {
 
 TEST_F(CrashLoggingTest, SetClearSingle) {
   const char* kTestKey = "test-key";
-  base::debug::CrashKey keys[] = { { kTestKey, 1 } };
+  base::debug::CrashKey keys[] = { { kTestKey, 255 } };
   base::debug::InitCrashKeys(keys, arraysize(keys), 255);
 
   base::debug::SetCrashKeyValue(kTestKey, "value");
@@ -60,7 +60,7 @@ TEST_F(CrashLoggingTest, SetChunked) {
   const char* kChunk1 = "chunky-1";
   const char* kChunk2 = "chunky-2";
   const char* kChunk3 = "chunky-3";
-  base::debug::CrashKey keys[] = { { kTestKey, 3 } };
+  base::debug::CrashKey keys[] = { { kTestKey, 15 } };
   base::debug::InitCrashKeys(keys, arraysize(keys), 5);
 
   std::map<std::string, std::string>& values = *key_values_;
@@ -72,7 +72,7 @@ TEST_F(CrashLoggingTest, SetChunked) {
   EXPECT_TRUE(values.end() == values.find(kChunk2));
   EXPECT_TRUE(values.end() == values.find(kChunk3));
 
-  // Fill all three chunks with truncation.
+  // Fill three chunks with truncation (max length is 15, this string is 20).
   base::debug::SetCrashKeyValue(kTestKey, "five four three two");
   EXPECT_EQ(3u, values.size());
   EXPECT_EQ("five ", values[kChunk1]);
@@ -105,7 +105,7 @@ TEST_F(CrashLoggingTest, SetChunked) {
 
 TEST_F(CrashLoggingTest, ScopedCrashKey) {
   const char* kTestKey = "test-key";
-  base::debug::CrashKey keys[] = { { kTestKey, 1 } };
+  base::debug::CrashKey keys[] = { { kTestKey, 255 } };
   base::debug::InitCrashKeys(keys, arraysize(keys), 255);
 
   EXPECT_EQ(0u, key_values_->size());
@@ -121,12 +121,12 @@ TEST_F(CrashLoggingTest, ScopedCrashKey) {
 
 TEST_F(CrashLoggingTest, InitSize) {
   base::debug::CrashKey keys[] = {
-    { "chunked-3", 3 },
-    { "single", 1 },
-    { "chunked-6", 6 },
+    { "chunked-3", 15 },
+    { "single", 5 },
+    { "chunked-6", 30 },
   };
 
-  size_t num_keys = base::debug::InitCrashKeys(keys, arraysize(keys), 255);
+  size_t num_keys = base::debug::InitCrashKeys(keys, arraysize(keys), 5);
 
   EXPECT_EQ(10u, num_keys);
 
@@ -140,9 +140,9 @@ TEST_F(CrashLoggingTest, ChunkValue) {
   using base::debug::ChunkCrashKeyValue;
 
   // Test truncation.
-  base::debug::CrashKey key = { "chunky", 1 };
+  base::debug::CrashKey key = { "chunky", 10 };
   std::vector<std::string> results =
-      ChunkCrashKeyValue(key, "hello world", 10);
+      ChunkCrashKeyValue(key, "hello world", 64);
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ("hello worl", results[0]);
 
@@ -152,7 +152,7 @@ TEST_F(CrashLoggingTest, ChunkValue) {
   EXPECT_EQ("hi", results[0]);
 
   // Test chunk pair.
-  key.num_chunks = 2;
+  key.max_length = 6;
   results = ChunkCrashKeyValue(key, "foobar", 3);
   ASSERT_EQ(2u, results.size());
   EXPECT_EQ("foo", results[0]);
@@ -165,11 +165,18 @@ TEST_F(CrashLoggingTest, ChunkValue) {
   EXPECT_EQ("bar", results[1]);
 
   // Test extra chunks.
-  key.num_chunks = 100;
+  key.max_length = 100;
   results = ChunkCrashKeyValue(key, "hello world", 3);
   ASSERT_EQ(4u, results.size());
   EXPECT_EQ("hel", results[0]);
   EXPECT_EQ("lo ", results[1]);
   EXPECT_EQ("wor", results[2]);
   EXPECT_EQ("ld",  results[3]);
+}
+
+TEST_F(CrashLoggingTest, ChunkRounding) {
+  // If max_length=12 and max_chunk_length=5, there should be 3 chunks,
+  // not 2.
+  base::debug::CrashKey key = { "round", 12 };
+  EXPECT_EQ(3u, base::debug::InitCrashKeys(&key, 1, 5));
 }

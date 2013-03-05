@@ -448,7 +448,11 @@
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
-          ]
+          ],
+          'sources!': [
+            'common/crash_keys.cc',
+            'common/crash_keys.h',
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [

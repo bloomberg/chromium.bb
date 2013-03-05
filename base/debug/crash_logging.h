@@ -33,7 +33,7 @@ BASE_EXPORT void SetCrashKeyToStackTrace(const base::StringPiece& key,
                                          const StackTrace& trace);
 
 // Formats |count| instruction pointers from |addresses| using %p and
-// sets the resulting string as a value for crash key |key. A maximum of 23
+// sets the resulting string as a value for crash key |key|. A maximum of 23
 // items will be encoded, since breakpad limits values to 255 bytes.
 BASE_EXPORT void SetCrashKeyFromAddresses(const base::StringPiece& key,
                                           const void* const* addresses,
@@ -57,10 +57,11 @@ struct BASE_EXPORT CrashKey {
   // The name of the crash key, used in the above functions.
   const char* const key_name;
 
-  // For values longer than chunk_max_length, the value can be chunked into
-  // values named "key_name-1", "key_name-2", etc. This is the maximum number of
-  // numbered chunks to use before the value is truncated.
-  size_t num_chunks;
+  // The maximum length for a value. If the value is longer than this, it will
+  // be truncated. If the value is larger than the |chunk_max_length| passed to
+  // InitCrashKeys() but less than this value, it will be split into multiple
+  // numbered chunks.
+  size_t max_length;
 };
 
 // Before the crash key logging mechanism can be used, all crash keys must be
