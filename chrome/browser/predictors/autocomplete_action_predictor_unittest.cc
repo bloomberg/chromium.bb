@@ -348,7 +348,7 @@ TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
   }
 }
 
-TEST_F(AutocompleteActionPredictorTest, RecommendActionURL) {
+TEST_F(AutocompleteActionPredictorTest, DISABLED_RecommendActionURL) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   AutocompleteMatch match;
