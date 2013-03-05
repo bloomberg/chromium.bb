@@ -231,8 +231,8 @@ bool BookmarkPromptController::IsEnabled() {
           date_range->expiration_date.month,
           date_range->expiration_date.day_of_month, NULL));
   trial->UseOneTimeRandomization();
-  trial->AppendGroup(kBookmarkPromptControlGroup, 99);
-  trial->AppendGroup(kBookmarkPromptExperimentGroup, 1);
+  trial->AppendGroup(kBookmarkPromptControlGroup, 10);
+  trial->AppendGroup(kBookmarkPromptExperimentGroup, 10);
 
   chrome_variations::AssociateGoogleVariationID(
       chrome_variations::GOOGLE_UPDATE_SERVICE,
