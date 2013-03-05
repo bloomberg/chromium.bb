@@ -20,3 +20,6 @@ BackgroundApplicationListModelTest.RandomTest
 # http://crbug.com/179427
 ExtensionPrefsDelayedInstallInfo.DelayedInstallInfo
 ExtensionServiceTest.*
+
+# http://crbug.com/180335
+AutocompleteActionPredictorTest.RecommendActionURL
