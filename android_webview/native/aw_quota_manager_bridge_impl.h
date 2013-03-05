@@ -18,6 +18,10 @@
 
 class GURL;
 
+namespace content {
+class StoragePartition;
+}
+
 namespace quota {
 class QuotaManager;
 }  // namespace quota
@@ -50,6 +54,8 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
                               int64 /* quota */)> QuotaUsageCallback;
 
  private:
+  content::StoragePartition* GetStoragePartition() const;
+
   quota::QuotaManager* GetQuotaManager() const;
 
   void GetOriginsCallbackImpl(

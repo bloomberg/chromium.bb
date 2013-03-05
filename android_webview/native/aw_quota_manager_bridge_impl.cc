@@ -173,80 +173,47 @@ void AwQuotaManagerBridgeImpl::Init(JNIEnv* env, jobject object) {
   java_ref_ = JavaObjectWeakGlobalRef(env, object);
 }
 
-QuotaManager* AwQuotaManagerBridgeImpl::GetQuotaManager() const {
+StoragePartition* AwQuotaManagerBridgeImpl::GetStoragePartition() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // AndroidWebview does not use per-site storage partitions.
   StoragePartition* storage_partition =
-      content::BrowserContext::GetStoragePartitionForSite(
-          browser_context_, GURL());
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_);
   DCHECK(storage_partition);
+  return storage_partition;
+}
 
-  QuotaManager* quota_manager = storage_partition->GetQuotaManager();
+QuotaManager* AwQuotaManagerBridgeImpl::GetQuotaManager() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  QuotaManager* quota_manager = GetStoragePartition()->GetQuotaManager();
   DCHECK(quota_manager);
   return quota_manager;
 }
 
-namespace {
-
-void IgnoreStatus(quota::QuotaStatusCode status_code) {}
-
-void DeleteAllOriginData(
-    QuotaManager* quota_manager,
-    const std::set<GURL>& origins,
-    quota::StorageType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  for (std::set<GURL>::const_iterator origin = origins.begin();
-       origin != origins.end();
-       ++origin) {
-    quota_manager->DeleteOriginData(*origin,
-                                    type,
-                                    QuotaClient::kAllClientsMask,
-                                    base::Bind(&IgnoreStatus));
-  }
-}
-
-}  // namespace
-
 // Cannot directly call StoragePartition clear data methods because cookies are
 // controlled separately.
-// TODO(boliu): Should consider dedup delete code with StoragePartition.
 void AwQuotaManagerBridgeImpl::DeleteAllData(JNIEnv* env, jobject object) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_refptr<QuotaManager> quota_manager = GetQuotaManager();
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&QuotaManager::GetOriginsModifiedSince,
-                 quota_manager,
-                 quota::kStorageTypeTemporary,
-                 base::Time()  /* Since beginning of time. */,
-                 base::Bind(&DeleteAllOriginData, quota_manager)));
-
-  // TODO(boliu): This needs to clear WebStorage (ie localStorage and
-  // sessionStorage).
+  GetStoragePartition()->AsyncClearData(
+      StoragePartition::kQuotaManagedTemporaryStorage |
+      StoragePartition::kLocalDomStorage |
+      StoragePartition::kSessionDomStorage);
 }
 
 void AwQuotaManagerBridgeImpl::DeleteOrigin(
     JNIEnv* env, jobject object, jstring origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&QuotaManager::DeleteOriginData,
-                 GetQuotaManager(),
-                 GURL(base::android::ConvertJavaStringToUTF16(env, origin)),
-                 quota::kStorageTypeTemporary,
-                 QuotaClient::kAllClientsMask,
-                 base::Bind(&IgnoreStatus)));
+  StoragePartition* storage_partition = GetStoragePartition();
+  storage_partition->AsyncClearDataForOrigin(
+      StoragePartition::kQuotaManagedTemporaryStorage,
+      GURL(base::android::ConvertJavaStringToUTF16(env, origin)),
+      storage_partition->GetURLRequestContext());
 }
 
 void AwQuotaManagerBridgeImpl::GetOrigins(
     JNIEnv* env, jobject object, jint callback_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(boliu): Consider expanding QuotaManager::GetUsageInfo to include
-  // quota so can be used here.
 
   const GetOriginsCallback ui_callback = base::Bind(
       &AwQuotaManagerBridgeImpl::GetOriginsCallbackImpl,

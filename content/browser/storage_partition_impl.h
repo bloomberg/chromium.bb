@@ -30,9 +30,10 @@ class StoragePartitionImpl : public StoragePartition {
   virtual DOMStorageContextImpl* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
   virtual void AsyncClearDataForOrigin(
+      uint32 storage_mask,
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
-  virtual void AsyncClearAllData() OVERRIDE;
+  virtual void AsyncClearData(uint32 storage_mask) OVERRIDE;
 
  private:
   friend class StoragePartitionImplMap;

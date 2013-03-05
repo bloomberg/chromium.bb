@@ -30,7 +30,7 @@ void DoNothingStatusCallback(quota::QuotaStatusCode status) {
 void ClearQuotaManagedOriginsOnIOThread(
     const scoped_refptr<quota::QuotaManager>& quota_manager,
     const std::set<GURL>& origins,
-    quota::StorageType type) {
+    quota::StorageType quota_storage_type) {
   // The QuotaManager manages all storage other than cookies, LocalStorage,
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
   // origins.
@@ -38,54 +38,70 @@ void ClearQuotaManagedOriginsOnIOThread(
   std::set<GURL>::const_iterator origin;
   for (std::set<GURL>::const_iterator origin = origins.begin();
        origin != origins.end(); ++origin) {
-    quota_manager->DeleteOriginData(*origin, type,
+    quota_manager->DeleteOriginData(*origin, quota_storage_type,
                                     quota::QuotaClient::kAllClientsMask,
                                     base::Bind(&DoNothingStatusCallback));
   }
 }
 
 void ClearOriginOnIOThread(
+    uint32 storage_mask,
     const GURL& storage_origin,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<quota::QuotaManager>& quota_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Handle the cookies.
-  net::CookieMonster* cookie_monster =
-      request_context->GetURLRequestContext()->cookie_store()->
-          GetCookieMonster();
-  if (cookie_monster)
-    cookie_monster->DeleteAllForHostAsync(
-        storage_origin, net::CookieMonster::DeleteCallback());
+  if (storage_mask & StoragePartition::kCookies) {
+    // Handle the cookies.
+    net::CookieMonster* cookie_monster =
+        request_context->GetURLRequestContext()->cookie_store()->
+            GetCookieMonster();
+    if (cookie_monster)
+      cookie_monster->DeleteAllForHostAsync(
+          storage_origin, net::CookieMonster::DeleteCallback());
+  }
 
   // Handle all HTML5 storage other than DOMStorageContext.
   std::set<GURL> origins;
   origins.insert(storage_origin);
-  ClearQuotaManagedOriginsOnIOThread(quota_manager, origins,
-                                     quota::kStorageTypePersistent);
-  ClearQuotaManagedOriginsOnIOThread(quota_manager, origins,
-                                     quota::kStorageTypeTemporary);
+  if (storage_mask & StoragePartition::kQuotaManagedTemporaryStorage) {
+    ClearQuotaManagedOriginsOnIOThread(quota_manager,
+                                       origins,
+                                       quota::kStorageTypeTemporary);
+  }
+  if (storage_mask & StoragePartition::kQuotaManagedPersistentStorage) {
+    ClearQuotaManagedOriginsOnIOThread(quota_manager,
+                                       origins,
+                                       quota::kStorageTypePersistent);
+  }
 }
 
 void ClearAllDataOnIOThread(
+    uint32 storage_mask,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const scoped_refptr<quota::QuotaManager>& quota_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // Handle the cookies.
-  net::CookieMonster* cookie_monster =
-      request_context->GetURLRequestContext()->cookie_store()->
-          GetCookieMonster();
-  if (cookie_monster)
-    cookie_monster->DeleteAllAsync(net::CookieMonster::DeleteCallback());
+  if (storage_mask & StoragePartition::kCookies) {
+    // Handle the cookies.
+    net::CookieMonster* cookie_monster =
+        request_context->GetURLRequestContext()->cookie_store()->
+            GetCookieMonster();
+    if (cookie_monster)
+      cookie_monster->DeleteAllAsync(net::CookieMonster::DeleteCallback());
+  }
 
   // Handle all HTML5 storage other than DOMStorageContext.
-  quota_manager->GetOriginsModifiedSince(
-      quota::kStorageTypePersistent, base::Time(),
-      base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
-  quota_manager->GetOriginsModifiedSince(
-      quota::kStorageTypeTemporary, base::Time(),
-      base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
+  if (storage_mask & StoragePartition::kQuotaManagedTemporaryStorage) {
+    quota_manager->GetOriginsModifiedSince(
+        quota::kStorageTypeTemporary, base::Time(),
+        base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
+  }
+  if (storage_mask & StoragePartition::kQuotaManagedPersistentStorage) {
+    quota_manager->GetOriginsModifiedSince(
+        quota::kStorageTypePersistent, base::Time(),
+        base::Bind(&ClearQuotaManagedOriginsOnIOThread, quota_manager));
+  }
 }
 
 void OnLocalStorageUsageInfo(
@@ -237,6 +253,7 @@ IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
 }
 
 void StoragePartitionImpl::AsyncClearDataForOrigin(
+    uint32 storage_mask,
     const GURL& storage_origin,
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -244,27 +261,36 @@ void StoragePartitionImpl::AsyncClearDataForOrigin(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ClearOriginOnIOThread,
+                 storage_mask,
                  storage_origin,
                  make_scoped_refptr(request_context_getter),
                  quota_manager_));
 
-  GetDOMStorageContext()->DeleteLocalStorage(storage_origin);
+  if (storage_mask & kLocalDomStorage)
+    GetDOMStorageContext()->DeleteLocalStorage(storage_origin);
 }
 
-void StoragePartitionImpl::AsyncClearAllData() {
+void StoragePartitionImpl::AsyncClearData(uint32 storage_mask) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We ignore the media request context because it shares the same cookie store
   // as the main request context.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ClearAllDataOnIOThread, url_request_context_,
+      base::Bind(&ClearAllDataOnIOThread,
+                 storage_mask,
+                 url_request_context_,
                  quota_manager_));
 
-  dom_storage_context_->GetLocalStorageUsage(
-      base::Bind(&OnLocalStorageUsageInfo, dom_storage_context_));
-  dom_storage_context_->GetSessionStorageUsage(
-      base::Bind(&OnSessionStorageUsageInfo, dom_storage_context_));
+  if (storage_mask & kLocalDomStorage) {
+    dom_storage_context_->GetLocalStorageUsage(
+        base::Bind(&OnLocalStorageUsageInfo, dom_storage_context_));
+  }
+
+  if (storage_mask & kSessionDomStorage) {
+    dom_storage_context_->GetSessionStorageUsage(
+        base::Bind(&OnSessionStorageUsageInfo, dom_storage_context_));
+  }
 }
 
 void StoragePartitionImpl::SetURLRequestContext(

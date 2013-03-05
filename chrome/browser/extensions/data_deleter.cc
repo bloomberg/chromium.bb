@@ -42,12 +42,14 @@ void DataDeleter::StartDeleting(Profile* profile,
     // simpler than special casing.  This code should go away once we merge
     // the various URLRequestContexts (http://crbug.com/159193).
     partition->AsyncClearDataForOrigin(
+        content::StoragePartition::kAllStorage,
         storage_origin,
         profile->GetRequestContextForExtensions());
   } else {
     // We don't need to worry about the media request context because that
     // shares the same cookie store as the main request context.
-    partition->AsyncClearDataForOrigin(storage_origin,
+    partition->AsyncClearDataForOrigin(content::StoragePartition::kAllStorage,
+                                       storage_origin,
                                        partition->GetURLRequestContext());
   }
 

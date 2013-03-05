@@ -56,8 +56,26 @@ class StoragePartition {
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
 
-  // Starts an asynchronous task that does a best-effort clear of all the
-  // data inside this StoragePartition for the given |storage_origin|.
+  enum StorageMask {
+    kCookies = 1 << 0,
+
+    // Corresponds to quota::kStorageTypeTemporary.
+    kQuotaManagedTemporaryStorage = 1 << 1,
+
+    // Corresponds to quota::kStorageTypePersistent.
+    kQuotaManagedPersistentStorage = 1 << 2,
+
+    // Local dom storage.
+    kLocalDomStorage = 1 << 3,
+    kSessionDomStorage = 1 << 4,
+
+    kAllStorage = -1,
+  };
+
+  // Starts an asynchronous task that does a best-effort clear the data
+  // corresonding to the given |storage_mask| inside this StoragePartition for
+  // the given |storage_origin|. Note kSessionDomStorage is not cleared and the
+  // mask is ignored.
   //
   // TODO(ajwong): Right now, the embedder may have some
   // URLRequestContextGetter objects that the StoragePartition does not know
@@ -65,12 +83,13 @@ class StoragePartition {
   // http://crbug.com/159193. Remove |request_context_getter| when that bug
   // is fixed.
   virtual void AsyncClearDataForOrigin(
+      uint32 storage_mask,
       const GURL& storage_origin,
       net::URLRequestContextGetter* request_context_getter) = 0;
 
   // Similar to AsyncClearDataForOrigin(), but deletes all data out of the
   // StoragePartition rather than just the data related to this origin.
-  virtual void AsyncClearAllData() = 0;
+  virtual void AsyncClearData(uint32 storage_mask) = 0;
 
  protected:
   virtual ~StoragePartition() {}
