@@ -197,51 +197,6 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")), viewport_rect));
 }
-
-TEST_F(GLRendererPixelTest, AntiAliasing) {
-  gfx::Rect rect(0, 0, 200, 200);
-
-  RenderPass::Id id(1, 1);
-  scoped_ptr<RenderPass> pass = CreateTestRenderPass(id, rect);
-
-  gfx::Transform red_content_to_target_transform;
-  red_content_to_target_transform.Rotate(10);
-  scoped_ptr<SharedQuadState> red_shared_state =
-      CreateTestSharedQuadState(red_content_to_target_transform, rect);
-
-  scoped_ptr<SolidColorDrawQuad> red = SolidColorDrawQuad::Create();
-  red->SetNew(red_shared_state.get(), rect, SK_ColorRED);
-
-  pass->quad_list.push_back(red.PassAs<DrawQuad>());
-
-  gfx::Transform yellow_content_to_target_transform;
-  yellow_content_to_target_transform.Rotate(5);
-  scoped_ptr<SharedQuadState> yellow_shared_state =
-      CreateTestSharedQuadState(yellow_content_to_target_transform, rect);
-
-  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
-  yellow->SetNew(yellow_shared_state.get(), rect, SK_ColorYELLOW);
-
-  pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
-
-  gfx::Transform blue_content_to_target_transform;
-  scoped_ptr<SharedQuadState> blue_shared_state =
-      CreateTestSharedQuadState(blue_content_to_target_transform, rect);
-
-  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
-  blue->SetNew(blue_shared_state.get(), rect, SK_ColorBLUE);
-
-  pass->quad_list.push_back(blue.PassAs<DrawQuad>());
-
-  RenderPassList pass_list;
-  pass_list.push_back(pass.Pass());
-
-  renderer_->drawFrame(pass_list);
-
-  EXPECT_TRUE(PixelsMatchReference(
-      base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")), rect));
-}
-
 #endif
 
 }  // namespace
