@@ -4,6 +4,7 @@
 
 #include "content/renderer/browser_plugin/browser_plugin.h"
 
+#include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -12,6 +13,7 @@
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
@@ -104,6 +106,9 @@ BrowserPlugin::BrowserPlugin(
 }
 
 BrowserPlugin::~BrowserPlugin() {
+  // Will be a no-op if we are not currently locked to.
+  render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
+
   // If the BrowserPlugin has never navigated then the browser process and
   // BrowserPluginManager don't know about it and so there is nothing to do
   // here.
@@ -130,10 +135,12 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdatedName, OnUpdatedName)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -515,6 +522,19 @@ void BrowserPlugin::OnLoadStop(int instance_id) {
   TriggerEvent(browser_plugin::kEventLoadStop, NULL);
 }
 
+void BrowserPlugin::OnLockMouse(int instance_id,
+                                bool user_gesture,
+                                bool last_unlocked_by_target,
+                                bool privileged) {
+  // This switch will be replaced with the Permission API once the API is in
+  // place.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+       switches::kEnableBrowserPluginPointerLock))
+    render_view_->mouse_lock_dispatcher()->LockMouse(this);
+  else
+    OnLockMouseACK(false);
+}
+
 void BrowserPlugin::OnRequestPermission(
     int instance_id,
     BrowserPluginPermissionType permission_type,
@@ -534,6 +554,10 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
         WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
         WebKit::WebPluginContainer::TouchEventRequestTypeNone);
   }
+}
+
+void BrowserPlugin::OnUnlockMouse(int instance_id) {
+  render_view_->mouse_lock_dispatcher()->UnlockMouse(this);
 }
 
 void BrowserPlugin::OnUpdatedName(int instance_id, const std::string& name) {
@@ -1333,6 +1357,29 @@ void BrowserPlugin::didFailLoadingFrameRequest(
     const WebKit::WebURL& url,
     void* notify_data,
     const WebKit::WebURLError& error) {
+}
+
+void BrowserPlugin::OnLockMouseACK(bool succeeded) {
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_LockMouse_ACK(
+      render_view_routing_id_,
+      instance_id_,
+      succeeded));
+}
+
+void BrowserPlugin::OnMouseLockLost() {
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_UnlockMouse_ACK(
+      render_view_routing_id_,
+      instance_id_));
+}
+
+bool BrowserPlugin::HandleMouseLockedInputEvent(
+    const WebKit::WebMouseEvent& event) {
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_HandleInputEvent(render_view_routing_id_,
+                                                instance_id_,
+                                                plugin_rect_,
+                                                &event));
+  return true;
 }
 
 }  // namespace content

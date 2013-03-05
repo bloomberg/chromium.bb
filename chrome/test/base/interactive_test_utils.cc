@@ -39,13 +39,22 @@ bool SendKeyPressSync(const Browser* browser,
   gfx::NativeWindow window = NULL;
   if (!GetNativeWindow(browser, &window))
     return false;
+  return SendKeyPressToWindowSync(window, key, control, shift, alt, command);
+}
+
+bool SendKeyPressToWindowSync(const gfx::NativeWindow window,
+                              ui::KeyboardCode key,
+                              bool control,
+                              bool shift,
+                              bool alt,
+                              bool command) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   bool result;
   result = ui_controls::SendKeyPressNotifyWhenDone(
       window, key, control, shift, alt, command, runner->QuitClosure());
 #if defined(OS_WIN)
-  if (!result && BringBrowserWindowToFront(browser)) {
+  if (!result && ui_test_utils::ShowAndFocusNativeWindow(window)) {
     result = ui_controls::SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, runner->QuitClosure());
   }

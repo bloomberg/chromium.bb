@@ -252,6 +252,14 @@ IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_RespondPermission,
                     int /* request_id */,
                     bool /* allow */)
 
+// Sends a PointerLock Lock ACK to the BrowserPluginGuest.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,
+                    int /* instance_id */,
+                    bool /* succeeded */)
+
+// Sends a PointerLock Unlock ACK to the BrowserPluginGuest.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_UnlockMouse_ACK, int /* instance_id */)
+
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process
 
@@ -387,3 +395,14 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
                      BrowserPluginPermissionType /* permission_type */,
                      int /* request_id */,
                      DictionaryValue /* request_info */)
+
+// Forwards a PointerLock Lock request to the BrowserPlugin.
+IPC_MESSAGE_ROUTED4(BrowserPluginMsg_LockMouse,
+                    int /* instance_id */,
+                    bool /* user_gesture */,
+                    bool /* last_unlocked_by_target */,
+                    bool /* privileged */)
+
+// Forwards a PointerLock Unlock request to the BrowserPlugin.
+IPC_MESSAGE_ROUTED1(BrowserPluginMsg_UnlockMouse, int /* instance_id */)
+

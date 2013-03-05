@@ -14,6 +14,8 @@
 #include "base/message_pump_aurax11.h"
 #include "chrome/test/base/ui_controls.h"
 #include "chrome/test/base/ui_controls_aura.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/compositor/dip_util.h"
@@ -59,10 +61,6 @@ class EventWaiter : public MessageLoopForUI::Observer {
   EventWaiterMatcher matcher_;
   DISALLOW_COPY_AND_ASSIGN(EventWaiter);
 };
-
-// Latest mouse pointer location set by SendMouseMoveNotifyWhenDone.
-int g_current_x = -1000;
-int g_current_y = -1000;
 
 // Returns atom that indidates that the XEvent is marker event.
 Atom MarkerEventAtom() {
@@ -142,8 +140,8 @@ class UIControlsX11 : public UIControlsAura {
     gfx::Point point = ui::ConvertPointToPixel(
         root_window_->layer(),
         gfx::Point(static_cast<int>(x), static_cast<int>(y)));
-    g_current_x = xmotion->x = point.x();
-    g_current_y = xmotion->y = point.y();
+    xmotion->x = point.x();
+    xmotion->y = point.y();
     xmotion->state = button_down_mask;
     xmotion->same_screen = True;
     // RootWindow will take care of other necessary fields.
@@ -160,10 +158,13 @@ class UIControlsX11 : public UIControlsAura {
       const base::Closure& closure) OVERRIDE {
     XEvent xevent = {0};
     XButtonEvent* xbutton = &xevent.xbutton;
-    DCHECK_NE(g_current_x, -1000);
-    DCHECK_NE(g_current_y, -1000);
-    xbutton->x = g_current_x;
-    xbutton->y = g_current_y;
+    gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
+    aura::client::ScreenPositionClient* screen_position_client =
+          aura::client::GetScreenPositionClient(root_window_);
+    if (screen_position_client)
+      screen_position_client->ConvertPointFromScreen(root_window_, &mouse_loc);
+    xbutton->x = mouse_loc.x();
+    xbutton->y = mouse_loc.y();
     xbutton->same_screen = True;
     switch (type) {
       case LEFT:

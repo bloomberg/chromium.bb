@@ -308,18 +308,21 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     // to press the mouse on.
     gfx::Point mouse_loc;
     views::View::ConvertPointToScreen(bb_view_.get(), &mouse_loc);
-    ui_controls::SendMouseMove(0, 0);
+    ui_controls::SendMouseMoveNotifyWhenDone(0, 0,
+        CreateEventTask(this, &BookmarkBarViewTest2::Step3));
+  }
 
+  void Step3() {
     // As the click is on the desktop the hook never sees the up, so we only
     // wait on the down. We still send the up though else the system thinks
     // the mouse is still down.
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::DOWN,
-        CreateEventTask(this, &BookmarkBarViewTest2::Step3));
+        CreateEventTask(this, &BookmarkBarViewTest2::Step4));
     ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::UP);
   }
 
-  void Step3() {
+  void Step4() {
     // The menu shouldn't be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
     ASSERT_TRUE(menu == NULL || !menu->GetSubmenu()->IsShowing());
@@ -677,13 +680,17 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
         drop_menu->GetSubmenu()->GetMenuItemAt(0);
     gfx::Point loc(1, 1);
     views::View::ConvertPointToScreen(target_menu, &loc);
-    ui_controls::SendMouseMove(loc.x(), loc.y());
-    ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::UP,
+    ui_controls::SendMouseMoveNotifyWhenDone(loc.x(), loc.y(),
         CreateEventTask(this, &BookmarkBarViewTest7::Step5));
   }
 
   void Step5() {
+    ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest7::Step6));
+  }
+
+  void Step6() {
     ASSERT_TRUE(model_->other_node()->GetChild(0)->url() == url_dragging_);
     Done();
   }

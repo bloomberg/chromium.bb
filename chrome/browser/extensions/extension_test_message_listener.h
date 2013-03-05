@@ -51,6 +51,10 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
                                bool will_reply);
   virtual ~ExtensionTestMessageListener();
 
+  void AlsoListenForFailureMessage(const std::string& failure_message) {
+    failure_message_ = failure_message;
+  }
+
   // This returns true immediately if we've already gotten the expected
   // message, or waits until it arrives. Returns false if the wait is
   // interrupted and we still haven't gotten the message.
@@ -86,6 +90,12 @@ class ExtensionTestMessageListener : public content::NotificationObserver {
   // If true, we expect the calling code to manually send a reply. Otherwise,
   // we send an automatic empty reply to the extension.
   bool will_reply_;
+
+  // The message that signals failure.
+  std::string failure_message_;
+
+  // If we received a message that was the failure message.
+  bool failed_;
 
   // The function we need to reply to.
   extensions::TestSendMessageFunction* function_;

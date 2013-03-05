@@ -17,6 +17,7 @@
 #include "content/common/browser_plugin_message_enums.h"
 #include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
+#include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 
@@ -32,7 +33,8 @@ class BrowserPluginManager;
 class MockBrowserPlugin;
 
 class CONTENT_EXPORT BrowserPlugin :
-    NON_EXPORTED_BASE(public WebKit::WebPlugin) {
+    NON_EXPORTED_BASE(public WebKit::WebPlugin),
+    public MouseLockDispatcher::LockTarget {
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
@@ -177,6 +179,13 @@ class CONTENT_EXPORT BrowserPlugin :
       const WebKit::WebURL& url,
       void* notify_data,
       const WebKit::WebURLError& error) OVERRIDE;
+
+  // MouseLockDispatcher::LockTarget implementation.
+  virtual void OnLockMouseACK(bool succeeded) OVERRIDE;
+  virtual void OnMouseLockLost() OVERRIDE;
+  virtual bool HandleMouseLockedInputEvent(
+          const WebKit::WebMouseEvent& event) OVERRIDE;
+
  private:
   friend class base::DeleteHelper<BrowserPlugin>;
   // Only the manager is allowed to create a BrowserPlugin.
@@ -316,6 +325,8 @@ class CONTENT_EXPORT BrowserPlugin :
                       bool is_top_level);
   void OnLoadStart(int instance_id, const GURL& url, bool is_top_level);
   void OnLoadStop(int instance_id);
+  void OnLockMouse(int instance_id, bool user_gesture,
+      bool last_unlocked_by_target, bool privileged);
   // Requests permission from the embedder.
   void OnRequestPermission(int instance_id,
                            BrowserPluginPermissionType permission_type,
@@ -323,6 +334,7 @@ class CONTENT_EXPORT BrowserPlugin :
                            const base::DictionaryValue& request_info);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
+  void OnUnlockMouse(int instance_id);
   void OnUpdatedName(int instance_id, const std::string& name);
   void OnUpdateRect(int instance_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);

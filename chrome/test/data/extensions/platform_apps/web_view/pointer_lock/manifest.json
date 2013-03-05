@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview> src",
+  "version": "1",
+  "permissions": [
+    "webview",
+    "pointerLock"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

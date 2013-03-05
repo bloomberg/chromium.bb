@@ -247,6 +247,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const WebKit::WebInputEvent* event);
+  void OnLockMouse(bool user_gesture,
+                   bool last_unlocked_by_target,
+                   bool privileged);
+  void OnLockMouseAck(int instance_id, bool succeeded);
   void OnNavigateGuest(int instance_id, const std::string& src);
   void OnPluginDestroyed(int instance_id);
   // Reload the guest. Overriden in tests.
@@ -291,6 +295,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                         uint32 sync_point);
 
   void OnTerminateGuest(int instance_id);
+  void OnUnlockMouse();
+  void OnUnlockMouseAck(int instance_id);
   void OnUpdateRectACK(
       int instance_id,
       const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
@@ -340,6 +346,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Rect guest_screen_rect_;
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
+  bool mouse_locked_;
   bool guest_visible_;
   bool embedder_visible_;
   std::string name_;

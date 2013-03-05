@@ -10,6 +10,7 @@
 #include "chrome/test/base/ui_controls_aura.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/screen.h"
@@ -110,7 +111,7 @@ class UIControlsAsh : public UIControlsAura {
 
   virtual bool SendMouseEventsNotifyWhenDone(
       MouseButton type, int state, const base::Closure& closure) OVERRIDE {
-    gfx::Point p(ash::Shell::GetScreen()->GetCursorScreenPoint());
+    gfx::Point p(aura::Env::GetInstance()->last_mouse_location());
     UIControlsAura* ui_controls = GetUIControlsAt(&p);
     return ui_controls && ui_controls->SendMouseEventsNotifyWhenDone(
         type, state, closure);

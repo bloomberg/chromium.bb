@@ -14,7 +14,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "net/base/net_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
@@ -25,6 +24,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/net_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/test/python_utils.h"
 #include "net/url_request/url_request_context.h"
@@ -228,17 +228,24 @@ void SimulateMouseClick(WebContents* web_contents,
                         WebKit::WebMouseEvent::Button button) {
   int x = web_contents->GetView()->GetContainerSize().width() / 2;
   int y = web_contents->GetView()->GetContainerSize().height() / 2;
+  SimulateMouseClickAt(web_contents, modifiers, button, gfx::Point(x, y));
+}
+
+void SimulateMouseClickAt(WebContents* web_contents,
+                          int modifiers,
+                          WebKit::WebMouseEvent::Button button,
+                          const gfx::Point& point) {
   WebKit::WebMouseEvent mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = button;
-  mouse_event.x = x;
-  mouse_event.y = y;
+  mouse_event.x = point.x();
+  mouse_event.y = point.y();
   mouse_event.modifiers = modifiers;
   // Mac needs globalX/globalY for events to plugins.
   gfx::Rect offset;
   web_contents->GetView()->GetContainerBounds(&offset);
-  mouse_event.globalX = x + offset.x();
-  mouse_event.globalY = y + offset.y();
+  mouse_event.globalX = point.x() + offset.x();
+  mouse_event.globalY = point.y() + offset.y();
   mouse_event.clickCount = 1;
   web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
   mouse_event.type = WebKit::WebInputEvent::MouseUp;

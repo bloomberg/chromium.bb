@@ -122,6 +122,7 @@ bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
     const IPC::Message& message) {
   switch (message.type()) {
     case BrowserPluginMsg_AdvanceFocus::ID:
+    case BrowserPluginMsg_BuffersSwapped::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
     case BrowserPluginMsg_GuestResponsive::ID:
@@ -131,12 +132,13 @@ bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_LoadRedirect::ID:
     case BrowserPluginMsg_LoadStart::ID:
     case BrowserPluginMsg_LoadStop::ID:
+    case BrowserPluginMsg_LockMouse::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
+    case BrowserPluginMsg_UnlockMouse::ID:
     case BrowserPluginMsg_UpdatedName::ID:
     case BrowserPluginMsg_UpdateRect::ID:
-    case BrowserPluginMsg_BuffersSwapped::ID:
       return true;
     default:
       break;

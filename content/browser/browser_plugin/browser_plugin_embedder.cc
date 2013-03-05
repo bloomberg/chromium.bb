@@ -229,6 +229,8 @@ bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_Stop::ID:
     case BrowserPluginHostMsg_TerminateGuest::ID:
     case BrowserPluginHostMsg_UpdateRect_ACK::ID:
+    case BrowserPluginHostMsg_LockMouse_ACK::ID:
+    case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
       return true;
     default:
       break;

@@ -31,7 +31,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/result_codes.h"
-#include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/surface/transport_dib.h"
@@ -65,6 +64,7 @@ BrowserPluginGuest::BrowserPluginGuest(
       guest_hang_timeout_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(params.focused),
+      mouse_locked_(false),
       guest_visible_(params.visible),
       embedder_visible_(true),
       name_(params.name),
@@ -114,6 +114,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
                         OnHandleInputEvent)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest, OnNavigateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed, OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
@@ -126,6 +127,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateRect_ACK, OnUpdateRectACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -450,6 +452,7 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnHandleInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
  #if defined(OS_MACOSX)
     // MacOSX creates and populates platform-specific select drop-down menus
@@ -459,6 +462,7 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
  #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameName, OnUpdateFrameName)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
@@ -522,6 +526,23 @@ void BrowserPluginGuest::OnHandleInputEvent(
 
   guest_rvh->Send(message);
   guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
+}
+
+void BrowserPluginGuest::OnLockMouse(bool user_gesture,
+                                     bool last_unlocked_by_target,
+                                     bool privileged) {
+  SendMessageToEmbedder(new BrowserPluginMsg_LockMouse(
+      embedder_routing_id(),
+      instance_id(),
+      user_gesture,
+      last_unlocked_by_target,
+      privileged));
+}
+
+void BrowserPluginGuest::OnLockMouseAck(int instance_id, bool succeeded) {
+  Send(new ViewMsg_LockMouse_ACK(routing_id(), succeeded));
+  if (succeeded)
+    mouse_locked_ = true;
 }
 
 void BrowserPluginGuest::OnNavigateGuest(
@@ -707,6 +728,20 @@ void BrowserPluginGuest::OnTerminateGuest(int instance_id) {
       web_contents()->GetRenderProcessHost()->GetHandle();
   if (process_handle)
     base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
+}
+
+void BrowserPluginGuest::OnUnlockMouse() {
+  SendMessageToEmbedder(new BrowserPluginMsg_UnlockMouse(embedder_routing_id(),
+                                                         instance_id()));
+}
+
+void BrowserPluginGuest::OnUnlockMouseAck(int instance_id) {
+  // mouse_locked_ could be false here if the lock attempt was cancelled due
+  // to window focus, or for various other reasons before the guest was informed
+  // of the lock's success.
+  if (mouse_locked_)
+    Send(new ViewMsg_MouseLockLost(routing_id()));
+  mouse_locked_ = false;
 }
 
 void BrowserPluginGuest::OnUpdateRectACK(

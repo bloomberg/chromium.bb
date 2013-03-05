@@ -267,6 +267,9 @@ const char kEnableBrowserPluginCompositing[] =
 const char kEnableBrowserPluginForAllViewTypes[] =
     "enable-browser-plugin-for-all-view-types";
 
+const char kEnableBrowserPluginPointerLock[] =
+    "enable-browser-plugin-pointer-lock";
+
 // Enable/Disable the creation of compositing layers for fixed position
 // elements. Three options are needed to support four possible scenarios:
 //  1. Default (disabled)

@@ -43,6 +43,8 @@ bool BrowserPluginGuestHelper::ShouldForwardToBrowserPluginGuest(
     case ViewHostMsg_TakeFocus::ID:
     case ViewHostMsg_UpdateFrameName::ID:
     case ViewHostMsg_UpdateRect::ID:
+    case ViewHostMsg_LockMouse::ID:
+    case ViewHostMsg_UnlockMouse::ID:
       return true;
     default:
       break;
