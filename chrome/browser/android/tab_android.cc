@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -57,6 +58,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(contents);
 
+  AlternateErrorPageTabObserver::CreateForWebContents(contents);
   autofill::TabAutofillManagerDelegate::CreateForWebContents(contents);
   AutofillManager::CreateForWebContentsAndDelegate(
       contents,
