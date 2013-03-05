@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/dump_accessibility_tree_helper.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -66,9 +66,9 @@ string16 FormatSize(BrowserAccessibility* node) {
 
 }  // namespace
 
-void AccessibilityTreeFormatter::Initialize() {}
+void DumpAccessibilityTreeHelper::Initialize() {}
 
-string16 AccessibilityTreeFormatter::ToString(BrowserAccessibility* node,
+string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
                                                char* prefix) {
   StartLine();
   Add(true, Format(node, "", @selector(role), ""));
@@ -112,30 +112,27 @@ string16 AccessibilityTreeFormatter::ToString(BrowserAccessibility* node,
   return ASCIIToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }
 
-// static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetActualFileSuffix() {
+DumpAccessibilityTreeHelper::GetActualFileSuffix()
+    const {
   return FILE_PATH_LITERAL("-actual-mac.txt");
 }
 
-// static
 const base::FilePath::StringType
-AccessibilityTreeFormatter::GetExpectedFileSuffix() {
+DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
+    const {
   return FILE_PATH_LITERAL("-expected-mac.txt");
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
+const std::string DumpAccessibilityTreeHelper::GetAllowEmptyString() const {
   return "@MAC-ALLOW-EMPTY:";
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetAllowString() {
+const std::string DumpAccessibilityTreeHelper::GetAllowString() const {
   return "@MAC-ALLOW:";
 }
 
-// static
-const std::string AccessibilityTreeFormatter::GetDenyString() {
+const std::string DumpAccessibilityTreeHelper::GetDenyString() const {
   return "@MAC-DENY:";
 }
 
