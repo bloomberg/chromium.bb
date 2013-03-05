@@ -20,6 +20,7 @@
     },
 
     'remoting_multi_process%': '<(remoting_multi_process)',
+    'remoting_rdp_session%': 0,
     'remoting_use_apps_v2%': 0,
 
     # The |major|, |build| and |patch| versions are inherited from Chrome.
@@ -262,6 +263,12 @@
       ['OS=="win" and buildtype == "Official"', {
         'defines': [
           'REMOTING_ENABLE_BREAKPAD'
+        ],
+      }],
+      ['OS=="win" and remoting_multi_process != 0 and \
+          remoting_rdp_session != 0', {
+        'defines': [
+          'REMOTING_RDP_SESSION',
         ],
       }],
       ['remoting_multi_process != 0', {

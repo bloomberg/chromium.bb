@@ -858,6 +858,12 @@ bool HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
     curtain_required_ = curtain_required;
     if (curtaining_host_observer_)
       curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
+
+    // The current Windows curtain mode implementation relies on this code
+    // restarting the host when the curtain mode policy changes. For example if
+    // the policy is enabled while someone is already connected to the console
+    // that session should be either curtained or disconnected. This code makes
+    // sure that the session will be disconnected by restarting the host.
     return true;
   }
   return false;
@@ -954,10 +960,18 @@ void HostProcess::StartHost() {
   resizing_host_observer_.reset(
       new ResizingHostObserver(desktop_resizer_.get(), host_->AsWeakPtr()));
 
+#if defined(REMOTING_RDP_SESSION)
+  // TODO(alexeypa): do not create |curtain_| in this case.
+  CurtainMode* curtain = static_cast<IpcDesktopEnvironmentFactory*>(
+      desktop_environment_factory_.get());
+#else  // !defined(REMOTING_RDP_SESSION)
+  CurtainMode* curtain = curtain_.get();
+#endif  // !defined(REMOTING_RDP_SESSION)
+
   // Create a host observer to enable/disable curtain mode as clients connect
   // and disconnect.
   curtaining_host_observer_.reset(new CurtainingHostObserver(
-                                  curtain_.get(), host_->AsWeakPtr()));
+      curtain, host_->AsWeakPtr()));
   curtaining_host_observer_->SetEnableCurtaining(curtain_required_);
 
   if (host_user_interface_.get()) {

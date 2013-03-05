@@ -25,7 +25,8 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const std::string& client_jid,
     const base::Closure& disconnect_callback,
-    base::WeakPtr<DesktopSessionConnector> desktop_session_connector)
+    base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
+    bool curtain_required)
     : caller_task_runner_(caller_task_runner),
       connected_(false),
       desktop_session_connector_(desktop_session_connector),
@@ -86,12 +87,19 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
     IPC::Sender* daemon_channel)
     : caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
+      curtain_activated_(false),
       daemon_channel_(daemon_channel),
       connector_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       next_id_(0) {
 }
 
 IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {
+}
+
+void IpcDesktopEnvironmentFactory::SetActivated(bool activated) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  curtain_activated_ = activated;
 }
 
 scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
@@ -101,7 +109,7 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
 
   return scoped_ptr<DesktopEnvironment>(new IpcDesktopEnvironment(
       caller_task_runner_, io_task_runner_, client_jid, disconnect_callback,
-      connector_factory_.GetWeakPtr()));
+      connector_factory_.GetWeakPtr(), curtain_activated_));
 }
 
 bool IpcDesktopEnvironmentFactory::SupportsAudioCapture() const {

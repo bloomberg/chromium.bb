@@ -47,6 +47,8 @@ ClientSession::ClientSession(
       connection_(connection.Pass()),
       connection_factory_(connection_.get()),
       client_jid_(connection_->session()->jid()),
+      // TODO(alexeypa): delay creation of |desktop_environment_| until
+      // the curtain is enabled.
       desktop_environment_(desktop_environment_factory->Create(
           client_jid_,
           base::Bind(&protocol::ConnectionToClient::Disconnect,
