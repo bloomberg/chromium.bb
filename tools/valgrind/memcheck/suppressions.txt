@@ -6152,7 +6152,7 @@
    fun:_Znw*
    fun:_ZN4base4BindIMN11dom_storage17DomStorageContextEFvRK4GURLE13scoped_refptrIS2_ES3_EENS_8CallbackINS_8internal9BindStateINSB_13FunctorTraitsIT_E12RunnableTypeENSF_7RunTypeEFvNSB_19CallbackParamTraitsIT0_E11StorageTypeENSI_IT1_E11StorageTypeEEE14UnboundRunTypeEEESE_RKSJ_RKSM_
    fun:_ZN7content21DOMStorageContextImpl18DeleteLocalStorageERK4GURL
-   fun:_ZN7content20StoragePartitionImpl23AsyncClearDataForOriginERK4GURLPN3net23URLRequestContextGetterE
+   fun:_ZN7content20StoragePartitionImpl23AsyncClearDataForOriginEjRK4GURLPN3net23URLRequestContextGetterE
    fun:_ZN10extensions11DataDeleter13StartDeletingEP7ProfileRKSsRK4GURL
    fun:_ZN16ExtensionService18UninstallExtensionESsbPSbItN4base20string16_char_traitsESaItEE
 }
@@ -6713,4 +6713,17 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base58WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtrBase_Test8TestBodyEv
+}
+{
+   bug_180381
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4base8FilePath31StripTrailingSeparatorsInternalEv
+   fun:_ZNK4base8FilePath7DirNameEv
+   fun:_ZN11dom_storage18DomStorageDatabase18GetJournalFilePathERKN4base8FilePathE
+   fun:_ZN11dom_storage27LocalStorageDatabaseAdapter11DeleteFilesEv
+   fun:_ZN11dom_storage14DomStorageArea12DeleteOriginEv
+   fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
+   fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
