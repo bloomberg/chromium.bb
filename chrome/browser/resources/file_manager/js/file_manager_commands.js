@@ -130,18 +130,8 @@ Commands.defaultCommand = {
 Commands.unmountCommand = {
   execute: function(event, rootsList, fileManager) {
     var root = CommandUtil.getCommandRoot(event, rootsList);
-    if (!root) return;
-
-    var doUnmount = function() {
+    if (root)
       fileManager.unmountVolume(PathUtil.getRootPath(root.fullPath));
-    };
-
-    if (fileManager.butterBar_.forceDeleteAndHide()) {
-      // TODO(dgozman): add completion callback to file copy manager.
-      setTimeout(doUnmount, 1000);
-    } else {
-      doUnmount();
-    }
   },
   canExecute: function(event, rootsList) {
     var rootType = CommandUtil.getCommandRootType(event, rootsList);
