@@ -15,6 +15,13 @@
 #include "content/test/content_browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 
+// TODO(wolenetz): Fix Media.YUV* tests on MSVS 2012 x64. crbug.com/180074
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64) && _MSC_VER == 1700
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 namespace content {
 
 // Tests playback and seeking of an audio or video file over file or http based
@@ -196,37 +203,37 @@ IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoNoAutoplayTest) {
   RunLayoutTest("video-no-autoplay.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pTheora) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pTheora)) {
   RunColorFormatTest("yuv420p.ogv", "ENDED");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv422pTheora) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv422pTheora)) {
   RunColorFormatTest("yuv422p.ogv", "ENDED");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv444pTheora) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pTheora)) {
   // TODO(scherkus): Support YUV444 http://crbug.com/104711
   RunColorFormatTest("yuv424p.ogv", "ERROR");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pVp8) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pVp8)) {
   RunColorFormatTest("yuv420p.webm", "ENDED");
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pH264) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pH264)) {
   RunColorFormatTest("yuv420p.mp4", "ENDED");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuvj420pH264) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuvj420pH264)) {
   RunColorFormatTest("yuvj420p.mp4", "ENDED");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv422pH264) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv422pH264)) {
   RunColorFormatTest("yuv422p.mp4", "ENDED");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, Yuv444pH264) {
+IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pH264)) {
   // TODO(scherkus): Support YUV444 http://crbug.com/104711
   RunColorFormatTest("yuv444p.mp4", "ERROR");
 }
