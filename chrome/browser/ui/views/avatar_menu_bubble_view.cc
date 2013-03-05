@@ -427,9 +427,10 @@ AvatarMenuBubbleView::AvatarMenuBubbleView(
     const gfx::Rect& anchor_rect,
     Browser* browser)
     : BubbleDelegateView(anchor_view, arrow_location),
-      add_profile_link_(NULL),
       anchor_rect_(anchor_rect),
-      browser_(browser) {
+      browser_(browser),
+      separator_(NULL),
+      add_profile_link_(NULL) {
   avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
       this, browser_));
@@ -439,9 +440,6 @@ AvatarMenuBubbleView::~AvatarMenuBubbleView() {
 }
 
 gfx::Size AvatarMenuBubbleView::GetPreferredSize() {
-  if (!add_profile_link_)
-    return gfx::Size();
-
   int max_width = 0;
   int total_height = 0;
   for (size_t i = 0; i < item_views_.size(); ++i) {
@@ -450,13 +448,15 @@ gfx::Size AvatarMenuBubbleView::GetPreferredSize() {
     total_height += size.height() + kItemMarginY;
   }
 
-  total_height += kSeparatorPaddingY * 2 +
-                  separator_->GetPreferredSize().height();
+  if (add_profile_link_) {
+    total_height += kSeparatorPaddingY * 2 +
+                    separator_->GetPreferredSize().height();
 
-  gfx::Size add_profile_size = add_profile_link_->GetPreferredSize();
-  max_width = std::max(max_width,
-      add_profile_size.width() + profiles::kAvatarIconWidth + kIconMarginX);
-  total_height += add_profile_link_->GetPreferredSize().height();
+    gfx::Size add_profile_size = add_profile_link_->GetPreferredSize();
+    max_width = std::max(max_width,
+        add_profile_size.width() + profiles::kAvatarIconWidth + kIconMarginX);
+    total_height += add_profile_link_->GetPreferredSize().height();
+  }
 
   const int kBubbleViewMaxWidth = 800;
   const int kBubbleViewMinWidth = 175;
@@ -475,13 +475,15 @@ void AvatarMenuBubbleView::Layout() {
     y += item_height + kItemMarginY;
   }
 
-  y += kSeparatorPaddingY;
-  int separator_height = separator_->GetPreferredSize().height();
-  separator_->SetBounds(0, y, width(), separator_height);
-  y += kSeparatorPaddingY + separator_height;
+  if (add_profile_link_) {
+    y += kSeparatorPaddingY;
+    int separator_height = separator_->GetPreferredSize().height();
+    separator_->SetBounds(0, y, width(), separator_height);
+    y += kSeparatorPaddingY + separator_height;
 
-  add_profile_link_->SetBounds(profiles::kAvatarIconWidth + kIconMarginX, y,
-      width(), add_profile_link_->GetPreferredSize().height());
+    add_profile_link_->SetBounds(profiles::kAvatarIconWidth + kIconMarginX, y,
+        width(), add_profile_link_->GetPreferredSize().height());
+  }
 }
 
 bool AvatarMenuBubbleView::AcceleratorPressed(
@@ -577,15 +579,17 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
     item_views_.push_back(item_view);
   }
 
-  separator_ = new views::Separator();
-  AddChildView(separator_);
+  if (avatar_menu_model_->ShouldShowAddNewProfileLink()) {
+    separator_ = new views::Separator();
+    AddChildView(separator_);
 
-  add_profile_link_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
-  add_profile_link_->set_listener(this);
-  add_profile_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  add_profile_link_->SetBackgroundColor(color());
-  AddChildView(add_profile_link_);
+    add_profile_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
+    add_profile_link_->set_listener(this);
+    add_profile_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    add_profile_link_->SetBackgroundColor(color());
+    AddChildView(add_profile_link_);
+  }
 
   // If the bubble has already been shown then resize and reposition the bubble.
   Layout();
