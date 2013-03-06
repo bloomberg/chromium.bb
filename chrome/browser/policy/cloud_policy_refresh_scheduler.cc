@@ -6,12 +6,24 @@
 
 #include <algorithm>
 
-#include "base/task_runner.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 
 namespace policy {
+
+namespace {
+
+// The maximum rate at which to refresh policies.
+const size_t kMaxRefreshesPerHour = 5;
+
+}  // namespace
 
 const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
     3 * 60 * 60 * 1000;  // 3 hours.
@@ -27,12 +39,18 @@ const int64 CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
 CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
     CloudPolicyClient* client,
     CloudPolicyStore* store,
-    const scoped_refptr<base::TaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : client_(client),
       store_(store),
       task_runner_(task_runner),
       error_retry_delay_ms_(kInitialErrorRetryDelayMs),
-      refresh_delay_ms_(kDefaultRefreshDelayMs) {
+      refresh_delay_ms_(kDefaultRefreshDelayMs),
+      rate_limiter_(kMaxRefreshesPerHour,
+                    base::TimeDelta::FromHours(1),
+                    base::Bind(&CloudPolicyRefreshScheduler::RefreshNow,
+                               base::Unretained(this)),
+                    task_runner_,
+                    scoped_ptr<base::TickClock>(new base::DefaultTickClock())) {
   client_->AddObserver(this);
   store_->AddObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -53,6 +71,10 @@ void CloudPolicyRefreshScheduler::SetRefreshDelay(int64 refresh_delay) {
   ScheduleRefresh();
 }
 
+void CloudPolicyRefreshScheduler::RefreshSoon() {
+  rate_limiter_.PostRequest();
+}
+
 void CloudPolicyRefreshScheduler::OnPolicyFetched(CloudPolicyClient* client) {
   error_retry_delay_ms_ = kInitialErrorRetryDelayMs;
 
@@ -66,8 +88,7 @@ void CloudPolicyRefreshScheduler::OnRegistrationStateChanged(
   error_retry_delay_ms_ = kInitialErrorRetryDelayMs;
 
   // The client might have registered, so trigger an immediate refresh.
-  last_refresh_ = base::Time();
-  ScheduleRefresh();
+  RefreshNow();
 }
 
 void CloudPolicyRefreshScheduler::OnClientError(CloudPolicyClient* client) {
@@ -128,6 +149,11 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
   }
+}
+
+void CloudPolicyRefreshScheduler::RefreshNow() {
+  last_refresh_ = base::Time();
+  ScheduleRefresh();
 }
 
 void CloudPolicyRefreshScheduler::ScheduleRefresh() {

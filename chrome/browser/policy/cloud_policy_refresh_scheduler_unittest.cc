@@ -20,6 +20,7 @@
 namespace em = enterprise_management;
 
 using testing::DoAll;
+using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
 using testing::_;
@@ -135,6 +136,22 @@ TEST_F(CloudPolicyRefreshSchedulerTest, Unregistered) {
   store_.NotifyStoreLoaded();
   store_.NotifyStoreError();
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
+}
+
+TEST_F(CloudPolicyRefreshSchedulerTest, RefreshSoonRateLimit) {
+  scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
+  // Max out the request rate.
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_CALL(client_, FetchPolicy()).Times(1);
+    scheduler->RefreshSoon();
+    task_runner_->RunUntilIdle();
+    Mock::VerifyAndClearExpectations(&client_);
+  }
+  // The next refresh is throttled.
+  EXPECT_CALL(client_, FetchPolicy()).Times(0);
+  scheduler->RefreshSoon();
+  task_runner_->RunPendingTasks();
+  Mock::VerifyAndClearExpectations(&client_);
 }
 
 class CloudPolicyRefreshSchedulerSteadyStateTest

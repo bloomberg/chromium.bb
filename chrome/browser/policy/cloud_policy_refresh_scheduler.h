@@ -11,10 +11,11 @@
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
+#include "chrome/browser/policy/rate_limiter.h"
 #include "net/base/network_change_notifier.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace policy {
@@ -40,7 +41,7 @@ class CloudPolicyRefreshScheduler
   CloudPolicyRefreshScheduler(
       CloudPolicyClient* client,
       CloudPolicyStore* store,
-      const scoped_refptr<base::TaskRunner>& task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~CloudPolicyRefreshScheduler();
 
   base::Time last_refresh() const { return last_refresh_; }
@@ -48,6 +49,10 @@ class CloudPolicyRefreshScheduler
 
   // Sets the refresh delay to |refresh_delay| (subject to min/max clamping).
   void SetRefreshDelay(int64 refresh_delay);
+
+  // Requests a policy refresh to be performed soon. This may apply throttling,
+  // and the request may not be immediately sent.
+  void RefreshSoon();
 
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
@@ -69,6 +74,9 @@ class CloudPolicyRefreshScheduler
   // a refresh on every restart.
   void UpdateLastRefreshFromPolicy();
 
+  // Schedules a refresh to be performed immediately.
+  void RefreshNow();
+
   // Evaluates when the next refresh is pending and updates the callback to
   // execute that refresh at the appropriate time.
   void ScheduleRefresh();
@@ -84,7 +92,7 @@ class CloudPolicyRefreshScheduler
   CloudPolicyStore* store_;
 
   // For scheduling delayed tasks.
-  const scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The delayed refresh callback.
   base::CancelableClosure refresh_callback_;
@@ -97,6 +105,9 @@ class CloudPolicyRefreshScheduler
 
   // The refresh delay.
   int64 refresh_delay_ms_;
+
+  // Used to limit the rate at which refreshes are scheduled.
+  RateLimiter rate_limiter_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyRefreshScheduler);
 };

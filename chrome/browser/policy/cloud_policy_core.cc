@@ -23,8 +23,8 @@ CloudPolicyCore::CloudPolicyCore(const PolicyNamespaceKey& key,
 CloudPolicyCore::~CloudPolicyCore() {}
 
 void CloudPolicyCore::Connect(scoped_ptr<CloudPolicyClient> client) {
-  CHECK(!client_.get());
-  CHECK(client.get());
+  CHECK(!client_);
+  CHECK(client);
   client_ = client.Pass();
   service_.reset(new CloudPolicyService(policy_ns_key_, client_.get(), store_));
 }
@@ -36,8 +36,13 @@ void CloudPolicyCore::Disconnect() {
   client_.reset();
 }
 
+void CloudPolicyCore::RefreshSoon() {
+ if (refresh_scheduler_)
+    refresh_scheduler_->RefreshSoon();
+}
+
 void CloudPolicyCore::StartRefreshScheduler() {
-  if (!refresh_scheduler_.get()) {
+  if (!refresh_scheduler_) {
     refresh_scheduler_.reset(
         new CloudPolicyRefreshScheduler(
             client_.get(), store_,
@@ -58,7 +63,7 @@ void CloudPolicyCore::TrackRefreshDelayPref(
 }
 
 void CloudPolicyCore::UpdateRefreshDelayFromPref() {
-  if (refresh_scheduler_.get() && refresh_delay_.get())
+  if (refresh_scheduler_ && refresh_delay_)
     refresh_scheduler_->SetRefreshDelay(refresh_delay_->GetValue());
 }
 

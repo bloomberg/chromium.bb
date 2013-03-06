@@ -55,6 +55,10 @@ class CloudPolicyCore {
   // Shuts down the cloud connection.
   void Disconnect();
 
+  // Requests a policy refresh to be performed soon. This may apply throttling,
+  // and the request may not be immediately sent.
+  void RefreshSoon();
+
   // Starts a refresh scheduler in case none is running yet.
   void StartRefreshScheduler();
 
