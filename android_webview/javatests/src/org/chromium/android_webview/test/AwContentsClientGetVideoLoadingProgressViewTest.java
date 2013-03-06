@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.io.IOException;
@@ -57,8 +58,12 @@ public class AwContentsClientGetVideoLoadingProgressViewTest extends AndroidWebV
         }
     }
 
-    @Feature({"AndroidWebView"})
-    @SmallTest
+    /*
+    * @Feature({"AndroidWebView"})
+    * @SmallTest
+    * http://crbug.com/180575
+    */
+    @DisabledTest
     public void testGetVideoLoadingProgressView() throws Throwable {
         TestAwContentsClient contentsClient = new TestAwContentsClient() {
             @Override
