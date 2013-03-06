@@ -524,18 +524,6 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
   return NULL;
 }
 
-static WebKit::WebLayerTreeView* CreateLayerTreeView(
-    LayerTreeViewType type,
-    DRTLayerTreeViewClient* client,
-    scoped_ptr<cc::Thread> compositor_thread) {
-  scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
-      new WebKit::WebLayerTreeViewImplForTesting(type, client));
-
-  if (!view->initialize(compositor_thread.Pass()))
-    return NULL;
-  return view.release();
-}
-
 WebKit::WebLayerTreeView* CreateLayerTreeView(
     LayerTreeViewType type,
     DRTLayerTreeViewClient* client,
@@ -545,29 +533,13 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
     compositor_thread = cc::ThreadImpl::createForDifferentThread(
         static_cast<webkit_glue::WebThreadImpl*>(thread)->
         message_loop()->message_loop_proxy());
-  return CreateLayerTreeView(type, client, compositor_thread.Pass());
-}
 
-// DEPRECATED. TODO(jamesr): Remove these three after fixing WebKit callers.
-static WebKit::WebLayerTreeView* CreateLayerTreeView(
-    LayerTreeViewType type,
-    DRTLayerTreeViewClient* client) {
-  scoped_ptr<cc::Thread> compositor_thread;
+  scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
+      new WebKit::WebLayerTreeViewImplForTesting(type, client));
 
-  webkit::WebCompositorSupportImpl* compositor_support_impl =
-      test_environment->webkit_platform_support()->compositor_support_impl();
-  if (compositor_support_impl->compositor_thread_message_loop_proxy())
-    compositor_thread = cc::ThreadImpl::createForDifferentThread(
-        compositor_support_impl->compositor_thread_message_loop_proxy());
-  return CreateLayerTreeView(type, client, compositor_thread.Pass());
-}
-WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
-    DRTLayerTreeViewClient* client) {
-  return CreateLayerTreeView(SOFTWARE_CONTEXT, client);
-}
-WebKit::WebLayerTreeView* CreateLayerTreeView3d(
-    DRTLayerTreeViewClient* client) {
-  return CreateLayerTreeView(MESA_CONTEXT, client);
+  if (!view->initialize(compositor_thread.Pass()))
+    return NULL;
+  return view.release();
 }
 
 void SetThreadedCompositorEnabled(bool enabled) {

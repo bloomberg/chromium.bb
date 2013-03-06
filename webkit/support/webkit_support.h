@@ -151,13 +151,6 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
     DRTLayerTreeViewClient* client,
     WebKit::WebThread* thread);
 
-// DEPRECATED. TODO(jamesr): Remove these two after fixing WebKit-side callers.
-WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
-    DRTLayerTreeViewClient* client);
-WebKit::WebLayerTreeView* CreateLayerTreeView3d(
-    DRTLayerTreeViewClient* client);
-
-#define WEBKIT_SUPPORT_HAS_SET_THREADING_COMPOSITING_ENABLED 1
 void SetThreadedCompositorEnabled(bool enabled);
 
 // ------- URL load mocking.
