@@ -699,9 +699,9 @@ void TabRendererGtk::UpdateFaviconOverlay(WebContents* contents) {
         data_.capture_state == PROJECTING ?
             IDR_TAB_CAPTURE_GLOW : IDR_TAB_RECORDING);
 
-    int icon_size = gfx::kFaviconSize;
-    if (data_.capture_state == PROJECTING)
-      icon_size *= kProjectingGlowResizeScale;
+    int icon_size = data_.capture_state == PROJECTING ?
+        gfx::kFaviconSize * kProjectingGlowResizeScale :
+        recording.ToImageSkia()->width();
 
     GdkPixbuf* pixbuf = data_.favicon.isNull() ?
         gfx::GdkPixbufFromSkBitmap(*recording.ToSkBitmap()) :
@@ -962,6 +962,9 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
     if (data_.capture_state == PROJECTING) {
       favicon_x -= favicon_bounds_.width() * kProjectingGlowShiftScale;
       favicon_y -= favicon_bounds_.height() * kProjectingGlowShiftScale;
+    } else if (data_.capture_state == RECORDING) {
+      favicon_x += favicon_bounds_.width() - data_.cairo_overlay.Width();
+      favicon_y += favicon_bounds_.height() - data_.cairo_overlay.Height();
     }
 
     data_.cairo_overlay.SetSource(cr, widget, favicon_x, favicon_y);
