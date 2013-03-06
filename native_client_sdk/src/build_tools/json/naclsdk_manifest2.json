@@ -2,21 +2,21 @@
   "bundles": [
     {
       "name": "sdk_tools",
-      "description": "Native Client SDK Tools, revision 182731",
+      "description": "Native Client SDK Tools, revision 186432",
       "stability": "stable",
       "recommended": "yes",
       "version": 1,
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.182731/sdk_tools.tgz",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.186432/sdk_tools.tgz",
           "checksum": {
-            "sha1": "a801cb708f133be2823fc628ba6f653bf68476c6"
+            "sha1": "afecddc8adf89e89c4c7e6cbd6e015dd49ad4661"
           },
           "host_os": "all",
-          "size": 32315
+          "size": 32905
         }
       ],
-      "revision": 182731
+      "revision": 186432
     },
     {
       "name": "vs_addin",
