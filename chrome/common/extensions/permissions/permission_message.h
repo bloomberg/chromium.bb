@@ -58,6 +58,7 @@ class PermissionMessage {
     kUsbDevice,
     kMediaGalleriesAllGalleriesWrite,
     kSystemInfoDisplay,
+    kNativeMessaging,
     kEnumBoundary
   };
 

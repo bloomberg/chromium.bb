@@ -195,6 +195,23 @@ void MessageService::OpenChannelToNativeApp(
     return;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  bool has_permission = false;
+  if (extension_service) {
+    const Extension* extension =
+        extension_service->GetExtensionById(source_extension_id, false);
+    has_permission = extension && extension->HasAPIPermission(
+        APIPermission::kNativeMessaging);
+  }
+
+  if (!has_permission) {
+    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
+    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id), true);
+    return;
+  }
+
   WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
 

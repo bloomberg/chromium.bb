@@ -7,5 +7,8 @@
   "description": "Test the basic functionality of passing native messages.",
   "background": {
     "scripts": ["test.js"]
-  }
+  },
+  "permissions": [
+    "nativeMessaging"
+  ]
 }

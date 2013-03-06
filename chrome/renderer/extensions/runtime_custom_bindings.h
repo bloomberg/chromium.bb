@@ -17,7 +17,8 @@ namespace extensions {
 // The native component of custom bindings for the chrome.runtime API.
 class RuntimeCustomBindings : public ChromeV8Extension {
  public:
-  explicit RuntimeCustomBindings(ChromeV8Context* context);
+  RuntimeCustomBindings(Dispatcher* dispatcher,
+                        ChromeV8Context* context);
 
   virtual ~RuntimeCustomBindings();
 
@@ -25,7 +26,8 @@ class RuntimeCustomBindings : public ChromeV8Extension {
   static v8::Handle<v8::Value> OpenChannelToExtension(
       const v8::Arguments& args);
 
-  static v8::Handle<v8::Value> OpenChannelToNativeApp(
+  // Creates a new messaging channels for the specified native application.
+  v8::Handle<v8::Value> OpenChannelToNativeApp(
       const v8::Arguments& args);
 
  private:

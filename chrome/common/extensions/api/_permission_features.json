@@ -261,6 +261,12 @@
       "ionpfmkccalenbmnddpbmocokhaknphg"   // Quickoffice dev
     ]
   },
+  "nativeMessaging": {
+    "channel": "dev",
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
   "networkingPrivate": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"],
