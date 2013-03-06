@@ -88,9 +88,6 @@ class AutofillPopupController {
   // hovered or has keyboard focus.
   virtual int selected_line() const = 0;
 
-  // Returns true if the delete icon of the selected line is currently hovered.
-  virtual bool delete_icon_hovered() const = 0;
-
  protected:
   virtual ~AutofillPopupController() {}
 };

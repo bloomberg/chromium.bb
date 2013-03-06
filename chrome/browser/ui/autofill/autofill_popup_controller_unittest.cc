@@ -412,8 +412,9 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
   // the screen.
   element_bounds.push_back(
       gfx::RectF(desired_width * 1.5, desired_height * 1.5, 0, 0));
-  expected_popup_bounds.push_back(gfx::Rect(
-          desired_width / 2, desired_height /2, desired_width, desired_height));
+  expected_popup_bounds.push_back(
+      gfx::Rect((desired_width + 1) / 2, (desired_height + 1) / 2,
+                desired_width, desired_height));
 
   for (size_t i = 0; i < element_bounds.size(); ++i) {
     NiceMock<MockAutofillExternalDelegate> external_delegate(

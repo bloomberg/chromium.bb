@@ -246,36 +246,6 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   // Use this to figure out where all the other Autofill items should be placed.
   int x_align_left = is_rtl ? kEndPadding : entry_rect.width() - kEndPadding;
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  // Draw the delete icon, if one is needed.
-  if (controller_->CanDelete(index)) {
-    x_align_left += is_rtl ? 0 : -kDeleteIconWidth;
-
-    gfx::Image delete_icon;
-    if (static_cast<int>(index) == controller_->selected_line() &&
-        controller_->delete_icon_hovered()) {
-      delete_icon = rb.GetImageNamed(IDR_CLOSE_BAR_H);
-    } else {
-      delete_icon = rb.GetImageNamed(IDR_CLOSE_BAR);
-    }
-
-    // TODO(csharp): Create a custom resource for the delete icon.
-    // http://crbug.com/131801
-    cairo_save(cairo_context);
-    gtk_util::DrawFullImage(
-        cairo_context,
-        window_,
-        delete_icon,
-        x_align_left,
-        entry_rect.y() +
-            ((row_height - kDeleteIconHeight) / 2));
-    cairo_restore(cairo_context);
-    cairo_save(cairo_context);
-
-    x_align_left += is_rtl ? kDeleteIconWidth + kIconPadding : -kIconPadding;
-  }
-
   // Draw the Autofill icon, if one exists
   if (!controller_->icons()[index].empty()) {
     int icon = controller_->GetIconResourceID(controller_->icons()[index]);
@@ -285,6 +255,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     x_align_left += is_rtl ? 0 : -kAutofillIconWidth;
 
     cairo_save(cairo_context);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gtk_util::DrawFullImage(cairo_context,
                             window_,
                             rb.GetImageNamed(icon),

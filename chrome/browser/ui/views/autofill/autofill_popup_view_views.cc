@@ -173,23 +173,9 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   // Use this to figure out where all the other Autofill items should be placed.
   int x_align_left = is_rtl ? kEndPadding : entry_rect.width() - kEndPadding;
 
-  // Draw the delete icon, if one is needed.
+  // Draw the Autofill icon, if one exists
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int row_height = controller_->GetRowBounds(index).height();
-  if (controller_->CanDelete(index)) {
-    x_align_left += is_rtl ? 0 : -kDeleteIconWidth;
-
-    // TODO(csharp): Create a custom resource for the delete icon.
-    // http://crbug.com/131801
-    canvas->DrawImageInt(
-        *rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
-        x_align_left,
-        entry_rect.y() + (row_height - kDeleteIconHeight) / 2);
-
-    x_align_left += is_rtl ? kDeleteIconWidth + kIconPadding : -kIconPadding;
-  }
-
-  // Draw the Autofill icon, if one exists
   if (!controller_->icons()[index].empty()) {
     int icon = controller_->GetIconResourceID(controller_->icons()[index]);
     DCHECK_NE(-1, icon);

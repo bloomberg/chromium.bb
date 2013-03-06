@@ -87,7 +87,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual const gfx::Font& subtext_font() const OVERRIDE;
 #endif
   virtual int selected_line() const OVERRIDE;
-  virtual bool delete_icon_hovered() const OVERRIDE;
 
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
@@ -109,10 +108,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // Returns the height of a row depending on its type.
   int GetRowHeightFromId(int identifier) const;
-
-  // Returns true if the given |x| and |y| coordinates refer to a point that
-  // hits the delete icon in the current selected line.
-  bool DeleteIconIsUnder(int x, int y);
 
   // Returns true if the given id refers to an element that can be accepted.
   bool CanAccept(int id);
@@ -199,9 +194,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
   int selected_line_;
-
-  // Used to indicate if the delete icon within a row is currently selected.
-  bool delete_icon_hovered_;
 
   // True if |HideInternal| has already been called.
   bool is_hiding_;

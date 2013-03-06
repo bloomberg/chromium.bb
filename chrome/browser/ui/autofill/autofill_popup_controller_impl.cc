@@ -48,8 +48,6 @@ const size_t kMaxTextLength = 15;
 #if !defined(OS_ANDROID)
 const size_t kIconPadding = AutofillPopupView::kIconPadding;
 const size_t kEndPadding = AutofillPopupView::kEndPadding;
-const size_t kDeleteIconHeight = AutofillPopupView::kDeleteIconHeight;
-const size_t kDeleteIconWidth = AutofillPopupView::kDeleteIconWidth;
 const size_t kAutofillIconWidth = AutofillPopupView::kAutofillIconWidth;
 #endif
 
@@ -102,7 +100,6 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       container_view_(container_view),
       element_bounds_(element_bounds),
       selected_line_(kNoSelection),
-      delete_icon_hovered_(false),
       is_hiding_(false),
       weak_ptr_factory_(this) {
 #if !defined(OS_ANDROID)
@@ -230,21 +227,11 @@ void AutofillPopupControllerImpl::UpdateBoundsAndRedrawPopup() {
 
 void AutofillPopupControllerImpl::MouseHovered(int x, int y) {
   SetSelectedLine(LineFromY(y));
-
-  bool delete_icon_hovered = DeleteIconIsUnder(x, y);
-  if (delete_icon_hovered != delete_icon_hovered_) {
-    delete_icon_hovered_ = delete_icon_hovered;
-    InvalidateRow(selected_line());
-  }
 }
 
 void AutofillPopupControllerImpl::MouseClicked(int x, int y) {
   MouseHovered(x, y);
-
-  if (delete_icon_hovered_)
-    RemoveSelectedLine();
-  else
-    AcceptSelectedLine();
+  RemoveSelectedLine();
 }
 
 void AutofillPopupControllerImpl::MouseExitedPopup() {
@@ -266,8 +253,8 @@ int AutofillPopupControllerImpl::GetIconResourceID(
 }
 
 bool AutofillPopupControllerImpl::CanDelete(size_t index) const {
-  // TODO(isherman): AddressBook suggestions on Mac should not be drawn as
-  // deleteable.
+  // TODO(isherman): Native AddressBook suggestions on Mac and Android should
+  // not be considered to be deleteable.
   int id = identifiers_[index];
   return id > 0 ||
       id == WebAutofillClient::MenuItemIDAutocompleteEntry ||
@@ -336,10 +323,6 @@ const gfx::Font& AutofillPopupControllerImpl::subtext_font() const {
 
 int AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
-}
-
-bool AutofillPopupControllerImpl::delete_icon_hovered() const {
-  return delete_icon_hovered_;
 }
 
 void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
@@ -457,28 +440,6 @@ int AutofillPopupControllerImpl::GetRowHeightFromId(int identifier) const {
   return kRowHeight;
 }
 
-bool AutofillPopupControllerImpl::DeleteIconIsUnder(int x, int y) {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  if (!CanDelete(selected_line()))
-    return false;
-
-  int row_start_y = 0;
-  for (int i = 0; i < selected_line(); ++i) {
-    row_start_y += GetRowHeightFromId(identifiers()[i]);
-  }
-
-  gfx::Rect delete_icon_bounds = gfx::Rect(
-      popup_bounds().width() - kDeleteIconWidth - kIconPadding,
-      row_start_y + ((kRowHeight - kDeleteIconHeight) / 2),
-      kDeleteIconWidth,
-      kDeleteIconHeight);
-
-  return delete_icon_bounds.Contains(x, y);
-#endif
-}
-
 bool AutofillPopupControllerImpl::CanAccept(int id) {
   return id != WebAutofillClient::MenuItemIDSeparator &&
       id != WebAutofillClient::MenuItemIDWarningMessage;
@@ -538,10 +499,6 @@ int AutofillPopupControllerImpl::RowWidthWithoutText(int row) const {
   // Add the Autofill icon size, if required.
   if (!icons_[row].empty())
     row_size += kAutofillIconWidth + kIconPadding;
-
-  // Add the delete icon size, if required.
-  if (CanDelete(row))
-    row_size += kDeleteIconWidth + kIconPadding;
 
   // Add the padding at the end
   row_size += kEndPadding;
