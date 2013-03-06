@@ -540,6 +540,12 @@ static void preCalculateMetaInformation(LayerType* layer)
     layer->drawProperties().descendants_can_clip_selves = descendantsCanClipSelves;
 }
 
+static void roundTranslationComponents(gfx::Transform* transform)
+{
+    transform->matrix().setDouble(0, 3, MathUtil::Round(transform->matrix().getDouble(0, 3)));
+    transform->matrix().setDouble(1, 3, MathUtil::Round(transform->matrix().getDouble(1, 3)));
+}
+
 // Recursively walks the layer tree starting at the given node and computes all the
 // necessary transformations, clipRects, render surfaces, etc.
 template<typename LayerType, typename LayerList, typename RenderSurfaceType>
@@ -693,6 +699,12 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     // computation of contentsScale above.
     // Note carefully: this is Concat, not Preconcat (implTransform * combinedTransform).
     combinedTransform.ConcatTransform(layer->implTransform());
+
+    if (!animatingTransformToTarget && layer->scrollable() && combinedTransform.IsScaleOrTranslation()) {
+        // Align the scrollable layer's position to screen space pixels to avoid blurriness.
+        // To avoid side-effects, do this only if the transform is simple.
+        roundTranslationComponents(&combinedTransform);
+    }
 
     if (layer->fixedToContainerLayer()) {
         // Special case: this layer is a composited fixed-position layer; we need to

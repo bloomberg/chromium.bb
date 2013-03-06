@@ -5,6 +5,8 @@
 #ifndef CC_MATH_UTIL_H_
 #define CC_MATH_UTIL_H_
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
@@ -80,6 +82,9 @@ public:
 
     static float Deg2Rad(float deg)  { return deg * PI_FLOAT / 180; }
     static float Rad2Deg(float rad)  { return rad * 180 / PI_FLOAT; }
+
+    static float Round(float f)  { return (f > 0.f) ? std::floor(f + 0.5f) : std::ceil(f - 0.5f); }
+    static double Round(double d)  { return (d > 0.0) ? std::floor(d + 0.5) : std::ceil(d - 0.5); }
 
     // Background: Existing transform code does not do the right thing in
     // mapRect / mapQuad / projectQuad when there is a perspective projection that causes

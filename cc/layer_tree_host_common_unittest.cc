@@ -258,6 +258,58 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedResult, layer->screenSpaceTransform());
 }
 
+TEST(LayerTreeHostCommonTest, verifyTransformsAboutScrollOffset)
+{
+    const gfx::Vector2d kScrollOffset(50, 100);
+    const gfx::Vector2dF kScrollDelta(2.34f, 5.67f);
+    const gfx::PointF kScrollLayerPosition(-kScrollOffset.x(), -kScrollOffset.y());
+    const float kPageScale = 0.888f;
+    const float kDeviceScale = 1.666f;
+
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+
+    gfx::Transform identityMatrix;
+    scoped_ptr<LayerImpl> sublayerScopedPtr(LayerImpl::create(hostImpl.activeTree(), 1));
+    LayerImpl* sublayer = sublayerScopedPtr.get();
+    sublayer->setContentsScale(kPageScale * kDeviceScale, kPageScale * kDeviceScale);
+    setLayerPropertiesForTesting(sublayer, identityMatrix, identityMatrix, gfx::Point(0, 0), gfx::PointF(0, 0), gfx::Size(500, 500), false);
+
+    scoped_ptr<LayerImpl> scrollLayerScopedPtr(LayerImpl::create(hostImpl.activeTree(), 2));
+    LayerImpl* scrollLayer = scrollLayerScopedPtr.get();
+    setLayerPropertiesForTesting(scrollLayer, identityMatrix, identityMatrix, gfx::PointF(0, 0), kScrollLayerPosition, gfx::Size(10, 20), false);
+    scrollLayer->setScrollable(true);
+    scrollLayer->setScrollOffset(kScrollOffset);
+    scrollLayer->setScrollDelta(kScrollDelta);
+    gfx::Transform implTransform;
+    implTransform.Scale(kPageScale, kPageScale);
+    scrollLayer->setImplTransform(implTransform);
+    scrollLayer->addChild(sublayerScopedPtr.Pass());
+
+    scoped_ptr<LayerImpl> root(LayerImpl::create(hostImpl.activeTree(), 3));
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(3, 4), false);
+    root->addChild(scrollLayerScopedPtr.Pass());
+
+    executeCalculateDrawProperties(root.get(), kDeviceScale, kPageScale);
+    gfx::Transform expectedTransform = identityMatrix;
+    gfx::PointF subLayerScreenPosition = kScrollLayerPosition - kScrollDelta;
+    subLayerScreenPosition.Scale(kPageScale * kDeviceScale);
+    expectedTransform.Translate(MathUtil::Round(subLayerScreenPosition.x()), MathUtil::Round(subLayerScreenPosition.y()));
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedTransform, sublayer->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedTransform, sublayer->screenSpaceTransform());
+
+    gfx::Transform arbitraryTranslate;
+    const float kTranslateX = 10.6f;
+    const float kTranslateY = 20.6f;
+    arbitraryTranslate.Translate(kTranslateX, kTranslateY);
+    setLayerPropertiesForTesting(scrollLayer, arbitraryTranslate, identityMatrix, gfx::PointF(0, 0), kScrollLayerPosition, gfx::Size(10, 20), false);
+    executeCalculateDrawProperties(root.get(), kDeviceScale, kPageScale);
+    expectedTransform.MakeIdentity();
+    expectedTransform.Translate(MathUtil::Round(kTranslateX * kPageScale * kDeviceScale + subLayerScreenPosition.x()),
+                                MathUtil::Round(kTranslateY * kPageScale * kDeviceScale + subLayerScreenPosition.y()));
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedTransform, sublayer->drawTransform());
+}
+
 TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
 {
     gfx::Transform identityMatrix;
