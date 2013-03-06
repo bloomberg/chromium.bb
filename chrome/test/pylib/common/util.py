@@ -122,7 +122,7 @@ def RunCommand(cmd, cwd=None):
   Returns:
     The exit code of the command.
   """
-  process = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr, cwd=cwd)
+  process = subprocess.Popen(cmd, cwd=cwd)
   process.wait()
   return process.returncode
 
