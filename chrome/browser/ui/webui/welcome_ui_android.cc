@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/welcome_ui_android.h"
 
+#include <string>
+
+#include "base/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -11,6 +15,9 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+
+const char kProductTourBaseURL[] =
+    "http://www.google.com/intl/%s/chrome/browser/mobile/tour/android.html";
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
@@ -25,6 +32,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("takeATour", IDS_FIRSTRUN_TAKE_TOUR);
   html_source->AddLocalizedString("firstRunSignedIn", IDS_FIRSTRUN_SIGNED_IN);
   html_source->AddLocalizedString("settings", IDS_FIRSTRUN_SETTINGS_LINK);
+
+  std::string locale = g_browser_process->GetApplicationLocale();
+  std::string product_tour_url = StringPrintf(
+      kProductTourBaseURL, locale.c_str());
+  html_source->AddString("productTourUrl", product_tour_url);
 
   // Add required resources.
   html_source->SetJsonPath("strings.js");
