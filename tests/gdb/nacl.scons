@@ -74,11 +74,13 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('print_symbol.py'),
              '--nexe', gdb_test_guest] + test_args)
 
-# This fails on PNaCl because function entry breakpoints break before
-# The variables are set up. TODO(dschuff): fix as described in bug.
-# http://code.google.com/p/nativeclient/issues/detail?id=3255
+# This fails on ARM+PNaCl. The set_global_var function appears to be
+# getting the wrong argument value (68K vs 1), so the value of
+# global_var doesn't match the expected value.
+# TODO(mseaborn): Investigate and enable this test.
+# http://code.google.com/p/nativeclient/issues/detail?id=3252
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_print_symbol_test',
-                       is_broken=env.Bit('bitcode'))
+                       is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
 env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
@@ -87,16 +89,13 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('stack_trace.py'),
              '--nexe', gdb_test_guest] + test_args)
 
-# This fails on PNaCl because function entry breakpoints break before
-# The variables are set up. TODO(dschuff): fix as described in bug.
-# http://code.google.com/p/nativeclient/issues/detail?id=3255
 # This fails on ARM+PNaCl because it gets an
 # unexpected value for a function argument from
 # the stack backtrace.
 # TODO(mseaborn): Investigate and enable this test.
 # http://code.google.com/p/nativeclient/issues/detail?id=3252
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stack_trace_test',
-                       is_broken=env.Bit('bitcode'))
+                       is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
 env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
@@ -123,15 +122,12 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('change_variable.py'),
              '--nexe', gdb_test_guest] + test_args)
 
-# This fails on PNaCl because function entry breakpoints break before
-# The variables are set up. TODO(dschuff): fix as described in bug.
-# http://code.google.com/p/nativeclient/issues/detail?id=3255
 # This fails on ARM+PNaCl because it is reading
 # local_var before it has been initialised.
 # TODO(mseaborn): Investigate and enable this test.
 # http://code.google.com/p/nativeclient/issues/detail?id=3252
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test',
-                       is_broken=env.Bit('bitcode'))
+                       is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
 env.TestBindsFixedTcpPort(node)
 
 if not env.Bit('nacl_static_link'):
