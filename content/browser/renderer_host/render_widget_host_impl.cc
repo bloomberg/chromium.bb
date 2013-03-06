@@ -355,7 +355,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnPaintAtSizeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                         OnCompositorSurfaceBuffersSwapped)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapCompositorFrame, OnSwapCompositorFrame)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
+                                msg_is_ok = OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnInputEventAck)
@@ -1528,32 +1529,39 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
                                           gpu_process_host_id);
 }
 
-void RenderWidgetHostImpl::OnSwapCompositorFrame(
-    const cc::CompositorFrame& frame) {
+bool RenderWidgetHostImpl::OnSwapCompositorFrame(
+    const IPC::Message& message) {
+  ViewHostMsg_SwapCompositorFrame::Param param;
+  if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
+    return false;
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  param.a.AssignTo(frame.get());
+
+  if (view_) {
 #if defined(OS_ANDROID)
-  if (view_) {
     view_->UpdateFrameInfo(
-        frame.metadata.root_scroll_offset,
-        frame.metadata.page_scale_factor,
+        frame->metadata.root_scroll_offset,
+        frame->metadata.page_scale_factor,
         gfx::Vector2dF(
-            frame.metadata.min_page_scale_factor,
-            frame.metadata.max_page_scale_factor),
-        frame.metadata.root_layer_size,
-        frame.metadata.viewport_size,
-        frame.metadata.location_bar_offset,
-        frame.metadata.location_bar_content_translation);
-  }
+            frame->metadata.min_page_scale_factor,
+            frame->metadata.max_page_scale_factor),
+        frame->metadata.root_layer_size,
+        frame->metadata.viewport_size,
+        frame->metadata.location_bar_offset,
+        frame->metadata.location_bar_content_translation);
 #endif
-  if (view_) {
-    view_->OnSwapCompositorFrame(frame);
-  } else if (frame.gl_frame_data) {
+    view_->OnSwapCompositorFrame(frame.Pass());
+  } else {
     cc::CompositorFrameAck ack;
-    ack.gl_frame_data.reset(new cc::GLFrameData());
-    ack.gl_frame_data->mailbox = frame.gl_frame_data->mailbox;
-    ack.gl_frame_data->size = frame.gl_frame_data->size;
-    ack.gl_frame_data->sync_point = 0;
+    if (frame->gl_frame_data) {
+      ack.gl_frame_data = frame->gl_frame_data.Pass();
+      ack.gl_frame_data->sync_point = 0;
+    } else if (frame->delegated_frame_data) {
+      ack.resources.swap(frame->delegated_frame_data->resource_list);
+    }
     SendSwapCompositorFrameAck(routing_id_, process_->GetID(), ack);
   }
+  return true;
 }
 
 void RenderWidgetHostImpl::OnUpdateRect(

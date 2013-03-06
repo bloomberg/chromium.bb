@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "cc/compositor_frame.h"
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -26,10 +27,6 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_SelectionBounds_Params;
-
-namespace cc {
-class CompositorFrame;
-}
 
 namespace media {
 class VideoFrame;
@@ -239,7 +236,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // returned only if the accelerated surface size matches.
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
 
-  virtual void OnSwapCompositorFrame(const cc::CompositorFrame& frame) = 0;
+  virtual void OnSwapCompositorFrame(scoped_ptr<cc::CompositorFrame> frame) = 0;
 
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
 

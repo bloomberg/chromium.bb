@@ -35,6 +35,10 @@ namespace aura {
 class WindowTracker;
 }
 
+namespace cc {
+class DelegatedFrameData;
+}
+
 namespace gfx {
 class Canvas;
 class Display;
@@ -177,7 +181,7 @@ class RenderWidgetHostViewAura
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void OnSwapCompositorFrame(
-      const cc::CompositorFrame& frame) OVERRIDE;
+      scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
 
   // Overridden from ui::TextInputClient:
   virtual void SetCompositionText(
@@ -294,7 +298,8 @@ class RenderWidgetHostViewAura
   virtual ~RenderWidgetHostViewAura();
 
   void UpdateCursorIfOverSelf();
-  bool ShouldSkipFrame(const gfx::Size& size);
+  bool ShouldSkipFrame(gfx::Size size_in_dip);
+  void CheckResizeLocks(gfx::Size size_in_dip);
   void UpdateExternalTexture();
   ui::InputMethod* GetInputMethod() const;
 
@@ -367,6 +372,10 @@ class RenderWidgetHostViewAura
       const BufferPresentedCallback& ack_callback,
       const scoped_refptr<ui::Texture>& texture_to_return);
 
+  void SwapDelegatedFrame(
+      scoped_ptr<cc::DelegatedFrameData> frame,
+      float device_scale_factor);
+  void SendDelegatedFrameAck();
 #if defined(OS_WIN)
   // Sets the cutout rects from transient windows. These are rectangles that
   // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout

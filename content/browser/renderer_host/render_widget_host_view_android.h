@@ -139,7 +139,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
-  virtual void OnSwapCompositorFrame(const cc::CompositorFrame& frame) OVERRIDE;
+  virtual void OnSwapCompositorFrame(
+      scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
   virtual void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
                                float page_scale_factor,
                                const gfx::Vector2dF& page_scale_factor_limits,

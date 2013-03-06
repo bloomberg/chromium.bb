@@ -477,8 +477,8 @@ void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
-    const cc::CompositorFrame& frame) {
-  if (!frame.gl_frame_data || frame.gl_frame_data->mailbox.IsZero())
+    scoped_ptr<cc::CompositorFrame> frame) {
+  if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
   base::Closure callback = base::Bind(&InsertSyncPointAndAckForCompositor,
@@ -487,9 +487,9 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
                                       current_mailbox_,
                                       texture_size_in_layer_);
   ImageTransportFactoryAndroid::GetInstance()->WaitSyncPoint(
-      frame.gl_frame_data->sync_point);
+      frame->gl_frame_data->sync_point);
   BuffersSwapped(
-      frame.gl_frame_data->mailbox, frame.gl_frame_data->size, callback);
+      frame->gl_frame_data->mailbox, frame->gl_frame_data->size, callback);
 
 }
 

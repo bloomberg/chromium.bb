@@ -58,6 +58,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 #if defined(OS_WIN)
@@ -1096,16 +1097,15 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   accelerated_compositing_state_changed_ = true;
 }
 
-bool RenderWidgetHostViewAura::ShouldSkipFrame(const gfx::Size& size) {
+bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) {
   if (can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
       can_lock_compositor_ == NO_PENDING_COMMIT ||
       resize_locks_.empty())
     return false;
 
-  gfx::Size container_size = ConvertSizeToDIP(this, size);
   ResizeLockList::iterator it = resize_locks_.begin();
   while (it != resize_locks_.end()) {
-    if ((*it)->expected_size() == container_size)
+    if ((*it)->expected_size() == size_in_dip)
       break;
     ++it;
   }
@@ -1113,6 +1113,35 @@ bool RenderWidgetHostViewAura::ShouldSkipFrame(const gfx::Size& size) {
   // We could be getting an unexpected frame due to an animation
   // (i.e. we start resizing but we get an old size frame first).
   return it == resize_locks_.end() || ++it != resize_locks_.end();
+}
+
+void RenderWidgetHostViewAura::CheckResizeLocks(gfx::Size size_in_dip) {
+  ResizeLockList::iterator it = resize_locks_.begin();
+  while (it != resize_locks_.end()) {
+    if ((*it)->expected_size() == size_in_dip)
+      break;
+    ++it;
+  }
+  if (it != resize_locks_.end()) {
+    ++it;
+    ui::Compositor* compositor = GetCompositor();
+    if (compositor) {
+      // Delay the release of the lock until we've kicked a frame with the
+      // new texture, to avoid resizing the UI before we have a chance to
+      // draw a "good" frame.
+      locks_pending_commit_.insert(
+          locks_pending_commit_.begin(), resize_locks_.begin(), it);
+      // However since we got the size we were looking for, unlock the
+      // compositor.
+      for (ResizeLockList::iterator it2 = resize_locks_.begin();
+           it2 !=it; ++it2) {
+        it2->get()->UnlockCompositor();
+      }
+      if (!compositor->HasObserver(this))
+        compositor->AddObserver(this);
+    }
+    resize_locks_.erase(resize_locks_.begin(), it);
+  }
 }
 
 void RenderWidgetHostViewAura::UpdateExternalTexture() {
@@ -1124,35 +1153,8 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
 
   if (current_surface_ && host_->is_accelerated_compositing_active()) {
     window_->SetExternalTexture(current_surface_.get());
-
-    ResizeLockList::iterator it = resize_locks_.begin();
-    while (it != resize_locks_.end()) {
-      gfx::Size container_size = ConvertSizeToDIP(this,
-                                                  current_surface_->size());
-      if ((*it)->expected_size() == container_size)
-        break;
-      ++it;
-    }
-    if (it != resize_locks_.end()) {
-      ++it;
-      ui::Compositor* compositor = GetCompositor();
-      if (compositor) {
-        // Delay the release of the lock until we've kicked a frame with the
-        // new texture, to avoid resizing the UI before we have a chance to
-        // draw a "good" frame.
-        locks_pending_commit_.insert(
-            locks_pending_commit_.begin(), resize_locks_.begin(), it);
-        // However since we got the size we were looking for, unlock the
-        // compositor.
-        for (ResizeLockList::iterator it2 = resize_locks_.begin();
-            it2 !=it; ++it2) {
-          it2->get()->UnlockCompositor();
-        }
-        if (!compositor->HasObserver(this))
-          compositor->AddObserver(this);
-      }
-      resize_locks_.erase(resize_locks_.begin(), it);
-    }
+    gfx::Size container_size = ConvertSizeToDIP(this, current_surface_->size());
+    CheckResizeLocks(container_size);
   } else {
     window_->SetExternalTexture(NULL);
     resize_locks_.clear();
@@ -1172,7 +1174,8 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
     last_swapped_surface_size_ = surface_rect.size();
   }
 
-  if (ShouldSkipFrame(surface_rect.size()) || mailbox_name.empty()) {
+  if (ShouldSkipFrame(ConvertSizeToDIP(this, surface_rect.size())) ||
+      mailbox_name.empty()) {
     skipped_damage_.op(RectToSkIRect(damage_rect), SkRegion::kUnion_Op);
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
     return false;
@@ -1250,30 +1253,75 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       params_in_pixel.size, params_in_pixel.mailbox_name, ack_callback);
 }
 
+void RenderWidgetHostViewAura::SwapDelegatedFrame(
+    scoped_ptr<cc::DelegatedFrameData> frame_data,
+    float frame_device_scale_factor) {
+  gfx::Size frame_size_in_dip;
+  if (!frame_data->render_pass_list.empty()) {
+    frame_size_in_dip = gfx::ToFlooredSize(gfx::ScaleSize(
+        frame_data->render_pass_list.back()->output_rect.size(),
+        1.f/frame_device_scale_factor));
+  }
+  if (ShouldSkipFrame(frame_size_in_dip)) {
+    SendDelegatedFrameAck();
+    return;
+  }
+  window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
+  released_front_lock_ = NULL;
+  CheckResizeLocks(frame_size_in_dip);
+
+  if (paint_observer_)
+    paint_observer_->OnUpdateCompositorContent();
+
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor) {
+    SendDelegatedFrameAck();
+  } else {
+    can_lock_compositor_ = NO_PENDING_COMMIT;
+    on_compositing_did_commit_callbacks_.push_back(
+        base::Bind(&RenderWidgetHostViewAura::SendDelegatedFrameAck,
+                   base::Unretained(this)));
+    if (!compositor->HasObserver(this))
+      compositor->AddObserver(this);
+  }
+}
+
+void RenderWidgetHostViewAura::SendDelegatedFrameAck() {
+  cc::CompositorFrameAck ack;
+  window_->layer()->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+}
+
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
-    const cc::CompositorFrame& frame) {
-  if (!frame.gl_frame_data || frame.gl_frame_data->mailbox.IsZero())
+    scoped_ptr<cc::CompositorFrame> frame) {
+  if (frame->delegated_frame_data) {
+    SwapDelegatedFrame(frame->delegated_frame_data.Pass(),
+                       frame->metadata.device_scale_factor);
+    return;
+  }
+  if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
     return;
 
   BufferPresentedCallback ack_callback = base::Bind(
       &SendCompositorFrameAck,
       host_->GetRoutingID(), host_->GetProcess()->GetID(),
-      frame.gl_frame_data->mailbox, frame.gl_frame_data->size);
+      frame->gl_frame_data->mailbox, frame->gl_frame_data->size);
 
-  if (!frame.gl_frame_data->sync_point) {
+  if (!frame->gl_frame_data->sync_point) {
     LOG(ERROR) << "CompositorFrame without sync point. Skipping frame...";
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
     return;
   }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->WaitSyncPoint(frame.gl_frame_data->sync_point);
+  factory->WaitSyncPoint(frame->gl_frame_data->sync_point);
 
   std::string mailbox_name(
-      reinterpret_cast<const char*>(frame.gl_frame_data->mailbox.name),
-      sizeof(frame.gl_frame_data->mailbox.name));
+      reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),
+      sizeof(frame->gl_frame_data->mailbox.name));
   BuffersSwapped(
-      frame.gl_frame_data->size, mailbox_name, ack_callback);
+      frame->gl_frame_data->size, mailbox_name, ack_callback);
 }
 
 void RenderWidgetHostViewAura::BuffersSwapped(

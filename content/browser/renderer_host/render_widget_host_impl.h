@@ -560,7 +560,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                          int32 route_id,
                                          const gfx::Size& size,
                                          int32 gpu_process_host_id);
-  void OnSwapCompositorFrame(const cc::CompositorFrame& frame);
+  bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnUpdateIsDelayed();
   void OnInputEventAck(WebKit::WebInputEvent::Type event_type,

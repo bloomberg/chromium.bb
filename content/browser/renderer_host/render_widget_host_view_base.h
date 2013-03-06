@@ -72,7 +72,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       RenderWidgetHostViewFrameSubscriber* subscriber) OVERRIDE;
   virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnSwapCompositorFrame(
-      const cc::CompositorFrame& frame) OVERRIDE {}
+      scoped_ptr<cc::CompositorFrame> frame) OVERRIDE {}
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
