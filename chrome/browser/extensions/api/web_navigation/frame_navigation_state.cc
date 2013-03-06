@@ -117,10 +117,8 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
 void FrameNavigationState::FrameDetached(FrameID frame_id) {
   FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
-  if (frame_state == frame_state_map_.end()) {
-    NOTREACHED();
+  if (frame_state == frame_state_map_.end())
     return;
-  }
   if (frame_id == main_frame_id_)
     main_frame_id_ = FrameID();
   frame_state_map_.erase(frame_id);
