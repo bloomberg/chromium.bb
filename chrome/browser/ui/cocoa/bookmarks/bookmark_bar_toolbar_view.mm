@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/ntp_background_util.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -22,8 +23,8 @@
 const CGFloat kBorderRadius = 3.0;
 
 @interface BookmarkBarToolbarView (Private)
-- (void)drawRectAsTopBubble:(NSRect)rect;
-- (void)drawRectAsBottomBubble:(NSRect)rect;
+- (void)drawAsDetachedBubble;
+- (void)drawAsDetachedInstantExtendedUI;
 @end
 
 @implementation BookmarkBarToolbarView
@@ -42,10 +43,10 @@ const CGFloat kBorderRadius = 3.0;
   if ([controller_ isInState:BookmarkBar::DETACHED] ||
       [controller_ isAnimatingToState:BookmarkBar::DETACHED] ||
       [controller_ isAnimatingFromState:BookmarkBar::DETACHED]) {
-    if ([controller_ shouldShowAtBottomWhenDetached])
-      [self drawRectAsBottomBubble:rect];
+    if (chrome::search::IsInstantExtendedAPIEnabled())
+      [self drawAsDetachedInstantExtendedUI];
     else
-      [self drawRectAsTopBubble:rect];
+      [self drawAsDetachedBubble];
   } else {
     NSPoint phase = [[self window] themePatternPhase];
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
@@ -53,7 +54,7 @@ const CGFloat kBorderRadius = 3.0;
   }
 }
 
-- (void)drawRectAsTopBubble:(NSRect)rect {
+- (void)drawAsDetachedBubble {
   // The state of our morph; 1 is total bubble, 0 is the regular bar. We use it
   // to morph the bubble to a regular bar (shape and colour).
   CGFloat morph = [controller_ detachedMorphProgress];
@@ -145,50 +146,44 @@ const CGFloat kBorderRadius = 3.0;
   [divider stroke];
 }
 
-- (void)drawRectAsBottomBubble:(NSRect)rect {
-  if ([controller_ isEmpty])
-    return;
-
+- (void)drawAsDetachedInstantExtendedUI {
+  CGFloat morph = [controller_ detachedMorphProgress];
+  NSRect bounds = [self bounds];
   ui::ThemeProvider* themeProvider = [controller_ themeProvider];
   if (!themeProvider)
     return;
 
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-  NSRect bounds = [self bounds];
+  [[NSColor whiteColor] set];
+  NSRectFill([self bounds]);
 
-  // Draw a background if the NTP has a custom background image. Otherwise just
-  // leave the background transparent.
-  BOOL useThemeColor = themeProvider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
-  if (useThemeColor) {
+  // Overlay with a ligher background color.
+  NSColor* toolbarColor = gfx::SkColorToCalibratedNSColor(
+        chrome::search::GetDetachedBookmarkBarBackgroundColor(themeProvider));
+  CGFloat alpha = morph * [toolbarColor alphaComponent];
+  [[toolbarColor colorWithAlphaComponent:alpha] set];
+  NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+
+  // Fade in/out the background.
+  {
     gfx::ScopedNSGraphicsContextSaveGState bgScopedState;
     NSGraphicsContext* context = [NSGraphicsContext currentContext];
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextBeginTransparencyLayer(cgContext, NULL);
-    CGContextSetAlpha(
-        cgContext, chrome::search::kBookmarkBarThemeBackgroundAlphaFactor);
-    [themeProvider->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND, true)
-        set];
-    NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+    CGContextSetAlpha(cgContext, 1 - morph);
+    [context setPatternPhase:[[self window] themePatternPhase]];
+    [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
   }
 
-  NSRect dividerRect;
-  dividerRect.size.width = NSWidth(bounds);
-  dividerRect.size.height = [self cr_lineWidth];
-  dividerRect.origin.x = NSMinX(bounds);
-  dividerRect.origin.y = NSMaxY(bounds) - NSHeight(dividerRect);
-
-  NSColor* strokeColor = nil;
-  if (useThemeColor) {
-    strokeColor = themeProvider->GetNSColor(
-        ThemeProperties::COLOR_TOOLBAR_SEPARATOR, true);
-  } else {
-    strokeColor = gfx::SkColorToCalibratedNSColor(
-        chrome::search::GetBookmarkBarNoThemeSeparatorColor());
-  }
-
+  // Bottom stroke.
+  NSColor* strokeColor = gfx::SkColorToCalibratedNSColor(
+        chrome::search::GetDetachedBookmarkBarSeparatorColor(themeProvider));
+  strokeColor = [[self strokeColor] blendedColorWithFraction:morph
+                                                     ofColor:strokeColor];
   [strokeColor set];
-  NSRectFillUsingOperation(dividerRect, NSCompositeSourceOver);
+  NSRect strokeRect = bounds;
+  strokeRect.size.height = 1;
+  NSRectFillUsingOperation(strokeRect, NSCompositeSourceOver);
 }
 
 @end  // @implementation BookmarkBarToolbarView

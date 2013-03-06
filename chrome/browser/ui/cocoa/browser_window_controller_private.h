@@ -64,12 +64,9 @@
 // call it with the appropriate |maxY| which depends on whether or not the
 // bookmark bar is shown as the NTP bubble or not (use
 // |-placeBookmarkBarBelowInfoBar|).
-- (CGFloat)layoutTopBookmarkBarAtMinX:(CGFloat)minX
-                                 maxY:(CGFloat)maxY
-                                width:(CGFloat)width;
-
-// Lays out the bookmark at the bottom of the content area.
-- (void)layoutBottomBookmarkBarInContentFrame:(NSRect)contentFrame;
+- (CGFloat)layoutBookmarkBarAtMinX:(CGFloat)minX
+                              maxY:(CGFloat)maxY
+                             width:(CGFloat)width;
 
 // Lay out the view which draws the background for the floating bar when in
 // presentation mode, with the given frame and presentation-mode-status. Should

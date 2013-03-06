@@ -63,13 +63,11 @@ class MockThemeProvider : public ui::ThemeProvider {
   int currentTabContentsHeight_;
   ui::ThemeProvider* themeProvider_;
   BookmarkBar::State state_;
-  BOOL shouldShowAtBottomWhenDetached_;
   BOOL isEmpty_;
 }
 @property (nonatomic, assign) int currentTabContentsHeight;
 @property (nonatomic, assign) ui::ThemeProvider* themeProvider;
 @property (nonatomic, assign) BookmarkBar::State state;
-@property (nonatomic, assign) BOOL shouldShowAtBottomWhenDetached;
 @property (nonatomic, assign) BOOL isEmpty;
 
 // |BookmarkBarState| protocol:
@@ -89,7 +87,6 @@ class MockThemeProvider : public ui::ThemeProvider {
 @synthesize currentTabContentsHeight = currentTabContentsHeight_;
 @synthesize themeProvider = themeProvider_;
 @synthesize state = state_;
-@synthesize shouldShowAtBottomWhenDetached = shouldShowAtBottomWhenDetached_;
 @synthesize isEmpty = isEmpty_;
 
 - (id)init {
@@ -195,32 +192,6 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
   [controller_.get() setThemeProvider:&provider];
   [controller_.get() setCurrentTabContentsHeight:200];
 
-  [view_ display];
-}
-
-TEST_F(BookmarkBarToolbarViewTest, DisplayAsBottomDetachedBar) {
-  [controller_.get() setState:BookmarkBar::DETACHED];
-  [controller_.get() setShouldShowAtBottomWhenDetached:YES];
-
-  // Tests where we don't have a background image, only a color.
-  NiceMock<MockThemeProvider> provider;
-  NSColor* color = [NSColor redColor];
-  EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(provider, GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND, true))
-      .WillRepeatedly(Return(color));
-  EXPECT_CALL(provider,
-              GetNSColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR, true))
-      .WillRepeatedly(Return(color));
-  [controller_.get() setThemeProvider:&provider];
-
-  [view_ display];
-}
-
-TEST_F(BookmarkBarToolbarViewTest, DisplayAsEmptyBottomDetachedBar) {
-  [controller_.get() setState:BookmarkBar::DETACHED];
-  [controller_.get() setShouldShowAtBottomWhenDetached:YES];
-  [controller_.get() setIsEmpty:YES];
   [view_ display];
 }
 

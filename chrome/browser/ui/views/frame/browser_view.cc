@@ -180,25 +180,12 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
                               DetachableToolbarView* view,
                               ui::ThemeProvider* theme_provider) {
   // Paint background for detached state; if animating, this is fade in/out.
-  bool themed = theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND);
-  SkColor themed_background_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  canvas->FillRect(view->GetLocalBounds(),
-                   themed ? themed_background_color :
-                            SkColorSetARGB(0xFF, 0xF1, 0xF1, 0xF1));
+  canvas->DrawColor(
+      chrome::search::GetDetachedBookmarkBarBackgroundColor(theme_provider));
   // Draw the separators above and below bookmark bar;
   // if animating, these are fading in/out.
-  SkColor separator_color = themed ? SkColorSetARGB(128, 0, 0, 0) :
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
-  if (themed) {
-    // If theme is too dark to use 0.5 black for separator, use 0.5 readable
-    // color, which is usually 0.5 white.
-    SkColor readable_color = color_utils::GetReadableColor(
-        separator_color, themed_background_color);
-    if (readable_color != separator_color)
-      separator_color = SkColorSetA(readable_color, 128);
-  }
+  SkColor separator_color =
+      chrome::search::GetDetachedBookmarkBarSeparatorColor(theme_provider);
   DetachableToolbarView::PaintHorizontalBorder(canvas, view, true,
                                                separator_color);
   DetachableToolbarView::PaintHorizontalBorder(canvas, view, false,

@@ -272,16 +272,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // The x point on the bar where the left edge of the new item will end
   // up if it is dropped.
   CGFloat insertionPos_;
-
-  // YES if the bookmark bar is empty.
-  BOOL isEmpty_;
 }
 
 @property(readonly, nonatomic) BookmarkBar::State currentState;
 @property(readonly, nonatomic) BookmarkBar::State lastState;
 @property(readonly, nonatomic) BOOL isAnimationRunning;
 @property(assign, nonatomic) id<BookmarkBarControllerDelegate> delegate;
-@property(readonly, nonatomic) BOOL isEmpty;
 @property(assign, nonatomic) BOOL stateAnimationsEnabled;
 @property(assign, nonatomic) BOOL innerContentAnimationsEnabled;
 
