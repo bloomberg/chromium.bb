@@ -54,6 +54,7 @@ class SidenavDataSource(object):
       if 'items' in item:
         if self._AddSelected(item['items']):
           item['child_selected'] = True
+          return True
     return False
 
   def get(self, key):
