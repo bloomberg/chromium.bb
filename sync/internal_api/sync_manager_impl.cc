@@ -426,6 +426,7 @@ void SyncManagerImpl::Init(
 
   DVLOG(1) << "Setting sync client ID: " << sync_id;
   DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
+  invalidator_->SetUniqueId(invalidator_client_id);
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
