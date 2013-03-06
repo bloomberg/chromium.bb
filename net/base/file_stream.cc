@@ -65,10 +65,7 @@ int FileStream::OpenSync(const base::FilePath& path, int open_flags) {
   }
 
   open_flags_ = open_flags;
-  // TODO(satorux): Put a DCHECK once all async clients are migrated
-  // to use Open(). crbug.com/114783
-  //
-  // DCHECK(!is_async());
+  DCHECK(!is_async());
   return context_->OpenSync(path, open_flags_);
 }
 
