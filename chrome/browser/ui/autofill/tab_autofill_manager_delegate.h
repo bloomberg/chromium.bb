@@ -36,7 +36,6 @@ class TabAutofillManagerDelegate
   virtual ~TabAutofillManagerDelegate();
 
   // AutofillManagerDelegate implementation.
-  virtual InfoBarService* GetInfoBarService() OVERRIDE;
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
@@ -46,6 +45,10 @@ class TabAutofillManagerDelegate
       const base::Closure& callback) OVERRIDE;
   virtual void OnAutocheckoutError() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
+  virtual void ConfirmSaveCreditCard(
+      const AutofillMetrics& metric_logger,
+      const CreditCard& credit_card,
+      const base::Closure& save_card_callback) OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
       const content::PasswordForm& form,

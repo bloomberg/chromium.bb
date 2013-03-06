@@ -9,10 +9,6 @@ namespace autofill {
 TestAutofillManagerDelegate::TestAutofillManagerDelegate() {}
 TestAutofillManagerDelegate::~TestAutofillManagerDelegate() {}
 
-InfoBarService* TestAutofillManagerDelegate::GetInfoBarService() {
-  return NULL;
-}
-
 PersonalDataManager* TestAutofillManagerDelegate::GetPersonalDataManager() {
   return NULL;
 }
@@ -37,6 +33,11 @@ void TestAutofillManagerDelegate::SetSyncStateChangedCallback(
 void TestAutofillManagerDelegate::OnAutocheckoutError() {}
 
 void TestAutofillManagerDelegate::ShowAutofillSettings() {}
+
+void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
+    const AutofillMetrics& metric_logger,
+    const CreditCard& credit_card,
+    const base::Closure& save_card_callback) {}
 
 void TestAutofillManagerDelegate::ShowPasswordGenerationBubble(
     const gfx::Rect& bounds,

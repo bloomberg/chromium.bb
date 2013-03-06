@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_CC_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -24,27 +25,19 @@ struct LoadCommittedDetails;
 // card information gathered from a form submission.
 class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an autofill credit card delegate and adds it to |infobar_service|.
+  // Creates an AutofillCCInfoBarDelegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
-                     const CreditCard* credit_card,
-                     PersonalDataManager* personal_data,
-                     const AutofillMetrics* metric_logger);
+                     const AutofillMetrics* metric_logger,
+                     const base::Closure& save_card_callback);
 
-#if defined(UNIT_TEST)
-  static scoped_ptr<ConfirmInfoBarDelegate> Create(
-      const CreditCard* credit_card,
-      PersonalDataManager* personal_data,
-      const AutofillMetrics* metric_logger) {
-    return scoped_ptr<ConfirmInfoBarDelegate>(new AutofillCCInfoBarDelegate(
-        NULL, credit_card, personal_data, metric_logger));
-  }
-#endif
+  static scoped_ptr<ConfirmInfoBarDelegate> CreateForTesting(
+      const AutofillMetrics* metric_logger,
+      const base::Closure& save_card_callback);
 
  private:
   AutofillCCInfoBarDelegate(InfoBarService* infobar_service,
-                            const CreditCard* credit_card,
-                            PersonalDataManager* personal_data,
-                            const AutofillMetrics* metric_logger);
+                            const AutofillMetrics* metric_logger,
+                            const base::Closure& save_card_callback);
   virtual ~AutofillCCInfoBarDelegate();
 
   void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
@@ -62,16 +55,12 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  // The credit card that should be saved if the user accepts the infobar.
-  scoped_ptr<const CreditCard> credit_card_;
-
-  // The personal data manager to which the credit card should be saved.
-  // Weak reference.
-  PersonalDataManager* personal_data_;
-
   // For logging UMA metrics.
   // Weak reference. Owned by the AutofillManager that initiated this infobar.
   const AutofillMetrics* metric_logger_;
+
+  // The callback to save credit card if the user accepts the infobar.
+  base::Closure save_card_callback_;
 
   // Did the user ever explicitly accept or dismiss this infobar?
   bool had_user_interaction_;

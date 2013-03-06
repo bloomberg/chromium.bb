@@ -20,11 +20,9 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/autocheckout/whitelist_manager.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
-#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_field.h"
@@ -64,6 +62,7 @@
 #include "ui/gfx/rect.h"
 
 typedef PersonalDataManager::GUIDPair GUIDPair;
+
 using base::TimeTicks;
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -918,12 +917,14 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
     return;
 
-  // If credit card information was submitted, show an infobar to offer to save
-  // it.
-  scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
-  if (imported_credit_card && web_contents()) {
-    AutofillCCInfoBarDelegate::Create(manager_delegate_->GetInfoBarService(),
-        scoped_credit_card.release(), personal_data_, metric_logger_.get());
+  // If credit card information was submitted, we need to confirm whether to
+  // save it.
+  if (imported_credit_card) {
+    manager_delegate_->ConfirmSaveCreditCard(
+        *metric_logger_,
+        *imported_credit_card,
+        base::Bind(&PersonalDataManager::SaveImportedCreditCard,
+                   base::Unretained(personal_data_), *imported_credit_card));
   }
 }
 

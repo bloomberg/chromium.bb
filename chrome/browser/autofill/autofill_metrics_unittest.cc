@@ -270,8 +270,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate(
-      MockAutofillMetrics* metric_logger,
-      CreditCard** created_card);
+      MockAutofillMetrics* metric_logger);
 
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
@@ -342,16 +341,15 @@ void AutofillMetricsTest::TearDown() {
 }
 
 scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(
-    MockAutofillMetrics* metric_logger,
-    CreditCard** created_card) {
+    MockAutofillMetrics* metric_logger) {
   EXPECT_CALL(*metric_logger,
               LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
-  // The delegate created below will take ownership of this object.
-  CreditCard* credit_card = new CreditCard();
-  if (created_card)
-    *created_card = credit_card;
-  return AutofillCCInfoBarDelegate::Create(credit_card, &personal_data_,
-                                           metric_logger);
+
+  CreditCard credit_card;
+  return AutofillCCInfoBarDelegate::CreateForTesting(
+      metric_logger,
+      base::Bind(&TestPersonalDataManager::SaveImportedCreditCard,
+                 base::Unretained(&personal_data_), credit_card));
 }
 
 // Test that we log quality metrics appropriately.
@@ -1149,11 +1147,9 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
 
   // Accept the infobar.
   {
-    CreditCard* credit_card;
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger,
-                                                              &credit_card));
+    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger));
     ASSERT_TRUE(infobar);
-    EXPECT_CALL(personal_data_, SaveImportedCreditCard(*credit_card));
+    EXPECT_CALL(personal_data_, SaveImportedCreditCard(_));
     EXPECT_CALL(metric_logger,
         LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_ACCEPTED)).Times(1);
     EXPECT_CALL(metric_logger,
@@ -1163,8 +1159,7 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
 
   // Cancel the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger,
-                                                              NULL));
+    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger));
     ASSERT_TRUE(infobar);
     EXPECT_CALL(metric_logger,
         LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_DENIED)).Times(1);
@@ -1175,8 +1170,7 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
 
   // Dismiss the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger,
-                                                              NULL));
+    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger));
     ASSERT_TRUE(infobar);
     EXPECT_CALL(metric_logger,
         LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_DENIED)).Times(1);
@@ -1187,8 +1181,7 @@ TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
 
   // Ignore the infobar.
   {
-    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger,
-                                                              NULL));
+    scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(&metric_logger));
     ASSERT_TRUE(infobar);
     EXPECT_CALL(metric_logger,
         LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_IGNORED)).Times(1);

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -38,10 +39,6 @@ TabAutofillManagerDelegate::TabAutofillManagerDelegate(
 
 TabAutofillManagerDelegate::~TabAutofillManagerDelegate() {
   HideAutofillPopup();
-}
-
-InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
-  return InfoBarService::FromWebContents(web_contents_);
 }
 
 PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
@@ -103,6 +100,16 @@ void TabAutofillManagerDelegate::ShowAutofillSettings() {
   if (browser)
     chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
 #endif  // #if defined(OS_ANDROID)
+}
+
+void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
+    const AutofillMetrics& metric_logger,
+    const CreditCard& credit_card,
+    const base::Closure& save_card_callback) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  AutofillCCInfoBarDelegate::Create(
+      infobar_service, &metric_logger, save_card_callback);
 }
 
 void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(

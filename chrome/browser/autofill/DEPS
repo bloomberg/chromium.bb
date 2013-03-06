@@ -4,7 +4,10 @@ include_rules = [
   # these basic rules followed by temporary exceptions.  Please don't
   # add to the list of exceptions!
   "-chrome/browser",
+  "+chrome/browser/api/sync",
+  "+chrome/browser/api/webdata",
   "+chrome/browser/autofill",
+  "+chrome/browser/common",
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.
@@ -26,6 +29,8 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
+    "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
+    "!chrome/browser/api/infobars/infobar_service.h",
     "!chrome/browser/password_manager/encryptor.h",
     "!chrome/browser/password_manager/password_manager.h",
     "!chrome/browser/password_manager/password_manager_delegate_impl.h",
@@ -62,5 +67,10 @@ specific_include_rules = {
   'personal_data_manager\.(h|cc)': [
     # TODO(joi): Remove.
     "!chrome/browser/api/sync",
+  ],
+
+  'autofill_cc_infobar_delegate\.(h|cc)': [
+    "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
+    "!chrome/browser/api/infobars/infobar_service.h",
   ],
 }

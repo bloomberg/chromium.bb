@@ -27,6 +27,7 @@ class RectF;
 
 class AutofillMetrics;
 class AutofillPopupDelegate;
+class CreditCard;
 class FormStructure;
 class GURL;
 class InfoBarService;
@@ -57,9 +58,6 @@ class AutofillManagerDelegate {
  public:
   virtual ~AutofillManagerDelegate() {}
 
-  // Gets the infobar service associated with the delegate.
-  virtual InfoBarService* GetInfoBarService() = 0;
-
   // Gets the PersonalDataManager instance associated with the delegate.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
@@ -89,6 +87,13 @@ class AutofillManagerDelegate {
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;
+
+  // Run |save_card_callback| if the credit card should be imported as personal
+  // data. |metric_logger| can be used to log user actions.
+  virtual void ConfirmSaveCreditCard(
+      const AutofillMetrics& metric_logger,
+      const CreditCard& credit_card,
+      const base::Closure& save_card_callback) = 0;
 
   // Causes the password generation bubble UI to be shown using the
   // specified form with the given bounds.
