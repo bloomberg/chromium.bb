@@ -69,18 +69,18 @@ string Curve25519KeyExchange::NewPrivateKey(QuicRandom* rand) {
 }
 
 bool Curve25519KeyExchange::CalculateSharedKey(
-    const StringPiece& public_value,
+    const StringPiece& peer_public_value,
     string* out_result) const {
 // TODO(rtenneti): Add support for curve25519.
 #if 0
-  if (public_value.size() != crypto_scalarmult_curve25519_BYTES) {
+  if (peer_public_value.size() != crypto_scalarmult_curve25519_BYTES) {
     return false;
   }
 
   uint8 result[crypto_scalarmult_curve25519_BYTES];
   crypto_scalarmult_curve25519(
       result, private_key_,
-      reinterpret_cast<const uint8*>(public_value.data()));
+      reinterpret_cast<const uint8*>(peer_public_value.data()));
   out_result->assign(reinterpret_cast<char*>(result), sizeof(result));
 
   return true;

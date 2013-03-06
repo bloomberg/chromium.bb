@@ -1532,6 +1532,7 @@
         'quic/congestion_control/tcp_receiver_test.cc',
         'quic/crypto/crypto_framer_test.cc',
         'quic/crypto/crypto_handshake_test.cc',
+        'quic/crypto/curve25519_key_exchange_test.cc',
         'quic/crypto/null_decrypter_test.cc',
         'quic/crypto/null_encrypter_test.cc',
         'quic/crypto/quic_random_test.cc',

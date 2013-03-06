@@ -31,7 +31,7 @@ class NET_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
   static std::string NewPrivateKey(QuicRandom* rand);
 
   // KeyExchange interface.
-  virtual bool CalculateSharedKey(const base::StringPiece& their_public_value,
+  virtual bool CalculateSharedKey(const base::StringPiece& peer_public_value,
                                   std::string* shared_key) const OVERRIDE;
   virtual base::StringPiece public_value() const OVERRIDE;
   virtual CryptoTag tag() const OVERRIDE;
