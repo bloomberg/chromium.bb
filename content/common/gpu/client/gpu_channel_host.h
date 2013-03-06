@@ -37,6 +37,10 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -170,7 +174,7 @@ class GpuChannelHost : public IPC::Sender,
   // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
   // handled only on the GPU process' IO thread, and so is not effectively
   // a finish.
-  bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
+  bool GenerateMailboxNames(unsigned num, std::vector<gpu::Mailbox>* names);
 
   // Reserve one unused transfer buffer ID.
   int32 ReserveTransferBufferId();
@@ -180,7 +184,7 @@ class GpuChannelHost : public IPC::Sender,
   virtual ~GpuChannelHost();
 
   // Message handlers.
-  void OnGenerateMailboxNamesReply(const std::vector<std::string>& names);
+  void OnGenerateMailboxNamesReply(const std::vector<gpu::Mailbox>& names);
 
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop.
@@ -235,7 +239,7 @@ class GpuChannelHost : public IPC::Sender,
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
   // A pool of valid mailbox names.
-  std::vector<std::string> mailbox_name_pool_;
+  std::vector<gpu::Mailbox> mailbox_name_pool_;
 
   // Transfer buffer IDs are allocated in sequence.
   base::AtomicSequenceNumber next_transfer_buffer_id_;

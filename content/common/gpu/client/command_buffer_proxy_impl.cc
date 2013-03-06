@@ -419,7 +419,7 @@ bool CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,
 
 bool CommandBufferProxyImpl::GenerateMailboxNames(
     unsigned num,
-    std::vector<std::string>* names) {
+    std::vector<gpu::Mailbox>* names) {
   return channel_->GenerateMailboxNames(num, names);
 }
 

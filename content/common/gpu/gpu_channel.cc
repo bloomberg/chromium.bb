@@ -25,6 +25,7 @@
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
 #include "crypto/hmac.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
@@ -106,7 +107,7 @@ class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
   }
 
   // Message handlers.
-  void OnGenerateMailboxNames(unsigned num, std::vector<std::string>* result) {
+  void OnGenerateMailboxNames(unsigned num, std::vector<gpu::Mailbox>* result) {
     TRACE_EVENT1("gpu", "OnGenerateMailboxNames", "num", num);
 
     result->resize(num);
@@ -121,12 +122,12 @@ class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
           sizeof(name) / 2);
       DCHECK(success);
 
-      (*result)[i].assign(name, sizeof(name));
+      (*result)[i].SetName(reinterpret_cast<int8*>(name));
     }
   }
 
   void OnGenerateMailboxNamesAsync(unsigned num) {
-    std::vector<std::string> names;
+    std::vector<gpu::Mailbox> names;
     OnGenerateMailboxNames(num, &names);
     Send(new GpuChannelMsg_GenerateMailboxNamesReply(names));
   }

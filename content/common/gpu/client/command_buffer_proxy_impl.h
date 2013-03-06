@@ -29,6 +29,10 @@ namespace base {
 class SharedMemory;
 }
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace content {
 class GpuChannelHost;
 
@@ -106,7 +110,7 @@ class CommandBufferProxyImpl
   // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
   // handled only on the GPU process' IO thread, and so is not effectively
   // a finish.
-  bool GenerateMailboxNames(unsigned num, std::vector<std::string>* names);
+  bool GenerateMailboxNames(unsigned num, std::vector<gpu::Mailbox>* names);
 
   // Sends an IPC message with the new state of surface visibility.
   bool SetSurfaceVisible(bool visible);
