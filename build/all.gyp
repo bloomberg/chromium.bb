@@ -248,34 +248,25 @@
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../webkit/webkit.gyp:test_shell_common',
-          ],
-          'conditions': [
-            ['target_arch!="x64"', {
-              'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
-              ]
-            }, { # target_arch!="x64"
-              'dependencies!': [
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-              'defines': [
-                'OMIT_CHROME_FRAME',
-              ],
-            }], # target_arch=="x64"
-            # remoting_host_installation uses lots of non-trivial GYP that tend
-            # to break because of differences between ninja and msbuild. Make
-            # sure this target is built by the builders on the main waterfall.
-            # See http://crbug.com/180600.
-            ['wix_exists == "True" and sas_dll_exists == "True"', {
-              'dependencies': [
-                '../remoting/remoting.gyp:remoting_host_installation',
-              ],
-            }],
-          ],
+           ],
+           'conditions': [
+             ['target_arch!="x64"', {
+               'dependencies': [
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
+                 '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
+               ]
+             }, { # target_arch!="x64"
+               'dependencies!': [
+                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+               ],
+               'defines': [
+                 'OMIT_CHROME_FRAME',
+               ],
+             }], # target_arch=="x64"
+           ],
         }],
         ['OS=="linux"', {
           'dependencies': [
