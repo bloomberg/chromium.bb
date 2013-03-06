@@ -33,6 +33,10 @@ class ImmersiveModeController : public ui::EventHandler,
   // Must initialize after browser view has a Widget and native window.
   void Init();
 
+  // Returns true if immersive mode should be used for fullscreen based on
+  // command line flags.
+  static bool UseImmersiveFullscreen();
+
   // Enables or disables immersive mode.
   void SetEnabled(bool enabled);
   bool enabled() const { return enabled_; }

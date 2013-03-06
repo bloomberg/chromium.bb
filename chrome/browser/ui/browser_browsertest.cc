@@ -1671,6 +1671,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
   EXPECT_TRUE(browser()->window()->IsFullscreen());
 #if defined(OS_MACOSX)
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
+#elif defined(OS_CHROMEOS)
+  // Immersive fullscreen behaves like Mac presentation mode.
+  EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 #else
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
 #endif

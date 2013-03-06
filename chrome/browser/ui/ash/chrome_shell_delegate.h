@@ -31,6 +31,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   static ChromeShellDelegate* instance() { return instance_; }
 
+  // Prefer the version in ImmersiveModeController.
+  static bool UseImmersiveFullscreen();
+
   ash::WindowPositioner* window_positioner() {
     return window_positioner_.get();
   }

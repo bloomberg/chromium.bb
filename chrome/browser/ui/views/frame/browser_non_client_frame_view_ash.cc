@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 
-#include "ash/ash_switches.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
-#include "base/command_line.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -34,8 +32,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-using ash::switches::kAshImmersiveMode;
 
 namespace {
 
@@ -190,7 +186,7 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kAshImmersiveMode)) {
+  if (ImmersiveModeController::UseImmersiveFullscreen()) {
     // Hide the caption buttons in immersive mode because it's confusing when
     // the user hovers or clicks in the top-right of the screen and hits one.
     // Only show them during a reveal.

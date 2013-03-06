@@ -17,19 +17,7 @@
 
 using views::Widget;
 
-class BrowserNonClientFrameViewAshTest : public InProcessBrowserTest {
- public:
-  BrowserNonClientFrameViewAshTest() {}
-  virtual ~BrowserNonClientFrameViewAshTest() {}
-
-  // content::BrowserTestBase overrides:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(ash::switches::kAshImmersiveMode);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAshTest);
-};
+typedef InProcessBrowserTest BrowserNonClientFrameViewAshTest;
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, WindowHeader) {
   // We know we're using Views, so static cast.

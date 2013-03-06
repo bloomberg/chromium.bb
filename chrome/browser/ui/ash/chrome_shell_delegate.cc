@@ -58,6 +58,17 @@ ChromeShellDelegate::~ChromeShellDelegate() {
     instance_ = NULL;
 }
 
+// static
+bool ChromeShellDelegate::UseImmersiveFullscreen() {
+#if defined(OS_CHROMEOS)
+  // Kiosk mode needs the whole screen.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kKioskMode) &&
+      !command_line->HasSwitch(ash::switches::kAshDisableImmersiveMode);
+#endif
+  return false;
+}
+
 bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
 }
@@ -96,8 +107,7 @@ void ChromeShellDelegate::ToggleMaximized() {
 
   // TODO(jamescook): If immersive mode replaces fullscreen, rename this
   // function and the interface to ToggleFullscreen.
-  if (CommandLine::ForCurrentProcess()->
-        HasSwitch(ash::switches::kAshImmersiveMode)) {
+  if (UseImmersiveFullscreen()) {
     chrome::ToggleFullscreenMode(GetTargetBrowser());
     return;
   }

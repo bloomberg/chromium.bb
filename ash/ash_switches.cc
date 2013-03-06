@@ -45,6 +45,9 @@ const char kAshDisableDisplayChangeLimiter[] =
 // Disables boot animation v2, go back to v1.
 const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
 
+// Disables immersive fullscreen mode.
+const char kAshDisableImmersiveMode[] = "ash-disable-immersive-mode";
+
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
@@ -79,11 +82,8 @@ const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 // "1024x768*2" sets the scale factor to 2 for a high DPI display.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
-// Enables immersive mode.
-const char kAshImmersiveMode[] = "ash-immersive-mode";
-
-// Enables immersive mode and hides the small tab indicators at the top of the
-// screen.
+// Hides the small tab indicators at the top of the screen during immersive
+// fullscreen mode.
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 

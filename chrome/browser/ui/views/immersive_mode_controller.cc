@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -357,6 +358,17 @@ void ImmersiveModeController::Init() {
   hide_tab_indicators_ = CommandLine::ForCurrentProcess()->
       HasSwitch(ash::switches::kAshImmersiveHideTabIndicators);
 #endif
+}
+
+// static
+bool ImmersiveModeController::UseImmersiveFullscreen() {
+#if defined(OS_CHROMEOS)
+  // Kiosk mode needs the whole screen.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kKioskMode) &&
+      !command_line->HasSwitch(ash::switches::kAshDisableImmersiveMode);
+#endif
+  return false;
 }
 
 void ImmersiveModeController::SetEnabled(bool enabled) {

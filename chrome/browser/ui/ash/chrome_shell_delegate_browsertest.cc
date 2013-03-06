@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -18,9 +20,21 @@ typedef InProcessBrowserTest ChromeShellDelegateBrowserTest;
 IN_PROC_BROWSER_TEST_F(ChromeShellDelegateBrowserTest, ToggleMaximized) {
   ash::ShellDelegate* shell_delegate = ash::Shell::GetInstance()->delegate();
   ASSERT_TRUE(shell_delegate);
+  aura::Window* window = ash::wm::GetActiveWindow();
+  ASSERT_TRUE(window);
+
+  if (ChromeShellDelegate::UseImmersiveFullscreen()) {
+    // "ToggleMaximized" toggles immersive fullscreen.
+    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+    EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
+    shell_delegate->ToggleMaximized();
+    EXPECT_TRUE(ash::wm::IsWindowFullscreen(window));
+    shell_delegate->ToggleMaximized();
+    EXPECT_FALSE(ash::wm::IsWindowFullscreen(window));
+    return;
+  }
 
   // When not in fullscreen, ShellDelegate::ToggleMaximized toggles Maximized.
-  aura::Window* window = ash::wm::GetActiveWindow();
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
   shell_delegate->ToggleMaximized();
   EXPECT_TRUE(ash::wm::IsWindowMaximized(window));

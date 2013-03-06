@@ -33,15 +33,10 @@ gfx::Rect GetRectInWidget(views::View* view) {
 
 typedef InProcessBrowserTest ImmersiveModeControllerTest;
 
-// TODO(jamescook): If immersive mode becomes popular on Ash, consider porting
+// TODO(jamescook): If immersive mode becomes popular on CrOS, consider porting
 // it to other Aura platforms (win_aura, linux_aura).  http://crbug.com/163931
-#if !defined(USE_ASH)
-#define MAYBE_ImmersiveMode DISABLED_ImmersiveMode
-#else
-#define MAYBE_ImmersiveMode ImmersiveMode
-#endif
-
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveMode) {
   ui::LayerAnimator::set_disable_animations_for_test(true);
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
@@ -210,14 +205,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   controller->StartRevealForTest();
 }
 
-#if defined(USE_ASH)
-// Ash-specific immersive mode tests.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveAsh) {
-#if defined(OS_WIN)
-  // Not running in Ash, so this doesn't doesn't make sense.
-  if (!ash::Shell::HasInstance())
-    return;
-#endif
+// Shelf-specific immersive mode tests.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
   ui::LayerAnimator::set_disable_animations_for_test(true);
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
@@ -266,4 +255,4 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveAsh) {
   EXPECT_FALSE(immersive_controller->enabled());
 }
 
-#endif  // defined(USE_ASH)
+#endif  // defined(OS_CHROMEOS)

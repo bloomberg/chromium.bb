@@ -121,7 +121,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_ASH)
-#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
@@ -248,14 +247,10 @@ bool ShouldSaveOrRestoreWindowPos() {
 // Returns whether immersive mode should replace fullscreen, which should only
 // occur for "browser-fullscreen" and not for "tab-fullscreen" (which has a URL
 // for the tab entering fullscreen).
-bool UseImmersiveFullscreen(const GURL& url) {
-#if defined(USE_ASH)
+bool UseImmersiveFullscreenForUrl(const GURL& url) {
   bool is_browser_fullscreen = url.is_empty();
   return is_browser_fullscreen &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshImmersiveMode);
-#endif
-  return false;
+      ImmersiveModeController::UseImmersiveFullscreen();
 }
 
 }  // namespace
@@ -868,7 +863,7 @@ void BrowserView::UpdateFullscreenExitBubbleContent(
   // Immersive mode has no exit bubble because it has a visible strip at the
   // top that gives the user a hover target.
   // TODO(jamescook): Figure out what to do with mouse-lock.
-  if (bubble_type == FEB_TYPE_NONE || UseImmersiveFullscreen(url)) {
+  if (bubble_type == FEB_TYPE_NONE || UseImmersiveFullscreenForUrl(url)) {
     fullscreen_bubble_.reset();
   } else if (fullscreen_bubble_.get()) {
     fullscreen_bubble_->UpdateContent(url, bubble_type);
@@ -2390,7 +2385,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   }
 
   // Enable immersive before the browser refreshes its list of enabled commands.
-  if (UseImmersiveFullscreen(url))
+  if (UseImmersiveFullscreenForUrl(url))
     immersive_mode_controller_->SetEnabled(fullscreen);
 
   browser_->WindowFullscreenStateChanged();
@@ -2398,7 +2393,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (fullscreen) {
     if (!chrome::IsRunningInAppMode() &&
         type != FOR_METRO &&
-        !UseImmersiveFullscreen(url)) {
+        !UseImmersiveFullscreenForUrl(url)) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
           GetWidget(), browser_.get(), url, bubble_type));
     }
