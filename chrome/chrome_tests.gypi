@@ -723,11 +723,13 @@
     {
       'target_name': 'chromedriver2_lib',
       'type': 'static_library',
-      'dependencies': [
+      'dependencies': [   
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
+        '../third_party/zlib/zlib.gyp:minizip',
+        '../third_party/zlib/zlib.gyp:zlib',          
         '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
@@ -815,6 +817,12 @@
         'test/chromedriver/web_view_impl.h',
         'test/chromedriver/window_commands.cc',
         'test/chromedriver/window_commands.h',
+        'test/chromedriver/zip.cc',
+        'test/chromedriver/zip.h',
+        'test/chromedriver/zip_internal.cc',
+        'test/chromedriver/zip_internal.h',
+        'test/chromedriver/zip_reader.cc',
+        'test/chromedriver/zip_reader.h',                
       ],
       'actions': [
         {

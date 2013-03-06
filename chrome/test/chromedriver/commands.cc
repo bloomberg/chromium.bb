@@ -81,9 +81,17 @@ Status ExecuteNewSession(
                       "command line arguments for chrome must be a list");
     }
 
+    const base::Value* extensions = NULL;
+    const base::ListValue* extensions_list = NULL;
+    if (params.Get("desiredCapabilities.chromeOptions.extensions", &extensions)
+        && !extensions->GetAsList(&extensions_list)) {
+        return Status(kUnknownError,
+                      "chrome extensions must be a list");
+    }
+
     scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
         context_getter, port, socket_factory));
-    status = chrome_desktop->Launch(chrome_exe, args_list);
+    status = chrome_desktop->Launch(chrome_exe, args_list, extensions_list);
     chrome.reset(chrome_desktop.release());
   }
   if (status.IsError())

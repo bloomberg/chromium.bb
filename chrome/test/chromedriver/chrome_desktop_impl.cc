@@ -4,12 +4,19 @@
 
 #include "chrome/test/chromedriver/chrome_desktop_impl.h"
 
+#include "base/base64.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/zip.h"
 #include "chrome/test/chromedriver/chrome_finder.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -26,7 +33,8 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
 }
 
 Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
-                                 const base::ListValue* chrome_args) {
+                                 const base::ListValue* chrome_args,
+                                 const base::ListValue* chrome_extensions) {
   base::FilePath program = chrome_exe;
   if (program.empty()) {
     if (!FindChrome(&program))
@@ -46,6 +54,16 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
 
   if (chrome_args) {
     Status status = internal::ProcessCommandLineArgs(chrome_args, &command);
+    if (status.IsError())
+      return status;
+  }
+
+  if (chrome_extensions) {
+    if (!extension_dir_.CreateUniqueTempDir())
+      return Status(kUnknownError,
+                    "cannot create temp dir for unpacking extensions");
+    Status status = internal::ProcessExtensions(
+        chrome_extensions, extension_dir_.path(), &command);
     if (status.IsError())
       return status;
   }
@@ -92,6 +110,55 @@ Status ProcessCommandLineArgs(const base::ListValue* args,
       command->AppendSwitch(arg_string);
     }
   }
+  return Status(kOk);
+}
+
+Status ProcessExtensions(const base::ListValue* extensions,
+                         const base::FilePath& temp_dir,
+                         CommandLine* command) {
+  std::vector<base::FilePath::StringType> extension_paths;
+  for (size_t i = 0; i < extensions->GetSize(); ++i) {
+    std::string extension_base64;
+    if (!extensions->GetString(i, &extension_base64)) {
+      return Status(kUnknownError,
+                    "each extension must be a base64 encoded string");
+    }
+
+    // Decodes extension string.
+    // Some WebDriver client base64 encoders follow RFC 1521, which require that
+    // 'encoded lines be no more than 76 characters long'. Just remove any
+    // newlines.
+    RemoveChars(extension_base64, "\n", &extension_base64);
+    std::string decoded_extension;
+    if (!base::Base64Decode(extension_base64, &decoded_extension))
+      return Status(kUnknownError, "failed to base64 decode extension");
+
+    // Writes decoded extension into a temporary .crx file.
+    base::ScopedTempDir temp_crx_dir;
+    if (!temp_crx_dir.CreateUniqueTempDir())
+      return Status(kUnknownError,
+                    "cannot create temp dir for writing extension CRX file");
+    base::FilePath extension_crx = temp_crx_dir.path().AppendASCII("temp.crx");
+    int size = static_cast<int>(decoded_extension.length());
+    if (file_util::WriteFile(extension_crx, decoded_extension.c_str(), size)
+        != size)
+      return Status(kUnknownError, "failed to write extension file");
+
+    // Unzips the temporary .crx file.
+    base::FilePath extension_dir = temp_dir.AppendASCII(
+        base::StringPrintf("extension%" PRIuS, i));
+    if (!zip::Unzip(extension_crx, extension_dir))
+      return Status(kUnknownError, "failed to unzip the extension CRX file");
+    extension_paths.push_back(extension_dir.value());
+  }
+
+  // Sets paths of unpacked extensions to the command line.
+  if (!extension_paths.empty()) {
+    base::FilePath::StringType extension_paths_value = JoinString(
+        extension_paths, FILE_PATH_LITERAL(','));
+    command->AppendSwitchNative("load-extension", extension_paths_value);
+  }
+
   return Status(kOk);
 }
 
