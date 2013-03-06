@@ -1139,6 +1139,9 @@ _release.add_config('butterfly-release',
 
 _release.add_config('fox-wtm2-release',
   boards=['fox_wtm2'],
+  # Until these are configured and ready, disable them.
+  signer_tests=False,
+  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
   hw_tests=[],
 )
 
