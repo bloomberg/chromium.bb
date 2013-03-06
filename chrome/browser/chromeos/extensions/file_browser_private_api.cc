@@ -606,6 +606,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<SetLastModifiedFunction>();
   registry->RegisterFunction<ZipSelectionFunction>();
   registry->RegisterFunction<ValidatePathNameLengthFunction>();
+  registry->RegisterFunction<OpenNewWindowFunction>();
 
   event_router_->ObserveFileSystemEvents();
 }
@@ -1935,6 +1936,8 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING("ERROR_LONG_NAME", IDS_FILE_BROWSER_ERROR_LONG_NAME);
   SET_STRING("NEW_FOLDER_BUTTON_LABEL",
              IDS_FILE_BROWSER_NEW_FOLDER_BUTTON_LABEL);
+  SET_STRING("NEW_WINDOW_BUTTON_LABEL",
+             IDS_FILE_BROWSER_NEW_WINDOW_BUTTON_LABEL);
   SET_STRING("FILENAME_LABEL", IDS_FILE_BROWSER_FILENAME_LABEL);
   SET_STRING("PREPARING_LABEL", IDS_FILE_BROWSER_PREPARING_LABEL);
   SET_STRING("DRAGGING_MULTIPLE_ITEMS",
@@ -3327,4 +3330,15 @@ void ValidatePathNameLengthFunction::OnFilePathLimitRetrieved(
     size_t max_length) {
   SetResult(new base::FundamentalValue(current_length <= max_length));
   SendResponse(true);
+}
+
+OpenNewWindowFunction::OpenNewWindowFunction() {}
+
+OpenNewWindowFunction::~OpenNewWindowFunction() {}
+
+bool OpenNewWindowFunction::RunImpl() {
+  std::string url;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
+  file_manager_util::OpenNewWindow(profile_, GURL(url));
+  return true;
 }

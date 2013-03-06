@@ -512,6 +512,7 @@ chrome.fileBrowserPrivate = {
       ERROR_WHITESPACE_NAME: 'Invalid name',
       ERROR_NEW_FOLDER_EMPTY_NAME: 'Please specify a folder name',
       NEW_FOLDER_BUTTON_LABEL: 'New folder',
+      NEW_WINDOW_BUTTON_LABEL: 'New window',
       FILENAME_LABEL: 'File Name',
       PREPARING_LABEL: 'Preparing',
       DRAGGING_MULTIPLE_ITEMS: '$1 items',

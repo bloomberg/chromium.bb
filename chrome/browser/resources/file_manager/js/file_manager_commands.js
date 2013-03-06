@@ -201,6 +201,18 @@ Commands.newFolderCommand = {
 };
 
 /**
+ * Initiates new window creation.
+ */
+Commands.newWindowCommand = {
+  execute: function(event, fileManager) {
+    chrome.fileBrowserPrivate.openNewWindow(document.location.href);
+  },
+  canExecute: function(event, fileManager) {
+    event.canExecute = true;
+  }
+};
+
+/**
  * Deletes selected files.
  */
 Commands.deleteFileCommand = {

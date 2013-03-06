@@ -12355,6 +12355,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_NEW_FOLDER_BUTTON_LABEL" desc="Label on the 'New folder' button.">
         New folder
       </message>
+      <message name="IDS_FILE_BROWSER_NEW_WINDOW_BUTTON_LABEL" desc="Label on the 'New window' button.">
+        New window
+      </message>
       <message name="IDS_FILE_BROWSER_FILENAME_LABEL" desc="Filename text area label.">
         File name
       </message>

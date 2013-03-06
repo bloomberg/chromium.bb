@@ -67,6 +67,10 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 // |path|. In this case the tab will automatically close on |path| unmount.
 void ViewRemovableDrive(const base::FilePath& path);
 
+// Opens a new window of the Files.app on the specified url using the
+// provided profile. If |profile| is null, then the default one is used.
+void OpenNewWindow(Profile* profile, const GURL& url);
+
 // Opens an action choice dialog for an external drive.
 // One of the actions is opening the File Manager.
 void OpenActionChoiceDialog(const base::FilePath& path);

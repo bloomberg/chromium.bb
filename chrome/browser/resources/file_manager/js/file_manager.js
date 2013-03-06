@@ -581,6 +581,9 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'newfolder',
         Commands.newFolderCommand, this, this.directoryModel_);
 
+    CommandUtil.registerCommand(doc, 'newwindow',
+        Commands.newWindowCommand, this);
+
     CommandUtil.registerCommand(this.rootsList_, 'unmount',
         Commands.unmountCommand, this.rootsList_, this);
 
