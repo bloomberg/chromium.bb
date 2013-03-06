@@ -387,6 +387,11 @@ class FindFullTest(cros_test_lib.TestCase):
     check_expected(external, external_expected)
     check_expected(internal, internal_expected)
 
+  def _CheckCanonicalConfig(self, board, ending):
+    self.assertEquals(
+        '-'.join((board, ending)),
+        cbuildbot_config.FindCanonicalConfigForBoard(board)['name'])
+
   def testExternal(self):
     """Test finding of a full builder."""
     self._RunTest('amd64-generic', external_expected='amd64-generic-full')
@@ -400,11 +405,17 @@ class FindFullTest(cros_test_lib.TestCase):
     self._RunTest('daisy', external_expected='daisy-full',
                   internal_expected='daisy-release')
 
-  def testCanonicalResolution(self):
+  def testExternalCanonicalResolution(self):
+    """Test an external canonical config."""
+    self._CheckCanonicalConfig('x86-generic', 'full')
+
+  def testInternalCanonicalResolution(self):
     """Test prefer internal over external when both exist."""
-    self.assertEquals(
-        'daisy-release',
-        cbuildbot_config.FindCanonicalConfigForBoard('daisy')['name'])
+    self._CheckCanonicalConfig('daisy', 'release')
+
+  def testPGOCanonicalResolution(self):
+    """Test prefer non-PGO over PGO builder."""
+    self._CheckCanonicalConfig('lumpy', 'release')
 
 
 if __name__ == '__main__':

@@ -171,9 +171,9 @@ def FindFullConfigsForBoard(board):
 
   for name, c in config.iteritems():
     if c['boards'] and board in c['boards']:
-      if name.endswith('-%s' % CONFIG_TYPE_RELEASE):
+      if name == '-'.join((board, CONFIG_TYPE_RELEASE)) and c['internal']:
         int_cfgs.append(copy.deepcopy(c))
-      elif name.endswith('-%s' % CONFIG_TYPE_FULL):
+      elif name == '-'.join((board, CONFIG_TYPE_FULL)) and not c['internal']:
         ext_cfgs.append(copy.deepcopy(c))
 
   return ext_cfgs, int_cfgs
