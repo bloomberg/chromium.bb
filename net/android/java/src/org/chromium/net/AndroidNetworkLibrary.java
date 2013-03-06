@@ -123,7 +123,7 @@ class AndroidNetworkLibrary {
         try {
             list = NetworkInterface.getNetworkInterfaces();
             if (list == null) return false;
-        } catch (SocketException e) {
+        } catch (Exception e) {
             Log.w(TAG, "could not get network interfaces: " + e);
             return false;
         }
