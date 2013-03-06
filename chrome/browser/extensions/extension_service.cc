@@ -1846,16 +1846,17 @@ bool ExtensionService::PopulateExtensionErrorUI(
 }
 
 void ExtensionService::HandleExtensionAlertClosed() {
-  extension_error_ui_.reset();
-}
-
-void ExtensionService::HandleExtensionAlertAccept() {
   const ExtensionIdSet* extension_ids =
       extension_error_ui_->get_blacklisted_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
     extension_prefs_->AcknowledgeBlacklistedExtension(*iter);
   }
+  extension_error_ui_.reset();
+}
+
+void ExtensionService::HandleExtensionAlertAccept() {
+  HandleExtensionAlertClosed();
 }
 
 void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
@@ -1876,6 +1877,7 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
 
 void ExtensionService::HandleExtensionAlertDetails() {
   extension_error_ui_->ShowExtensions();
+  HandleExtensionAlertClosed();
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {
