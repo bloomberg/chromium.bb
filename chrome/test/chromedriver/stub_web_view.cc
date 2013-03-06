@@ -15,6 +15,10 @@ std::string StubWebView::GetId() {
   return id_;
 }
 
+Status StubWebView::ConnectIfNecessary() {
+  return Status(kOk);
+}
+
 Status StubWebView::Close() {
   return Status(kOk);
 }

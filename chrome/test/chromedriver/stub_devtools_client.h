@@ -22,6 +22,7 @@ class StubDevToolsClient : public DevToolsClient {
   virtual ~StubDevToolsClient();
 
   // Overridden from DevToolsClient:
+  virtual Status ConnectIfNecessary() OVERRIDE;
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE;
   virtual Status SendCommandAndGetResult(

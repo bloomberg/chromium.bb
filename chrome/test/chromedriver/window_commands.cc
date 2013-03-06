@@ -52,6 +52,10 @@ Status ExecuteWindowCommand(
   if (status.IsError())
     return status;
 
+  status = web_view->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
   Status nav_status = web_view->WaitForPendingNavigations(session->frame);
   if (nav_status.IsError())
     return nav_status;

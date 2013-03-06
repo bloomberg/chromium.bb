@@ -103,6 +103,10 @@ std::string WebViewImpl::GetId() {
   return id_;
 }
 
+Status WebViewImpl::ConnectIfNecessary() {
+  return client_->ConnectIfNecessary();
+}
+
 Status WebViewImpl::Close() {
   Status status = closer_func_.Run();
   if (status.IsOk())

@@ -19,6 +19,10 @@ SyncWebSocketImpl::SyncWebSocketImpl(
 
 SyncWebSocketImpl::~SyncWebSocketImpl() {}
 
+bool SyncWebSocketImpl::IsConnected() {
+  return core_->IsConnected();
+}
+
 bool SyncWebSocketImpl::Connect(const GURL& url) {
   return core_->Connect(url);
 }
@@ -37,8 +41,13 @@ bool SyncWebSocketImpl::HasNextMessage() {
 
 SyncWebSocketImpl::Core::Core(net::URLRequestContextGetter* context_getter)
     : context_getter_(context_getter),
-      closed_(false),
+      is_connected_(false),
       on_update_event_(&lock_) {}
+
+bool SyncWebSocketImpl::Core::IsConnected() {
+  base::AutoLock lock(lock_);
+  return is_connected_;
+}
 
 bool SyncWebSocketImpl::Core::Connect(const GURL& url) {
   bool success = false;
@@ -64,8 +73,8 @@ bool SyncWebSocketImpl::Core::Send(const std::string& message) {
 
 bool SyncWebSocketImpl::Core::ReceiveNextMessage(std::string* message) {
   base::AutoLock lock(lock_);
-  while (received_queue_.empty() && !closed_) on_update_event_.Wait();
-  if (closed_)
+  while (received_queue_.empty() && is_connected_) on_update_event_.Wait();
+  if (!is_connected_)
     return false;
   *message = received_queue_.front();
   received_queue_.pop_front();
@@ -85,7 +94,7 @@ void SyncWebSocketImpl::Core::OnMessageReceived(const std::string& message) {
 
 void SyncWebSocketImpl::Core::OnClose() {
   base::AutoLock lock(lock_);
-  closed_ = true;
+  is_connected_ = false;
   on_update_event_.Signal();
 }
 
@@ -95,6 +104,10 @@ void SyncWebSocketImpl::Core::ConnectOnIO(
     const GURL& url,
     bool* success,
     base::WaitableEvent* event) {
+  {
+    base::AutoLock lock(lock_);
+    received_queue_.clear();
+  }
   socket_.reset(new WebSocket(context_getter_, url, this));
   socket_->Connect(base::Bind(
       &SyncWebSocketImpl::Core::OnConnectCompletedOnIO,
@@ -106,6 +119,10 @@ void SyncWebSocketImpl::Core::OnConnectCompletedOnIO(
     base::WaitableEvent* event,
     int error) {
   *success = (error == net::OK);
+  if (*success) {
+    base::AutoLock lock(lock_);
+    is_connected_ = true;
+  }
   event->Signal();
 }
 

@@ -51,8 +51,10 @@ class SyncWebSocket;
 
 class DevToolsClientImpl : public DevToolsClient {
  public:
+  typedef base::Callback<Status()> FrontendCloserFunc;
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
-                     const std::string& url);
+                     const std::string& url,
+                     const FrontendCloserFunc& frontend_closer_func);
 
   typedef base::Callback<bool(
       const std::string&,
@@ -62,6 +64,7 @@ class DevToolsClientImpl : public DevToolsClient {
       internal::InspectorCommandResponse*)> ParserFunc;
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url,
+                     const FrontendCloserFunc& frontend_closer_func,
                      const ParserFunc& parser_func);
 
   virtual ~DevToolsClientImpl();
@@ -69,6 +72,7 @@ class DevToolsClientImpl : public DevToolsClient {
   void SetParserFuncForTesting(const ParserFunc& parser_func);
 
   // Overridden from DevToolsClient:
+  virtual Status ConnectIfNecessary() OVERRIDE;
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE;
   virtual Status SendCommandAndGetResult(
@@ -97,12 +101,12 @@ class DevToolsClientImpl : public DevToolsClient {
                               const base::DictionaryValue& params);
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
+  FrontendCloserFunc frontend_closer_func_;
   ParserFunc parser_func_;
   std::list<DevToolsEventListener*> listeners_;
   std::list<DevToolsEventListener*> listeners_for_on_connected_;
   typedef std::map<int, base::DictionaryValue*> ResponseMap;
   ResponseMap cmd_response_map_;
-  bool connected_;
   int next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClientImpl);

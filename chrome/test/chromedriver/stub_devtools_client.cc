@@ -11,6 +11,10 @@ StubDevToolsClient::StubDevToolsClient() {}
 
 StubDevToolsClient::~StubDevToolsClient() {}
 
+Status StubDevToolsClient::ConnectIfNecessary() {
+  return Status(kOk);
+}
+
 Status StubDevToolsClient::SendCommand(const std::string& method,
                                        const base::DictionaryValue& params) {
   scoped_ptr<base::DictionaryValue> result;

@@ -29,6 +29,9 @@ class FakeDevToolsClient : public DevToolsClient {
   }
 
   // Overridden from DevToolsClient:
+  virtual Status ConnectIfNecessary() OVERRIDE {
+    return Status(kOk);
+  }
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) OVERRIDE {
     return SendCommandAndGetResult(method, params, NULL);

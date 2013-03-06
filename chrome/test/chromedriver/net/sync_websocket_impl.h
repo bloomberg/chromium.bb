@@ -35,6 +35,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
   virtual ~SyncWebSocketImpl();
 
   // Overridden from SyncWebSocket:
+  virtual bool IsConnected() OVERRIDE;
   virtual bool Connect(const GURL& url) OVERRIDE;
   virtual bool Send(const std::string& message) OVERRIDE;
   virtual bool ReceiveNextMessage(std::string* message) OVERRIDE;
@@ -46,6 +47,8 @@ class SyncWebSocketImpl : public SyncWebSocket {
                public base::RefCountedThreadSafe<Core, CoreTraits> {
    public:
     explicit Core(net::URLRequestContextGetter* context_getter);
+
+    bool IsConnected();
 
     bool Connect(const GURL& url);
 
@@ -87,7 +90,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
     base::Lock lock_;
 
     // Protected by |lock_|.
-    bool closed_;
+    bool is_connected_;
 
     // Protected by |lock_|.
     std::list<std::string> received_queue_;

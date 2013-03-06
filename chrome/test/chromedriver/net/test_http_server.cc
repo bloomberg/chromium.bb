@@ -43,12 +43,15 @@ bool TestHttpServer::Start() {
 }
 
 void TestHttpServer::Stop() {
+  if (!thread_.IsRunning())
+    return;
   base::WaitableEvent event(false, false);
   thread_.message_loop_proxy()->PostTask(
       FROM_HERE,
       base::Bind(&TestHttpServer::StopOnServerThread,
                  base::Unretained(this), &event));
   event.Wait();
+  thread_.Stop();
 }
 
 bool TestHttpServer::WaitForConnectionsToClose() {

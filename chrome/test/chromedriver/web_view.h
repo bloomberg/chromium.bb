@@ -27,6 +27,9 @@ class WebView {
   // Return the id for this WebView.
   virtual std::string GetId() = 0;
 
+  // Make DevToolsCient connect to DevTools if it is disconnected.
+  virtual Status ConnectIfNecessary() = 0;
+
   // Close the WebView itself.
   virtual Status Close() = 0;
 

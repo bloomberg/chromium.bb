@@ -61,8 +61,28 @@ class ChromeImpl : public Chrome, public WebViewDelegate {
 
 namespace internal {
 
+struct WebViewInfo {
+  enum Type {
+    kPage,
+    kOther
+  };
+
+  WebViewInfo(const std::string& id,
+              const std::string& debugger_url,
+              const std::string& url,
+              Type type);
+
+  bool IsFrontend() const;
+
+  std::string id;
+  std::string debugger_url;
+  std::string url;
+  Type type;
+};
+
 Status ParsePagesInfo(const std::string& data,
-                      std::list<std::string>* page_ids);
+                      std::list<WebViewInfo>* info_list);
+
 Status ParseVersionInfo(const std::string& data,
                         std::string* version);
 

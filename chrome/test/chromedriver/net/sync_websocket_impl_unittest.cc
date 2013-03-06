@@ -109,3 +109,21 @@ TEST_F(SyncWebSocketImplTest, CloseOnSend) {
   server_.Stop();
   ASSERT_FALSE(sock.Send("1"));
 }
+
+TEST_F(SyncWebSocketImplTest, Reconnect) {
+  SyncWebSocketImpl sock(context_getter_);
+  ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
+  ASSERT_TRUE(sock.Send("1"));
+  server_.Stop();
+  ASSERT_FALSE(sock.Send("2"));
+  ASSERT_FALSE(sock.IsConnected());
+  server_.Start();
+  ASSERT_TRUE(sock.HasNextMessage());
+  ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
+  ASSERT_FALSE(sock.HasNextMessage());
+  ASSERT_TRUE(sock.Send("3"));
+  std::string message;
+  ASSERT_TRUE(sock.ReceiveNextMessage(&message));
+  ASSERT_STREQ("3", message.c_str());
+  ASSERT_FALSE(sock.HasNextMessage());
+}

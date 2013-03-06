@@ -14,6 +14,9 @@ class SyncWebSocket {
  public:
   virtual ~SyncWebSocket() {}
 
+  // Return true if connected, otherwise return false.
+  virtual bool IsConnected() = 0;
+
   // Connects to the WebSocket server. Returns true on success.
   virtual bool Connect(const GURL& url) = 0;
 

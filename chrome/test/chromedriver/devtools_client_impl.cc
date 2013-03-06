@@ -48,21 +48,23 @@ InspectorCommandResponse::~InspectorCommandResponse() {}
 
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
-    const std::string& url)
+    const std::string& url,
+    const FrontendCloserFunc& frontend_closer_func)
     : socket_(factory.Run().Pass()),
       url_(url),
+      frontend_closer_func_(frontend_closer_func),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
-      connected_(false),
       next_id_(1) {}
 
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
     const std::string& url,
+    const FrontendCloserFunc& frontend_closer_func,
     const ParserFunc& parser_func)
     : socket_(factory.Run().Pass()),
       url_(url),
+      frontend_closer_func_(frontend_closer_func),
       parser_func_(parser_func),
-      connected_(false),
       next_id_(1) {}
 
 DevToolsClientImpl::~DevToolsClientImpl() {
@@ -76,6 +78,23 @@ DevToolsClientImpl::~DevToolsClientImpl() {
 void DevToolsClientImpl::SetParserFuncForTesting(
     const ParserFunc& parser_func) {
   parser_func_ = parser_func;
+}
+
+Status DevToolsClientImpl::ConnectIfNecessary() {
+  if (!socket_->IsConnected()) {
+    if (!socket_->Connect(url_)) {
+      // Try to close devtools frontend and then reconnect.
+      Status status = frontend_closer_func_.Run();
+      if (status.IsError())
+        return status;
+      if (!socket_->Connect(url_))
+        return Status(kDisconnected, "unable to connect to renderer");
+    }
+
+    // OnConnected notification will be sent out in method ReceiveNextMessage.
+    listeners_for_on_connected_ = listeners_;
+  }
+  return Status(kOk);
 }
 
 Status DevToolsClientImpl::SendCommand(
@@ -122,14 +141,8 @@ Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
     scoped_ptr<base::DictionaryValue>* result) {
-  if (!connected_) {
-    if (!socket_->Connect(url_))
-      return Status(kDisconnected, "unable to connect to renderer");
-    connected_ = true;
-
-    // OnConnected notification will be sent out in method ReceiveNextMessage.
-    listeners_for_on_connected_ = listeners_;
-  }
+  if (!socket_->IsConnected())
+    return Status(kDisconnected, "disconnected from DevTools");
 
   int command_id = next_id_++;
   base::DictionaryValue command;
@@ -138,10 +151,8 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.Set("params", params.DeepCopy());
   std::string message;
   base::JSONWriter::Write(&command, &message);
-  if (!socket_->Send(message)) {
-    connected_ = false;
+  if (!socket_->Send(message))
     return Status(kDisconnected, "unable to send message to renderer");
-  }
   return ReceiveCommandResponse(command_id, result);
 }
 
@@ -180,11 +191,8 @@ Status DevToolsClientImpl::ReceiveNextMessage(
     return Status(kOk);
 
   std::string message;
-  if (!socket_->ReceiveNextMessage(&message)) {
-    connected_ = false;
-    return Status(kDisconnected,
-                  "unable to receive message from renderer");
-  }
+  if (!socket_->ReceiveNextMessage(&message))
+    return Status(kDisconnected, "unable to receive message from renderer");
   if (!parser_func_.Run(message, expected_id, type, event, response))
     return Status(kUnknownError, "bad inspector message: " + message);
   if (*type == internal::kEventMessageType)
@@ -214,10 +222,8 @@ Status DevToolsClientImpl::NotifyEventListeners(
        iter != listeners_.end(); ++iter) {
     (*iter)->OnEvent(method, params);
   }
-  if (method == "Inspector.detached") {
-    connected_ = false;
+  if (method == "Inspector.detached")
     return Status(kDisconnected, "received Inspector.detached event");
-  }
   return Status(kOk);
 }
 

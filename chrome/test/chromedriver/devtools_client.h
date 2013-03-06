@@ -24,6 +24,9 @@ class DevToolsClient {
 
   virtual ~DevToolsClient() {}
 
+  // Connect to DevTools if the DevToolsClient is disconnected.
+  virtual Status ConnectIfNecessary() = 0;
+
   virtual Status SendCommand(const std::string& method,
                              const base::DictionaryValue& params) = 0;
   virtual Status SendCommandAndGetResult(

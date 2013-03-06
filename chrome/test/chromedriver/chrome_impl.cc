@@ -27,6 +27,8 @@
 
 namespace {
 
+typedef std::list<internal::WebViewInfo> WebViewInfoList;
+
 Status FetchVersionInfo(URLRequestContextGetter* context_getter,
                         int port,
                         std::string* version) {
@@ -38,27 +40,39 @@ Status FetchVersionInfo(URLRequestContextGetter* context_getter,
   return internal::ParseVersionInfo(data, version);
 }
 
-Status FetchPagesInfo(URLRequestContextGetter* context_getter,
-                      int port,
-                      std::list<std::string>* page_ids) {
+Status FetchWebViewsInfo(URLRequestContextGetter* context_getter,
+                         int port,
+                         WebViewInfoList* info_list) {
   std::string url = base::StringPrintf("http://127.0.0.1:%d/json", port);
   std::string data;
   if (!FetchUrl(GURL(url), context_getter, &data))
     return Status(kChromeNotReachable);
-  return internal::ParsePagesInfo(data, page_ids);
+
+  return internal::ParsePagesInfo(data, info_list);
+}
+
+const internal::WebViewInfo* GetWebViewFromList(
+    const std::string& id,
+    const WebViewInfoList& info_list) {
+  for (WebViewInfoList::const_iterator it = info_list.begin();
+       it != info_list.end(); ++it) {
+    if (it->id == id)
+      return &(*it);
+  }
+  return NULL;
 }
 
 Status CloseWebView(URLRequestContextGetter* context_getter,
                     int port,
                     const std::string& web_view_id) {
-  std::list<std::string> ids;
-  Status status = FetchPagesInfo(context_getter, port, &ids);
+  WebViewInfoList info_list;
+  Status status = FetchWebViewsInfo(context_getter, port, &info_list);
   if (status.IsError())
     return status;
-  if (std::find(ids.begin(), ids.end(), web_view_id) == ids.end())
+  if (!GetWebViewFromList(web_view_id, info_list))
     return Status(kOk);
 
-  bool is_last_web_view = ids.size() == 1;
+  bool is_last_web_view = info_list.size() == 1u;
 
   std::string url = base::StringPrintf(
       "http://127.0.0.1:%d/json/close/%s", port, web_view_id.c_str());
@@ -71,18 +85,113 @@ Status CloseWebView(URLRequestContextGetter* context_getter,
   // Wait for the target window to be completely closed.
   base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
   while (base::Time::Now() < deadline) {
-    ids.clear();
-    status = FetchPagesInfo(context_getter, port, &ids);
+    info_list.clear();
+    status = FetchWebViewsInfo(context_getter, port, &info_list);
     if (is_last_web_view && status.code() == kChromeNotReachable)
       return Status(kOk);  // Closing the last web view leads chrome to quit.
     if (status.IsError())
       return status;
-    if (std::find(ids.begin(), ids.end(), web_view_id) == ids.end())
+    if (!GetWebViewFromList(web_view_id, info_list))
       return Status(kOk);
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
   }
 
   return Status(kUnknownError, "failed to close window in 20 seconds");
+}
+
+Status FakeCloseWebView() {
+  // This is for the docked DevTools frontend only.
+  return Status(kUnknownError,
+                "docked DevTools frontend should be closed by Javascript");
+}
+
+Status FakeCloseDevToolsFrontend() {
+  // This is for the docked DevTools frontend only.
+  return Status(kOk);
+}
+
+Status CloseDevToolsFrontend(ChromeImpl* chrome,
+                             const SyncWebSocketFactory& socket_factory,
+                             URLRequestContextGetter* context_getter,
+                             int port,
+                             const std::string& web_view_id) {
+  WebViewInfoList info_list;
+  Status status = FetchWebViewsInfo(context_getter, port, &info_list);
+  if (status.IsError())
+    return status;
+
+  std::list<std::string> tab_frontend_ids;
+  std::list<std::string> docked_frontend_ids;
+  // Filter out DevTools frontend.
+  for (WebViewInfoList::const_iterator it = info_list.begin();
+       it != info_list.end(); ++it) {
+    if (it->IsFrontend()) {
+      if (it->type == internal::WebViewInfo::kPage)
+        tab_frontend_ids.push_back(it->id);
+      else if (it->type == internal::WebViewInfo::kOther)
+        docked_frontend_ids.push_back(it->id);
+      else
+        return Status(kUnknownError, "unknown type of DevTools frontend");
+    }
+  }
+
+  // Close tab DevTools frontend as if closing a normal web view.
+  for (std::list<std::string>::const_iterator it = tab_frontend_ids.begin();
+       it != tab_frontend_ids.end(); ++it) {
+    status = CloseWebView(context_getter, port, *it);
+    if (status.IsError())
+      return status;
+  }
+
+  // Close docked DevTools frontend by Javascript.
+  for (std::list<std::string>::const_iterator it = docked_frontend_ids.begin();
+       it != docked_frontend_ids.end(); ++it) {
+    std::string ws_url = base::StringPrintf(
+        "ws://127.0.0.1:%d/devtools/page/%s", port, it->c_str());
+    scoped_ptr<WebViewImpl> web_view(new WebViewImpl(
+        *it,
+        new DevToolsClientImpl(socket_factory, ws_url,
+                               base::Bind(&FakeCloseDevToolsFrontend)),
+        chrome, base::Bind(&FakeCloseWebView)));
+
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+
+    scoped_ptr<base::Value> result;
+    status = web_view->EvaluateScript(
+        "", "document.getElementById('close-button-right').click();", &result);
+    // Ignore disconnected error, because the DevTools frontend is closed.
+    if (status.IsError() && status.code() != kDisconnected)
+      return status;
+  }
+
+  // Wait until DevTools UI disconnects from the given web view.
+  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
+  bool web_view_still_open = false;
+  while (base::Time::Now() < deadline) {
+    info_list.clear();
+    status = FetchWebViewsInfo(context_getter, port, &info_list);
+    if (status.IsError())
+      return status;
+
+    web_view_still_open = false;
+    for (WebViewInfoList::const_iterator it = info_list.begin();
+         it != info_list.end(); ++it) {
+      if (it->id == web_view_id) {
+        if (!it->debugger_url.empty())
+          return Status(kOk);
+        web_view_still_open = true;
+        break;
+      }
+    }
+    if (!web_view_still_open)
+      return Status(kUnknownError, "window closed while closing devtools");
+
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
+
+  return Status(kUnknownError, "failed to close DevTools frontend");
 }
 
 }  // namespace
@@ -105,26 +214,32 @@ std::string ChromeImpl::GetVersion() {
 }
 
 Status ChromeImpl::GetWebViews(std::list<WebView*>* web_views) {
-  std::list<std::string> ids;
-  Status status = FetchPagesInfo(context_getter_, port_, &ids);
+  WebViewInfoList info_list;
+  Status status = FetchWebViewsInfo(
+      context_getter_, port_, &info_list);
   if (status.IsError())
     return status;
 
   std::list<WebView*> internal_web_views;
-  for (std::list<std::string>::const_iterator it = ids.begin();
-       it != ids.end(); ++it) {
-    WebViewMap::const_iterator found = web_view_map_.find(*it);
+  for (WebViewInfoList::const_iterator it = info_list.begin();
+       it != info_list.end(); ++it) {
+    WebViewMap::const_iterator found = web_view_map_.find(it->id);
     if (found != web_view_map_.end()) {
       internal_web_views.push_back(found->second.get());
       continue;
     }
 
     std::string ws_url = base::StringPrintf(
-        "ws://127.0.0.1:%d/devtools/page/%s", port_, it->c_str());
-    web_view_map_[*it] = make_linked_ptr(new WebViewImpl(
-        *it, new DevToolsClientImpl(socket_factory_, ws_url),
-        this, base::Bind(&CloseWebView, context_getter_, port_, *it)));
-    internal_web_views.push_back(web_view_map_[*it].get());
+        "ws://127.0.0.1:%d/devtools/page/%s", port_, it->id.c_str());
+    DevToolsClientImpl::FrontendCloserFunc frontend_closer_func = base::Bind(
+        &CloseDevToolsFrontend, this, socket_factory_,
+        context_getter_, port_, it->id);
+    web_view_map_[it->id] = make_linked_ptr(new WebViewImpl(
+        it->id,
+        new DevToolsClientImpl(socket_factory_, ws_url, frontend_closer_func),
+        this,
+        base::Bind(&CloseWebView, context_getter_, port_, it->id)));
+    internal_web_views.push_back(web_view_map_[it->id].get());
   }
 
   web_views->swap(internal_web_views);
@@ -184,18 +299,15 @@ Status ChromeImpl::Init() {
   if (status.IsError())
     return status;
 
-  std::list<std::string> page_ids;
+  WebViewInfoList info_list;
   while (base::Time::Now() < deadline) {
-    FetchPagesInfo(context_getter_, port_, &page_ids);
-    if (page_ids.empty())
+    FetchWebViewsInfo(context_getter_, port_, &info_list);
+    if (info_list.empty())
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
     else
-      break;
+      return Status(kOk);
   }
-  if (page_ids.empty())
-    return Status(kUnknownError, "unable to discover open pages");
-
-  return Status(kOk);
+  return Status(kUnknownError, "unable to discover open pages");
 }
 
 int ChromeImpl::GetPort() const {
@@ -252,8 +364,18 @@ Status ChromeImpl::ParseAndCheckVersion(const std::string& version) {
 
 namespace internal {
 
+WebViewInfo::WebViewInfo(const std::string& id,
+                         const std::string& debugger_url,
+                         const std::string& url,
+                         Type type)
+    : id(id), debugger_url(debugger_url), url(url), type(type) {}
+
+bool WebViewInfo::IsFrontend() const {
+  return url.find("chrome-devtools://") == 0u;
+}
+
 Status ParsePagesInfo(const std::string& data,
-                      std::list<std::string>* page_ids) {
+                      std::list<WebViewInfo>* info_list) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (!value.get())
     return Status(kUnknownError, "DevTools returned invalid JSON");
@@ -261,22 +383,32 @@ Status ParsePagesInfo(const std::string& data,
   if (!value->GetAsList(&list))
     return Status(kUnknownError, "DevTools did not return list");
 
-  std::list<std::string> ids;
+  std::list<WebViewInfo> info_list_tmp;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::DictionaryValue* info;
     if (!list->GetDictionary(i, &info))
       return Status(kUnknownError, "DevTools contains non-dictionary item");
-    std::string type;
-    if (!info->GetString("type", &type))
-      return Status(kUnknownError, "DevTools did not include type");
-    if (type != "page")
-      continue;
     std::string id;
     if (!info->GetString("id", &id))
       return Status(kUnknownError, "DevTools did not include id");
-    ids.push_back(id);
+    std::string type;
+    if (!info->GetString("type", &type))
+      return Status(kUnknownError, "DevTools did not include type");
+    std::string url;
+    if (!info->GetString("url", &url))
+      return Status(kUnknownError, "DevTools did not include url");
+    std::string debugger_url;
+    info->GetString("webSocketDebuggerUrl", &debugger_url);
+    if (type == "page")
+      info_list_tmp.push_back(
+          WebViewInfo(id, debugger_url, url, internal::WebViewInfo::kPage));
+    else if (type == "other")
+      info_list_tmp.push_back(
+          WebViewInfo(id, debugger_url, url, internal::WebViewInfo::kOther));
+    else
+      return Status(kUnknownError, "DevTools returned unknown type:" + type);
   }
-  page_ids->swap(ids);
+  info_list->swap(info_list_tmp);
   return Status(kOk);
 }
 
