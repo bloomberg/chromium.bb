@@ -1022,6 +1022,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableAppMode),
   },
+  {
+    "force-fullscreen-app",
+    IDS_FLAGS_FORCE_FULLSCREEN_APP_NAME,
+    IDS_FLAGS_FORCE_FULLSCREEN_APP_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kForceFullscreenApp),
+  },
 #endif  // defined(OS_CHROMEOS)
   {
     "views-textfield",

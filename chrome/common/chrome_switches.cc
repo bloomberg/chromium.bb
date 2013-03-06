@@ -705,6 +705,9 @@ const char kForceAppMode[]                  = "force-app-mode";
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
+// Forces application to run in full screen in force app mode.
+const char kForceFullscreenApp[]            = "force-fullscreen-app";
+
 // Tries to load cloud policy for every signed in user, regardless of whether
 // they are a dasher user or not. Used to allow any GAIA account to be used for
 // testing the cloud policy framework.

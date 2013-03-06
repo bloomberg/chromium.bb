@@ -106,7 +106,7 @@ void StartupAppLauncher::Launch() {
       extension_service()->GetInstalledExtension(app_id_);
   CHECK(extension);
 
-  // Always the app in a window.
+  // Always open the app in a window.
   chrome::OpenApplication(chrome::AppLaunchParams(profile_,
                                                   extension,
                                                   extension_misc::LAUNCH_WINDOW,
