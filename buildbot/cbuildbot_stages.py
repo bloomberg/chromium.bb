@@ -203,7 +203,7 @@ class PatchChangesStage(bs.BuilderStage):
 
     for conflict in duplicates:
       cros_build_lib.Error(
-          "Changes %s conflict with each other- they have same id %s."
+          "Changes %s conflict with each other- they have same id %s.",
           ', '.join(map(str, conflict)), conflict[0].id)
 
     cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
