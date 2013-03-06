@@ -29,8 +29,8 @@ validator32 = env.ComponentObject('gen/validator_x86_32.c')
 validator64 = env.ComponentObject('gen/validator_x86_64.c')
 
 features = [
-    env.ComponentObject('unreviewed/validator_features_all.c'),
-    env.ComponentObject('unreviewed/validator_features_validator.c')
+    env.ComponentObject('validator_features_all.c'),
+    env.ComponentObject('validator_features_validator.c')
 ]
 
 # Glue library called from service runtime. The source file depends on the
