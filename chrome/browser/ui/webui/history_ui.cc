@@ -241,7 +241,7 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
 }
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry()
-    : is_search_result(false) {
+    : entry_type(EMPTY_ENTRY), is_search_result(false) {
 }
 
 BrowsingHistoryHandler::HistoryEntry::~HistoryEntry() {

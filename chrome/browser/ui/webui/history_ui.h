@@ -33,6 +33,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     // Values indicating whether an entry represents only local visits, only
     // remote visits, or a mixture of both.
     enum EntryType {
+      EMPTY_ENTRY = 0,
       LOCAL_ENTRY,
       REMOTE_ENTRY,
       COMBINED_ENTRY
