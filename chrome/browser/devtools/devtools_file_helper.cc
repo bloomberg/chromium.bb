@@ -136,7 +136,7 @@ std::string RegisterFileSystem(WebContents* web_contents,
                                const base::FilePath& path,
                                std::string* registered_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(content::HasWebUIScheme(web_contents->GetURL()));
+  CHECK(web_contents->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   std::string file_system_id = isolated_context()->RegisterFileSystemForPath(
       fileapi::kFileSystemTypeNativeLocal, path, registered_name);
 

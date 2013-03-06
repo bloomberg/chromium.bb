@@ -437,6 +437,18 @@ NavigateParams::NavigateParams(Profile* a_profile,
 
 NavigateParams::~NavigateParams() {}
 
+void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
+                                         const content::OpenURLParams& params) {
+  nav_params->referrer = params.referrer;
+  nav_params->extra_headers = params.extra_headers;
+  nav_params->disposition = params.disposition;
+  nav_params->override_encoding = params.override_encoding;
+  nav_params->is_renderer_initiated = params.is_renderer_initiated;
+  nav_params->transferred_global_request_id =
+      params.transferred_global_request_id;
+  nav_params->is_cross_site_redirect = params.is_cross_site_redirect;
+}
+
 void Navigate(NavigateParams* params) {
   Browser* source_browser = params->browser;
   if (source_browser)

@@ -498,6 +498,17 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 
 WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
                                             const OpenURLParams& params) {
+  if (params.url.SchemeIs(chrome::kChromeDevToolsScheme)) {
+    chrome::NavigateParams nav_params(profile_, params.url, params.transition);
+    FillNavigateParamsFromOpenURLParams(&nav_params, params);
+    nav_params.source_contents = source;
+    nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
+    nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    nav_params.user_gesture = true;
+    chrome::Navigate(&nav_params);
+    return nav_params.target_contents;
+  }
+
   if (inspected_web_contents_)
     return inspected_web_contents_->OpenURL(params);
   return NULL;
@@ -866,19 +877,19 @@ DictionaryValue* CreateFileSystemValue(
 } // namespace
 
 void DevToolsWindow::RequestFileSystems() {
-  CHECK(content::HasWebUIScheme(web_contents_->GetURL()));
+  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   file_helper_->RequestFileSystems(
       Bind(&DevToolsWindow::FileSystemsLoaded, weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsWindow::AddFileSystem() {
-  CHECK(content::HasWebUIScheme(web_contents_->GetURL()));
+  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   file_helper_->AddFileSystem(
       Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
-  CHECK(content::HasWebUIScheme(web_contents_->GetURL()));
+  CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   file_helper_->RemoveFileSystem(file_system_path);
   StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.fileSystemRemoved",
