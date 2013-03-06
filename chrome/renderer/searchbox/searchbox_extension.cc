@@ -609,16 +609,12 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
     info->Set(v8::String::New("imageHorizontalAlignment"),
               UTF8ToV8String(alignment));
 
-    // The theme background image vertical alignment is one of "bottom",
-    // "center" or, for top-aligned image, "top" or "$x px" where $x is an
-    // integer to offset top of image by.
+    // The theme background image vertical alignment is one of "top", "bottom",
+    // "center".
     // This is the vertical component of the CSS "background-position" format.
     // Value is only valid if |image_url| is not empty.
     if (theme_info.image_vertical_alignment == THEME_BKGRND_IMAGE_ALIGN_TOP) {
-      if (theme_info.image_top_offset != 0)
-        alignment = base::IntToString(theme_info.image_top_offset) + "px";
-      else
-        alignment = kCSSBackgroundPositionTop;
+      alignment = kCSSBackgroundPositionTop;
     } else if (theme_info.image_vertical_alignment ==
                    THEME_BKGRND_IMAGE_ALIGN_BOTTOM) {
       alignment = kCSSBackgroundPositionBottom;

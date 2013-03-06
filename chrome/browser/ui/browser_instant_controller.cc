@@ -11,7 +11,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -198,10 +197,10 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
   instant_.TabDeactivated(contents);
 }
 
-void BrowserInstantController::UpdateThemeInfo(bool parse_theme_info) {
+void BrowserInstantController::UpdateThemeInfo() {
   // Update theme background info.
-  // Initialize or re-parse |theme_info| if necessary.
-  if (!initialized_theme_info_ || parse_theme_info)
+  // Initialize |theme_info| if necessary.
+  if (!initialized_theme_info_)
     OnThemeChanged(ThemeServiceFactory::GetForProfile(profile()));
   else
     OnThemeChanged(NULL);
@@ -242,7 +241,7 @@ void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
                                            const search::Mode& new_mode) {
   // If mode is now |NTP|, send theme-related information to Instant.
   if (new_mode.is_ntp())
-    UpdateThemeInfo(false);
+    UpdateThemeInfo();
 
   instant_.SearchModeChanged(old_mode, new_mode);
 }
@@ -292,19 +291,12 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
       }
 
       // Set theme background image vertical alignment.
-      if (alignment & ThemeProperties::ALIGN_TOP) {
+      if (alignment & ThemeProperties::ALIGN_TOP)
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
-#if !defined(OS_ANDROID)
-        // A detached bookmark bar will draw the top part of a top-aligned theme
-        // image as its background, so offset the image by the bar height.
-        if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED)
-          theme_info_.image_top_offset = -chrome::kNTPBookmarkBarHeight;
-#endif  // !defined(OS_ANDROID)
-      } else if (alignment & ThemeProperties::ALIGN_BOTTOM) {
+      else if (alignment & ThemeProperties::ALIGN_BOTTOM)
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
-      } else {  // ALIGN_CENTER
+      else  // ALIGN_CENTER
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
-      }
 
       // Set theme background image tiling.
       int tiling = 0;

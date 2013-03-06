@@ -890,7 +890,7 @@ void InstantController::InstantPageRenderViewCreated(
     return;
 
   // Update theme info so that the page picks it up.
-  browser_->UpdateThemeInfo(false);
+  browser_->UpdateThemeInfo();
 
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
@@ -1229,7 +1229,7 @@ void InstantController::ResetInstantTab() {
       instant_tab_.reset(new InstantTab(this));
       instant_tab_->Init(active_tab);
       // Update theme info for this tab.
-      browser_->UpdateThemeInfo(false);
+      browser_->UpdateThemeInfo();
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
       instant_tab_->SetOmniboxBounds(omnibox_bounds_);
       instant_tab_->InitializeFonts();

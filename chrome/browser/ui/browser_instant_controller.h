@@ -93,9 +93,8 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by |browser_| when the active tab is about to be deactivated.
   void TabDeactivated(content::WebContents* contents);
 
-  // Invoked by |instant_| or |browser_| to update theme information for NTP.
-  // Set |parse_theme_info| to true to force re-parsing of theme information.
-  void UpdateThemeInfo(bool parse_theme_info);
+  // Invoked by |instant_| to update theme information for NTP.
+  void UpdateThemeInfo();
 
   // Invoked by the InstantController when it wants to open a URL.
   void OpenURL(const GURL& url,
