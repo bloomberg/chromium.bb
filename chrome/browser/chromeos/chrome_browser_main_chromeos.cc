@@ -857,6 +857,7 @@ void ChromeBrowserMainPartsChromeos::KioskAppLaunchCallback(bool success) {
     return;
 
   // If failed to launch, go back to login screen.
+  LOG(ERROR) << "Failed to launch kiosk app. Fall back to login screen";
   OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
 
   // TODO(xiyuan): Show error message.

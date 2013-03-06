@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -35,6 +36,8 @@ class KioskAppLauncher {
   bool success() const { return success_; }
 
  private:
+  class CryptohomedChecker;
+
   void ReportLaunchResult(bool success);
 
   void StartMount();
@@ -45,6 +48,8 @@ class KioskAppLauncher {
 
   const std::string app_id_;
   const LaunchCallback callback_;
+
+  scoped_ptr<CryptohomedChecker> crytohomed_checker;
 
   // True when cryptohome for the app is mounted successfully and restart
   // is scheduled.
