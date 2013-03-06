@@ -105,7 +105,7 @@ class Observer : public chrome::BrowserListObserver,
 - (BOOL)insertItemsIntoMenu:(NSMenu*)menu
                    atOffset:(NSInteger)offset
                    fromDock:(BOOL)dock {
-  if (!model_->ShouldShowAvatarMenu())
+  if (!model_ || !model_->ShouldShowAvatarMenu())
     return NO;
 
   if (dock) {
