@@ -13,11 +13,11 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -57,7 +57,9 @@ class LocaleChangeGuard::Delegate : public NotificationDelegate {
 
 LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
     : profile_(profile),
-      reverted_(false) {
+      reverted_(false),
+      session_started_(false),
+      main_frame_loaded_(false) {
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
                  content::NotificationService::AllSources());
@@ -66,6 +68,8 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
 LocaleChangeGuard::~LocaleChangeGuard() {}
 
 void LocaleChangeGuard::OnLogin() {
+  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -83,11 +87,7 @@ void LocaleChangeGuard::RevertLocaleChange() {
   content::RecordAction(UserMetricsAction("LanguageChange_Revert"));
   profile_->ChangeAppLocale(
       from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
-
-  Browser* browser = chrome::FindTabbedBrowser(profile_, false,
-                                               chrome::HOST_DESKTOP_TYPE_ASH);
-  if (browser)
-    chrome::ExecuteCommand(browser, IDC_EXIT);
+  chrome::AttemptUserExit();
 }
 
 void LocaleChangeGuard::RevertLocaleChangeCallback(const ListValue* list) {
@@ -102,13 +102,23 @@ void LocaleChangeGuard::Observe(int type,
     return;
   }
   switch (type) {
+    case chrome::NOTIFICATION_SESSION_STARTED: {
+      session_started_ = true;
+      registrar_.Remove(this, chrome::NOTIFICATION_SESSION_STARTED,
+                        content::NotificationService::AllSources());
+      if (main_frame_loaded_)
+        Check();
+      break;
+    }
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
       if (profile_ ==
           content::Source<WebContents>(source)->GetBrowserContext()) {
+        main_frame_loaded_ = true;
         // We need to perform locale change check only once, so unsubscribe.
         registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                           content::NotificationService::AllSources());
-        Check();
+        if (session_started_)
+          Check();
       }
       break;
     }
