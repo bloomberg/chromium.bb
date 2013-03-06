@@ -298,8 +298,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           !args[4]->IsNumber())
         return v8::False();
 
-      mouse_event_x = args[3]->IntegerValue();
-      mouse_event_y = args[4]->IntegerValue();
+      mouse_event_x = args[3]->IntegerValue() * web_view->pageScaleFactor();
+      mouse_event_y = args[4]->IntegerValue() * web_view->pageScaleFactor();
     }
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in

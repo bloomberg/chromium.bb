@@ -180,7 +180,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Directs the host to begin a smooth scroll. This scroll should have the same
   // performance characteristics as a user-initiated scroll. Returns an ID of
-  // the scroll gesture.
+  // the scroll gesture. |mouse_event_x| and |mouse_event_y| are expected to be
+  // in local DIP coordinates.
   void BeginSmoothScroll(bool scroll_down,
                          const SmoothScrollCompletionCallback& callback,
                          int pixels_to_scroll,
