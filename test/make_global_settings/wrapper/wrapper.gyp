@@ -8,6 +8,8 @@
     ['CC_wrapper', 'distcc'],
     ['LINK', 'clang++'],
     ['LINK_wrapper', 'distlink'],
+    ['CC.host', 'clang'],
+    ['CC.host_wrapper', 'ccache'],
   ],
   'targets': [
     {

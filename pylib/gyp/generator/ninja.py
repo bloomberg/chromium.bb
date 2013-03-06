@@ -1443,8 +1443,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     cc_host = cc_host_global_setting.replace('$(CC)', cc)
   if '$(CXX)' in cxx_host and cxx_host_global_setting:
     cxx_host = cxx_host_global_setting.replace('$(CXX)', cxx)
-  master_ninja.variable('cc_host', cc_host)
-  master_ninja.variable('cxx_host', cxx_host)
+  master_ninja.variable('cc_host',
+                        CommandWithWrapper('CC.host', wrappers, cc_host))
+  master_ninja.variable('cxx_host',
+                        CommandWithWrapper('CXX.host', wrappers, cxx_host))
   if flavor == 'win':
     master_ninja.variable('ld_host', ld_host)
   else:

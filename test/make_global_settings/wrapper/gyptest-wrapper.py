@@ -31,10 +31,13 @@ endif
 if test.format == 'ninja':
   cc_expected = ('cc = ' + os.path.join('..', '..', 'distcc') + ' ' +
                  os.path.join('..', '..', 'clang'))
+  cc_host_expected = ('cc_host = ' + os.path.join('..', '..', 'ccache') + ' ' +
+                      os.path.join('..', '..', 'clang'))
   ld_expected = 'ld = ../../distlink $cxx'
   if sys.platform == 'win32':
      ld_expected = 'link.exe'
   test.must_contain('out/Default/build.ninja', cc_expected)
+  test.must_contain('out/Default/build.ninja', cc_host_expected)
   test.must_contain('out/Default/build.ninja', ld_expected)
 
 test.pass_test()
