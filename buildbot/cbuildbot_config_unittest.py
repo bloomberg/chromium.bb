@@ -379,7 +379,7 @@ class FindFullTest(cros_test_lib.TestCase):
   def _RunTest(self, board, external_expected=None, internal_expected=None):
     def check_expected(l, expected):
       if expected is not None:
-        self.assertEquals(l[0]['name'], expected)
+        self.assertTrue(expected in [v['name'] for v in l])
 
     external, internal = cbuildbot_config.FindFullConfigsForBoard(board)
     self.assertFalse(
