@@ -13,6 +13,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/strings/string_number_conversions.h"
@@ -74,6 +75,14 @@ static const char kHistoryJsFile[] = "history.js";
 static const int kWebHistoryTimeoutSeconds = 3;
 
 namespace {
+
+// Buckets for UMA histograms.
+enum WebHistoryQueryBuckets {
+  WEB_HISTORY_QUERY_FAILED = 0,
+  WEB_HISTORY_QUERY_SUCCEEDED,
+  WEB_HISTORY_QUERY_TIMED_OUT,
+  NUM_WEB_HISTORY_QUERY_BUCKETS
+};
 
 #if defined(OS_MACOSX)
 const char kIncognitoModeShortcut[] = "("
@@ -189,6 +198,26 @@ bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
   return false;
 }
 
+// Removes all entries in |entry_list| that are older than the |cutoff|.
+// |entry_list| must already be sorted in reverse chronological order.
+void RemoveOlderEntries(
+    std::vector<BrowsingHistoryHandler::HistoryEntry>* entry_list,
+    base::Time cutoff) {
+  for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
+      entry_list->begin(); it != entry_list->end(); ++it) {
+    if (it->time < cutoff) {
+      entry_list->erase(it, entry_list->end());
+      break;
+    }
+  }
+}
+
+// Returns true if |entry| represents a local visit that had no corresponding
+// visit on the server.
+bool IsLocalOnlyResult(const BrowsingHistoryHandler::HistoryEntry& entry) {
+  return entry.entry_type == BrowsingHistoryHandler::HistoryEntry::LOCAL_ENTRY;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,9 +227,12 @@ bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
 ////////////////////////////////////////////////////////////////////////////////
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
+    BrowsingHistoryHandler::HistoryEntry::EntryType entry_type,
     const GURL& url, const string16& title, base::Time time,
-    const std::set<int64>& timestamps, bool is_search_result,
-    const string16& snippet) : all_timestamps(timestamps) {
+    const std::set<int64>& timestamps,
+    bool is_search_result, const string16& snippet)
+      : all_timestamps(timestamps) {
+  this->entry_type = entry_type;
   this->url = url;
   this->title = title;
   this->time = time;
@@ -216,7 +248,7 @@ BrowsingHistoryHandler::HistoryEntry::~HistoryEntry() {
 }
 
 void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
-    DictionaryValue* result) {
+    DictionaryValue* result) const {
   result->SetString("url", url.spec());
 
   bool using_url_as_the_title = false;
@@ -240,7 +272,8 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
 }
 
 scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
-    BookmarkModel* bookmark_model, ManagedUserService* managed_user_service) {
+    BookmarkModel* bookmark_model,
+    ManagedUserService* managed_user_service) const {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   SetUrlAndTitle(result.get());
   result->SetDouble("time", time.ToJsTime());
@@ -367,7 +400,11 @@ bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
 void BrowsingHistoryHandler::WebHistoryTimeout() {
   // TODO(dubroy): Communicate the failure to the front end.
   if (!results_info_value_.empty())
-    ReturnResultsToFrontEnd(false, 0);
+    ReturnResultsToFrontEnd();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebHistory.QueryCompletion",
+      WEB_HISTORY_QUERY_TIMED_OUT, NUM_WEB_HISTORY_QUERY_BUCKETS);
 }
 
 void BrowsingHistoryHandler::QueryHistory(
@@ -392,11 +429,14 @@ void BrowsingHistoryHandler::QueryHistory(
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
   if (web_history) {
+    web_history_query_results_.clear();
     web_history_request_ = web_history->QueryHistory(
         search_text,
         options,
         base::Bind(&BrowsingHistoryHandler::WebHistoryQueryComplete,
-                   base::Unretained(this), search_text, options));
+                   base::Unretained(this),
+                   search_text, options,
+                   base::TimeTicks::Now()));
     // Start a timer so we know when to give up.
     web_history_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
@@ -747,15 +787,21 @@ void BrowsingHistoryHandler::RemoveDuplicateResults(
       new_results.push_back(*it);
     } else {
       // Keep track of the timestamps of all visits to the URL on the same day.
-      current_day_entries[it->url].all_timestamps.insert(
+      BrowsingHistoryHandler::HistoryEntry* entry =
+          &current_day_entries[it->url];
+      entry->all_timestamps.insert(
           it->all_timestamps.begin(), it->all_timestamps.end());
+
+      if (entry->entry_type != it->entry_type) {
+        entry->entry_type =
+            BrowsingHistoryHandler::HistoryEntry::COMBINED_ENTRY;
+      }
     }
   }
   results->swap(new_results);
 }
 
-void BrowsingHistoryHandler::ReturnResultsToFrontEnd(
-    bool results_need_merge, int max_count) {
+void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
   ManagedUserService* managed_user_service = NULL;
@@ -763,16 +809,39 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd(
   managed_user_service = ManagedUserServiceFactory::GetForProfile(profile);
 #endif
 
-  if (results_need_merge)
+  // Combine the local and remote results into |query_results_|, and remove
+  // any duplicates.
+  if (query_results_.size() && web_history_query_results_.size()) {
+    // Each result set covers a particular time range. Determine the
+    // intersection of the two time ranges, discard any entries from either
+    // set the are older than that, and then combine the results.
+    base::Time cutoff_time = std::max(query_results_.back().time,
+                                      web_history_query_results_.back().time);
+    RemoveOlderEntries(&query_results_, cutoff_time);
+    RemoveOlderEntries(&web_history_query_results_, cutoff_time);
+
+    int local_result_count = query_results_.size();
+    query_results_.insert(query_results_.end(),
+                          web_history_query_results_.begin(),
+                          web_history_query_results_.end());
     RemoveDuplicateResults(&query_results_);
 
-  // Convert the result vector into a ListValue with at most |max_count|
-  // elements.
+    // In the best case, we expect that all local results are duplicated on the
+    // server. Keep track of how many are missing.
+    if (local_result_count) {
+      int missing_count = std::count_if(
+          query_results_.begin(), query_results_.end(), IsLocalOnlyResult);
+      UMA_HISTOGRAM_PERCENTAGE("WebHistory.LocalResultMissingOnServer",
+                               missing_count * 100.0 / local_result_count);
+    }
+  }
+
+  // Convert the result vector into a ListValue.
   ListValue results_value;
-  int query_results_size = static_cast<int>(query_results_.size());
-  for (int i = 0; i < query_results_size && i < max_count; ++i) {
+  for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
+           query_results_.begin(); it != query_results_.end(); ++it) {
     scoped_ptr<base::Value> value(
-        query_results_[i].ToValue(bookmark_model, managed_user_service));
+        it->ToValue(bookmark_model, managed_user_service));
     results_value.Append(value.release());
   }
 
@@ -780,6 +849,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd(
       "historyResult", results_info_value_, results_value);
   results_info_value_.Clear();
   query_results_.clear();
+  web_history_query_results_.clear();
 }
 
 void BrowsingHistoryHandler::QueryComplete(
@@ -787,8 +857,8 @@ void BrowsingHistoryHandler::QueryComplete(
     const history::QueryOptions& options,
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
-  // If we're appending to existing results, they will need merging.
-  bool needs_merge = query_results_.size() >  0;
+  DCHECK_EQ(0U, query_results_.size());
+  query_results_.reserve(results->size());
 
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
@@ -797,12 +867,14 @@ void BrowsingHistoryHandler::QueryComplete(
     timestamps.insert(page.visit_time().ToInternalValue());
 
     query_results_.push_back(
-        HistoryEntry(page.url(),
-                     page.title(),
-                     page.visit_time(),
-                     timestamps,
-                     !search_text.empty(),
-                     page.snippet().text()));
+        HistoryEntry(
+            HistoryEntry::LOCAL_ENTRY,
+            page.url(),
+            page.title(),
+            page.visit_time(),
+            timestamps,
+            !search_text.empty(),
+            page.snippet().text()));
   }
 
   results_info_value_.SetString("term", search_text);
@@ -821,18 +893,33 @@ void BrowsingHistoryHandler::QueryComplete(
         getRelativeDateLocalized(base::Time::Now()));
   }
   if (!web_history_timer_.IsRunning())
-    ReturnResultsToFrontEnd(needs_merge, options.max_count);
+    ReturnResultsToFrontEnd();
 }
 
 void BrowsingHistoryHandler::WebHistoryQueryComplete(
     const string16& search_text,
     const history::QueryOptions& options,
+    base::TimeTicks start_time,
     history::WebHistoryService::Request* request,
     const DictionaryValue* results_value) {
+  base::TimeDelta delta = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES("WebHistory.ResponseTime", delta);
+
+  // If the response came in too late, do nothing.
+  // TODO(dubroy): Maybe show a banner, and prompt the user to reload?
+  if (!web_history_timer_.IsRunning())
+    return;
   web_history_timer_.Stop();
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebHistory.QueryCompletion",
+      results_value ? WEB_HISTORY_QUERY_SUCCEEDED : WEB_HISTORY_QUERY_FAILED,
+      NUM_WEB_HISTORY_QUERY_BUCKETS);
+
+  DCHECK_EQ(0U, web_history_query_results_.size());
   const ListValue* events = NULL;
   if (results_value && results_value->GetList("event", &events)) {
+    web_history_query_results_.reserve(events->GetSize());
     for (unsigned int i = 0; i < events->GetSize(); ++i) {
       const DictionaryValue* event = NULL;
       const DictionaryValue* result = NULL;
@@ -880,8 +967,9 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
           visit_time = time;
       }
       GURL gurl(url);
-      query_results_.push_back(
+      web_history_query_results_.push_back(
           HistoryEntry(
+              HistoryEntry::REMOTE_ENTRY,
               gurl,
               title,
               visit_time,
@@ -893,7 +981,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
     NOTREACHED() << "Failed to parse JSON response.";
   }
   if (!results_info_value_.empty())
-    ReturnResultsToFrontEnd(true, options.max_count);
+    ReturnResultsToFrontEnd();
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {
