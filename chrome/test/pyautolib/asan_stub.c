@@ -35,8 +35,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
-// Update the name when asan api updates.
-void __asan_init_v1() {
+void __asan_init() {
   static int inited = 0;
   if (inited) return;
   inited = 1;
@@ -59,6 +58,11 @@ void __asan_init_v1() {
             "You have been warned. Aborting.");
     abort();
   }
+}
+
+// Update the name when asan api updates.
+void __asan_init_v1() {
+  __asan_init();
 }
 
 void __asan_handle_no_return() { }
