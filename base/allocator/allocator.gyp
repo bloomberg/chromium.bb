@@ -294,8 +294,6 @@
         # TODO(sgk):  merge this with build/common.gypi settings
         'VCLibrarianTool': {
           'AdditionalOptions': ['/ignore:4006,4221'],
-          'AdditionalLibraryDirectories':
-            ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
         },
         'VCLinkerTool': {
           'AdditionalOptions': ['/ignore:4006'],
