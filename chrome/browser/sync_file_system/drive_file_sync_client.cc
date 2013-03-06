@@ -35,6 +35,8 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 const base::FilePath::CharType kDummyDrivePath[] =
     FILE_PATH_LITERAL("/dummy/drive/path");
 
+void EmptyGDataErrorCodeCallback(google_apis::GDataErrorCode error) {}
+
 bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
                      const GURL& parent_link) {
   bool should_not_have_parent = parent_link.is_empty();
@@ -233,6 +235,9 @@ void DriveFileSyncClient::DidGetDirectory(
   DCHECK_EQ(google_apis::ENTRY_KIND_FOLDER, entry->kind());
   DCHECK_EQ(directory_name, entry->title());
 
+  if (entry->title() == kSyncRootDirectoryName)
+    EnsureSyncRootIsNotInMyDrive(entry->resource_id());
+
   callback.Run(error, entry->resource_id());
 }
 
@@ -271,9 +276,12 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateDirectory(
   //   the conflict was resolved.
   //
 
-  if (error == google_apis::HTTP_FOUND) {
+  if (error == google_apis::HTTP_FOUND)
     error = google_apis::HTTP_CREATED;
-  }
+
+  if (entry->title() == kSyncRootDirectoryName)
+    EnsureSyncRootIsNotInMyDrive(entry->resource_id());
+
   callback.Run(error, entry->resource_id());
 }
 
@@ -467,6 +475,17 @@ void DriveFileSyncClient::DeleteFile(
 GURL DriveFileSyncClient::ResourceIdToResourceLink(
     const std::string& resource_id) const {
   return url_generator_.GenerateEditUrl(resource_id);
+}
+
+void DriveFileSyncClient::EnsureSyncRootIsNotInMyDrive(
+    const std::string& sync_root_resource_id) const {
+  DCHECK(CalledOnValidThread());
+  DVLOG(2) << "Ensuring the sync root directory is not in 'My Drive'.";
+
+  drive_service_->RemoveResourceFromDirectory(
+      drive_service_->GetRootResourceId(),
+      sync_root_resource_id,
+      base::Bind(&EmptyGDataErrorCodeCallback));
 }
 
 // static

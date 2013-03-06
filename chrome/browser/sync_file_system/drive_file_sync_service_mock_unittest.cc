@@ -38,6 +38,7 @@
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
+using ::testing::Return;
 using ::testing::Sequence;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -55,6 +56,7 @@ namespace sync_file_system {
 
 namespace {
 
+const char kRootResourceId[] = "folder:root";
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char* kServiceName = DriveFileSyncService::kServiceName;
 
@@ -232,6 +234,14 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
     EXPECT_CALL(*mock_drive_service(), Initialize(profile_.get()));
     EXPECT_CALL(*mock_drive_service(), AddObserver(_));
+
+    // Expect to call GetRootResourceId and RemoveResourceFromDirectory to
+    // ensure the sync root directory is not in 'My Drive' directory.
+    EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
+        .WillRepeatedly(Return(kRootResourceId));
+    EXPECT_CALL(*mock_drive_service(),
+                RemoveResourceFromDirectory(kRootResourceId, _, _))
+        .Times(AnyNumber());
 
     sync_client_ = DriveFileSyncClient::CreateForTesting(
         profile_.get(),
@@ -475,7 +485,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     scoped_ptr<google_apis::AboutResource> about_resource(
         google_apis::AboutResource::CreateFromAccountMetadata(
             *google_apis::AccountMetadata::CreateFrom(*account_metadata_value),
-            "folder:root"));
+            kRootResourceId));
     EXPECT_CALL(*mock_drive_service(), GetAboutResource(_))
         .WillOnce(InvokeGetAboutResourceCallback0(
             google_apis::HTTP_SUCCESS,

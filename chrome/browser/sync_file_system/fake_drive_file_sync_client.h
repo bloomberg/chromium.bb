@@ -101,6 +101,8 @@ class FakeDriveFileSyncClient
       const GDataErrorCallback& callback) OVERRIDE;
   virtual GURL ResourceIdToResourceLink(
       const std::string& resource_id) const OVERRIDE;
+  virtual void EnsureSyncRootIsNotInMyDrive(
+      const std::string& sync_root_resource_id) const OVERRIDE;
 
   void PushRemoteChange(const std::string& parent_resource_id,
                         const std::string& parent_title,

@@ -365,6 +365,8 @@ void DriveFileSyncService::RegisterOriginForTrackingChanges(
                    AsWeakPtr(), origin, callback));
     return;
   }
+  sync_client_->EnsureSyncRootIsNotInMyDrive(
+      metadata_store_->sync_root_directory());
 
   if (metadata_store_->IsIncrementalSyncOrigin(origin) ||
       metadata_store_->IsBatchSyncOrigin(origin)) {
@@ -873,6 +875,8 @@ void DriveFileSyncService::DidInitializeMetadataStore(
     GetSyncRootDirectory(token.Pass(), base::Bind(&EmptyStatusCallback));
     return;
   }
+  sync_client_->EnsureSyncRootIsNotInMyDrive(
+      metadata_store_->sync_root_directory());
 
   DriveMetadataStore::URLAndResourceIdList to_be_fetched_files;
   status = metadata_store_->GetToBeFetchedFiles(&to_be_fetched_files);
@@ -927,7 +931,7 @@ void DriveFileSyncService::GetSyncRootDirectory(
   token->UpdateTask(FROM_HERE, TASK_TYPE_DRIVE, "Retrieving drive root");
   sync_client_->GetDriveDirectoryForSyncRoot(
       base::Bind(&DriveFileSyncService::DidGetSyncRootDirectory,
-                  AsWeakPtr(), base::Passed(&token), callback));
+                 AsWeakPtr(), base::Passed(&token), callback));
 }
 
 void DriveFileSyncService::DidGetSyncRootDirectory(

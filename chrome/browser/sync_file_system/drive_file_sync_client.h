@@ -87,6 +87,8 @@ class DriveFileSyncClient
       const GDataErrorCallback& callback) OVERRIDE;
   virtual GURL ResourceIdToResourceLink(
       const std::string& resource_id) const OVERRIDE;
+  virtual void EnsureSyncRootIsNotInMyDrive(
+      const std::string& sync_root_resource_id) const OVERRIDE;
 
   static std::string OriginToDirectoryTitle(const GURL& origin);
   static GURL DirectoryTitleToOrigin(const std::string& title);
@@ -120,6 +122,7 @@ class DriveFileSyncClient
                           const ResourceIdCallback& callback,
                           google_apis::GDataErrorCode error,
                           scoped_ptr<google_apis::ResourceEntry> entry);
+
   void DidEnsureUniquenessForCreateDirectory(
       const ResourceIdCallback& callback,
       google_apis::GDataErrorCode error,
@@ -159,6 +162,7 @@ class DriveFileSyncClient
                         const UploadFileCallback& callback,
                         google_apis::GDataErrorCode error,
                         scoped_ptr<google_apis::ResourceEntry> entry);
+
   void DidEnsureUniquenessForCreateFile(
       const std::string& expected_resource_id,
       const UploadFileCallback& callback,

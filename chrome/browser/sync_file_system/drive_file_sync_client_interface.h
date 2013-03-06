@@ -163,9 +163,15 @@ class DriveFileSyncClientInterface {
   virtual void DeleteFile(const std::string& resource_id,
                           const std::string& remote_file_md5,
                           const GDataErrorCallback& callback) = 0;
+
   // Converts |resource_id| to corresponing resource link.
   virtual GURL ResourceIdToResourceLink(
       const std::string& resource_id) const = 0;
+
+  // Ensures the sync root directory is not in 'My Drive'. Even if the directory
+  // is in directories other than 'My Drive', it will not be removed from there.
+  virtual void EnsureSyncRootIsNotInMyDrive(
+      const std::string& sync_root_resource_id) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncClientInterface);
