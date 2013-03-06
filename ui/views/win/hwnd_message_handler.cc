@@ -1897,12 +1897,12 @@ LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
 LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
-  // Using ScopedRedrawLock here frequently allows content behind this window to
-  // paint in front of this window, causing glaring rendering artifacts.
-  // If omitting ScopedRedrawLock here triggers caption rendering artifacts via
-  // DefWindowProc message handling, we'll need to find a better solution.
-  SetMsgHandled(FALSE);
-  return 0;
+  const LRESULT result = DefWindowProcWithRedrawLock(message, w_param, l_param);
+  // Invalidate the window to paint over any outdated window regions asap, as
+  // using a RedrawLock for WM_SETCURSOR may show content through this window.
+  if (delegate_->IsUsingCustomFrame() && !ui::win::IsAeroGlassEnabled())
+    InvalidateRect(hwnd(), NULL, FALSE);
+  return result;
 }
 
 void HWNDMessageHandler::OnSetFocus(HWND last_focused_window) {
