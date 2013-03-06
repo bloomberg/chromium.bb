@@ -234,8 +234,6 @@ void PictureLayerImpl::updateTilePriorities() {
       viewport_in_content_space,
       last_bounds_,
       bounds(),
-      last_content_bounds_,
-      contentBounds(),
       last_content_scale_,
       contentsScaleX(),
       last_screen_space_transform_,
@@ -246,7 +244,6 @@ void PictureLayerImpl::updateTilePriorities() {
 
   last_screen_space_transform_ = current_screen_space_transform;
   last_bounds_ = bounds();
-  last_content_bounds_ = contentBounds();
   last_content_scale_ = contentsScaleX();
 }
 

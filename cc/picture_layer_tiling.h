@@ -133,8 +133,6 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::RectF& viewport_in_layer_space,
       gfx::Size last_layer_bounds,
       gfx::Size current_layer_bounds,
-      gfx::Size last_layer_content_bounds,
-      gfx::Size current_layer_content_bounds,
       float last_layer_contents_scale,
       float current_layer_contents_scale,
       const gfx::Transform& last_screen_transform,

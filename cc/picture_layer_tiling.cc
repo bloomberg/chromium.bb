@@ -328,8 +328,6 @@ void PictureLayerTiling::UpdateTilePriorities(
     const gfx::RectF& viewport_in_layer_space,
     gfx::Size last_layer_bounds,
     gfx::Size current_layer_bounds,
-    gfx::Size last_layer_content_bounds,
-    gfx::Size current_layer_content_bounds,
     float last_layer_contents_scale,
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
@@ -357,12 +355,8 @@ void PictureLayerTiling::UpdateTilePriorities(
     return;
 
   double time_delta = 0;
-  if (last_impl_frame_time_ != 0 &&
-      last_layer_bounds == current_layer_bounds &&
-      last_layer_content_bounds == current_layer_content_bounds &&
-      last_layer_contents_scale == current_layer_contents_scale) {
+  if (last_impl_frame_time_ != 0 && last_layer_bounds == current_layer_bounds)
     time_delta = current_frame_time - last_impl_frame_time_;
-  }
 
   gfx::Rect viewport_in_content_space =
       gfx::ToEnclosingRect(gfx::ScaleRect(viewport_in_layer_space,
