@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
 namespace search {
@@ -74,71 +74,7 @@ TEST(EmbeddedSearchFieldTrialTest, GetFieldTrialInfo) {
   EXPECT_EQ(ZERO, flags.size());
 }
 
-TEST(SearchTest, ShouldAssignURLToInstantRendererImpl) {
-  TemplateURLData data;
-  data.SetURL("http://foo.com/url?bar={searchTerms}");
-  data.instant_url = "http://foo.com/instant";
-  data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-  data.search_terms_replacement_key = "strk";
-  TemplateURL url(NULL, data);
-
-  struct {
-    const char* const url;
-    bool extended_api_enabled;
-    bool expected_result;
-  } kTestCases[] = {
-    {"invalid URL",                     false, false},
-    {"unknown://scheme/path",           false, false},
-    {"chrome-search://foo/bar",         false,  true},
-    {kLocalOmniboxPopupURL,             false, false},
-    {kLocalOmniboxPopupURL,              true,  true},
-    {"http://foo.com/instant",          false,  true},
-    {"http://foo.com/instant?foo=bar",  false,  true},
-    {"https://foo.com/instant",         false,  true},
-    {"https://foo.com/instant#foo=bar", false,  true},
-    {"HtTpS://fOo.CoM/instant",         false,  true},
-    {"http://foo.com:80/instant",       false,  true},
-    {"ftp://foo.com/instant",           false, false},
-    {"http://sub.foo.com/instant",      false, false},
-    {"http://foo.com:26/instant",       false, false},
-    {"http://foo.com/instant/bar",      false, false},
-    {"http://foo.com/Instant",          false, false},
-    {"https://foo.com/instant?strk",     true,  true},
-    {"https://foo.com/instant#strk",     true,  true},
-    {"https://foo.com/instant?strk=0",   true,  true},
-    {"http://foo.com/instant",           true, false},
-    {"https://foo.com/instant",          true, false},
-    {"http://foo.com/instant?strk=1",    true, false},
-    {"https://foo.com/url?strk",         true,  true},
-    {"https://foo.com/alt?strk",         true,  true},
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    EXPECT_EQ(kTestCases[i].expected_result,
-              ShouldAssignURLToInstantRendererImpl(
-                  GURL(kTestCases[i].url),
-                  kTestCases[i].extended_api_enabled,
-                  &url)) << kTestCases[i].url << " "
-                         << kTestCases[i].extended_api_enabled;
-  }
-}
-
-TEST(SearchTest, CoerceCommandLineURLToTemplateURL) {
-  TemplateURLData data;
-  data.SetURL("http://foo.com/url?bar={searchTerms}");
-  data.instant_url = "http://foo.com/instant?foo=foo#foo=foo";
-  data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-  data.search_terms_replacement_key = "strk";
-  TemplateURL url(NULL, data);
-
-  EXPECT_EQ(
-      GURL("https://foo.com/instant?bar=bar#bar=bar"),
-      CoerceCommandLineURLToTemplateURL(
-          GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
-          url.instant_url_ref()));
-}
-
-class InstantNTPTest : public BrowserWithTestWindowTest {
+class SearchTest : public BrowserWithTestWindowTest {
  protected:
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
@@ -149,61 +85,140 @@ class InstantNTPTest : public BrowserWithTestWindowTest {
     ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 
     TemplateURLData data;
-    data.SetURL("http://foo.com/#query={searchTerms}");
-    data.instant_url = "http://foo.com/instant";
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo";
+    data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "strk";
 
     TemplateURL* template_url = new TemplateURL(profile(), data);
+    // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
     template_url_service->SetDefaultSearchProvider(template_url);
   }
 };
 
-static const struct {
-  const char* const url;
+struct SearchTestCase {
+  const char* url;
   bool expected_result;
-  const char* const description;
-} kInstantNTPTestCases[] = {
-  {"https://foo.com/instant?strk=1",    true,  "Valid Instant URL"},
-  {"https://foo.com/?strk=1",           true,  "Valid search URL"},
-  {"https://foo.com/instant",           false, "No search terms replacement"},
-  {"https://foo.com/?strk=1#query=abc", false, "Has query terms"},
-  {"http://foo.com/instant?strk=1",     false, "Insecure URL"},
-  {"chrome://blank/",                   false, "chrome schema"},
-  {"chrome-search//foo",                false, "chrome-search schema"},
-  {"https://bar.com/instant?strk=1",    false, "Random non-search page"},
+  const char* comment;
 };
 
-TEST_F(InstantNTPTest, InstantExtendedEnabled) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
-  AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInstantNTPTestCases); ++i) {
-    NavigateAndCommitActiveTab(GURL(kInstantNTPTestCases[i].url));
-    const content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    EXPECT_EQ(kInstantNTPTestCases[i].expected_result, IsInstantNTP(contents))
-        << kInstantNTPTestCases[i].description << ": "
-        << kInstantNTPTestCases[i].url;
+TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedDisabled) {
+  const SearchTestCase kTestCases[] = {
+    {"chrome-search://foo/bar",         true,  ""},
+    {"http://foo.com/instant",          true,  ""},
+    {"http://foo.com/instant?foo=bar",  true,  ""},
+    {"https://foo.com/instant",         true,  ""},
+    {"https://foo.com/instant#foo=bar", true,  ""},
+    {"HtTpS://fOo.CoM/instant",         true,  ""},
+    {"http://foo.com:80/instant",       true,  ""},
+    {"invalid URL",                     false, "Invalid URL"},
+    {"unknown://scheme/path",           false, "Unknown scheme"},
+    {"ftp://foo.com/instant",           false, "Non-HTTP scheme"},
+    {"http://sub.foo.com/instant",      false, "Non-exact host"},
+    {"http://foo.com:26/instant",       false, "Non-default port"},
+    {"http://foo.com/instant/bar",      false, "Non-exact path"},
+    {"http://foo.com/Instant",          false, "Case sensitive path"},
+    {"http://foo.com/",                 false, "Non-exact path"},
+    {"https://foo.com/",                false, "Non-exact path"},
+    {kLocalOmniboxPopupURL,             false, "Non-extended mode"},
+    {"https://foo.com/url?strk",        false, "Non-extended mode"},
+    {"https://foo.com/alt?strk",        false, "Non-extended mode"},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const SearchTestCase& test = kTestCases[i];
+    EXPECT_EQ(test.expected_result,
+              ShouldAssignURLToInstantRenderer(GURL(test.url), profile()))
+        << test.url << " " << test.comment;
   }
 }
 
-TEST_F(InstantNTPTest, InstantExtendedDisabled) {
-  AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInstantNTPTestCases); ++i) {
-    NavigateAndCommitActiveTab(GURL(kInstantNTPTestCases[i].url));
-    const content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    EXPECT_FALSE(IsInstantNTP(contents))
-        << kInstantNTPTestCases[i].description << ": "
-        << kInstantNTPTestCases[i].url;
+TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
+  EnableInstantExtendedAPIForTesting();
+
+  const SearchTestCase kTestCases[] = {
+    {kLocalOmniboxPopupURL,            true,  ""},
+    {"https://foo.com/instant?strk",   true,  ""},
+    {"https://foo.com/instant#strk",   true,  ""},
+    {"https://foo.com/instant?strk=0", true,  ""},
+    {"https://foo.com/url?strk",       true,  ""},
+    {"https://foo.com/alt?strk",       true,  ""},
+    {"http://foo.com/instant",         false, "Non-HTTPS"},
+    {"http://foo.com/instant?strk",    false, "Non-HTTPS"},
+    {"http://foo.com/instant?strk=1",  false, "Non-HTTPS"},
+    {"https://foo.com/instant",        false, "No search terms replacement"},
+    {"https://foo.com/?strk",          false, "Non-exact path"},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const SearchTestCase& test = kTestCases[i];
+    EXPECT_EQ(test.expected_result,
+              ShouldAssignURLToInstantRenderer(GURL(test.url), profile()))
+        << test.url << " " << test.comment;
   }
 }
 
-TEST_F(InstantNTPTest, CustomNavigationEntry) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
+TEST_F(SearchTest, CoerceCommandLineURLToTemplateURL) {
+  TemplateURL* template_url =
+      TemplateURLServiceFactory::GetForProfile(profile())->
+          GetDefaultSearchProvider();
+  EXPECT_EQ(
+      GURL("https://foo.com/instant?bar=bar#bar=bar"),
+      CoerceCommandLineURLToTemplateURL(
+          GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
+          template_url->instant_url_ref()));
+}
+
+const SearchTestCase kInstantNTPTestCases[] = {
+  {"https://foo.com/instant?strk",     true,  "Valid Instant URL"},
+  {"https://foo.com/instant#strk",     true,  "Valid Instant URL"},
+  {"https://foo.com/url?strk",         true,  "Valid search URL"},
+  {"https://foo.com/url#strk",         true,  "Valid search URL"},
+  {"https://foo.com/alt?strk",         true,  "Valid alternative URL"},
+  {"https://foo.com/alt#strk",         true,  "Valid alternative URL"},
+  {"https://foo.com/url?strk&bar=",    true,  "No query terms"},
+  {"https://foo.com/url?strk&q=abc",   true,  "No query terms key"},
+  {"https://foo.com/url?strk#bar=abc", true,  "Query terms key in ref"},
+  {"https://foo.com/url?strk&bar=abc", false, "Has query terms"},
+  {"http://foo.com/instant?strk=1",    false, "Insecure URL"},
+  {"https://foo.com/instant",          false, "No search terms replacement"},
+  {"chrome://blank/",                  false, "Chrome scheme"},
+  {"chrome-search//foo",               false, "Chrome-search scheme"},
+  {kLocalOmniboxPopupURL,              false, "Local omnibox popup"},
+  {"https://bar.com/instant?strk=1",   false, "Random non-search page"},
+};
+
+TEST_F(SearchTest, InstantNTPExtendedEnabled) {
+  EnableInstantExtendedAPIForTesting();
   AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInstantNTPTestCases); ++i) {
-    NavigateAndCommitActiveTab(GURL(kInstantNTPTestCases[i].url));
+  for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
+    const SearchTestCase& test = kInstantNTPTestCases[i];
+    NavigateAndCommitActiveTab(GURL(test.url));
+    const content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+    EXPECT_EQ(test.expected_result, IsInstantNTP(contents))
+        << test.url << " " << test.comment;
+  }
+}
+
+TEST_F(SearchTest, InstantNTPExtendedDisabled) {
+  AddTab(browser(), GURL("chrome://blank"));
+  for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
+    const SearchTestCase& test = kInstantNTPTestCases[i];
+    NavigateAndCommitActiveTab(GURL(test.url));
+    const content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+    EXPECT_FALSE(IsInstantNTP(contents)) << test.url << " " << test.comment;
+  }
+}
+
+TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
+  EnableInstantExtendedAPIForTesting();
+  AddTab(browser(), GURL("chrome://blank"));
+  for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
+    const SearchTestCase& test = kInstantNTPTestCases[i];
+    NavigateAndCommitActiveTab(GURL(test.url));
     content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     content::NavigationController& controller = contents->GetController();
@@ -215,13 +230,87 @@ TEST_F(InstantNTPTest, CustomNavigationEntry) {
                                          std::string(),
                                          contents->GetBrowserContext()));
     // The active entry is chrome://blank and not an NTP.
-    ASSERT_FALSE(IsInstantNTP(contents));
-    EXPECT_EQ(kInstantNTPTestCases[i].expected_result,
+    EXPECT_FALSE(IsInstantNTP(contents));
+    EXPECT_EQ(test.expected_result,
               NavEntryIsInstantNTP(contents,
                                    controller.GetLastCommittedEntry()))
-        << kInstantNTPTestCases[i].description << ": "
-        << kInstantNTPTestCases[i].url;
+        << test.url << " " << test.comment;
   }
+}
+
+TEST_F(SearchTest, GetInstantURLExtendedDisabled) {
+  // Instant is disabled, so no Instant URL.
+  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+
+  // Enable Instant.
+  profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
+  EXPECT_EQ(GURL("http://foo.com/instant?foo=foo#foo=foo"),
+            GetInstantURL(profile()));
+
+  // Override the Instant URL on the commandline.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kInstantURL,
+      "http://myserver.com:9000/dev?bar=bar#bar=bar");
+  EXPECT_EQ(GURL("http://myserver.com:9000/dev?bar=bar#bar=bar"),
+            GetInstantURL(profile()));
+}
+
+TEST_F(SearchTest, GetInstantURLExtendedEnabled) {
+  EnableInstantExtendedAPIForTesting();
+
+  // Instant is disabled, so no Instant URL.
+  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+
+  // Enable Instant. Still no Instant URL because "strk" is missing.
+  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, true);
+  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+
+  {
+    // Set an Instant URL with a valid search terms replacement key.
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+
+    TemplateURLData data;
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo&strk";
+    data.search_terms_replacement_key = "strk";
+
+    TemplateURL* template_url = new TemplateURL(profile(), data);
+    // Takes ownership of |template_url|.
+    template_url_service->Add(template_url);
+    template_url_service->SetDefaultSearchProvider(template_url);
+  }
+
+  // Now there should be a valid Instant URL. Note the HTTPS "upgrade".
+  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
+            GetInstantURL(profile()));
+
+  // Enable suggest. No difference.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
+            GetInstantURL(profile()));
+
+  // Disable Instant. No difference, because suggest is still enabled.
+  profile()->GetPrefs()->SetBoolean(prefs::kInstantExtendedEnabled, false);
+  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
+            GetInstantURL(profile()));
+
+  // Override the Instant URL on the commandline. Oops, forgot "strk".
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kInstantURL,
+      "http://myserver.com:9000/dev?bar=bar#bar=bar");
+  EXPECT_EQ(GURL(), GetInstantURL(profile()));
+
+  // Override with "strk". For fun, put it in the query, instead of the ref.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kInstantURL,
+      "http://myserver.com:9000/dev?bar=bar&strk#bar=bar");
+  EXPECT_EQ(GURL("http://myserver.com:9000/dev?bar=bar&strk#bar=bar"),
+            GetInstantURL(profile()));
+
+  // Disable suggest. No Instant URL.
+  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
+  EXPECT_EQ(GURL(), GetInstantURL(profile()));
 }
 
 }  // namespace search

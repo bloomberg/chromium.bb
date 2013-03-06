@@ -37,7 +37,6 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -176,7 +175,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     }
   }
 
-  // Add the new instant suggest result.
+  // Add the new Instant suggest result.
   if (suggestion.type == INSTANT_SUGGESTION_SEARCH) {
     // Instant has a query suggestion. Rank it higher than SEARCH_WHAT_YOU_TYPED
     // so that it gets autocompleted.
@@ -285,13 +284,13 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   input_ = input;
 
-  // Don't run the normal provider flow when the Instant Extended API is
-  // enabled.  (When the Extended API is enabled, the embedded page will handle
-  // all search suggestions itself.)
-  // TODO(dcblack): once we are done refactoring the omnibox so we don't need to
+  // When Instant is enabled in the extended mode, the embedded page will handle
+  // all search suggestions itself, so don't run the normal provider flow.
+  // TODO(dcblack): Once we are done refactoring the omnibox so we don't need to
   // use FinalizeInstantQuery anymore, we can take out this check and remove
   // this provider from kInstantExtendedOmniboxProviders.
-  if (!chrome::search::IsInstantExtendedAPIEnabled()) {
+  if (!chrome::search::IsInstantExtendedAPIEnabled() ||
+      !chrome::search::IsInstantEnabled(profile_)) {
     DoHistoryQuery(minimal_changes);
     StartOrStopSuggestQuery(minimal_changes);
   }
@@ -721,7 +720,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     extras->GetList("google:suggesttype", &types);
 
     // Only accept relevance suggestions if Instant is disabled.
-    if (!chrome::BrowserInstantController::IsInstantEnabled(profile_)) {
+    if (!chrome::search::IsInstantEnabled(profile_)) {
       // Discard this list if its size does not match that of the suggestions.
       if (extras->GetList("google:suggestrelevance", &relevances) &&
           relevances->GetSize() != results->GetSize())
@@ -1395,9 +1394,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
 
 void SearchProvider::UpdateDone() {
   // We're done when the timer isn't running, there are no suggest queries
-  // pending, and we're not waiting on instant.
+  // pending, and we're not waiting on Instant.
   done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
-           (instant_finalized_ ||
-            (!chrome::BrowserInstantController::IsInstantEnabled(profile_) &&
-             !chrome::search::IsInstantExtendedAPIEnabled())));
+           (instant_finalized_ || !chrome::search::IsInstantEnabled(profile_)));
 }

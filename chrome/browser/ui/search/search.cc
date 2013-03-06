@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/instant/instant_service.h"
@@ -15,7 +16,9 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +27,15 @@ namespace chrome {
 namespace search {
 
 namespace {
+
+// The default value we should assign to the instant_extended.enabled pref. As
+// with other prefs, the default is used only when the user hasn't toggled the
+// pref explicitly.
+enum InstantExtendedDefault {
+  INSTANT_DEFAULT_ON,    // Default the pref to be enabled.
+  INSTANT_USE_EXISTING,  // Use the current value of the instant.enabled pref.
+  INSTANT_DEFAULT_OFF,   // Default the pref to be disabled.
+};
 
 // Configuration options for Embedded Search.
 // InstantExtended field trials are named in such a way that we can parse out
@@ -47,16 +59,6 @@ const char kGroupNumberPrefix[] = "Group";
 // If the field trial's group name ends with this string its configuration will
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
-
-InstantExtendedDefault InstantExtendedDefaultFromInt64(
-    int64 default_value) {
-  switch (default_value) {
-    case 0: return INSTANT_DEFAULT_ON;
-    case 1: return INSTANT_USE_EXISTING;
-    case 2: return INSTANT_DEFAULT_OFF;
-    default: return INSTANT_USE_EXISTING;
-  }
-}
 
 TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   TemplateURLService* template_url_service =
@@ -82,7 +84,7 @@ bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
 
 bool IsCommandLineInstantURL(const GURL& url) {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
-  GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
+  const GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
   return instant_url.is_valid() && MatchesOriginAndPath(url, instant_url);
 }
 
@@ -103,22 +105,18 @@ bool MatchesAnySearchURL(const GURL& url, TemplateURL* template_url) {
 }
 
 enum OptInState {
-  // The user has not manually opted-in to or opted-out of InstantExtended.
-  NOT_SET,
-  // The user has opted-in to InstantExtended.
-  OPT_IN,
-  // The user has opted-out of InstantExtended.
-  OPT_OUT,
-  // Number of enum entries, used for UMA histogram reporting macros.
+  NOT_SET,  // The user has not manually opted into or out of InstantExtended.
+  OPT_IN,   // The user has opted-in to InstantExtended.
+  OPT_OUT,  // The user has opted-out of InstantExtended.
   OPT_IN_STATE_ENUM_COUNT,
 };
 
 void RecordInstantExtendedOptInState(OptInState state) {
   static bool recorded = false;
   if (!recorded) {
+    recorded = true;
     UMA_HISTOGRAM_ENUMERATION("InstantExtended.OptInState", state,
                               OPT_IN_STATE_ENUM_COUNT);
-    recorded = true;
   }
 }
 
@@ -139,20 +137,21 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
   return instant_service->IsInstantProcess(process_host->GetID());
 }
 
-// Returns true if |url| can be used as an Instant URL for |template_url|.
-bool IsInstantURL(const GURL& url,
-                  bool extended_api_enabled,
-                  TemplateURL* template_url) {
+// Returns true if |url| can be used as an Instant URL for |profile|.
+bool IsInstantURL(const GURL& url, Profile* profile) {
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return false;
+
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
+  const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
   GURL effective_url = url;
+
   if (IsCommandLineInstantURL(url))
     effective_url = CoerceCommandLineURLToTemplateURL(url, instant_url_ref);
 
   if (!effective_url.is_valid())
     return false;
-
-  if (extended_api_enabled && effective_url == GURL(kLocalOmniboxPopupURL))
-    return true;
 
   if (extended_api_enabled && !effective_url.SchemeIsSecure())
     return false;
@@ -216,29 +215,6 @@ const char kInstantExtendedSearchTermsKey[] = "search_terms";
 
 const char kLocalOmniboxPopupURL[] =
     "chrome://local-omnibox-popup/local-omnibox-popup.html";
-
-InstantExtendedDefault GetInstantExtendedDefaultSetting() {
-  // Check the command-line/about:flags setting first, which should have
-  // precedence and allows the trial to not be reported (if it's never queried).
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableInstantExtendedAPI))
-    return chrome::search::INSTANT_DEFAULT_OFF;
-  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI))
-    return chrome::search::INSTANT_DEFAULT_ON;
-
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(
-          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
-          &flags, NULL)) {
-    uint64 trial_default = GetUInt64ValueForFlagWithDefault(
-                               kInstantExtendedActivationName,
-                               kInstantExtendedActivationDefault,
-                               flags);
-    return InstantExtendedDefaultFromInt64(trial_default);
-  }
-
-  return kInstantExtendedActivationDefault;
-}
 
 bool IsInstantExtendedAPIEnabled() {
   return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
@@ -306,8 +282,11 @@ string16 GetSearchTerms(const content::WebContents* contents) {
 }
 
 bool IsInstantNTP(const content::WebContents* contents) {
-  return NavEntryIsInstantNTP(
-      contents, contents->GetController().GetVisibleEntry());
+  if (!contents)
+    return false;
+
+  return NavEntryIsInstantNTP(contents,
+                              contents->GetController().GetVisibleEntry());
 }
 
 bool NavEntryIsInstantNTP(const content::WebContents* contents,
@@ -316,28 +295,131 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
     return false;
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (!IsRenderedInInstantProcess(contents, profile))
-    return false;
-
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return false;
-
-  const bool extended_enabled = IsInstantExtendedAPIEnabled();
-  return extended_enabled &&
-      IsInstantURL(entry->GetVirtualURL(), extended_enabled, template_url) &&
-      GetSearchTermsImpl(contents, entry).empty();
+  return IsInstantExtendedAPIEnabled() &&
+         IsRenderedInInstantProcess(contents, profile) &&
+         IsInstantURL(entry->GetVirtualURL(), profile) &&
+         GetSearchTermsImpl(contents, entry).empty();
 }
 
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
+  return url.is_valid() &&
+         profile &&
+         (url.SchemeIs(chrome::kChromeSearchScheme) ||
+          IsInstantURL(url, profile) ||
+          (IsInstantExtendedAPIEnabled() &&
+           url == GURL(kLocalOmniboxPopupURL)));
+}
+
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  // This default is overridden by SetInstantExtendedPrefDefault().
+  registry->RegisterBooleanPref(prefs::kInstantExtendedEnabled, false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+const char* GetInstantPrefName() {
+  return IsInstantExtendedAPIEnabled() ? prefs::kInstantExtendedEnabled :
+                                         prefs::kInstantEnabled;
+}
+
+bool IsInstantPrefEnabled(Profile* profile) {
+  if (!profile || profile->IsOffTheRecord())
     return false;
 
-  return ShouldAssignURLToInstantRendererImpl(
-             url,
-             IsInstantExtendedAPIEnabled(),
-             template_url);
+  const PrefService* prefs = profile->GetPrefs();
+  if (!prefs)
+    return false;
+
+  return prefs->GetBoolean(GetInstantPrefName());
+}
+
+void SetInstantExtendedPrefDefault(Profile* profile) {
+  PrefService* prefs = profile ? profile->GetPrefs() : NULL;
+  if (!prefs)
+    return;
+
+  bool pref_default = false;
+
+  // Check the command-line/about:flags setting first, which should have
+  // precedence and allows the trial to not be reported (if it's never queried).
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableInstantExtendedAPI)) {
+    pref_default = true;
+  } else if (!command_line->HasSwitch(switches::kDisableInstantExtendedAPI)) {
+    uint64 trial_default = kInstantExtendedActivationDefault;
+
+    FieldTrialFlags flags;
+    if (GetFieldTrialInfo(
+            base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+            &flags, NULL)) {
+      trial_default = GetUInt64ValueForFlagWithDefault(
+                          kInstantExtendedActivationName,
+                          kInstantExtendedActivationDefault,
+                          flags);
+    }
+
+    if (trial_default == INSTANT_DEFAULT_ON) {
+      pref_default = true;
+    } else if (trial_default != INSTANT_DEFAULT_OFF) {
+      pref_default = prefs->GetBoolean(prefs::kInstantEnabled);
+    }
+  }
+
+  prefs->SetDefaultPrefValue(prefs::kInstantExtendedEnabled,
+                             Value::CreateBooleanValue(pref_default));
+}
+
+GURL GetInstantURL(Profile* profile) {
+  const bool extended_api_enabled = IsInstantExtendedAPIEnabled();
+
+  const PrefService* prefs = profile && !profile->IsOffTheRecord() ?
+      profile->GetPrefs() : NULL;
+  if (!IsInstantPrefEnabled(profile) &&
+      !(extended_api_enabled && prefs &&
+        prefs->GetBoolean(prefs::kSearchSuggestEnabled)))
+    return GURL();
+
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return GURL();
+
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kInstantURL)) {
+    GURL instant_url(cl->GetSwitchValueASCII(switches::kInstantURL));
+    if (extended_api_enabled) {
+      // Extended mode won't work if the search terms replacement key is absent.
+      GURL coerced_url = CoerceCommandLineURLToTemplateURL(
+          instant_url, template_url->instant_url_ref());
+      if (!template_url->HasSearchTermsReplacementKey(coerced_url))
+        return GURL();
+    }
+    return instant_url;
+  }
+
+  GURL instant_url = TemplateURLRefToGURL(template_url->instant_url_ref());
+
+  if (extended_api_enabled) {
+    // Extended mode won't work if the search terms replacement key is absent.
+    if (!template_url->HasSearchTermsReplacementKey(instant_url))
+      return GURL();
+
+    // Extended mode requires HTTPS. Force it if necessary.
+    if (!instant_url.SchemeIsSecure()) {
+      const std::string secure_scheme = chrome::kHttpsScheme;
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr(secure_scheme);
+      instant_url = instant_url.ReplaceComponents(replacements);
+    }
+  }
+
+  return instant_url;
+}
+
+bool IsInstantEnabled(Profile* profile) {
+  return GetInstantURL(profile).is_valid();
 }
 
 void EnableInstantExtendedAPIForTesting() {
@@ -352,16 +434,6 @@ void EnableQueryExtractionForTesting() {
 #else
   EnableInstantExtendedAPIForTesting();
 #endif
-}
-
-bool ShouldAssignURLToInstantRendererImpl(const GURL& url,
-                                          bool extended_api_enabled,
-                                          TemplateURL* template_url) {
-  if (!url.is_valid())
-    return false;
-
-  return url.SchemeIs(chrome::kChromeSearchScheme) ||
-      IsInstantURL(url, extended_api_enabled, template_url);
 }
 
 bool GetFieldTrialInfo(const std::string& group_name,

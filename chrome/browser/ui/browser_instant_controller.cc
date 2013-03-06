@@ -32,15 +32,6 @@
 
 using content::UserMetricsAction;
 
-namespace {
-
-const char* GetInstantPrefName() {
-  return chrome::search::IsInstantExtendedAPIEnabled() ?
-      prefs::kInstantExtendedEnabled : prefs::kInstantEnabled;
-}
-
-}  // namespace
-
 namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,49 +43,27 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
                chrome::search::IsInstantExtendedAPIEnabled()),
       instant_unload_handler_(browser),
       initialized_theme_info_(false) {
-  PrefService* prefs = profile()->GetPrefs();
 
-  // The kInstantExtendedEnabled and kInstantEnabled preferences are
-  // separate, as the way opt-in is done is a bit different, and
-  // because the experiment that controls the behavior of
-  // kInstantExtendedEnabled (value retrieved via
-  // search::GetInstantExtendedDefaultSetting) may take different
-  // settings on different Chrome set-ups for the same user.
-  //
-  // In one mode of the experiment, however, the
-  // kInstantExtendedEnabled preference's default value is set to the
-  // existing value of kInstantEnabled.
-  //
-  // Because this requires reading the value of the kInstantEnabled
-  // value, we reset the default for kInstantExtendedEnabled here,
-  // instead of fully determining the default in RegisterUserPrefs,
-  // below.
-  bool instant_extended_default = true;
-  switch (search::GetInstantExtendedDefaultSetting()) {
-    case search::INSTANT_DEFAULT_ON:
-      instant_extended_default = true;
-      break;
-    case search::INSTANT_USE_EXISTING:
-      instant_extended_default = prefs->GetBoolean(prefs::kInstantEnabled);
-    case search::INSTANT_DEFAULT_OFF:
-      instant_extended_default = false;
-      break;
-  }
+  // In one mode of the InstantExtended experiments, the kInstantExtendedEnabled
+  // preference's default value is set to the existing value of kInstantEnabled.
+  // Because this requires reading the value of the kInstantEnabled value, we
+  // reset the default for kInstantExtendedEnabled here.
+  chrome::search::SetInstantExtendedPrefDefault(profile());
 
-  prefs->SetDefaultPrefValue(
-      prefs::kInstantExtendedEnabled,
-      Value::CreateBooleanValue(instant_extended_default));
-
-  profile_pref_registrar_.Init(prefs);
+  profile_pref_registrar_.Init(profile()->GetPrefs());
   profile_pref_registrar_.Add(
-      GetInstantPrefName(),
+      prefs::kInstantEnabled,
+      base::Bind(&BrowserInstantController::ResetInstant,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kInstantExtendedEnabled,
       base::Bind(&BrowserInstantController::ResetInstant,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
       prefs::kSearchSuggestEnabled,
       base::Bind(&BrowserInstantController::ResetInstant,
                  base::Unretained(this)));
-  ResetInstant();
+  ResetInstant(std::string());
   browser_->search_model()->AddObserver(this);
 
 #if defined(ENABLE_THEMES)
@@ -107,25 +76,6 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
 
 BrowserInstantController::~BrowserInstantController() {
   browser_->search_model()->RemoveObserver(this);
-}
-
-bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
-  return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
-         profile->GetPrefs()->GetBoolean(GetInstantPrefName());
-}
-
-void BrowserInstantController::RegisterUserPrefs(
-    PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-
-  // Note that the default for this pref gets reset in the
-  // BrowserInstantController constructor.
-  registry->RegisterBooleanPref(prefs::kInstantExtendedEnabled,
-                                false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 bool BrowserInstantController::MaybeSwapInInstantNTPContents(
@@ -272,12 +222,17 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   instant_.SetOmniboxBounds(bounds);
 }
 
-void BrowserInstantController::ResetInstant() {
-  bool instant_enabled = IsInstantEnabled(profile());
+void BrowserInstantController::ResetInstant(const std::string& pref_name) {
+  // Update the default value of the kInstantExtendedEnabled pref to match the
+  // value of the kInstantEnabled pref, if necessary.
+  if (pref_name == prefs::kInstantEnabled)
+    chrome::search::SetInstantExtendedPrefDefault(profile());
+
+  bool instant_pref_enabled = chrome::search::IsInstantPrefEnabled(profile());
   bool use_local_overlay_only = profile()->IsOffTheRecord() ||
-      (!instant_enabled &&
+      (!instant_pref_enabled &&
        !profile()->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled));
-  instant_.SetInstantEnabled(instant_enabled, use_local_overlay_only);
+  instant_.SetInstantEnabled(instant_pref_enabled, use_local_overlay_only);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

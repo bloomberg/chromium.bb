@@ -11,7 +11,6 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -130,10 +129,8 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  uint32 instant_extended_api_version =
-      chrome::search::EmbeddedSearchPageVersion();
-  if (instant_extended_api_version == 0 &&
-      chrome::BrowserInstantController::IsInstantEnabled(profile_))
+  if (chrome::search::IsInstantPrefEnabled(profile_) &&
+      !chrome::search::IsInstantExtendedAPIEnabled())
     return "ion=1&";
   return std::string();
 }
@@ -141,9 +138,9 @@ std::string UIThreadSearchTermsData::InstantEnabledParam() const {
 std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  uint32 instant_extended_api_version =
+  uint64 instant_extended_api_version =
       chrome::search::EmbeddedSearchPageVersion();
-  if (instant_extended_api_version != 0) {
+  if (instant_extended_api_version) {
     return std::string(google_util::kInstantExtendedAPIParam) + "=" +
         base::Uint64ToString(instant_extended_api_version) + "&";
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/string16.h"
 
 class GURL;
+class PrefRegistrySyncable;
 class Profile;
 class TemplateURL;
 class TemplateURLRef;
@@ -32,19 +33,6 @@ extern const char kInstantExtendedSearchTermsKey[];
 
 // The URL for the local omnibox popup (rendered in a WebContents).
 extern const char kLocalOmniboxPopupURL[];
-
-// The default value we should assign to the instant_extended.enabled pref.
-// As with other prefs, the default is used only when the user hasn't toggled
-// the pref explicitly.
-enum InstantExtendedDefault {
-  INSTANT_DEFAULT_ON,    // Default the pref to be enabled.
-  INSTANT_USE_EXISTING,  // Use the current value of the instant.enabled pref.
-  INSTANT_DEFAULT_OFF,   // Default the pref to be disabled.
-};
-
-// Returns an enum value indicating which mode to set the new
-// instant_extended.enabled pref to by default.
-InstantExtendedDefault GetInstantExtendedDefaultSetting();
 
 // Returns whether the Instant Extended API is enabled.
 bool IsInstantExtendedAPIEnabled();
@@ -84,6 +72,38 @@ bool IsInstantNTP(const content::WebContents* contents);
 bool NavEntryIsInstantNTP(const content::WebContents* contents,
                           const content::NavigationEntry* nav_entry);
 
+// Registers Instant-related user preferences. Called at startup.
+void RegisterUserPrefs(PrefRegistrySyncable* registry);
+
+// Returns prefs::kInstantExtendedEnabled in extended mode;
+// prefs::kInstantEnabled otherwise.
+const char* GetInstantPrefName();
+
+// Returns whether the Instant pref (as per GetInstantPrefName()) is enabled.
+bool IsInstantPrefEnabled(Profile* profile);
+
+// Sets the default value of prefs::kInstantExtendedEnabled, based on field
+// trials and the current value of prefs::kInstantEnabled.
+void SetInstantExtendedPrefDefault(Profile* profile);
+
+// Returns the Instant URL of the default search engine. Returns an empty GURL
+// if the engine doesn't have an Instant URL, or if it shouldn't be used (say
+// because it doesn't satisfy the requirements for extended mode or if Instant
+// is disabled through preferences). Callers must check that the returned URL is
+// valid before using it.
+// NOTE: This method expands the default search engine's instant_url template,
+// so it shouldn't be called from SearchTermsData or other such code that would
+// lead to an infinite recursion.
+GURL GetInstantURL(Profile* profile);
+
+// Instant (loading a remote server page and talking to it using the searchbox
+// API) is considered enabled if there's a valid Instant URL that can be used,
+// so this simply returns whether GetInstantURL() is a valid URL.
+// NOTE: This method expands the default search engine's instant_ur templatel,
+// so it shouldn't be called from SearchTermsData or other such code that would
+// lead to an infinite recursion.
+bool IsInstantEnabled(Profile* profile);
+
 // -----------------------------------------------------
 // The following APIs are exposed for use in tests only.
 // -----------------------------------------------------
@@ -93,12 +113,6 @@ void EnableInstantExtendedAPIForTesting();
 
 // Forces query extraction to be enabled for tests.
 void EnableQueryExtractionForTesting();
-
-// Actually implements the logic for ShouldAssignURLToInstantRenderer().
-// Exposed for testing only.
-bool ShouldAssignURLToInstantRendererImpl(const GURL& url,
-                                          bool extended_api_enabled,
-                                          TemplateURL* template_url);
 
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
@@ -135,7 +149,7 @@ bool GetBoolValueForFlagWithDefault(const std::string& flag,
                                     const FieldTrialFlags& flags);
 
 // Coerces the commandline Instant URL to look like a template URL, so that we
-// can extract search terms from it.
+// can extract search terms from it. Exposed for testing only.
 GURL CoerceCommandLineURLToTemplateURL(const GURL& instant_url,
                                        const TemplateURLRef& ref);
 

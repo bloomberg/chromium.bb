@@ -4,7 +4,6 @@
 
 #include "chrome/browser/instant/instant_controller.h"
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -1362,77 +1361,11 @@ bool InstantController::GetInstantURL(Profile* profile,
     return true;
   }
 
-  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
-      profile)->GetDefaultSearchProvider();
-
-  if (!template_url) {
-    LOG_INSTANT_DEBUG_EVENT(this, "GetInstantURL: No template URL");
+  const GURL instant_url_obj = chrome::search::GetInstantURL(profile);
+  if (!instant_url_obj.is_valid())
     return false;
-  }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kInstantURL))
-    *instant_url = command_line->GetSwitchValueASCII(switches::kInstantURL);
-
-  if (instant_url->empty()) {
-    const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
-    if (!instant_url_ref.IsValid()) {
-      LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-          "GetInstantURL: TemplateRef invalid: url=%s",
-          template_url->instant_url().c_str()));
-      return false;
-    }
-
-    // Even if the URL template doesn't have search terms, it may have other
-    // components (such as {google:baseURL}) that need to be replaced.
-    // Additionally, the start-margin size needs to be communicated to the
-    // URL template.
-    TemplateURLRef::SearchTermsArgs search_terms_args =
-        TemplateURLRef::SearchTermsArgs(string16());
-    if (extended_enabled_)
-      search_terms_args.omnibox_start_margin = omnibox_bounds_.x();
-    *instant_url = instant_url_ref.ReplaceSearchTerms(search_terms_args);
-
-    // Extended mode should always use HTTPS. TODO(sreeram): This section can be
-    // removed if TemplateURLs supported "https://{google:host}/..." instead of
-    // only supporting "{google:baseURL}...".
-    if (extended_enabled_) {
-      GURL url_obj(*instant_url);
-      if (!url_obj.is_valid()) {
-        LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-            "GetInstantURL: Instant URL invalid: url=%s",
-            url_obj.possibly_invalid_spec().c_str()));
-        return false;
-      }
-
-      // Extended mode won't work properly unless the TemplateURL supports the
-      // param to enable it on the server.
-      if (!template_url->HasSearchTermsReplacementKey(url_obj)) {
-        LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-            "GetInstantURL: No search terms replacement key: url=%s",
-            url_obj.spec().c_str()));
-        return false;
-      }
-
-      if (!url_obj.SchemeIsSecure()) {
-        std::string new_scheme = "https";
-        std::string new_port = "443";
-        GURL::Replacements secure;
-        secure.SetSchemeStr(new_scheme);
-        secure.SetPortStr(new_port);
-        url_obj = url_obj.ReplaceComponents(secure);
-
-        if (!url_obj.is_valid()) {
-          LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-              "GetInstantURL: HTTPS URL invalid: url=%s",
-              url_obj.possibly_invalid_spec().c_str()));
-          return false;
-        }
-
-        *instant_url = url_obj.spec();
-      }
-    }
-  }
+  *instant_url = instant_url_obj.spec();
 
   if (!ignore_blacklist) {
     std::map<std::string, int>::const_iterator iter =

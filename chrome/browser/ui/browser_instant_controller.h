@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_
 #define CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_change_registrar.h"
@@ -17,8 +19,6 @@
 
 class Browser;
 struct InstantSuggestion;
-class PrefRegistrySyncable;
-class PrefService;
 class Profile;
 class ThemeService;
 
@@ -37,12 +37,6 @@ class BrowserInstantController : public content::NotificationObserver,
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
-
-  // Returns true if Instant is enabled in a visible, overlay-showing mode.
-  static bool IsInstantEnabled(Profile* profile);
-
-  // Registers Instant related preferences.
-  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // If |url| is the new tab page URL, set |target_contents| to the preloaded
   // NTP contents from InstantController. If |source_contents| is not NULL, we
@@ -114,7 +108,7 @@ class BrowserInstantController : public content::NotificationObserver,
  private:
   // Sets the value of |instant_| based on value from profile. Invoked
   // on pref change.
-  void ResetInstant();
+  void ResetInstant(const std::string& pref_name);
 
   // Overridden from search::SearchModelObserver:
   virtual void ModeChanged(const search::Mode& old_mode,

@@ -24,7 +24,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -196,6 +196,7 @@ void SearchProviderTest::SetUp() {
   data.short_name = ASCIIToUTF16("t");
   data.SetURL("http://defaultturl/{searchTerms}");
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
+  data.instant_url = "http://does/not/exist";
   default_t_url_ = new TemplateURL(&profile_, data);
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
@@ -274,8 +275,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   QueryForInput(text, string16(), false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-  EXPECT_NE(chrome::BrowserInstantController::IsInstantEnabled(&profile_),
-            provider_->done());
+  EXPECT_NE(chrome::search::IsInstantEnabled(&profile_), provider_->done());
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);
@@ -506,7 +506,7 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo"),
                                                       NULL));
 
-  // Tell the provider instant is done.
+  // Tell the provider Instant is done.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
@@ -534,7 +534,7 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
           &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
-  // The instant search should be more relevant.
+  // The Instant search should be more relevant.
   EXPECT_GT(instant_match.relevance, wyt_match.relevance);
 }
 
@@ -546,7 +546,7 @@ TEST_F(SearchProviderTest, FinalizeInstantURL) {
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ex"),
                                                       NULL));
 
-  // Tell the provider instant is done.
+  // Tell the provider Instant is done.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("ex"),
                                   InstantSuggestion(
                                       ASCIIToUTF16("http://example.com/"),
@@ -563,7 +563,7 @@ TEST_F(SearchProviderTest, FinalizeInstantURL) {
   AutocompleteMatch instant_match;
   EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
 
-  // The instant match should not have a description, it'll be set later.
+  // The Instant match should not have a description, it'll be set later.
   EXPECT_TRUE(instant_match.description.empty());
 
   // Make sure the what you typed match has no description.
@@ -574,7 +574,7 @@ TEST_F(SearchProviderTest, FinalizeInstantURL) {
           &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
-  // The instant URL should be more relevant.
+  // The Instant URL should be more relevant.
   EXPECT_GT(instant_match.relevance, wyt_match.relevance);
 }
 
@@ -589,7 +589,7 @@ TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(
       ASCIIToUTF16("example.co"), NULL));
 
-  // Tell the provider instant is done.
+  // Tell the provider Instant is done.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("example.co"),
                                   InstantSuggestion(
                                       ASCIIToUTF16("http://example.com/"),
@@ -606,10 +606,10 @@ TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
   AutocompleteMatch instant_match;
   EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
 
-  // The instant match should not have a description, it'll be set later.
+  // The Instant match should not have a description, it'll be set later.
   EXPECT_TRUE(instant_match.description.empty());
 
-  // The instant URL should be more relevant than a URL_WHAT_YOU_TYPED match.
+  // The Instant URL should be more relevant than a URL_WHAT_YOU_TYPED match.
   EXPECT_GT(instant_match.relevance,
             HistoryURLProvider::kScoreForWhatYouTypedResult);
 }
@@ -622,7 +622,7 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
 
   QueryForInput(ASCIIToUTF16("foo"), string16(), false);
 
-  // Finalize the instant query immediately.
+  // Finalize the Instant query immediately.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
@@ -661,7 +661,7 @@ TEST_F(SearchProviderTest, DifferingText) {
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("foo"),
                                                       NULL));
 
-  // Finalize the instant query immediately.
+  // Finalize the Instant query immediately.
   provider_->FinalizeInstantQuery(ASCIIToUTF16("foo"),
                                   InstantSuggestion(ASCIIToUTF16("bar"),
                                                     INSTANT_COMPLETE_NOW,
@@ -961,7 +961,7 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
   RunTest(cases, arraysize(cases), true);
 }
 
-// Verifies Navsuggest results don't set a TemplateURL, which instant relies on.
+// Verifies Navsuggest results don't set a TemplateURL, which Instant relies on.
 // Also verifies that just the *first* navigational result is listed as a match
 // if suggested relevance scores were not sent.
 TEST_F(SearchProviderTest, NavSuggestNoSuggestedRelevanceScores) {

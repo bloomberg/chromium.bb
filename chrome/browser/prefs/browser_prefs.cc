@@ -71,10 +71,10 @@
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -262,8 +262,8 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   AutofillManager::RegisterUserPrefs(registry);
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
   bookmark_utils::RegisterUserPrefs(registry);
-  BrowserInstantController::RegisterUserPrefs(registry);
   browser_sync::SyncPrefs::RegisterUserPrefs(registry);
+  chrome::search::RegisterUserPrefs(registry);
   ChromeContentBrowserClient::RegisterUserPrefs(registry);
   ChromeDownloadManagerDelegate::RegisterUserPrefs(registry);
   ChromeVersionService::RegisterUserPrefs(registry);
