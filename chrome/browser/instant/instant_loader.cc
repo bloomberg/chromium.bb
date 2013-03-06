@@ -11,6 +11,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "content/public/browser/navigation_entry.h"
@@ -80,6 +81,10 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
   TabSpecificContentSettings::CreateForWebContents(contents());
   TabSpecificContentSettings::FromWebContents(contents())->
       SetPopupsBlocked(true);
+
+  // Bookmarks (Users can bookmark the Instant NTP. This ensures the bookmarked
+  // state is correctly set when the contents are swapped into a tab.)
+  BookmarkTabHelper::CreateForWebContents(contents());
 
   // A tab helper to catch prerender content swapping shenanigans.
   CoreTabHelper::CreateForWebContents(contents());
