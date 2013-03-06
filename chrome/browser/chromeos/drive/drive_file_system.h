@@ -126,8 +126,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void ReadDirectoryByPath(
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
-  virtual void RequestDirectoryRefresh(
-      const base::FilePath& directory_path) OVERRIDE;
+  virtual void RefreshDirectory(
+      const base::FilePath& directory_path,
+      const FileOperationCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(const base::FilePath& directory_path,
@@ -297,10 +298,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const base::FilePath& downloaded_file_path,
       bool has_enough_space);
 
-  // FileMoveCallback for directory changes. Notifies of directory changes.
-  void OnDirectoryChangeFileMoveCallback(DriveFileError error,
-                                         const base::FilePath& directory_path);
-
   // Adds the uploaded file to the cache.
   void AddUploadedFileToCache(const AddUploadedFileParams& params,
                               DriveFileError error,
@@ -402,12 +399,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const google_apis::GetContentCallback& get_content_callback,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  void OnRequestDirectoryRefresh(
-      const std::string& directory_resource_id,
-      const base::FilePath& directory_path,
-      const ScopedVector<google_apis::ResourceList>& feed_list,
-      DriveFileError error);
-
   // Part of GetEntryInfoByResourceId(). Called after
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
   // |callback| must not be null.
@@ -429,12 +420,29 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Part of RequestDirectoryRefresh(). Called after
+  // Part of RefreshDirectory(). Called after
   // GetEntryInfoByPath() is complete.
-  void RequestDirectoryRefreshAfterGetEntryInfo(
-      const base::FilePath& file_path,
+  void RefreshDirectoryAfterGetEntryInfo(
+      const base::FilePath& directory_path,
+      const FileOperationCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Part of RefreshDirectory(). Called after
+  // ChangeListLoader::LoadDirectoryFromServer() is complete.
+  void RefreshDirectoryAfterLoadDirectory(
+      const std::string& directory_resource_id,
+      const base::FilePath& directory_path,
+      const FileOperationCallback& callback,
+      const ScopedVector<google_apis::ResourceList>& resource_list,
+      DriveFileError error);
+
+  // Part of RefreshDirectory(). Called after
+  // DriveResourceMetadata::RefreshDirectory() is complete.
+  void RefreshDirectoryAfterRefreshDirectory(
+      const FileOperationCallback& callback,
+      DriveFileError error,
+      const base::FilePath& directory_path);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the

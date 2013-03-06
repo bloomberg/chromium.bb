@@ -1979,7 +1979,7 @@ TEST_F(DriveFileSystemTest, GetAvailableSpace) {
   EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
 }
 
-TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
+TEST_F(DriveFileSystemTest, RefreshDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
   // We'll notify the directory change to the observer.
@@ -1987,9 +1987,12 @@ TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
       OnDirectoryChanged(Eq(
           base::FilePath::FromUTF8Unsafe(kDriveRootDirectory)))).Times(1);
 
-  file_system_->RequestDirectoryRefresh(
-      base::FilePath::FromUTF8Unsafe(kDriveRootDirectory));
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->RefreshDirectory(
+      base::FilePath::FromUTF8Unsafe(kDriveRootDirectory),
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 }
 
 TEST_F(DriveFileSystemTest, OpenAndCloseFile) {

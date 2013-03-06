@@ -87,8 +87,9 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD2(ReadDirectoryByPath,
                void(const base::FilePath& file_path,
                     const ReadDirectoryWithSettingCallback& callback));
-  MOCK_METHOD1(RequestDirectoryRefresh,
-               void(const base::FilePath& file_path));
+  MOCK_METHOD2(RefreshDirectory,
+               void(const base::FilePath& file_path,
+                    const FileOperationCallback& callback));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
   // This function is not mockable by gmock because scoped_ptr is not supported.

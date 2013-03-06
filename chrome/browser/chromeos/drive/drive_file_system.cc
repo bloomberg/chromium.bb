@@ -111,9 +111,6 @@ class OperationReadinessObserver : public google_apis::DriveServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(OperationReadinessObserver);
 };
 
-// Used as a FileOperationCallback.
-void EmptyFileOperationCallback(DriveFileError error) {}
-
 // Creates a temporary JSON file representing a document with |edit_url|
 // and |resource_id| under |document_dir| on blocking pool.
 DriveFileError CreateDocumentJsonFileOnBlockingPool(
@@ -347,7 +344,7 @@ void DriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
 
 void DriveFileSystem::StartInitialFeedFetch() {
   if (drive_service_->CanStartOperation()) {
-    LoadFeedIfNeeded(base::Bind(&EmptyFileOperationCallback));
+    LoadFeedIfNeeded(base::Bind(&util::EmptyFileOperationCallback));
   } else {
     // Wait for the service to get ready. The observer deletes itself after
     // OnReadyToPerformOperations() gets called.
@@ -355,7 +352,7 @@ void DriveFileSystem::StartInitialFeedFetch() {
         drive_service_,
         base::Bind(&DriveFileSystem::LoadFeedIfNeeded,
                    weak_ptr_factory_.GetWeakPtr(),
-                   base::Bind(&EmptyFileOperationCallback)));
+                   base::Bind(&util::EmptyFileOperationCallback)));
   }
 }
 
@@ -942,58 +939,84 @@ void DriveFileSystem::ReadDirectoryByPathAfterRead(
   callback.Run(DRIVE_FILE_OK, hide_hosted_docs_, entries.Pass());
 }
 
-void DriveFileSystem::RequestDirectoryRefresh(
-    const base::FilePath& directory_path) {
+void DriveFileSystem::RefreshDirectory(
+    const base::FilePath& directory_path,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // Make sure the destination directory exists.
   resource_metadata_->GetEntryInfoByPath(
       directory_path,
-      base::Bind(&DriveFileSystem::RequestDirectoryRefreshAfterGetEntryInfo,
+      base::Bind(&DriveFileSystem::RefreshDirectoryAfterGetEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
-                 directory_path));
+                 directory_path,
+                 callback));
 }
 
-void DriveFileSystem::RequestDirectoryRefreshAfterGetEntryInfo(
+void DriveFileSystem::RefreshDirectoryAfterGetEntryInfo(
     const base::FilePath& directory_path,
+    const FileOperationCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK ||
-      !entry_proto->file_info().is_directory()) {
-    LOG(ERROR) << "Directory entry not found: " << directory_path.value();
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+  if (!entry_proto->file_info().is_directory()) {
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
   change_list_loader_->LoadDirectoryFromServer(
       entry_proto->resource_id(),
-      base::Bind(&DriveFileSystem::OnRequestDirectoryRefresh,
+      base::Bind(&DriveFileSystem::RefreshDirectoryAfterLoadDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  entry_proto->resource_id(),
-                 directory_path));
+                 directory_path,
+                 callback));
 }
 
-void DriveFileSystem::OnRequestDirectoryRefresh(
+void DriveFileSystem::RefreshDirectoryAfterLoadDirectory(
     const std::string& directory_resource_id,
     const base::FilePath& directory_path,
-    const ScopedVector<google_apis::ResourceList>& feed_list,
+    const FileOperationCallback& callback,
+    const ScopedVector<google_apis::ResourceList>& resource_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    LOG(ERROR) << "Failed to refresh directory: " << directory_path.value()
+    LOG(ERROR) << "Failed to load directory: " << directory_path.value()
                << ": " << error;
+    callback.Run(error);
     return;
   }
 
   ChangeListProcessor change_list_processor(resource_metadata_.get());
-  change_list_processor.FeedToEntryProtoMap(feed_list, NULL, NULL);
+  change_list_processor.FeedToEntryProtoMap(resource_list, NULL, NULL);
   resource_metadata_->RefreshDirectory(
       directory_resource_id,
       change_list_processor.entry_proto_map(),
-      base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&DriveFileSystem::RefreshDirectoryAfterRefreshDirectory,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void DriveFileSystem::RefreshDirectoryAfterRefreshDirectory(
+    const FileOperationCallback& callback,
+    DriveFileError error,
+    const base::FilePath& directory_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  callback.Run(error);
+  // Also notify the observers.
+  if (error == DRIVE_FILE_OK)
+    OnDirectoryChanged(directory_path);
 }
 
 void DriveFileSystem::UpdateFileByResourceId(
@@ -1224,8 +1247,11 @@ void DriveFileSystem::UnpinIfPinned(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
-  if (success && cache_entry.is_pinned())
-    cache_->Unpin(resource_id, md5, base::Bind(&EmptyFileOperationCallback));
+  if (success && cache_entry.is_pinned()) {
+    cache_->Unpin(resource_id,
+                  md5,
+                  base::Bind(&util::EmptyFileOperationCallback));
+  }
 }
 
 void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
@@ -1247,7 +1273,7 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
                     params.md5,
                     downloaded_file_path,
                     DriveCache::FILE_OPERATION_MOVE,
-                    base::Bind(&EmptyFileOperationCallback));
+                    base::Bind(&util::EmptyFileOperationCallback));
       // Storing to cache changes the "offline available" status, hence notify.
       OnDirectoryChanged(params.virtual_file_path.DirName());
     } else {
@@ -1266,13 +1292,6 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
                                downloaded_file_path,
                                params.mime_type,
                                REGULAR_FILE);
-}
-
-void DriveFileSystem::OnDirectoryChangeFileMoveCallback(
-    DriveFileError error,
-    const base::FilePath& directory_path) {
-  if (error == DRIVE_FILE_OK)
-    OnDirectoryChanged(directory_path);
 }
 
 void DriveFileSystem::NotifyFileSystemMounted() {

@@ -375,5 +375,8 @@ void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
   proto->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
+void EmptyFileOperationCallback(DriveFileError error) {
+}
+
 }  // namespace util
 }  // namespace drive

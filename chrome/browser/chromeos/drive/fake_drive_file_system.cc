@@ -152,8 +152,9 @@ void FakeDriveFileSystem::ReadDirectoryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::RequestDirectoryRefresh(
-    const base::FilePath& file_path) {
+void FakeDriveFileSystem::RefreshDirectory(
+    const base::FilePath& file_path,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

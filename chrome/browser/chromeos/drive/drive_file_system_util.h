@@ -135,6 +135,10 @@ void ConvertProtoToPlatformFileInfo(const PlatformFileInfoProto& proto,
 // Converts the platform file info to the proto representation.
 void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
                                     PlatformFileInfoProto* proto);
+
+// Does nothing with |error|. Used with functions taking FileOperationCallback.
+void EmptyFileOperationCallback(DriveFileError error);
+
 }  // namespace util
 }  // namespace drive
 

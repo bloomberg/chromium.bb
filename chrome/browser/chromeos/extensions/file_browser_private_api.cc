@@ -3199,7 +3199,9 @@ bool RequestDirectoryRefreshFunction::RunImpl() {
 
   base::FilePath directory_path = GetVirtualPathFromURL(file_system_context,
                                                   GURL(file_url_as_string));
-  system_service->file_system()->RequestDirectoryRefresh(directory_path);
+  system_service->file_system()->RefreshDirectory(
+      directory_path,
+      base::Bind(&drive::util::EmptyFileOperationCallback));
 
   return true;
 }

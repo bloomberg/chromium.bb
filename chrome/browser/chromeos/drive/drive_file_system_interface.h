@@ -293,19 +293,24 @@ class DriveFileSystemInterface {
       const base::FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback) = 0;
 
-  // Requests a refresh of the directory pointed by |file_path| (i.e. fetches
-  // the latest metadata of files in the target directory).
+  // Refreshes the directory pointed by |file_path| (i.e. fetches the latest
+  // metadata of files in the target directory).
   //
   // In particular, this function is used to get the latest thumbnail
   // URLs. Thumbnail URLs change periodically even if contents of files are
   // not changed, hence we should get the new thumbnail URLs manually if we
   // detect that the existing thumbnail URLs are stale.
   //
-  // Upon success, the metadata of files in the target directory is updated,
-  // and the change is notified via Observer::OnDirectoryChanged(). Note that
-  // this function ignores changes in directories in the target
-  // directory. Changes in directories are handled via the delta feeds.
-  virtual void RequestDirectoryRefresh(const base::FilePath& file_path) = 0;
+  // Upon success, the metadata of files in the target directory is updated
+  // and the change is notified via Observer::OnDirectoryChanged().
+  // |callback| is called with an error code regardless of whether the
+  // refresh was success or not. Note that this function ignores changes in
+  // directories in the target directory. Changes in directories are handled
+  // via the change lists.
+  //
+  // |callback| must not be null.
+  virtual void RefreshDirectory(const base::FilePath& file_path,
+                                const FileOperationCallback& callback) = 0;
 
   // Does server side content search for |search_query|.
   // If |shared_with_me| is true, it searches for the files shared to the user,

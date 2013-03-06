@@ -93,8 +93,9 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   virtual void ReadDirectoryByPath(
       const base::FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
-  virtual void RequestDirectoryRefresh(
-      const base::FilePath& file_path) OVERRIDE;
+  virtual void RefreshDirectory(
+      const base::FilePath& file_path,
+      const FileOperationCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       bool shared_with_me,
                       const GURL& next_feed,
