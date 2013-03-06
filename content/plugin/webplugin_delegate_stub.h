@@ -61,7 +61,9 @@ class WebPluginDelegateStub : public IPC::Listener,
 
   // Message handlers for the WebPluginDelegate calls that are proxied from the
   // renderer over the IPC channel.
-  void OnInit(const PluginMsg_Init_Params& params, bool* result);
+  void OnInit(const PluginMsg_Init_Params& params,
+              bool* transparent,
+              bool* result);
   void OnWillSendRequest(int id, const GURL& url, int http_status_code);
   void OnDidReceiveResponse(const PluginMsg_DidReceiveResponseParams& params);
   void OnDidReceiveData(int id, const std::vector<char>& buffer,

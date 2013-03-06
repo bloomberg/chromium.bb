@@ -152,8 +152,9 @@ IPC_SYNC_MESSAGE_CONTROL0_1(PluginMsg_GenerateRouteID,
                            int /* id */)
 
 // The messages below all map to WebPluginDelegate methods.
-IPC_SYNC_MESSAGE_ROUTED1_1(PluginMsg_Init,
+IPC_SYNC_MESSAGE_ROUTED1_2(PluginMsg_Init,
                            PluginMsg_Init_Params,
+                           bool /* transparent */,
                            bool /* result */)
 
 // Used to synchronously request a paint for windowless plugins.

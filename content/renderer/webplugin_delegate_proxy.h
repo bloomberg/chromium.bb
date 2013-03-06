@@ -300,6 +300,9 @@ class WebPluginDelegateProxy
   // True if we got an invalidate from the plugin and are waiting for a paint.
   bool invalidate_pending_;
 
+  // If the plugin is transparent or not.
+  bool transparent_;
+
   // The index in the transport_stores_ array of the current front buffer
   // (i.e., the buffer to display).
   int front_buffer_index_;

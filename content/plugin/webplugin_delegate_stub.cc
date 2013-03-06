@@ -21,6 +21,7 @@
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/glue/webcursor.h"
 
@@ -149,10 +150,12 @@ bool WebPluginDelegateStub::Send(IPC::Message* msg) {
 }
 
 void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
+                                   bool* transparent,
                                    bool* result) {
   page_url_ = params.page_url;
   GetContentClient()->SetActiveURL(page_url_);
 
+  *transparent = false;
   *result = false;
   if (params.arg_names.size() != params.arg_values.size()) {
     NOTREACHED();
@@ -176,6 +179,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                     arg_values,
                                     webplugin_,
                                     params.load_manually);
+    *transparent = delegate_->instance()->transparent();
   }
 }
 

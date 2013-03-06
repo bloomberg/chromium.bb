@@ -85,10 +85,11 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   bool windowless() { return windowless_; }
   void set_windowless(bool value) { windowless_ = value; }
 
-  // Get/Set whether this instance is transparent.
-  // This only applies to windowless plugins.  Transparent
-  // plugins require that webkit paint the background.
-  // Default is true.
+  // Get/Set whether this instance is transparent. This only applies to
+  // windowless plugins.  Transparent plugins require that webkit paint the
+  // background.
+  // Default is true for all plugins other than Flash. For Flash, we default to
+  // opaque since it always tells us if it's transparent during NPP_New.
   bool transparent() { return transparent_; }
   void set_transparent(bool value) { transparent_ = value; }
 

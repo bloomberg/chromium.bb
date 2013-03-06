@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/escape.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
@@ -17,7 +18,7 @@
 #include "webkit/plugins/npapi/plugin_string_stream.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
-#include "net/base/escape.h"
+#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
@@ -61,6 +62,9 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
   npp_ = new NPP_t();
   npp_->ndata = 0;
   npp_->pdata = 0;
+
+  if (mime_type_ == kFlashPluginSwfMimeType)
+    transparent_ = false;
 
   memset(&zero_padding_, 0, sizeof(zero_padding_));
   DCHECK(message_loop_);

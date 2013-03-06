@@ -280,7 +280,6 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
   skia::RefPtr<SkCanvas> windowless_canvases_[2];
-  skia::RefPtr<SkCanvas> background_canvas_;
 
 #if defined(USE_X11)
   scoped_refptr<SharedTransportDIB> windowless_dibs_[2];

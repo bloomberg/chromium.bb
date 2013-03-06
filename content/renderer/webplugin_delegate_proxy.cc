@@ -214,6 +214,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       npobject_(NULL),
       sad_plugin_(NULL),
       invalidate_pending_(false),
+      transparent_(false),
       front_buffer_index_(0),
       page_url_(render_view_->webview()->mainFrame()->document().url()) {
 }
@@ -373,7 +374,7 @@ bool WebPluginDelegateProxy::Initialize(
   plugin_ = plugin;
 
   result = false;
-  Send(new PluginMsg_Init(instance_id_, params, &result));
+  Send(new PluginMsg_Init(instance_id_, params, &transparent_, &result));
 
   if (!result)
     LOG(ERROR) << "PluginMsg_Init returned false";
@@ -725,7 +726,8 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
   const SkBitmap& bitmap =
       front_buffer_canvas()->getDevice()->accessBitmap(false);
   SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrcATop_Mode);
+  paint.setXfermodeMode(
+      transparent_ ? SkXfermode::kSrcATop_Mode : SkXfermode::kSrc_Mode);
   SkIRect src_rect = gfx::RectToSkIRect(offset_rect);
   canvas->drawBitmapRect(bitmap,
                          &src_rect,
