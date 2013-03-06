@@ -489,7 +489,7 @@ Download.prototype.update = function(download) {
                  this.state_ == Download.States.COMPLETE &&
                      !this.fileExternallyRemoved_);
     }
-    showInline(this.controlRetry_, this.state_ == Download.States.CANCELLED);
+    showInline(this.controlRetry_, download.retry);
     this.controlRetry_.href = this.url_;
     showInline(this.controlPause_, this.state_ == Download.States.IN_PROGRESS);
     showInline(this.controlResume_, this.state_ == Download.States.PAUSED);

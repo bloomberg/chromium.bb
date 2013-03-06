@@ -142,6 +142,7 @@ DictionaryValue* CreateDownloadItemValue(
       download_item->GetTotalBytes()));
   file_value->SetBoolean("file_externally_removed",
                          download_item->GetFileExternallyRemoved());
+  file_value->SetBoolean("retry", false); // Overridden below if needed.
 
   if (download_item->IsInProgress()) {
     if (download_item->IsDangerous()) {
@@ -185,8 +186,12 @@ DictionaryValue* CreateDownloadItemValue(
         static_cast<int>(download_item->GetReceivedBytes()));
     file_value->SetString("last_reason_text",
                           download_model.GetInterruptReasonText());
+    if (content::DOWNLOAD_INTERRUPT_REASON_CRASH ==
+        download_item->GetLastReason())
+      file_value->SetBoolean("retry", true);
   } else if (download_item->IsCancelled()) {
     file_value->SetString("state", "CANCELLED");
+    file_value->SetBoolean("retry", true);
   } else if (download_item->IsComplete()) {
     DCHECK(!download_item->IsDangerous());
     file_value->SetString("state", "COMPLETE");
