@@ -298,11 +298,6 @@ WebDataService::Handle WebDataService::GetAutofillProfiles(
       Bind(&WebDataService::GetAutofillProfilesImpl, this), consumer);
 }
 
-void WebDataService::EmptyMigrationTrash(bool notify_sync) {
-  ScheduleDBTask(FROM_HERE,
-      Bind(&WebDataService::EmptyMigrationTrashImpl, this, notify_sync));
-}
-
 void WebDataService::AddCreditCard(const CreditCard& credit_card) {
   ScheduleDBTask(FROM_HERE,
       Bind(&WebDataService::AddCreditCardImpl, this, credit_card));
@@ -772,51 +767,6 @@ scoped_ptr<WDTypedResult> WebDataService::GetAutofillProfilesImpl() {
           profiles,
           base::Bind(&WebDataService::DestroyAutofillProfileResult,
               base::Unretained(this))));
-}
-
-void WebDataService::EmptyMigrationTrashImpl(bool notify_sync) {
-  if (notify_sync) {
-    std::vector<std::string> guids;
-    if (!db_->GetAutofillTable()->GetAutofillProfilesInTrash(&guids)) {
-      NOTREACHED();
-      return;
-    }
-
-    for (std::vector<std::string>::const_iterator iter = guids.begin();
-         iter != guids.end(); ++iter) {
-      // Send GUID-based notification.
-      AutofillProfileChange change(AutofillProfileChange::REMOVE,
-                                   *iter, NULL);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-          content::Source<WebDataService>(this),
-          content::Details<AutofillProfileChange>(&change));
-    }
-
-    // If we trashed any profiles they may have been merged, so send out
-    // update notifications as well.
-    if (!guids.empty()) {
-      std::vector<AutofillProfile*> profiles;
-      db_->GetAutofillTable()->GetAutofillProfiles(&profiles);
-      for (std::vector<AutofillProfile*>::const_iterator
-              iter = profiles.begin();
-           iter != profiles.end(); ++iter) {
-        AutofillProfileChange change(AutofillProfileChange::UPDATE,
-                                     (*iter)->guid(), *iter);
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-            content::Source<WebDataService>(this),
-            content::Details<AutofillProfileChange>(&change));
-      }
-      STLDeleteElements(&profiles);
-    }
-  }
-
-  if (!db_->GetAutofillTable()->EmptyAutofillProfilesTrash()) {
-    NOTREACHED();
-    return;
-  }
-  ScheduleCommit();
 }
 
 void WebDataService::AddCreditCardImpl(const CreditCard& credit_card) {

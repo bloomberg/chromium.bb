@@ -13,7 +13,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -38,7 +37,6 @@ class BrowserContext;
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
 class PersonalDataManager : public WebDataServiceConsumer,
-                            public ProfileSyncServiceObserver,
                             public content::NotificationObserver {
  public:
   // A pair of GUID and variant index. Represents a single FormGroup and a
@@ -61,9 +59,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // Removes |observer| as an observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManagerObserver* observer);
-
-  // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
 
   // content::NotificationObserver:
   // Observes "batch" changes made by Sync and refreshes data from the
@@ -228,9 +223,6 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Cancels a pending query to the web database.  |handle| is a pointer to the
   // query handle.
   void CancelPendingQuery(WebDataServiceBase::Handle* handle);
-
-  // Notifies Sync about data migration if necessary.
-  void EmptyMigrationTrash();
 
   // The first time this is called, logs an UMA metrics for the number of
   // profiles the user has. On subsequent calls, does nothing.

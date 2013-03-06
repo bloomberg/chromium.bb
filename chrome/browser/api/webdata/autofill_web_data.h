@@ -59,10 +59,6 @@ class AutofillWebData {
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) = 0;
 
-  // Remove "trashed" profile guids from the web database and optionally send
-  // notifications to tell Sync that the items have been removed.
-  virtual void EmptyMigrationTrash(bool notify_sync) = 0;
-
   // Schedules a task to add credit card to the web database.
   virtual void AddCreditCard(const CreditCard& credit_card) = 0;
 

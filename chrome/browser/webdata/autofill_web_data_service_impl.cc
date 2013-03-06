@@ -59,10 +59,6 @@ WebDataServiceBase::Handle AutofillWebDataServiceImpl::GetAutofillProfiles(
   return service_->GetAutofillProfiles(consumer);
 }
 
-void AutofillWebDataServiceImpl::EmptyMigrationTrash(bool notify_sync) {
-  service_->EmptyMigrationTrash(notify_sync);
-}
-
 void AutofillWebDataServiceImpl::AddCreditCard(const CreditCard& credit_card) {
   service_->AddCreditCard(credit_card);
 }

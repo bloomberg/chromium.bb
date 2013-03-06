@@ -12,7 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/autofill-inl.h"
 #include "chrome/browser/autofill/autofill_country.h"
@@ -190,32 +189,6 @@ void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
 void PersonalDataManager::RemoveObserver(
     PersonalDataManagerObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-// The |PersonalDataManager| is set up as a listener of the sync service in
-// |EmptyMigrationTrash| in the case where sync is not yet ready to receive
-// changes.  This method, |OnStateChange| acts as a deferred call to
-// |EmptyMigrationTrash| once the sync service becomes available.
-void PersonalDataManager::OnStateChanged() {
-  if (!browser_context_ || browser_context_->IsOffTheRecord())
-    return;
-
-  scoped_ptr<AutofillWebDataService> autofill_data(
-      AutofillWebDataService::FromBrowserContext(browser_context_));
-  if (!autofill_data.get()) {
-    NOTREACHED();
-    return;
-  }
-
-  ProfileSyncServiceBase* sync_service =
-      ProfileSyncServiceBase::FromBrowserContext(browser_context_);
-  if (!sync_service)
-    return;
-
-  if (sync_service->ShouldPushChanges()) {
-    autofill_data->EmptyMigrationTrash(true);
-    sync_service->RemoveObserver(this);
-  }
 }
 
 void PersonalDataManager::Observe(int type,
@@ -888,7 +861,6 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataServiceBase::Handle h,
   }
 
   LogProfileCount();
-  EmptyMigrationTrash();
 }
 
 void PersonalDataManager::ReceiveLoadedCreditCards(
@@ -976,33 +948,6 @@ void PersonalDataManager::SaveImportedCreditCard(
     credit_cards.push_back(imported_card);
 
   SetCreditCards(&credit_cards);
-}
-
-void PersonalDataManager::EmptyMigrationTrash() {
-  if (browser_context_->IsOffTheRecord())
-    return;
-
-  scoped_ptr<AutofillWebDataService> autofill_data(
-      AutofillWebDataService::FromBrowserContext(browser_context_));
-  // Might be NULL during testing.
-  if (!autofill_data.get())
-    return;
-
-  ProfileSyncServiceBase* sync_service =
-      ProfileSyncServiceBase::FromBrowserContext(browser_context_);
-  if (!sync_service)
-    return;
-
-  if (!sync_service->HasSyncSetupCompleted()) {
-    autofill_data->EmptyMigrationTrash(false);
-  } else if (sync_service->ShouldPushChanges()) {
-    autofill_data->EmptyMigrationTrash(true);
-  } else {
-    // Install ourself as a listener so we can empty the trash once the
-    // sync service becomes available.
-    if (!sync_service->HasObserver(this))
-      sync_service->AddObserver(this);
-  }
 }
 
 void PersonalDataManager::LogProfileCount() const {

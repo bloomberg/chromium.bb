@@ -33,7 +33,6 @@ class AutofillWebDataServiceImpl : public AutofillWebDataService {
   virtual void RemoveAutofillProfile(const std::string& guid) OVERRIDE;
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) OVERRIDE;
-  virtual void EmptyMigrationTrash(bool notify_sync) OVERRIDE;
   virtual void AddCreditCard(const CreditCard& credit_card) OVERRIDE;
   virtual void UpdateCreditCard(const CreditCard& credit_card) OVERRIDE;
   virtual void RemoveCreditCard(const std::string& guid) OVERRIDE;

@@ -16,8 +16,6 @@ include_rules = [
   # TODO(joi, kaiwang): Bring this list to zero.
   "!chrome/browser/api/infobars",
   "!chrome/browser/api/webdata",
-  "!chrome/browser/common",
-  "!chrome/browser/ui/autofill",
 
   # TODO(akalin): Remove this dependency.
   "!sync/util/data_encryption_win.h",
@@ -57,16 +55,12 @@ specific_include_rules = {
   # TODO(joi): These files will stay in chrome/browser/autofill when
   # the rest move to components/autofill. Fix DEPS once that happens.
   'personal_data_manager_factory\.(h|cc)': [
-    "!chrome/browser/profiles/profile_dependency_manager.h",
-    "!chrome/browser/profiles/profile_keyed_service.h",
-    "!chrome/browser/profiles/profile_keyed_service_factory.h",
-    "!chrome/browser/profiles/profile.h",
-    "!chrome/browser/webdata/web_data_service_factory.h",
-  ],
-
-  'personal_data_manager\.(h|cc)': [
-    # TODO(joi): Remove.
-    "!chrome/browser/api/sync",
+    "+chrome/browser/api/sync",
+    "+chrome/browser/profiles/profile_dependency_manager.h",
+    "+chrome/browser/profiles/profile_keyed_service.h",
+    "+chrome/browser/profiles/profile_keyed_service_factory.h",
+    "+chrome/browser/profiles/profile.h",
+    "+chrome/browser/webdata/web_data_service_factory.h",
   ],
 
   'autofill_cc_infobar_delegate\.(h|cc)': [
