@@ -21,9 +21,11 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
   virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual ProfileSyncServiceBase* GetProfileSyncService() OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
   virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
+  virtual bool IsPasswordSyncEnabled() const OVERRIDE;
+  virtual void SetSyncStateChangedCallback(
+      const base::Closure& callback) OVERRIDE;
   virtual void OnAutocheckoutError() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(

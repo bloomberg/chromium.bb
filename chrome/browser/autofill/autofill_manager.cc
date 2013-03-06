@@ -21,7 +21,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/autofill/autocheckout/whitelist_manager.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
@@ -248,9 +247,13 @@ void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 }
 
 void AutofillManager::RegisterWithSyncService() {
-  ProfileSyncServiceBase* service = manager_delegate_->GetProfileSyncService();
-  if (service)
-    service->AddObserver(this);
+  // TODO(joi): If/when SupportsWebData supports structured
+  // destruction ordering, we could use a base::Unretained here and
+  // just unsubscribe in our destructor. As is, we can't guarantee
+  // that the delegate doesn't get destroyed (by WebContent's
+  // SupportsUserData) right before the AutofillManager.
+  manager_delegate_->SetSyncStateChangedCallback(base::Bind(
+      &AutofillManager::OnSyncStateChanged, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutofillManager::SendPasswordGenerationStateToRenderer(
@@ -266,21 +269,12 @@ void AutofillManager::SendPasswordGenerationStateToRenderer(
 void AutofillManager::UpdatePasswordGenerationState(
     content::RenderViewHost* host,
     bool new_renderer) {
-  ProfileSyncServiceBase* service = manager_delegate_->GetProfileSyncService();
-
-  bool password_sync_enabled = false;
-  if (service) {
-    syncer::ModelTypeSet sync_set = service->GetPreferredDataTypes();
-    password_sync_enabled =
-      service->HasSyncSetupCompleted() && sync_set.Has(syncer::PASSWORDS);
-  }
-
   bool saving_passwords_enabled = manager_delegate_->IsSavingPasswordsEnabled();
   bool preference_checked = manager_delegate_->GetPrefs()->GetBoolean(
       prefs::kPasswordGenerationEnabled);
 
   bool new_password_generation_enabled =
-      password_sync_enabled &&
+      manager_delegate_->IsPasswordSyncEnabled() &&
       saving_passwords_enabled &&
       preference_checked;
 
@@ -300,7 +294,7 @@ void AutofillManager::OnPasswordGenerationEnabledChanged() {
   UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
 }
 
-void AutofillManager::OnStateChanged() {
+void AutofillManager::OnSyncStateChanged() {
   // It is possible for sync state to change during tab contents destruction.
   // In this case, we don't need to update the renderer since it's going away.
   if (web_contents() && web_contents()->GetRenderViewHost()) {
@@ -369,9 +363,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 void AutofillManager::WebContentsDestroyed(content::WebContents* web_contents) {
-  ProfileSyncServiceBase* service = manager_delegate_->GetProfileSyncService();
-  if (service && service->HasObserver(this))
-    service->RemoveObserver(this);
+  // Unsubscribe.
+  manager_delegate_->SetSyncStateChangedCallback(base::Closure());
 }
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,

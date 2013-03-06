@@ -21,15 +21,18 @@ PrefService* TestAutofillManagerDelegate::GetPrefs() {
   return NULL;
 }
 
-ProfileSyncServiceBase* TestAutofillManagerDelegate::GetProfileSyncService() {
-  return NULL;
-}
-
 void TestAutofillManagerDelegate::HideRequestAutocompleteDialog() {}
 
 bool TestAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
   return false;
 }
+
+bool TestAutofillManagerDelegate::IsPasswordSyncEnabled() const {
+  return false;
+}
+
+void TestAutofillManagerDelegate::SetSyncStateChangedCallback(
+    const base::Closure& callback) { }
 
 void TestAutofillManagerDelegate::OnAutocheckoutError() {}
 

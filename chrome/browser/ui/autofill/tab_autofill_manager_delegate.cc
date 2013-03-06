@@ -56,13 +56,39 @@ PrefService* TabAutofillManagerDelegate::GetPrefs() {
       GetPrefs();
 }
 
-ProfileSyncServiceBase* TabAutofillManagerDelegate::GetProfileSyncService() {
-  return ProfileSyncServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-}
-
 bool TabAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
   return PasswordManager::FromWebContents(web_contents_)->IsSavingEnabled();
+}
+
+bool TabAutofillManagerDelegate::IsPasswordSyncEnabled() const {
+  ProfileSyncServiceBase* service = ProfileSyncServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  if (!service)
+    return false;
+
+  syncer::ModelTypeSet sync_set = service->GetPreferredDataTypes();
+  return service->HasSyncSetupCompleted() && sync_set.Has(syncer::PASSWORDS);
+}
+
+void TabAutofillManagerDelegate::SetSyncStateChangedCallback(
+    const base::Closure& callback) {
+  ProfileSyncServiceBase* service = ProfileSyncServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  if (!service)
+    return;
+
+  if (sync_state_changed_callback_.is_null() && !callback.is_null())
+    service->AddObserver(this);
+  else if (!sync_state_changed_callback_.is_null() && callback.is_null())
+    service->RemoveObserver(this);
+
+  sync_state_changed_callback_ = callback;
+
+  // Invariant: Either sync_state_changed_callback_.is_null() is true
+  // and this object is not subscribed as a
+  // ProfileSyncServiceObserver, or
+  // sync_state_changed_callback_.is_null() is false and this object
+  // is subscribed as a ProfileSyncServiceObserver.
 }
 
 void TabAutofillManagerDelegate::OnAutocheckoutError() {
@@ -159,6 +185,11 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
     dialog_controller_->Hide();
     RequestAutocompleteDialogClosed();
   }
+}
+
+void TabAutofillManagerDelegate::OnStateChanged() {
+  if (!sync_state_changed_callback_.is_null())
+    sync_state_changed_callback_.Run();
 }
 
 void TabAutofillManagerDelegate::DidNavigateMainFrame(

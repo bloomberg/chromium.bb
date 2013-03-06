@@ -66,16 +66,22 @@ class AutofillManagerDelegate {
   // Gets the preferences associated with the delegate.
   virtual PrefService* GetPrefs() = 0;
 
-  // Gets the profile sync service associated with the delegate.  Will
-  // be NULL if sync is not enabled.
-  virtual ProfileSyncServiceBase* GetProfileSyncService() = 0;
-
   // Hides the associated request autocomplete dialog (if it exists).
   virtual void HideRequestAutocompleteDialog() = 0;
 
   // Returns true if saving passwords is currently enabled for the
   // delegate.
   virtual bool IsSavingPasswordsEnabled() const = 0;
+
+  // Returns true if Sync is enabled for the passwords datatype.
+  virtual bool IsPasswordSyncEnabled() const = 0;
+
+  // Sets a callback that will be called when sync state changes.
+  //
+  // Set the callback to an object for which |is_null()| evaluates to
+  // true to stop receiving notifications
+  // (e.g. SetSyncStateChangedCallback(base::Closure())).
+  virtual void SetSyncStateChangedCallback(const base::Closure& callback) = 0;
 
   // Causes an error explaining that Autocheckout has failed to be displayed to
   // the user.

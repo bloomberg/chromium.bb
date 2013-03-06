@@ -1,25 +1,27 @@
 include_rules = [
-  # Autofill is being made into a Browser Component, so we have these basic
-  # rules followed by temporary exceptions.  Please don't add to the list of
-  # exceptions!
+  # Autofill is being made into a component (it will end up at
+  # src/components/autofill and not depend on src/chrome), so we have
+  # these basic rules followed by temporary exceptions.  Please don't
+  # add to the list of exceptions!
   "-chrome/browser",
-  "+chrome/browser/api",
   "+chrome/browser/autofill",
-  "+chrome/browser/common",
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.
   "+third_party/libphonenumber",  # For phone number i18n.
 
-  # TODO(joi): May be able to remove this if PKS is moved to c/b/api.
-  "!chrome/browser/profiles/profile_keyed_service.h",
+  # TODO(joi, kaiwang): Bring this list to zero.
+  "!chrome/browser/api/infobars",
+  "!chrome/browser/api/webdata",
+  "!chrome/browser/common",
+  "!chrome/browser/ui/autofill",
 
   # TODO(akalin): Remove this dependency.
   "!sync/util/data_encryption_win.h",
 ]
 
 specific_include_rules = {
-  # TODO(joi): Bring this list to zero.
+  # TODO(joi, kaiwang): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
@@ -47,12 +49,18 @@ specific_include_rules = {
     "!chrome/browser/browser_process.h",
   ],
 
-  # TODO(joi): May be able to get rid of the need for this by moving
-  # PersonalDataManagerFactory to chrome/browser/profiles.
+  # TODO(joi): These files will stay in chrome/browser/autofill when
+  # the rest move to components/autofill. Fix DEPS once that happens.
   'personal_data_manager_factory\.(h|cc)': [
     "!chrome/browser/profiles/profile_dependency_manager.h",
+    "!chrome/browser/profiles/profile_keyed_service.h",
     "!chrome/browser/profiles/profile_keyed_service_factory.h",
     "!chrome/browser/profiles/profile.h",
     "!chrome/browser/webdata/web_data_service_factory.h",
+  ],
+
+  'personal_data_manager\.(h|cc)': [
+    # TODO(joi): Remove.
+    "!chrome/browser/api/sync",
   ],
 }

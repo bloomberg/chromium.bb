@@ -21,7 +21,6 @@
 #include "base/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time.h"
-#include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_download.h"
@@ -75,7 +74,6 @@ class Message;
 // forms.
 class AutofillManager : public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
-                        public ProfileSyncServiceObserver,
                         public base::SupportsUserData::Data {
  public:
   static void CreateForWebContentsAndDelegate(
@@ -220,8 +218,7 @@ class AutofillManager : public content::WebContentsObserver,
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
 
-  // ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
+  void OnSyncStateChanged();
 
   // Register as an observer with the sync service.
   void RegisterWithSyncService();
