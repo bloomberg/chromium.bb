@@ -56,12 +56,12 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
       return "normal";
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_STILL_RUNNING:
       return "abnormal";
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       return "killed";
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
       return "crashed";
-    case base::TERMINATION_STATUS_STILL_RUNNING:
     case base::TERMINATION_STATUS_MAX_ENUM:
       break;
   }
