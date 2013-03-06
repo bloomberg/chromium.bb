@@ -14,4 +14,6 @@ node = env.CommandSelLdrTestNacl('nullptr.out',
                                  nexe,
                                  exit_status='untrusted_segfault')
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_nullptr_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nullptr_test',
+                       is_broken=env.UsingEmulator())
+
