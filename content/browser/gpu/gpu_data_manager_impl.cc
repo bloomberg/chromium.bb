@@ -436,6 +436,15 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,
                                    swiftshader_path);
 
+#if defined(OS_WIN)
+  // DisplayLink 7.1 and earlier can cause the GPU process to crash on startup.
+  // http://crbug.com/177611
+  if (gpu_info_.display_link_version.IsValid()
+      && gpu_info_.display_link_version.IsOlderThan("7.2")) {
+    command_line->AppendSwitch(switches::kReduceGpuSandbox);
+  }
+#endif
+
   {
     base::AutoLock auto_lock(gpu_info_lock_);
     if (gpu_info_.optimus)

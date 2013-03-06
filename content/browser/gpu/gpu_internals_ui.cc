@@ -125,6 +125,10 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
       "Optimus", new base::FundamentalValue(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
       "AMD switchable", new base::FundamentalValue(gpu_info.amd_switchable)));
+  if (gpu_info.display_link_version.IsValid()) {
+    basic_info->Append(NewDescriptionValuePair(
+        "DisplayLink Version", gpu_info.display_link_version.GetString()));
+  }
   basic_info->Append(NewDescriptionValuePair("Driver vendor",
                                              gpu_info.driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",
