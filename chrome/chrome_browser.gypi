@@ -1446,6 +1446,8 @@
         'browser/policy/preferences_mac.h',
         'browser/policy/proxy_policy_provider.cc',
         'browser/policy/proxy_policy_provider.h',
+        'browser/policy/rate_limiter.cc',
+        'browser/policy/rate_limiter.h',
         'browser/policy/resource_cache.cc',
         'browser/policy/resource_cache.h',
         'browser/policy/url_blacklist_manager.cc',
