@@ -119,14 +119,22 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
   MessageLoop message_loop;
   content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
+  // Test that it searches $XDG_DATA_HOME/applications.
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
+    // Create a file in a non-applications directory. This should be ignored.
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII(kTemplateFilename),
+        kTestData2, strlen(kTestData2)));
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir.path().AppendASCII("applications")));
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII("applications")
+            .AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     std::string contents;
     ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
@@ -134,6 +142,26 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     EXPECT_EQ(kTestData1, contents);
   }
 
+  // Test that it falls back to $HOME/.local/share/applications.
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    MockEnvironment env;
+    env.Set("HOME", temp_dir.path().value());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir.path().AppendASCII(".local/share/applications")));
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII(".local/share/applications")
+            .AppendASCII(kTemplateFilename),
+        kTestData1, strlen(kTestData1)));
+    std::string contents;
+    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
+                                                                  &contents));
+    EXPECT_EQ(kTestData1, contents);
+  }
+
+  // Test that it searches $XDG_DATA_DIRS/applications.
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -152,26 +180,31 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     EXPECT_EQ(kTestData2, contents);
   }
 
+  // Test that it searches $X/applications for each X in $XDG_DATA_DIRS.
   {
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::ScopedTempDir temp_dir1;
+    ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
+    base::ScopedTempDir temp_dir2;
+    ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
 
     MockEnvironment env;
-    env.Set("XDG_DATA_DIRS", temp_dir.path().value() + ":" +
-                   temp_dir.path().AppendASCII("applications").value());
-    ASSERT_TRUE(file_util::CreateDirectory(
-        temp_dir.path().AppendASCII("applications")));
+    env.Set("XDG_DATA_DIRS", temp_dir1.path().value() + ":" +
+                             temp_dir2.path().value());
+    // Create a file in a non-applications directory. This should be ignored.
     ASSERT_TRUE(file_util::WriteFile(
-        temp_dir.path().AppendASCII(kTemplateFilename),
+        temp_dir1.path().AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
+    // Only create a findable desktop file in the second path.
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir2.path().AppendASCII("applications")));
     ASSERT_TRUE(file_util::WriteFile(
-        temp_dir.path().AppendASCII("applications")
+        temp_dir2.path().AppendASCII("applications")
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
     ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
                                                                   &contents));
-    EXPECT_EQ(kTestData1, contents);
+    EXPECT_EQ(kTestData2, contents);
   }
 }
 
