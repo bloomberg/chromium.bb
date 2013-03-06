@@ -114,6 +114,10 @@ int FieldTrial::AppendGroup(const std::string& name,
   if (forced_) {
     DCHECK(!group_name_.empty());
     if (name == group_name_) {
+      // Note that while |group_| may be equal to |kDefaultGroupNumber| on the
+      // forced trial, it will not have the same value as the default group
+      // number returned from the non-forced |FactoryGetFieldTrial()| call,
+      // which takes care to ensure that this does not happen.
       return group_;
     }
     DCHECK_NE(next_group_number_, group_);
@@ -259,11 +263,28 @@ FieldTrial* FieldTrialList::FactoryGetFieldTrial(
   FieldTrial* existing_trial = Find(name);
   if (existing_trial) {
     CHECK(existing_trial->forced_);
-    // If the field trial has already been forced, check whether it was forced
-    // to the default group. Return the chosen group number, in that case..
+    // If the default group name differs between the existing forced trial
+    // and this trial, then use a different value for the default group number.
     if (default_group_number &&
-        default_group_name == existing_trial->default_group_name()) {
-      *default_group_number = existing_trial->group();
+        default_group_name != existing_trial->default_group_name()) {
+      // If the new default group number corresponds to the group that was
+      // chosen for the forced trial (which has been finalized when it was
+      // forced), then set the default group number to that.
+      if (default_group_name == existing_trial->group_name_internal()) {
+        *default_group_number = existing_trial->group_;
+      } else {
+        // Otherwise, use |kNonConflictingGroupNumber| (-2) for the default
+        // group number, so that it does not conflict with the |AppendGroup()|
+        // result for the chosen group.
+        const int kNonConflictingGroupNumber = -2;
+        COMPILE_ASSERT(
+            kNonConflictingGroupNumber != FieldTrial::kDefaultGroupNumber,
+            conflicting_default_group_number);
+        COMPILE_ASSERT(
+            kNonConflictingGroupNumber != FieldTrial::kNotFinalized,
+            conflicting_default_group_number);
+        *default_group_number = kNonConflictingGroupNumber;
+      }
     }
     return existing_trial;
   }
@@ -389,10 +410,8 @@ FieldTrial* FieldTrialList::CreateFieldTrial(
   }
   const int kTotalProbability = 100;
   field_trial = new FieldTrial(name, kTotalProbability, group_name);
-  // This is where we may assign a group number different from
-  // kDefaultGroupNumber to the default group.
-  field_trial->AppendGroup(group_name, kTotalProbability);
-  field_trial->forced_ = true;
+  // Force the trial, which will also finalize the group choice.
+  field_trial->SetForced();
   FieldTrialList::Register(field_trial);
   return field_trial;
 }

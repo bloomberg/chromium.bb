@@ -542,10 +542,14 @@ TEST_F(FieldTrialTest, ForcedFieldTrials) {
   EXPECT_NE(chosen_group, new_group);
   // The new group should not be the default group either.
   EXPECT_NE(default_group_number, new_group);
+}
 
+TEST_F(FieldTrialTest, ForcedFieldTrialsDefaultGroup) {
   // Forcing the default should use the proper group ID.
-  forced_trial = FieldTrialList::CreateFieldTrial("Trial Name", "Default");
-  factory_trial = FieldTrialList::FactoryGetFieldTrial(
+  FieldTrial* forced_trial = FieldTrialList::CreateFieldTrial("Trial Name",
+                                                              "Default");
+  int default_group_number = -1;
+  FieldTrial* factory_trial = FieldTrialList::FactoryGetFieldTrial(
       "Trial Name", 1000, "Default", next_year_, 12, 31, &default_group_number);
   EXPECT_EQ(forced_trial, factory_trial);
 
@@ -624,6 +628,112 @@ TEST_F(FieldTrialTest, SetForcedDefaultWithExtraGroup) {
   EXPECT_EQ(default_group, trial->group());
   EXPECT_NE(extra_group, trial->group());
   EXPECT_EQ(kDefaultGroupName, trial->group_name());
+}
+
+TEST_F(FieldTrialTest, SetForcedTurnFeatureOn) {
+  const char kTrialName[] = "SetForcedTurnFeatureOn";
+  const char kExtraGroupName[] = "Extra";
+  ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
+
+  // Simulate a server-side (forced) config that turns the feature on when the
+  // original hard-coded config had it disabled.
+  FieldTrial* forced_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
+                                           next_year_, 12, 31, NULL);
+  forced_trial->AppendGroup(kExtraGroupName, 100);
+  forced_trial->SetForced();
+
+  int default_group = -1;
+  FieldTrial* client_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
+                                           next_year_, 12, 31, &default_group);
+  const int extra_group = client_trial->AppendGroup(kExtraGroupName, 0);
+  EXPECT_NE(default_group, extra_group);
+
+  EXPECT_FALSE(client_trial->group_reported_);
+  EXPECT_EQ(extra_group, client_trial->group());
+  EXPECT_TRUE(client_trial->group_reported_);
+  EXPECT_EQ(kExtraGroupName, client_trial->group_name());
+}
+
+TEST_F(FieldTrialTest, SetForcedTurnFeatureOff) {
+  const char kTrialName[] = "SetForcedTurnFeatureOff";
+  const char kExtraGroupName[] = "Extra";
+  ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
+
+  // Simulate a server-side (forced) config that turns the feature off when the
+  // original hard-coded config had it enabled.
+  FieldTrial* forced_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
+                                           next_year_, 12, 31, NULL);
+  forced_trial->AppendGroup(kExtraGroupName, 0);
+  forced_trial->SetForced();
+
+  int default_group = -1;
+  FieldTrial* client_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kDefaultGroupName,
+                                           next_year_, 12, 31, &default_group);
+  const int extra_group = client_trial->AppendGroup(kExtraGroupName, 100);
+  EXPECT_NE(default_group, extra_group);
+
+  EXPECT_FALSE(client_trial->group_reported_);
+  EXPECT_EQ(default_group, client_trial->group());
+  EXPECT_TRUE(client_trial->group_reported_);
+  EXPECT_EQ(kDefaultGroupName, client_trial->group_name());
+}
+
+TEST_F(FieldTrialTest, SetForcedChangeDefault_Default) {
+  const char kTrialName[] = "SetForcedDefaultGroupChange";
+  const char kGroupAName[] = "A";
+  const char kGroupBName[] = "B";
+  ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
+
+  // Simulate a server-side (forced) config that switches which group is default
+  // and ensures that the non-forced code receives the correct group numbers.
+  FieldTrial* forced_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupAName,
+                                           next_year_, 12, 31, NULL);
+  forced_trial->AppendGroup(kGroupBName, 100);
+  forced_trial->SetForced();
+
+  int default_group = -1;
+  FieldTrial* client_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupBName,
+                                           next_year_, 12, 31, &default_group);
+  const int extra_group = client_trial->AppendGroup(kGroupAName, 50);
+  EXPECT_NE(default_group, extra_group);
+
+  EXPECT_FALSE(client_trial->group_reported_);
+  EXPECT_EQ(default_group, client_trial->group());
+  EXPECT_TRUE(client_trial->group_reported_);
+  EXPECT_EQ(kGroupBName, client_trial->group_name());
+}
+
+TEST_F(FieldTrialTest, SetForcedChangeDefault_NonDefault) {
+  const char kTrialName[] = "SetForcedDefaultGroupChange";
+  const char kGroupAName[] = "A";
+  const char kGroupBName[] = "B";
+  ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
+
+  // Simulate a server-side (forced) config that switches which group is default
+  // and ensures that the non-forced code receives the correct group numbers.
+  FieldTrial* forced_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupAName,
+                                           next_year_, 12, 31, NULL);
+  forced_trial->AppendGroup(kGroupBName, 0);
+  forced_trial->SetForced();
+
+  int default_group = -1;
+  FieldTrial* client_trial =
+      FieldTrialList::FactoryGetFieldTrial(kTrialName, 100, kGroupBName,
+                                           next_year_, 12, 31, &default_group);
+  const int extra_group = client_trial->AppendGroup(kGroupAName, 50);
+  EXPECT_NE(default_group, extra_group);
+
+  EXPECT_FALSE(client_trial->group_reported_);
+  EXPECT_EQ(extra_group, client_trial->group());
+  EXPECT_TRUE(client_trial->group_reported_);
+  EXPECT_EQ(kGroupAName, client_trial->group_name());
 }
 
 TEST_F(FieldTrialTest, Observe) {
