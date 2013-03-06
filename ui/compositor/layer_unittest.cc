@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "cc/delegated_frame_data.h"
 #include "cc/layer.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1253,6 +1254,59 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
   EXPECT_TRUE(schedule_draw_invoked_);
   DrawTree(root.get());
   EXPECT_TRUE(delegate.painted());
+}
+
+static scoped_ptr<cc::DelegatedFrameData> MakeFrameData(gfx::Size size) {
+  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
+  scoped_ptr<cc::RenderPass> render_pass(cc::RenderPass::Create());
+  render_pass->SetNew(cc::RenderPass::Id(1, 1),
+                      gfx::Rect(size),
+                      gfx::RectF(),
+                      gfx::Transform());
+  frame_data->render_pass_list.push_back(render_pass.Pass());
+  return frame_data.Pass();
+}
+
+TEST_F(LayerWithDelegateTest, DelegatedLayer) {
+  scoped_ptr<Layer> root(CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000)));
+
+  scoped_ptr<Layer> child(CreateLayer(LAYER_TEXTURED));
+
+  child->SetBounds(gfx::Rect(0, 0, 10, 10));
+  child->SetVisible(true);
+  root->Add(child.get());
+  DrawTree(root.get());
+
+  // Content matches layer size.
+  child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+            gfx::Size(10, 10).ToString());
+
+  // Content larger than layer.
+  child->SetBounds(gfx::Rect(0, 0, 5, 5));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+            gfx::Size(5, 5).ToString());
+
+  // Content smaller than layer.
+  child->SetBounds(gfx::Rect(0, 0, 10, 10));
+  child->SetDelegatedFrame(MakeFrameData(gfx::Size(5, 5)), gfx::Size(5, 5));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+            gfx::Size(5, 5).ToString());
+
+  // Hi-DPI content on low-DPI layer.
+  child->SetDelegatedFrame(MakeFrameData(gfx::Size(20, 20)), gfx::Size(10, 10));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+            gfx::Size(10, 10).ToString());
+
+  // Hi-DPI content on hi-DPI layer.
+  compositor()->SetScaleAndSize(2.f, gfx::Size(1000, 1000));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+            gfx::Size(20, 20).ToString());
+
+  // Low-DPI content on hi-DPI layer.
+  child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
+  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+            gfx::Size(20, 20).ToString());
 }
 
 }  // namespace ui

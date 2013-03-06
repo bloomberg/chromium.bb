@@ -29,10 +29,14 @@ class SkCanvas;
 
 namespace cc {
 class ContentLayer;
+class DelegatedFrameData;
+class DelegatedRendererLayer;
 class Layer;
 class ResourceUpdateQueue;
 class SolidColorLayer;
 class TextureLayer;
+struct TransferableResource;
+typedef std::vector<TransferableResource> TransferableResourceArray;
 }
 
 namespace ui {
@@ -235,6 +239,14 @@ class COMPOSITOR_EXPORT Layer
   void SetExternalTexture(ui::Texture* texture);
   ui::Texture* external_texture() { return texture_.get(); }
 
+  // Sets a delegated frame, coming from a child compositor.
+  void SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
+                         gfx::Size frame_size_in_dip);
+
+  // Gets unused resources to recycle to the child compositor.
+  void TakeUnusedResourcesForChildCompositor(
+      cc::TransferableResourceArray* array);
+
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
 
@@ -304,11 +316,6 @@ class COMPOSITOR_EXPORT Layer
   bool GetTargetTransformRelativeTo(const Layer* ancestor,
                                     gfx::Transform* transform) const;
 
-  // The only externally updated layers are ones that get their pixels from
-  // WebKit and WebKit does not produce valid alpha values. All other layers
-  // should have valid alpha.
-  bool has_valid_alpha_channel() const { return !layer_updated_externally_; }
-
   // Following are invoked from the animation or if no animation exists to
   // update the values immediately.
   void SetBoundsImmediately(const gfx::Rect& bounds);
@@ -351,6 +358,8 @@ class COMPOSITOR_EXPORT Layer
   void SetLayerBackgroundFilters();
 
   void UpdateIsDrawn();
+
+  void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
 
   const LayerType type_;
 
@@ -423,8 +432,8 @@ class COMPOSITOR_EXPORT Layer
   scoped_refptr<cc::ContentLayer> content_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
+  scoped_refptr<cc::DelegatedRendererLayer> delegated_renderer_layer_;
   cc::Layer* cc_layer_;
-  bool cc_layer_is_accelerated_;
 
   // If true, the layer scales the canvas and the texture with the device scale
   // factor as appropriate. When true, the texture size is in DIP.
@@ -432,6 +441,10 @@ class COMPOSITOR_EXPORT Layer
 
   // A cached copy of |Compositor::device_scale_factor()|.
   float device_scale_factor_;
+
+  // The size of the delegated frame in DIP, set when SetDelegatedFrame was
+  // called.
+  gfx::Size delegated_frame_size_in_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };
