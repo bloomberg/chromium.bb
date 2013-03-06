@@ -26,6 +26,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -284,6 +285,10 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   int return_code;
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
+
+  // TODO(pastarmovj): Restart the browser and apply any flags set by the user.
+  // See: http://crosbug.com/39249
+
   browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                                 profile,
                                 base::FilePath(),

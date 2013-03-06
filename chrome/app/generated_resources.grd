@@ -6067,6 +6067,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that restarts Chrome OS when clicked. ">
           Restart Now
         </message>
+        <message name="IDS_SYSTEM_FLAGS_OWNER_ONLY" desc="A warning that flags that apply system-wide can only be set by the owner.">
+          Flags that apply system-wide can only be set by the owner: <ph name="OWNER_EMAIL">$1<ex>owner@example.com</ex></ph>.
+        </message>
       </if>
       <message name="IDS_FLAGS_RESET_ALL_BUTTON" desc="Text on a button that resets all experiments to their default state when clicked.">
         Reset all to default

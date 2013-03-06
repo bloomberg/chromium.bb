@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
@@ -33,6 +34,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #endif
 
 using content::WebContents;
@@ -58,23 +60,22 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   source->AddLocalizedString("disable", IDS_FLAGS_DISABLE);
   source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
 #if defined(OS_CHROMEOS)
-  // Set the strings to show which user can actually change the flags
-  source->AddLocalizedString("ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY);
-  std::string owner;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-  source->AddString("ownerUserId", UTF8ToUTF16(owner));
+  if (!chromeos::UserManager::Get()->IsCurrentUserOwner() &&
+      base::chromeos::IsRunningOnChromeOS()) {
+    // Set the strings to show which user can actually change the flags.
+    std::string owner;
+    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+    source->AddString("ownerWarning",
+                      l10n_util::GetStringFUTF16(IDS_SYSTEM_FLAGS_OWNER_ONLY,
+                                                 UTF8ToUTF16(owner)));
+  } else {
+    source->AddString("ownerWarning", string16());
+  }
 #endif
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("flags.js", IDR_FLAGS_JS);
-
-  int idr = IDR_FLAGS_HTML;
-#if defined (OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->IsCurrentUserOwner() &&
-      base::chromeos::IsRunningOnChromeOS())
-    idr = IDR_FLAGS_HTML_WARNING;
-#endif
-  source->SetDefaultResource(idr);
+  source->SetDefaultResource(IDR_FLAGS_HTML);
   return source;
 }
 
@@ -87,7 +88,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 // The handler for Javascript messages for the about:flags page.
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
-  FlagsDOMHandler() {}
+  explicit FlagsDOMHandler(PrefService* prefs) : prefs_(prefs) {}
   virtual ~FlagsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
@@ -106,6 +107,8 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   void HandleResetAllFlags(const ListValue* args);
 
  private:
+  PrefService* prefs_;
+
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
 
@@ -127,8 +130,7 @@ void FlagsDOMHandler::RegisterMessages() {
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
   DictionaryValue results;
   results.Set("flagsExperiments",
-              about_flags::GetFlagsExperimentsData(
-                  g_browser_process->local_state()));
+              about_flags::GetFlagsExperimentsData(prefs_));
   results.SetBoolean("needsRestart",
                      about_flags::IsRestartNeededToCommitChanges());
   web_ui()->CallJavascriptFunction("returnFlagsExperiments", results);
@@ -147,7 +149,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
     return;
 
   about_flags::SetExperimentEnabled(
-      g_browser_process->local_state(),
+      prefs_,
       experiment_internal_name,
       enable_str == "true");
 }
@@ -168,12 +170,25 @@ void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new FlagsDOMHandler());
+FlagsUI::FlagsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+
+#ifdef OS_CHROMEOS
+  chromeos::DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+      base::Bind(&FlagsUI::FinishInitialization,
+                 weak_factory_.GetWeakPtr(), profile));
+#else
+  web_ui->AddMessageHandler(
+      new FlagsDOMHandler(g_browser_process->local_state()));
 
   // Set up the about:flags source.
-  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
+#endif
+}
+
+FlagsUI::~FlagsUI() {
 }
 
 // static
@@ -187,3 +202,32 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
 void FlagsUI::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kEnabledLabsExperiments);
 }
+
+#ifdef OS_CHROMEOS
+// static
+void FlagsUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kEnabledLabsExperiments,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+void FlagsUI::FinishInitialization(
+    Profile* profile,
+    chromeos::DeviceSettingsService::OwnershipStatus status,
+    bool current_user_is_owner) {
+  // On Chrome OS the owner can set system wide flags and other users can only
+  // set flags for their own session.
+  if (!current_user_is_owner) {
+    web_ui()->AddMessageHandler(new FlagsDOMHandler(profile->GetPrefs()));
+  } else {
+    web_ui()->AddMessageHandler(
+        new FlagsDOMHandler(g_browser_process->local_state()));
+    // If the owner managed to set the flags pref on his own profile clear it
+    // because it will never be accessible anymore.
+    if (profile->GetPrefs()->HasPrefPath(prefs::kEnabledLabsExperiments))
+      profile->GetPrefs()->ClearPref(prefs::kEnabledLabsExperiments);
+  }
+
+  // Set up the about:flags source.
+  content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
+}
+#endif

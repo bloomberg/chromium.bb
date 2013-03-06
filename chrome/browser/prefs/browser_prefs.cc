@@ -345,6 +345,7 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   chromeos::OAuth2LoginManager::RegisterUserPrefs(registry);
   chromeos::Preferences::RegisterUserPrefs(registry);
   chromeos::ProxyConfigServiceImpl::RegisterUserPrefs(registry);
+  FlagsUI::RegisterUserPrefs(registry);
 #endif
 
 #if defined(OS_WIN)
