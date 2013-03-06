@@ -16,7 +16,7 @@
       '../../../../',
     ],
     'dependencies' : [
-      '../../../dl.gyp:arm_fft',
+      '../../../dl.gyp:openmax_dl',
       'test_utilities'
     ],
     'conditions': [

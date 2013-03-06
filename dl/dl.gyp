@@ -13,7 +13,7 @@
   },
   'targets': [
     {
-      'target_name': 'arm_fft',
+      'target_name': 'openmax_dl',
       'type': 'static_library',
       'include_dirs': [
         '../',
