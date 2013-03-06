@@ -16,24 +16,30 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-class InstantTest : public InProcessBrowserTest, public InstantTestBase {
+class InstantTest : public InstantTestBase {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(test_server()->Start());
-    GURL instant_url = test_server()->GetURL("files/instant.html?");
-    InstantTestBase::Init(instant_url);
+    instant_url_ = test_server()->GetURL("files/instant.html?");
+  }
+
+  void FocusOmniboxAndWaitForInstantSupport() {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    FocusOmnibox();
+    observer.Wait();
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
@@ -60,7 +66,7 @@ class InstantTest : public InProcessBrowserTest, public InstantTestBase {
 
 // Test that Instant is preloaded when the omnibox is focused.
 IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Explicitly unfocus the omnibox.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -115,12 +121,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
 #endif
 // Test that the onchange event is dispatched upon typing in the omnibox.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
-  ui_test_utils::NavigateToURL(browser(), instant_url());
+  ui_test_utils::NavigateToURL(browser(), instant_url_);
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -157,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
 
 // Test that the onsubmit event is dispatched upon pressing Enter.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
   SetOmniboxTextAndWaitForOverlayToShow("search");
 
@@ -199,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   EXPECT_EQ(2, overlay->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.
-  EXPECT_EQ(instant_url(), omnibox()->model()->PermanentURL());
+  EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
 
   // Check that the searchbox API values have been reset.
   std::string value;
@@ -217,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 
 // Test that the oncancel event is dispatched upon clicking on the overlay.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   FocusOmniboxAndWaitForInstantSupport();
   SetOmniboxTextAndWaitForOverlayToShow("search");
@@ -260,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   EXPECT_EQ(2, overlay->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.
-  EXPECT_EQ(instant_url(), omnibox()->model()->PermanentURL());
+  EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
 
   // Check that the searchbox API values have been reset.
   std::string value;
@@ -278,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 
 // Test that the onreisze event is dispatched upon typing in the omnibox.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnResizeEvent) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   FocusOmniboxAndWaitForInstantSupport();
 
@@ -297,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnResizeEvent) {
 
 // Test that the INSTANT_COMPLETE_NOW behavior works as expected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Tell the JS to request the given behavior.
@@ -320,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
 
 // Test that the INSTANT_COMPLETE_NEVER behavior works as expected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Tell the JS to request the given behavior.
@@ -343,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
 
 // Test that a valid suggestion is accepted.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsValidObject) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Tell the JS to use the given suggestion.
@@ -356,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsValidObject) {
 
 // Test that an invalid suggestion is rejected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsInvalidObject) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Tell the JS to use an object in an invalid format.
@@ -369,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsInvalidObject) {
 
 // Test that various forms of empty suggestions are rejected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsEmpty) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_TRUE(ExecuteScript("suggestion = {}"));
@@ -391,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsEmpty) {
 
 // Test that Instant doesn't process URLs.
 IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Note that we are not actually navigating to these URLs yet. We are just
@@ -417,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
 // Test that Instant doesn't fire for intranet paths that look like searches.
 // http://crbug.com/99836
 IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Navigate to a URL that looks like a search (when the scheme is stripped).
   // It's okay if the host is bogus or the navigation fails, since we only care
@@ -432,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
 
 // Test that transitions between searches and non-searches work as expected.
 IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type a search, and immediately a URL, without waiting for Instant to show.
@@ -496,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
 
 // Test that Instant can't be fooled into committing a URL.
 IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsOne) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Type a URL. The Instant overlay shouldn't be showing.
@@ -532,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsOne) {
 
 // Test that Instant can't be fooled into committing a URL.
 IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type a query. This causes the overlay to be shown.
@@ -566,23 +572,22 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
 
 // Test that a non-Instant search provider shows no overlays.
 IN_PROC_BROWSER_TEST_F(InstantTest, NonInstantSearchProvider) {
-  GURL instant_url = test_server()->GetURL("files/empty.html");
-  InstantTestBase::Init(instant_url);
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  instant_url_ = test_server()->GetURL("files/empty.html");
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Focus the omnibox. When the support determination response comes back,
   // Instant will destroy the non-Instant page, and attempt to recreate it.
   // We can know this happened by looking at the blacklist.
-  EXPECT_EQ(0, instant()->blacklisted_urls_[instant_url.spec()]);
+  EXPECT_EQ(0, instant()->blacklisted_urls_[instant_url_.spec()]);
   FocusOmniboxAndWaitForInstantSupport();
-  EXPECT_EQ(1, instant()->blacklisted_urls_[instant_url.spec()]);
+  EXPECT_EQ(1, instant()->blacklisted_urls_[instant_url_.spec()]);
 }
 
 // Test that the renderer doesn't crash if JavaScript is blocked.
 IN_PROC_BROWSER_TEST_F(InstantTest, NoCrashOnBlockedJS) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Wait for notification that the Instant API has been determined. As long as
   // we get the notification we're good (the renderer didn't crash).
@@ -591,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NoCrashOnBlockedJS) {
 
 // Test that the overlay and active tab's visibility states are set correctly.
 IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   content::WebContents* active_tab =
@@ -639,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TaskManagerPrefix) {
     EXPECT_FALSE(StartsWith(title, prefix, true)) << title << " vs " << prefix;
   }
 
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmnibox();
 
   // Now there should be two renderers, the second being the Instant overlay.
@@ -675,7 +680,7 @@ void KeywordQueryDone(base::RunLoop* run_loop,
 
 // Test that the Instant page load is not added to history.
 IN_PROC_BROWSER_TEST_F(InstantTest, History) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
@@ -708,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
 
   // The Instant URL should not be in history.
   base::RunLoop run_loop2;
-  history->QueryURL(instant_url(), false, &consumer,
+  history->QueryURL(instant_url_, false, &consumer,
                     base::Bind(&HistoryQueryDone, &run_loop2, &found));
   run_loop2.Run();
   EXPECT_FALSE(found);
@@ -733,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, History) {
 #endif
 // Test that creating a new window hides any currently showing Instant overlay.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   FocusOmniboxAndWaitForInstantSupport();
   SetOmniboxTextAndWaitForOverlayToShow("search");
@@ -760,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
 // - The overlay is not showing.
 // - The omnibox doesn't have focus.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // The overlay is refreshed only after all three conditions above are met.
@@ -790,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, InstantOverlayRefresh) {
 
 // Test that suggestions are case insensitive. http://crbug.com/150728
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'INSTANT' } ]"));
@@ -852,12 +857,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
 #endif
 // Test that the overlay can be committed onto a new tab.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
-  ui_test_utils::NavigateToURL(browser(), instant_url());
+  ui_test_utils::NavigateToURL(browser(), instant_url_);
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -882,7 +887,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
   // The state of the active tab before the commit.
   EXPECT_NE(overlay, active_tab);
   EXPECT_EQ(2, active_tab->GetController().GetEntryCount());
-  EXPECT_EQ(instant_url(), omnibox()->model()->PermanentURL());
+  EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
   active_tab_onvisibilitycalls = -1;
   EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
@@ -907,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
   EXPECT_EQ(1, overlay->GetController().GetEntryCount());
 
   // Check that the omnibox contains the Instant URL we loaded.
-  EXPECT_EQ(instant_url(), omnibox()->model()->PermanentURL());
+  EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
 
   // Check that the searchbox API values have been reset.
   std::string value;
@@ -931,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
 
 // Test that suggestions are reusable.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'instant' } ];"
@@ -952,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreReusable) {
 
 // Test that the Instant overlay is recreated if it gets destroyed.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantRenderViewGone) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Type partial query, get suggestion to show.
@@ -975,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ProcessIsolation) {
   EXPECT_EQ(0, instant_service->GetInstantProcessCount());
 
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
   // Now there should be a registered Instant render process.

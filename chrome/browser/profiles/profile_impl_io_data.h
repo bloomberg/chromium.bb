@@ -54,14 +54,32 @@ class ProfileImplIOData : public ProfileIOData {
     // these functions.
     scoped_refptr<ChromeURLRequestContextGetter>
         CreateMainRequestContextGetter(
-            content::ProtocolHandlerMap* protocol_handlers,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                blob_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                file_system_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                developer_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_devtools_protocol_handler,
             PrefService* local_state,
             IOThread* io_thread) const;
     scoped_refptr<ChromeURLRequestContextGetter>
         CreateIsolatedAppRequestContextGetter(
             const base::FilePath& partition_path,
             bool in_memory,
-            content::ProtocolHandlerMap* protocol_handlers) const;
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                blob_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                file_system_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                developer_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_protocol_handler,
+            scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+                chrome_devtools_protocol_handler) const;
 
     content::ResourceContext* GetResourceContext() const;
     // GetResourceContextNoInit() does not call LazyInitialize() so it can be
@@ -148,7 +166,16 @@ class ProfileImplIOData : public ProfileIOData {
 
   virtual void InitializeInternal(
       ProfileParams* profile_params,
-      content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE;
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const OVERRIDE;
   virtual void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
@@ -156,7 +183,16 @@ class ProfileImplIOData : public ProfileIOData {
       const StoragePartitionDescriptor& partition_descriptor,
       scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
-      content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE;
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          blob_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          file_system_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          developer_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_protocol_handler,
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+          chrome_devtools_protocol_handler) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeMediaRequestContext(
       ChromeURLRequestContext* original_context,
       const StoragePartitionDescriptor& partition_descriptor) const OVERRIDE;
@@ -168,7 +204,16 @@ class ProfileImplIOData : public ProfileIOData {
           const StoragePartitionDescriptor& partition_descriptor,
           scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
               protocol_handler_interceptor,
-          content::ProtocolHandlerMap* protocol_handlers) const OVERRIDE;
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              blob_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              file_system_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              developer_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              chrome_protocol_handler,
+          scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+              chrome_devtools_protocol_handler) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
           ChromeURLRequestContext* app_context,

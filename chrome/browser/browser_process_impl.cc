@@ -176,8 +176,6 @@ BrowserProcessImpl::BrowserProcessImpl(
       extensions::kExtensionScheme);
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kExtensionResourceScheme);
-  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      chrome::kChromeSearchScheme);
 
 #if defined(OS_MACOSX)
   InitIdleMonitor();

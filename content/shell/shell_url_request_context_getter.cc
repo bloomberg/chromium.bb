@@ -35,37 +35,33 @@
 
 namespace content {
 
-namespace {
-
-void InstallProtocolHandlers(net::URLRequestJobFactoryImpl* job_factory,
-                             ProtocolHandlerMap* protocol_handlers) {
-  for (ProtocolHandlerMap::iterator it =
-           protocol_handlers->begin();
-       it != protocol_handlers->end();
-       ++it) {
-    bool set_protocol = job_factory->SetProtocolHandler(
-        it->first, it->second.release());
-    DCHECK(set_protocol);
-  }
-  protocol_handlers->clear();
-}
-
-}  // namespace
-
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
     const base::FilePath& base_path,
     MessageLoop* io_loop,
     MessageLoop* file_loop,
-    ProtocolHandlerMap* protocol_handlers)
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),
       io_loop_(io_loop),
-      file_loop_(file_loop) {
+      file_loop_(file_loop),
+      blob_protocol_handler_(blob_protocol_handler.Pass()),
+      file_system_protocol_handler_(file_system_protocol_handler.Pass()),
+      developer_protocol_handler_(developer_protocol_handler.Pass()),
+      chrome_protocol_handler_(chrome_protocol_handler.Pass()),
+      chrome_devtools_protocol_handler_(
+          chrome_devtools_protocol_handler.Pass()) {
   // Must first be created on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  std::swap(protocol_handlers_, *protocol_handlers);
 
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
@@ -177,8 +173,22 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
-    InstallProtocolHandlers(job_factory.get(), &protocol_handlers_);
-    storage_->set_job_factory(job_factory.release());
+    bool set_protocol = job_factory->SetProtocolHandler(
+        chrome::kBlobScheme, blob_protocol_handler_.release());
+    DCHECK(set_protocol);
+    set_protocol = job_factory->SetProtocolHandler(
+        chrome::kFileSystemScheme, file_system_protocol_handler_.release());
+    DCHECK(set_protocol);
+    set_protocol = job_factory->SetProtocolHandler(
+            chrome::kChromeUIScheme, chrome_protocol_handler_.release());
+    DCHECK(set_protocol);
+    set_protocol = job_factory->SetProtocolHandler(
+        chrome::kChromeDevToolsScheme,
+        chrome_devtools_protocol_handler_.release());
+    DCHECK(set_protocol);
+    storage_->set_job_factory(new net::ProtocolInterceptJobFactory(
+        job_factory.PassAs<net::URLRequestJobFactory>(),
+        developer_protocol_handler_.Pass()));
   }
 
   return url_request_context_.get();

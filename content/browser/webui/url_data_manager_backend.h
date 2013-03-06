@@ -17,16 +17,11 @@
 
 class GURL;
 
-namespace appcache {
-class AppCacheService;
-}
-
 namespace base {
 class RefCountedMemory;
 }
 
 namespace content {
-class ChromeBlobStorageContext;
 class ResourceContext;
 class URLDataManagerBackend;
 class URLDataSourceImpl;
@@ -46,9 +41,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // be set for incognito profiles. Called on the UI thread.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
       content::ResourceContext* resource_context,
-      bool is_incognito,
-      appcache::AppCacheService* appcache_service,
-      ChromeBlobStorageContext* blob_storage_context);
+      bool is_incognito);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(URLDataSourceImpl* source);
@@ -68,7 +61,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
 
   // Called by the job when it's starting up.
   // Returns false if |url| is not a URL managed by this object.
-  bool StartRequest(const net::URLRequest* request, URLRequestChromeJob* job);
+  bool StartRequest(const GURL& url, URLRequestChromeJob* job);
 
   // Helper function to call StartDataRequest on |source|'s delegate. This is
   // needed because while we want to call URLDataSourceDelegate's method, we

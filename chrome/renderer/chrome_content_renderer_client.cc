@@ -239,15 +239,12 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (command_line->HasSwitch(switches::kEnableIPCFuzzing)) {
     thread->GetChannel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
   }
-  // chrome:, chrome-search:, chrome-devtools:, and chrome-internal: pages
-  // should not be accessible by normal content, and should also be unable to
-  // script anything but themselves (to help limit the damage that a corrupt
+  // chrome:, chrome-devtools:, and chrome-internal: pages should not be
+  // accessible by normal content, and should also be unable to script
+  // anything but themselves (to help limit the damage that a corrupt
   // page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
-
-  WebString chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
 
   WebString dev_tools_scheme(ASCIIToUTF16(chrome::kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);
@@ -260,17 +257,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsLocal(drive_scheme);
 #endif
 
-  // chrome: and chrome-search: pages should not be accessible by bookmarklets
-  // or javascript: URLs typed in the omnibox.
+  // chrome: pages should not be accessible by bookmarklets or javascript:
+  // URLs typed in the omnibox.
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       chrome_ui_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
-      chrome_search_scheme);
 
-  // chrome:, chrome-search:, and chrome-extension: resources shouldn't trigger
-  // insecure content warnings.
+  // chrome:, and chrome-extension: resources shouldn't trigger insecure
+  // content warnings.
   WebSecurityPolicy::registerURLSchemeAsSecure(chrome_ui_scheme);
-  WebSecurityPolicy::registerURLSchemeAsSecure(chrome_search_scheme);
 
   WebString extension_scheme(ASCIIToUTF16(extensions::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);

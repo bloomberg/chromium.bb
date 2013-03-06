@@ -943,8 +943,6 @@
         'browser/instant/instant_commit_type.h',
         'browser/instant/instant_controller.cc',
         'browser/instant/instant_controller.h',
-        'browser/instant/instant_io_context.cc',
-        'browser/instant/instant_io_context.h',
         'browser/instant/instant_loader.cc',
         'browser/instant/instant_loader.h',
         'browser/instant/instant_ntp.cc',

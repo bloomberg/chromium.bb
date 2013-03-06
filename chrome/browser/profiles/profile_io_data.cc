@@ -431,7 +431,6 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     chrome::kBlobScheme,
     chrome::kFileSystemScheme,
     chrome::kExtensionResourceScheme,
-    chrome::kChromeSearchScheme,
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
     if (scheme == kProtocolList[i])
@@ -440,7 +439,6 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   return net::URLRequest::IsHandledProtocol(scheme);
 }
 
-// static
 bool ProfileIOData::IsHandledURL(const GURL& url) {
   if (!url.is_valid()) {
     // We handle error cases.
@@ -448,21 +446,6 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
   }
 
   return IsHandledProtocol(url.scheme());
-}
-
-// static
-void ProfileIOData::InstallProtocolHandlers(
-    net::URLRequestJobFactoryImpl* job_factory,
-    content::ProtocolHandlerMap* protocol_handlers) {
-  for (content::ProtocolHandlerMap::iterator it =
-           protocol_handlers->begin();
-       it != protocol_handlers->end();
-       ++it) {
-    bool set_protocol = job_factory->SetProtocolHandler(
-        it->first, it->second.release());
-    DCHECK(set_protocol);
-  }
-  protocol_handlers->clear();
 }
 
 content::ResourceContext* ProfileIOData::GetResourceContext() const {
@@ -491,7 +474,16 @@ ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
     const StoragePartitionDescriptor& partition_descriptor,
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
-    content::ProtocolHandlerMap* protocol_handlers) const {
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) const {
   DCHECK(initialized_);
   ChromeURLRequestContext* context = NULL;
   if (ContainsKey(app_request_context_map_, partition_descriptor)) {
@@ -499,7 +491,9 @@ ChromeURLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
   } else {
     context = AcquireIsolatedAppRequestContext(
         main_context, partition_descriptor, protocol_handler_interceptor.Pass(),
-        protocol_handlers);
+        blob_protocol_handler.Pass(), file_system_protocol_handler.Pass(),
+        developer_protocol_handler.Pass(), chrome_protocol_handler.Pass(),
+        chrome_devtools_protocol_handler.Pass());
     app_request_context_map_[partition_descriptor] = context;
   }
   DCHECK(context);
@@ -609,7 +603,17 @@ std::string ProfileIOData::GetSSLSessionCacheShard() {
   return StringPrintf("profile/%u", ssl_session_cache_instance++);
 }
 
-void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
+void ProfileIOData::Init(
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        blob_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        file_system_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        developer_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_protocol_handler,
+    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+        chrome_devtools_protocol_handler) const {
   // The basic logic is implemented here. The specific initialization
   // is done in InitializeInternal(), implemented by subtypes. Static helper
   // functions have been provided to assist in common operations.
@@ -691,7 +695,12 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
   managed_mode_url_filter_ = profile_params_->managed_mode_url_filter;
 #endif
 
-  InitializeInternal(profile_params_.get(), protocol_handlers);
+  InitializeInternal(profile_params_.get(),
+                     blob_protocol_handler.Pass(),
+                     file_system_protocol_handler.Pass(),
+                     developer_protocol_handler.Pass(),
+                     chrome_protocol_handler.Pass(),
+                     chrome_devtools_protocol_handler.Pass());
 
   profile_params_.reset();
   initialized_ = true;

@@ -5,11 +5,7 @@
 #include <sstream>
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_ntp.h"
 #include "chrome/browser/instant/instant_overlay.h"
@@ -18,45 +14,21 @@
 #include "chrome/browser/instant/instant_tab.h"
 #include "chrome/browser/instant/instant_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/bindings_policy.h"
 #include "content/public/test/browser_test_utils.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
-namespace {
-
-// Creates a bitmap of the specified color. Caller takes ownership.
-gfx::Image CreateBitmap(SkColor color) {
-  SkBitmap thumbnail;
-  thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
-  thumbnail.allocPixels();
-  thumbnail.eraseColor(color);
-  return gfx::Image::CreateFrom1xBitmap(thumbnail);  // adds ref.
-}
-
-}  // namespace
-
-class InstantExtendedTest : public InProcessBrowserTest,
-                            public InstantTestBase {
+class InstantExtendedTest : public InstantTestBase {
  public:
   InstantExtendedTest()
       : on_most_visited_change_calls_(0),
@@ -66,10 +38,21 @@ class InstantExtendedTest : public InProcessBrowserTest,
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     chrome::search::EnableInstantExtendedAPIForTesting();
-    ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url = https_test_server().GetURL(
-        "files/instant_extended.html?strk=1&");
-    InstantTestBase::Init(instant_url);
+    ASSERT_TRUE(https_test_server_.Start());
+    instant_url_ = https_test_server_.
+        GetURL("files/instant_extended.html?strk=1&");
+  }
+
+  void FocusOmniboxAndWaitForInstantSupport() {
+    content::WindowedNotificationObserver ntp_observer(
+        chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver overlay_observer(
+        chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    FocusOmnibox();
+    ntp_observer.Wait();
+    overlay_observer.Wait();
   }
 
   std::string GetOmniboxText() {
@@ -108,51 +91,14 @@ class InstantExtendedTest : public InProcessBrowserTest,
   int first_most_visited_item_id_;
 };
 
-// Test class used to verify chrome-search: scheme and access policy from the
-// Instant overlay.  This is a subclass of |ExtensionBrowserTest| because it
-// loads a theme that provides a background image.
-class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
- public:
-  InstantPolicyTest() {}
-
- protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chrome::search::EnableInstantExtendedAPIForTesting();
-    ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url = https_test_server().GetURL(
-        "files/instant_extended.html?strk=1&");
-    InstantTestBase::Init(instant_url);
-  }
-
-  void InstallThemeSource() {
-    ThemeSource* theme = new ThemeSource(profile());
-    content::URLDataSource::Add(profile(), theme);
-  }
-
-  void InstallThemeAndVerify(const std::string& theme_dir,
-                             const std::string& theme_name) {
-    const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_dir);
-    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-        theme_path, 1, ExtensionBrowserTest::browser()));
-    const extensions::Extension* theme =
-        ThemeServiceFactory::GetThemeForProfile(
-            ExtensionBrowserTest::browser()->profile());
-    ASSERT_NE(static_cast<extensions::Extension*>(NULL), theme);
-    ASSERT_EQ(theme->name(), theme_name);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InstantPolicyTest);
-};
-
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ExtendedModeIsOn) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
   EXPECT_TRUE(instant()->extended_enabled_);
 }
 
 // Test that Instant is preloaded when the omnibox is focused.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxFocusLoadsInstant) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Explicitly unfocus the omnibox.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -166,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxFocusLoadsInstant) {
   EXPECT_FALSE(instant()->GetOverlayContents());
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_TRUE(omnibox()->model()->has_focus());
@@ -194,10 +140,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxFocusLoadsInstant) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Focus omnibox and confirm overlay isn't shown.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantSupport();
   content::WebContents* overlay = instant()->GetOverlayContents();
   EXPECT_TRUE(overlay);
   EXPECT_FALSE(instant()->IsOverlayingSearchResults());
@@ -212,8 +158,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
 // Test that middle clicking on a suggestion opens the result in a new tab.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        MiddleClickOnSuggestionOpensInNewTab) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -243,16 +189,17 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   // Check that the new tab URL is as expected.
   content::WebContents* new_tab_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_EQ(new_tab_contents->GetURL().spec(), instant_url().spec()+"q=santa");
+  EXPECT_EQ(new_tab_contents->GetURL().spec(), instant_url_.spec()+"q=santa");
 
   // Check that there are now two tabs.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
 // Test that omnibox text is correctly set when overlay is committed with Enter.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       OmniboxTextUponEnterCommit) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // The page will autocomplete once we set the omnibox value.
   EXPECT_TRUE(ExecuteScript("suggestion = 'santa claus';"));
@@ -275,9 +222,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
 }
 
 // Test that omnibox text is correctly set when committed with focus lost.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       OmniboxTextUponFocusLostCommit) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Set autocomplete text (grey text).
   EXPECT_TRUE(ExecuteScript("suggestion = 'johnny depp';"));
@@ -303,8 +251,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        OmniboxTextUponFocusedCommittedSERP) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Do a search and commit it.
   SetOmniboxTextAndWaitForOverlayToShow("hello k");
@@ -331,8 +279,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 // This test simulates a search provider using the InstantExtended API to
 // navigate through the suggested results and back to the original user query.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   SetOmniboxTextAndWaitForOverlayToShow("hello");
   EXPECT_EQ("hello", GetOmniboxText());
@@ -369,8 +317,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
 // navigate through the suggested results and hitting escape to get back to the
 // original user query.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsAndHitEscape) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   SetOmniboxTextAndWaitForOverlayToShow("hello");
   EXPECT_EQ("hello", GetOmniboxText());
@@ -401,8 +349,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsAndHitEscape) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // NTP contents should be preloaded.
   ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
@@ -412,8 +360,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // NTP contents should be preloaded.
   ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
@@ -434,8 +382,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInNewTab) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // NTP contents should be preloaded.
   ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
@@ -456,8 +404,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, PreloadedNTPIsUsedInSameTab) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxHasFocusOnNewTab) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Explicitly unfocus the omnibox.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -477,8 +425,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxHasFocusOnNewTab) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxEmptyOnNewTabPage) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -491,11 +439,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxEmptyOnNewTabPage) {
   EXPECT_TRUE(omnibox()->GetText().empty());
 }
 
-// TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NoFaviconOnNewTabPage) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoFaviconOnNewTabPage) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -519,10 +466,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NoFaviconOnNewTabPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputOnNTPDoesntShowOverlay) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Focus omnibox and confirm overlay isn't shown.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantSupport();
   content::WebContents* overlay = instant()->GetOverlayContents();
   EXPECT_TRUE(overlay);
   EXPECT_FALSE(instant()->IsOverlayingSearchResults());
@@ -552,8 +499,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
   EXPECT_EQ(1, instant_service->GetInstantProcessCount());
 
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // The registered Instant render process should still exist.
   EXPECT_EQ(1, instant_service->GetInstantProcessCount());
@@ -589,8 +536,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
 // Flaky: http://crbug.com/177516
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_UnrelatedSiteInstance) {
   // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Check that the uncommited ntp page and uncommited overlay have unrelated
   // site instances.
@@ -634,8 +581,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_UnrelatedSiteInstance) {
 
 // Tests that suggestions are sanity checked.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Do not set gray text that is not a suffix of the query.
   EXPECT_TRUE(ExecuteScript("behavior = 2"));
@@ -687,14 +634,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ValidatesSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("www.example.com/"), omnibox()->GetText());
 }
 
-// TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
       content::NotificationService::AllSources());
   // Initialize Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Get a handle to the NTP and the current state of the JS.
   ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
@@ -778,120 +724,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
-  InstallThemeSource();
-  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
-
-  // The "Instant" New Tab should have access to chrome-search: scheme but not
-  // chrome: scheme.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-
-  content::RenderViewHost* rvh =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-
-  const std::string chrome_url("chrome://theme/IDR_THEME_NTP_BACKGROUND");
-  const std::string search_url(
-      "chrome-search://theme/IDR_THEME_NTP_BACKGROUND");
-  bool loaded = false;
-  ASSERT_TRUE(LoadImage(rvh, chrome_url, &loaded));
-  EXPECT_FALSE(loaded) << chrome_url;
-  ASSERT_TRUE(LoadImage(rvh, search_url, &loaded));
-  EXPECT_TRUE(loaded) << search_url;
-}
-
-// TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_FaviconAccess) {
-  // Create a favicon.
-  history::TopSites* top_sites = browser()->profile()->GetTopSites();
-  GURL url("http://www.google.com/foo.html");
-  gfx::Image thumbnail(CreateBitmap(SK_ColorWHITE));
-  ThumbnailScore high_score(0.0, true, true, base::Time::Now());
-  EXPECT_TRUE(top_sites->SetPageThumbnail(url, thumbnail, high_score));
-
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
-
-  // The "Instant" New Tab should have access to chrome-search: scheme but not
-  // chrome: scheme.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-
-  content::RenderViewHost* rvh =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-
-  // Get the favicons.
-  const std::string chrome_favicon_url(
-      "chrome://favicon/largest/http://www.google.com/foo.html");
-  const std::string search_favicon_url(
-      "chrome-search://favicon/largest/http://www.google.com/foo.html");
-  bool loaded = false;
-  ASSERT_TRUE(LoadImage(rvh, chrome_favicon_url, &loaded));
-  EXPECT_FALSE(loaded) << chrome_favicon_url;
-  ASSERT_TRUE(LoadImage(rvh, search_favicon_url, &loaded));
-  EXPECT_TRUE(loaded) << search_favicon_url;
-}
-
-// WebUIBindings should never be enabled on ANY Instant web contents.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoWebUIBindingsOnNTP) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
-
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  const content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Instant-provided NTP should not have any bindings enabled.
-  EXPECT_EQ(0, tab->GetRenderViewHost()->GetEnabledBindings());
-}
-
-// WebUIBindings should never be enabled on ANY Instant web contents.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoWebUIBindingsOnPreview) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
-
-  // Typing in the omnibox shows the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
-  EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
-  content::WebContents* preview = instant()->GetOverlayContents();
-  ASSERT_NE(static_cast<content::WebContents*>(NULL), preview);
-
-  // Instant preview should not have any bindings enabled.
-  EXPECT_EQ(0, preview->GetRenderViewHost()->GetEnabledBindings());
-}
-
-// WebUIBindings should never be enabled on ANY Instant web contents.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoWebUIBindingsOnResults) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantExtendedSupport();
-
-  // Typing in the omnibox shows the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("query");
-  content::WebContents* preview = instant()->GetOverlayContents();
-  EXPECT_TRUE(instant()->model()->mode().is_search_suggestions());
-  // Commit the search by pressing Enter.
-  browser()->window()->GetLocationBar()->AcceptInput();
-  EXPECT_TRUE(instant()->model()->mode().is_default());
-  const content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(preview, tab);
-
-  // The commited Instant page should not have any bindings enabled.
-  EXPECT_EQ(0, tab->GetRenderViewHost()->GetEnabledBindings());
-}
-
 // Only implemented in Views and Mac currently: http://crbug.com/164723
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
 #define MAYBE_HomeButtonAffectsMargin HomeButtonAffectsMargin
@@ -901,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoWebUIBindingsOnResults) {
 // Check that toggling the state of the home button changes the start-edge
 // margin and width.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_HomeButtonAffectsMargin) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Get the current value of the start-edge margin and width.
   int start_margin;
@@ -938,10 +770,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_HomeButtonAffectsMargin) {
 // shown at 100% height.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        MAYBE_CommitWhenFocusLostInFullHeight) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Focus omnibox and confirm overlay isn't shown.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantSupport();
   content::WebContents* overlay = instant()->GetOverlayContents();
   EXPECT_TRUE(overlay);
   EXPECT_TRUE(instant()->model()->mode().is_default());
@@ -968,10 +800,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 // in the omnibox.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        CommitWhenShownInFullHeightWithoutFocus) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
 
   // Focus omnibox and confirm overlay isn't shown.
-  FocusOmniboxAndWaitForInstantExtendedSupport();
+  FocusOmniboxAndWaitForInstantSupport();
   content::WebContents* overlay = instant()->GetOverlayContents();
   EXPECT_TRUE(overlay);
   EXPECT_TRUE(instant()->model()->mode().is_default());

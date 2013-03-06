@@ -23,8 +23,8 @@
 
 namespace {
 
-const char kCSSBackgroundImageFormat[] = "-webkit-image-set("
-    "url(chrome-search://theme/IDR_THEME_NTP_BACKGROUND?%s) 1x)";
+const char kCSSBackgroundImageFormat[] =
+    "-webkit-image-set(url(chrome://theme/IDR_THEME_BACKGROUND?%s) 1x)";
 
 const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
 

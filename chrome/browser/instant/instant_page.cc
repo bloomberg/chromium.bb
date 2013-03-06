@@ -56,12 +56,6 @@ void InstantPage::InitializeFonts() {
       routing_id(), omnibox_font_name, omnibox_font_size));
 }
 
-void InstantPage::GrantChromeSearchAccessFromOrigin(const GURL& origin_url) {
-  DCHECK(origin_url.is_valid());
-  Send(new ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin(
-      routing_id(), origin_url));
-}
-
 void InstantPage::DetermineIfPageSupportsInstant() {
   Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
 }

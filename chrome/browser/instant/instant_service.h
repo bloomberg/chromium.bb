@@ -13,13 +13,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Profile;
-
 // Tracks render process host IDs that are associated with Instant.
 class InstantService : public ProfileKeyedService,
                        public content::NotificationObserver {
  public:
-  explicit InstantService(Profile* profile);
+  InstantService();
   virtual ~InstantService();
 
   // Add, remove, and query RenderProcessHost IDs that are associated with
@@ -41,8 +39,6 @@ class InstantService : public ProfileKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  Profile* const profile_;
 
   // The process ids associated with Instant processes.
   std::set<int> process_ids_;
