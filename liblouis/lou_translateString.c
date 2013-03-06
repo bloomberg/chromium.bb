@@ -260,7 +260,7 @@ trace_translate (const char *tableList, const widechar * inbufx,
       memcpy (srcSpacing, destSpacing, srcmax);
       srcSpacing[srcmax] = 0;
     }
-  if (cursorPos != NULL)
+  if (cursorPos != NULL && *cursorPos != -1)
     {
       if (outputPos != NULL)
 	*cursorPos = outputPos[*cursorPos];

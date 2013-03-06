@@ -84,7 +84,7 @@ static int showPositions = 0;
 static int minimalist = 0;
 static int outputSize = BUFSIZE;
 static int showSizes = 0;
-static int enteredCursorPos;
+static int enteredCursorPos = -1;
 static unsigned int mode;
 static char table[BUFSIZE];
 static char emphasis[BUFSIZE];
@@ -275,7 +275,7 @@ main (int argc, char **argv)
   int inlen;
   int translen;
   int outlen;
-  int cursorPos;
+  int cursorPos = -1;
   int realInlen = 0;
   int k;
   int optc;
