@@ -278,7 +278,6 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   QuicPacketPublicHeader public_header;
   if (!ProcessPublicHeader(&public_header)) {
     DLOG(WARNING) << "Unable to process public header.";
-    reader_.reset(NULL);
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
   // TODO(satyamshekhar): Handle version negotiation.
@@ -304,11 +303,13 @@ bool QuicFramer::ProcessDataPacket(
 
   QuicPacketHeader header(public_header);
   if (!ProcessPacketHeader(&header, packet)) {
+    DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessPacketHeader sets the error.
     DLOG(WARNING) << "Unable to process data packet header.";
-    return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    return false;
   }
 
   if (!visitor_->OnPacketHeader(header)) {
+    // The visitor suppresses further processing of the packet.
     return true;
   }
 
@@ -501,30 +502,30 @@ bool QuicFramer::ProcessPacketHeader(
     const QuicEncryptedPacket& packet) {
   if (!ProcessPacketSequenceNumber(&header->packet_sequence_number)) {
     set_detailed_error("Unable to read sequence number.");
-    return false;
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
   if (header->packet_sequence_number == 0u) {
     set_detailed_error("Packet sequence numbers cannot be 0.");
-    return false;
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
   if (!DecryptPayload(header->packet_sequence_number,
                       header->public_header.version_flag,
                       packet)) {
-    DLOG(WARNING) << "Unable to decrypt payload.";
+    set_detailed_error("Unable to decrypt payload.");
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
 
   uint8 private_flags;
   if (!reader_->ReadBytes(&private_flags, 1)) {
     set_detailed_error("Unable to read private flags.");
-    return false;
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
   if (private_flags > PACKET_PRIVATE_FLAGS_MAX) {
     set_detailed_error("Illegal private flags value.");
-    return false;
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
   header->fec_flag = (private_flags & PACKET_PRIVATE_FLAGS_FEC) != 0;
@@ -535,7 +536,7 @@ bool QuicFramer::ProcessPacketHeader(
   uint8 first_fec_protected_packet_offset;
   if (!reader_->ReadBytes(&first_fec_protected_packet_offset, 1)) {
     set_detailed_error("Unable to read first fec protected packet offset.");
-    return false;
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
   header->fec_group = first_fec_protected_packet_offset == kNoFecOffset ? 0 :
       header->packet_sequence_number - first_fec_protected_packet_offset;

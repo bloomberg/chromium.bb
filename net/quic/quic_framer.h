@@ -70,7 +70,7 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnRevivedPacket() = 0;
 
   // Called when the header of a packet had been parsed.
-  // If OnPacketHeader returns false, framing for this packet will cease.
+  // If OnPacketHeader returns false, parsing for this packet will cease.
   virtual bool OnPacketHeader(const QuicPacketHeader& header) = 0;
 
   // Called when a data packet is parsed that is part of an FEC group.
@@ -334,6 +334,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicFecBuilderInterface* fec_builder_;
   QuicReceivedEntropyHashCalculatorInterface* entropy_calculator_;
   QuicErrorCode error_;
+  // Updated by ProcessPacketHeader when it succeeds.
   QuicPacketSequenceNumber last_sequence_number_;
   // Buffer containing decrypted payload data during parsing.
   scoped_ptr<QuicData> decrypted_;

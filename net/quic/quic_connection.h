@@ -27,7 +27,6 @@
 #include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/quic_blocked_writer_interface.h"
-#include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_entropy_manager.h"
@@ -38,7 +37,6 @@ namespace net {
 
 class QuicClock;
 class QuicConnection;
-class QuicEncrypter;
 class QuicFecGroup;
 class QuicRandom;
 
