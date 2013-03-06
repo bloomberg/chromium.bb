@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/views/panels/panel_stack_view.h"
 
-#include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -40,9 +38,7 @@ PanelStackView::PanelStackView(
     scoped_ptr<StackedPanelCollection> stacked_collection)
     : stacked_collection_(stacked_collection.Pass()),
       delay_initialized_(false),
-#if defined(OS_WIN)
-      weak_factory_(this),
-#endif
+      is_drawing_attention_(false),
       window_(NULL) {
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -79,10 +75,13 @@ void PanelStackView::EnsureInitialized() {
                                                 panel->profile()->GetPath()),
       views::HWNDForWidget(window_));
 #endif
+
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
 void PanelStackView::Close() {
   window_->Close();
+  views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
 void PanelStackView::OnPanelAddedOrRemoved(Panel* panel) {
@@ -130,6 +129,12 @@ void PanelStackView::Minimize() {
 }
 
 void PanelStackView::DrawSystemAttention(bool draw_attention) {
+  // The underlying call of FlashFrame, FlashWindowEx, seems not to work
+  // correctly if it is called more than once consecutively.
+  if (draw_attention == is_drawing_attention_)
+    return;
+  is_drawing_attention_ = draw_attention;
+
   window_->FlashFrame(draw_attention);
 }
 
@@ -176,30 +181,25 @@ void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
 void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
 #if defined(OS_WIN)
-  if (!active)
-    return;
-
-  if (thumbnailer_)
+  if (active && thumbnailer_)
     thumbnailer_->Stop();
-
-  // The stack window could get activated when the user selects it via ALT-TAB
-  // or WIN-TAB. When this occurs, the most recently active panel should be
-  // focused. Note that we cannot do this while processing the activation
-  // message for the stack window.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PanelStackView::ActivateMostRecentlyActivePanel,
-                 weak_factory_.GetWeakPtr()));
 #endif
 }
 
+void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
+                                         gfx::NativeView focused_now) {
+  // When the user selects the stacked panels via ALT-TAB or WIN-TAB, the
+  // background stack window, instead of the foreground panel window, receives
+  // WM_SETFOCUS message. To deal with this, we listen to the focus change event
+  // and activate the most recently active panel.
 #if defined(OS_WIN)
-void PanelStackView::ActivateMostRecentlyActivePanel() {
-  Panel* panel_to_focus = stacked_collection_->most_recently_active_panel();
-  if (panel_to_focus)
-    panel_to_focus->Activate();
-}
+  if (focused_now == window_->GetNativeView()) {
+    Panel* panel_to_focus = stacked_collection_->most_recently_active_panel();
+    if (panel_to_focus)
+      panel_to_focus->Activate();
+  }
 #endif
+}
 
 void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 #if defined(OS_WIN)
