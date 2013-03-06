@@ -177,8 +177,7 @@ class GpuChannel : public IPC::Listener,
   // Create a java surface texture object and send it to the renderer process
   // through binder thread.
   void OnEstablishStreamTexture(
-      int32 stream_id, SurfaceTexturePeer::SurfaceTextureTarget type,
-      int32 primary_id, int32 secondary_id);
+      int32 stream_id, int32 primary_id, int32 secondary_id);
 #endif
 
   // Collect rendering stats.

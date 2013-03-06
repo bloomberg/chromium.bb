@@ -53,9 +53,6 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
     private static final int MEDIA_ERROR = 100;
     private static final int MEDIA_INFO = 200;
 
-    // Type needs to be kept in sync with surface_texture_peer.h.
-    private static final int SET_VIDEO_SURFACE_TEXTURE = 1;
-
     /** The video is streamed and its container is not valid for progressive
      * playback i.e the video's index (e.g moov atom) is not at the start of the
      * file.

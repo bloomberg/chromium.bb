@@ -106,7 +106,6 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
   IPC_STRUCT_MEMBER(float, m32)
   IPC_STRUCT_MEMBER(float, m33)
 IPC_STRUCT_END()
-IPC_ENUM_TRAITS(content::SurfaceTexturePeer::SurfaceTextureTarget)
 #endif
 
 IPC_STRUCT_TRAITS_BEGIN(content::DxDiagNode)
@@ -438,10 +437,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_RegisterStreamTextureProxy,
 
 // Tells the GPU process create and send the java surface texture object to
 // the renderer process through the binder thread.
-IPC_MESSAGE_CONTROL4(GpuChannelMsg_EstablishStreamTexture,
+IPC_MESSAGE_CONTROL3(GpuChannelMsg_EstablishStreamTexture,
                      int32, /* stream_id */
-                     content::SurfaceTexturePeer::SurfaceTextureTarget,
-                     /* type */
                      int32, /* primary_id */
                      int32 /* secondary_id */)
 #endif

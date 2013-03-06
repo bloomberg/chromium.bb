@@ -119,8 +119,7 @@ webkit_media::StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
 void StreamTextureFactoryImpl::EstablishPeer(int stream_id, int player_id) {
   DCHECK(channel_.get());
   channel_->Send(new GpuChannelMsg_EstablishStreamTexture(
-      stream_id, SurfaceTexturePeer::SET_VIDEO_SURFACE_TEXTURE,
-      view_id_, player_id));
+      stream_id, view_id_, player_id));
 }
 
 unsigned StreamTextureFactoryImpl::CreateStreamTexture(unsigned* texture_id) {

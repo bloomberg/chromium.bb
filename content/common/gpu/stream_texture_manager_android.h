@@ -40,8 +40,7 @@ class StreamTextureManagerAndroid : public gpu::StreamTextureManager {
   void RegisterStreamTextureProxy(
       int32 stream_id, const gfx::Size& initial_size, int32 route_id);
   void EstablishStreamTexture(
-      int32 stream_id, content::SurfaceTexturePeer::SurfaceTextureTarget type,
-      int32 primary_id, int32 secondary_id);
+      int32 stream_id, int32 primary_id, int32 secondary_id);
 
   // Send new transform matrix.
   void SendMatrixChanged(int route_id,

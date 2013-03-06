@@ -52,13 +52,10 @@ bool StreamTextureHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void StreamTextureHost::EstablishPeer(
-    SurfaceTexturePeer::SurfaceTextureTarget type,
-    int32 primary_id, int32 secondary_id) {
+void StreamTextureHost::EstablishPeer(int32 primary_id, int32 secondary_id) {
   if (channel_.get()) {
     channel_->Send(new GpuChannelMsg_EstablishStreamTexture(
-        stream_id_, type,
-        primary_id, secondary_id));
+        stream_id_, primary_id, secondary_id));
   }
 }
 void StreamTextureHost::OnChannelError() {

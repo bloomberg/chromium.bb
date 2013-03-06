@@ -119,15 +119,13 @@ void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
 }
 
 void StreamTextureManagerAndroid::EstablishStreamTexture(
-    int32 stream_id, SurfaceTexturePeer::SurfaceTextureTarget type,
-    int32 primary_id, int32 secondary_id) {
+    int32 stream_id, int32 primary_id, int32 secondary_id) {
   StreamTextureAndroid* stream_texture = textures_.Lookup(stream_id);
   base::ProcessHandle process = channel_->renderer_pid();
 
   if (stream_texture) {
     SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
         process,
-        type,
         stream_texture->surface_texture_bridge(),
         primary_id,
         secondary_id);

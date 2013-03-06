@@ -12,13 +12,6 @@ namespace content {
 
 class SurfaceTexturePeer {
  public:
-  enum SurfaceTextureTarget {
-    // These are used in java so don't change them unless we can
-    // share an enum from java and remove this enum.
-    SET_GPU_SURFACE_TEXTURE    = 0, // Contains gpu surface_texture_ and id
-    SET_VIDEO_SURFACE_TEXTURE  = 1, // contains video surface_texture_ and id
-  };
-
   static SurfaceTexturePeer* GetInstance();
 
   static void InitInstance(SurfaceTexturePeer* instance);
@@ -27,7 +20,6 @@ class SurfaceTexturePeer {
   // process.
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle pid,
-      SurfaceTextureTarget type,
       scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
       int primary_id,
       int secondary_id) = 0;

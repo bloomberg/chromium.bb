@@ -9,7 +9,6 @@
 #include "content/common/android/command_line.h"
 #include "content/common/android/device_telephony_info.h"
 #include "content/common/android/hash_set.h"
-#include "content/common/android/surface_callback.h"
 #include "content/common/android/surface_texture_listener.h"
 #include "content/common/android/trace_event_binding.h"
 
@@ -19,7 +18,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "DeviceTelephonyInfo",
         content::DeviceTelephonyInfo::RegisterDeviceTelephonyInfo },
   { "HashSet", content::RegisterHashSet },
-  { "SurfaceCallback", content::RegisterSurfaceCallback },
   { "SurfaceTextureListener",
         content::SurfaceTextureListener::RegisterSurfaceTextureListener },
   { "TraceEvent", RegisterTraceEvent },

@@ -229,7 +229,6 @@ extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 
 #if defined(OS_ANDROID)
-extern const char kMediaPlayerInRenderProcess[];
 extern const char kDisableMediaHistoryLogging[];
 extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kNetworkCountryIso[];

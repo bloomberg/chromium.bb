@@ -25,7 +25,6 @@ import org.chromium.content.browser.SandboxedProcessConnection;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
 import org.chromium.content.common.ProcessInitException;
-import org.chromium.content.common.SurfaceCallback;
 
 /**
  * This is the base class for sandboxed services; the SandboxedProcessService0, 1.. etc
@@ -93,12 +92,6 @@ public class SandboxedProcessService extends Service {
                 mSandboxMainThread.notifyAll();
             }
             return Process.myPid();
-        }
-
-        @Override
-        public void setSurface(int type, Surface surface, int primaryID, int secondaryID) {
-            // This gives up ownership of the Surface.
-            SurfaceCallback.setSurface(type, surface, primaryID, secondaryID);
         }
     };
 
@@ -210,7 +203,6 @@ public class SandboxedProcessService extends Service {
      * call to the correct process.
      *
      * @param pid Process handle of the sandboxed process to share the SurfaceTexture with.
-     * @param type The type of process that the SurfaceTexture is for.
      * @param surfaceObject The Surface or SurfaceTexture to share with the other sandboxed process.
      * @param primaryID Used to route the call to the correct client instance.
      * @param secondaryID Used to route the call to the correct client instance.
@@ -218,7 +210,7 @@ public class SandboxedProcessService extends Service {
     @SuppressWarnings("unused")
     @CalledByNative
     private void establishSurfaceTexturePeer(
-            int pid, int type, Object surfaceObject, int primaryID, int secondaryID) {
+            int pid, Object surfaceObject, int primaryID, int secondaryID) {
         if (mCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return;
@@ -236,7 +228,7 @@ public class SandboxedProcessService extends Service {
             return;
         }
         try {
-            mCallback.establishSurfacePeer(pid, type, surface, primaryID, secondaryID);
+            mCallback.establishSurfacePeer(pid, surface, primaryID, secondaryID);
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call establishSurfaceTexturePeer: " + e);
             return;

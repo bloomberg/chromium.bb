@@ -912,10 +912,9 @@ void GpuChannel::OnRegisterStreamTextureProxy(
 }
 
 void GpuChannel::OnEstablishStreamTexture(
-    int32 stream_id, SurfaceTexturePeer::SurfaceTextureTarget type,
-    int32 primary_id, int32 secondary_id) {
+    int32 stream_id, int32 primary_id, int32 secondary_id) {
   stream_texture_manager_->EstablishStreamTexture(
-      stream_id, type, primary_id, secondary_id);
+      stream_id, primary_id, secondary_id);
 }
 #endif
 

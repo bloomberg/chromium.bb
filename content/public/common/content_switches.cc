@@ -753,9 +753,6 @@ const char kDisableMediaHistoryLogging[]    = "disable-media-history";
 const char kDisableGestureRequirementForMediaPlayback[] =
     "disable-gesture-requirement-for-media-playback";
 
-// Whether to run media elements in the renderer process.
-const char kMediaPlayerInRenderProcess[]    = "media-player-in-render-process";
-
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

@@ -825,7 +825,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kLoggingLevel,
     switches::kMemoryMetrics,
 #if defined(OS_ANDROID)
-    switches::kMediaPlayerInRenderProcess,
     switches::kNetworkCountryIso,
     switches::kDisableGestureRequirementForMediaPlayback,
 #endif

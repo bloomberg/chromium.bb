@@ -402,9 +402,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
     parts_->PostMainMessageLoopStart();
 
 #if defined(OS_ANDROID)
-  SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl(
-      parameters_.command_line.HasSwitch(
-          switches::kMediaPlayerInRenderProcess)));
+  SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl());
   DataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
 #endif
 

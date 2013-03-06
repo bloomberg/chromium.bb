@@ -1888,7 +1888,6 @@ import org.chromium.content.app.ContentMain;
 import org.chromium.content.browser.SandboxedProcessConnection;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
-import org.chromium.content.common.SurfaceCallback;
 import org.chromium.content.common.WillNotRaise.AnException;
 import org.chromium.content.common.WillRaise.AnException;
 

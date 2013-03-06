@@ -12,7 +12,4 @@ import android.os.Bundle;
 interface ISandboxedProcessService {
   // Sets up the initial IPC channel and returns the pid of the sandboxed process.
   int setupConnection(in Bundle args, ISandboxedProcessCallback callback);
-
-  // Shares the Surface with the sandboxed process.
-  void setSurface(int type, in Surface surface, int primaryID, int secondaryID);
 }

@@ -2733,7 +2733,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     return NULL;
   }
 
-  if (cmd_line->HasSwitch(switches::kMediaPlayerInRenderProcess)) {
+  if (cmd_line->HasSwitch(switches::kInProcessWebGL)) {
     if (!media_bridge_manager_.get()) {
       media_bridge_manager_.reset(
           new webkit_media::MediaPlayerBridgeManagerImpl(1));

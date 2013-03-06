@@ -10,9 +10,9 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
+#include "content/common/android/scoped_java_surface.h"
 #include "content/common/android/surface_texture_listener.h"
 #include "jni/SurfaceTexture_jni.h"
-#include "jni/Surface_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -25,7 +25,6 @@ bool g_jni_initialized = false;
 void RegisterNativesIfNeeded(JNIEnv* env) {
   if (!g_jni_initialized) {
     JNI_SurfaceTexture::RegisterNativesImpl(env);
-    JNI_Surface::RegisterNativesImpl(env);
     g_jni_initialized = true;
   }
 }
@@ -139,12 +138,9 @@ void SurfaceTextureBridge::DetachFromGLContext() {
 
 ANativeWindow* SurfaceTextureBridge::CreateSurface() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jsurface(
-      JNI_Surface::Java_Surface_Constructor(
-          env, j_surface_texture_.obj()));
-  DCHECK(!jsurface.is_null());
-  ANativeWindow* native_window = ANativeWindow_fromSurface(env, jsurface.obj());
-  JNI_Surface::Java_Surface_release(env, jsurface.obj());
+  ScopedJavaSurface surface(this);
+  ANativeWindow* native_window =
+      ANativeWindow_fromSurface(env, surface.j_surface().obj());
   return native_window;
 }
 

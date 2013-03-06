@@ -4,23 +4,16 @@
 
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 
-#include <jni.h>
-
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "content/common/android/surface_callback.h"
+#include "content/common/android/scoped_java_surface.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
 #include "media/video/picture.h"
 #include "ui/gl/gl_bindings.h"
-
-using base::android::MethodID;
-using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
@@ -385,22 +378,12 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
 
   media_codec_.reset(new media::MediaCodecBridge(codec_));
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  CHECK(env);
-  ScopedJavaLocalRef<jclass> cls(
-      base::android::GetClass(env, "android/view/Surface"));
-  jmethodID constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "<init>", "(Landroid/graphics/SurfaceTexture;)V");
-  ScopedJavaLocalRef<jobject> j_surface(
-      env, env->NewObject(
-          cls.obj(), constructor,
-          surface_texture_->j_surface_texture().obj()));
-
+  ScopedJavaSurface surface(surface_texture_.get());
   // VDA does not pass the container indicated resolution in the initialization
   // phase. Here, we set 720p by default.
   // TODO(dwkang): find out a way to remove the following hard-coded value.
-  media_codec_->StartVideo(codec_, gfx::Size(1280, 720), j_surface.obj());
-  content::ReleaseSurface(j_surface.obj());
+  media_codec_->StartVideo(
+      codec_, gfx::Size(1280, 720), surface.j_surface().obj());
   media_codec_->GetOutputBuffers();
 }
 

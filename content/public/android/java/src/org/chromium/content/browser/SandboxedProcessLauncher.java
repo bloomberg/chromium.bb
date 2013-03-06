@@ -257,24 +257,6 @@ public class SandboxedProcessLauncher {
         connection.unbindHighPriority(false);
     }
 
-    static void establishSurfacePeer(
-            int pid, int type, Surface surface, int primaryID, int secondaryID) {
-        Log.d(TAG, "establishSurfaceTexturePeer: pid = " + pid + ", " +
-              "type = " + type + ", " +
-              "primaryID = " + primaryID + ", " +
-              "secondaryID = " + secondaryID);
-        ISandboxedProcessService service = SandboxedProcessLauncher.getSandboxedService(pid);
-        if (service == null) {
-            Log.e(TAG, "Unable to get SandboxedProcessService from pid.");
-            return;
-        }
-        try {
-            service.setSurface(type, surface, primaryID, secondaryID);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Unable to call setSurface: " + e);
-        }
-    }
-
     /**
      * This implementation is used to receive callbacks from the remote service.
      */
@@ -288,15 +270,9 @@ public class SandboxedProcessLauncher {
              * to use a Handler.
              */
             public void establishSurfacePeer(
-                    int pid, int type, Surface surface, int primaryID, int secondaryID) {
-                SandboxedProcessLauncher.establishSurfacePeer(pid, type, surface,
-                        primaryID, secondaryID);
-                // The SandboxProcessService now holds a reference to the
-                // Surface's resources, so we release our reference to it now to
-                // avoid waiting for the finalizer to get around to it.
-                if (surface != null) {
-                    surface.release();
-                }
+                    int pid, Surface surface, int primaryID, int secondaryID) {
+                // TODO(sievers): This should call into native and pass the Surface to the
+                // right media player instance.
             }
         };
     };

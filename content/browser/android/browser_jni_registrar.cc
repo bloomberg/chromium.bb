@@ -32,8 +32,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "AndroidLocationApiAdapter",
     content::AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
-  { "BrowserProcessSurfaceTexture",
-    SurfaceTexturePeerBrowserImpl::RegisterBrowserProcessSurfaceTexture },
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
   { "ContentViewRenderView",
     content::ContentViewRenderView::RegisterContentViewRenderView },

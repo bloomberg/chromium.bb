@@ -41,8 +41,7 @@ class StreamTextureHost : public IPC::Listener {
 
   // Request the GPU process to create the surface texture and forward it
   // to the renderer process.
-  void EstablishPeer(SurfaceTexturePeer::SurfaceTextureTarget type,
-                     int32 primary_id, int32 secondary_id);
+  void EstablishPeer(int32 primary_id, int32 secondary_id);
 
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

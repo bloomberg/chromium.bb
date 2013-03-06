@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_ANDROID_SURFACE_TEXTURE_PEER_BROWSER_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_SURFACE_TEXTURE_PEER_BROWSER_IMPL_H_
 
-#include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "content/common/android/surface_texture_peer.h"
 
@@ -19,25 +18,17 @@ class SurfaceTexturePeerBrowserImpl : public SurfaceTexturePeer {
   // will send the java surface texture object to the render process through
   // SandboxedProcessService. Otherwise, it will pass the surface texture
   // to the MediaPlayerBridge object in the browser process.
-  explicit SurfaceTexturePeerBrowserImpl(bool player_in_render_process);
+  SurfaceTexturePeerBrowserImpl();
   virtual ~SurfaceTexturePeerBrowserImpl();
 
   // SurfaceTexturePeer implementation.
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle render_process_handle,
-      SurfaceTextureTarget type,
       scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
       int render_view_id,
       int player_id) OVERRIDE;
 
-  static bool RegisterBrowserProcessSurfaceTexture(JNIEnv* env);
-
  private:
-  // Whether the media player is in render process.
-  bool player_in_render_process_;
-
-  base::android::ScopedJavaGlobalRef<jobject> surface_;
-
   DISALLOW_COPY_AND_ASSIGN(SurfaceTexturePeerBrowserImpl);
 };
 
