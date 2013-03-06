@@ -21,8 +21,6 @@
 
 using content::BrowserThread;
 
-const char kRootPath[] = "/";
-
 namespace chrome {
 
 namespace {
@@ -46,6 +44,10 @@ const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
 const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 const char kMacImageCapture[] = "ic:";
+
+#if !defined(OS_WIN)
+const char kRootPath[] = "/";
+#endif
 
 void ValidatePathOnFileThread(
     const base::FilePath& path,
