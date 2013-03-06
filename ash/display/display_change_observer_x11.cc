@@ -119,9 +119,10 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
         std::string(output_info->name));
     XRRFreeOutputInfo(output_info);
     if (is_internal) {
-      // No need to check the return value of |GetDisplayID()| as
-      // the default value is |gfx::Display::kInvalidDisplayID| anyway.
-      gfx::Display::SetInternalDisplayId(GetDisplayId(output, output_index));
+      int64 id = GetDisplayId(output, output_index);
+      // Fallback to output index. crbug.com/180100
+      gfx::Display::SetInternalDisplayId(
+          id == gfx::Display::kInvalidDisplayID ? output_index : id);
       break;
     }
   }
