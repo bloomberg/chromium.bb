@@ -176,9 +176,6 @@ def FindFullConfigsForBoard(board):
       elif name.endswith('-%s' % CONFIG_TYPE_FULL):
         ext_cfgs.append(copy.deepcopy(c))
 
-  ext_cfgs.sort(key=len)
-  int_cfgs.sort(key=len)
-
   return ext_cfgs, int_cfgs
 
 
