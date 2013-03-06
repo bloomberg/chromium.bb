@@ -392,36 +392,36 @@ void ContentViewCoreImpl::OnTabCrashed() {
 // Note that viewport_width/height is a best effort based.
 // ContentViewCore has the actual information about the physical viewport size.
 void ContentViewCoreImpl::UpdateFrameInfo(
-    float scroll_offset_x, float scroll_offset_y,
+    const gfx::Vector2dF& scroll_offset,
     float page_scale_factor,
-    float min_page_scale_factor, float max_page_scale_factor,
-    float content_width, float content_height,
-    float viewport_width, float viewport_height) {
+    const gfx::Vector2dF& page_scale_factor_limits,
+    const gfx::SizeF& content_size,
+    const gfx::SizeF& viewport_size,
+    const gfx::Vector2dF& controls_offset,
+    const gfx::Vector2dF& content_offset) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
+
   Java_ContentViewCore_updateFrameInfo(
       env, obj.obj(),
-      scroll_offset_x,
-      scroll_offset_y,
+      scroll_offset.x(),
+      scroll_offset.y(),
       page_scale_factor,
-      min_page_scale_factor, max_page_scale_factor,
-      content_width,
-      content_height,
-      viewport_width,
-      viewport_height);
-}
+      page_scale_factor_limits.x(),
+      page_scale_factor_limits.y(),
+      content_size.width(),
+      content_size.height(),
+      viewport_size.width(),
+      viewport_size.height(),
+      controls_offset.y(),
+      content_offset.y());
 
-void ContentViewCoreImpl::UpdateOffsetsForFullscreen(float controls_offset_y,
-                                                     float content_offset_y) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_updateOffsetsForFullscreen(env, obj.obj(),
-                                                  controls_offset_y,
-                                                  content_offset_y);
+  for (size_t i = 0; i < update_frame_info_callbacks_.size(); ++i) {
+    update_frame_info_callbacks_[i].Run(
+        content_size, scroll_offset, page_scale_factor);
+  }
 }
 
 void ContentViewCoreImpl::SetTitle(const string16& title) {
@@ -561,6 +561,22 @@ unsigned int ContentViewCoreImpl::GetScaledContentTexture(
     return 0;
 
   return view->GetScaledContentTexture(scale, out_size);
+}
+
+void ContentViewCoreImpl::AddFrameInfoCallback(
+    const UpdateFrameInfoCallback& callback) {
+  update_frame_info_callbacks_.push_back(callback);
+}
+
+void ContentViewCoreImpl::RemoveFrameInfoCallback(
+    const UpdateFrameInfoCallback& callback) {
+  for (size_t i = 0; i < update_frame_info_callbacks_.size(); ++i) {
+    if (update_frame_info_callbacks_[i].Equals(callback)) {
+      update_frame_info_callbacks_.erase(
+          update_frame_info_callbacks_.begin() + i);
+      return;
+    }
+  }
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {

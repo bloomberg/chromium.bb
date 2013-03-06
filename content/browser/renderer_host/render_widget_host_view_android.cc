@@ -695,13 +695,8 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
   if (content_view_core_) {
     // All offsets and sizes are in CSS pixels.
     content_view_core_->UpdateFrameInfo(
-        scroll_offset.x(), scroll_offset.y(),
-        page_scale_factor,
-        page_scale_factor_limits.x(), page_scale_factor_limits.y(),
-        content_size.width(), content_size.height(),
-        viewport_size.width(), viewport_size.height());
-    content_view_core_->UpdateOffsetsForFullscreen(controls_offset.y(),
-                                                   content_offset.y());
+        scroll_offset, page_scale_factor, page_scale_factor_limits,
+        content_size, viewport_size, controls_offset, content_offset);
   }
 }
 

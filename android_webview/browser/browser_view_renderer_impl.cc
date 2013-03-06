@@ -21,8 +21,9 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/vector2d_f.h"
 #include "ui/gl/gl_bindings.h"
 
 // TODO(leandrogracia): remove when crbug.com/164140 is closed.
@@ -115,6 +116,7 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
     JavaHelper* java_helper)
     : client_(client),
       java_helper_(java_helper),
+      view_renderer_host_(new ViewRendererHost(NULL, this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(compositor_(Compositor::Create(this))),
       view_clip_layer_(cc::Layer::create()),
       transform_layer_(cc::Layer::create()),
@@ -123,9 +125,14 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
       compositor_visible_(false),
       is_composite_pending_(false),
       dpi_scale_(1.0f),
+      page_scale_(1.0f),
       on_new_picture_mode_(kOnNewPictureDisabled),
       last_frame_context_(NULL),
-      web_contents_(NULL) {
+      web_contents_(NULL),
+      update_frame_info_callback_(
+          base::Bind(&BrowserViewRendererImpl::OnFrameInfoUpdated,
+                     base::Unretained(ALLOW_THIS_IN_INITIALIZER_LIST(this)))) {
+
   DCHECK(java_helper);
 
   // Define the view hierarchy.
@@ -137,6 +144,7 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
 }
 
 BrowserViewRendererImpl::~BrowserViewRendererImpl() {
+  SetContents(NULL);
 }
 
 // static
@@ -150,12 +158,24 @@ void BrowserViewRendererImpl::SetAwDrawSWFunctionTable(
 }
 
 void BrowserViewRendererImpl::SetContents(ContentViewCore* content_view_core) {
+  if (web_contents_) {
+    ContentViewCore* previous_content_view_core =
+        ContentViewCore::FromWebContents(web_contents_);
+    if (previous_content_view_core) {
+      previous_content_view_core->RemoveFrameInfoCallback(
+          update_frame_info_callback_);
+    }
+  }
+
+  web_contents_ = content_view_core ?
+                  content_view_core->GetWebContents() : NULL;
+  view_renderer_host_->Observe(web_contents_);
+
+  if (!content_view_core)
+    return;
+
+  content_view_core->AddFrameInfoCallback(update_frame_info_callback_);
   dpi_scale_ = content_view_core->GetDpiScale();
-  web_contents_ = content_view_core->GetWebContents();
-  if (!view_renderer_host_)
-    view_renderer_host_.reset(new ViewRendererHost(web_contents_, this));
-  else
-    view_renderer_host_->Observe(web_contents_);
 
   view_clip_layer_->removeAllChildren();
   view_clip_layer_->addChild(content_view_core->GetLayer());
@@ -532,7 +552,6 @@ skia::RefPtr<SkPicture> BrowserViewRendererImpl::GetLastCapturedPicture() {
 
   // If not available or not in listener mode get it synchronously.
   if (!picture) {
-    DCHECK(view_renderer_host_);
     view_renderer_host_->CapturePictureSync();
     picture = RendererPictureMap::GetInstance()->GetRendererPicture(
         web_contents_->GetRoutingID());
@@ -580,10 +599,20 @@ void BrowserViewRendererImpl::Invalidate() {
 }
 
 bool BrowserViewRendererImpl::RenderSW(SkCanvas* canvas) {
-  // TODO(leandrogracia): once Ubercompositor is ready and we support software
-  // rendering mode, we should avoid this as much as we can, ideally always.
-  // This includes finding a proper replacement for onDraw calls in hardware
-  // mode with software canvases. http://crbug.com/170086.
+  float content_scale = dpi_scale_ * page_scale_;
+  canvas->scale(content_scale, content_scale);
+
+  // Clear to white any parts of the view not covered by the scaled contents.
+  // TODO(leandrogracia): this should be automatically done by the SW rendering
+  // path once multiple layers are supported.
+  gfx::Size physical_content_size = gfx::ToCeiledSize(
+      gfx::ScaleSize(content_size_css_, content_scale));
+  if (physical_content_size.width() < view_size_.width() ||
+      physical_content_size.height() < view_size_.height())
+    canvas->clear(SK_ColorWHITE);
+
+  // TODO(leandrogracia): use the appropriate SW rendering path when available
+  // instead of abusing CapturePicture.
   return RenderPicture(canvas);
 }
 
@@ -592,11 +621,16 @@ bool BrowserViewRendererImpl::RenderPicture(SkCanvas* canvas) {
   if (!picture)
     return false;
 
-  // Correct device scale.
-  canvas->scale(dpi_scale_, dpi_scale_);
-
   picture->draw(canvas);
   return true;
+}
+
+void BrowserViewRendererImpl::OnFrameInfoUpdated(
+    const gfx::SizeF& content_size,
+    const gfx::Vector2dF& scroll_offset,
+    float page_scale_factor) {
+  page_scale_ = page_scale_factor;
+  content_size_css_ = content_size;
 }
 
 }  // namespace android_webview

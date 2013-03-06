@@ -58,6 +58,10 @@ class ContentViewCoreImpl : public ContentViewCore,
       float scale,
       gfx::Size* out_size) OVERRIDE;
   virtual float GetDpiScale() const OVERRIDE;
+  virtual void AddFrameInfoCallback(
+      const UpdateFrameInfoCallback& callback) OVERRIDE;
+  virtual void RemoveFrameInfoCallback(
+      const UpdateFrameInfoCallback& callback) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -219,15 +223,13 @@ class ContentViewCoreImpl : public ContentViewCore,
   void OnTabCrashed();
 
   // All sizes and offsets are in CSS pixels as cached by the renderer.
-  void UpdateFrameInfo(
-      float scroll_offset_x, float scroll_offset_y,
-      float page_scale_factor,
-      float min_page_scale_factor, float max_page_scale_factor,
-      float content_width, float content_height,
-      float viewport_width, float viewport_height);
-
-  void UpdateOffsetsForFullscreen(float controls_offset_y,
-                                  float content_offset_y);
+  void UpdateFrameInfo(const gfx::Vector2dF& scroll_offset,
+                       float page_scale_factor,
+                       const gfx::Vector2dF& page_scale_factor_limits,
+                       const gfx::SizeF& content_size,
+                       const gfx::SizeF& viewport_size,
+                       const gfx::Vector2dF& controls_offset,
+                       const gfx::Vector2dF& content_offset);
 
   void UpdateImeAdapter(int native_ime_adapter, int text_input_type,
                         const std::string& text,
@@ -324,10 +326,13 @@ class ContentViewCoreImpl : public ContentViewCore,
   // browser compositor.
   bool renderer_frame_pending_;
 
+  // Device scale factor.
   float dpi_scale_;
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;
+
+  std::vector<UpdateFrameInfoCallback> update_frame_info_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

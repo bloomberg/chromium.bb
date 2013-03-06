@@ -1914,7 +1914,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             float scrollOffsetX, float scrollOffsetY,
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
             float contentWidth, float contentHeight,
-            float viewportWidth, float viewportHeight) {
+            float viewportWidth, float viewportHeight,
+            float controlsOffsetYCss, float contentOffsetYCss) {
 
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
@@ -1976,14 +1977,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
         if (needUpdateZoomControls) mZoomManager.updateZoomControls();
-    }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void updateOffsetsForFullscreen(float controlsOffsetYCss, float contentOffsetYCss) {
-        final float scale = mRenderCoordinates.getDeviceScaleFactor();
-        final float controlsOffsetPix = controlsOffsetYCss * scale;
-        final float contentOffsetYPix = contentOffsetYCss * scale;
+        // Update offsets for fullscreen.
+        final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
+        final float controlsOffsetPix = controlsOffsetYCss * deviceScale;
+        final float contentOffsetYPix = contentOffsetYCss * deviceScale;
         getContentViewClient().onOffsetsForFullscreenChanged(controlsOffsetPix, contentOffsetYPix);
     }
 

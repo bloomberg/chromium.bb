@@ -8,10 +8,12 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/renderer_host/view_renderer_host.h"
 #include "content/public/browser/android/compositor.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/size_f.h"
 
 typedef void* EGLContext;
 struct AwDrawSWFunctionTable;
@@ -21,6 +23,10 @@ class SkPicture;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class Vector2dF;
 }
 
 namespace android_webview {
@@ -38,6 +44,7 @@ class BrowserViewRendererImpl
   static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
 
   // BrowserViewRenderer implementation.
+  // |content_view_core| must not outlive |this| BrowserViewRenderer instance.
   virtual void SetContents(
       content::ContentViewCore* content_view_core) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
@@ -74,6 +81,10 @@ class BrowserViewRendererImpl
   bool RenderSW(SkCanvas* canvas);
   bool RenderPicture(SkCanvas* canvas);
 
+  void OnFrameInfoUpdated(const gfx::SizeF& content_size,
+                          const gfx::Vector2dF& scroll_offset,
+                          float page_scale_factor);
+
   BrowserViewRenderer::Client* client_;
   BrowserViewRenderer::JavaHelper* java_helper_;
 
@@ -97,7 +108,9 @@ class BrowserViewRendererImpl
   bool compositor_visible_;
   bool is_composite_pending_;
   float dpi_scale_;
+  float page_scale_;
   gfx::Size view_size_;
+  gfx::SizeF content_size_css_;
   OnNewPictureMode on_new_picture_mode_;
 
   // Used only for detecting Android View System context changes.
@@ -106,6 +119,9 @@ class BrowserViewRendererImpl
 
   // Set via SetContents. Used to recognize updates to the local WebView.
   content::WebContents* web_contents_;
+
+  // Used to observe frame metadata updates.
+  content::ContentViewCore::UpdateFrameInfoCallback update_frame_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRendererImpl);
 };

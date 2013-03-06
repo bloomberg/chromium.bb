@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 
@@ -17,6 +18,8 @@ class Layer;
 
 namespace gfx {
 class Size;
+class SizeF;
+class Vector2dF;
 }
 
 namespace ui {
@@ -49,6 +52,17 @@ class CONTENT_EXPORT ContentViewCore {
       float scale,
       gfx::Size* out_size) = 0;
   virtual float GetDpiScale() const = 0;
+
+  // Observer callback for frame metadata updates.
+  typedef base::Callback<void(
+      const gfx::SizeF& content_size,
+      const gfx::Vector2dF& scroll_offset,
+      float page_scale_factor)> UpdateFrameInfoCallback;
+
+  virtual void AddFrameInfoCallback(
+      const UpdateFrameInfoCallback& callback) = 0;
+  virtual void RemoveFrameInfoCallback(
+      const UpdateFrameInfoCallback& callback) = 0;
 
  protected:
   virtual ~ContentViewCore() {};
