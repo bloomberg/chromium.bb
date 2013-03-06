@@ -375,6 +375,10 @@ class DriveFileSyncService
       bool has_new_changes,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> changes);
+  void HandleConflictForLocalSync(
+      scoped_ptr<TaskToken> token,
+      const fileapi::FileSystemURL& url,
+      const SyncStatusCallback& callback);
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
   void OnPollingTimerFired();
