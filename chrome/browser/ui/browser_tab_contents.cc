@@ -109,7 +109,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       autofill::TabAutofillManagerDelegate::FromWebContents(web_contents));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewAutofillUi)) {
+          switches::kEnableNativeAutofillUi)) {
     AutofillExternalDelegate::CreateForWebContentsAndManager(
         web_contents, AutofillManager::FromWebContents(web_contents));
     AutofillManager::FromWebContents(web_contents)->SetExternalDelegate(

@@ -565,15 +565,15 @@ const char kNaClDebugMask[]                 = "nacl-debug-mask";
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 
+// Enables the native Autofill UI, which is part of the browser process rather
+// than part of the renderer process.  http://crbug.com/51644
+const char kEnableNativeAutofillUi[]        = "enable-new-autofill-ui";
+
 // Enables the native messaging extensions API.
 const char kEnableNativeMessaging[]         = "enable-native-messaging";
 
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]            = "enable-net-benchmarking";
-
-// Enables the new Autofill UI, which is part of the browser process rather than
-// part of the renderer process.  http://crbug.com/51644
-const char kEnableNewAutofillUi[]           = "enable-new-autofill-ui";
 
 // Enables NPN and SPDY. In case server supports SPDY, browser will use SPDY.
 const char kEnableNpn[]                     = "enable-npn";
