@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/i18n/rtl.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -165,6 +166,9 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
 
 void BrowserFrame::ShowContextMenuForView(views::View* source,
                                           const gfx::Point& p) {
+  if (chrome::IsRunningInForcedAppMode())
+    return;
+
   // Only show context menu if point is in unobscured parts of browser, i.e.
   // if NonClientHitTest returns :
   // - HTCAPTION: in title bar or unobscured part of tabstrip
