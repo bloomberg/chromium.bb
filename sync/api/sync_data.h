@@ -117,6 +117,8 @@ class SYNC_EXPORT SyncData {
 // gmock printer helper.
 void PrintTo(const SyncData& sync_data, std::ostream* os);
 
+typedef std::vector<SyncData> SyncDataList;
+
 }  // namespace syncer
 
 #endif  // SYNC_API_SYNC_DATA_H_

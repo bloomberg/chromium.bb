@@ -21,8 +21,6 @@ namespace syncer {
 
 class SyncErrorFactory;
 
-typedef std::vector<SyncData> SyncDataList;
-
 // TODO(zea): remove SupportsWeakPtr in favor of having all SyncableService
 // implementers provide a way of getting a weak pointer to themselves.
 // See crbug.com/100114.

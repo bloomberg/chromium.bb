@@ -442,8 +442,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       base::Time begin_time,
       base::Time end_time);
 
-  // Calls ExpireHistoryBackend::ExpireHistoryForTimes and commits the change.
-  void ExpireHistoryForTimes(const std::vector<base::Time>& times);
+  // Finds the URLs visited at |times| and expires all their visits within
+  // [|begin_time|, |end_time|). All times in |times| should be in
+  // [|begin_time|, |end_time|). This is used when expiration request is from
+  // server side, i.e. web history deletes, where only visit times (possibly
+  // incomplete) are transmitted to protect user's privacy.
+  void ExpireHistoryForTimes(const std::set<base::Time>& times,
+                             base::Time begin_time, base::Time end_time);
 
   // Calls ExpireHistoryBetween() once for each element in the vector.
   // The fields of |ExpireHistoryArgs| map directly to the arguments of
@@ -548,6 +553,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                            CloneFaviconIsRestrictedToSameDomain);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, QueryFilteredURLs);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ExpireHistoryForTimes);
 
   friend class ::TestingProfile;
 

@@ -1,0 +1,76 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_HISTORY_DELETE_DIRECTIVE_HANDLER_H_
+#define CHROME_BROWSER_HISTORY_DELETE_DIRECTIVE_HANDLER_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "chrome/browser/common/cancelable_request.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_data.h"
+
+namespace sync_pb {
+class HistoryDeleteDirectiveSpecifics;
+}
+
+class HistoryService;
+
+namespace history {
+
+// DeleteDirectiveHandler sends delete directives created locally to sync
+// engine to propagate to other clients. It also expires local history entries
+// according to given delete directives from server.
+class DeleteDirectiveHandler {
+ public:
+  DeleteDirectiveHandler();
+  ~DeleteDirectiveHandler();
+
+  // Start/stop processing delete directives when sync is enabled/disabled.
+  void Start(HistoryService* history_service,
+             const syncer::SyncDataList& initial_sync_data,
+             scoped_ptr<syncer::SyncChangeProcessor> sync_processor);
+  void Stop();
+
+  // Sends the given |delete_directive| to SyncChangeProcessor (if it exists).
+  // Returns any error resulting from sending the delete directive to sync.
+  // NOTE: the given |delete_directive| is not processed to remove local
+  //       history entries that match. Caller still needs to call other
+  //       interfaces, e.g. HistoryService::ExpireHistoryBetween(), to delete
+  //       local history entries.
+  syncer::SyncError ProcessLocalDeleteDirective(
+      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
+
+  // Expires local history entries according to delete directives from server.
+  syncer::SyncError ProcessSyncChanges(
+      HistoryService* history_service,
+      const syncer::SyncChangeList& change_list);
+
+ private:
+  class DeleteDirectiveTask;
+  friend class DeleteDirectiveTask;
+
+  // Action to take on processed delete directives.
+  enum PostProcessingAction {
+    KEEP_AFTER_PROCESSING,
+    DROP_AFTER_PROCESSING
+  };
+
+  // Callback when history backend finishes deleting visits according to
+  // |delete_directives|.
+  void FinishProcessing(PostProcessingAction post_processing_action,
+                        const syncer::SyncDataList& delete_directives);
+
+  CancelableRequestConsumer internal_consumer_;
+  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<DeleteDirectiveHandler> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteDirectiveHandler);
+};
+
+}  // namespace history
+
+#endif  // CHROME_BROWSER_HISTORY_DELETE_DIRECTIVE_HANDLER_H_

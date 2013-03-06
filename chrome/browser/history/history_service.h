@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/history/delete_directive_handler.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -74,10 +75,6 @@ struct HistoryAddPageArgs;
 struct HistoryDetails;
 
 }  // namespace history
-
-namespace sync_pb {
-class HistoryDeleteDirectiveSpecifics;
-}
 
 // The history service records page titles, and visit times, as well as
 // (eventually) information about autocomplete.
@@ -602,9 +599,6 @@ class HistoryService : public CancelableRequestProvider,
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 
-  void ProcessDeleteDirectiveForTest(
-      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
-
   // syncer::SyncableService implementation.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
@@ -835,15 +829,6 @@ class HistoryService : public CancelableRequestProvider,
   // specified priority. The task will have ownership taken.
   void ScheduleTask(SchedulePriority priority, const base::Closure& task);
 
-  // Delete local history according to the given directive (from
-  // sync).
-  void ProcessDeleteDirective(
-      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
-
-  // Called when a delete directive has been processed.
-  void OnDeleteDirectiveProcessed(
-      const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive);
-
   // Schedule ------------------------------------------------------------------
   //
   // Functions for scheduling operations on the history thread that have a
@@ -1066,9 +1051,6 @@ class HistoryService : public CancelableRequestProvider,
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
 
-  // Used to propagate local delete directives to sync.
-  scoped_ptr<syncer::SyncChangeProcessor> sync_change_processor_;
-
   // The profile, may be null when testing.
   Profile* profile_;
 
@@ -1098,6 +1080,8 @@ class HistoryService : public CancelableRequestProvider,
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   ObserverList<history::VisitDatabaseObserver> visit_database_observers_;
+
+  history::DeleteDirectiveHandler delete_directive_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

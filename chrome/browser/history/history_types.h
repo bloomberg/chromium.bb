@@ -461,7 +461,10 @@ struct QueryOptions {
     // Omit visits for which there is a more recent visit to the same URL on
     // the same day. Each URL will appear no more than once per day, where the
     // day is defined by the local timezone.
-    REMOVE_DUPLICATES_PER_DAY
+    REMOVE_DUPLICATES_PER_DAY,
+
+    // Return all visits without deduping.
+    KEEP_ALL_DUPLICATES
   };
 
   // Allows the caller to specify how duplicate URLs in the result set should

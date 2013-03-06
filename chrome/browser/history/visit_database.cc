@@ -348,21 +348,21 @@ bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
     VisitRow visit;
     FillVisitRow(statement, &visit);
 
-    if (options.duplicate_policy == QueryOptions::REMOVE_DUPLICATES_PER_DAY &&
-        found_urls_midnight != visit.visit_time.LocalMidnight()) {
-      found_urls.clear();
-      found_urls_midnight = visit.visit_time.LocalMidnight();
-    }
-
-    // Make sure the URL this visit corresponds to is unique.
-    if (found_urls.find(visit.url_id) == found_urls.end()) {
+    if (options.duplicate_policy != QueryOptions::KEEP_ALL_DUPLICATES) {
+      if (options.duplicate_policy == QueryOptions::REMOVE_DUPLICATES_PER_DAY &&
+          found_urls_midnight != visit.visit_time.LocalMidnight()) {
+        found_urls.clear();
+        found_urls_midnight = visit.visit_time.LocalMidnight();
+      }
+      // Make sure the URL this visit corresponds to is unique.
+      if (found_urls.find(visit.url_id) != found_urls.end())
+        continue;
       found_urls.insert(visit.url_id);
-
-      if (static_cast<int>(visits->size()) >= options.EffectiveMaxCount())
-        return true;
-
-      visits->push_back(visit);
     }
+
+    if (static_cast<int>(visits->size()) >= options.EffectiveMaxCount())
+      return true;
+    visits->push_back(visit);
   }
   return false;
 }

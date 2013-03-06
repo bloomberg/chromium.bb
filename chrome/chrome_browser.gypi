@@ -763,6 +763,8 @@
         'browser/history/android/visit_sql_handler.h',
         'browser/history/archived_database.cc',
         'browser/history/archived_database.h',
+        'browser/history/delete_directive_handler.cc',
+        'browser/history/delete_directive_handler.h',
         'browser/history/download_database.cc',
         'browser/history/download_database.h',
         'browser/history/download_row.cc',

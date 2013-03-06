@@ -2492,9 +2492,10 @@ TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
 TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
   ASSERT_TRUE(backend_.get());
 
-  HistoryAddPageArgs args[5];
+  HistoryAddPageArgs args[10];
   for (size_t i = 0; i < arraysize(args); ++i) {
-    args[i].url = GURL("http://example" + base::IntToString(i) + ".com");
+    args[i].url = GURL("http://example" +
+                       std::string((i % 2 == 0 ? ".com" : ".net")));
     args[i].time = base::Time::FromInternalValue(i);
     backend_->AddPage(args[i]);
   }
@@ -2505,22 +2506,38 @@ TEST_F(HistoryBackendTest, ExpireHistoryForTimes) {
     EXPECT_TRUE(backend_->GetURL(args[i].url, &row));
   }
 
-  std::vector<base::Time> times;
-  times.push_back(args[0].time);
-  // Insert twice to make sure we handle duplicate times correctly.
-  times.push_back(args[2].time);
-  times.push_back(args[2].time);
-  times.push_back(args[4].time);
-  backend_->ExpireHistoryForTimes(times);
+  std::set<base::Time> times;
+  times.insert(args[5].time);
+  backend_->ExpireHistoryForTimes(times,
+                                  base::Time::FromInternalValue(2),
+                                  base::Time::FromInternalValue(8));
 
-  EXPECT_EQ(base::Time::FromInternalValue(1),
+  EXPECT_EQ(base::Time::FromInternalValue(0),
             backend_->GetFirstRecordedTimeForTest());
 
-  EXPECT_FALSE(backend_->GetURL(args[0].url, &row));
-  EXPECT_TRUE(backend_->GetURL(args[1].url, &row));
-  EXPECT_FALSE(backend_->GetURL(args[2].url, &row));
-  EXPECT_TRUE(backend_->GetURL(args[3].url, &row));
-  EXPECT_FALSE(backend_->GetURL(args[4].url, &row));
+  // Visits to http://example.com are untouched.
+  VisitVector visit_vector;
+  EXPECT_TRUE(backend_->GetVisitsForURL(
+      backend_->db_->GetRowForURL(GURL("http://example.com"), NULL),
+      &visit_vector));
+  ASSERT_EQ(5u, visit_vector.size());
+  EXPECT_EQ(base::Time::FromInternalValue(0), visit_vector[0].visit_time);
+  EXPECT_EQ(base::Time::FromInternalValue(2), visit_vector[1].visit_time);
+  EXPECT_EQ(base::Time::FromInternalValue(4), visit_vector[2].visit_time);
+  EXPECT_EQ(base::Time::FromInternalValue(6), visit_vector[3].visit_time);
+  EXPECT_EQ(base::Time::FromInternalValue(8), visit_vector[4].visit_time);
+
+  // Visits to http://example.net between [2,8] are removed.
+  visit_vector.clear();
+  EXPECT_TRUE(backend_->GetVisitsForURL(
+      backend_->db_->GetRowForURL(GURL("http://example.net"), NULL),
+      &visit_vector));
+  ASSERT_EQ(2u, visit_vector.size());
+  EXPECT_EQ(base::Time::FromInternalValue(1), visit_vector[0].visit_time);
+  EXPECT_EQ(base::Time::FromInternalValue(9), visit_vector[1].visit_time);
+
+  EXPECT_EQ(base::Time::FromInternalValue(0),
+            backend_->GetFirstRecordedTimeForTest());
 }
 
 TEST_F(HistoryBackendTest, ExpireHistory) {

@@ -2732,29 +2732,57 @@ void HistoryBackend::ExpireHistoryBetween(
 }
 
 void HistoryBackend::ExpireHistoryForTimes(
-    const std::vector<base::Time>& times) {
-  // Put the times in reverse chronological order and remove
-  // duplicates (for expirer_.ExpireHistoryForTimes()).
-  std::vector<base::Time> sorted_times = times;
-  std::sort(sorted_times.begin(), sorted_times.end(),
-            std::greater<base::Time>());
-  sorted_times.erase(
-      std::unique(sorted_times.begin(), sorted_times.end()),
-      sorted_times.end());
-
-  if (sorted_times.empty())
+    const std::set<base::Time>& times,
+    base::Time begin_time, base::Time end_time) {
+  if (times.empty() || !db_.get())
     return;
 
-  if (db_.get()) {
-    expirer_.ExpireHistoryForTimes(sorted_times);
-    // Force a commit, if the user is deleting something for privacy reasons,
-    // we want to get it on disk ASAP.
-    Commit();
+  DCHECK(*times.begin() >= begin_time)
+      << "Min time is before begin time: "
+      << times.begin()->ToJsTime() << " v.s. " << begin_time.ToJsTime();
+  DCHECK(*times.rbegin() < end_time)
+      << "Max time is after end time: "
+      << times.rbegin()->ToJsTime() << " v.s. " << end_time.ToJsTime();
+
+  history::QueryOptions options;
+  options.begin_time = begin_time;
+  options.end_time = end_time;
+  options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  QueryResults results;
+  QueryHistoryBasic(db_.get(), db_.get(), options, &results);
+
+  // 1st pass: find URLs that are visited at one of |times|.
+  std::set<GURL> urls;
+  for (size_t i = 0; i < results.size(); ++i) {
+    if (times.count(results[i].visit_time()) > 0)
+      urls.insert(results[i].url());
+  }
+  if (urls.empty())
+    return;
+
+  // 2nd pass: collect all visit times of those URLs.
+  std::vector<base::Time> times_to_expire;
+  for (size_t i = 0; i < results.size(); ++i) {
+    if (urls.count(results[i].url()))
+      times_to_expire.push_back(results[i].visit_time());
   }
 
-  // Update the first recorded time if we've expired it.
-  if (std::binary_search(sorted_times.begin(), sorted_times.end(),
-                         first_recorded_time_, std::greater<base::Time>()))
+  // Put the times in reverse chronological order and remove
+  // duplicates (for expirer_.ExpireHistoryForTimes()).
+  std::sort(times_to_expire.begin(), times_to_expire.end(),
+            std::greater<base::Time>());
+  times_to_expire.erase(
+      std::unique(times_to_expire.begin(), times_to_expire.end()),
+      times_to_expire.end());
+
+  // Expires by times and commit.
+  DCHECK(!times_to_expire.empty());
+  expirer_.ExpireHistoryForTimes(times_to_expire);
+  Commit();
+
+  DCHECK(times_to_expire.back() >= first_recorded_time_);
+  // Update |first_recorded_time_| if we expired it.
+  if (times_to_expire.back() == first_recorded_time_)
     db_->GetStartDate(&first_recorded_time_);
 }
 
