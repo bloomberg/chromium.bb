@@ -8,6 +8,7 @@ import collections
 import contextlib
 import errno
 import functools
+import logging
 import multiprocessing
 import os
 import Queue
@@ -20,6 +21,8 @@ from chromite.buildbot import cbuildbot_results as results_lib
 
 _PRINT_INTERVAL = 1
 _BUFSIZE = 1024
+
+logger = logging.getLogger(__name__)
 
 
 class BackgroundFailure(results_lib.StepFailure):
@@ -62,6 +65,15 @@ class _BackgroundSteps(multiprocessing.Process):
     except OSError as ex:
       if ex.errno != errno.ESRCH:
         raise
+
+    # Delete output files.
+    for _step, output in self._steps:
+      output_name = output.name
+      if logger.isEnabledFor(logging.DEBUG):
+        with open(output_name, 'r') as f:
+          for line in f:
+            logging.debug(line.rstrip('\n'))
+      os.unlink(output_name)
 
   def WaitForStep(self):
     """Wait for the next step to complete.
@@ -173,10 +185,11 @@ class _BackgroundSteps(multiprocessing.Process):
       sys.stdout.flush()
       sys.stderr.flush()
       output.close()
-      sys.stdout, sys.stderr = orig_stdout, orig_stderr
-      os.dup2(orig_stdout_fd, stdout_fileno)
-      os.dup2(orig_stderr_fd, stderr_fileno)
-      map(os.close, [orig_stdout_fd, orig_stderr_fd])
+      if self._steps:
+        sys.stdout, sys.stderr = orig_stdout, orig_stderr
+        os.dup2(orig_stdout_fd, stdout_fileno)
+        os.dup2(orig_stderr_fd, stderr_fileno)
+        map(os.close, [orig_stdout_fd, orig_stderr_fd])
       results = results_lib.Results.Get()
       self._queue.put((error, results))
 

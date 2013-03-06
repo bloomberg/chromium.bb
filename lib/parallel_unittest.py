@@ -13,6 +13,7 @@ import Queue
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
 
@@ -232,6 +233,7 @@ class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
     self.failed.set()
 
   def testExceptionRaising(self):
+    """Test that exceptions halt all running steps."""
     steps = [self._Exit, self._Fail, self._Pass]
     output_str = None
     with self.OutputCapturer() as capture:
@@ -244,6 +246,13 @@ class TestHalting(cros_test_lib.OutputTestCase, cros_test_lib.MockTestCase):
     self.assertTrue(self.passed.is_set())
     self.assertEqual(output_str, _GREETING)
     self.assertFalse(self.failed.is_set())
+
+  def testTempFileCleanup(self):
+    """Test that all temp files are cleaned up."""
+    with osutils.TempDirContextManager() as tempdir:
+      self.assertEqual(os.listdir(tempdir), [])
+      self.testExceptionRaising()
+      self.assertEqual(os.listdir(tempdir), [])
 
 
 if __name__ == '__main__':
