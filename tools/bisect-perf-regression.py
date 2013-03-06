@@ -36,6 +36,7 @@ An example usage (using git hashes):
 """
 
 import imp
+import math
 import optparse
 import os
 import re
@@ -90,6 +91,44 @@ DEPOT_DEPS_NAME = { 'webkit' : {
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
 FILE_DEPS_GIT = '.DEPS.git'
+
+
+def CalculateTruncatedMean(data_set, truncate_percent):
+  """Calculates the truncated mean of a set of values.
+
+  Args:
+    data_set: Set of values to use in calculation.
+    truncate_percent: The % from the upper/lower portions of the data set to
+        discard, expressed as a value in [0, 1].
+
+  Returns:
+    The truncated mean as a float.
+  """
+  if len(data_set) > 2:
+    data_set = sorted(data_set)
+
+    discard_num_float = len(data_set) * truncate_percent
+    discard_num_int = int(math.floor(discard_num_float))
+    kept_weight = len(data_set) - discard_num_float * 2
+
+    data_set = data_set[discard_num_int:len(data_set)-discard_num_int]
+
+    weight_left = 1.0 - (discard_num_float - discard_num_int)
+
+    if weight_left < 1:
+      # If the % to discard leaves a fractional portion, need to weight those
+      # values.
+      unweighted_vals = data_set[1:len(data_set)-1]
+      weighted_vals = [data_set[0], data_set[len(data_set)-1]]
+      weighted_vals = [w * weight_left for w in weighted_vals]
+      data_set = weighted_vals + unweighted_vals
+  else:
+    kept_weight = len(data_set)
+
+  truncated_mean = reduce(lambda x, y: float(x) + float(y),
+                          data_set) / kept_weight
+
+  return truncated_mean
 
 
 def IsStringFloat(string_to_check):
@@ -586,22 +625,31 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
-    # Can ignore the return code since if the tests fail, it won't return 0.
-    (output, return_code) = RunProcess(args,
-        self.opts.output_buildbot_annotations)
+    metric_values = {}
+    for i in xrange(self.opts.repeat_test_count):
+      # Can ignore the return code since if the tests fail, it won't return 0.
+      (output, return_code) = RunProcess(args,
+          self.opts.output_buildbot_annotations)
+
+      cur_metric_values = self.ParseMetricValuesFromOutput(metric, output)
+
+      for k, v in cur_metric_values.iteritems():
+        if metric_values.has_key(k):
+          metric_values[k].extend(v)
+        else:
+          metric_values[k] = v
 
     os.chdir(cwd)
-
-    metric_values = self.ParseMetricValuesFromOutput(metric, output)
 
     # Need to get the average value if there were multiple values.
     if metric_values:
       for k, v in metric_values.iteritems():
-        average_metric_value = reduce(lambda x, y: float(x) + float(y),
-                                      v) / len(v)
+        truncated_mean = CalculateTruncatedMean(v, self.opts.truncate_percent)
 
-        metric_values[k] = average_metric_value
+        metric_values[k] = truncated_mean
 
+      print 'Results of performance test: %s' % str(metric_values)
+      print
       return (metric_values, 0)
     else:
       return ('No values returned from performance test.', -1)
@@ -678,6 +726,17 @@ class BisectPerformanceMetrics(object):
     if not self.opts.debug_ignore_sync:
       for r in revisions_to_sync:
         self.ChangeToDepotWorkingDirectory(r[0])
+
+        if use_gclient:
+          print 'Cleaning up between runs.'
+          print
+
+          # Having these pyc files around between runs can confuse the
+          # perf tests and cause them to crash.
+          cmd = ['find', '.', '-name', '*.pyc', '-exec', 'rm', '-f', '{}', ';']
+          (output, return_code) = RunProcess(cmd)
+
+          assert not output, "Cleaning *.pyc failed."
 
         if not self.source_control.SyncToRevision(r[1], use_gclient):
           success = False
@@ -1129,6 +1188,14 @@ class BisectPerformanceMetrics(object):
       print '  %8s  %s  %s' % (current_data['depot'], current_id, build_status)
     print
 
+    print
+    print 'Tested commits:'
+    for current_id, current_data in revision_data_sorted:
+      if current_data['value']:
+        print '  %8s  %s  %s' % (
+            current_data['depot'], current_id, current_data['value'])
+    print
+
     # Find range where it possibly broke.
     first_working_revision = None
     last_broken_revision = None
@@ -1219,6 +1286,19 @@ def main():
                     'working_directory and that will be used to perform the '
                     'bisection. This parameter is optional, if it is not '
                     'supplied, the script will work from the current depot.')
+  parser.add_option('-r', '--repeat_test_count',
+                    type='int',
+                    default=5,
+                    help='The number of times to repeat the performance test. '
+                    'Values will be clamped to range [1, 100]. '
+                    'Default value is 5.')
+  parser.add_option('-t', '--truncate_percent',
+                    type='int',
+                    default=10,
+                    help='The highest/lowest % are discarded to form a '
+                    'truncated mean. Values will be clamped to range [0, 25]. '
+                    'Default value is 10 (highest/lowest 10% will be '
+                    'discarded).')
   parser.add_option('--use_goma',
                     action="store_true",
                     help='Add a bunch of extra threads for goma.')
@@ -1259,6 +1339,10 @@ def main():
     print
     parser.print_help()
     return 1
+
+  opts.repeat_test_count = min(max(opts.repeat_test_count, 1), 100)
+  opts.truncate_percent = min(max(opts.truncate_percent, 0), 25)
+  opts.truncate_percent = opts.truncate_percent / 100.0
 
   # Haven't tested the script out on any other platforms yet.
   if not os.name in ['posix']:

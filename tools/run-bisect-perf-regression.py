@@ -66,6 +66,12 @@ def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
          '--working_directory', working_directory,
          '--output_buildbot_annotations']
 
+  if config['repeat_count']:
+    cmd.extend(['-r', config['repeat_count']])
+
+  if config['truncate_percent']:
+    cmd.extend(['-t', config['truncate_percent']])
+
   goma_file = ''
   if path_to_goma:
     path_to_goma = os.path.abspath(path_to_goma)
