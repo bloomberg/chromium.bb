@@ -58,6 +58,7 @@ namespace content {
 
 class BrowserPluginHostFactory;
 class BrowserPluginEmbedder;
+class BrowserPluginGuestManager;
 class RenderProcessHost;
 class RenderWidgetHostView;
 struct MediaStreamRequest;
@@ -75,7 +76,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   static BrowserPluginGuest* Create(
       int instance_id,
-      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* web_contents,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
 
@@ -87,15 +87,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
-  void Initialize(const BrowserPluginHostMsg_CreateGuest_Params& params);
+  void Initialize(WebContentsImpl* embedder_web_contents,
+                  const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   void set_guest_hang_timeout_for_testing(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
   }
 
-  void set_embedder_web_contents(WebContentsImpl* web_contents) {
-    embedder_web_contents_ = web_contents;
-  }
   WebContentsImpl* embedder_web_contents() const {
     return embedder_web_contents_;
   }
@@ -158,7 +156,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
       const content::MediaResponseCallback& callback) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
-  WebContents* GetWebContents();
+  WebContentsImpl* GetWebContents();
 
   // Kill the guest process.
   void Terminate();
@@ -186,6 +184,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                                        const std::string& mailbox_name,
                                        uint32 sync_point);
 
+  // Returns whether BrowserPluginGuest is interested in receiving the given
+  // |message|.
+  static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
+
  private:
   typedef std::pair<content::MediaStreamRequest, content::MediaResponseCallback>
       MediaStreamRequestAndCallbackPair;
@@ -195,7 +197,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   friend class TestBrowserPluginGuest;
 
   BrowserPluginGuest(int instance_id,
-                     WebContentsImpl* embedder_web_contents,
                      WebContentsImpl* web_contents,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
 
@@ -353,7 +354,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
-  bool destroy_called_;
 
   // A counter to generate unique request id for a media access request.
   // We only need the ids to be unique for a given BrowserPluginGuest.

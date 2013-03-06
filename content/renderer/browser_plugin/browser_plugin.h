@@ -141,6 +141,9 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnEmbedderDecidedPermission(int request_id, bool allow);
 
 
+  // Returns whether a message should be forwarded to BrowserPlugin.
+  static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
+
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const OVERRIDE;
   virtual bool initialize(WebKit::WebPluginContainer* container) OVERRIDE;

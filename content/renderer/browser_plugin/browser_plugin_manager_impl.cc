@@ -4,6 +4,7 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
 
+#include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
@@ -42,8 +43,8 @@ bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
 
 bool BrowserPluginManagerImpl::OnMessageReceived(
     const IPC::Message& message) {
-  if (ShouldForwardToBrowserPlugin(message)) {
-    int instance_id = 0;
+  if (BrowserPlugin::ShouldForwardToBrowserPlugin(message)) {
+    int instance_id = browser_plugin::kInstanceIDNone;
     // All allowed messages must have instance_id as their first parameter.
     PickleIterator iter(message);
     bool success = iter.ReadInt(&instance_id);
@@ -79,7 +80,7 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
     const IPC::Message& message,
     int request_id,
     const gfx::Point& position) {
-  int instance_id = -1;
+  int instance_id = browser_plugin::kInstanceIDNone;
   IDMap<BrowserPlugin>::iterator it(&instances_);
   gfx::Point local_position = position;
   while (!it.IsAtEnd()) {
@@ -115,35 +116,6 @@ void BrowserPluginManagerImpl::OnUnhandledSwap(const IPC::Message& message,
       gpu_host_id,
       mailbox_name,
       0));
-}
-
-// static
-bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
-    const IPC::Message& message) {
-  switch (message.type()) {
-    case BrowserPluginMsg_AdvanceFocus::ID:
-    case BrowserPluginMsg_BuffersSwapped::ID:
-    case BrowserPluginMsg_GuestContentWindowReady::ID:
-    case BrowserPluginMsg_GuestGone::ID:
-    case BrowserPluginMsg_GuestResponsive::ID:
-    case BrowserPluginMsg_GuestUnresponsive::ID:
-    case BrowserPluginMsg_LoadAbort::ID:
-    case BrowserPluginMsg_LoadCommit::ID:
-    case BrowserPluginMsg_LoadRedirect::ID:
-    case BrowserPluginMsg_LoadStart::ID:
-    case BrowserPluginMsg_LoadStop::ID:
-    case BrowserPluginMsg_LockMouse::ID:
-    case BrowserPluginMsg_RequestPermission::ID:
-    case BrowserPluginMsg_SetCursor::ID:
-    case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
-    case BrowserPluginMsg_UnlockMouse::ID:
-    case BrowserPluginMsg_UpdatedName::ID:
-    case BrowserPluginMsg_UpdateRect::ID:
-      return true;
-    default:
-      break;
-  }
-  return false;
 }
 
 }  // namespace content

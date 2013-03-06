@@ -18,6 +18,7 @@
 #include "cc/switches.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -39,6 +40,7 @@
 #include "content/browser/webui/generic_handler.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
+#include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/icon_messages.h"
 #include "content/common/ssl_status_serialization.h"
@@ -367,11 +369,10 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 }
 
 // static
-void WebContentsImpl::CreateGuest(
+BrowserPluginGuest* WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
     int routing_id,
-    WebContentsImpl* embedder_web_contents,
     WebContentsImpl* opener_web_contents,
     int guest_instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
@@ -384,7 +385,6 @@ void WebContentsImpl::CreateGuest(
   new_contents->browser_plugin_guest_.reset(
     BrowserPluginGuest::Create(
         guest_instance_id,
-        embedder_web_contents,
         new_contents,
         params));
 
@@ -397,7 +397,7 @@ void WebContentsImpl::CreateGuest(
   static_cast<RenderViewHostImpl*>(
       new_contents->GetRenderViewHost())->set_is_subframe(true);
 
-  new_contents->browser_plugin_guest_->Initialize(params);
+  return new_contents->browser_plugin_guest_.get();
 }
 
 WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
@@ -2424,8 +2424,7 @@ void WebContentsImpl::OnBrowserPluginAllocateInstanceID(
   // messages are handled in BrowserPluginEmbedder. Thus, this code will not be
   // executed if a BrowserPluginEmbedder exists for this WebContents.
   CHECK(!browser_plugin_embedder_.get());
-  browser_plugin_embedder_.reset(
-      BrowserPluginEmbedder::Create(this, GetRenderViewHost()));
+  browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
   browser_plugin_embedder_->OnMessageReceived(message);
 }
 
@@ -3498,6 +3497,13 @@ BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();
+}
+
+BrowserPluginGuestManager*
+    WebContentsImpl::GetBrowserPluginGuestManager() const {
+  return static_cast<BrowserPluginGuestManager*>(
+      GetBrowserContext()->GetUserData(
+          browser_plugin::kBrowserPluginGuestManagerKeyName));
 }
 
 }  // namespace content

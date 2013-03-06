@@ -13,6 +13,7 @@
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_plugin/test_browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
+#include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
@@ -105,26 +106,28 @@ namespace content {
 // BrowserPluginGuest.
 class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
  public:
+  virtual BrowserPluginGuestManager*
+      CreateBrowserPluginGuestManager() OVERRIDE {
+    guest_manager_instance_count_++;
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+    return new TestBrowserPluginGuestManager();
+  }
+
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
       int instance_id,
-      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* web_contents,
       const BrowserPluginHostMsg_CreateGuest_Params& params) OVERRIDE {
     return new TestBrowserPluginGuest(instance_id,
-                                      embedder_web_contents,
                                       web_contents,
                                       params);
   }
 
   // Also keeps track of number of instances created.
   virtual BrowserPluginEmbedder* CreateBrowserPluginEmbedder(
-      WebContentsImpl* web_contents,
-      RenderViewHost* render_view_host) OVERRIDE {
-    embedder_instance_count_++;
-    if (message_loop_runner_)
-      message_loop_runner_->Quit();
+      WebContentsImpl* web_contents) OVERRIDE {
 
-    return new TestBrowserPluginEmbedder(web_contents, render_view_host);
+    return new TestBrowserPluginEmbedder(web_contents);
   }
 
   // Singleton getter.
@@ -134,9 +137,9 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
 
   // Waits for at least one embedder to be created in the test. Returns true if
   // we have a guest, false if waiting times out.
-  void WaitForEmbedderCreation() {
-    // Check if already have created instance.
-    if (embedder_instance_count_ > 0)
+  void WaitForGuestManagerCreation() {
+    // Check if already have created an instance.
+    if (guest_manager_instance_count_ > 0)
       return;
     // Wait otherwise.
     message_loop_runner_ = new MessageLoopRunner();
@@ -144,7 +147,7 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
   }
 
  protected:
-  TestBrowserPluginHostFactory() : embedder_instance_count_(0) {}
+  TestBrowserPluginHostFactory() : guest_manager_instance_count_(0) {}
   virtual ~TestBrowserPluginHostFactory() {}
 
  private:
@@ -152,7 +155,7 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
   friend struct DefaultSingletonTraits<TestBrowserPluginHostFactory>;
 
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
-  int embedder_instance_count_;
+  int guest_manager_instance_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginHostFactory);
 };
@@ -163,12 +166,10 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
  public:
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
       int instance_id,
-      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* web_contents,
       const BrowserPluginHostMsg_CreateGuest_Params& params) OVERRIDE {
     BrowserPluginGuest* guest =
         new TestBrowserPluginGuest(instance_id,
-                                   embedder_web_contents,
                                    web_contents,
                                    params);
     guest->set_guest_hang_timeout_for_testing(TestTimeouts::tiny_timeout());
@@ -237,13 +238,16 @@ class BrowserPluginHostTest : public ContentBrowserTest {
  public:
   BrowserPluginHostTest()
       : test_embedder_(NULL),
-        test_guest_(NULL) {}
+        test_guest_(NULL),
+        test_guest_manager_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     // Override factory to create tests instances of BrowserPlugin*.
     content::BrowserPluginEmbedder::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
     content::BrowserPluginGuest::set_factory_for_testing(
+        TestBrowserPluginHostFactory::GetInstance());
+    content::BrowserPluginGuestManager::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
 
     ContentBrowserTest::SetUp();
@@ -337,16 +341,21 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     }
 
     // Wait to make sure embedder is created/attached to WebContents.
-    TestBrowserPluginHostFactory::GetInstance()->WaitForEmbedderCreation();
+    TestBrowserPluginHostFactory::GetInstance()->WaitForGuestManagerCreation();
 
     test_embedder_ = static_cast<TestBrowserPluginEmbedder*>(
         embedder_web_contents->GetBrowserPluginEmbedder());
     ASSERT_TRUE(test_embedder_);
-    test_embedder_->WaitForGuestAdded();
+
+    test_guest_manager_ = static_cast<TestBrowserPluginGuestManager*>(
+        embedder_web_contents->GetBrowserPluginGuestManager());
+    ASSERT_TRUE(test_guest_manager_);
+
+    test_guest_manager_->WaitForGuestAdded();
 
     // Verify that we have exactly one guest.
-    const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
-        test_embedder_->guest_web_contents_for_testing();
+    const TestBrowserPluginGuestManager::GuestInstanceMap& instance_map =
+        test_guest_manager_->guest_web_contents_for_testing();
     EXPECT_EQ(1u, instance_map.size());
 
     WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
@@ -358,10 +367,14 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
   TestBrowserPluginEmbedder* test_embedder() const { return test_embedder_; }
   TestBrowserPluginGuest* test_guest() const { return test_guest_; }
+  TestBrowserPluginGuestManager* test_guest_manager() const {
+    return test_guest_manager_;
+  }
 
  private:
   TestBrowserPluginEmbedder* test_embedder_;
   TestBrowserPluginGuest* test_guest_;
+  TestBrowserPluginGuestManager* test_guest_manager_;
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 
@@ -733,10 +746,10 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
     ExecuteSyncJSFunction(
         test_embedder()->web_contents()->GetRenderViewHost(),
         StringPrintf("SetSrc('%s');", kHTMLForGuest));
-    test_embedder()->WaitForGuestAdded();
+    test_guest_manager()->WaitForGuestAdded();
 
-    const BrowserPluginEmbedder::ContainerInstanceMap& instance_map =
-        test_embedder()->guest_web_contents_for_testing();
+    const TestBrowserPluginGuestManager::GuestInstanceMap& instance_map =
+        test_guest_manager()->guest_web_contents_for_testing();
     WebContentsImpl* test_guest_web_contents = static_cast<WebContentsImpl*>(
         instance_map.begin()->second);
     TestBrowserPluginGuest* new_test_guest =

@@ -70,6 +70,7 @@ extern const char kErrorInvalidPartition[];
 extern const char kErrorCannotRemovePartition[];
 
 // Other.
+extern const char kBrowserPluginGuestManagerKeyName[];
 extern const int kInstanceIDNone;
 
 }  // namespace browser_plugin

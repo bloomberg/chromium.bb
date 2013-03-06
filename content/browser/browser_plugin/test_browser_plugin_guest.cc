@@ -16,11 +16,9 @@ class BrowserPluginGuest;
 
 TestBrowserPluginGuest::TestBrowserPluginGuest(
     int instance_id,
-    WebContentsImpl* embedder_web_contents,
     WebContentsImpl* web_contents,
     const BrowserPluginHostMsg_CreateGuest_Params& params)
     : BrowserPluginGuest(instance_id,
-                         embedder_web_contents,
                          web_contents,
                          params),
       update_rect_count_(0),

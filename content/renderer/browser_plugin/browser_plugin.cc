@@ -1157,6 +1157,35 @@ gfx::Point BrowserPlugin::ToLocalCoordinates(const gfx::Point& point) const {
   return gfx::Point(point.x() - plugin_rect_.x(), point.y() - plugin_rect_.y());
 }
 
+// static
+bool BrowserPlugin::ShouldForwardToBrowserPlugin(
+    const IPC::Message& message) {
+  switch (message.type()) {
+    case BrowserPluginMsg_AdvanceFocus::ID:
+    case BrowserPluginMsg_BuffersSwapped::ID:
+    case BrowserPluginMsg_GuestContentWindowReady::ID:
+    case BrowserPluginMsg_GuestGone::ID:
+    case BrowserPluginMsg_GuestResponsive::ID:
+    case BrowserPluginMsg_GuestUnresponsive::ID:
+    case BrowserPluginMsg_LoadAbort::ID:
+    case BrowserPluginMsg_LoadCommit::ID:
+    case BrowserPluginMsg_LoadRedirect::ID:
+    case BrowserPluginMsg_LoadStart::ID:
+    case BrowserPluginMsg_LoadStop::ID:
+    case BrowserPluginMsg_LockMouse::ID:
+    case BrowserPluginMsg_RequestPermission::ID:
+    case BrowserPluginMsg_SetCursor::ID:
+    case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
+    case BrowserPluginMsg_UnlockMouse::ID:
+    case BrowserPluginMsg_UpdatedName::ID:
+    case BrowserPluginMsg_UpdateRect::ID:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 void BrowserPlugin::updateGeometry(
     const WebRect& window_rect,
     const WebRect& clip_rect,

@@ -72,6 +72,7 @@ const char kErrorCannotRemovePartition[] =
     "Cannot remove partition attribute after navigating.";
 
 // Other.
+const char kBrowserPluginGuestManagerKeyName[] = "browser_plugin_guest_manager";
 const int kInstanceIDNone = 0;
 
 }  // namespace browser_plugin

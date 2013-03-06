@@ -37,6 +37,7 @@ struct ViewMsg_PostMessage_Params;
 namespace content {
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
+class BrowserPluginGuestManager;
 class ColorChooser;
 class DateTimeChooserAndroid;
 class DownloadItem;
@@ -85,11 +86,10 @@ class CONTENT_EXPORT WebContentsImpl
   WebContentsImpl* opener() const { return opener_; }
 
   // Creates a WebContents to be used as a browser plugin guest.
-  static void CreateGuest(
+  static BrowserPluginGuest* CreateGuest(
       BrowserContext* browser_context,
       content::SiteInstance* site_instance,
       int routing_id,
-      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* opener_web_contents,
       int guest_instance_id,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
@@ -166,6 +166,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Returns embedder browser plugin object, or NULL if this WebContents is not
   // an embedder.
   BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
+  // Returns the BrowserPluginGuestManager object, or NULL if this web contents
+  // does not have a BrowserPluginGuestManager.
+  BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   // Gets the current fullscreen render widget's routing ID. Returns
   // MSG_ROUTING_NONE when there is no fullscreen render widget.

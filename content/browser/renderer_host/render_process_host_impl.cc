@@ -487,13 +487,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   MediaInternals* media_internals = MediaInternals::GetInstance();;
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
-  if (IsGuest()) {
-    scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
-        new BrowserPluginMessageFilter(
-            GetID(),
-            GetBrowserContext()));
-    channel_->AddFilter(bp_message_filter);
-  }
+  scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
+      new BrowserPluginMessageFilter(GetID(), IsGuest()));
+  channel_->AddFilter(bp_message_filter);
 
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(

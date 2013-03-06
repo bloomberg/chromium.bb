@@ -24,7 +24,6 @@ class WebContentsImpl;
 class TestBrowserPluginGuest : public BrowserPluginGuest {
  public:
   TestBrowserPluginGuest(int instance_id,
-                         WebContentsImpl* embedder_web_contents,
                          WebContentsImpl* web_contents,
                          const BrowserPluginHostMsg_CreateGuest_Params& params);
   virtual ~TestBrowserPluginGuest();

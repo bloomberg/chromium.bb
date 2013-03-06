@@ -50,9 +50,6 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
                        int gpu_route_id,
                        int gpu_host_id);
 
-  // Returns whether a message should be forwarded to BrowserPlugins.
-  static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
-
   int request_id_counter_;
   IDMap<BrowserPlugin> pending_allocate_instance_id_requests_;
 
