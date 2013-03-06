@@ -40,44 +40,12 @@
 
 #include "base/cpu.h"
 #include "base/logging.h"
-#include "build/build_config.h"
-
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 #if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 #include <arm_neon.h>
 #endif
 
 namespace media {
-
-namespace {
-
-enum {
-  // The kernel size can be adjusted for quality (higher is better) at the
-  // expense of performance.  Must be a multiple of 32.
-  // TODO(dalecurtis): Test performance to see if we can jack this up to 64+.
-  kKernelSize = 32,
-
-  // The number of destination frames generated per processing pass.  Affects
-  // how often and for how much SincResampler calls back for input.  Must be
-  // greater than kKernelSize.
-  kBlockSize = 512,
-
-  // The kernel offset count is used for interpolation and is the number of
-  // sub-sample kernel shifts.  Can be adjusted for quality (higher is better)
-  // at the expense of allocating more memory.
-  kKernelOffsetCount = 32,
-  kKernelStorageSize = kKernelSize * (kKernelOffsetCount + 1),
-
-  // The size (in samples) of the internal buffer used by the resampler.
-  kBufferSize = kBlockSize + kKernelSize
-};
-
-}  // namespace
-
-const int SincResampler::kMaximumLookAheadSize = kBufferSize;
 
 SincResampler::SincResampler(double io_sample_rate_ratio, const ReadCB& read_cb)
     : io_sample_rate_ratio_(io_sample_rate_ratio),
@@ -222,7 +190,7 @@ void SincResampler::Resample(float* destination, int frames) {
   }
 }
 
-int SincResampler::ChunkSize() {
+int SincResampler::ChunkSize() const {
   return kBlockSize / io_sample_rate_ratio_;
 }
 
@@ -235,14 +203,23 @@ void SincResampler::Flush() {
 float SincResampler::Convolve(const float* input_ptr, const float* k1,
                               const float* k2,
                               double kernel_interpolation_factor) {
+  // Ensure |k1|, |k2| are 16-byte aligned for SSE usage.  Should always be true
+  // so long as kKernelSize is a multiple of 16.
+  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k1) & 0x0F);
+  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
+
   // Rely on function level static initialization to keep ConvolveProc selection
   // thread safe.
   typedef float (*ConvolveProc)(const float* src, const float* k1,
                                 const float* k2,
                                 double kernel_interpolation_factor);
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
+#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(__SSE__)
+  static const ConvolveProc kConvolveProc = Convolve_SSE;
+#else
   static const ConvolveProc kConvolveProc =
       base::CPU().has_sse() ? Convolve_SSE : Convolve_C;
+#endif
 #elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
   static const ConvolveProc kConvolveProc = Convolve_NEON;
 #else
@@ -270,50 +247,6 @@ float SincResampler::Convolve_C(const float* input_ptr, const float* k1,
   return (1.0 - kernel_interpolation_factor) * sum1
       + kernel_interpolation_factor * sum2;
 }
-
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-float SincResampler::Convolve_SSE(const float* input_ptr, const float* k1,
-                                  const float* k2,
-                                  double kernel_interpolation_factor) {
-  // Ensure |k1|, |k2| are 16-byte aligned for SSE usage.  Should always be true
-  // so long as kKernelSize is a multiple of 16.
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k1) & 0x0F);
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
-
-  __m128 m_input;
-  __m128 m_sums1 = _mm_setzero_ps();
-  __m128 m_sums2 = _mm_setzero_ps();
-
-  // Based on |input_ptr| alignment, we need to use loadu or load.  Unrolling
-  // these loops hurt performance in local testing.
-  if (reinterpret_cast<uintptr_t>(input_ptr) & 0x0F) {
-    for (int i = 0; i < kKernelSize; i += 4) {
-      m_input = _mm_loadu_ps(input_ptr + i);
-      m_sums1 = _mm_add_ps(m_sums1, _mm_mul_ps(m_input, _mm_load_ps(k1 + i)));
-      m_sums2 = _mm_add_ps(m_sums2, _mm_mul_ps(m_input, _mm_load_ps(k2 + i)));
-    }
-  } else {
-    for (int i = 0; i < kKernelSize; i += 4) {
-      m_input = _mm_load_ps(input_ptr + i);
-      m_sums1 = _mm_add_ps(m_sums1, _mm_mul_ps(m_input, _mm_load_ps(k1 + i)));
-      m_sums2 = _mm_add_ps(m_sums2, _mm_mul_ps(m_input, _mm_load_ps(k2 + i)));
-    }
-  }
-
-  // Linearly interpolate the two "convolutions".
-  m_sums1 = _mm_mul_ps(m_sums1, _mm_set_ps1(1.0 - kernel_interpolation_factor));
-  m_sums2 = _mm_mul_ps(m_sums2, _mm_set_ps1(kernel_interpolation_factor));
-  m_sums1 = _mm_add_ps(m_sums1, m_sums2);
-
-  // Sum components together.
-  float result;
-  m_sums2 = _mm_add_ps(_mm_movehl_ps(m_sums1, m_sums1), m_sums1);
-  _mm_store_ss(&result, _mm_add_ss(m_sums2, _mm_shuffle_ps(
-      m_sums2, m_sums2, 1)));
-
-  return result;
-}
-#endif
 
 #if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 float SincResampler::Convolve_NEON(const float* input_ptr, const float* k1,

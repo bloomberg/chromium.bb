@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -98,7 +99,7 @@ TEST(SincResamplerTest, Flush) {
 }
 
 // Define platform independent function name for Convolve* tests.
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
+#if defined(ARCH_CPU_X86_FAMILY)
 #define CONVOLVE_FUNC Convolve_SSE
 #elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
 #define CONVOLVE_FUNC Convolve_NEON
@@ -109,6 +110,10 @@ TEST(SincResamplerTest, Flush) {
 // will be tested by the parameterized SincResampler tests below.
 #if defined(CONVOLVE_FUNC)
 TEST(SincResamplerTest, Convolve) {
+#if defined(ARCH_CPU_X86_FAMILY)
+  ASSERT_TRUE(base::CPU().has_sse());
+#endif
+
   // Initialize a dummy resampler.
   MockSource mock_source;
   SincResampler resampler(
@@ -171,6 +176,10 @@ TEST(SincResamplerTest, ConvolveBenchmark) {
   printf("Convolve_C took %.2fms.\n", total_time_c_ms);
 
 #if defined(CONVOLVE_FUNC)
+#if defined(ARCH_CPU_X86_FAMILY)
+  ASSERT_TRUE(base::CPU().has_sse());
+#endif
+
   // Benchmark with unaligned input pointer.
   start = base::TimeTicks::HighResNow();
   for (int j = 0; j < convolve_iterations; ++j) {

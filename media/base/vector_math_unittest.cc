@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -90,8 +91,9 @@ TEST_F(VectorMathTest, FMAC) {
     VerifyOutput(kResult);
   }
 
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
+#if defined(ARCH_CPU_X86_FAMILY)
   {
+    ASSERT_TRUE(base::CPU().has_sse());
     SCOPED_TRACE("FMAC_SSE");
     FillTestVectors(kInputFillValue, kOutputFillValue);
     vector_math::FMAC_SSE(
@@ -118,7 +120,9 @@ TEST_F(VectorMathTest, FMACBenchmark) {
   double total_time_c_ms = (TimeTicks::HighResNow() - start).InMillisecondsF();
   printf("FMAC_C took %.2fms.\n", total_time_c_ms);
 
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
+#if defined(ARCH_CPU_X86_FAMILY)
+  ASSERT_TRUE(base::CPU().has_sse());
+
   // Benchmark FMAC_SSE() with unaligned size.
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
             sizeof(float)), 0U);

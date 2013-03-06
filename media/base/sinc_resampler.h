@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -16,9 +17,30 @@ namespace media {
 // SincResampler is a high-quality single-channel sample-rate converter.
 class MEDIA_EXPORT SincResampler {
  public:
-  // The maximum number of samples that may be requested from the callback ahead
-  // of the current position in the stream.
-  static const int kMaximumLookAheadSize;
+  enum {
+    // The kernel size can be adjusted for quality (higher is better) at the
+    // expense of performance.  Must be a multiple of 32.
+    // TODO(dalecurtis): Test performance to see if we can jack this up to 64+.
+    kKernelSize = 32,
+
+    // The number of destination frames generated per processing pass.  Affects
+    // how often and for how much SincResampler calls back for input.  Must be
+    // greater than kKernelSize.
+    kBlockSize = 512,
+
+    // The kernel offset count is used for interpolation and is the number of
+    // sub-sample kernel shifts.  Can be adjusted for quality (higher is better)
+    // at the expense of allocating more memory.
+    kKernelOffsetCount = 32,
+    kKernelStorageSize = kKernelSize * (kKernelOffsetCount + 1),
+
+    // The size (in samples) of the internal buffer used by the resampler.
+    kBufferSize = kBlockSize + kKernelSize,
+
+    // The maximum number of samples that may be requested from the callback
+    // ahead of the current position in the stream.
+    kMaximumLookAheadSize = kBufferSize
+  };
 
   // Callback type for providing more data into the resampler.  Expects |frames|
   // of data to be rendered into |destination|; zero padded if not enough frames
@@ -36,7 +58,7 @@ class MEDIA_EXPORT SincResampler {
 
   // The maximum size in frames that guarantees Resample() will only make a
   // single call to |read_cb_| for more data.
-  int ChunkSize();
+  int ChunkSize() const;
 
   // Flush all buffered data and reset internal indices.
   void Flush();
@@ -55,15 +77,18 @@ class MEDIA_EXPORT SincResampler {
                         const float* k2, double kernel_interpolation_factor);
   static float Convolve_C(const float* input_ptr, const float* k1,
                           const float* k2, double kernel_interpolation_factor);
+#if defined(ARCH_CPU_X86_FAMILY)
   static float Convolve_SSE(const float* input_ptr, const float* k1,
                             const float* k2,
                             double kernel_interpolation_factor);
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
   static float Convolve_NEON(const float* input_ptr, const float* k1,
                              const float* k2,
                              double kernel_interpolation_factor);
+#endif
 
   // The ratio of input / output sample rates.
-  double io_sample_rate_ratio_;
+  const double io_sample_rate_ratio_;
 
   // An index on the source input buffer with sub-sample precision.  It must be
   // double precision to avoid drift.
