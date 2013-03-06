@@ -373,4 +373,23 @@ TEST_F(DriveFileSyncServiceSyncTest, SquashedFileAddTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
+TEST_F(DriveFileSyncServiceSyncTest, RelaunchTestWithSquashedDeletion) {
+  std::string kFile1 = "file title 1";
+  std::string kFile2 = "file title 2";
+  SyncEvent sync_event[] = {
+    CreateRemoteFileAddOrUpdateEvent(kFile1),
+    CreateFetchEvent(),
+    CreateProcessRemoteChangeEvent(),
+
+    CreateRemoteFileDeleteEvent(kFile1),
+    CreateRemoteFileAddOrUpdateEvent(kFile2),
+    CreateRemoteFileAddOrUpdateEvent(kFile1),
+
+    CreateFetchEvent(),
+    CreateProcessRemoteChangeEvent(),
+    CreateRelaunchEvent(),
+  };
+  RunTest(CreateTestCase(sync_event));
+}
+
 }  // namespace sync_file_system

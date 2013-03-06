@@ -1738,7 +1738,9 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
   std::string local_file_md5;
 
   DriveMetadata metadata;
-  if (metadata_store_->ReadEntry(url, &metadata) == SYNC_STATUS_OK) {
+  bool has_db_entry =
+      (metadata_store_->ReadEntry(url, &metadata) == SYNC_STATUS_OK);
+  if (has_db_entry) {
     local_resource_id = metadata.resource_id();
     if (!metadata.to_be_fetched())
       local_file_md5 = metadata.md5_checksum();
@@ -1775,6 +1777,12 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     return false;
 
   FileChange file_change(CreateFileChange(is_deleted));
+
+  if (is_deleted && has_db_entry) {
+    metadata.set_resource_id(std::string());
+    metadata_store_->UpdateEntry(url, metadata,
+                                 base::Bind(&EmptyStatusCallback));
+  }
 
   // Do not return in this block. These changes should be done together.
   {
