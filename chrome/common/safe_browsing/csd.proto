@@ -244,3 +244,20 @@ message ClientDownloadReport {
   // The original download response sent from the verdict server.
   optional ClientDownloadResponse download_response = 5;
 }
+
+// This is used to send back upload status to the client after upload completion
+message ClientUploadResponse {
+  enum UploadStatus {
+    // The upload was successful and a complete response can be expected
+    SUCCESS = 0;
+
+    // The upload was unsuccessful and the response is incomplete.
+    UPLOAD_FAILURE = 1;
+  }
+
+  // Holds the upload status
+  optional UploadStatus status = 1;
+
+  // Holds the permalink where the results of scanning the binary are available
+  optional string permalink = 2;
+}
