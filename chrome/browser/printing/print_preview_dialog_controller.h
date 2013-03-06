@@ -22,19 +22,12 @@ class WebContents;
 
 namespace printing {
 
-// For print preview, a print preview (PP) tab is linked with the initiator tab
-// that initiated the printing operation. If the tab initiates a second
-// printing operation while the first print preview tab is still open, that PP
-// tab is focused/activated. There may be more than one PP tab open. There is a
-// 1:1 relationship between PP tabs and initiating tabs. This class manages PP
-// tabs and initiator tabs.
-//
-// THE ABOVE COMMENT IS OBSOLETE
-//
-// This class needs to be renamed. It no longer controls tabs. All tests need to
-// be reevaluated as to whether they're useful. The comments, both here and in
-// the tests, need to be fixed so that they don't lie.
-// http://crbug.com/163671
+// For print preview, the tab that initiates the printing operation is the
+// initiator tab, and the constrained dialog that shows the print preview is
+// the print preview dialog.
+// This class manages print preview dialog creation and destruction, and keeps
+// track of the 1:1 relationship between initiatora tabs and print preview
+// dialogs.
 class PrintPreviewDialogController
     : public base::RefCounted<PrintPreviewDialogController>,
       public content::NotificationObserver {
@@ -58,9 +51,9 @@ class PrintPreviewDialogController
   content::WebContents* GetPrintPreviewForContents(
       content::WebContents* contents) const;
 
-  // Returns initiator tab for |preview_tab|.
-  // Returns NULL if no initiator tab exists for |preview_tab|.
-  content::WebContents* GetInitiatorTab(content::WebContents* preview_tab);
+  // Returns the initiator tab for |preview_dialog|.
+  // Returns NULL if no initiator tab exists for |preview_dialog|.
+  content::WebContents* GetInitiatorTab(content::WebContents* preview_dialog);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -83,11 +76,11 @@ class PrintPreviewDialogController
  private:
   friend class base::RefCounted<PrintPreviewDialogController>;
 
-  // 1:1 relationship between initiator tab and print preview tab.
-  // Key: Preview tab.
+  // 1:1 relationship between a print preview dialog and its initiator tab.
+  // Key: Print preview dialog.
   // Value: Initiator tab.
   typedef std::map<content::WebContents*, content::WebContents*>
-      PrintPreviewTabMap;
+      PrintPreviewDialogMap;
 
   virtual ~PrintPreviewDialogController();
 
@@ -96,37 +89,37 @@ class PrintPreviewDialogController
   void OnRendererProcessClosed(content::RenderProcessHost* rph);
 
   // Handler for the WEB_CONTENTS_DESTROYED notification. This is observed when
-  // either tab is closed.
-  void OnWebContentsDestroyed(content::WebContents* tab);
+  // either WebContents is closed.
+  void OnWebContentsDestroyed(content::WebContents* contents);
 
   // Handler for the NAV_ENTRY_COMMITTED notification. This is observed when the
   // renderer is navigated to a different page.
-  void OnNavEntryCommitted(content::WebContents* tab,
+  void OnNavEntryCommitted(content::WebContents* contents,
                            content::LoadCommittedDetails* details);
 
-  // Creates a new print preview tab.
-  content::WebContents* CreatePrintPreviewTab(
+  // Creates a new print preview dialog.
+  content::WebContents* CreatePrintPreviewDialog(
       content::WebContents* initiator_tab);
 
   // Helper function to store the title of the initiator tab associated with
   // |preview_dialog| in |preview_dialog|'s PrintPreviewUI.
   void SaveInitiatorTabTitle(content::WebContents* preview_dialog);
 
-  // Adds/Removes observers for notifications from |tab|.
-  void AddObservers(content::WebContents* tab);
-  void RemoveObservers(content::WebContents* tab);
+  // Adds/Removes observers for notifications from |contents|.
+  void AddObservers(content::WebContents* contents);
+  void RemoveObservers(content::WebContents* contents);
 
-  // Removes tabs when they close/crash/navigate.
+  // Removes WebContents when they close/crash/navigate.
   void RemoveInitiatorTab(content::WebContents* initiator_tab);
-  void RemovePreviewTab(content::WebContents* preview_tab);
+  void RemovePreviewDialog(content::WebContents* preview_dialog);
 
-  // Mapping between print preview tab and the corresponding initiator tab.
-  PrintPreviewTabMap preview_tab_map_;
+  // Mapping between print preview dialog and the corresponding initiator tab.
+  PrintPreviewDialogMap preview_dialog_map_;
 
   // A registrar for listening notifications.
   content::NotificationRegistrar registrar_;
 
-  // True if the controller is waiting for a new preview tab via
+  // True if the controller is waiting for a new preview dialog via
   // content::NAVIGATION_TYPE_NEW_PAGE.
   bool waiting_for_new_preview_page_;
 
