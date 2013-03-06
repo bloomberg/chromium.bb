@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
@@ -81,8 +82,7 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(web_contents);
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
-  pref_change_registrar_.Init(
-      PrefServiceFromBrowserContext(browser()->profile()));
+  pref_change_registrar_.Init(components::UserPrefs::Get(browser()->profile()));
   pref_service_ = browser()->profile()->GetPrefs();
   ASSERT_TRUE(content::ExecuteScript(render_view_host_,
       "function TestEnv() {"

@@ -230,7 +230,7 @@ class ProfileImpl : public Profile {
   scoped_ptr<policy::PolicyService> policy_service_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
-  // |net_pref_observer_|, |io_data_| an others store pointers to |prefs_| and
+  // |net_pref_observer_|, |io_data_| and others store pointers to |prefs_| and
   // shall be destructed first.
   scoped_refptr<PrefRegistrySyncable> pref_registry_;
   scoped_ptr<PrefServiceSyncable> prefs_;

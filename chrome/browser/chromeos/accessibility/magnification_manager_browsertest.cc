@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/user_prefs/user_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -66,7 +67,7 @@ Profile* profile() {
 }
 
 PrefService* prefs() {
-  return PrefServiceFromBrowserContext(profile());
+  return components::UserPrefs::Get(profile());
 }
 
 void EnableScreenManagnifierToPref(bool enabled) {

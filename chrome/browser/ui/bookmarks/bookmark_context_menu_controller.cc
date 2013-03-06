@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -248,12 +249,12 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
 bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id == IDC_BOOKMARK_BAR_ALWAYS_SHOW);
-  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
+  PrefService* prefs = components::UserPrefs::Get(profile_);
   return prefs->GetBoolean(prefs::kShowBookmarkBar);
 }
 
 bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
-  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
+  PrefService* prefs = components::UserPrefs::Get(profile_);
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();

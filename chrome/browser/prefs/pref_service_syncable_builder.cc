@@ -10,8 +10,8 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 PrefServiceSyncableBuilder::PrefServiceSyncableBuilder() {
 }

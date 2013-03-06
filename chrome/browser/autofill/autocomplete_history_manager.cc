@@ -15,6 +15,7 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -115,8 +116,9 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
-  autofill_enabled_.Init(prefs::kAutofillEnabled,
-                         PrefServiceFromBrowserContext(browser_context_));
+  autofill_enabled_.Init(
+      prefs::kAutofillEnabled,
+      components::UserPrefs::Get(browser_context_));
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {

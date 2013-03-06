@@ -26,6 +26,7 @@
 #include "chrome/browser/autofill/validation.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"
 
@@ -517,7 +518,7 @@ bool PersonalDataManager::IsDataLoaded() const {
 }
 
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() {
-  if (!PrefServiceFromBrowserContext(browser_context_)->GetBoolean(
+  if (!components::UserPrefs::Get(browser_context_)->GetBoolean(
           prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
   }
@@ -664,7 +665,7 @@ void PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return PrefServiceFromBrowserContext(browser_context_)->GetBoolean(
+  return components::UserPrefs::Get(browser_context_)->GetBoolean(
       prefs::kAutofillEnabled);
 }
 

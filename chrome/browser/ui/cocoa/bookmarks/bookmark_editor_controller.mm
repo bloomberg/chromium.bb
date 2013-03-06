@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
+#include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface BookmarkEditorController (Private)
@@ -70,7 +71,7 @@
   if (node_) {
     [self setInitialName:base::SysUTF16ToNSString(node_->GetTitle())];
     PrefService* prefs = [self profile] ?
-        PrefServiceFromBrowserContext([self profile]) :
+        components::UserPrefs::Get([self profile]) :
         NULL;
     string16 urlString =
         chrome::FormatBookmarkURLForDisplay(node_->url(), prefs);

@@ -21,8 +21,6 @@
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 
-using content::BrowserContext;
-
 namespace {
 
 class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {

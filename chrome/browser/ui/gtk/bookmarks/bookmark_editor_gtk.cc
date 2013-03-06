@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
+#include "components/user_prefs/user_prefs.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -360,7 +361,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_entry_ = gtk_entry_new();
     PrefService* prefs = profile_ ?
-        PrefServiceFromBrowserContext(profile_) :
+        components::UserPrefs::Get(profile_) :
         NULL;
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),

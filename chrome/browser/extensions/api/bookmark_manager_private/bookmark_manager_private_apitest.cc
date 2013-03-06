@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/user_prefs/user_prefs.h"
 
 // Times out on win asan, http://crbug.com/166026
 #if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
@@ -44,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   model->AddURL(bar, 1, ASCIIToUTF16("AAA"), GURL("http://aaa.example.com"));
   model->AddURL(folder, 0, ASCIIToUTF16("BBB"), GURL("http://bbb.example.com"));
 
-  PrefService* prefs = PrefServiceFromBrowserContext(profile);
+  PrefService* prefs = components::UserPrefs::Get(profile);
   prefs->SetBoolean(prefs::kEditBookmarksEnabled, false);
 
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/edit_disabled"))

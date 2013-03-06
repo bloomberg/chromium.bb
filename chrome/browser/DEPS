@@ -7,6 +7,7 @@ include_rules = [
   "+chromeos",
   "+components/auto_login_parser",
   "+components/navigation_interception",
+  "+components/user_prefs",
   "+components/visitedlink/browser",
   "+components/web_contents_delegate_android",
   "+content/public/browser",

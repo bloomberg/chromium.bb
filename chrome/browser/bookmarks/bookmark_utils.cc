@@ -19,9 +19,10 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/query_parser.h"
-#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -134,7 +135,7 @@ int PreferredDropOperation(int source_operations, int operations) {
 
 int BookmarkDragOperation(content::BrowserContext* browser_context,
                           const BookmarkNode* node) {
-  PrefService* prefs = PrefServiceFromBrowserContext(browser_context);
+  PrefService* prefs = components::UserPrefs::Get(browser_context);
 
   int move = ui::DragDropTypes::DRAG_MOVE;
   if (!prefs->GetBoolean(prefs::kEditBookmarksEnabled))

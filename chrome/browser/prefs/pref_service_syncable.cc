@@ -14,10 +14,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 // static
 PrefServiceSyncable* PrefServiceSyncable::FromProfile(Profile* profile) {

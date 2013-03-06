@@ -5,8 +5,8 @@
 #include "base/basictypes.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {

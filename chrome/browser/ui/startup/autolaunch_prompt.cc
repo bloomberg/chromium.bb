@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 
-#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 namespace chrome {
 

@@ -55,6 +55,7 @@
 #include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -271,6 +272,9 @@ void TestingProfile::CreateTempProfileDir() {
 }
 
 void TestingProfile::Init() {
+  if (prefs_.get())
+    components::UserPrefs::Set(this, prefs_.get());
+
   if (!file_util::PathExists(profile_path_))
     file_util::CreateDirectory(profile_path_);
 
@@ -559,6 +563,7 @@ void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
+  components::UserPrefs::Set(this, prefs_.get());
   chrome::RegisterUserPrefs(testing_prefs_->registry());
 }
 

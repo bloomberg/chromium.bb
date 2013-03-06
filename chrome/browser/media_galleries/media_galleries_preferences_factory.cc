@@ -5,8 +5,8 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 // static
 chrome::MediaGalleriesPreferences*

@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 using syncer::InvalidationStateMap;

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/pref_names.h"
+#include "components/user_prefs/user_prefs.h"
 
 namespace autofill_test {
 
@@ -83,7 +84,7 @@ void DisableSystemServices(Profile* profile) {
   // Disable auxiliary profiles for unit testing.  These reach out to system
   // services on the Mac.
   if (profile) {
-    PrefServiceFromBrowserContext(profile)->SetBoolean(
+    components::UserPrefs::Get(profile)->SetBoolean(
         prefs::kAutofillAuxiliaryProfilesEnabled, false);
   }
 }

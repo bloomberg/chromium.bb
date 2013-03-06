@@ -7,7 +7,7 @@
 
 #include <stddef.h>  // For size_t
 
-#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 
 class PrefRegistrySimple;
 

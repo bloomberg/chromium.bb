@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_REGISTRY_SYNCABLE_H_
-#define CHROME_BROWSER_PREFS_PREF_REGISTRY_SYNCABLE_H_
+#ifndef COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_
+#define COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_
 
 #include <set>
 #include <string>
 
 #include "base/prefs/pref_registry.h"
+#include "components/user_prefs/user_prefs_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,7 +20,15 @@ class Value;
 
 // A PrefRegistry that forces users to choose whether each registered
 // preference is syncable or not.
-class PrefRegistrySyncable : public PrefRegistry {
+//
+// Classes or components that want to register such preferences should
+// define a static function named RegisterUserPrefs that takes a
+// PrefRegistrySyncable*, and the top-level application using the
+// class or embedding the component should call this function at an
+// appropriate time before the PrefService for these preferences is
+// constructed. See e.g. chrome/browser/prefs/browser_prefs.cc which
+// does this for Chrome.
+class USER_PREFS_EXPORT PrefRegistrySyncable : public PrefRegistry {
  public:
   typedef base::Callback<void(const char* path)> SyncableRegistrationCallback;
 
@@ -107,4 +116,4 @@ class PrefRegistrySyncable : public PrefRegistry {
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySyncable);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_REGISTRY_SYNCABLE_H_
+#endif  // COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_
