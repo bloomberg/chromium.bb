@@ -64,7 +64,7 @@ NativeProcessLauncher::FindAndLoadManifest(
 
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
-    const base::FilePath& path,
+    const CommandLine& command_line,
     base::PlatformFile* read_file,
     base::PlatformFile* write_file) {
   // Timeout for the IO pipes.
@@ -74,7 +74,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   // CreateNamedPipeW().
   const DWORD kBufferSize = 0;
 
-  if (!path.IsAbsolute()) {
+  if (!command_line.GetProgram().IsAbsolute()) {
     LOG(ERROR) << "Native Messaging host path must be absolute.";
     return false;
   }
@@ -117,20 +117,23 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   scoped_ptr<wchar_t[]> comspec(new wchar_t[comspec_length]);
   ::GetEnvironmentVariable(L"COMSPEC", comspec.get(), comspec_length);
 
+  string16 command_line_string = command_line.GetCommandLineString();
+
   // 'start' command has a moronic syntax: if first argument is quoted then it
-  // interprets it as a command title. Host path must always be in quotes, so
+  // interprets it as a command title. Host path may need to be in quotes, so
   // we always need to specify the title as the first argument.
   string16 command = base::StringPrintf(
       L"%ls /c start \"Chrome Native Messaging Host\" /b "
-      L"\"%ls\" < %ls > %ls",
-      comspec.get(), path.value().c_str(),
+      L"%ls < %ls > %ls",
+      comspec.get(), command_line_string.c_str(),
       in_pipe_name.c_str(), out_pipe_name.c_str());
 
   base::LaunchOptions options;
   options.start_hidden = true;
   base::ProcessHandle cmd_handle;
   if (!base::LaunchProcess(command.c_str(), options, &cmd_handle)) {
-    LOG(ERROR) << "Error launching process " << path.MaybeAsASCII();
+    LOG(ERROR) << "Error launching process "
+               << command_line.GetProgram().MaybeAsASCII();
     return false;
   }
 
@@ -142,7 +145,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     base::KillProcess(cmd_handle, 0, false);
     base::CloseProcessHandle(cmd_handle);
     LOG(ERROR) << "Failed to connect IO pipes when starting "
-               << path.MaybeAsASCII();
+               << command_line.GetProgram().MaybeAsASCII();
     return false;
   }
 

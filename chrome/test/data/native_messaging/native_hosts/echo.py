@@ -12,6 +12,11 @@ import struct
 def Main():
   message_number = 0
 
+  if len(sys.argv) < 2:
+    sys.stderr.write("URL of the calling application is not specified.\n")
+    return;
+  caller_url = sys.argv[1]
+
   while 1:
     # Read the message type (first 4 bytes).
     text_length_bytes = sys.stdin.read(4)
@@ -27,8 +32,8 @@ def Main():
 
     message_number += 1
 
-    response = '{{"id": {0}, "echo": {1}}}'.format(message_number,
-                                                   text).encode('utf-8')
+    response = '{{"id": {0}, "echo": {1}, "caller_url": "{2}"}}'.format(
+        message_number, text, caller_url).encode('utf-8')
 
     try:
       sys.stdout.write(struct.pack("I", len(response)))

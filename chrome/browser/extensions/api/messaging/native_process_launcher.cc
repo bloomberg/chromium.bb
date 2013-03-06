@@ -160,10 +160,13 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     return;
   }
 
+  CommandLine command_line(manifest->path());
+  command_line.AppendArg(origin.spec());
+
   base::PlatformFile read_file;
   base::PlatformFile write_file;
   bool result = NativeProcessLauncher::LaunchNativeProcess(
-      manifest->path(), &read_file, &write_file);
+      command_line, &read_file, &write_file);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,

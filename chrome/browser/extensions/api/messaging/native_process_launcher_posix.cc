@@ -37,7 +37,7 @@ NativeProcessLauncher::FindAndLoadManifest(
 
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
-    const base::FilePath& path,
+    const CommandLine& command_line,
     base::PlatformFile* read_file,
     base::PlatformFile* write_file) {
   base::FileHandleMappingVector fd_map;
@@ -60,11 +60,10 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   file_util::ScopedFD write_pipe_write_fd(&write_pipe_fds[1]);
   fd_map.push_back(std::make_pair(*write_pipe_read_fd, STDIN_FILENO));
 
-  CommandLine line(path);
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
   int process_id;
-  if (!base::LaunchProcess(line, options, &process_id)) {
+  if (!base::LaunchProcess(command_line, options, &process_id)) {
     LOG(ERROR) << "Error launching process";
     return false;
   }

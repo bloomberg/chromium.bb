@@ -8,6 +8,7 @@
 #include "base/process.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 
+class CommandLine;
 class GURL;
 
 namespace base {
@@ -53,7 +54,7 @@ class NativeProcessLauncher {
 
   // Launches native messaging process.
   static bool LaunchNativeProcess(
-      const base::FilePath& path,
+      const CommandLine& command_line,
       base::PlatformFile* read_file,
       base::PlatformFile* write_file);
 
