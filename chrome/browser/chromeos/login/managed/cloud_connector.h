@@ -23,7 +23,12 @@ class CloudConnector {
   class Delegate {
    public:
     // Called when new id for locally managed user was succesfully generated.
-    virtual void NewUserIdGenerated(std::string new_id) = 0;
+    virtual void NewUserIdGenerated(std::string& new_id) = 0;
+
+    // Called when DMToken for locally managed user with |user_id| was
+    // succesfully fetched.
+    virtual void DMTokenFetched(std::string& user_id, std::string& token) = 0;
+
     // Called when some error happened while interacting with cloud server.
     virtual void OnCloudError(CloudError error) = 0;
    protected:
@@ -36,6 +41,9 @@ class CloudConnector {
 
   // Request new user id generation.
   void GenerateNewUserId();
+
+  // Fetches DMToken for locally managed user identified by |user_id|.
+  void FetchDMToken(std::string& user_id);
 
  private:
   Delegate* delegate_;

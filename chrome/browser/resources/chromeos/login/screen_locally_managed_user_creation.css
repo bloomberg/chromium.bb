@@ -10,3 +10,27 @@
   padding: 70px 17px 50px;
   width: 704px;
 }
+
+
+#managed-user-creation-flow-success-title {
+  font-size: x-large;
+}
+
+#managed-user-creation-flow-success-image {
+  background-color: #d3d3d3;
+  color: gray;
+  height: 300px;
+  margin-top: 25px;
+  width: 400px;
+}
+
+#managed-user-creation-flow-success-image-text {
+  color: gray;
+  margin-left: 25px;
+  margin-top: 25px;
+  text-align: center;
+}
+
+#managed-user-creation-flow-success-email-instructions {
+  margin-top: 12px;
+}

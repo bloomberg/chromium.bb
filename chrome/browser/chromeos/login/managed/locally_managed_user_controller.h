@@ -10,16 +10,39 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/login/managed/cloud_connector.h"
+#include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
 
 namespace chromeos {
 
 // LocallyManagedUserController is used to locally managed user creation.
 // LocallyManagedUserController maintains it's own life cycle and deletes itself
 // when user creation is finished or aborted.
-class LocallyManagedUserController : public CloudConnector::Delegate {
+class LocallyManagedUserController
+    : public ManagedUserAuthenticator::StatusConsumer,
+      public CloudConnector::Delegate {
  public:
+  enum ErrorCode {
+    NO_ERROR,
+    CRYPTOHOME_NO_MOUNT,
+    CRYPTOHOME_FAILED_MOUNT,
+    CRYPTOHOME_FAILED_TPM,
+    CLOUD_NOT_CONNECTED,
+    CLOUD_TIMED_OUT,
+    CLOUD_SERVER_ERROR,
+  };
+
+  class StatusConsumer {
+   public:
+    virtual ~StatusConsumer();
+
+    virtual void OnCreationError(ErrorCode code, bool recoverable) = 0;
+    virtual void OnCreationSuccess() = 0;
+  };
+
   // All UI initialization is deferred till Init() call.
-  LocallyManagedUserController();
+  // |Consumer| is not owned by controller, and it is expected that it wouldn't
+  // be deleted before LocallyManagedUserController.
+  explicit LocallyManagedUserController(StatusConsumer* consumer);
   virtual ~LocallyManagedUserController();
 
   // Returns the current locally managed user controller if it has been created.
@@ -28,24 +51,44 @@ class LocallyManagedUserController : public CloudConnector::Delegate {
   }
 
   void StartCreation(string16 display_name, std::string password);
+  void RetryLastStep();
   void FinishCreation();
 
  private:
   // Contains information necessary for new user creation.
   struct UserCreationContext {
+    UserCreationContext();
+    ~UserCreationContext();
+
     string16 display_name;
+    bool id_acquired;
+    std::string user_id;
+    std::string password;
+    bool token_acquired;
+    std::string token;
   };
 
-  // CloudConnector::Delegate overrides
-  virtual void NewUserIdGenerated(std::string new_id) OVERRIDE;
+  // CloudConnector::Delegate overrides.
+  virtual void NewUserIdGenerated(std::string& new_id) OVERRIDE;
+  virtual void DMTokenFetched(std::string& user_id, std::string& token)
+      OVERRIDE;
   virtual void OnCloudError(CloudConnector::CloudError error) OVERRIDE;
+
+  // ManagedUserAuthenticator::StatusConsumer overrides.
+  virtual void OnAuthenticationFailure(
+      ManagedUserAuthenticator::AuthState error) OVERRIDE;
+  virtual void OnMountSuccess() OVERRIDE;
+  virtual void OnCreationSuccess() OVERRIDE;
 
   // Pointer to the current instance of the controller to be used by
   // automation tests.
   static LocallyManagedUserController* current_controller_;
 
+  StatusConsumer* consumer_;
+
   // Cloud connector for this controller.
   scoped_ptr<CloudConnector> connector_;
+  scoped_refptr<ManagedUserAuthenticator> authenticator_;
 
   // Creation context. Not null while creating new LMU.
   scoped_ptr<UserCreationContext> creation_context_;

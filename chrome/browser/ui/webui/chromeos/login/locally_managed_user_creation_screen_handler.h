@@ -19,21 +19,22 @@ namespace chromeos {
 
 class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
  public:
-   class Delegate {
-    public:
-     virtual ~Delegate() {}
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
 
-     // Called when screen is exited.
-     virtual void OnExit() = 0;
+    // Called when screen is exited.
+    virtual void OnExit() = 0;
 
-     // This method is called, when actor is being destroyed. Note, if Delegate
-     // is destroyed earlier then it has to call SetDelegate(NULL).
-     virtual void OnActorDestroyed(
-         LocallyManagedUserCreationScreenHandler* actor) = 0;
+    // This method is called, when actor is being destroyed. Note, if Delegate
+    // is destroyed earlier then it has to call SetDelegate(NULL).
+    virtual void OnActorDestroyed(
+        LocallyManagedUserCreationScreenHandler* actor) = 0;
 
-     virtual void AbortFlow() = 0;
-     virtual void FinishFlow() = 0;
-   };
+    virtual void AbortFlow() = 0;
+    virtual void FinishFlow() = 0;
+    virtual void RetryLastStep() = 0;
+  };
 
   LocallyManagedUserCreationScreenHandler();
   virtual ~LocallyManagedUserCreationScreenHandler();
@@ -44,11 +45,11 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   virtual void SetDelegate(Delegate* delegate);
 
   virtual void ShowSuccessMessage();
-  virtual void ShowErrorMessage(string16 message);
+  virtual void ShowErrorMessage(string16 message, bool recoverable);
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(
-      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings)
+      OVERRIDE;
   virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation:
@@ -58,6 +59,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   // WebUI message handlers.
   void HandleFinishLocalManagedUserCreation(const base::ListValue* args);
   void HandleAbortLocalManagedUserCreation(const base::ListValue* args);
+  void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
 
   Delegate* delegate_;
 

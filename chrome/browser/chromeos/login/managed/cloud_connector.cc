@@ -8,20 +8,23 @@
 
 namespace chromeos {
 
-CloudConnector::Delegate::~Delegate() {
-}
+CloudConnector::Delegate::~Delegate() {}
 
 CloudConnector::CloudConnector(CloudConnector::Delegate* delegate)
-    : delegate_(delegate) {
-}
+    : delegate_(delegate) {}
 
-CloudConnector::~CloudConnector() {
-}
+CloudConnector::~CloudConnector() {}
 
 void CloudConnector::GenerateNewUserId() {
   // TODO(antrim) : replace with actual implementation once one exist.
   std::string id = UserManager::Get()->GenerateUniqueLocallyManagedUserId();
   delegate_->NewUserIdGenerated(id);
+}
+
+void CloudConnector::FetchDMToken(std::string& user_id) {
+  // TODO(antrim) : replace with actual implementation once one exist.
+  std::string token = "DMToken";
+  delegate_->DMTokenFetched(user_id, token);
 }
 
 }  // namespace chromeos

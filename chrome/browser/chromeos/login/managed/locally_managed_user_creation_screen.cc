@@ -7,6 +7,8 @@
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -30,7 +32,7 @@ void LocallyManagedUserCreationScreen::PrepareToShow() {
 }
 
 void LocallyManagedUserCreationScreen::SetParameters(string16 name,
-    std::string password) {
+                                                     std::string password) {
   name_ = name;
   password_ = password;
 }
@@ -39,11 +41,9 @@ void LocallyManagedUserCreationScreen::Show() {
     actor_->Show();
   // Make sure no two controllers exist at the same time.
   controller_.reset();
-  controller_.reset(new LocallyManagedUserController());
+  controller_.reset(new LocallyManagedUserController(this));
 
   controller_->StartCreation(name_, password_);
-  if (actor_)
-    actor_->ShowSuccessMessage();
 }
 
 void LocallyManagedUserCreationScreen::Hide() {
@@ -63,13 +63,53 @@ void LocallyManagedUserCreationScreen::FinishFlow() {
   controller_->FinishCreation();
 }
 
-void LocallyManagedUserCreationScreen::OnExit() {
+void LocallyManagedUserCreationScreen::RetryLastStep() {
+  controller_->RetryLastStep();
 }
+
+void LocallyManagedUserCreationScreen::OnExit() {}
 
 void LocallyManagedUserCreationScreen::OnActorDestroyed(
     LocallyManagedUserCreationScreenHandler* actor) {
   if (actor_ == actor)
     actor_ = NULL;
+}
+
+void LocallyManagedUserCreationScreen::OnCreationError(
+    LocallyManagedUserController::ErrorCode code,
+    bool recoverable) {
+  string16 message;
+  // TODO(antrim) : find out which errors do we really have.
+  // We might reuse some error messages from ordinary user flow.
+  switch (code) {
+    case LocallyManagedUserController::CRYPTOHOME_NO_MOUNT:
+    case LocallyManagedUserController::CRYPTOHOME_FAILED_MOUNT:
+    case LocallyManagedUserController::CRYPTOHOME_FAILED_TPM:
+      message = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TPM_ERROR);
+      break;
+    case LocallyManagedUserController::CLOUD_NOT_CONNECTED:
+      message = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_NOT_CONNECTED);
+      break;
+    case LocallyManagedUserController::CLOUD_TIMED_OUT:
+      message = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TIMED_OUT);
+      break;
+    case LocallyManagedUserController::CLOUD_SERVER_ERROR:
+      message = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_SERVER_ERROR);
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (actor_)
+    actor_->ShowErrorMessage(message, recoverable);
+}
+
+void LocallyManagedUserCreationScreen::OnCreationSuccess() {
+  if (actor_)
+    actor_->ShowSuccessMessage();
 }
 
 }  // namespace chromeos

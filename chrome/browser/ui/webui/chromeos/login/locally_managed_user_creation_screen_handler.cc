@@ -22,12 +22,10 @@ const char kLocallyManagedUserCreationScreen[] =
 namespace chromeos {
 
 LocallyManagedUserCreationScreenHandler::
-    LocallyManagedUserCreationScreenHandler() {
-}
+    LocallyManagedUserCreationScreenHandler() {}
 
 LocallyManagedUserCreationScreenHandler::
-    ~LocallyManagedUserCreationScreenHandler() {
-}
+    ~LocallyManagedUserCreationScreenHandler() {}
 
 void LocallyManagedUserCreationScreenHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
@@ -36,9 +34,21 @@ void LocallyManagedUserCreationScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TITLE));
   localized_strings->SetString(
-      "managedUserCreationSuccessMessage",
+      "managedUserCreationSuccessTitle",
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_MESSAGE));
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_TITLE));
+  localized_strings->SetString(
+      "managedUserCreationSuccessImageText",
+      l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_IMAGE_TEXT));
+  localized_strings->SetString(
+      "managedUserCreationSuccessSendEmailInstructionsText",
+      l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_EMAIL_INSTRUCTIONS));
+  localized_strings->SetString(
+      "managedUserCreationFlowRetryButtonTitle",
+      l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE));
   localized_strings->SetString(
       "managedUserCreationFlowCancelButtonTitle",
       l10n_util::GetStringUTF16(
@@ -49,30 +59,33 @@ void LocallyManagedUserCreationScreenHandler::GetLocalizedStrings(
           IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE));
 }
 
-void LocallyManagedUserCreationScreenHandler::Initialize() {
-}
+void LocallyManagedUserCreationScreenHandler::Initialize() {}
 
 void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("finishLocalManagedUserCreation",
+  web_ui()->RegisterMessageCallback(
+      "finishLocalManagedUserCreation",
       base::Bind(&LocallyManagedUserCreationScreenHandler::
                      HandleFinishLocalManagedUserCreation,
                  base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback("abortLocalManagedUserCreation",
+  web_ui()->RegisterMessageCallback(
+      "abortLocalManagedUserCreation",
       base::Bind(&LocallyManagedUserCreationScreenHandler::
                      HandleAbortLocalManagedUserCreation,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "retryLocalManagedUserCreation",
+      base::Bind(&LocallyManagedUserCreationScreenHandler::
+                     HandleRetryLocalManagedUserCreation,
+                 base::Unretained(this)));
 }
 
-void LocallyManagedUserCreationScreenHandler::PrepareToShow() {
-}
+void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
 
 void LocallyManagedUserCreationScreenHandler::Show() {
   ShowScreen(OobeUI::kScreenManagedUserCreationFlow, NULL);
 }
 
-void LocallyManagedUserCreationScreenHandler::Hide() {
-}
+void LocallyManagedUserCreationScreenHandler::Hide() {}
 
 void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
   web_ui()->CallJavascriptFunction(
@@ -80,10 +93,12 @@ void LocallyManagedUserCreationScreenHandler::ShowSuccessMessage() {
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowErrorMessage(
-    string16 message) {
+    string16 message,
+    bool recoverable) {
   web_ui()->CallJavascriptFunction(
       "login.LocallyManagedUserCreationScreen.showErrorMessage",
-      base::StringValue(message));
+      base::StringValue(message),
+      base::FundamentalValue(recoverable));
 }
 
 void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
@@ -93,6 +108,11 @@ void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
 void LocallyManagedUserCreationScreenHandler::
     HandleFinishLocalManagedUserCreation(const base::ListValue* args) {
   delegate_->FinishFlow();
+}
+
+void LocallyManagedUserCreationScreenHandler::
+    HandleRetryLocalManagedUserCreation(const base::ListValue* args) {
+  delegate_->RetryLastStep();
 }
 
 void LocallyManagedUserCreationScreenHandler::

@@ -9,19 +9,21 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/login/managed/locally_managed_user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 
 namespace chromeos {
 
-class LocallyManagedUserController;
-
 // Class that controls screen showing ui for locally managed user creation.
 
-class LocallyManagedUserCreationScreen : public WizardScreen,
-    public LocallyManagedUserCreationScreenHandler::Delegate {
+class LocallyManagedUserCreationScreen
+    : public WizardScreen,
+      public LocallyManagedUserCreationScreenHandler::Delegate,
+      public LocallyManagedUserController::StatusConsumer {
  public:
-  LocallyManagedUserCreationScreen(ScreenObserver* observer,
+  LocallyManagedUserCreationScreen(
+      ScreenObserver* observer,
       LocallyManagedUserCreationScreenHandler* actor);
   virtual ~LocallyManagedUserCreationScreen();
 
@@ -33,12 +35,18 @@ class LocallyManagedUserCreationScreen : public WizardScreen,
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // WrongHWIDScreenActor::Delegate implementation:
+  // LocallyManagedUserCreationScreenHandler::Delegate implementation:
   virtual void OnExit() OVERRIDE;
   virtual void OnActorDestroyed(LocallyManagedUserCreationScreenHandler* actor)
       OVERRIDE;
   virtual void AbortFlow() OVERRIDE;
+  virtual void RetryLastStep() OVERRIDE;
   virtual void FinishFlow() OVERRIDE;
+
+  // LocallyManagedUserController::StatusConsumer overrides.
+  virtual void OnCreationError(LocallyManagedUserController::ErrorCode code,
+                               bool recoverable) OVERRIDE;
+  virtual void OnCreationSuccess() OVERRIDE;
 
  private:
   LocallyManagedUserCreationScreenHandler* actor_;

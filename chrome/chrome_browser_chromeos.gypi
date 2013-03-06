@@ -433,6 +433,8 @@
         'browser/chromeos/login/managed/locally_managed_user_creation_flow.h',
         'browser/chromeos/login/managed/locally_managed_user_creation_screen.cc',
         'browser/chromeos/login/managed/locally_managed_user_creation_screen.h',
+        'browser/chromeos/login/managed/managed_user_authenticator.cc',
+        'browser/chromeos/login/managed/managed_user_authenticator.h',
         'browser/chromeos/login/merge_session_load_page.cc',
         'browser/chromeos/login/merge_session_load_page.h',
         'browser/chromeos/login/merge_session_throttle.cc',
