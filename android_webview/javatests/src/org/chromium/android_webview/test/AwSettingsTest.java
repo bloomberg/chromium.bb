@@ -99,7 +99,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         protected abstract T getCurrentValue();
 
-        protected abstract void setCurrentValue(T value);
+        protected abstract void setCurrentValue(T value) throws Throwable;
 
         protected abstract void doEnsureSettingHasValue(T value) throws Throwable;
 
@@ -129,6 +129,11 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 mContentViewClient.getOnPageFinishedHelper(),
                 mContentViewClient.getOnReceivedErrorHelper(),
                 url);
+        }
+
+        protected String executeJavaScriptAndWaitForResult(String script) throws Throwable {
+            return AwSettingsTest.this.executeJavaScriptAndWaitForResult(
+                    mAwContents, mContentViewClient, script);
         }
 
         private void ensureSettingHasValue(T value) throws Throwable {
@@ -196,8 +201,7 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             String oldTitle = getTitleOnUiThread();
             String newTitle = oldTitle + "_modified";
-            executeJavaScriptAndWaitForResult(
-                mAwContents, mContentViewClient, getScript(newTitle));
+            executeJavaScriptAndWaitForResult(getScript(newTitle));
             assertEquals(value == ENABLED ? newTitle : oldTitle, getTitleOnUiThread());
         }
 
@@ -861,14 +865,40 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 AwContents awContents,
                 TestAwContentsClient contentViewClient) throws Throwable {
             super(awContents, contentViewClient, true);
+            mNeedToWaitForFontSizeChange = false;
+            loadDataSync(getData());
+        }
+
+        @Override
+        protected void setCurrentValue(T value) throws Throwable {
+            mNeedToWaitForFontSizeChange = false;
+            if (value != getCurrentValue()) {
+                mOldFontSize = getActualFontSize();
+                mNeedToWaitForFontSizeChange = true;
+            }
         }
 
         protected float getActualFontSize() throws Throwable {
-            loadDataSync(getData());
-            // Retrieve font size after the native callback has fired, not in body.onload.
-            // The latter can fire prior to Font autosizer adjustments.
-            executeJavaScriptAndWaitForResult(
-                mAwContents, mContentViewClient, "setTitleToActualFontSize()");
+            if (!mNeedToWaitForFontSizeChange) {
+                executeJavaScriptAndWaitForResult("setTitleToActualFontSize()");
+            } else {
+                final float oldFontSize = mOldFontSize;
+                assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+                        @Override
+                        public boolean isSatisfied() {
+                            try {
+                                executeJavaScriptAndWaitForResult("setTitleToActualFontSize()");
+                                float newFontSize = Float.parseFloat(getTitleOnUiThread());
+                                return newFontSize != oldFontSize;
+                            } catch (Throwable t) {
+                                t.printStackTrace();
+                                fail("Failed to getTitleOnUiThread: " + t.toString());
+                                return false;
+                            }
+                        }
+                    }, TEST_TIMEOUT, CHECK_INTERVAL));
+                mNeedToWaitForFontSizeChange = false;
+            }
             return Float.parseFloat(getTitleOnUiThread());
         }
 
@@ -892,6 +922,9 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             sb.append("</p></body></html>");
             return sb.toString();
         }
+
+        private boolean mNeedToWaitForFontSizeChange;
+        private float mOldFontSize;
     }
 
     class AwSettingsLayoutAlgorithmTestHelper extends
@@ -922,7 +955,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
 
         @Override
-        protected void setCurrentValue(LayoutAlgorithm value) {
+        protected void setCurrentValue(LayoutAlgorithm value) throws Throwable {
+            super.setCurrentValue(value);
             mContentSettings.setLayoutAlgorithm(value);
         }
 
@@ -966,7 +1000,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
 
         @Override
-        protected void setCurrentValue(Integer value) {
+        protected void setCurrentValue(Integer value) throws Throwable {
+            super.setCurrentValue(value);
             mContentSettings.setTextZoom(value);
             mAwSettings.setTextZoom(value);
         }
@@ -1017,7 +1052,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
 
         @Override
-        protected void setCurrentValue(Integer value) {
+        protected void setCurrentValue(Integer value) throws Throwable {
+            super.setCurrentValue(value);
             mContentSettings.setTextZoom(value);
             // This is to verify that AwSettings will not affect font boosting by Autosizer.
             mAwSettings.setTextZoom(-1);
@@ -1989,12 +2025,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    http://crbug.com/171492
-    */
-    @DisabledTest
     public void testLayoutAlgorithmWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
