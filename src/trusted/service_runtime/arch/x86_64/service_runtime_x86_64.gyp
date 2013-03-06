@@ -53,11 +53,6 @@
             'fxsaverstor.S',
           ] },
         ],
-        [ 'library=="shared_library"', {
-            'asflags': [
-              '-fPIC',
-            ],
-        }],
       ],
       # We assemble the .asm assembly file with the Microsoft
       # assembler because we need to generate x86-64 Windows unwind
