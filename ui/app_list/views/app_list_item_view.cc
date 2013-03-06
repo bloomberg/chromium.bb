@@ -225,7 +225,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
 
   gfx::Rect rect(GetContentsBounds());
 
-  if (model_->highlighted()) {
+  if (model_->highlighted() && !model_->is_installing()) {
     canvas->FillRect(rect, kHighlightedColor);
   } else if (hover_animation_->is_animating()) {
     int alpha = SkColorGetA(kHoverAndPushedColor) *
