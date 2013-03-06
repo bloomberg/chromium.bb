@@ -51,7 +51,6 @@
 #include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor_win.h"
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
-#include "chrome/common/chrome_switches.h"
 #endif
 
 namespace chrome {
@@ -741,8 +740,6 @@ MediaFileSystemRegistryTest::GetAutoAddedGalleries(
 
 void MediaFileSystemRegistryTest::SetUp() {
 #if defined(OS_WIN)
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableMediaTransferProtocolDeviceOperations);
   test::TestPortableDeviceWatcherWin* portable_device_watcher =
       new test::TestPortableDeviceWatcherWin;
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
