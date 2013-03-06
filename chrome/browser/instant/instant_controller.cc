@@ -18,6 +18,7 @@
 #include "chrome/browser/instant/instant_overlay.h"
 #include "chrome/browser/instant/instant_tab.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -203,6 +204,7 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
+      omnibox_bounds_(-1, -1, 0, 0),
       allow_overlay_to_show_search_suggestions_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -1383,8 +1385,13 @@ bool InstantController::GetInstantURL(Profile* profile,
 
     // Even if the URL template doesn't have search terms, it may have other
     // components (such as {google:baseURL}) that need to be replaced.
-    *instant_url = instant_url_ref.ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(string16()));
+    // Additionally, the start-margin size needs to be communicated to the
+    // URL template.
+    TemplateURLRef::SearchTermsArgs search_terms_args =
+        TemplateURLRef::SearchTermsArgs(string16());
+    if (extended_enabled_)
+      search_terms_args.omnibox_start_margin = omnibox_bounds_.x();
+    *instant_url = instant_url_ref.ReplaceSearchTerms(search_terms_args);
 
     // Extended mode should always use HTTPS. TODO(sreeram): This section can be
     // removed if TemplateURLs supported "https://{google:host}/..." instead of

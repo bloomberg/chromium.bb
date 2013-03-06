@@ -61,6 +61,8 @@ const char kGoogleInstantExtendedEnabledKey[] =
     "google:instantExtendedEnabledKey";
 const char kGoogleInstantExtendedEnabledKeyFull[] =
     "{google:instantExtendedEnabledKey}";
+const char kGoogleOmniboxStartMarginParameter[] =
+    "google:omniboxStartMarginParameter";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 const char kGoogleRLZParameter[] = "google:RLZ";
@@ -149,7 +151,8 @@ std::string FindSearchTermsKey(const std::string& params) {
 TemplateURLRef::SearchTermsArgs::SearchTermsArgs(const string16& search_terms)
     : search_terms(search_terms),
       accepted_suggestion(NO_SUGGESTIONS_AVAILABLE),
-      cursor_position(string16::npos) {
+      cursor_position(string16::npos),
+      omnibox_start_margin(-1) {
 }
 
 
@@ -306,6 +309,13 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_INSTANT_EXTENDED_ENABLED:
         url.insert(i->index, search_terms_data.InstantExtendedEnabledParam());
+        break;
+
+      case GOOGLE_OMNIBOX_START_MARGIN:
+        if (search_terms_args.omnibox_start_margin >= 0) {
+          url.insert(i->index, "es_sm=" +
+              base::IntToString(search_terms_args.omnibox_start_margin) + "&");
+        }
         break;
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
@@ -569,6 +579,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == kGoogleInstantExtendedEnabledKey) {
     url->insert(start, google_util::kInstantExtendedAPIParam);
+  } else if (parameter == kGoogleOmniboxStartMarginParameter) {
+    replacements->push_back(Replacement(GOOGLE_OMNIBOX_START_MARGIN, start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));

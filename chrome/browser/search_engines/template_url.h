@@ -74,6 +74,10 @@ class TemplateURLRef {
     // The 0-based position of the cursor within the query string at the time
     // the request was issued.  Set to string16::npos if not used.
     size_t cursor_position;
+
+    // The start-edge margin of the omnibox in pixels, used in extended Instant
+    // to align the preview contents with the omnibox.
+    int omnibox_start_margin;
   };
 
   TemplateURLRef(TemplateURL* owner, Type type);
@@ -165,6 +169,7 @@ class TemplateURLRef {
     GOOGLE_CURSOR_POSITION,
     GOOGLE_INSTANT_ENABLED,
     GOOGLE_INSTANT_EXTENDED_ENABLED,
+    GOOGLE_OMNIBOX_START_MARGIN,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
