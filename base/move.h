@@ -125,15 +125,15 @@
 // Boost.Move makes RValue a fieldless child of the move-only type. RValue&
 // is then used in place of RValue in the various operators.  The RValue& is
 // "created" by doing *reinterpret_cast<RValue*>(this).  This has the appeal
-// of never creating a temproary RValue struct even with optimizations
+// of never creating a temporary RValue struct even with optimizations
 // disabled.  Also, by virtue of inheritance you can treat the RValue
-// reference as if it were the move-only type itself.  Unfortuantely,
+// reference as if it were the move-only type itself.  Unfortunately,
 // using the result of this reinterpret_cast<> is actually undefined behavior
-// due to C++98 5.2.10.7. In certain compilers (eg., NaCl) the optimizer
+// due to C++98 5.2.10.7. In certain compilers (e.g., NaCl) the optimizer
 // will generate non-working code.
 //
 // In optimized builds, both implementations generate the same assembly so we
-// choose the one that adheres to the standard. ☃
+// choose the one that adheres to the standard.
 //
 //
 // COMPARED TO C++11
@@ -144,7 +144,7 @@
 // This emulation also has a deficiency where it uses up the single
 // user-defined conversion allowed by C++ during initialization.  This can
 // cause problems in some API edge cases.  For instance, in scoped_ptr, it is
-// impossible to make an function "void Foo(scoped_ptr<Parent> p)" accept a
+// impossible to make a function "void Foo(scoped_ptr<Parent> p)" accept a
 // value of type scoped_ptr<Child> even if you add a constructor to
 // scoped_ptr<> that would make it look like it should work.  C++11 does not
 // have this deficiency.
@@ -177,7 +177,7 @@
 // Since we have no need for writing such APIs yet, our implementation keeps
 // RValue private and uses a .Pass() method to do the conversion instead of
 // trying to write a version of "std::move()." Writing an API like std::move()
-// would require the RValue structs to be public.
+// would require the RValue struct to be public.
 //
 //
 // CAVEATS

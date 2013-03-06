@@ -303,6 +303,7 @@ WebContentsImpl::WebContentsImpl(
       temporary_zoom_settings_(false),
       content_restrictions_(0),
       color_chooser_(NULL),
+      message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
 }
 
