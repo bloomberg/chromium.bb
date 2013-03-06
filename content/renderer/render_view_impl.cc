@@ -611,6 +611,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
+      auto_resize_mode_(false),
       is_loading_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
@@ -5434,6 +5435,7 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
   DCHECK(disable_scrollbars_size_limit_.IsEmpty());
   if (!webview())
     return;
+  auto_resize_mode_ = true;
   webview()->enableAutoResizeMode(min_size, max_size);
 }
 
@@ -5441,6 +5443,7 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
   DCHECK(disable_scrollbars_size_limit_.IsEmpty());
   if (!webview())
     return;
+  auto_resize_mode_ = false;
   webview()->disableAutoResizeMode();
 
   Resize(new_size, physical_backing_size_, resizer_rect_, is_fullscreen_,
@@ -6198,6 +6201,8 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
         ShouldUseFixedPositionCompositing(device_scale_factor_));
   }
+  if (auto_resize_mode_)
+    AutoResizeCompositor();
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {

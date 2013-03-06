@@ -318,6 +318,8 @@ class CONTENT_EXPORT RenderWidget
   void OnShowImeIfNeeded();
 #endif
 
+  void AutoResizeCompositor();
+
   virtual void SetDeviceScaleFactor(float device_scale_factor);
 
   // Override points to notify derived classes that a paint has happened.
