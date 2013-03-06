@@ -1087,13 +1087,21 @@ void InstantController::ShowInstantOverlay(const content::WebContents* contents,
     ShowOverlay(reason, height, units);
 }
 
+void InstantController::FocusOmnibox(const content::WebContents* contents) {
+  if (!extended_enabled_)
+    return;
+
+  DCHECK(IsContentsFrom(instant_tab(), contents));
+  browser_->FocusOmnibox(true);
+}
+
 void InstantController::StartCapturingKeyStrokes(
     const content::WebContents* contents) {
   if (!extended_enabled_)
     return;
 
   DCHECK(IsContentsFrom(instant_tab(), contents));
-  browser_->FocusOmniboxInvisibly();
+  browser_->FocusOmnibox(false);
 }
 
 void InstantController::StopCapturingKeyStrokes(

@@ -66,6 +66,9 @@ class InstantPage : public content::WebContentsObserver {
                                     int height,
                                     InstantSizeUnits units) = 0;
 
+    // Called when the page wants the omnibox to be focused.
+    virtual void FocusOmnibox(const content::WebContents* contents) = 0;
+
     // Called when the page wants the omnibox to start capturing user key
     // strokes. If this call is processed successfully, the omnibox will not
     // look focused visibly but any user key strokes will go to the omnibox.
@@ -185,6 +188,7 @@ class InstantPage : public content::WebContentsObserver {
   virtual bool ShouldProcessAboutToNavigateMainFrame();
   virtual bool ShouldProcessSetSuggestions();
   virtual bool ShouldProcessShowInstantOverlay();
+  virtual bool ShouldProcessFocusOmnibox();
   virtual bool ShouldProcessStartCapturingKeyStrokes();
   virtual bool ShouldProcessStopCapturingKeyStrokes();
   virtual bool ShouldProcessNavigateToURL();
@@ -214,6 +218,7 @@ class InstantPage : public content::WebContentsObserver {
                             InstantShownReason reason,
                             int height,
                             InstantSizeUnits units);
+  void OnFocusOmnibox(int page_id);
   void OnStartCapturingKeyStrokes(int page_id);
   void OnStopCapturingKeyStrokes(int page_id);
   void OnSearchBoxNavigate(int page_id,

@@ -178,11 +178,11 @@ void BrowserInstantController::InstantOverlayFocused() {
   browser_->window()->WebContentsFocused(instant_.GetOverlayContents());
 }
 
-void BrowserInstantController::FocusOmniboxInvisibly() {
+void BrowserInstantController::FocusOmnibox(bool caret_visibility) {
   OmniboxView* omnibox_view = browser_->window()->GetLocationBar()->
       GetLocationEntry();
   omnibox_view->SetFocus();
-  omnibox_view->model()->SetCaretVisibility(false);
+  omnibox_view->model()->SetCaretVisibility(caret_visibility);
 }
 
 content::WebContents* BrowserInstantController::GetActiveWebContents() const {

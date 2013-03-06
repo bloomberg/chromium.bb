@@ -691,6 +691,10 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantOverlay,
                     int /* height */,
                     InstantSizeUnits /* units */)
 
+// Sent by Instant to focus the omnibox.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusOmnibox,
+                    int /* page_id */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_StartCapturingKeyStrokes,
                     int /* page_id */)
 

@@ -80,8 +80,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // to the user clicking on it.
   void InstantOverlayFocused();
 
-  // Invoked by |instant_| to give the omnibox focus invisibly.
-  void FocusOmniboxInvisibly();
+  // Invoked by |instant_| to give the omnibox focus, with the option of making
+  // the caret invisible.
+  void FocusOmnibox(bool caret_visibility);
 
   // Invoked by |instant_| to get the currently active tab, over which the
   // overlay would be shown.

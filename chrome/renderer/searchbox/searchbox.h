@@ -35,6 +35,9 @@ class SearchBox : public content::RenderViewObserver,
                           int height,
                           InstantSizeUnits units);
 
+  // Sends ChromeViewHostMsg_FocusOmnibox to the browser.
+  void FocusOmnibox();
+
   // Sends ChromeViewHostMsg_StartCapturingKeyStrokes to the browser.
   void StartCapturingKeyStrokes();
 

@@ -59,6 +59,11 @@ void SearchBox::ShowInstantOverlay(InstantShownReason reason,
       height, units));
 }
 
+void SearchBox::FocusOmnibox() {
+  render_view()->Send(new ChromeViewHostMsg_FocusOmnibox(
+      render_view()->GetRoutingID(), render_view()->GetPageId()));
+}
+
 void SearchBox::StartCapturingKeyStrokes() {
   render_view()->Send(new ChromeViewHostMsg_StartCapturingKeyStrokes(
       render_view()->GetRoutingID(), render_view()->GetPageId()));

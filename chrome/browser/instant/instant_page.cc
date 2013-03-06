@@ -122,6 +122,10 @@ bool InstantPage::ShouldProcessShowInstantOverlay() {
   return false;
 }
 
+bool InstantPage::ShouldProcessFocusOmnibox() {
+  return false;
+}
+
 bool InstantPage::ShouldProcessStartCapturingKeyStrokes() {
   return false;
 }
@@ -156,6 +160,7 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
                         OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantOverlay,
                         OnShowInstantOverlay)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StartCapturingKeyStrokes,
                         OnStartCapturingKeyStrokes);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StopCapturingKeyStrokes,
@@ -221,6 +226,14 @@ void InstantPage::OnShowInstantOverlay(int page_id,
     OnInstantSupportDetermined(page_id, true);
     if (ShouldProcessShowInstantOverlay())
       delegate_->ShowInstantOverlay(contents(), reason, height, units);
+  }
+}
+
+void InstantPage::OnFocusOmnibox(int page_id) {
+  if (contents()->IsActiveEntry(page_id)) {
+    OnInstantSupportDetermined(page_id, true);
+    if (ShouldProcessFocusOmnibox())
+      delegate_->FocusOmnibox(contents());
   }
 }
 

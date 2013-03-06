@@ -96,6 +96,7 @@ if (!chrome.embeddedSearch) {
       native function SetQuery();
       native function SetQueryFromAutocompleteResult();
       native function ShowOverlay();
+      native function FocusOmnibox();
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
 
@@ -252,6 +253,9 @@ if (!chrome.embeddedSearch) {
       this.show = this.showOverlay;
       this.markDuplicateSuggestions = function(clientSuggestions) {
         return DedupeClientSuggestions(clientSuggestions);
+      };
+      this.focus = function() {
+        FocusOmnibox();
       };
       this.startCapturingKeyStrokes = function() {
         StartCapturingKeyStrokes();

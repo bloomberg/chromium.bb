@@ -237,6 +237,7 @@ class InstantController : public InstantPage::Delegate,
       InstantShownReason reason,
       int height,
       InstantSizeUnits units) OVERRIDE;
+  virtual void FocusOmnibox(const content::WebContents* contents) OVERRIDE;
   virtual void StartCapturingKeyStrokes(
       const content::WebContents* contents) OVERRIDE;
   virtual void StopCapturingKeyStrokes(content::WebContents* contents) OVERRIDE;

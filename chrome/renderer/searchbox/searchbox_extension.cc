@@ -314,6 +314,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Requests the overlay be shown with the specified contents and height.
   static v8::Handle<v8::Value> ShowOverlay(const v8::Arguments& args);
 
+  // Sets the focus to the omnibox.
+  static v8::Handle<v8::Value> FocusOmnibox(const v8::Arguments& args);
+
   // Start capturing user key strokes.
   static v8::Handle<v8::Value> StartCapturingKeyStrokes(
       const v8::Arguments& args);
@@ -391,6 +394,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(SetQueryFromAutocompleteResult);
   if (name->Equals(v8::String::New("ShowOverlay")))
     return v8::FunctionTemplate::New(ShowOverlay);
+  if (name->Equals(v8::String::New("FocusOmnibox")))
+    return v8::FunctionTemplate::New(FocusOmnibox);
   if (name->Equals(v8::String::New("StartCapturingKeyStrokes")))
     return v8::FunctionTemplate::New(StartCapturingKeyStrokes);
   if (name->Equals(v8::String::New("StopCapturingKeyStrokes")))
@@ -926,6 +931,18 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::UndoAllMostVisitedDeletions(
 
   DVLOG(1) << render_view << " UndoAllMostVisitedDeletions";
   SearchBox::Get(render_view)->UndoAllMostVisitedDeletions();
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::FocusOmnibox(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return v8::Undefined();
+
+  DVLOG(1) << render_view << " FocusOmnibox";
+  SearchBox::Get(render_view)->FocusOmnibox();
+
   return v8::Undefined();
 }
 
