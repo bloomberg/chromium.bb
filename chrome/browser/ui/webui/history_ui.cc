@@ -508,9 +508,9 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
   expire_list.reserve(args->GetSize());
 
   for (ListValue::const_iterator it = args->begin(); it != args->end(); ++it) {
-    DictionaryValue* deletion;
+    DictionaryValue* deletion = NULL;
     string16 url;
-    ListValue* timestamps;
+    ListValue* timestamps = NULL;
 
     // Each argument is a dictionary with properties "url" and "timestamps".
     if (!((*it)->GetAsDictionary(&deletion) &&
