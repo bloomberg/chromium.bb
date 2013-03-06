@@ -982,6 +982,7 @@ internal_paladin.add_config('alex-paladin',
 internal_paladin.add_config('fox-wtm2-paladin',
   boards=['fox_wtm2'],
   paladin_builder_name='fox paladin',
+  vm_tests=None,
   important=False,
 )
 
@@ -1141,7 +1142,7 @@ _release.add_config('fox-wtm2-release',
   boards=['fox_wtm2'],
   # Until these are configured and ready, disable them.
   signer_tests=False,
-  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+  vm_tests=None,
   hw_tests=[],
 )
 
