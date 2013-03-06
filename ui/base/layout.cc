@@ -23,6 +23,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "ui/base/win/dpi.h"
 #include <Windows.h>
 #endif  // defined(OS_WIN)
 
@@ -122,8 +123,10 @@ std::vector<ScaleFactor>& GetSupportedScaleFactorsInternal() {
     // Have high-DPI resources for 140% and 180% scaling on Windows based on
     // default scaling for Metro mode.  Round to nearest supported scale in
     // all cases.
-    supported_scale_factors->push_back(SCALE_FACTOR_140P);
-    supported_scale_factors->push_back(SCALE_FACTOR_180P);
+    if (ui::IsInHighDPIMode()) {
+      supported_scale_factors->push_back(SCALE_FACTOR_140P);
+      supported_scale_factors->push_back(SCALE_FACTOR_180P);
+    }
 #elif defined(OS_CHROMEOS)
     // TODO(oshima): Include 200P only if the device support 200P
     supported_scale_factors->push_back(SCALE_FACTOR_200P);
