@@ -85,6 +85,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
                                      FileSystemType mount_type,
                                      const base::FilePath& virtual_path);
 
+  // Parses filesystem scheme |url| into uncracked FileSystemURL components.
+  static bool ParseFileSystemSchemeURL(const GURL& url,
+                                       GURL* origin,
+                                       FileSystemType* type,
+                                       base::FilePath* file_path);
+
   // Returns true if this instance represents a valid FileSystem URL.
   bool is_valid() const { return is_valid_; }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
@@ -185,6 +188,14 @@ class DriveMetadataStoreTest : public testing::Test {
                        SyncStatusCode status) {
     *status_out = status;
     message_loop_.Quit();
+  }
+
+  void MarkAsCreated() {
+    created_ = true;
+  }
+
+  base::FilePath base_dir() {
+    return base_dir_.path();
   }
 
   DriveMetadataStore* metadata_store() {
@@ -478,6 +489,81 @@ TEST_F(DriveMetadataStoreTest, GetResourceIdForOrigin) {
 
   EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
   EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
+}
+
+TEST_F(DriveMetadataStoreTest, MigrationFromV0) {
+  const GURL kOrigin1("chrome-extension://example1");
+  const GURL kOrigin2("chrome-extension://example2");
+  const std::string kSyncRootResourceId("sync_root_resource_id");
+  const std::string kResourceId1("hoge");
+  const std::string kResourceId2("fuga");
+  const std::string kFileResourceId("piyo");
+  const base::FilePath kFile(FPL("foo bar"));
+  const std::string kFileMD5("file_md5");
+
+  {
+    const char kChangeStampKey[] = "CHANGE_STAMP";
+    const char kSyncRootDirectoryKey[] = "SYNC_ROOT_DIR";
+    const char kDriveMetadataKeyPrefix[] = "METADATA: ";
+    const char kDriveBatchSyncOriginKeyPrefix[] = "BSYNC_ORIGIN: ";
+    const char kDriveIncrementalSyncOriginKeyPrefix[] = "ISYNC_ORIGIN: ";
+
+    const char kV0ServiceName[] = "drive";
+    ASSERT_TRUE(RegisterSyncableFileSystem(kV0ServiceName));
+    leveldb::Options options;
+    options.create_if_missing = true;
+    leveldb::DB* db_ptr = NULL;
+    std::string db_dir = fileapi::FilePathToString(
+        base_dir().Append(DriveMetadataStore::kDatabaseName));
+    leveldb::Status status = leveldb::DB::Open(options, db_dir, &db_ptr);
+
+    scoped_ptr<leveldb::DB> db(db_ptr);
+    ASSERT_TRUE(status.ok());
+
+    leveldb::WriteOptions write_options;
+    db->Put(write_options, kChangeStampKey, "1");
+    db->Put(write_options, kSyncRootDirectoryKey, kSyncRootResourceId);
+
+    DriveMetadata drive_metadata;
+    drive_metadata.set_resource_id(kFileResourceId);
+    drive_metadata.set_md5_checksum(kFileMD5);
+    drive_metadata.set_conflicted(false);
+    drive_metadata.set_to_be_fetched(false);
+
+    fileapi::FileSystemURL url = CreateSyncableFileSystemURL(
+        kOrigin1, kV0ServiceName, kFile);
+    std::string serialized_url;
+    SerializeSyncableFileSystemURL(url, &serialized_url);
+    std::string metadata_string;
+    drive_metadata.SerializeToString(&metadata_string);
+
+    db->Put(write_options,
+            kDriveMetadataKeyPrefix + serialized_url, metadata_string);
+    db->Put(write_options,
+            kDriveBatchSyncOriginKeyPrefix + kOrigin1.spec(), kResourceId1);
+    db->Put(write_options,
+            kDriveIncrementalSyncOriginKeyPrefix + kOrigin2.spec(),
+            kResourceId2);
+    EXPECT_TRUE(RevokeSyncableFileSystem(kV0ServiceName));
+    MarkAsCreated();
+  }
+
+  InitializeDatabase();
+
+  EXPECT_EQ(1, metadata_store()->GetLargestChangeStamp());
+  EXPECT_EQ(kSyncRootResourceId, metadata_store()->sync_root_directory());
+  EXPECT_EQ(kResourceId1, metadata_store()->GetResourceIdForOrigin(kOrigin1));
+  EXPECT_EQ(kResourceId2, metadata_store()->GetResourceIdForOrigin(kOrigin2));
+
+  DriveMetadata metadata;
+  EXPECT_EQ(SYNC_STATUS_OK,
+            metadata_store()->ReadEntry(
+                CreateSyncableFileSystemURL(kOrigin1, kServiceName, kFile),
+                &metadata));
+  EXPECT_EQ(kFileResourceId, metadata.resource_id());
+  EXPECT_EQ(kFileMD5, metadata.md5_checksum());
+  EXPECT_FALSE(metadata.conflicted());
+  EXPECT_FALSE(metadata.to_be_fetched());
 }
 
 }  // namespace sync_file_system

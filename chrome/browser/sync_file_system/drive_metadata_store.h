@@ -44,6 +44,8 @@ class DriveMetadataStore
   typedef base::Callback<void(SyncStatusCode status, bool created)>
       InitializationCallback;
 
+  static const base::FilePath::CharType kDatabaseName[];
+
   DriveMetadataStore(const base::FilePath& base_dir,
                      base::SequencedTaskRunner* file_task_runner);
   ~DriveMetadataStore();

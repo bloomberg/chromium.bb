@@ -96,7 +96,7 @@ FileChange CreateFileChange(bool is_deleted) {
 
 }  // namespace
 
-const char DriveFileSyncService::kServiceName[] = "drive";
+const char DriveFileSyncService::kServiceName[] = "syncfs";
 
 class DriveFileSyncService::TaskToken {
  public:
