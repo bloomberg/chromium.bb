@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.ui.toolbar;
 
 public class ToolbarModelSecurityLevel {
-#define DEFINE_TOOLBAR_MODEL_SECURITY_LEVEL(name,value) public static final \
-  int TOOLBAR_MODEL_SECURITY_LEVEL_ ## name = value;
+#define DEFINE_TOOLBAR_MODEL_SECURITY_LEVEL(name,value) \
+  public static final int name = value;
 #include "chrome/browser/ui/toolbar/toolbar_model_security_level_list.h"
 }
