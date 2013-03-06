@@ -1,3 +1,9 @@
+bryner@chromium.org
+erikkay@chromium.org
+mattm@chromium.org
+noelutz@google.com
+shess@chromium.org
+
 # For security review of IPC message files.
 per-file *_messages.h=set noparent
 per-file *_messages.h=cdn@chromium.org
