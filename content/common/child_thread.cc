@@ -328,7 +328,8 @@ void ChildThread::OnGetTcmallocStats() {
 #endif
 
 ChildThread* ChildThread::current() {
-  return ChildProcess::current()->main_thread();
+  return ChildProcess::current() ?
+      ChildProcess::current()->main_thread() : NULL;
 }
 
 bool ChildThread::IsWebFrameValid(WebKit::WebFrame* frame) {

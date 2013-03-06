@@ -32,7 +32,8 @@ static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls =
 
 WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
-  webkit_platform_support_.reset(new WorkerWebKitPlatformSupportImpl);
+  webkit_platform_support_.reset(
+      new WorkerWebKitPlatformSupportImpl(thread_safe_sender()));
   WebKit::initialize(webkit_platform_support_.get());
   WebKit::setIDBFactory(
       webkit_platform_support_.get()->idbFactory());

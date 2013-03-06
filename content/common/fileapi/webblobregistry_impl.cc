@@ -5,9 +5,11 @@
 #include "content/common/fileapi/webblobregistry_impl.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "content/common/thread_safe_sender.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebBlobData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
@@ -20,8 +22,8 @@ using WebKit::WebURL;
 
 namespace content {
 
-WebBlobRegistryImpl::WebBlobRegistryImpl(ChildThread* child_thread)
-    : child_thread_(child_thread) {
+WebBlobRegistryImpl::WebBlobRegistryImpl(ThreadSafeSender* sender)
+    : sender_(sender) {
 }
 
 WebBlobRegistryImpl::~WebBlobRegistryImpl() {
@@ -29,10 +31,11 @@ WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 
 void WebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, WebBlobData& data) {
+  DCHECK(ChildThread::current()->message_loop() == MessageLoop::current());
   const size_t kLargeThresholdBytes = 250 * 1024;
   const size_t kMaxSharedMemoryBytes = 10 * 1024 * 1024;
 
-  child_thread_->Send(new BlobHostMsg_StartBuildingBlob(url));
+  sender_->Send(new BlobHostMsg_StartBuildingBlob(url));
   size_t i = 0;
   WebBlobData::Item data_item;
   while (data.itemAt(i++, data_item)) {
@@ -45,7 +48,7 @@ void WebBlobRegistryImpl::registerBlobURL(
           break;
         if (data_item.data.size() < kLargeThresholdBytes) {
           item.SetToBytes(data_item.data.data(), data_item.data.size());
-          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+          sender_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         } else {
           // We handle larger amounts of data via SharedMemory instead of
           // writing it directly to the IPC channel.
@@ -54,12 +57,12 @@ void WebBlobRegistryImpl::registerBlobURL(
           size_t shared_memory_size = std::min(
               data_size, kMaxSharedMemoryBytes);
           scoped_ptr<base::SharedMemory> shared_memory(
-              child_thread_->AllocateSharedMemory(shared_memory_size));
+              ChildThread::AllocateSharedMemory(shared_memory_size, sender_));
           CHECK(shared_memory.get());
           while (data_size) {
             size_t chunk_size = std::min(data_size, shared_memory_size);
             memcpy(shared_memory->memory(), data_ptr, chunk_size);
-            child_thread_->Send(new BlobHostMsg_SyncAppendSharedMemory(
+            sender_->Send(new BlobHostMsg_SyncAppendSharedMemory(
                 url, shared_memory->handle(), chunk_size));
             data_size -= chunk_size;
             data_ptr += chunk_size;
@@ -74,7 +77,7 @@ void WebBlobRegistryImpl::registerBlobURL(
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length),
               base::Time::FromDoubleT(data_item.expectedModificationTime));
-          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+          sender_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         }
         break;
       case WebBlobData::Item::TypeBlob:
@@ -83,7 +86,7 @@ void WebBlobRegistryImpl::registerBlobURL(
               data_item.blobURL,
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length));
-          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+          sender_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         }
         break;
       case WebBlobData::Item::TypeURL:
@@ -95,24 +98,26 @@ void WebBlobRegistryImpl::registerBlobURL(
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length),
               base::Time::FromDoubleT(data_item.expectedModificationTime));
-          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+          sender_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         }
         break;
       default:
         NOTREACHED();
     }
   }
-  child_thread_->Send(new BlobHostMsg_FinishBuildingBlob(
+  sender_->Send(new BlobHostMsg_FinishBuildingBlob(
       url, data.contentType().utf8().data()));
 }
 
 void WebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, const WebURL& src_url) {
-  child_thread_->Send(new BlobHostMsg_CloneBlob(url, src_url));
+  DCHECK(ChildThread::current()->message_loop() == MessageLoop::current());
+  sender_->Send(new BlobHostMsg_CloneBlob(url, src_url));
 }
 
 void WebBlobRegistryImpl::unregisterBlobURL(const WebURL& url) {
-  child_thread_->Send(new BlobHostMsg_RemoveBlob(url));
+  DCHECK(ChildThread::current()->message_loop() == MessageLoop::current());
+  sender_->Send(new BlobHostMsg_RemoveBlob(url));
 }
 
 }  // namespace content

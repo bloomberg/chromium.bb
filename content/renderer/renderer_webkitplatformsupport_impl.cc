@@ -19,6 +19,7 @@
 #include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/npobject_util.h"
+#include "content/common/thread_safe_sender.h"
 #include "content/common/view_messages.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/public/common/content_switches.h"
@@ -114,9 +115,14 @@ class RendererWebKitPlatformSupportImpl::MimeRegistry
 class RendererWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
+  explicit FileUtilities(ThreadSafeSender* sender)
+      : thread_safe_sender_(sender) {}
   virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
   virtual base::PlatformFile openFile(const WebKit::WebString& path,
                                       int mode);
+ private:
+  bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
 
 class RendererWebKitPlatformSupportImpl::Hyphenator
@@ -191,33 +197,16 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
   } else {
     DVLOG(1) << "Disabling sandbox support for testing.";
   }
+
+  // ChildThread may not exist in some tests.
+  if (ChildThread::current())
+    thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
 }
 
 RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
 }
 
 //------------------------------------------------------------------------------
-
-namespace {
-
-bool SendSyncMessageFromAnyThreadInternal(IPC::SyncMessage* msg) {
-  RenderThread* render_thread = RenderThread::Get();
-  if (render_thread)
-    return render_thread->Send(msg);
-  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
-      ChildThread::current()->sync_message_filter());
-  return sync_msg_filter->Send(msg);
-}
-
-bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
-  base::TimeTicks begin = base::TimeTicks::Now();
-  const bool success = SendSyncMessageFromAnyThreadInternal(msg);
-  base::TimeDelta delta = base::TimeTicks::Now() - begin;
-  UMA_HISTOGRAM_TIMES("RendererSyncIPC.ElapsedTime", delta);
-  return success;
-}
-
-}  // namespace
 
 WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
   WebKit::WebClipboard* clipboard =
@@ -238,7 +227,7 @@ WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
 WebKit::WebFileUtilities*
 RendererWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_.get()) {
-    file_utilities_.reset(new FileUtilities);
+    file_utilities_.reset(new FileUtilities(thread_safe_sender_));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
   }
   return file_utilities_.get();
@@ -445,6 +434,15 @@ base::PlatformFile RendererWebKitPlatformSupportImpl::FileUtilities::openFile(
   SendSyncMessageFromAnyThread(new FileUtilitiesMsg_OpenFile(
       webkit_base::WebStringToFilePath(path), mode, &handle));
   return IPC::PlatformFileForTransitToPlatformFile(handle);
+}
+
+bool RendererWebKitPlatformSupportImpl::FileUtilities::
+SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const {
+  base::TimeTicks begin = base::TimeTicks::Now();
+  const bool success = thread_safe_sender_->Send(msg);
+  base::TimeDelta delta = base::TimeTicks::Now() - begin;
+  UMA_HISTOGRAM_TIMES("RendererSyncIPC.ElapsedTime", delta);
+  return success;
 }
 
 //------------------------------------------------------------------------------
@@ -745,10 +743,9 @@ void RendererWebKitPlatformSupportImpl::screenColorProfile(
 //------------------------------------------------------------------------------
 
 WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
-  // ChildThread::current can be NULL when running some tests.
-  if (!blob_registry_.get() && ChildThread::current()) {
-    blob_registry_.reset(new WebBlobRegistryImpl(ChildThread::current()));
-  }
+  // thread_safe_sender_ can be NULL when running some tests.
+  if (!blob_registry_.get() && thread_safe_sender_.get())
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
   return blob_registry_.get();
 }
 

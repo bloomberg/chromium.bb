@@ -13,6 +13,7 @@
 #include "content/common/file_utilities_messages.h"
 #include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/thread_safe_sender.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/worker/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -45,25 +46,20 @@ namespace content {
 class WorkerWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
+  explicit FileUtilities(ThreadSafeSender* sender)
+      : thread_safe_sender_(sender) {}
   virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
+ private:
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
-
-static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
-  WorkerThread* worker_thread = WorkerThread::current();
-  if (worker_thread)
-    return worker_thread->Send(msg);
-
-  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
-      ChildThread::current()->sync_message_filter());
-  return sync_msg_filter->Send(msg);
-}
 
 bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
     const WebString& path,
     WebFileInfo& web_file_info) {
   base::PlatformFileInfo file_info;
   base::PlatformFileError status;
-  if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
+  if (!thread_safe_sender_.get() ||
+      !thread_safe_sender_->Send(new FileUtilitiesMsg_GetFileInfo(
            webkit_base::WebStringToFilePath(path), &file_info, &status)) ||
       status != base::PLATFORM_FILE_OK) {
     return false;
@@ -75,7 +71,9 @@ bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
 
 //------------------------------------------------------------------------------
 
-WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl() {
+WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
+    ThreadSafeSender* sender)
+    : thread_safe_sender_(sender) {
 }
 
 WorkerWebKitPlatformSupportImpl::~WorkerWebKitPlatformSupportImpl() {
@@ -98,7 +96,7 @@ WebFileSystem* WorkerWebKitPlatformSupportImpl::fileSystem() {
 
 WebFileUtilities* WorkerWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_.get()) {
-    file_utilities_.reset(new FileUtilities);
+    file_utilities_.reset(new FileUtilities(thread_safe_sender_));
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
   }
   return file_utilities_.get();
@@ -245,7 +243,7 @@ WorkerWebKitPlatformSupportImpl::supportsNonImageMIMEType(
 WebString WorkerWebKitPlatformSupportImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
-  SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromExtension(
+  thread_safe_sender_->Send(new MimeRegistryMsg_GetMimeTypeFromExtension(
       webkit_base::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
 }
@@ -261,24 +259,25 @@ WebString WorkerWebKitPlatformSupportImpl::wellKnownMimeTypeForExtension(
 WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
-  SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromFile(
-      base::FilePath(webkit_base::WebStringToFilePathString(file_path)),
-      &mime_type));
+  thread_safe_sender_->Send(
+      new MimeRegistryMsg_GetMimeTypeFromFile(
+          base::FilePath(webkit_base::WebStringToFilePathString(file_path)),
+          &mime_type));
   return ASCIIToUTF16(mime_type);
 }
 
 WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
     const WebString& mime_type) {
   base::FilePath::StringType file_extension;
-  SendSyncMessageFromAnyThread(
+  thread_safe_sender_->Send(
       new MimeRegistryMsg_GetPreferredExtensionForMimeType(
           UTF16ToASCII(mime_type), &file_extension));
   return webkit_base::FilePathStringToWebString(file_extension);
 }
 
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
-  if (!blob_registry_.get())
-    blob_registry_.reset(new WebBlobRegistryImpl(WorkerThread::current()));
+  if (!blob_registry_.get() && thread_safe_sender_.get())
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
   return blob_registry_.get();
 }
 

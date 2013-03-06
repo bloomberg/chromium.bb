@@ -21,6 +21,7 @@ class WebClipboardImpl;
 namespace content {
 class GamepadSharedMemoryReader;
 class RendererClipboardClient;
+class ThreadSafeSender;
 class WebFileSystemImpl;
 class WebSharedWorkerRepositoryImpl;
 
@@ -154,6 +155,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
+
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };
 
 }  // namespace content
