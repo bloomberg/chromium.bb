@@ -11,9 +11,6 @@ namespace gpu {
 namespace gles2 {
 
 struct DisallowedFeatures;
-class Buffer;
-class BufferManager;
-class MockGLES2Decoder;
 
 class TestHelper {
  public:
@@ -88,11 +85,6 @@ class TestHelper {
       AttribInfo* attribs, size_t num_attribs,
       UniformInfo* uniforms, size_t num_uniforms,
       GLuint service_id);
-
-  static void DoBufferData(
-      ::gfx::MockGLInterface* gl, MockGLES2Decoder* decoder,
-      BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
-      const GLvoid* data, GLenum error);
 
  private:
   static void SetupTextureInitializationExpectations(

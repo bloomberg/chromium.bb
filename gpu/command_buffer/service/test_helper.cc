@@ -10,9 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "gpu/command_buffer/common/types.h"
-#include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -491,30 +489,6 @@ void TestHelper::SetupShader(
 
   SetupProgramSuccessExpectations(
       gl, attribs, num_attribs, uniforms, num_uniforms, service_id);
-}
-
-void TestHelper::DoBufferData(
-    ::gfx::MockGLInterface* gl, MockGLES2Decoder* decoder,
-    BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
-    const GLvoid* data, GLenum error) {
-  EXPECT_CALL(*decoder, CopyRealGLErrorsToWrapper())
-      .Times(1)
-      .RetiresOnSaturation();
-  if (manager->IsUsageClientSideArray(usage)) {
-    EXPECT_CALL(*gl, BufferData(
-        buffer->target(), 0, _, usage))
-        .Times(1)
-        .RetiresOnSaturation();
-  } else {
-    EXPECT_CALL(*gl, BufferData(
-        buffer->target(), size, _, usage))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  EXPECT_CALL(*decoder, PeekGLError())
-      .WillOnce(Return(error))
-      .RetiresOnSaturation();
-  manager->DoBufferData(decoder, buffer, size, usage, data);
 }
 
 }  // namespace gles2

@@ -1176,7 +1176,6 @@ _PEPPER_INTERFACES = [
 #               when they can not be automatically determined.
 # pepper_interface: The pepper interface that is used for this extension
 # invalid_test: False if no invalid test needed.
-# shadowed:     True = the value is shadowed so no glGetXXX call will be made.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -1564,13 +1563,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGetBooleanv',
     'gl_test_func': 'glGetBooleanv',
   },
-  'GetBufferParameteriv': {
-    'type': 'GETn',
-    'result': ['SizedResult<GLint>'],
-    'decoder_func': 'DoGetBufferParameteriv',
-    'expectation': False,
-    'shadowed': True,
-  },
+  'GetBufferParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetError': {
     'type': 'Is',
     'decoder_func': 'GetGLError',
@@ -4352,19 +4345,11 @@ class GETnHandler(TypeHandler):
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
+  CopyRealGLErrorsToWrapper();
 """
-    shadowed = func.GetInfo('shadowed')
-    if not shadowed:
-      file.Write("  CopyRealGLErrorsToWrapper();\n");
     file.Write(code)
     func.WriteHandlerImplementation(file)
-    if shadowed:
-      code = """  result->SetNumResults(num_values);
-  return error::kNoError;
-}
-"""
-    else:
-     code = """  GLenum error = glGetError();
+    code = """  GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
   } else {
