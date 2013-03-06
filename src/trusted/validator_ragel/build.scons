@@ -99,8 +99,8 @@ else:
   validator64_dll = dll_env.ComponentObject('gen/validator_x86_64.c')
 
   features_dll = [
-      dll_env.ComponentObject('unreviewed/validator_features_all.c'),
-      dll_env.ComponentObject('unreviewed/validator_features_validator.c')
+      dll_env.ComponentObject('validator_features_all.c'),
+      dll_env.ComponentObject('validator_features_validator.c')
   ]
 
 nacl_log_for_dll_dll = dll_env.ComponentObject('nacl_log_for_dll.c')
