@@ -13,9 +13,33 @@
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+
+namespace {
+
+bool IsNTPWebUI(content::WebContents* web_contents) {
+  content::WebUI* web_ui = NULL;
+  // Use the committed entry so the bookmarks bar disappears at the same time
+  // the page does.
+  if (web_contents->GetController().GetLastCommittedEntry())
+    web_ui = web_contents->GetCommittedWebUI();
+  else
+    web_ui = web_contents->GetWebUI();
+  return web_ui && NewTabUI::FromWebUIController(web_ui->GetController());
+}
+
+bool IsInstantNTP(content::WebContents* web_contents) {
+  // Use the committed entry so the bookmarks bar disappears at the same time
+  // the page does.
+  const content::NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  if (!entry)
+    entry = web_contents->GetController().GetVisibleEntry();
+  return chrome::search::NavEntryIsInstantNTP(web_contents, entry);
+}
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkTabHelper);
 
@@ -28,28 +52,17 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
   if (web_contents()->ShowingInterstitialPage())
     return false;
 
-  // For non-first loads, we want to use the committed entry. This is so the
-  // bookmarks bar disappears at the same time the page does.
-  const content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    entry = web_contents()->GetController().GetVisibleEntry();
-  if (!entry)
+  if (!browser_defaults::bookmarks_enabled)
     return false;
-
-  GURL url = entry->GetVirtualURL();
-  if (url != GURL(chrome::kChromeUINewTabURL) &&
-      !chrome::search::NavEntryIsInstantNTP(web_contents(), entry)) {
-    return false;
-  }
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  bool disabled_by_policy =
-      prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
-      !prefs->GetBoolean(prefs::kShowBookmarkBar);
-  return browser_defaults::bookmarks_enabled && !disabled_by_policy;
+  if (prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
+      !prefs->GetBoolean(prefs::kShowBookmarkBar))
+    return false;
+
+  return IsNTPWebUI(web_contents()) || IsInstantNTP(web_contents());
 }
 
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
