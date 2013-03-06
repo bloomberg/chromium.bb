@@ -1,16 +1,3 @@
-/*
- *  Copyright (c) 2013 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
- *
- *  This file was originally licensed as follows. It has been
- *  relicensed with permission from the copyright holders.
- */
-
 /**
  * File: omxSP.h
  * Brief: OpenMAX DL v1.0.2 - Signal Processing library
