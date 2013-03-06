@@ -516,6 +516,11 @@ bool WebRtcAudioDeviceImpl::Recording() const {
 int32_t WebRtcAudioDeviceImpl::SetAGC(bool enable) {
   DCHECK(initialized_);
   DVLOG(1) <<  "SetAGC(enable=" << enable << ")";
+
+  // Return early if we are not changing the AGC state.
+  if (enable == agc_is_enabled_)
+    return 0;
+
   // The current implementation does not support changing the AGC state while
   // recording. Using this approach simplifies the design and it is also
   // inline with the  latest WebRTC standard.
