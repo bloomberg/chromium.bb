@@ -5,19 +5,18 @@
   </tr>
   <tr>
     <td><strong>Description:</strong></td>
-    <td>Use the <code>chrome.experimental.notification</code> module
+    <td>Use the <code>chrome.notifications</code> module
     to create rich notifications using templates and
     show these notifications to users in the system tray
     (see <a href="#usage">Usage</a>).</td>
   </tr>
   <tr>
     <td><strong>Availability:</strong></td>
-    <td>Experimental API. You must enable the
-    <a href="experimental.html#using">"Experimental Extensions API"</a>.</td>
+    <td>Google Chrome Dev Channel Only</td>
   </tr>
   <tr>
     <td><strong>Permissions:</strong></td>
-    <td><code>"experimental"</code></td>
+    <td><code>"notifications"</code></td>
   </tr>
   <tr>
     <td><strong>Learn more:</strong></td>
@@ -28,15 +27,13 @@
 <p class="warning">
 <b>Warning: </b>
 Currently this API only works on ChromeOS and Windows.
-Linux and Mac should fail gracefully by displaying normal HTML5 notifications;
-however, some information may not be displayed.
 </p>
 
 <h2 id="usage">Usage</h2>
 
 <p>
 To use this API,
-call the <a href="#method-create">create()</a> method,
+call the $ref:experimental.notification.create method,
 passing in the notification details
 via the <code>options</code> parameter:
 </p>
@@ -47,8 +44,8 @@ chrome.experimental.notification
 </pre>
 
 <p>
-<a href="#type-NotificationOptions">NotificationOptions</a> must include the
-<a href="#type-TemplateType">TemplateType</a>
+The $ref:experimental.notification.NotificationOptions must include the
+$ref:experimental.notification.TemplateType
 which defines available notification details
 and how those details are displayed.
 All four available template types
@@ -65,7 +62,8 @@ The <code>image</code> template displays icons and images
 more prominently than the text
 (use <code>iconURL</code> or <code>imageURL</code>).
 Due to a strict <a href="app_csp.html">Content Security Policy</a>,
-all icon and image URLs in packaged apps should point to a local resource.
+all of these URLs in packaged apps should point to a local resource
+or use a <a href="http://developer.chrome.com/apps/app_external.html">data URL</a>.
 </p>
 
 <p>
@@ -114,7 +112,7 @@ all notifications can include event listeners and event handlers
 which respond to user actions.
 For example,
 you can write an event handler to respond to an
-<a href="#event-onButtonClicked">onButtonClicked</a> event.
+$ref:experimental.notification.onButtonClicked event.
 </p>
 
 <p>Consider including event listeners and handlers within the
