@@ -105,6 +105,31 @@ bool CanSaveAsComplete(const std::string& contents_mime_type) {
          contents_mime_type == "application/xhtml+xml";
 }
 
+// Request handle for SavePackage downloads. Currently doesn't support
+// pause/resume/cancel, but returns a WebContents.
+class SavePackageRequestHandle : public DownloadRequestHandleInterface {
+ public:
+  SavePackageRequestHandle(base::WeakPtr<SavePackage> save_package)
+      : save_package_(save_package) {}
+
+  // DownloadRequestHandleInterface
+  virtual WebContents* GetWebContents() const OVERRIDE {
+    return save_package_.get() ? save_package_->web_contents() : NULL;
+  }
+  virtual DownloadManager* GetDownloadManager() const OVERRIDE {
+    return NULL;
+  }
+  virtual void PauseRequest() const OVERRIDE {}
+  virtual void ResumeRequest() const OVERRIDE {}
+  virtual void CancelRequest() const OVERRIDE {}
+  virtual std::string DebugString() const OVERRIDE {
+    return "SavePackage DownloadRequestHandle";
+  }
+
+ private:
+  base::WeakPtr<SavePackage> save_package_;
+};
+
 }  // namespace
 
 const base::FilePath::CharType SavePackage::kDefaultHtmlExtension[] =
@@ -285,12 +310,15 @@ bool SavePackage::Init(
     return false;
   }
 
+  scoped_ptr<DownloadRequestHandleInterface> request_handle(
+      new SavePackageRequestHandle(AsWeakPtr()));
   // The download manager keeps ownership but adds us as an observer.
   download_ = download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_,
       page_url_,
       ((save_type_ == SAVE_PAGE_TYPE_AS_MHTML) ?
        "multipart/related" : "text/html"),
+      request_handle.Pass(),
       this);
   // Confirm above didn't delete the tab out from under us.
   if (!download_created_callback.is_null())

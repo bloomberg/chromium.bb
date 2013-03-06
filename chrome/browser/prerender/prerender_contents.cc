@@ -86,12 +86,6 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  virtual void OnStartDownload(WebContents* source,
-                               DownloadItem* download) OVERRIDE {
-    // Prerendered pages should never be able to download files.
-    NOTREACHED();
-  }
-
   virtual bool ShouldCreateWebContents(
       WebContents* web_contents,
       int route_id,

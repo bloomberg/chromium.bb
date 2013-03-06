@@ -236,16 +236,18 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
 }
 
 void DownloadControllerAndroidImpl::OnPostDownloadStarted(
-    WebContents* web_contents,
     DownloadItem* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!download_item->GetWebContents())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
 
   // Register for updates to the DownloadItem.
   download_item->AddObserver(this);
 
   ScopedJavaLocalRef<jobject> view =
-      GetContentViewCoreFromWebContents(web_contents);
+      GetContentViewCoreFromWebContents(download_item->GetWebContents());
   // The view went away. Can't proceed.
   if (view.is_null())
     return;
@@ -257,8 +259,12 @@ void DownloadControllerAndroidImpl::OnPostDownloadStarted(
 void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (item->GetState() != DownloadItem::COMPLETE)
+  if (!item->IsComplete())
     return;
+
+  // Multiple OnDownloadUpdated() notifications may be issued while the download
+  // is in the COMPLETE state. Only handle one.
+  item->RemoveObserver(this);
 
   // Call onHttpPostDownloadCompleted
   JNIEnv* env = AttachCurrentThread();
@@ -282,9 +288,6 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       GetJavaObject()->Controller(env).obj(), view_core.obj(), jurl.obj(),
       jcontent_disposition.obj(), jmime_type.obj(), jpath.obj(),
       item->GetReceivedBytes(), true);
-}
-
-void DownloadControllerAndroidImpl::OnDownloadOpened(DownloadItem* item) {
 }
 
 ScopedJavaLocalRef<jobject> DownloadControllerAndroidImpl::GetContentView(

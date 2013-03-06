@@ -28,6 +28,7 @@ namespace content {
 class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
+class DownloadRequestHandleInterface;
 
 class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
                                            private DownloadItemImplDelegate {
@@ -45,6 +46,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::FilePath& main_file_path,
       const GURL& page_url,
       const std::string& mime_type,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       DownloadItem::Observer* observer);
 
   // Notifies DownloadManager about a successful completion of |download_item|.
@@ -140,7 +142,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual void OpenDownload(DownloadItemImpl* download) OVERRIDE;
   virtual void ShowDownloadInShell(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadRemoved(DownloadItemImpl* download) OVERRIDE;
-  virtual void ShowDownloadInBrowser(DownloadItemImpl* download) OVERRIDE;
 
   // Factory for creation of downloads items.
   scoped_ptr<DownloadItemFactory> item_factory_;

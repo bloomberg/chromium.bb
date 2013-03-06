@@ -87,9 +87,6 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // DownloadItem.
   virtual void DownloadRemoved(DownloadItemImpl* download);
 
-  // Show the download in the browser.
-  virtual void ShowDownloadInBrowser(DownloadItemImpl* download);
-
   // Assert consistent state for delgate object at various transitions.
   virtual void AssertStateConsistent(DownloadItemImpl* download) const;
 

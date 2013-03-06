@@ -1237,6 +1237,27 @@ void Browser::MaybeUpdateBookmarkBarStateForInstantOverlay(
   }
 }
 
+void Browser::ShowDownload(content::DownloadItem* download) {
+  if (!window())
+    return;
+
+  // If the download occurs in a new tab, and it's not a save page
+  // download (started before initial navigation completed) close it.
+  WebContents* source = download->GetWebContents();
+  if (source && source->GetController().IsInitialNavigation() &&
+      tab_strip_model_->count() > 1 && !download->IsSavePackageDownload()) {
+    CloseContents(source);
+  }
+
+  // Some (app downloads) are not supposed to appear on the shelf.
+  if (!DownloadItemModel(download).ShouldShowInShelf())
+    return;
+
+  // GetDownloadShelf creates the download shelf if it was not yet created.
+  DownloadShelf* shelf = window()->GetDownloadShelf();
+  shelf->AddDownload(download);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, content::WebContentsDelegate implementation:
 
@@ -1400,32 +1421,6 @@ void Browser::RenderWidgetShowing() {
 
 int Browser::GetExtraRenderViewHeight() const {
   return window_->GetExtraRenderViewHeight();
-}
-
-void Browser::OnStartDownload(WebContents* source,
-                              content::DownloadItem* download) {
-  if (!DownloadItemModel(download).ShouldShowInShelf())
-    return;
-
-  WebContents* constrained = GetConstrainingWebContents(source);
-  if (constrained != source) {
-    // Download in a constrained popup is shown in the tab that opened it.
-    constrained->GetDelegate()->OnStartDownload(constrained, download);
-    return;
-  }
-
-  if (!window())
-    return;
-
-  // GetDownloadShelf creates the download shelf if it was not yet created.
-  DownloadShelf* shelf = window()->GetDownloadShelf();
-  shelf->AddDownload(download);
-
-  // If the download occurs in a new tab, and it's not a save page
-  // download (started before initial navigation completed), close it.
-  if (source->GetController().IsInitialNavigation() &&
-      tab_strip_model_->count() > 1 && !download->IsSavePackageDownload())
-    CloseContents(source);
 }
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {

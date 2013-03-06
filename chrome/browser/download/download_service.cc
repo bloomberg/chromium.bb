@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
+#include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -60,6 +61,12 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
           scoped_ptr<DownloadHistory::HistoryAdapter>(
             new DownloadHistory::HistoryAdapter(hs))));
   }
+
+  // Pass an empty delegate when constructing the DownloadUIController. The
+  // default delegate does all the notifications we need.
+  scoped_ptr<DownloadUIController::Delegate> empty_ui_delegate;
+  download_ui_.reset(new DownloadUIController(manager,
+                                              empty_ui_delegate.Pass()));
 
   // Include this download manager in the set monitored by the
   // global status updater.

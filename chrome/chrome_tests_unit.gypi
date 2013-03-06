@@ -692,6 +692,7 @@
         'browser/download/download_path_reservation_tracker_unittest.cc',
         'browser/download/download_shelf_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
+        'browser/download/download_ui_controller_unittest.cc',
         'browser/enumerate_modules_model_unittest_win.cc',
         'browser/extensions/active_tab_unittest.cc',
         'browser/extensions/activity_database_unittest.cc',

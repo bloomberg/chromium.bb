@@ -60,7 +60,7 @@ class AllDownloadItemNotifier
   };
 
   AllDownloadItemNotifier(content::DownloadManager* manager,
-                                 Observer* observer);
+                          Observer* observer);
 
   virtual ~AllDownloadItemNotifier();
 

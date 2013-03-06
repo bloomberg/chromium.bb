@@ -71,7 +71,6 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
-  MOCK_METHOD1(ShowDownloadInBrowser, void(DownloadItemImpl*));
   MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl*));
 
   void VerifyAndClearExpectations() {
@@ -289,7 +288,6 @@ class DownloadItemTest : public testing::Test {
     EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
         .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_NONE,
                                          intermediate_path));
-    EXPECT_CALL(*mock_delegate(), ShowDownloadInBrowser(_));
     callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
     RunAllPendingInMessageLoops();
@@ -572,7 +570,6 @@ TEST_F(DownloadItemTest, NotificationAfterOnDownloadTargetDetermined) {
   EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
       .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_NONE,
                                        new_intermediate_path));
-  EXPECT_CALL(*mock_delegate(), ShowDownloadInBrowser(_));
 
   // Currently, a notification would be generated if the danger type is anything
   // other than NOT_DANGEROUS.
@@ -625,7 +622,6 @@ TEST_F(DownloadItemTest, DisplayName) {
                                        intermediate_path));
   callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
-  EXPECT_CALL(*mock_delegate(), ShowDownloadInBrowser(_));
   RunAllPendingInMessageLoops();
   EXPECT_EQ(FILE_PATH_LITERAL("foo.bar"),
             item->GetFileNameToReportUser().value());
@@ -662,8 +658,6 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
       .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_NONE,
                                        new_intermediate_path));
-  EXPECT_CALL(*mock_delegate(), ShowDownloadInBrowser(item))
-      .Times(1);
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
@@ -699,8 +693,6 @@ TEST_F(DownloadItemTest, CallbackAfterInterruptedRename) {
       .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
                                        new_intermediate_path));
   EXPECT_CALL(*download_file, Cancel())
-      .Times(1);
-  EXPECT_CALL(*mock_delegate(), ShowDownloadInBrowser(item))
       .Times(1);
 
   callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,

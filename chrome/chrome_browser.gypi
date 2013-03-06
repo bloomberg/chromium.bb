@@ -580,6 +580,8 @@
         'browser/download/download_status_updater_gtk.cc',
         'browser/download/download_status_updater_mac.mm',
         'browser/download/download_status_updater_win.cc',
+        'browser/download/download_ui_controller.cc',
+        'browser/download/download_ui_controller.h',
         'browser/download/download_util.cc',
         'browser/download/download_util.h',
         'browser/download/all_download_item_notifier.cc',

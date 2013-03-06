@@ -66,6 +66,7 @@ public:
       const GURL& url,
       DownloadId download_id,
       const std::string& mime_type,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) = 0;
 };
 

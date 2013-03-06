@@ -105,6 +105,16 @@ class DownloadItemModel {
   // displayed in the shelf.
   void SetShouldShowInShelf(bool should_show);
 
+  // Returns |true| if the UI should be notified when the download is ready to
+  // be presented in the UI. By default, this value is |false| and should be
+  // changed explicitly using SetShouldNotifyUI(). Note that this is indpendent
+  // of ShouldShowInShelf() since there might be actions other than showing in
+  // the shelf that the UI must perform.
+  bool ShouldNotifyUI() const;
+
+  // Change what's returned by ShouldNotifyUI().
+  void SetShouldNotifyUI(bool should_notify);
+
   content::DownloadItem* download() { return download_; }
 
  private:

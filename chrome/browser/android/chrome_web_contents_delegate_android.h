@@ -57,8 +57,6 @@ class ChromeWebContentsDelegateAndroid
   virtual bool CanDownload(content::RenderViewHost* source,
                            int request_id,
                            const std::string& request_method) OVERRIDE;
-  virtual void OnStartDownload(content::WebContents* source,
-                               content::DownloadItem* download) OVERRIDE;
   virtual void DidNavigateToPendingEntry(content::WebContents* source) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       content::WebContents* source) OVERRIDE;

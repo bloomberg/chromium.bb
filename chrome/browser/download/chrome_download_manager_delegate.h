@@ -68,8 +68,6 @@ class ChromeDownloadManagerDelegate
   virtual bool DetermineDownloadTarget(
       content::DownloadItem* item,
       const content::DownloadTargetCallback& callback) OVERRIDE;
-  virtual content::WebContents*
-      GetAlternativeWebContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(
       const base::FilePath& path) OVERRIDE;
   virtual bool ShouldCompleteDownload(

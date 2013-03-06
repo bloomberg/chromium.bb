@@ -413,16 +413,6 @@ void ExtensionHost::CloseContents(WebContents* contents) {
   }
 }
 
-void ExtensionHost::OnStartDownload(
-    content::WebContents* source, content::DownloadItem* download) {
-  // If |source| is in the context of a Browser, show the DownloadShelf on that
-  // Browser.
-  if (!view() || !view()->browser())
-    return;
-  static_cast<content::WebContentsDelegate*>(view()->browser())->
-    OnStartDownload(source, download);
-}
-
 void ExtensionHost::WillRunJavaScriptDialog() {
   ExtensionProcessManager* pm =
       ExtensionSystem::Get(profile_)->process_manager();

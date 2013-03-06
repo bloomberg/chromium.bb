@@ -462,6 +462,9 @@ class Browser : public TabStripModelObserver,
   void MaybeUpdateBookmarkBarStateForInstantOverlay(
       const chrome::search::Mode& mode);
 
+  // Show a download on the download shelf.
+  void ShowDownload(content::DownloadItem* download);
+
   FullscreenController* fullscreen_controller() const {
     return fullscreen_controller_.get();
   }
@@ -561,8 +564,6 @@ class Browser : public TabStripModelObserver,
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void RenderWidgetShowing() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
-  virtual void OnStartDownload(content::WebContents* source,
-                               content::DownloadItem* download) OVERRIDE;
   virtual void ViewSourceForTab(content::WebContents* source,
                                 const GURL& page_url) OVERRIDE;
   virtual void ViewSourceForFrame(

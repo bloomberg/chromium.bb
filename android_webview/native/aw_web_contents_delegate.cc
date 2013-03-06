@@ -61,11 +61,6 @@ bool AwWebContentsDelegate::CanDownload(content::RenderViewHost* source,
   return false;
 }
 
-void AwWebContentsDelegate::OnStartDownload(WebContents* source,
-                                            content::DownloadItem* download) {
-  NOTREACHED();  // Downloads are cancelled in ResourceDispatcherHostDelegate.
-}
-
 void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
                                            content::WebContents* new_contents,
                                            WindowOpenDisposition disposition,

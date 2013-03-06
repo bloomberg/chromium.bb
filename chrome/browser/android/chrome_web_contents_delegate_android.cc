@@ -276,14 +276,10 @@ bool ChromeWebContentsDelegateAndroid::CanDownload(
         source, request_id);
     return false;
   }
+  // DownloadControllerAndroid::OnPostDownloadStarted() is called for the
+  // started download by the default DownloadUIController::Delegate
+  // implementation.
   return true;
-}
-
-void ChromeWebContentsDelegateAndroid::OnStartDownload(
-    WebContents* source,
-    content::DownloadItem* download) {
-  content::DownloadControllerAndroid::Get()->OnPostDownloadStarted(
-      source, download);
 }
 
 void ChromeWebContentsDelegateAndroid::DidNavigateToPendingEntry(

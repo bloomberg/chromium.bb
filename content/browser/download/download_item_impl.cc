@@ -65,30 +65,6 @@ void DeleteDownloadedFile(const base::FilePath& path) {
     file_util::Delete(path, false);
 }
 
-// Classes to null out request handle calls (for SavePage DownloadItems, which
-// may have, e.g., Cancel() called on them without it doing anything)
-// and to DCHECK on them (for history DownloadItems, which should never have
-// any operation that implies an off-thread component, since they don't
-// have any).
-class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
- public:
-  NullDownloadRequestHandle() {}
-
-  // DownloadRequestHandleInterface calls
-  virtual WebContents* GetWebContents() const OVERRIDE {
-    return NULL;
-  }
-  virtual DownloadManager* GetDownloadManager() const OVERRIDE {
-    return NULL;
-  }
-  virtual void PauseRequest() const OVERRIDE {}
-  virtual void ResumeRequest() const OVERRIDE {}
-  virtual void CancelRequest() const OVERRIDE {}
-  virtual std::string DebugString() const OVERRIDE {
-    return "Null DownloadRequestHandle";
-  }
-};
-
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
@@ -217,14 +193,16 @@ DownloadItemImpl::DownloadItemImpl(
 }
 
 // Constructing for the "Save Page As..." feature:
-DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
-                                   const base::FilePath& path,
-                                   const GURL& url,
-                                   DownloadId download_id,
-                                   const std::string& mime_type,
-                                   const net::BoundNetLog& bound_net_log)
+DownloadItemImpl::DownloadItemImpl(
+    DownloadItemImplDelegate* delegate,
+    const base::FilePath& path,
+    const GURL& url,
+    DownloadId download_id,
+    const std::string& mime_type,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    const net::BoundNetLog& bound_net_log)
     : is_save_package_download_(true),
-      request_handle_(new NullDownloadRequestHandle()),
+      request_handle_(request_handle.Pass()),
       download_id_(download_id),
       current_path_(path),
       target_path_(path),
@@ -1126,7 +1104,6 @@ void DownloadItemImpl::OnDownloadFileInitialized(
   // If we're resuming an interrupted download, we may already know
   // the download target so we can skip target name determination.
   if (!GetTargetFilePath().empty() && !GetFullPath().empty()) {
-    delegate_->ShowDownloadInBrowser(this);
     MaybeCompleteDownload();
     return;
   }
@@ -1203,14 +1180,10 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
   if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
     Interrupt(reason);
-    // MaybeCompleteDownload() is a no-op if we've been interrupted,
-    // so it's safe to fall through.
   } else {
     SetFullPath(full_path);
+    MaybeCompleteDownload();
   }
-  delegate_->ShowDownloadInBrowser(this);
-
-  MaybeCompleteDownload();
 }
 
 // When SavePackage downloads MHTML to GData (see

@@ -77,11 +77,6 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   virtual bool DetermineDownloadTarget(DownloadItem* item,
                                        const DownloadTargetCallback& callback);
 
-  // Called when the download system wants to alert a WebContents that a
-  // download has started, but the TabConetnts has gone away. This lets an
-  // delegate return an alternative WebContents. The delegate can return NULL.
-  virtual WebContents* GetAlternativeWebContentsToNotifyForDownload();
-
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
 

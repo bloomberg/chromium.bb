@@ -224,9 +224,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                            int request_id,
                            const std::string& request_method);
 
-  // Notifies the delegate that a download is starting.
-  virtual void OnStartDownload(WebContents* source, DownloadItem* download) {}
-
   // Return much extra vertical space should be allotted to the
   // render view widget during various animations (e.g. infobar closing).
   // This is used to make painting look smoother.

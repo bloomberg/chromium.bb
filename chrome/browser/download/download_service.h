@@ -15,6 +15,7 @@
 
 class ChromeDownloadManagerDelegate;
 class DownloadHistory;
+class DownloadUIController;
 class ExtensionDownloadsEventRouter;
 class Profile;
 
@@ -71,6 +72,11 @@ class DownloadService : public ProfileKeyedService {
   scoped_refptr<ChromeDownloadManagerDelegate> manager_delegate_;
 
   scoped_ptr<DownloadHistory> download_history_;
+
+  // The UI controller is responsible for observing the download manager and
+  // notifying the UI of any new downloads. Its lifetime matches that of the
+  // associated download manager.
+  scoped_ptr<DownloadUIController> download_ui_;
 
   // On Android, GET downloads are not handled by the DownloadManager.
   // Once we have extensions on android, we probably need the EventRouter

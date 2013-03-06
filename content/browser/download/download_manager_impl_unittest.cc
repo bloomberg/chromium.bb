@@ -181,7 +181,6 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD2(DetermineDownloadTarget,
                bool(DownloadItem* item,
                     const DownloadTargetCallback&));
-  MOCK_METHOD0(GetAlternativeWebContentsToNotifyForDownload, WebContents*());
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
   MOCK_METHOD2(ShouldCompleteDownload,
                bool(DownloadItem*, const base::Closure&));
@@ -248,6 +247,7 @@ class MockDownloadItemFactory
       const GURL& url,
       DownloadId download_id,
       const std::string& mime_type,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
 
  private:
@@ -339,6 +339,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     const GURL& url,
     DownloadId download_id,
     const std::string& mime_type,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log) {
   int local_id = download_id.local();
   DCHECK(items_.find(local_id) == items_.end());
@@ -548,21 +549,6 @@ class DownloadManagerTest : public testing::Test {
         item, base::Bind(
             &DownloadManagerTest::DownloadTargetDeterminedCallback,
             base::Unretained(this)));
-  }
-
-  void AddItemToHistory(MockDownloadItemImpl& item, int64 db_handle) {
-    // For DCHECK in AddDownloadItemToHistory.  Don't want to use
-    // WillRepeatedly as it may have to return true after this.
-    if (DCHECK_IS_ON())
-    // Null out ShowDownloadInBrowser
-    EXPECT_CALL(item, GetWebContents())
-        .WillOnce(Return(static_cast<WebContents*>(NULL)));
-    EXPECT_CALL(GetMockDownloadManagerDelegate(),
-                GetAlternativeWebContentsToNotifyForDownload())
-        .WillOnce(Return(static_cast<WebContents*>(NULL)));
-
-    EXPECT_CALL(item, IsInProgress())
-        .WillOnce(Return(true));
   }
 
  protected:

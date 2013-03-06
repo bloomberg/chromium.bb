@@ -162,60 +162,62 @@ void EnsureNoPendingDownloadJobsOnFile(bool* result) {
 
 class DownloadItemFactoryImpl : public DownloadItemFactory {
  public:
-    DownloadItemFactoryImpl() {}
-    virtual ~DownloadItemFactoryImpl() {}
+  DownloadItemFactoryImpl() {}
+  virtual ~DownloadItemFactoryImpl() {}
 
-    virtual DownloadItemImpl* CreatePersistedItem(
-        DownloadItemImplDelegate* delegate,
-        DownloadId download_id,
-        const base::FilePath& current_path,
-        const base::FilePath& target_path,
-        const std::vector<GURL>& url_chain,
-        const GURL& referrer_url,
-        const base::Time& start_time,
-        const base::Time& end_time,
-        int64 received_bytes,
-        int64 total_bytes,
-        DownloadItem::DownloadState state,
-        DownloadDangerType danger_type,
-        DownloadInterruptReason interrupt_reason,
-        bool opened,
-        const net::BoundNetLog& bound_net_log) OVERRIDE {
-      return new DownloadItemImpl(
-          delegate,
-          download_id,
-          current_path,
-          target_path,
-          url_chain,
-          referrer_url,
-          start_time,
-          end_time,
-          received_bytes,
-          total_bytes,
-          state,
-          danger_type,
-          interrupt_reason,
-          opened,
-          bound_net_log);
-    }
+  virtual DownloadItemImpl* CreatePersistedItem(
+      DownloadItemImplDelegate* delegate,
+      DownloadId download_id,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
+      const std::vector<GURL>& url_chain,
+      const GURL& referrer_url,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      int64 received_bytes,
+      int64 total_bytes,
+      DownloadItem::DownloadState state,
+      DownloadDangerType danger_type,
+      DownloadInterruptReason interrupt_reason,
+      bool opened,
+      const net::BoundNetLog& bound_net_log) OVERRIDE {
+    return new DownloadItemImpl(
+        delegate,
+        download_id,
+        current_path,
+        target_path,
+        url_chain,
+        referrer_url,
+        start_time,
+        end_time,
+        received_bytes,
+        total_bytes,
+        state,
+        danger_type,
+        interrupt_reason,
+        opened,
+        bound_net_log);
+  }
 
-    virtual DownloadItemImpl* CreateActiveItem(
-        DownloadItemImplDelegate* delegate,
-        const DownloadCreateInfo& info,
-        const net::BoundNetLog& bound_net_log) OVERRIDE {
+  virtual DownloadItemImpl* CreateActiveItem(
+      DownloadItemImplDelegate* delegate,
+      const DownloadCreateInfo& info,
+      const net::BoundNetLog& bound_net_log) OVERRIDE {
       return new DownloadItemImpl(delegate, info, bound_net_log);
-    }
+  }
 
-    virtual DownloadItemImpl* CreateSavePageItem(
-        DownloadItemImplDelegate* delegate,
-        const base::FilePath& path,
-        const GURL& url,
-        DownloadId download_id,
-        const std::string& mime_type,
-        const net::BoundNetLog& bound_net_log) OVERRIDE {
-      return new DownloadItemImpl(delegate, path, url, download_id,
-                                  mime_type, bound_net_log);
-    }
+  virtual DownloadItemImpl* CreateSavePageItem(
+      DownloadItemImplDelegate* delegate,
+      const base::FilePath& path,
+      const GURL& url,
+      DownloadId download_id,
+      const std::string& mime_type,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
+      const net::BoundNetLog& bound_net_log) OVERRIDE {
+    return new DownloadItemImpl(delegate, path, url, download_id,
+                                mime_type, request_handle.Pass(),
+                                bound_net_log);
+  }
 };
 
 }  // namespace
@@ -458,6 +460,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
     const base::FilePath& main_file_path,
     const GURL& page_url,
     const std::string& mime_type,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
     DownloadItem::Observer* observer) {
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
@@ -467,6 +470,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
       page_url,
       GetNextId(),
       mime_type,
+      request_handle.Pass(),
       bound_net_log);
 
   download_item->AddObserver(observer);
@@ -474,9 +478,6 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
   downloads_[download_item->GetId()] = download_item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(
       this, download_item));
-
-  // TODO(asanka): Make the ui an observer.
-  ShowDownloadInBrowser(download_item);
 
   return download_item;
 }
@@ -630,21 +631,6 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, item));
   VLOG(20) << __FUNCTION__ << "() download = " << item->DebugString(true);
   return item;
-}
-
-// TODO(asanka) Move into an observer.
-void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItemImpl* download) {
-  // The 'contents' may no longer exist if the user closed the contents before
-  // we get this start completion event.
-  WebContents* content = download->GetWebContents();
-
-  // If the contents no longer exists, we ask the embedder to suggest another
-  // contents.
-  if (!content && delegate_)
-    content = delegate_->GetAlternativeWebContentsToNotifyForDownload();
-
-  if (content && content->GetDelegate())
-    content->GetDelegate()->OnStartDownload(content, download);
 }
 
 int DownloadManagerImpl::InProgressCount() const {
