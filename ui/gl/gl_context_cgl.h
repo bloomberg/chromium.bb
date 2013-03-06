@@ -41,6 +41,9 @@ class GLContextCGL : public GLContext {
 
   CGLPixelFormatObj discrete_pixelformat_;
 
+  int screen_;
+  int renderer_id_;
+
   DISALLOW_COPY_AND_ASSIGN(GLContextCGL);
 };
 

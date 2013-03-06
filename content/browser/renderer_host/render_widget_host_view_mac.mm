@@ -1160,6 +1160,8 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
     if (pending_swap_buffers_acks_.front().first != 0) {
       AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
       ack_params.sync_point = 0;
+      if (compositing_iosurface_.get())
+        ack_params.renderer_id = compositing_iosurface_->GetRendererID();
       RenderWidgetHostImpl::AcknowledgeBufferPresent(
           pending_swap_buffers_acks_.front().first,
           pending_swap_buffers_acks_.front().second,

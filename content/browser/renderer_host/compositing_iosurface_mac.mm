@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 
+#include <OpenGL/CGLRenderers.h>
 #include <OpenGL/OpenGL.h>
 #include <vector>
 
@@ -347,6 +348,15 @@ void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
   CGLSetCurrentContext(cglContext_);
   MapIOSurfaceToTexture(io_surface_handle);
   CGLSetCurrentContext(0);
+}
+
+int CompositingIOSurfaceMac::GetRendererID() {
+  GLint current_renderer_id = -1;
+  if (CGLGetParameter(cglContext_,
+                      kCGLCPCurrentRendererID,
+                      &current_renderer_id) == kCGLNoError)
+    return current_renderer_id & kCGLRendererIDMatchingMask;
+  return -1;
 }
 
 void CompositingIOSurfaceMac::DrawIOSurface(

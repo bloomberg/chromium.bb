@@ -17,11 +17,48 @@
 
 namespace gfx {
 
+bool g_support_renderer_switching;
+
+static CGLPixelFormatObj GetPixelFormat() {
+  static CGLPixelFormatObj format;
+  if (format)
+    return format;
+  std::vector<CGLPixelFormatAttribute> attribs;
+  // If the system supports dual gpus then allow offline renderers for every
+  // context, so that they can all be in the same share group.
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+    attribs.push_back(kCGLPFAAllowOfflineRenderers);
+    g_support_renderer_switching = true;
+  }
+  if (GetGLImplementation() == kGLImplementationAppleGL) {
+    attribs.push_back(kCGLPFARendererID);
+    attribs.push_back((CGLPixelFormatAttribute) kCGLRendererGenericFloatID);
+    g_support_renderer_switching = false;
+  }
+  attribs.push_back((CGLPixelFormatAttribute) 0);
+
+  GLint num_virtual_screens;
+  if (CGLChoosePixelFormat(&attribs.front(),
+                           &format,
+                           &num_virtual_screens) != kCGLNoError) {
+    LOG(ERROR) << "Error choosing pixel format.";
+    return NULL;
+  }
+  if (!format) {
+    LOG(ERROR) << "format == 0.";
+    return NULL;
+  }
+  DCHECK_NE(num_virtual_screens, 0);
+  return format;
+}
+
 GLContextCGL::GLContextCGL(GLShareGroup* share_group)
   : GLContext(share_group),
     context_(NULL),
     gpu_preference_(PreferIntegratedGpu),
-    discrete_pixelformat_(NULL) {
+    discrete_pixelformat_(NULL),
+    screen_(-1),
+    renderer_id_(-1) {
 }
 
 bool GLContextCGL::Initialize(GLSurface* compatible_surface,
@@ -34,30 +71,9 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
   GLContextCGL* share_context = share_group() ?
       static_cast<GLContextCGL*>(share_group()->GetContext()) : NULL;
 
-  std::vector<CGLPixelFormatAttribute> attribs;
-  // If the system supports dual gpus then allow offline renderers for every
-  // context, so that they can all be in the same share group.
-  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus())
-    attribs.push_back(kCGLPFAAllowOfflineRenderers);
-  if (GetGLImplementation() == kGLImplementationAppleGL) {
-    attribs.push_back(kCGLPFARendererID);
-    attribs.push_back((CGLPixelFormatAttribute) kCGLRendererGenericFloatID);
-  }
-  attribs.push_back((CGLPixelFormatAttribute) 0);
-
-  CGLPixelFormatObj format;
-  GLint num_pixel_formats;
-  if (CGLChoosePixelFormat(&attribs.front(),
-                           &format,
-                           &num_pixel_formats) != kCGLNoError) {
-    LOG(ERROR) << "Error choosing pixel format.";
+  CGLPixelFormatObj format = GetPixelFormat();
+  if (!format)
     return false;
-  }
-  if (!format) {
-    LOG(ERROR) << "format == 0.";
-    return false;
-  }
-  DCHECK_NE(num_pixel_formats, 0);
 
   // If using the discrete gpu, create a pixel format requiring it before we
   // create the context.
@@ -79,7 +95,6 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
       share_context ?
           static_cast<CGLContextObj>(share_context->GetHandle()) : NULL,
       reinterpret_cast<CGLContextObj*>(&context_));
-  CGLReleasePixelFormat(format);
   if (res != kCGLNoError) {
     LOG(ERROR) << "Error creating context.";
     Destroy();
@@ -103,6 +118,36 @@ void GLContextCGL::Destroy() {
 
 bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   DCHECK(context_);
+  int renderer_id = share_group()->GetRendererID();
+  int screen;
+  CGLGetVirtualScreen(static_cast<CGLContextObj>(context_), &screen);
+
+  if (g_support_renderer_switching &&
+      (screen != screen_ || renderer_id != renderer_id_)) {
+    CGLPixelFormatObj format = GetPixelFormat();
+    // Attempt to find a virtual screen that's using the requested renderer,
+    // and switch the context to use that screen.
+    int virtual_screen_count;
+    if (CGLDescribePixelFormat(format, 0, kCGLPFAVirtualScreenCount,
+                               &virtual_screen_count) != kCGLNoError)
+      return false;
+
+    for (int i = 0; i < virtual_screen_count; ++i) {
+      int screen_renderer_id;
+      if (CGLDescribePixelFormat(format, i, kCGLPFARendererID,
+                                 &screen_renderer_id) != kCGLNoError)
+        return false;
+
+      screen_renderer_id &= kCGLRendererIDMatchingMask;
+      if (screen_renderer_id == renderer_id) {
+        CGLSetVirtualScreen(static_cast<CGLContextObj>(context_), i);
+        screen_ = i;
+        break;
+      }
+    }
+    renderer_id_ = renderer_id;
+  }
+
   if (IsCurrent(surface))
     return true;
 

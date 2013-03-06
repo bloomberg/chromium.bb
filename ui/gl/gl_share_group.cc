@@ -10,7 +10,11 @@
 namespace gfx {
 
 GLShareGroup::GLShareGroup()
-    : shared_context_(NULL) {
+    : shared_context_(NULL)
+#if defined(OS_MACOSX)
+    , renderer_id_(-1)
+#endif
+    {
 }
 
 void GLShareGroup::AddContext(GLContext* context) {
@@ -50,6 +54,16 @@ void GLShareGroup::SetSharedContext(GLContext* context) {
 GLContext* GLShareGroup::GetSharedContext() {
   return shared_context_;
 }
+
+#if defined(OS_MACOSX)
+void GLShareGroup::SetRendererID(int renderer_id) {
+  renderer_id_ = renderer_id;
+}
+
+int GLShareGroup::GetRendererID() {
+  return renderer_id_;
+}
+#endif
 
 GLShareGroup::~GLShareGroup() {
 }

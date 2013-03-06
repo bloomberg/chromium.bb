@@ -80,6 +80,9 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
   IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(uint32, sync_point)
+#if defined(OS_MACOSX)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+#endif
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)

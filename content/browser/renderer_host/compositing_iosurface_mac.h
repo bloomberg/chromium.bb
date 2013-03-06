@@ -54,6 +54,9 @@ class CompositingIOSurfaceMac {
   void SetIOSurface(uint64 io_surface_handle,
                     const gfx::Size& size);
 
+  // Get the CGL renderer ID currently associated with this context.
+  int GetRendererID();
+
   // Blit the IOSurface at the upper-left corner of the |view|. If |view| window
   // size is larger than the IOSurface, the remaining right and bottom edges
   // will be white. |scaleFactor| is 1 in normal views, 2 in HiDPI views.

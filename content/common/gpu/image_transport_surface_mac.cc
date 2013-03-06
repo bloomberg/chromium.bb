@@ -270,8 +270,10 @@ gfx::Size IOSurfaceImageTransportSurface::GetSize() {
 }
 
 void IOSurfaceImageTransportSurface::OnBufferPresented(
-    const AcceleratedSurfaceMsg_BufferPresented_Params& /* params */) {
+    const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   DCHECK(is_swap_buffers_pending_);
+
+  context_->share_group()->SetRendererID(params.renderer_id);
   is_swap_buffers_pending_ = false;
   if (did_unschedule_) {
     did_unschedule_ = false;
