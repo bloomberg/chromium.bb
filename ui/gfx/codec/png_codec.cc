@@ -768,10 +768,11 @@ bool PNGCodec::EncodeBGRASkBitmap(const SkBitmap& input,
   if (input.empty())
     return false;
   DCHECK(input.bytesPerPixel() == bbp);
+  DCHECK(static_cast<int>(input.rowBytes()) >= input.width() * bbp);
 
   return Encode(reinterpret_cast<unsigned char*>(input.getAddr32(0, 0)),
                 FORMAT_SkBitmap, Size(input.width(), input.height()),
-                input.width() * bbp, discard_transparency,
+                static_cast<int>(input.rowBytes()), discard_transparency,
                 std::vector<Comment>(), output);
 }
 

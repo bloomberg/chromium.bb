@@ -970,6 +970,48 @@ TEST(PNGCodec, StripAddAlpha) {
   ASSERT_EQ(original_rgb, decoded);
 }
 
+TEST(PNGCodec, EncodeBGRASkBitmapStridePadded) {
+  const int kWidth = 20;
+  const int kHeight = 20;
+  const int kPaddedWidth = 32;
+  const int kBytesPerPixel = 4;
+  const int kPaddedSize = kPaddedWidth * kHeight;
+  const int kRowBytes = kPaddedWidth * kBytesPerPixel;
+
+  SkBitmap original_bitmap;
+  original_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                            kWidth, kHeight, kRowBytes);
+  original_bitmap.allocPixels();
+
+  // Write data over the source bitmap.
+  // We write on the pad area here too.
+  // The encoder should ignore the pad area.
+  uint32_t* src_data = original_bitmap.getAddr32(0, 0);
+  for (int i = 0; i < kPaddedSize; i++) {
+    src_data[i] = SkPreMultiplyARGB(i % 255, i % 250, i % 245, i % 240);
+  }
+
+  // Encode the bitmap.
+  std::vector<unsigned char> encoded;
+  PNGCodec::EncodeBGRASkBitmap(original_bitmap, false, &encoded);
+
+  // Decode the encoded string.
+  SkBitmap decoded_bitmap;
+  EXPECT_TRUE(PNGCodec::Decode(&encoded.front(), encoded.size(),
+                               &decoded_bitmap));
+
+  // Compare the original bitmap and the output bitmap. We use ColorsClose
+  // as SkBitmaps are considered to be pre-multiplied, the unpremultiplication
+  // (in Encode) and repremultiplication (in Decode) can be lossy.
+  for (int x = 0; x < kWidth; x++) {
+    for (int y = 0; y < kHeight; y++) {
+      uint32_t original_pixel = original_bitmap.getAddr32(0, y)[x];
+      uint32_t decoded_pixel = decoded_bitmap.getAddr32(0, y)[x];
+      EXPECT_TRUE(ColorsClose(original_pixel, decoded_pixel));
+    }
+  }
+}
+
 TEST(PNGCodec, EncodeBGRASkBitmap) {
   const int w = 20, h = 20;
 
