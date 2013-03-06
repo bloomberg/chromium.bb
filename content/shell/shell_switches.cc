@@ -25,6 +25,9 @@ const char kDisableHeadlessForLayoutTests[] =
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
+// Enable accelerated 2D canvas.
+const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
+
 // Alias for kEnableSoftwareCompositingGLAdapter.
 const char kEnableSoftwareCompositing[] = "enable-software-compositing";
 

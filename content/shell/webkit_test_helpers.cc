@@ -4,7 +4,9 @@
 
 #include "content/shell/webkit_test_helpers.h"
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "content/shell/shell_switches.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -57,6 +59,7 @@ void ExportLayoutTestSpecificPreferences(const WebPreferences& from,
 // of the defaults are controlled via command line flags which are
 // automatically set for layout tests.
 void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
   prefs->allow_universal_access_from_file_urls = true;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
@@ -99,7 +102,8 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->asynchronous_spell_checking_enabled = false;
   prefs->user_style_sheet_enabled = true;
   prefs->threaded_html_parser = true;
-  prefs->accelerated_2d_canvas_enabled = false;
+  prefs->accelerated_2d_canvas_enabled =
+      command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);
   prefs->accelerated_compositing_for_video_enabled = false;
   prefs->deferred_2d_canvas_enabled = false;
   prefs->mock_scrollbars_enabled = false;
