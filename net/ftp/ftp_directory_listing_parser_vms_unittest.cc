@@ -5,9 +5,9 @@
 #include "net/ftp/ftp_directory_listing_parser_unittest.h"
 
 #include "base/format_macros.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "net/ftp/ftp_directory_listing_parser_vms.h"
 

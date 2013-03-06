@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "crypto/rsa_private_key.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"

@@ -10,9 +10,9 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
-#include "base/stringprintf.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 
 namespace webkit {

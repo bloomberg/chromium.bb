@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_pump_aurax11.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"

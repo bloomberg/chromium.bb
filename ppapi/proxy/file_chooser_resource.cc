@@ -5,7 +5,7 @@
 #include "ppapi/proxy/file_chooser_resource.h"
 
 #include "base/bind.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"

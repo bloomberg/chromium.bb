@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/dns/dns_client.h"

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/text/text_elider.h"
 

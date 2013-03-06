@@ -10,8 +10,8 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 

@@ -13,8 +13,8 @@
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 
 using std::string;

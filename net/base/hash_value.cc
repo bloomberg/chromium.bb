@@ -7,8 +7,8 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/sha1.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 
 namespace net {
 

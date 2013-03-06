@@ -6,7 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"

@@ -9,7 +9,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 

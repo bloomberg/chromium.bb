@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "jingle/notifier/listener/xml_element_util.h"

@@ -10,8 +10,8 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "cc/compositor_frame.h"
 #include "cc/compositor_frame_metadata.h"

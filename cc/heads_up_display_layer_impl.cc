@@ -4,8 +4,8 @@
 
 #include "cc/heads_up_display_layer_impl.h"
 
-#include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "cc/debug_colors.h"
 #include "cc/debug_rect_history.h"
 #include "cc/frame_rate_counter.h"

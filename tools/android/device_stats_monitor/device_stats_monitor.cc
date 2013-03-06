@@ -15,7 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 
 namespace {
 

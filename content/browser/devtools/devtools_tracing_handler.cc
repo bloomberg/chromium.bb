@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_http_handler_impl.h"
 #include "content/public/browser/trace_controller.h"

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"

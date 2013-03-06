@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"

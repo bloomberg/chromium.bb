@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 

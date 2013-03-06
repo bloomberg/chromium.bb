@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/version.h"
 
 namespace webkit {

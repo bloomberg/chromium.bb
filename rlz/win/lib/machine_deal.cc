@@ -11,9 +11,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "base/win/registry.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/lib_values.h"

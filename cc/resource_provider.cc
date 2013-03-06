@@ -9,8 +9,8 @@
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/stl_util.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "cc/context_provider.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
 #include "cc/platform_color.h"

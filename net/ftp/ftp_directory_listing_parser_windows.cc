@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/time.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "net/ftp/ftp_util.h"

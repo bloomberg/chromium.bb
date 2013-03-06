@@ -10,7 +10,7 @@
 #include "base/pickle.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/asn1_util.h"
 #include "net/base/cert_test_util.h"
