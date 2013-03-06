@@ -24,6 +24,7 @@ public class AwContentVideoViewDelegate implements ContentVideoViewContextDelega
         mContext = context;
     }
 
+    @Override
     public void onShowCustomView(View view) {
         CustomViewCallback cb = new CustomViewCallback() {
             @Override
@@ -36,35 +37,47 @@ public class AwContentVideoViewDelegate implements ContentVideoViewContextDelega
                 cb);
     }
 
+    @Override
     public void onDestroyContentVideoView() {
     }
 
+    @Override
     public Context getContext() {
         return mContext;
     }
 
+    @Override
     public String getPlayBackErrorText() {
         return mContext.getString(
                 org.chromium.content.R.string.media_player_error_text_invalid_progressive_playback);
     }
 
+    @Override
     public String getUnknownErrorText() {
         return mContext.getString(
               org.chromium.content.R.string.media_player_error_text_unknown);
     }
 
+    @Override
     public String getErrorButton() {
         return mContext.getString(
               org.chromium.content.R.string.media_player_error_button);
     }
 
+    @Override
     public String getErrorTitle() {
         return mContext.getString(
               org.chromium.content.R.string.media_player_error_title);
     }
 
+    @Override
     public String getVideoLoadingText() {
         return mContext.getString(
               org.chromium.content.R.string.media_player_loading_video);
+    }
+
+    @Override
+    public View getVideoLoadingProgressView() {
+        return mAwContentsClient.getVideoLoadingProgressView();
     }
 }

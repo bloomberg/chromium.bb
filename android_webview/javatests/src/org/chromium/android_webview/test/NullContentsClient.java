@@ -156,4 +156,9 @@ class NullContentsClient extends AwContentsClient {
     @Override
     public void onScaleChangedScaled(float oldScale, float newScale) {
     }
+
+    @Override
+    protected View getVideoLoadingProgressView() {
+        return null;
+    }
 }

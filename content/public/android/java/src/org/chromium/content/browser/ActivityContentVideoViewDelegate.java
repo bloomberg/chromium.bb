@@ -25,6 +25,7 @@ public class ActivityContentVideoViewDelegate implements ContentVideoViewContext
         this.mActivity = activity;
     }
 
+    @Override
     public void onShowCustomView(View view) {
         mActivity.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -37,31 +38,43 @@ public class ActivityContentVideoViewDelegate implements ContentVideoViewContext
                         Gravity.CENTER));
     }
 
+    @Override
     public void onDestroyContentVideoView() {
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
+    @Override
     public Context getContext() {
         return mActivity;
     }
 
+    @Override
     public String getPlayBackErrorText() {
         return mActivity.getString(R.string.media_player_error_text_invalid_progressive_playback);
     }
 
+    @Override
     public String getUnknownErrorText() {
         return mActivity.getString(R.string.media_player_error_text_unknown);
     }
 
+    @Override
     public String getErrorButton() {
         return mActivity.getString(R.string.media_player_error_button);
     }
 
+    @Override
     public String getErrorTitle() {
         return mActivity.getString(R.string.media_player_error_title);
     }
 
+    @Override
     public String getVideoLoadingText() {
         return mActivity.getString(R.string.media_player_loading_video);
+    }
+
+    @Override
+    public View getVideoLoadingProgressView() {
+        return null;
     }
 }

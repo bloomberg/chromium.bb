@@ -21,4 +21,5 @@ public interface ContentVideoViewContextDelegate {
     public String getErrorButton();
     public String getErrorTitle();
     public String getVideoLoadingText();
+    public View getVideoLoadingProgressView();
 }

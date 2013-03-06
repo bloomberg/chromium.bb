@@ -21,6 +21,7 @@
         'additional_input_paths': [
           '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_file.html',
           '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_icon.png',
+          '<(PRODUCT_DIR)/android_webview_test_apk/assets/get_video_loading_progress_view_test.html',
         ],
       },
       'copies': [
@@ -29,6 +30,7 @@
           'files': [
             '<(java_in_dir)/assets/asset_file.html',
             '<(java_in_dir)/assets/asset_icon.png',
+            '<(java_in_dir)/assets/get_video_loading_progress_view_test.html',
           ],
         },
       ],

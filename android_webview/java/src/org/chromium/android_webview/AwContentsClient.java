@@ -283,6 +283,12 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     protected abstract void onRequestFocus();
 
+    // TODO (michaelbai): This method should be abstract, having empty body here
+    // makes the merge to the Android easy.
+    protected View getVideoLoadingProgressView() {
+        return null;
+    }
+
     //--------------------------------------------------------------------------------------------
     //                              Other WebView-specific methods
     //--------------------------------------------------------------------------------------------
