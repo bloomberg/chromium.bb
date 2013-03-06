@@ -6,30 +6,18 @@
  */
 
 #managed-user-creation-dialog {
-  height: 570px;
+  height: 488px;
   padding: 70px 17px 50px;
-  width: 485px;
+  width: 704px;
 }
 
 #managed-user-creation-contents {
   color: #606060;
-  margin: 20px 60px;
-}
-
-#managed-user-creation-name-title {
-  margin-top: 15px;
+  margin: 10px 33px;
 }
 
 #managed-user-creation-name-block,
-#managed-user-creation-password-block {
-  margin-top: 12px;
-}
-
-#managed-user-creation-name-error-block {
-  height: 16px;
-  margin-top: 10px;
-}
-
+#managed-user-creation-password-block,
 #managed-user-creation-password-title {
   margin-top: 10px;
 }
@@ -61,48 +49,53 @@
 }
 
 #managed-user-creation-managers-pane {
-  height: 200px;
+  height: 140px;
+  margin-top: 6px;
   overflow-y: auto;
-  width: 330px;
+  width: 645px;
 }
 
 .manager-pod {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   opacity: 0.8;
-  width: 300px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  width: 625px;
 }
 
 #managed-user-creation-managers-pane .focused {
+  background-color: #f0f0f0;
   opacity: 1;
 }
 
 .manager-pod .managed-user-creation-manager-info-block {
-  height: 48px;
+  min-height: 40px;
 }
 
 .manager-pod .managed-user-creation-manager-image {
   display: inline-block;
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
 }
 
 .manager-pod .managed-user-creation-manager-info {
   display: inline-block;
   margin: 0 8px;
-  min-height: 40px;
+  min-height: 30px;
 }
 
 .manager-pod .managed-user-creation-manager-info-text {
   display: inline-block;
-  min-height: 40px;
+  min-height: 30px;
   vertical-align: top;
 }
 
 .manager-pod .managed-user-creation-manager-email {
   color: #666;
-  margin-top: 2px;
+  font-size: small;
 }
 
 .manager-pod .managed-user-creation-manager-name {
-  margin-top: 2px;
+  color: #000;
+  font-size: small;
 }

@@ -466,6 +466,8 @@ cr.define('login', function() {
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);
+      if (userList.length > 0)
+        this.managerList_.selectPod(this.managerList_.pods[0]);
     },
 
     /**
