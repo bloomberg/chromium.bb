@@ -8,6 +8,7 @@
 
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -277,6 +278,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void ActivationRulesOverride() = 0;
   virtual void ShiftFocusOnActivation() {}
   virtual void NoShiftActiveOnActivation() {}
+  virtual void NoFocusChangeOnClickOnCaptureWindow() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -502,6 +504,26 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   virtual void NoShiftActiveOnActivation() OVERRIDE {
     // When a window is activated, we need to prevent any change to activation
     // from being made in response to an activation change notification.
+  }
+
+  virtual void NoFocusChangeOnClickOnCaptureWindow() OVERRIDE {
+    scoped_ptr<aura::client::DefaultCaptureClient> capture_client(
+        new aura::client::DefaultCaptureClient(root_window()));
+    // Clicking on a window which has capture should not cause a focus change
+    // to the window. This test verifies whether that is indeed the case.
+    ActivateWindowById(1);
+
+    EXPECT_EQ(1, GetActiveWindowId());
+    EXPECT_EQ(1, GetFocusedWindowId());
+
+    aura::Window* w2 = root_window()->GetChildById(2);
+    aura::client::GetCaptureClient(root_window())->SetCapture(w2);
+    aura::test::EventGenerator generator(root_window(), w2);
+    generator.ClickLeftButton();
+
+    EXPECT_EQ(1, GetActiveWindowId());
+    EXPECT_EQ(1, GetFocusedWindowId());
+    aura::client::GetCaptureClient(root_window())->ReleaseCapture(w2);
   }
 
  private:
@@ -890,6 +912,9 @@ TARGET_FOCUS_TESTS(ActivationRulesOverride);
 //   activation change observer are ignored.
 DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivation);
 DIRECT_FOCUS_CHANGE_TESTS(NoShiftActiveOnActivation);
+
+// Clicking on a window which has capture should not result in a focus change.
+DIRECT_FOCUS_CHANGE_TESTS(NoFocusChangeOnClickOnCaptureWindow);
 
 }  // namespace corewm
 }  // namespace views

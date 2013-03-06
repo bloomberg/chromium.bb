@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env.h"
 #include "ui/base/events/event.h"
@@ -110,6 +111,10 @@ void FocusController::FocusWindow(aura::Window* window) {
       (window->Contains(focused_window_) || window->Contains(active_window_))) {
     return;
   }
+
+  // We should not be messing with the focus if the window has capture.
+  if (window && (aura::client::GetCaptureWindow(window) == window))
+    return;
 
   // Focusing a window also activates its containing activatable window. Note
   // that the rules could redirect activation activation and/or focus.
