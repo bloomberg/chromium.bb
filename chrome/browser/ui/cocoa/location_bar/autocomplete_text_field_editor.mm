@@ -513,6 +513,32 @@ BOOL ThePasteboardIsTooDamnBig() {
   textChangedByKeyEvents_ = NO;
 }
 
+- (void)setInstantSuggestion:(NSString*)instantSuggestion
+                   textColor:(NSColor*)textColor {
+  if ([instantSuggestion length] == 0) {
+    suggestTextView_.reset();
+    return;
+  }
+
+  if (!suggestTextView_) {
+    suggestTextView_.reset([[NSTextView alloc] initWithFrame:NSZeroRect]);
+    [suggestTextView_ setDrawsBackground:NO];
+    [suggestTextView_ setEditable:NO];
+    [suggestTextView_ setFieldEditor:YES];
+    [[suggestTextView_ textContainer] setLineFragmentPadding:
+        [[self textContainer] lineFragmentPadding]];
+  }
+
+  NSMutableAttributedString* as = [[[NSMutableAttributedString alloc]
+      initWithAttributedString:[self textStorage]] autorelease];
+  NSRange range = NSMakeRange([[self textStorage] length], 0);
+  [as replaceCharactersInRange:range withString:instantSuggestion];
+  [as addAttribute:NSForegroundColorAttributeName
+             value:textColor
+             range:NSMakeRange(range.location, [instantSuggestion length])];
+  [[suggestTextView_ textStorage] setAttributedString:as];
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem*)item {
   if ([item action] == @selector(copyToFindPboard:))
     return [self selectedRange].length > 0;
@@ -542,6 +568,32 @@ BOOL ThePasteboardIsTooDamnBig() {
     return;
 
   [[FindPasteboard sharedInstance] setFindText:[selection string]];
+}
+
+- (void)drawRect:(NSRect)rect {
+  [super drawRect:rect];
+  if (!suggestTextView_)
+    return;
+
+  [suggestTextView_ setFrame:[self bounds]];
+
+  // Get the bounds for the non-suggest text.
+  NSRange nonSuggestTextRange = [[[self textContainer] layoutManager]
+      glyphRangeForTextContainer:[self textContainer]];
+  NSRect nonSuggestRect = [[[suggestTextView_ textContainer] layoutManager]
+      boundingRectForGlyphRange:nonSuggestTextRange
+                inTextContainer:[suggestTextView_ textContainer]];
+
+  // Clip out the non-suggest text.
+  NSRect clipRect = [suggestTextView_ bounds];
+  clipRect.origin.x = NSMaxX(nonSuggestRect);
+  clipRect.size.width =
+      NSMaxX([suggestTextView_ bounds]) - NSMaxX(nonSuggestRect);
+
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  NSRectClip(clipRect);
+  [suggestTextView_ drawRect:rect];
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
 }
 
 @end

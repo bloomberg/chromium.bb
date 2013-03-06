@@ -187,6 +187,12 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
   [editor_ display];
 }
 
+// Test setting instant suggestion, mostly to ensure nothing leaks or crashes.
+TEST_F(AutocompleteTextFieldEditorTest, InstantSuggestion) {
+  [editor_ setInstantSuggestion:@"foo" textColor:[NSColor redColor]];
+  [editor_ display];
+}
+
 // Test that -paste: is correctly delegated to the observer.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Paste) {
   EXPECT_CALL(field_observer_, OnPaste());

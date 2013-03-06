@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>  // kVK_Return
 
+#include "base/mac/foundation_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -138,7 +140,6 @@ OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
     : OmniboxView(profile, controller, toolbar_model, command_updater),
       popup_view_(OmniboxPopupViewMac::Create(this, model(), field)),
       field_(field),
-      suggest_text_length_(0),
       delete_was_pressed_(false),
       delete_at_end_pressed_(false),
       line_height_(0) {
@@ -232,7 +233,7 @@ void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
 }
 
 string16 OmniboxViewMac::GetText() const {
-  return base::SysNSStringToUTF16(GetNonSuggestTextSubstring());
+  return base::SysNSStringToUTF16([field_ stringValue]);
 }
 
 NSRange OmniboxViewMac::GetSelectedRange() const {
@@ -342,8 +343,7 @@ void OmniboxViewMac::UpdatePopup() {
   bool prevent_inline_autocomplete = IsImeComposing();
   NSTextView* editor = (NSTextView*)[field_ currentEditor];
   if (editor) {
-    if (NSMaxRange([editor selectedRange]) <
-        [[editor textStorage] length] - suggest_text_length_)
+    if (NSMaxRange([editor selectedRange]) < [[editor textStorage] length])
       prevent_inline_autocomplete = true;
   }
 
@@ -369,7 +369,7 @@ void OmniboxViewMac::ApplyCaretVisibility() {
 
 void OmniboxViewMac::SetText(const string16& display_text) {
   // If we are setting the text directly, there cannot be any suggest text.
-  suggest_text_length_ = 0;
+  SetInstantSuggestion(string16());
   SetTextInternal(display_text);
 }
 
@@ -378,15 +378,7 @@ void OmniboxViewMac::SetTextInternal(const string16& display_text) {
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
 
-  // |ApplyTextAttributes()| may call |GetText()|, expecting the current text
-  // to be consistent with |suggest_text_length_|, which may not be the case
-  // when |SetTextInternal()| is called after updating |suggest_text_length_|.
-  // To work around this, set the non-attributed string first, before applying
-  // styles to it.
-  [field_ setAttributedStringValue:as];
-
   ApplyTextAttributes(display_text, as);
-
   [field_ setAttributedStringValue:as];
 
   // TODO(shess): This may be an appropriate place to call:
@@ -410,27 +402,6 @@ void OmniboxViewMac::SetTextAndSelectedRange(const string16& display_text,
                                              const NSRange range) {
   SetText(display_text);
   SetSelectedRange(range);
-}
-
-NSString* OmniboxViewMac::GetNonSuggestTextSubstring() const {
-  NSString* text = [field_ stringValue];
-  if (suggest_text_length_ > 0) {
-    NSUInteger length = [text length];
-
-    DCHECK_LE(suggest_text_length_, length);
-    text = [text substringToIndex:(length - suggest_text_length_)];
-  }
-  return text;
-}
-
-NSString* OmniboxViewMac::GetSuggestTextSubstring() const {
-  if (suggest_text_length_ == 0)
-    return nil;
-
-  NSString* text = [field_ stringValue];
-  NSUInteger length = [text length];
-  DCHECK_LE(suggest_text_length_, length);
-  return [text substringFromIndex:(length - suggest_text_length_)];
 }
 
 void OmniboxViewMac::EmphasizeURLComponents() {
@@ -471,13 +442,9 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
   scoped_nsobject<NSMutableParagraphStyle>
       paragraph_style([[NSMutableParagraphStyle alloc] init]);
   [paragraph_style setMaximumLineHeight:line_height_];
+  [paragraph_style setMinimumLineHeight:line_height_];
   [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
              range:as_entire_string];
-
-  // Grey out the suggest text.
-  [as addAttribute:NSForegroundColorAttributeName value:SuggestTextColor()
-             range:NSMakeRange(as_length - suggest_text_length_,
-                               suggest_text_length_)];
 
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
@@ -527,7 +494,7 @@ void OmniboxViewMac::OnTemporaryTextMaybeChanged(const string16& display_text,
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
 
-  suggest_text_length_ = 0;
+  SetInstantSuggestion(string16());
   SetWindowTextAndCaretPos(display_text, display_text.size(), false, false);
   if (notify_text_changed)
     model()->OnChanged();
@@ -639,30 +606,15 @@ gfx::NativeView OmniboxViewMac::GetRelativeWindowForPopup() const {
 }
 
 void OmniboxViewMac::SetInstantSuggestion(const string16& suggest_text) {
-  NSString* text = GetNonSuggestTextSubstring();
-  bool needs_update = (suggest_text_length_ > 0);
-
-  // Append the new suggest text.
-  suggest_text_length_ = suggest_text.length();
-  if (suggest_text_length_ > 0) {
-    text = [text stringByAppendingString:base::SysUTF16ToNSString(
-               suggest_text)];
-    needs_update = true;
-  }
-
-  if (needs_update) {
-    NSRange current_range = GetSelectedRange();
-    SetTextInternal(base::SysNSStringToUTF16(text));
-    if (NSMaxRange(current_range) <= [text length] - suggest_text_length_)
-      SetSelectedRange(current_range);
-    else
-      SetSelectedRange(NSMakeRange([text length] - suggest_text_length_, 0));
-  }
+  suggest_text_ = suggest_text;
+  AutocompleteTextFieldEditor* field_editor =
+      base::mac::ObjCCast<AutocompleteTextFieldEditor>([field_ currentEditor]);
+  [field_editor setInstantSuggestion:base::SysUTF16ToNSString(suggest_text)
+                           textColor:SuggestTextColor()];
 }
 
 string16 OmniboxViewMac::GetInstantSuggestion() const {
-  return suggest_text_length_ ?
-      base::SysNSStringToUTF16(GetSuggestTextSubstring()) : string16();
+  return suggest_text_;
 }
 
 int OmniboxViewMac::TextWidth() const {
@@ -744,7 +696,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   if (cmd == @selector(moveRight:)) {
     // Only commit suggested text if the cursor is all the way to the right and
     // there is no selection.
-    if (suggest_text_length_ > 0 && IsCaretAtEnd()) {
+    if (suggest_text_.length() > 0 && IsCaretAtEnd()) {
       model()->CommitSuggestedText(true);
       return true;
     }
@@ -985,30 +937,7 @@ bool OmniboxViewMac::OnBackspacePressed() {
 }
 
 NSRange OmniboxViewMac::SelectionRangeForProposedRange(NSRange proposed_range) {
-  // Should never call this function unless editing is in progress.
-  DCHECK([field_ currentEditor]);
-
-  if (![field_ currentEditor])
-    return proposed_range;
-
-  // Do not use [field_ stringValue] here, as that forces a sync between the
-  // field and the editor.  This sync will end up setting the selection, which
-  // in turn calls this method, leading to an infinite loop.  Instead, retrieve
-  // the current string value directly from the editor.
-  size_t text_length = [[[field_ currentEditor] string] length];
-
-  // Cannot select suggested text.
-  size_t max = text_length - suggest_text_length_;
-  NSUInteger start = proposed_range.location;
-  NSUInteger end = proposed_range.location + proposed_range.length;
-
-  if (start > max)
-    start = max;
-
-  if (end > max)
-    end = max;
-
-  return NSMakeRange(start, end - start);
+  return proposed_range;
 }
 
 void OmniboxViewMac::OnControlKeyChanged(bool pressed) {
@@ -1037,9 +966,8 @@ int OmniboxViewMac::GetOmniboxTextLength() const {
 }
 
 NSUInteger OmniboxViewMac::GetTextLength() const {
-  return ([field_ currentEditor] ?
-          [[[field_ currentEditor] string] length] :
-          [[field_ stringValue] length]) - suggest_text_length_;
+  return [field_ currentEditor] ?  [[[field_ currentEditor] string] length] :
+                                   [[field_ stringValue] length];
 }
 
 bool OmniboxViewMac::IsCaretAtEnd() const {

@@ -248,8 +248,16 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 }
 
 // Test that omnibox text is correctly set when clicking on committed SERP.
+// Disabled on Mac because omnibox focus loss is not working correctly.
+#if defined(OS_MACOSX)
+#define MAYBE_OmniboxTextUponFocusedCommittedSERP \
+    DISABLED_OmniboxTextUponFocusedCommittedSERP
+#else
+#define MAYBE_OmniboxTextUponFocusedCommittedSERP \
+    OmniboxTextUponFocusedCommittedSERP
+#endif
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       OmniboxTextUponFocusedCommittedSERP) {
+                       MAYBE_OmniboxTextUponFocusedCommittedSERP) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
