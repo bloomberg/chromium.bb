@@ -732,7 +732,7 @@ void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
   const gfx::ImageSkia& bottom_right_image =
       GetBottomRightCornerImage(corner_style_);
   const gfx::ImageSkia& top_image = GetTopEdgeImage();
-  const gfx::ImageSkia& bottom_image = GetRightEdgeImage();
+  const gfx::ImageSkia& bottom_image = GetBottomEdgeImage();
   const gfx::ImageSkia& left_image = GetLeftEdgeImage();
   const gfx::ImageSkia& right_image = GetRightEdgeImage();
 
