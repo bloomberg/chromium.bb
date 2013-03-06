@@ -3600,6 +3600,43 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 }
 
+// Tests reloading an extension.
+TEST_F(ExtensionServiceTest, ReloadExtension) {
+  InitializeEmptyExtensionService();
+  InitializeExtensionProcessManager();
+
+  // Simple extension that should install without error.
+  const char* extension_id = "behllobkkfkfnphdnhnkndlbkcpglgmj";
+  base::FilePath ext = data_dir_
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(extension_id)
+      .AppendASCII("1.0.0.0");
+  extensions::UnpackedInstaller::Create(service_)->Load(ext);
+  loop_.RunUntilIdle();
+
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+
+  service_->ReloadExtension(extension_id);
+
+  // Extension should be disabled now, waiting to be reloaded.
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(1u, service_->disabled_extensions()->size());
+  EXPECT_EQ(Extension::DISABLE_RELOAD,
+            service_->extension_prefs()->GetDisableReasons(extension_id));
+
+  // Reloading again should not crash.
+  service_->ReloadExtension(extension_id);
+
+  // Finish reloading
+  loop_.RunUntilIdle();
+
+  // Extension should be enabled again.
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+}
+
 TEST_F(ExtensionServiceTest, UninstallExtension) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);

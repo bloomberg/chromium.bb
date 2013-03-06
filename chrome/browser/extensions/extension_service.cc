@@ -712,6 +712,13 @@ void ExtensionService::ReloadExtensionWithEvents(
     const std::string& extension_id,
     int events) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If the extension is already reloading, don't reload again.
+  if (extension_prefs_->GetDisableReasons(extension_id) &
+      Extension::DISABLE_RELOAD) {
+    return;
+  }
+
   base::FilePath path;
   const Extension* current_extension = GetExtensionById(extension_id, false);
 
