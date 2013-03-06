@@ -10,7 +10,6 @@
 #include "ash/system/chromeos/network/network_list_detailed_view.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
-#include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -20,8 +19,6 @@
 #include "ash/system/tray/tray_notification_view.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -407,8 +404,7 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       detailed_(NULL),
       notification_(NULL),
       messages_(new tray::NetworkMessages()),
-      request_wifi_view_(false),
-      uninitialized_msg_(0) {
+      request_wifi_view_(false) {
   if (UseNewNetworkHandlers())
     network_state_observer_.reset(new TrayNetworkStateObserver(this));
   Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
@@ -445,7 +441,8 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
     request_wifi_view_ = false;
   } else {
     if (UseNewNetworkHandlers()) {
-      detailed_ = new tray::NetworkStateListDetailedView(this, status);
+      detailed_ = new tray::NetworkStateListDetailedView(
+          this, tray::NetworkStateListDetailedView::LIST_TYPE_NETWORK, status);
     } else {
       detailed_ = new tray::NetworkListDetailedView(
           this, status, IDS_ASH_STATUS_TRAY_NETWORK);
@@ -522,8 +519,7 @@ void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
 }
 
 void TrayNetwork::OnWillToggleWifi() {
-  if (UseNewNetworkHandlers())
-    return;  // Handled in TrayNetworkStateObserver::NetworkManagerChanged()
+  // Triggered by a user action (e.g. keyboard shortcut)
   if (!detailed_ ||
       detailed_->GetViewType() == tray::NetworkDetailedView::WIFI_VIEW) {
     request_wifi_view_ = true;
@@ -531,42 +527,22 @@ void TrayNetwork::OnWillToggleWifi() {
   }
 }
 
-void TrayNetwork::TrayNetworkUpdated() {
+void TrayNetwork::NetworkStateChanged(bool list_changed) {
   if (tray_  && UseNewNetworkHandlers())
     tray_->UpdateNetworkStateHandlerIcon();
   if (default_)
     default_->Update();
-}
-
-void TrayNetwork::NetworkServiceChanged(const chromeos::NetworkState* network) {
-  if (!network->IsConnectingState())
-    connecting_networks_.erase(network->path());
-}
-
-void TrayNetwork::ConnectToNetwork(const std::string& service_path) {
-  DCHECK(UseNewNetworkHandlers());
-  const NetworkState* network =
-      NetworkStateHandler::Get()->GetNetworkState(service_path);
-  if (!network)
-    return;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableNewNetworkConfigurationHandlers) &&
-      !network->IsConnectedState()) {
-    chromeos::NetworkConfigurationHandler::Get()->Connect(
-        service_path,
-        base::Bind(&base::DoNothing),
-        chromeos::network_handler::ErrorCallback());
-    connecting_networks_.insert(service_path);
-  } else {
-    // This will show the settings UI for a connected network.
-    // TODO(stevenjb): Change the API to explicitly show network settings.
-    Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
-        service_path);
+  if (detailed_) {
+    if (list_changed)
+      detailed_->NetworkListChanged();
+    else
+      detailed_->ManagerChanged();
   }
 }
 
-bool TrayNetwork::HasConnectingNetwork(const std::string& service_path) {
-  return connecting_networks_.count(service_path) > 0;
+void TrayNetwork::NetworkServiceChanged(const chromeos::NetworkState* network) {
+  if (detailed_)
+    detailed_->NetworkServiceChanged(network);
 }
 
 void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
@@ -587,13 +563,13 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
   // network, or the connection was user requested, use the connecting
   // network.
   if (connecting_network &&
-      (!network ||
-       HasConnectingNetwork(connecting_network->path()))) {
+      (!network || TrayNetworkStateObserver::HasConnectingNetwork(
+          connecting_network->path()))) {
     network = connecting_network;
   }
   if (!network) {
     // If no connecting network, check for cellular initializing.
-    int uninitialized_msg = GetUninitializedMsg();
+    int uninitialized_msg = network_icon::GetCellularUninitializedMsg();
     if (uninitialized_msg != 0) {
       *image = network_icon::GetImageForConnectingNetwork(
           icon_type, flimflam::kTypeCellular);
@@ -614,29 +590,6 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
   *image = network_icon::GetImageForNetwork(network, icon_type);
   if (label)
     *label = network_icon::GetLabelForNetwork(network, icon_type);
-}
-
-int TrayNetwork::GetUninitializedMsg() {
-  NetworkStateHandler* handler = NetworkStateHandler::Get();
-  if (handler->TechnologyUninitialized(
-          NetworkStateHandler::kMatchTypeMobile)) {
-    uninitialized_msg_ = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
-    uninitialized_state_time_ = base::Time::Now();
-    return uninitialized_msg_;
-  } else if (handler->GetScanningByType(
-      NetworkStateHandler::kMatchTypeMobile)) {
-    uninitialized_msg_ = IDS_ASH_STATUS_TRAY_CELLULAR_SCANNING;
-    uninitialized_state_time_ = base::Time::Now();
-    return uninitialized_msg_;
-  }
-  // There can be a delay between leaving the Initializing state and when
-  // a Cellular device shows up, so keep showing the initializing
-  // animation for a bit to avoid flashing the disconnect icon.
-  const int kInitializingDelaySeconds = 1;
-  base::TimeDelta dtime = base::Time::Now() - uninitialized_state_time_;
-  if (dtime.InSeconds() < kInitializingDelaySeconds)
-    return uninitialized_msg_;
-  return 0;
 }
 
 void TrayNetwork::LinkClicked(MessageType message_type, int link_id) {

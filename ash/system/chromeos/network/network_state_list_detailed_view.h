@@ -26,10 +26,12 @@ class BubbleDelegateView;
 }
 
 namespace ash {
+
+class SystemTrayItem;
+
 namespace internal {
 
 class HoverHighlightView;
-class TrayNetwork;
 class TrayPopupLabelButton;
 
 namespace tray {
@@ -41,7 +43,13 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
                                      public ViewClickListener,
                                      public network_icon::AnimationObserver {
  public:
-  NetworkStateListDetailedView(TrayNetwork* tray_network,
+  enum ListType {
+    LIST_TYPE_NETWORK,
+    LIST_TYPE_VPN
+  };
+
+  NetworkStateListDetailedView(SystemTrayItem* owner,
+                               ListType list_type,
                                user::LoginStatus login);
   virtual ~NetworkStateListDetailedView();
 
@@ -78,7 +86,7 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   void UpdateHeaderButtons();
 
   void UpdateNetworks(const NetworkStateList& networks);
-  void UpdateNetworkListEntries();
+  void UpdateNetworkList();
   bool CreateOrUpdateInfoLabel(
       int index, const string16& text, views::Label** label);
   bool UpdateNetworkChild(int index, const NetworkInfo* info);
@@ -96,8 +104,11 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   bool ResetInfoBubble();
   views::View* CreateNetworkInfoView();
 
-  // Typed pointer to the owning tray item.
-  TrayNetwork* tray_network_;
+  // Handle click (connect) action
+  void ConnectToNetwork(const std::string& service_path);
+
+  // Type of list (all networks or vpn)
+  ListType list_type_;
 
   // Track login state.
   user::LoginStatus login_;
@@ -125,6 +136,7 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   TrayPopupLabelButton* other_wifi_;
   TrayPopupLabelButton* turn_on_wifi_;
   TrayPopupLabelButton* other_mobile_;
+  TrayPopupLabelButton* other_vpn_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
   views::Label* scanning_view_;

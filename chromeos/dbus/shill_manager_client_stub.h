@@ -85,6 +85,7 @@ class ShillManagerClientStub : public ShillManagerClient,
   virtual void AddDevice(const std::string& device_path) OVERRIDE;
   virtual void RemoveDevice(const std::string& device_path) OVERRIDE;
   virtual void ClearDevices() OVERRIDE;
+  virtual void ClearServices() OVERRIDE;
   virtual void AddService(const std::string& service_path,
                           bool add_to_watch_list) OVERRIDE;
   virtual void AddServiceAtIndex(const std::string& service_path,

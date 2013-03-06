@@ -287,6 +287,11 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
 
 const gfx::ImageSkia GetDisconnectedImage(const std::string& type,
                                           IconType icon_type) {
+  if (type == flimflam::kTypeVPN) {
+    // Note: same as connected image, shouldn't normally be seen.
+    return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NETWORK_VPN);
+  }
   ImageType image_type = ImageTypeForNetworkType(type);
   const int disconnected_index = 0;
   return GetImageForIndex(image_type, icon_type, disconnected_index);
@@ -595,6 +600,32 @@ string16 GetLabelForNetwork(const chromeos::NetworkState* network,
     }
   }
   return UTF8ToUTF16(network->name());
+}
+
+int GetCellularUninitializedMsg() {
+  static base::Time s_uninitialized_state_time;
+  static int s_uninitialized_msg(0);
+
+  NetworkStateHandler* handler = NetworkStateHandler::Get();
+  if (handler->TechnologyUninitialized(
+          NetworkStateHandler::kMatchTypeMobile)) {
+    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
+    s_uninitialized_state_time = base::Time::Now();
+    return s_uninitialized_msg;
+  } else if (handler->GetScanningByType(
+      NetworkStateHandler::kMatchTypeMobile)) {
+    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_CELLULAR_SCANNING;
+    s_uninitialized_state_time = base::Time::Now();
+    return s_uninitialized_msg;
+  }
+  // There can be a delay between leaving the Initializing state and when
+  // a Cellular device shows up, so keep showing the initializing
+  // animation for a bit to avoid flashing the disconnect icon.
+  const int kInitializingDelaySeconds = 1;
+  base::TimeDelta dtime = base::Time::Now() - s_uninitialized_state_time;
+  if (dtime.InSeconds() < kInitializingDelaySeconds)
+    return s_uninitialized_msg;
+  return 0;
 }
 
 }  // namespace network_icon

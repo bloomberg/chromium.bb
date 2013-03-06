@@ -4,46 +4,116 @@
 
 #include "ash/system/chromeos/network/tray_vpn.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_list_detailed_view_base.h"
+#include "ash/system/chromeos/network/network_state_list_detailed_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
+#include "base/command_line.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/ash_strings.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+bool UseNewNetworkHandlers() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshEnableNewNetworkStatusArea);
+}
+
+}
+
+using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
 
 namespace ash {
 namespace internal {
 
 namespace tray {
 
-class VpnDefaultView : public TrayItemMore {
+class VpnDefaultView : public TrayItemMore,
+                       public network_icon::AnimationObserver {
  public:
   VpnDefaultView(SystemTrayItem* owner, bool show_more)
       : TrayItemMore(owner, show_more) {
     Update();
+    if (UseNewNetworkHandlers())
+      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   }
 
-  virtual ~VpnDefaultView() {}
+  virtual ~VpnDefaultView() {
+    if (UseNewNetworkHandlers())
+      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+  }
 
   static bool ShouldShow() {
     // Do not show VPN line in uber tray bubble if VPN is not configured.
-    std::vector<NetworkIconInfo> list;
-    Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(&list);
-    return list.size() != 0;
+    if (UseNewNetworkHandlers()) {
+      NetworkStateHandler* handler = NetworkStateHandler::Get();
+      const NetworkState* vpn = handler->FirstNetworkByType(
+          flimflam::kTypeVPN);
+      return vpn != NULL;
+    } else {
+      std::vector<NetworkIconInfo> list;
+      Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworks(&list);
+      return list.size() != 0;
+    }
   }
 
   void Update() {
-    NetworkIconInfo info;
-    Shell::GetInstance()->system_tray_delegate()->GetVirtualNetworkIcon(&info);
-    SetImage(&info.image);
-    SetLabel(info.description);
-    SetAccessibleName(info.description);
+    if (UseNewNetworkHandlers()) {
+      gfx::ImageSkia image;
+      string16 label;
+      GetNetworkStateHandlerImageAndLabel(&image, &label);
+      SetImage(&image);
+      SetLabel(label);
+      SetAccessibleName(label);
+    } else {
+      NetworkIconInfo info;
+      Shell::GetInstance()->system_tray_delegate()->
+          GetVirtualNetworkIcon(&info);
+      SetImage(&info.image);
+      SetLabel(info.description);
+      SetAccessibleName(info.description);
+    }
+  }
+
+  // network_icon::AnimationObserver
+  virtual void NetworkIconChanged() OVERRIDE {
+    Update();
   }
 
  private:
+  void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
+                                           string16* label) {
+    NetworkStateHandler* handler = NetworkStateHandler::Get();
+    const NetworkState* vpn = handler->FirstNetworkByType(
+        flimflam::kTypeVPN);
+    if (!vpn) {
+      *image = network_icon::GetImageForDisconnectedNetwork(
+          network_icon::ICON_TYPE_DEFAULT_VIEW, flimflam::kTypeVPN);
+      if (label) {
+        *label = l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);
+      }
+      return;
+    }
+    *image = network_icon::GetImageForNetwork(
+        vpn, network_icon::ICON_TYPE_DEFAULT_VIEW);
+    if (label) {
+      *label = network_icon::GetLabelForNetwork(
+          vpn, network_icon::ICON_TYPE_DEFAULT_VIEW);
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(VpnDefaultView);
 };
 
@@ -151,6 +221,8 @@ TrayVPN::TrayVPN(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_(NULL),
       detailed_(NULL) {
+  if (UseNewNetworkHandlers())
+    network_state_observer_.reset(new TrayNetworkStateObserver(this));
   Shell::GetInstance()->system_tray_notifier()->AddVpnObserver(this);
 }
 
@@ -176,8 +248,14 @@ views::View* TrayVPN::CreateDefaultView(user::LoginStatus status) {
 
 views::View* TrayVPN::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_ == NULL);
-  detailed_ = new tray::VpnListDetailedView(
-      this, status, IDS_ASH_STATUS_TRAY_VPN);
+
+  if (UseNewNetworkHandlers()) {
+    detailed_ = new tray::NetworkStateListDetailedView(
+        this, tray::NetworkStateListDetailedView::LIST_TYPE_VPN, status);
+  } else {
+    detailed_ = new tray::VpnListDetailedView(
+        this, status, IDS_ASH_STATUS_TRAY_VPN);
+  }
   detailed_->Init();
   return detailed_;
 }
@@ -233,6 +311,22 @@ void TrayVPN::ClearNetworkMessage(MessageType message_type) {
 }
 
 void TrayVPN::OnWillToggleWifi() {
+}
+
+void TrayVPN::NetworkStateChanged(bool list_changed) {
+  if (default_)
+    default_->Update();
+  if (detailed_) {
+    if (list_changed)
+      detailed_->NetworkListChanged();
+    else
+      detailed_->ManagerChanged();
+  }
+}
+
+void TrayVPN::NetworkServiceChanged(const chromeos::NetworkState* network) {
+  if (detailed_)
+    detailed_->NetworkServiceChanged(network);
 }
 
 }  // namespace internal

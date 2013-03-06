@@ -188,6 +188,7 @@ class ShillPropertyHandlerTest : public testing::Test {
 
   // Call this after any initial Shill client setup
   void SetupShillPropertyHandler() {
+    SetupDefaultShillState();
     listener_.reset(new TestListener);
     shill_property_handler_.reset(
         new internal::ShillPropertyHandler(listener_.get()));
@@ -204,6 +205,23 @@ class ShillPropertyHandlerTest : public testing::Test {
   }
 
  protected:
+  void SetupDefaultShillState() {
+    message_loop_.RunUntilIdle();  // Process any pending updates
+    device_test_->ClearDevices();
+    AddDevice(flimflam::kTypeWifi, "stub_wifi_device1");
+    AddDevice(flimflam::kTypeCellular, "stub_cellular_device1");
+    service_test_->ClearServices();
+    const bool add_to_watchlist = true;
+    AddService(flimflam::kTypeEthernet, "stub_ethernet",
+               flimflam::kStateOnline, add_to_watchlist);
+    AddService(flimflam::kTypeWifi, "stub_wifi1",
+               flimflam::kStateOnline, add_to_watchlist);
+    AddService(flimflam::kTypeWifi, "stub_wifi2",
+               flimflam::kStateIdle, add_to_watchlist);
+    AddService(flimflam::kTypeCellular, "stub_cellular1",
+               flimflam::kStateIdle, add_to_watchlist);
+  }
+
   MessageLoopForUI message_loop_;
   scoped_ptr<TestListener> listener_;
   scoped_ptr<internal::ShillPropertyHandler> shill_property_handler_;
@@ -219,8 +237,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
   SetupShillPropertyHandler();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, listener_->manager_updates());
-  // ShillManagerClient default stub entries are in shill_manager_client.cc.
-  // TODO(stevenjb): Eliminate default stub entries and add them explicitly.
   EXPECT_TRUE(shill_property_handler_->TechnologyAvailable(
       flimflam::kTypeWifi));
   EXPECT_TRUE(shill_property_handler_->TechnologyEnabled(
@@ -236,7 +252,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupShillPropertyHandler();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, listener_->manager_updates());
@@ -262,7 +277,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupShillPropertyHandler();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, listener_->manager_updates());
@@ -290,7 +304,6 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerDevicePropertyChanged) {
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServicePropertyChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupShillPropertyHandler();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1, listener_->manager_updates());

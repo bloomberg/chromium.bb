@@ -291,6 +291,9 @@ const base::DictionaryValue* ShillServiceClientStub::GetServiceProperties(
 }
 
 void ShillServiceClientStub::ClearServices() {
+  DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
+      ClearServices();
+
   stub_services_.Clear();
 }
 
@@ -335,6 +338,16 @@ void ShillServiceClientStub::SetDefaultProperties() {
   SetServiceProperty("stub_cellular1",
                      flimflam::kActivationStateProperty,
                      activation_value);
+
+  AddService("stub_vpn1", "vpn1",
+             flimflam::kTypeVPN,
+             flimflam::kStateOnline,
+             add_to_watchlist);
+
+  AddService("stub_vpn2", "vpn2",
+             flimflam::kTypeVPN,
+             flimflam::kStateOffline,
+             add_to_watchlist);
 }
 
 void ShillServiceClientStub::PassStubServiceProperties(

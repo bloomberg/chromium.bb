@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
@@ -27,6 +28,11 @@ void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
   LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
 }
+
+const std::string kShillManagerClientStubDefaultService = "stub_ethernet";
+const std::string kShillManagerClientStubDefaultWireless = "stub_wifi1";
+const std::string kShillManagerClientStubWireless2 = "stub_wifi2";
+const std::string kShillManagerClientStubCellular = "stub_cellular";
 
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
@@ -127,6 +133,7 @@ class NetworkStateHandlerTest : public testing::Test {
   }
 
   void SetupNetworkStateHandler() {
+    SetupDefaultShillState();
     network_state_handler_.reset(new NetworkStateHandler);
     test_observer_.reset(new TestObserver(network_state_handler_.get()));
     network_state_handler_->AddObserver(test_observer_.get());
@@ -134,6 +141,38 @@ class NetworkStateHandlerTest : public testing::Test {
   }
 
  protected:
+  void SetupDefaultShillState() {
+    message_loop_.RunUntilIdle();  // Process any pending updates
+    ShillDeviceClient::TestInterface* device_test =
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+    device_test->ClearDevices();
+    device_test->AddDevice("/device/stub_wifi_device1",
+                           flimflam::kTypeWifi, "stub_wifi_device1");
+    device_test->AddDevice("/device/stub_cellular_device1",
+                           flimflam::kTypeCellular, "stub_cellular_device1");
+
+    ShillServiceClient::TestInterface* service_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    service_test->ClearServices();
+    const bool add_to_watchlist = true;
+    service_test->AddService(kShillManagerClientStubDefaultService,
+                             kShillManagerClientStubDefaultService,
+                             flimflam::kTypeEthernet, flimflam::kStateOnline,
+                             add_to_watchlist);
+    service_test->AddService(kShillManagerClientStubDefaultWireless,
+                             kShillManagerClientStubDefaultWireless,
+                             flimflam::kTypeWifi, flimflam::kStateOnline,
+                             add_to_watchlist);
+    service_test->AddService(kShillManagerClientStubWireless2,
+                             kShillManagerClientStubWireless2,
+                             flimflam::kTypeWifi, flimflam::kStateIdle,
+                             add_to_watchlist);
+    service_test->AddService(kShillManagerClientStubCellular,
+                             kShillManagerClientStubCellular,
+                             flimflam::kTypeCellular, flimflam::kStateIdle,
+                             add_to_watchlist);
+  }
+
   MessageLoopForUI message_loop_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<TestObserver> test_observer_;
@@ -143,7 +182,6 @@ class NetworkStateHandlerTest : public testing::Test {
 };
 
 TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupNetworkStateHandler();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->manager_changed_count());
@@ -152,7 +190,6 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
   EXPECT_EQ(kNumShillManagerClientStubImplServices,
             test_observer_->network_count());
   // Ensure that the first stub network is the default network.
-  const std::string kShillManagerClientStubDefaultService = "stub_ethernet";
   EXPECT_EQ(kShillManagerClientStubDefaultService,
             test_observer_->default_network());
   EXPECT_EQ(kShillManagerClientStubDefaultService,
@@ -161,7 +198,6 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
   EXPECT_EQ(kShillManagerClientStubDefaultService,
             network_state_handler_->ConnectedNetworkByType(
                 flimflam::kTypeEthernet)->path());
-  const std::string kShillManagerClientStubDefaultWireless = "stub_wifi1";
   EXPECT_EQ(kShillManagerClientStubDefaultWireless,
             network_state_handler_->ConnectedNetworkByType(
                 NetworkStateHandler::kMatchTypeWireless)->path());
@@ -170,7 +206,6 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupNetworkStateHandler();
   message_loop_.RunUntilIdle();
   EXPECT_EQ(1u, test_observer_->manager_changed_count());
@@ -185,7 +220,6 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupNetworkStateHandler();
   message_loop_.RunUntilIdle();
   // Set a service property.
@@ -204,7 +238,6 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupNetworkStateHandler();
   message_loop_.RunUntilIdle();
   // Change a network state.
@@ -227,7 +260,6 @@ TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
-  // This relies on the stub dbus implementations for ShillManagerClient,
   SetupNetworkStateHandler();
   message_loop_.RunUntilIdle();
 

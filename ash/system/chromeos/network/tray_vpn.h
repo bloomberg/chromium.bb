@@ -6,11 +6,14 @@
 #define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H
 
 #include "ash/system/chromeos/network/network_observer.h"
+#include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {
 namespace internal {
+
+class TrayNetworkStateObserver;
 
 namespace tray {
 class NetworkDetailedView;
@@ -19,12 +22,13 @@ class VpnDetailedView;
 }
 
 class TrayVPN : public SystemTrayItem,
-                public NetworkObserver {
+                public NetworkObserver,
+                public TrayNetworkStateObserver::Delegate {
  public:
   explicit TrayVPN(SystemTray* system_tray);
   virtual ~TrayVPN();
 
-  // Overridden from SystemTrayItem.
+  // SystemTrayItem
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
@@ -38,7 +42,7 @@ class TrayVPN : public SystemTrayItem,
   virtual void UpdateAfterShelfAlignmentChange(
       ShelfAlignment alignment) OVERRIDE;
 
-  // Overridden from NetworkObserver.
+  // NetworkObserver
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;
   virtual void SetNetworkMessage(NetworkTrayDelegate* delegate,
                                  MessageType message_type,
@@ -49,9 +53,15 @@ class TrayVPN : public SystemTrayItem,
   virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
   virtual void OnWillToggleWifi() OVERRIDE;
 
+  // TrayNetworkStateObserver::Delegate
+  virtual void NetworkStateChanged(bool list_changed) OVERRIDE;
+  virtual void NetworkServiceChanged(
+      const chromeos::NetworkState* network) OVERRIDE;
+
  private:
   tray::VpnDefaultView* default_;
   tray::NetworkDetailedView* detailed_;
+  scoped_ptr<TrayNetworkStateObserver> network_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayVPN);
 };

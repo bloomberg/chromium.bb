@@ -4,18 +4,27 @@
 
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 
-#include "ash/system/chromeos/network/network_detailed_view.h"
-#include "ash/system/chromeos/network/tray_network.h"
-#include "ash/system/tray/tray_constants.h"
+#include <set>
+#include <string>
+
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace {
+
+std::set<std::string>& GetConnectingNetworks() {
+  static std::set<std::string> s_connecting_networks_;
+  return s_connecting_networks_;
+}
+
+}
 
 namespace ash {
 namespace internal {
 
-TrayNetworkStateObserver::TrayNetworkStateObserver(TrayNetwork* tray)
-    : tray_(tray),
-      wifi_state_(WIFI_UNKNOWN) {
+TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
+    : delegate_(delegate) {
   chromeos::NetworkStateHandler::Get()->AddObserver(this);
 }
 
@@ -24,46 +33,39 @@ TrayNetworkStateObserver::~TrayNetworkStateObserver() {
 }
 
 void TrayNetworkStateObserver::NetworkManagerChanged() {
-  tray::NetworkDetailedView* detailed = tray_->detailed();
-  bool wifi_enabled = chromeos::NetworkStateHandler::Get()->
-      TechnologyEnabled(flimflam::kTypeWifi);
-  WifiState wifi_state = wifi_enabled ? WIFI_ENABLED : WIFI_DISABLED;
-  if ((wifi_state_ != WIFI_UNKNOWN && wifi_state_ != wifi_state) &&
-      (!detailed ||
-       detailed->GetViewType() == tray::NetworkDetailedView::WIFI_VIEW)) {
-    tray_->set_request_wifi_view(true);
-    tray_->PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
-  }
-  wifi_state_ = wifi_state;
-  if (detailed)
-    detailed->ManagerChanged();
+  delegate_->NetworkStateChanged(false);
 }
 
 void TrayNetworkStateObserver::NetworkListChanged() {
-  tray::NetworkDetailedView* detailed = tray_->detailed();
-  if (detailed)
-    detailed->NetworkListChanged();
-  tray_->TrayNetworkUpdated();
+  delegate_->NetworkStateChanged(true);
 }
 
 void TrayNetworkStateObserver::DeviceListChanged() {
-  tray::NetworkDetailedView* detailed = tray_->detailed();
-  if (detailed)
-    detailed->ManagerChanged();
-  tray_->TrayNetworkUpdated();
+  delegate_->NetworkStateChanged(false);
 }
 
 void TrayNetworkStateObserver::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
-  tray_->TrayNetworkUpdated();
+  delegate_->NetworkStateChanged(true);
 }
 
 void TrayNetworkStateObserver::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
-  tray_->NetworkServiceChanged(network);
-  tray::NetworkDetailedView* detailed = tray_->detailed();
-  if (detailed)
-    detailed->NetworkServiceChanged(network);
+  if (!network->IsConnectingState())
+    GetConnectingNetworks().erase(network->path());
+  delegate_->NetworkServiceChanged(network);
+}
+
+// static
+void TrayNetworkStateObserver::AddConnectingNetwork(
+    const std::string& service_path) {
+  GetConnectingNetworks().insert(service_path);
+}
+
+// static
+bool TrayNetworkStateObserver::HasConnectingNetwork(
+    const std::string& service_path) {
+  return GetConnectingNetworks().count(service_path) > 0;
 }
 
 }  // namespace ash

@@ -8,6 +8,10 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_service_client.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -25,6 +29,49 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
         "networking", "main.html?" + subtest,
         kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    content::RunAllPendingInMessageLoop();
+
+    ShillDeviceClient::TestInterface* device_test =
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
+    device_test->ClearDevices();
+    device_test->AddDevice("/device/stub_wifi_device1",
+                           flimflam::kTypeWifi, "stub_wifi_device1");
+    device_test->AddDevice("/device/stub_cellular_device1",
+                           flimflam::kTypeCellular, "stub_cellular_device1");
+
+    ShillServiceClient::TestInterface* service_test =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    service_test->ClearServices();
+    const bool add_to_watchlist = true;
+    service_test->AddService("stub_ethernet",
+                             "eth0",
+                             flimflam::kTypeEthernet, flimflam::kStateOnline,
+                             add_to_watchlist);
+    service_test->AddService("stub_wifi1",
+                             "wifi1",
+                             flimflam::kTypeWifi, flimflam::kStateOnline,
+                             add_to_watchlist);
+    service_test->AddService("stub_wifi2",
+                             "wifi2_PSK",
+                             flimflam::kTypeWifi, flimflam::kStateIdle,
+                             add_to_watchlist);
+    base::StringValue psk_value(flimflam::kSecurityPsk);
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kSecurityProperty,
+                                     psk_value);
+    base::FundamentalValue strength_value(80);
+    service_test->SetServiceProperty("stub_wifi2",
+                                     flimflam::kSignalStrengthProperty,
+                                     strength_value);
+    service_test->AddService("stub_cellular1",
+                             "cellular1",
+                             flimflam::kTypeCellular, flimflam::kStateIdle,
+                             add_to_watchlist);
+  }
+
 };
 
 // Place each subtest into a separate browser test so that the stub networking

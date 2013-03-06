@@ -47,6 +47,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
                                    size_t index,
                                    bool add_to_watch_list) = 0;
     virtual void RemoveService(const std::string& service_path) = 0;
+    virtual void ClearServices() = 0;
     virtual void AddTechnology(const std::string& type, bool enabled) = 0;
     virtual void RemoveTechnology(const std::string& type) = 0;
     virtual void AddGeoNetwork(const std::string& technology,

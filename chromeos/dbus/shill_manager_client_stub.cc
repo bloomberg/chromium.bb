@@ -242,6 +242,11 @@ void ShillManagerClientStub::ClearDevices() {
   stub_properties_.Remove(flimflam::kDevicesProperty, NULL);
 }
 
+void ShillManagerClientStub::ClearServices() {
+  stub_properties_.Remove(flimflam::kServicesProperty, NULL);
+  stub_properties_.Remove(flimflam::kServiceWatchListProperty, NULL);
+}
+
 void ShillManagerClientStub::AddService(const std::string& service_path,
                                         bool add_to_watch_list) {
   if (GetListProperty(flimflam::kServicesProperty)->AppendIfNotPresent(
@@ -414,6 +419,8 @@ base::ListValue* ShillManagerClientStub::GetListProperty(
 }
 
 bool ShillManagerClientStub::TechnologyEnabled(const std::string& type) const {
+  if (type == flimflam::kTypeVPN)
+    return true;  // VPN is always "enabled" since there is no associated device
   bool enabled = false;
   const base::ListValue* technologies;
   if (stub_properties_.GetListWithoutPathExpansion(
@@ -439,6 +446,10 @@ base::ListValue* ShillManagerClientStub::GetEnabledServiceList(
         continue;
       const base::DictionaryValue* properties =
           service_client->GetServiceProperties(service_path);
+      if (!properties) {
+        LOG(ERROR) << "Properties not found for service: " << service_path;
+        continue;
+      }
       std::string name;
       properties->GetString(flimflam::kNameProperty, &name);
       std::string type;
