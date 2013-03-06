@@ -344,14 +344,14 @@ gfx::Rect TrayBubbleView::GetAnchorRect() {
                                   params_.anchor_alignment);
 }
 
-BubbleFrameView* TrayBubbleView::CreateBubbleFrameView() {
+bool TrayBubbleView::CanActivate() const {
+  return params_.can_activate;
+}
+
+NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(margins());
   frame->SetBubbleBorder(bubble_border_);
   return frame;
-}
-
-bool TrayBubbleView::CanActivate() const {
-  return params_.can_activate;
 }
 
 bool TrayBubbleView::WidgetHasHitTestMask() const {
