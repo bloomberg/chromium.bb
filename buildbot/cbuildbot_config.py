@@ -242,6 +242,10 @@ _settings = dict(
 # usepkg_build_packages -- Use binary packages for build_packages.
   usepkg_build_packages=True,
 
+# sync_chrome -- Does this profile need to sync chrome?  If None, we guess based
+#                on other factors.  If True/False, we always do that.
+  sync_chrome=None,
+
 # nowithdebug -- Pass the --nowithdebug flag to build_packages (sets the
 #                -DNDEBUG compiler flag).
   nowithdebug=False,
@@ -1162,6 +1166,7 @@ _firmware_release = _release.derive(
   packages=('virtual/chromeos-firmware',),
   usepkg_setup_board=True,
   usepkg_build_packages=True,
+  sync_chrome=False,
   build_tests=False,
   unittests=False,
   vm_tests=None,

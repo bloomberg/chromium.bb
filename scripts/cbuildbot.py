@@ -608,10 +608,13 @@ def _RunBuildStagesWrapper(options, build_config):
     options.chrome_rev = constants.CHROME_REV_SPEC
 
   # If it's likely we'll need to build Chrome, fetch the source.
-  options.managed_chrome = (chrome_rev != constants.CHROME_REV_LOCAL and
-      (not build_config['usepkg_build_packages'] or chrome_rev or
-       build_config['useflags'] or build_config['profile'] or
-       options.rietveld_patches))
+  if build_config['sync_chrome'] is None:
+    options.managed_chrome = (chrome_rev != constants.CHROME_REV_LOCAL and
+        (not build_config['usepkg_build_packages'] or chrome_rev or
+         build_config['useflags'] or build_config['profile'] or
+         options.rietveld_patches))
+  else:
+    options.managed_chrome = build_config['sync_chrome']
 
   if options.managed_chrome:
     # Tell Chrome to fetch the source locally.
