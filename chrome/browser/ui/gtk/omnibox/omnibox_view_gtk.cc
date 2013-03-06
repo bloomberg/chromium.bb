@@ -432,7 +432,6 @@ void OmniboxViewGtk::SetFocus() {
 
 void OmniboxViewGtk::ApplyCaretVisibility() {
   // TODO(mathp): implement for Linux.
-  NOTIMPLEMENTED();
 }
 
 int OmniboxViewGtk::WidthOfTextAfterCursor() {
