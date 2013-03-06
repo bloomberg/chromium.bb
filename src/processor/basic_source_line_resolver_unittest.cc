@@ -59,8 +59,8 @@ class TestCodeModule : public CodeModule {
   TestCodeModule(string code_file) : code_file_(code_file) {}
   virtual ~TestCodeModule() {}
 
-  virtual u_int64_t base_address() const { return 0; }
-  virtual u_int64_t size() const { return 0xb000; }
+  virtual uint64_t base_address() const { return 0; }
+  virtual uint64_t size() const { return 0xb000; }
   virtual string code_file() const { return code_file_; }
   virtual string code_identifier() const { return ""; }
   virtual string debug_file() const { return ""; }
@@ -76,17 +76,17 @@ class TestCodeModule : public CodeModule {
 
 // A mock memory region object, for use by the STACK CFI tests.
 class MockMemoryRegion: public MemoryRegion {
-  u_int64_t GetBase() const { return 0x10000; }
-  u_int32_t GetSize() const { return 0x01000; }
-  bool GetMemoryAtAddress(u_int64_t address, u_int8_t *value) const {
+  uint64_t GetBase() const { return 0x10000; }
+  uint32_t GetSize() const { return 0x01000; }
+  bool GetMemoryAtAddress(uint64_t address, uint8_t *value) const {
     *value = address & 0xff;
     return true;
   }
-  bool GetMemoryAtAddress(u_int64_t address, u_int16_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint16_t *value) const {
     *value = address & 0xffff;
     return true;
   }
-  bool GetMemoryAtAddress(u_int64_t address, u_int32_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint32_t *value) const {
     switch (address) {
       case 0x10008: *value = 0x98ecadc3; break; // saved %ebx
       case 0x1000c: *value = 0x878f7524; break; // saved %esi
@@ -97,7 +97,7 @@ class MockMemoryRegion: public MemoryRegion {
     }
     return true;
   }
-  bool GetMemoryAtAddress(u_int64_t address, u_int64_t *value) const {
+  bool GetMemoryAtAddress(uint64_t address, uint64_t *value) const {
     *value = address;
     return true;
   }
@@ -109,9 +109,9 @@ class MockMemoryRegion: public MemoryRegion {
 // ".cfa".
 static bool VerifyRegisters(
     const char *file, int line,
-    const CFIFrameInfo::RegisterValueMap<u_int32_t> &expected,
-    const CFIFrameInfo::RegisterValueMap<u_int32_t> &actual) {
-  CFIFrameInfo::RegisterValueMap<u_int32_t>::const_iterator a;
+    const CFIFrameInfo::RegisterValueMap<uint32_t> &expected,
+    const CFIFrameInfo::RegisterValueMap<uint32_t> &actual) {
+  CFIFrameInfo::RegisterValueMap<uint32_t>::const_iterator a;
   a = actual.find(".cfa");
   if (a == actual.end())
     return false;
@@ -119,7 +119,7 @@ static bool VerifyRegisters(
   if (a == actual.end())
     return false;
   for (a = actual.begin(); a != actual.end(); a++) {
-    CFIFrameInfo::RegisterValueMap<u_int32_t>::const_iterator e =
+    CFIFrameInfo::RegisterValueMap<uint32_t>::const_iterator e =
       expected.find(a->first);
     if (e == expected.end()) {
       fprintf(stderr, "%s:%d: unexpected register '%s' recovered, value 0x%x\n",
@@ -252,9 +252,9 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_FALSE(cfi_frame_info.get());
 
-  CFIFrameInfo::RegisterValueMap<u_int32_t> current_registers;
-  CFIFrameInfo::RegisterValueMap<u_int32_t> caller_registers;
-  CFIFrameInfo::RegisterValueMap<u_int32_t> expected_caller_registers;
+  CFIFrameInfo::RegisterValueMap<uint32_t> current_registers;
+  CFIFrameInfo::RegisterValueMap<uint32_t> caller_registers;
+  CFIFrameInfo::RegisterValueMap<uint32_t> expected_caller_registers;
   MockMemoryRegion memory;
 
   // Regardless of which instruction evaluation takes place at, it
@@ -277,7 +277,7 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_TRUE(cfi_frame_info.get());
   ASSERT_TRUE(cfi_frame_info.get()
-              ->FindCallerRegs<u_int32_t>(current_registers, memory,
+              ->FindCallerRegs<uint32_t>(current_registers, memory,
                                           &caller_registers));
   ASSERT_TRUE(VerifyRegisters(__FILE__, __LINE__,
                               expected_caller_registers, caller_registers));
@@ -287,7 +287,7 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_TRUE(cfi_frame_info.get());
   ASSERT_TRUE(cfi_frame_info.get()
-              ->FindCallerRegs<u_int32_t>(current_registers, memory,
+              ->FindCallerRegs<uint32_t>(current_registers, memory,
                                           &caller_registers));
   ASSERT_TRUE(VerifyRegisters(__FILE__, __LINE__,
                               expected_caller_registers, caller_registers));
@@ -297,7 +297,7 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_TRUE(cfi_frame_info.get());
   ASSERT_TRUE(cfi_frame_info.get()
-              ->FindCallerRegs<u_int32_t>(current_registers, memory,
+              ->FindCallerRegs<uint32_t>(current_registers, memory,
                                           &caller_registers));
   VerifyRegisters(__FILE__, __LINE__,
                   expected_caller_registers, caller_registers);
@@ -307,7 +307,7 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_TRUE(cfi_frame_info.get());
   ASSERT_TRUE(cfi_frame_info.get()
-              ->FindCallerRegs<u_int32_t>(current_registers, memory,
+              ->FindCallerRegs<uint32_t>(current_registers, memory,
                                           &caller_registers));
   VerifyRegisters(__FILE__, __LINE__,
                   expected_caller_registers, caller_registers);
@@ -317,7 +317,7 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_TRUE(cfi_frame_info.get());
   ASSERT_TRUE(cfi_frame_info.get()
-              ->FindCallerRegs<u_int32_t>(current_registers, memory,
+              ->FindCallerRegs<uint32_t>(current_registers, memory,
                                           &caller_registers));
   VerifyRegisters(__FILE__, __LINE__,
                   expected_caller_registers, caller_registers);
@@ -327,7 +327,7 @@ TEST_F(TestBasicSourceLineResolver, TestLoadAndResolve)
   cfi_frame_info.reset(resolver.FindCFIFrameInfo(&frame));
   ASSERT_TRUE(cfi_frame_info.get());
   ASSERT_TRUE(cfi_frame_info.get()
-              ->FindCallerRegs<u_int32_t>(current_registers, memory,
+              ->FindCallerRegs<uint32_t>(current_registers, memory,
                                           &caller_registers));
   VerifyRegisters(__FILE__, __LINE__,
                   expected_caller_registers, caller_registers);
