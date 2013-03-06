@@ -41,6 +41,10 @@ GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
                            int protocol_version,
                            bool pushed);
 
+// Returns true if the value of this header should be displayed.
+NET_EXPORT_PRIVATE bool ShouldShowHttpHeaderValue(
+    const std::string& header_name);
+
 NET_EXPORT_PRIVATE SpdyPriority ConvertRequestPriorityToSpdyPriority(
     RequestPriority priority,
     int protocol_version);

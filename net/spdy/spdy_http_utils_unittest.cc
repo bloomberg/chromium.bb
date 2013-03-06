@@ -25,6 +25,16 @@ TEST(SpdyHttpUtilsTest, ConvertRequestPriorityToSpdy3Priority) {
   EXPECT_EQ(4, ConvertRequestPriorityToSpdyPriority(IDLE, 3));
 }
 
+TEST(SpdyHttpUtilsTest, ShowHttpHeaderValue){
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  EXPECT_FALSE(ShouldShowHttpHeaderValue("proxy-authorization"));
+  EXPECT_TRUE(ShouldShowHttpHeaderValue("accept-encoding"));
+#else
+  EXPECT_TRUE(ShouldShowHttpHeaderValue("proxy-authorization"));
+  EXPECT_TRUE(ShouldShowHttpHeaderValue("accept-encoding"));
+#endif
+}
+
 }  // namespace test
 
 }  // namespace net

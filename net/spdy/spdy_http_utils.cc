@@ -183,4 +183,12 @@ GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
   return GURL(url);
 }
 
+bool ShouldShowHttpHeaderValue(const std::string& header_name) {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  if (header_name == "proxy-authorization")
+    return false;
+#endif
+  return true;
+}
+
 }  // namespace net

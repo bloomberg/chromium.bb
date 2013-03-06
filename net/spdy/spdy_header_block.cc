@@ -5,6 +5,7 @@
 #include "net/spdy/spdy_header_block.h"
 
 #include "base/values.h"
+#include "net/spdy/spdy_http_utils.h"
 
 namespace net {
 
@@ -15,18 +16,10 @@ Value* SpdyHeaderBlockNetLogCallback(
   DictionaryValue* headers_dict = new DictionaryValue();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
-#if defined(OS_ANDROID)
-    if (it->first == "proxy-authorization") {
     headers_dict->SetWithoutPathExpansion(
-        it->first, new StringValue("[elided]"));
-    } else {
-      headers_dict->SetWithoutPathExpansion(
-          it->first, new StringValue(it->second));
-    }
-#else
-    headers_dict->SetWithoutPathExpansion(
-        it->first, new StringValue(it->second));
-#endif
+        it->first,
+        new StringValue(
+            ShouldShowHttpHeaderValue(it->first) ? it->second : "[elided]"));
   }
   dict->Set("headers", headers_dict);
   return dict;
