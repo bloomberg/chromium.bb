@@ -1371,7 +1371,6 @@
         'browser/ui/ash/shelf_browsertest.cc',
         'browser/ui/ash/volume_controller_browsertest_chromeos.cc',
         'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
-        'browser/ui/autofill/autofill_popup_controller_browsertest.cc',
         'browser/ui/bookmarks/bookmark_browsertest.cc',
         'browser/ui/browser_browsertest.cc',
         'browser/ui/browser_close_browsertest.cc',

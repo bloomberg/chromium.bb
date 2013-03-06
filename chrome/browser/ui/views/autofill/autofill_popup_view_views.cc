@@ -34,17 +34,13 @@ AutofillPopupViewViews::AutofillPopupViewViews(
       observing_widget_(NULL) {}
 
 AutofillPopupViewViews::~AutofillPopupViewViews() {
-}
-
-void AutofillPopupViewViews::Hide() {
-  AutofillPopupView::Hide();
-
   if (observing_widget_)
     observing_widget_->RemoveObserver(this);
 
-  // The controller is no longer valid after it hides us.
-  controller_ = NULL;
+  controller_->ViewDestroyed();
+}
 
+void AutofillPopupViewViews::Hide() {
   if (GetWidget()) {
     // This deletes |this|.
     GetWidget()->Close();
@@ -54,13 +50,6 @@ void AutofillPopupViewViews::Hide() {
 }
 
 void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
-  // This can happen if we have a paint message in the queue when the popup
-  // is told to hide (so the controller is invalid at this point). Its ok to
-  // avoid drawing popup, sine we don't have access to the data anymore, and it
-  // should be hidden soon.
-  if (!controller_)
-    return;
-
   canvas->DrawColor(kPopupBackground);
   OnPaintBorder(canvas);
 
@@ -117,7 +106,7 @@ void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
 void AutofillPopupViewViews::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
-  controller_->Hide();
+  Hide();
 }
 
 void AutofillPopupViewViews::Show() {

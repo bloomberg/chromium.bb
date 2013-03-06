@@ -28,9 +28,6 @@ namespace {
 class MockAutofillManagerDelegate
     : public autofill::TestAutofillManagerDelegate {
  public:
-  MockAutofillManagerDelegate() {}
-  virtual ~MockAutofillManagerDelegate() {}
-
   virtual PrefService* GetPrefs() { return &prefs_; }
 
   PrefRegistrySyncable* GetPrefRegistry() {
@@ -49,8 +46,6 @@ class MockAutofillManagerDelegate
 
  private:
   TestingPrefServiceSyncable prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
 // Subclass AutofillManager so we can create AutofillManager instance.
@@ -65,8 +60,6 @@ class TestAutofillManager : public AutofillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
-// Subclass AutofillExternalDelegate so we can create an
-// AutofillExternalDelegate instance.
 class TestAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
   TestAutofillExternalDelegate(content::WebContents* web_contents,

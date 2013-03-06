@@ -323,8 +323,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
       static_cast<AutofillPopupController*>(controller3)->element_bounds());
   controller3->Hide();
 
-  // Hide the test_controller to delete it.
-  test_controller->DoHide();
+  delete test_controller;
 }
 
 #if !defined(OS_ANDROID)
