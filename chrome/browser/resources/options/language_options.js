@@ -599,15 +599,19 @@ cr.define('options', function() {
       for (var i = 0; i < languageCodes.length; i++) {
         languageCodeSet[languageCodes[i]] = true;
       }
+
       var addLanguageList = $('add-language-overlay-language-list');
-      var lis = addLanguageList.querySelectorAll('li');
-      for (var i = 0; i < lis.length; i++) {
-        // The first child button knows the language code.
-        var button = lis[i].childNodes[0];
-        if (button.languageCode in languageCodeSet) {
-          lis[i].style.display = 'none';
-        } else {
-          lis[i].style.display = 'block';
+      var options = addLanguageList.querySelectorAll('option');
+      assert(options.length > 0);
+      var selectedFirstItem = false;
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        option.hidden = option.value in languageCodeSet;
+        if (!option.hidden && !selectedFirstItem) {
+          // Select first visible item, otherwise previously selected hidden
+          // item will be selected by default at the next time.
+          option.selected = true;
+          selectedFirstItem = true;
         }
       }
     },
