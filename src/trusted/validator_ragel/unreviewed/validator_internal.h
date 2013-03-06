@@ -361,7 +361,7 @@ static FORCEINLINE void Rel32Operand(const uint8_t *rip,
     *instruction_info_collected |= RELATIVE_32BIT | DIRECT_JUMP_OUT_OF_RANGE;
 }
 
-static INLINE void CheckAccess(ptrdiff_t instruction_start,
+static INLINE void CheckAccess(ptrdiff_t instruction_begin,
                                enum OperandName base,
                                enum OperandName index,
                                uint8_t restricted_register,
@@ -372,7 +372,7 @@ static INLINE void CheckAccess(ptrdiff_t instruction_start,
     if ((index == NO_REG) || (index == REG_RIZ))
       { /* do nothing. */ }
     else if (index == restricted_register)
-      BitmapClearBit(valid_targets, instruction_start),
+      BitmapClearBit(valid_targets, instruction_begin),
       *instruction_info_collected |= RESTRICTED_REGISTER_USED;
     else
       *instruction_info_collected |= UNRESTRICTED_INDEX_REGISTER;
@@ -539,16 +539,16 @@ static INLINE void Process2OperandsZeroExtends(
  */
 static INLINE void ExpandSuperinstructionBySandboxingBytes(
     size_t sandbox_instructions_size,
-    const uint8_t **instruction_start,
+    const uint8_t **instruction_begin,
     const uint8_t *data,
     bitmap_word *valid_targets) {
-  *instruction_start -= sandbox_instructions_size;
+  *instruction_begin -= sandbox_instructions_size;
   /*
    * We need to unmark start of the “dangerous” instruction itself, too, but we
    * don't need to mark the beginning of the whole “superinstruction” - that's
    * why we move start by one byte and don't change the length.
    */
-  UnmarkValidJumpTargets((*instruction_start + 1 - data),
+  UnmarkValidJumpTargets((*instruction_begin + 1 - data),
                          sandbox_instructions_size,
                          valid_targets);
 }
@@ -566,39 +566,39 @@ static INLINE void ExpandSuperinstructionBySandboxingBytes(
  *              3: 4? 01 fX    add    RBASE,R86
  *              6: ff eX       jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E86
  *              4: 4? 01 fX    add    RBASE,R86
  *              7: ff eX       jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 83 eX e0    and    $~0x1f,E86
  *              3: 4? 01 fX    add    RBASE,R86
  *              6: 4? ff eX    jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E86
  *              4: 4? 01 fX    add    RBASE,R86
  *              7: 4? ff eX       jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E64
  *              4: 4? 01 fX    add    RBASE,R64
  *              7: 4? ff eX    jmpq   *R64
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  * We don't care about “?” (they are checked by DFA).
  */
-static INLINE Bool VerifyNaclCallOrJmpAddToRM(const uint8_t *instruction_start,
+static INLINE Bool VerifyNaclCallOrJmpAddToRM(const uint8_t *instruction_begin,
                                               const uint8_t *current_position) {
   return
-    RMFromModRM(instruction_start[-5]) == RMFromModRM(instruction_start[-1]) &&
-    RMFromModRM(instruction_start[-5]) == RMFromModRM(current_position[0]);
+    RMFromModRM(instruction_begin[-5]) == RMFromModRM(instruction_begin[-1]) &&
+    RMFromModRM(instruction_begin[-5]) == RMFromModRM(current_position[0]);
 }
 
 /*
@@ -614,40 +614,40 @@ static INLINE Bool VerifyNaclCallOrJmpAddToRM(const uint8_t *instruction_start,
  *              3: 4? 03 Xf    add    RBASE,R86
  *              6: ff eX       jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E86
  *              4: 4? 03 Xf    add    RBASE,R86
  *              7: ff eX       jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 83 eX e0    and    $~0x1f,E86
  *              3: 4? 03 Xf    add    RBASE,R86
  *              6: 4? ff eX       jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E86
  *              4: 4? 03 Xf    add    RBASE,R86
  *              7: 4? ff eX       jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E64
  *              4: 4? 03 Xf    add    RBASE,R64
  *              7: 4? ff eX    jmpq   *R64
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  * We don't care about “?” (they are checked by DFA).
  */
 static INLINE Bool VerifyNaclCallOrJmpAddToReg(
-    const uint8_t *instruction_start,
+    const uint8_t *instruction_begin,
     const uint8_t *current_position) {
   return
-    RMFromModRM(instruction_start[-5]) == RegFromModRM(instruction_start[-1]) &&
-    RMFromModRM(instruction_start[-5]) == RMFromModRM(current_position[0]);
+    RMFromModRM(instruction_begin[-5]) == RegFromModRM(instruction_begin[-1]) &&
+    RMFromModRM(instruction_begin[-5]) == RMFromModRM(current_position[0]);
 }
 
 /*
@@ -666,23 +666,23 @@ static INLINE Bool VerifyNaclCallOrJmpAddToReg(
  *              3: 4? 01 fX    add    RBASE,R86
  *              6: ff eX       jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 83 eX e0    and    $~0x1f,E86
  *              3: 4? 01 fX    add    RBASE,R86
  *              6: 4? ff eX    jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  */
 static INLINE void ProcessNaclCallOrJmpAddToRMNoRex(
     uint32_t *instruction_info_collected,
-    const uint8_t **instruction_start,
+    const uint8_t **instruction_begin,
     const uint8_t *current_position,
     const uint8_t *data,
     bitmap_word *valid_targets) {
-  if (VerifyNaclCallOrJmpAddToRM(*instruction_start, current_position))
+  if (VerifyNaclCallOrJmpAddToRM(*instruction_begin, current_position))
     ExpandSuperinstructionBySandboxingBytes(
-      3 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+      3 /* and */ + 3 /* add */, instruction_begin, data, valid_targets);
   else
     *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
 }
@@ -703,23 +703,23 @@ static INLINE void ProcessNaclCallOrJmpAddToRMNoRex(
  *              3: 4? 03 Xf    add    RBASE,R86
  *              6: ff eX       jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 83 eX e0    and    $~0x1f,E86
  *              3: 4? 03 Xf    add    RBASE,R86
  *              6: 4? ff eX    jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  */
 static INLINE void ProcessNaclCallOrJmpAddToRegNoRex(
     uint32_t *instruction_info_collected,
-    const uint8_t **instruction_start,
+    const uint8_t **instruction_begin,
     const uint8_t *current_position,
     const uint8_t *data,
     bitmap_word *valid_targets) {
-  if (VerifyNaclCallOrJmpAddToReg(*instruction_start, current_position))
+  if (VerifyNaclCallOrJmpAddToReg(*instruction_begin, current_position))
     ExpandSuperinstructionBySandboxingBytes(
-      3 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+      3 /* and */ + 3 /* add */, instruction_begin, data, valid_targets);
   else
     *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
 }
@@ -740,29 +740,29 @@ static INLINE void ProcessNaclCallOrJmpAddToRegNoRex(
  *              4: 4? 01 fX    add    RBASE,R86
  *              7: ff eX    jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E86
  *              4: 4? 01 fX    add    RBASE,R86
  *              7: 4? ff eX    jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E64
  *              4: 4? 01 fX    add    RBASE,R64
  *              7: 4? ff eX    jmpq   *R64
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  */
 static INLINE void ProcessNaclCallOrJmpAddToRMWithRex(
     uint32_t *instruction_info_collected,
-    const uint8_t **instruction_start,
+    const uint8_t **instruction_begin,
     const uint8_t *current_position,
     const uint8_t *data,
     bitmap_word *valid_targets) {
-  if (VerifyNaclCallOrJmpAddToRM(*instruction_start, current_position))
+  if (VerifyNaclCallOrJmpAddToRM(*instruction_begin, current_position))
     ExpandSuperinstructionBySandboxingBytes(
-      4 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+      4 /* and */ + 3 /* add */, instruction_begin, data, valid_targets);
   else
     *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
 }
@@ -783,29 +783,29 @@ static INLINE void ProcessNaclCallOrJmpAddToRMWithRex(
  *              4: 4? 03 Xf    add    RBASE,R86
  *              7: ff eX    jmpq   *R86
  *                 ↑  ↑
- * instruction_start  current_position
+ * instruction_begin  current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E86
  *              4: 4? 03 Xf    add    RBASE,R86
  *              7: 4? ff eX    jmpq   *R86
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  *
  *              0: 4? 83 eX e0 and    $~0x1f,E64
  *              4: 4? 03 Xf    add    RBASE,R64
  *              7: 4? ff eX    jmpq   *R64
  *                 ↑     ↑
- * instruction_start     current_position
+ * instruction_begin     current_position
  */
 static INLINE void ProcessNaclCallOrJmpAddToRegWithRex(
     uint32_t *instruction_info_collected,
-    const uint8_t **instruction_start,
+    const uint8_t **instruction_begin,
     const uint8_t *current_position,
     const uint8_t *data,
     bitmap_word *valid_targets) {
-  if (VerifyNaclCallOrJmpAddToReg(*instruction_start, current_position))
+  if (VerifyNaclCallOrJmpAddToReg(*instruction_begin, current_position))
     ExpandSuperinstructionBySandboxingBytes(
-      4 /* and */ + 3 /* add */, instruction_start, data, valid_targets);
+      4 /* and */ + 3 /* add */, instruction_begin, data, valid_targets);
   else
     *instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
 }

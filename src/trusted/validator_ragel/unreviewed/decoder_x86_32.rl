@@ -95,7 +95,7 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
                     ProcessDecodingErrorFunc process_error, void *userdata) {
   const uint8_t *current_position = data;
   const uint8_t *end_of_data = data + size;
-  const uint8_t *instruction_start = current_position;
+  const uint8_t *instruction_begin = current_position;
   uint8_t vex_prefix3 = 0x00;
   enum ImmediateMode imm_operand = IMMNONE;
   enum ImmediateMode imm2_operand = IMMNONE;

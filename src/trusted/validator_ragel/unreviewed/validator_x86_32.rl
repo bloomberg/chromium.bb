@@ -104,7 +104,7 @@
    # and $~0x1f, %eXX     jmp %eXX
     @{
       UnmarkValidJumpTarget((current_position - data) - 1, valid_targets);
-      instruction_start -= 3;
+      instruction_begin -= 3;
       instruction_info_collected |= SPECIAL_INSTRUCTION;
     } |
     (0x65 0xa1 (0x00|0x04) 0x00 0x00 0x00      | # mov %gs:0x0/0x4,%eax
@@ -137,27 +137,33 @@
   # We call the user callback if there are validation errors or if the
   # CALL_USER_CALLBACK_ON_EACH_INSTRUCTION option is used.
   #
-  # After that we move instruction_start and clean all the variables which
+  # After that we move instruction_begin and clean all the variables which
   # only used in the processing of a single instruction (prefixes, operand
   # states and instruction_info_collected).
   action end_of_instruction_cleanup {
+    /* Mark start of this instruction as a valid target for jump.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
-      result &= user_callback(instruction_start, current_position,
-                                 instruction_info_collected, callback_data);
+      result &= user_callback(instruction_begin, instruction_end,
+                              instruction_info_collected, callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Clear variables (well, one variable currently).  */
     instruction_info_collected = 0;
   }
 
   # This action reports fatal error detected by DFA.
   action report_fatal_error {
-    result &= user_callback(instruction_start, current_position,
+    result &= user_callback(instruction_begin, current_position,
                             UNRECOGNIZED_INSTRUCTION, callback_data);
     /*
      * Process the next bundle: “continue” here is for the “for” cycle in
@@ -190,8 +196,8 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                        const NaClCPUFeaturesX86 *cpu_features,
                        ValidationCallbackFunc user_callback,
                        void *callback_data) {
-  bitmap_word valid_targets_small[2];
-  bitmap_word jump_dests_small[2];
+  bitmap_word valid_targets_small;
+  bitmap_word jump_dests_small;
   bitmap_word *valid_targets;
   bitmap_word *jump_dests;
   const uint8_t *current_position;
@@ -201,23 +207,15 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
   CHECK(sizeof valid_targets_small == sizeof jump_dests_small);
   CHECK(size % kBundleSize == 0);
 
-  /*
-   * For a very small sequences (one bundle) malloc is too expensive.
-   *
-   * Note1: we allocate one extra bit, because we set valid jump target bits
-   * _after_ instructions, so there will be one at the end of the chunk.
-   *
-   * Note2: we don't ever mark first bit as a valid jump target but this is
-   * not a problem because any aligned address is valid jump target.
-   */
-  if ((size + 1) <= (sizeof valid_targets_small * 8)) {
-    memset(valid_targets_small, 0, sizeof valid_targets_small);
-    valid_targets = valid_targets_small;
-    memset(jump_dests_small, 0, sizeof jump_dests_small);
-    jump_dests = jump_dests_small;
+  /* For a very small sequences (one bundle) malloc is too expensive.  */
+  if (size <= (sizeof valid_targets_small * 8)) {
+    valid_targets_small = 0;
+    valid_targets = &valid_targets_small;
+    jump_dests_small = 0;
+    jump_dests = &jump_dests_small;
   } else {
-    valid_targets = BitmapAllocate(size + 1);
-    jump_dests = BitmapAllocate(size + 1);
+    valid_targets = BitmapAllocate(size);
+    jump_dests = BitmapAllocate(size);
     if (!valid_targets || !jump_dests) {
       free(jump_dests);
       free(valid_targets);
@@ -247,7 +245,9 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
        current_position = end_of_bundle,
        end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
-    const uint8_t *instruction_start = current_position;
+    const uint8_t *instruction_begin = current_position;
+    /* Only used locally in the end_of_instruction_cleanup action.  */
+    const uint8_t *instruction_end;
     uint32_t instruction_info_collected = 0;
     int current_state;
 
@@ -263,8 +263,8 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                                       user_callback, callback_data);
 
   /* We only use malloc for a large code sequences  */
-  if (jump_dests != jump_dests_small) free(jump_dests);
-  if (valid_targets != valid_targets_small) free(valid_targets);
+  if (jump_dests != &jump_dests_small) free(jump_dests);
+  if (valid_targets != &valid_targets_small) free(valid_targets);
   if (!result) errno = EINVAL;
   return result;
 }

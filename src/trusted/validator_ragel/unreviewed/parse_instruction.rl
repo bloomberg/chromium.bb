@@ -904,9 +904,9 @@
   machine decoder;
 
   action end_of_instruction_cleanup {
-    process_instruction(instruction_start, current_position+1, &instruction,
+    process_instruction(instruction_begin, current_position + 1, &instruction,
                         userdata);
-    instruction_start = current_position + 1;
+    instruction_begin = current_position + 1;
     SET_DISP_TYPE(DISPNONE);
     SET_IMM_TYPE(IMMNONE);
     SET_IMM2_TYPE(IMMNONE);

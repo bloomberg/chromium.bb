@@ -38,8 +38,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                         const NaClCPUFeaturesX86 *cpu_features,
                         ValidationCallbackFunc user_callback,
                         void *callback_data) {
-  bitmap_word valid_targets_small[2];
-  bitmap_word jump_dests_small[2];
+  bitmap_word valid_targets_small;
+  bitmap_word jump_dests_small;
   bitmap_word *valid_targets;
   bitmap_word *jump_dests;
   const uint8_t *current_position;
@@ -59,10 +59,10 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
    * not a problem because any aligned address is valid jump target.
    */
   if ((size + 1) <= (sizeof valid_targets_small * 8)) {
-    memset(valid_targets_small, 0, sizeof valid_targets_small);
-    valid_targets = valid_targets_small;
-    memset(jump_dests_small, 0, sizeof jump_dests_small);
-    jump_dests = jump_dests_small;
+    valid_targets_small = 0;
+    valid_targets = &valid_targets_small;
+    jump_dests_small = 0;
+    jump_dests = &jump_dests_small;
   } else {
     valid_targets = BitmapAllocate(size + 1);
     jump_dests = BitmapAllocate(size + 1);
@@ -95,7 +95,9 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
        current_position = end_of_bundle,
        end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
-    const uint8_t *instruction_start = current_position;
+    const uint8_t *instruction_begin = current_position;
+    /* Only used locally in the end_of_instruction_cleanup action.  */
+    const uint8_t *instruction_end;
     int current_state;
     uint32_t instruction_info_collected = 0;
     /* Keeps one byte of information per operand in the current instruction:
@@ -2727,27 +2729,35 @@ tr0:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -2771,20 +2781,28 @@ tr7:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -2808,27 +2826,35 @@ tr8:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -2847,27 +2873,35 @@ tr13:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -2886,27 +2920,35 @@ tr14:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -2931,20 +2973,28 @@ tr17:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -2972,7 +3022,7 @@ tr18:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -2980,20 +3030,28 @@ tr18:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3017,20 +3075,28 @@ tr25:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3054,7 +3120,7 @@ tr26:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3062,20 +3128,28 @@ tr26:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3094,7 +3168,7 @@ tr31:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3102,20 +3176,28 @@ tr31:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3134,7 +3216,7 @@ tr32:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3142,20 +3224,28 @@ tr32:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3183,7 +3273,7 @@ tr35:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3192,20 +3282,28 @@ tr35:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3230,20 +3328,28 @@ tr42:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3267,7 +3373,7 @@ tr43:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3276,20 +3382,28 @@ tr43:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3308,7 +3422,7 @@ tr48:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3317,20 +3431,28 @@ tr48:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3349,7 +3471,7 @@ tr49:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -3358,20 +3480,28 @@ tr49:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3394,20 +3524,28 @@ tr52:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3431,20 +3569,28 @@ tr56:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3461,20 +3607,28 @@ tr59:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3492,20 +3646,28 @@ tr61:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3523,20 +3685,28 @@ tr68:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3554,20 +3724,28 @@ tr77:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3591,20 +3769,28 @@ tr94:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3625,20 +3811,28 @@ tr98:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3659,20 +3853,28 @@ tr99:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3690,20 +3892,28 @@ tr100:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3729,20 +3939,28 @@ tr101:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3769,20 +3987,28 @@ tr108:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3804,20 +4030,28 @@ tr113:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3839,20 +4073,28 @@ tr114:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3873,20 +4115,28 @@ tr125:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3907,20 +4157,28 @@ tr126:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3943,27 +4201,35 @@ tr136:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -3981,20 +4247,28 @@ tr143:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4020,20 +4294,28 @@ tr144:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4058,20 +4340,28 @@ tr151:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4094,27 +4384,35 @@ tr158:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4132,20 +4430,28 @@ tr165:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4168,27 +4474,35 @@ tr169:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4206,20 +4520,28 @@ tr176:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4242,27 +4564,35 @@ tr177:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4291,7 +4621,7 @@ tr184:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -4299,20 +4629,28 @@ tr184:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4335,27 +4673,35 @@ tr191:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4377,20 +4723,28 @@ tr207:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4419,7 +4773,7 @@ tr217:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -4427,20 +4781,28 @@ tr217:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4465,20 +4827,28 @@ tr224:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4503,20 +4873,28 @@ tr225:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4542,20 +4920,28 @@ tr235:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4577,20 +4963,28 @@ tr239:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4613,27 +5007,35 @@ tr240:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4658,20 +5060,28 @@ tr247:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4695,20 +5105,28 @@ tr256:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4731,27 +5149,35 @@ tr257:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4774,27 +5200,35 @@ tr260:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4812,20 +5246,28 @@ tr271:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4855,20 +5297,28 @@ tr272:
                      rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4896,7 +5346,7 @@ tr273:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -4904,20 +5354,28 @@ tr273:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4947,20 +5405,28 @@ tr280:
                      rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -4984,20 +5450,28 @@ tr282:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5028,20 +5502,28 @@ tr283:
                                 operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5064,27 +5546,35 @@ tr293:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5109,20 +5599,28 @@ tr300:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5145,27 +5643,35 @@ tr301:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5188,20 +5694,28 @@ tr311:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5223,20 +5737,28 @@ tr315:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5258,20 +5780,28 @@ tr319:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5295,20 +5825,28 @@ tr329:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5338,20 +5876,28 @@ tr341:
                                 operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5378,20 +5924,28 @@ tr342:
                                 operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5409,20 +5963,28 @@ tr343:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5446,20 +6008,28 @@ tr390:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5484,27 +6054,35 @@ tr427:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5531,20 +6109,28 @@ tr434:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5572,20 +6158,28 @@ tr435:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5616,7 +6210,7 @@ tr438:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -5624,20 +6218,28 @@ tr438:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5664,20 +6266,28 @@ tr445:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5708,7 +6318,7 @@ tr446:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -5717,20 +6327,28 @@ tr446:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5758,20 +6376,28 @@ tr453:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5804,20 +6430,28 @@ tr454:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5846,20 +6480,28 @@ tr461:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5883,20 +6525,28 @@ tr466:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5920,20 +6570,28 @@ tr467:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5957,20 +6615,28 @@ tr470:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -5993,27 +6659,35 @@ tr487:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6031,20 +6705,28 @@ tr494:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6065,20 +6747,28 @@ tr495:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6104,20 +6794,28 @@ tr499:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6143,20 +6841,28 @@ tr512:
                      rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6180,20 +6886,28 @@ tr519:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6221,7 +6935,7 @@ tr520:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -6229,20 +6943,28 @@ tr520:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6266,20 +6988,28 @@ tr527:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6303,20 +7033,28 @@ tr536:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6345,7 +7083,7 @@ tr539:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -6353,20 +7091,28 @@ tr539:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6395,7 +7141,7 @@ tr546:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -6403,20 +7149,28 @@ tr546:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6441,20 +7195,28 @@ tr553:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6479,20 +7241,28 @@ tr554:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6517,20 +7287,28 @@ tr555:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6560,20 +7338,28 @@ tr557:
                      rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6596,27 +7382,35 @@ tr559:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6641,20 +7435,28 @@ tr566:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6674,20 +7476,28 @@ tr603:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6714,20 +7524,28 @@ tr604:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6758,7 +7576,7 @@ tr605:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -6766,20 +7584,28 @@ tr605:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6806,20 +7632,28 @@ tr612:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6851,20 +7685,28 @@ tr613:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6892,20 +7734,28 @@ tr620:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6928,20 +7778,28 @@ tr625:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -6964,20 +7822,28 @@ tr626:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7000,20 +7866,28 @@ tr636:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7031,26 +7905,34 @@ tr644:
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7068,26 +7950,34 @@ tr645:
        else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7102,26 +7992,34 @@ tr645:
 tr655:
 	{
        ExpandSuperinstructionBySandboxingBytes(
-         3 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         3 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7145,20 +8043,28 @@ tr689:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7184,20 +8090,28 @@ tr700:
                      rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7221,20 +8135,28 @@ tr709:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7262,7 +8184,7 @@ tr710:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -7270,20 +8192,28 @@ tr710:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7307,20 +8237,28 @@ tr717:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7343,20 +8281,28 @@ tr719:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7379,27 +8325,35 @@ tr745:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7417,20 +8371,28 @@ tr752:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7453,27 +8415,35 @@ tr753:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7491,20 +8461,28 @@ tr760:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7527,27 +8505,35 @@ tr761:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7565,20 +8551,28 @@ tr768:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7607,7 +8601,7 @@ tr769:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -7615,20 +8609,28 @@ tr769:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7657,7 +8659,7 @@ tr814:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -7665,20 +8667,28 @@ tr814:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7703,20 +8713,28 @@ tr821:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7741,20 +8759,28 @@ tr822:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7772,20 +8798,28 @@ tr831:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7808,27 +8842,35 @@ tr832:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7846,20 +8888,28 @@ tr839:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7885,20 +8935,28 @@ tr840:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7928,20 +8986,28 @@ tr842:
                      rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -7963,20 +9029,28 @@ tr847:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8003,20 +9077,28 @@ tr891:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8047,7 +9129,7 @@ tr892:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -8055,20 +9137,28 @@ tr892:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8095,20 +9185,28 @@ tr899:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8140,20 +9238,28 @@ tr900:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8178,20 +9284,28 @@ tr923:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8216,20 +9330,28 @@ tr924:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8258,7 +9380,7 @@ tr943:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -8266,20 +9388,28 @@ tr943:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8304,20 +9434,28 @@ tr950:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8332,7 +9470,7 @@ tr950:
 tr958:
 	{
       ProcessNaclCallOrJmpAddToRegNoRex(&instruction_info_collected,
-                                        &instruction_start, current_position,
+                                        &instruction_begin, current_position,
                                         data, valid_targets);
     }
 	{
@@ -8343,20 +9481,28 @@ tr958:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8371,27 +9517,35 @@ tr958:
 tr959:
 	{
       ProcessNaclCallOrJmpAddToRegNoRex(&instruction_info_collected,
-                                        &instruction_start, current_position,
+                                        &instruction_begin, current_position,
                                         data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8408,26 +9562,34 @@ tr977:
        ExpandSuperinstructionBySandboxingBytes(
          2 /* mov */ + 4 /* lea */ + 3 /* mov */ + 4 /* lea */
          /* == 3 (* mov *) + 4 (* lea *) + 2 (* mov *) + 4 (* lea *) */,
-         &instruction_start, data, valid_targets);
+         &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8442,26 +9604,34 @@ tr977:
 tr984:
 	{
        ExpandSuperinstructionBySandboxingBytes(
-         2 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         2 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8481,20 +9651,28 @@ tr1023:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8517,27 +9695,35 @@ tr1089:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8555,20 +9741,28 @@ tr1092:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8595,7 +9789,7 @@ tr1164:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -8603,20 +9797,28 @@ tr1164:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8639,20 +9841,28 @@ tr1167:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8670,20 +9880,28 @@ tr1169:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8708,20 +9926,28 @@ tr1170:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8748,7 +9974,7 @@ tr1173:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -8756,20 +9982,28 @@ tr1173:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8792,20 +10026,28 @@ tr1176:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8830,20 +10072,28 @@ tr1178:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8867,20 +10117,28 @@ tr1304:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8903,27 +10161,35 @@ tr1413:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8941,20 +10207,28 @@ tr1416:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -8979,20 +10253,28 @@ tr1423:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9021,7 +10303,7 @@ tr1428:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9029,20 +10311,28 @@ tr1428:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9068,20 +10358,28 @@ tr1432:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9110,7 +10408,7 @@ tr1434:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9118,20 +10416,28 @@ tr1434:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9156,20 +10462,28 @@ tr1437:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9194,20 +10508,28 @@ tr1439:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9236,7 +10558,7 @@ tr1449:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9244,20 +10566,28 @@ tr1449:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9282,20 +10612,28 @@ tr1452:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9318,27 +10656,35 @@ tr1455:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9356,20 +10702,28 @@ tr1458:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9392,27 +10746,35 @@ tr1459:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9430,20 +10792,28 @@ tr1462:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9466,27 +10836,35 @@ tr1464:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9504,20 +10882,28 @@ tr1467:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9546,7 +10932,7 @@ tr1469:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9554,20 +10940,28 @@ tr1469:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9592,20 +10986,28 @@ tr1472:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9632,7 +11034,7 @@ tr1614:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9640,20 +11042,28 @@ tr1614:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9676,20 +11086,28 @@ tr1617:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9716,7 +11134,7 @@ tr1619:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9724,20 +11142,28 @@ tr1619:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9760,20 +11186,28 @@ tr1622:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9796,27 +11230,35 @@ tr1672:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9845,7 +11287,7 @@ tr1679:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9853,20 +11295,28 @@ tr1679:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9888,20 +11338,28 @@ tr1688:
     Process0Operands(&restricted_register, &instruction_info_collected);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9930,7 +11388,7 @@ tr1692:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9938,20 +11396,28 @@ tr1692:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -9980,7 +11446,7 @@ tr1700:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -9988,20 +11454,28 @@ tr1700:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10026,20 +11500,28 @@ tr1707:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10068,7 +11550,7 @@ tr1716:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10076,20 +11558,28 @@ tr1716:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10118,7 +11608,7 @@ tr1723:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10126,20 +11616,28 @@ tr1723:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10164,20 +11662,28 @@ tr1730:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10206,7 +11712,7 @@ tr1731:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10214,20 +11720,28 @@ tr1731:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10252,20 +11766,28 @@ tr1738:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10294,7 +11816,7 @@ tr1739:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10302,20 +11824,28 @@ tr1739:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10340,20 +11870,28 @@ tr1746:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10382,7 +11920,7 @@ tr1752:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10390,20 +11928,28 @@ tr1752:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10432,7 +11978,7 @@ tr1759:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10440,20 +11986,28 @@ tr1759:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10478,20 +12032,28 @@ tr1766:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10520,7 +12082,7 @@ tr1767:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10528,20 +12090,28 @@ tr1767:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10566,20 +12136,28 @@ tr1774:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10608,7 +12186,7 @@ tr1775:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	{
@@ -10616,20 +12194,28 @@ tr1775:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10654,20 +12240,28 @@ tr1782:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10682,26 +12276,34 @@ tr1782:
 tr1807:
 	{
        ExpandSuperinstructionBySandboxingBytes(
-         2 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         2 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10717,26 +12319,34 @@ tr1812:
 	{
        ExpandSuperinstructionBySandboxingBytes(
          2 /* mov */ + 4 /* lea */ + 2 /* mov */ + 4 /* lea */,
-         &instruction_start, data, valid_targets);
+         &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10751,7 +12361,7 @@ tr1812:
 tr1822:
 	{
       ProcessNaclCallOrJmpAddToRMNoRex(&instruction_info_collected,
-                                       &instruction_start, current_position,
+                                       &instruction_begin, current_position,
                                        data, valid_targets);
     }
 	{
@@ -10762,20 +12372,28 @@ tr1822:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10790,27 +12408,35 @@ tr1822:
 tr1823:
 	{
       ProcessNaclCallOrJmpAddToRMNoRex(&instruction_info_collected,
-                                       &instruction_start, current_position,
+                                       &instruction_begin, current_position,
                                        data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10826,26 +12452,34 @@ tr1827:
 	{
        ExpandSuperinstructionBySandboxingBytes(
          3 /* mov */ + 4 /* lea */ + 3 /* mov */ + 4 /* lea */,
-         &instruction_start, data, valid_targets);
+         &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10860,26 +12494,34 @@ tr1827:
 tr1831:
 	{
        ExpandSuperinstructionBySandboxingBytes(
-         3 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         3 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10894,7 +12536,7 @@ tr1831:
 tr1844:
 	{
       ProcessNaclCallOrJmpAddToRMWithRex(&instruction_info_collected,
-                                         &instruction_start, current_position,
+                                         &instruction_begin, current_position,
                                          data, valid_targets);
     }
 	{
@@ -10905,20 +12547,28 @@ tr1844:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10933,27 +12583,35 @@ tr1844:
 tr1845:
 	{
       ProcessNaclCallOrJmpAddToRMWithRex(&instruction_info_collected,
-                                         &instruction_start, current_position,
+                                         &instruction_begin, current_position,
                                          data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -10968,7 +12626,7 @@ tr1845:
 tr1849:
 	{
       ProcessNaclCallOrJmpAddToRegWithRex(&instruction_info_collected,
-                                          &instruction_start, current_position,
+                                          &instruction_begin, current_position,
                                           data, valid_targets);
     }
 	{
@@ -10979,20 +12637,28 @@ tr1849:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -11007,27 +12673,35 @@ tr1849:
 tr1850:
 	{
       ProcessNaclCallOrJmpAddToRegWithRex(&instruction_info_collected,
-                                          &instruction_start, current_position,
+                                          &instruction_begin, current_position,
                                           data, valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -14770,7 +16444,7 @@ tr592:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st29;
@@ -14781,7 +16455,7 @@ tr597:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st29;
@@ -14792,7 +16466,7 @@ tr598:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st29;
@@ -14880,7 +16554,7 @@ tr584:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st29;
@@ -14934,7 +16608,7 @@ tr866:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st29;
@@ -15008,7 +16682,7 @@ tr373:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st30;
@@ -15019,7 +16693,7 @@ tr378:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st30;
@@ -15030,7 +16704,7 @@ tr379:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st30;
@@ -15073,7 +16747,7 @@ tr365:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st30;
@@ -15127,7 +16801,7 @@ case 33:
 	goto tr56;
 tr57:
 	{
-    result &= user_callback(instruction_start, current_position,
+    result &= user_callback(instruction_begin, current_position,
                             UNRECOGNIZED_INSTRUCTION, callback_data);
     /*
      * Process the next bundle: “continue” here is for the “for” cycle in
@@ -15376,7 +17050,7 @@ tr117:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st46;
@@ -15392,7 +17066,7 @@ tr127:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st46;
@@ -15403,7 +17077,7 @@ tr132:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st46;
@@ -15414,7 +17088,7 @@ tr133:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st46;
@@ -15674,7 +17348,7 @@ tr248:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15690,7 +17364,7 @@ tr208:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15701,7 +17375,7 @@ tr213:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15712,7 +17386,7 @@ tr214:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15739,7 +17413,7 @@ tr199:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15754,7 +17428,7 @@ tr226:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15772,7 +17446,7 @@ tr284:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15789,7 +17463,7 @@ tr471:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15813,7 +17487,7 @@ tr781:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15828,7 +17502,7 @@ tr790:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15846,7 +17520,7 @@ tr798:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15861,7 +17535,7 @@ tr806:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15876,7 +17550,7 @@ tr823:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15894,7 +17568,7 @@ tr1081:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15921,7 +17595,7 @@ tr1417:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15936,7 +17610,7 @@ tr1485:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15951,7 +17625,7 @@ tr1501:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -15966,7 +17640,7 @@ tr1509:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st67;
@@ -16865,7 +18539,7 @@ tr575:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st102;
@@ -16876,7 +18550,7 @@ tr580:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st102;
@@ -16887,7 +18561,7 @@ tr581:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st102;
@@ -16931,7 +18605,7 @@ tr567:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st102;
@@ -16971,7 +18645,7 @@ tr1096:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st102;
@@ -17001,7 +18675,7 @@ tr1101:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st102;
@@ -17104,7 +18778,7 @@ tr401:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st111;
@@ -17120,7 +18794,7 @@ tr410:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st111;
@@ -17131,7 +18805,7 @@ tr415:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st111;
@@ -17142,7 +18816,7 @@ tr416:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st111;
@@ -17159,7 +18833,7 @@ tr479:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st111;
@@ -17177,7 +18851,7 @@ tr1183:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st111;
@@ -17417,7 +19091,7 @@ tr391:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st127;
@@ -17428,7 +19102,7 @@ tr396:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st127;
@@ -17439,7 +19113,7 @@ tr397:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st127;
@@ -17467,7 +19141,7 @@ tr382:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st127;
@@ -17890,20 +19564,28 @@ tr421:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -17974,20 +19656,28 @@ tr426:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -18056,20 +19746,28 @@ tr436:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -18097,20 +19795,28 @@ tr657:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -19797,20 +21503,28 @@ tr647:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -19870,20 +21584,28 @@ tr650:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -19911,20 +21633,28 @@ tr1830:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -20001,20 +21731,28 @@ tr653:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -20111,20 +21849,28 @@ tr437:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -20152,20 +21898,28 @@ tr658:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -20242,20 +21996,28 @@ tr661:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -20676,7 +22438,7 @@ tr857:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st301;
@@ -20687,7 +22449,7 @@ tr862:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st301;
@@ -20698,7 +22460,7 @@ tr863:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st301;
@@ -20741,7 +22503,7 @@ tr849:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st301;
@@ -21091,7 +22853,7 @@ tr874:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st337;
@@ -21107,7 +22869,7 @@ tr882:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st337;
@@ -21118,7 +22880,7 @@ tr887:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st337;
@@ -21129,7 +22891,7 @@ tr888:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st337;
@@ -21146,7 +22908,7 @@ tr907:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st337;
@@ -22001,20 +23763,28 @@ tr952:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22070,20 +23840,28 @@ tr954:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22101,26 +23879,34 @@ tr955:
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22138,26 +23924,34 @@ tr956:
        else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22395,20 +24189,28 @@ tr966:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22436,20 +24238,28 @@ tr978:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22526,20 +24336,28 @@ tr970:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22599,20 +24417,28 @@ tr973:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22640,20 +24466,28 @@ tr1806:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22730,20 +24564,28 @@ tr976:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22812,20 +24654,28 @@ tr967:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22853,20 +24703,28 @@ tr979:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -22943,20 +24801,28 @@ tr982:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -23307,7 +25173,7 @@ tr1022:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st457;
@@ -23318,7 +25184,7 @@ tr1030:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st457;
@@ -23329,7 +25195,7 @@ tr1025:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st457;
@@ -23347,7 +25213,7 @@ tr1077:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st457;
@@ -23368,7 +25234,7 @@ tr1493:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st457;
@@ -23383,7 +25249,7 @@ tr1497:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st457;
@@ -26106,7 +27972,7 @@ tr1303:
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st636;
@@ -26117,7 +27983,7 @@ tr1311:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st636;
@@ -26128,7 +27994,7 @@ tr1306:
   }
 	{}
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st636;
@@ -26146,7 +28012,7 @@ tr1489:
     SET_MODRM_SCALE(0);
   }
 	{
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 	goto st636;
@@ -31028,20 +32894,28 @@ tr1808:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31069,20 +32943,28 @@ tr1815:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31159,20 +33041,28 @@ tr1811:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31369,20 +33259,28 @@ tr1818:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31400,26 +33298,34 @@ tr1819:
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31437,26 +33343,34 @@ tr1820:
        else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31818,20 +33732,28 @@ tr1832:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31859,20 +33781,28 @@ tr1838:
                                operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -31949,20 +33879,28 @@ tr1835:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32159,20 +34097,28 @@ tr1842:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32274,20 +34220,28 @@ tr1847:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32403,20 +34357,28 @@ tr1853:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32434,26 +34396,34 @@ tr1854:
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32471,26 +34441,34 @@ tr1855:
        else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32648,20 +34626,28 @@ tr1859:
                     rex_prefix, operand_states);
   }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32679,26 +34665,34 @@ tr1860:
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -32716,26 +34710,34 @@ tr1861:
        else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     }
 	{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -34933,7 +36935,7 @@ case 1021:
 	case 1020: 
 	case 1021: 
 	{
-    result &= user_callback(instruction_start, current_position,
+    result &= user_callback(instruction_begin, current_position,
                             UNRECOGNIZED_INSTRUCTION, callback_data);
     /*
      * Process the next bundle: “continue” here is for the “for” cycle in
@@ -34977,8 +36979,8 @@ case 1021:
                                       user_callback, callback_data);
 
   /* We only use malloc for a large code sequences  */
-  if (jump_dests != jump_dests_small) free(jump_dests);
-  if (valid_targets != valid_targets_small) free(valid_targets);
+  if (jump_dests != &jump_dests_small) free(jump_dests);
+  if (valid_targets != &valid_targets_small) free(valid_targets);
   if (!result) errno = EINVAL;
   return result;
 }

@@ -83,13 +83,13 @@ Bool ProcessInstruction(
   // about overflows.
   if ((validation_info & DIRECT_JUMP_OUT_OF_RANGE) == 0) {
     uint32_t program_counter = user_data.segment.vaddr +
-                               static_cast<uint32_t>(end + 1 -
+                               static_cast<uint32_t>(end -
                                                      user_data.segment.data);
     if (validation_info & RELATIVE_8BIT) {
-      program_counter += *reinterpret_cast<const int8_t *>(end);
+      program_counter += reinterpret_cast<const int8_t *>(end)[-1];
       user_data.jumps->push_back(Jump(offset, program_counter));
     } else if (validation_info & RELATIVE_32BIT) {
-      program_counter += *reinterpret_cast<const int32_t *>(end - 3);
+      program_counter += reinterpret_cast<const int32_t *>(end)[-1];
       user_data.jumps->push_back(Jump(offset, program_counter));
     }
   }

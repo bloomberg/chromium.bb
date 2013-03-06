@@ -142,7 +142,7 @@ enum ValidationOptions {
  * becomes FALSE.
  *
  * When callback is called for invalid jump tagret,
- *   instruction_start = instruction_end = jump target
+ *   instruction_begin = instruction_end = jump target
  *
  * Minimal user_callback for CALL_USER_CALLBACK_ON_EACH_INSTRUCTION looks like
  * this:
@@ -157,7 +157,7 @@ enum ValidationOptions {
  * called for the sandboxing instructions (just as if they were regular
  * instructions) and then it'll be called again for the full superinstruction.
  */
-typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_start,
+typedef Bool (*ValidationCallbackFunc) (const uint8_t *instruction_begin,
                                         const uint8_t *instruction_end,
                                         uint32_t validation_info,
                                         void *callback_data);

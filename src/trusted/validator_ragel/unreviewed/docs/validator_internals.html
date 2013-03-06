@@ -301,7 +301,7 @@ IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeat
 <tr><td align="left">┊</td><td align="left">┊</td><td align="left">┊</td><td align="left">┊</td><td align="left" colspan="100">└&nbsp;<span style="background: lightgray;">ia32 mode: reserved;</span> amd64 mode: <span class="hoverable" title="amd64 mode: in ia32 mode all non-special instructions are modifiable">Instruction is modifiable.</span></td></tr>
 <tr><td align="left">┊</td><td align="left">┊</td><td align="left">┊</td><td align="left" colspan="100">└&nbsp;Special instruction (uses different validation rules from the regular instruction). Can not be changed in ia32bit mode.</td></tr>
 <tr><td align="left">┊</td><td align="left">┊</td><td align="left" colspan="100">└&nbsp;Last byte is not immediate. It's either <span class="hoverable" title="3DNow! instructions.">opcode</span>, <span class="hoverable" title="Some AVX, FMA4, XOP instructions.">register number</span> or <span class="hoverable" title="vpermil2pd and vpermil2ps">register number and two-bit immediate</span>.</td></tr>
-<tr><td align="left">┊</td><td align="left" colspan="100">└&nbsp;Invalid jump target.  When this flag is set <code>instruction_start</code> and <code>instruction_end</code> both point to the <b>jump target</b> instruction, not to the <b>jump</b> instruction itself.</td></tr>
+<tr><td align="left">┊</td><td align="left" colspan="100">└&nbsp;Invalid jump target.  When this flag is set <code>instruction_begin</code> and <code>instruction_end</code> both point to the <b>jump target</b> instruction, not to the <b>jump</b> instruction itself.</td></tr>
 <tr><td align="left" colspan="100">└&nbsp;Reserved.</td></tr>
 </table>
 

@@ -86,11 +86,9 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
                                               uint32_t info_new,
                                               void *callback_data) {
   ptrdiff_t existing_minus_new = (ptrdiff_t)callback_data;
-  /* TODO(khim): change ABI to pass next_existing instead.  */
-  const uint8_t *next_new = end_new + 1;
-  size_t instruction_length = next_new - begin_new;
+  size_t instruction_length = end_new - begin_new;
   const uint8_t *begin_existing = begin_new + existing_minus_new;
-  const uint8_t *next_existing = next_new + existing_minus_new;
+  const uint8_t *end_existing = end_new + existing_minus_new;
 
   /* Sanity check: instruction must be no longer than 17 bytes.  */
   CHECK(instruction_length <= MAX_INSTRUCTION_LENGTH);
@@ -151,14 +149,14 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
     return memcmp(begin_new, begin_existing,
                   instruction_length -
                   INFO_ANYFIELDS_SIZE(info_new) - 1) == 0 &&
-           (next_new[-1] & 0xfc) == (next_existing[-1] & 0xfc);
+           (end_new[-1] & 0xfc) == (end_existing[-1] & 0xfc);
 
   /* Instruction's last byte is not immediate, thus it must be unchanged.  */
   if (info_new & LAST_BYTE_IS_NOT_IMMEDIATE)
     return memcmp(begin_new, begin_existing,
                   instruction_length -
                   INFO_ANYFIELDS_SIZE(info_new) - 1) == 0 &&
-           next_new[-1] == next_existing[-1];
+           end_new[-1] == end_existing[-1];
 
   /*
    * Normal instruction can only change an anyfied: immediate, displacement or

@@ -130,7 +130,7 @@ def ValidateChunk(
   def LowLevelCallback(begin, end, info, callback_data):
     if callback is not None:
       begin_index = SubtractPointers_(begin, data)
-      end_index = SubtractPointers_(end, data) + 1
+      end_index = SubtractPointers_(end, data)
       callback(begin_index, end_index, info)
 
     # See validator.h for details

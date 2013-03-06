@@ -104,9 +104,7 @@ static Bool ProcessOriginalCodeInstruction(const uint8_t *begin_existing,
                                            uint32_t info_existing,
                                            void *callback_data) {
   struct CodeReplacementCallbackData *data = callback_data;
-  /* TODO(khim): change ABI to pass next_existing instead.  */
-  const uint8_t *next_existing = end_existing + 1;
-  size_t instruction_length = next_existing - begin_existing;
+  size_t instruction_length = end_existing - begin_existing;
   const uint8_t *begin_new = begin_existing - data->existing_minus_new;
 
   /* Sanity check: instruction must be no longer than 17 bytes.  */
@@ -187,9 +185,7 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
                                               uint32_t info_new,
                                               void *callback_data) {
   struct CodeReplacementCallbackData *data = callback_data;
-  /* TODO(khim): change ABI to pass next_existing instead.  */
-  const uint8_t *next_new = end_new + 1;
-  size_t instruction_length = next_new - begin_new;
+  size_t instruction_length = end_new - begin_new;
   const uint8_t *begin_existing = begin_new + data->existing_minus_new;
 
   /* Sanity check: instruction must be no longer than 17 bytes.  */
@@ -205,9 +201,9 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
                (begin_new - data->data_new) & kBundleMask);
 
   /* If we at the end of a bundle then check boundaries.  */
-  if (((next_new - data->data_new) & kBundleMask) == 0) {
+  if (((end_new - data->data_new) & kBundleMask) == 0) {
     Bool rc;
-    data->bundle_existing = next_new - kBundleSize + data->existing_minus_new;
+    data->bundle_existing = end_new - kBundleSize + data->existing_minus_new;
 
     /* Check existing code and mark its instruction boundaries.  */
     rc = ValidateChunkIA32(data->bundle_existing, kBundleSize,

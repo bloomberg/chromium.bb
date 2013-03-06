@@ -82,7 +82,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
   action check_access {
-    CheckAccess(instruction_start - data, base, index, restricted_register,
+    CheckAccess(instruction_begin - data, base, index, restricted_register,
                 valid_targets, &instruction_info_collected);
   }
 
@@ -171,7 +171,7 @@
        else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     };
 
   # Special %rsp modifications — the ones which don't need a sandboxing.
@@ -229,7 +229,7 @@
        else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        restricted_register = NO_REG;
-       UnmarkValidJumpTarget((instruction_start - data), valid_targets);
+       UnmarkValidJumpTarget((instruction_begin - data), valid_targets);
     };
 
   # naclcall or nacljmp. These are three-instruction indirection-jump sequences.
@@ -284,7 +284,7 @@
       (REX_WRX? 0xff b_11_100_xxx)))
     @{
       ProcessNaclCallOrJmpAddToRMNoRex(&instruction_info_collected,
-                                       &instruction_start, current_position,
+                                       &instruction_begin, current_position,
                                        data, valid_targets);
     } |
 
@@ -306,7 +306,7 @@
       (REX_WRX? 0xff b_11_100_xxx)))
     @{
       ProcessNaclCallOrJmpAddToRegNoRex(&instruction_info_collected,
-                                        &instruction_start, current_position,
+                                        &instruction_begin, current_position,
                                         data, valid_targets);
     } |
 
@@ -345,7 +345,7 @@
       (b_0100_xxx1 0xff (b_11_100_xxx - b_11_100_111)))))
     @{
       ProcessNaclCallOrJmpAddToRMWithRex(&instruction_info_collected,
-                                         &instruction_start, current_position,
+                                         &instruction_begin, current_position,
                                          data, valid_targets);
     } |
 
@@ -384,7 +384,7 @@
        (b_0100_xxx1 0xff (b_11_100_xxx - b_11_100_111)))))
     @{
       ProcessNaclCallOrJmpAddToRegWithRex(&instruction_info_collected,
-                                          &instruction_start, current_position,
+                                          &instruction_begin, current_position,
                                           data, valid_targets);
     };
 
@@ -454,7 +454,7 @@
     string_instruction_rsi_no_rdi
     @{
        ExpandSuperinstructionBySandboxingBytes(
-         2 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         2 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     } |
 
     REX_X (0x89 | 0x8b) 0xf6 # mov %esi,%esi
@@ -462,7 +462,7 @@
     string_instruction_rsi_no_rdi
     @{
        ExpandSuperinstructionBySandboxingBytes(
-         3 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         3 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     };
 
   # “Superinstruction” which includes %rdi sandboxing.
@@ -480,7 +480,7 @@
     (string_instruction_rdi_no_rsi | mmx_sse_rdi_instruction)
     @{
        ExpandSuperinstructionBySandboxingBytes(
-         2 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         2 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     } |
 
     REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
@@ -488,7 +488,7 @@
     (string_instruction_rdi_no_rsi | mmx_sse_rdi_instruction)
     @{
        ExpandSuperinstructionBySandboxingBytes(
-         3 /* mov */ + 4 /* lea */, &instruction_start, data, valid_targets);
+         3 /* mov */ + 4 /* lea */, &instruction_begin, data, valid_targets);
     };
 
 
@@ -511,7 +511,7 @@
     @{
        ExpandSuperinstructionBySandboxingBytes(
          2 /* mov */ + 4 /* lea */ + 2 /* mov */ + 4 /* lea */,
-         &instruction_start, data, valid_targets);
+         &instruction_begin, data, valid_targets);
     } |
 
     (((0x89 | 0x8b) 0xf6       # mov %esi,%esi
@@ -528,7 +528,7 @@
        ExpandSuperinstructionBySandboxingBytes(
          2 /* mov */ + 4 /* lea */ + 3 /* mov */ + 4 /* lea */
          /* == 3 (* mov *) + 4 (* lea *) + 2 (* mov *) + 4 (* lea *) */,
-         &instruction_start, data, valid_targets);
+         &instruction_begin, data, valid_targets);
     } |
 
     REX_X (0x89 | 0x8b) 0xf6 . # mov %esi,%esi
@@ -539,7 +539,7 @@
     @{
        ExpandSuperinstructionBySandboxingBytes(
          3 /* mov */ + 4 /* lea */ + 3 /* mov */ + 4 /* lea */,
-         &instruction_start, data, valid_targets);
+         &instruction_begin, data, valid_targets);
     };
 
   # All the “special” instructions (== instructions which obey non-standard
@@ -596,24 +596,32 @@
   # We call the user callback if there are validation errors or if the
   # CALL_USER_CALLBACK_ON_EACH_INSTRUCTION option is used.
   #
-  # After that we move instruction_start and clean all the variables which
+  # After that we move instruction_begin and clean all the variables which
   # only used in the processing of a single instruction (prefixes, operand
   # states and instruction_info_collected).
   action end_of_instruction_cleanup {
+    /* Call user-supplied callback.  */
+    instruction_end = current_position + 1;
     if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
         (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
       result &= user_callback(
-          instruction_start, current_position,
+          instruction_begin, instruction_end,
           instruction_info_collected |
           ((restricted_register << RESTRICTED_REGISTER_SHIFT) &
            RESTRICTED_REGISTER_MASK), callback_data);
     }
-    /* On successful match the instruction start must point to the next byte
+
+    /* On successful match the instruction_begin must point to the next byte
      * to be able to report the new offset as the start of instruction
      * causing error.  */
-    instruction_start = current_position + 1;
-    /* Mark this position as a valid target for jump.  */
-    MarkValidJumpTarget(current_position + 1 - data, valid_targets);
+    instruction_begin = instruction_end;
+
+    /* Mark start of the next instruction as a valid target for jump.
+     * Note: we mark start of the next instruction here, not start of the
+     * current one because memory access check should be able to clear this
+     * bit when restricted register is used.  */
+    MarkValidJumpTarget(instruction_begin - data, valid_targets);
+
     /* Clear variables.  */
     instruction_info_collected = 0;
     SET_REX_PREFIX(FALSE);
@@ -627,7 +635,7 @@
 
   # This action reports fatal error detected by DFA.
   action report_fatal_error {
-    result &= user_callback(instruction_start, current_position,
+    result &= user_callback(instruction_begin, current_position,
                             UNRECOGNIZED_INSTRUCTION, callback_data);
     /*
      * Process the next bundle: “continue” here is for the “for” cycle in
@@ -663,8 +671,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                         const NaClCPUFeaturesX86 *cpu_features,
                         ValidationCallbackFunc user_callback,
                         void *callback_data) {
-  bitmap_word valid_targets_small[2];
-  bitmap_word jump_dests_small[2];
+  bitmap_word valid_targets_small;
+  bitmap_word jump_dests_small;
   bitmap_word *valid_targets;
   bitmap_word *jump_dests;
   const uint8_t *current_position;
@@ -684,10 +692,10 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
    * not a problem because any aligned address is valid jump target.
    */
   if ((size + 1) <= (sizeof valid_targets_small * 8)) {
-    memset(valid_targets_small, 0, sizeof valid_targets_small);
-    valid_targets = valid_targets_small;
-    memset(jump_dests_small, 0, sizeof jump_dests_small);
-    jump_dests = jump_dests_small;
+    valid_targets_small = 0;
+    valid_targets = &valid_targets_small;
+    jump_dests_small = 0;
+    jump_dests = &jump_dests_small;
   } else {
     valid_targets = BitmapAllocate(size + 1);
     jump_dests = BitmapAllocate(size + 1);
@@ -720,7 +728,9 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
        current_position = end_of_bundle,
        end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
-    const uint8_t *instruction_start = current_position;
+    const uint8_t *instruction_begin = current_position;
+    /* Only used locally in the end_of_instruction_cleanup action.  */
+    const uint8_t *instruction_end;
     int current_state;
     uint32_t instruction_info_collected = 0;
     /* Keeps one byte of information per operand in the current instruction:
@@ -763,8 +773,8 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
                                       user_callback, callback_data);
 
   /* We only use malloc for a large code sequences  */
-  if (jump_dests != jump_dests_small) free(jump_dests);
-  if (valid_targets != valid_targets_small) free(valid_targets);
+  if (jump_dests != &jump_dests_small) free(jump_dests);
+  if (valid_targets != &valid_targets_small) free(valid_targets);
   if (!result) errno = EINVAL;
   return result;
 }
