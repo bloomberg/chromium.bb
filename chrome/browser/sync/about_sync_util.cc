@@ -188,8 +188,8 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat last_synced(section_local, "Last Synced");
   BoolSyncStat is_setup_complete(section_local,
                                  "Sync First-Time Setup Complete");
-  BoolSyncStat is_backend_initialized(section_local,
-                                      "Sync Backend Initialized");
+  StringSyncStat backend_initialization(section_local,
+                                        "Sync Backend Initialization");
   BoolSyncStat is_syncing(section_local, "Syncing");
 
   ListValue* section_network = AddSection(stats_list, "Network");
@@ -300,7 +300,8 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
 
   last_synced.SetValue(service->GetLastSyncedTimeString());
   is_setup_complete.SetValue(service->HasSyncSetupCompleted());
-  is_backend_initialized.SetValue(sync_initialized);
+  backend_initialization.SetValue(
+      service->GetBackendInitializationStateString());
   if (is_status_valid) {
     is_syncing.SetValue(full_status.syncing);
     retry_time.SetValue(GetTimeStr(full_status.retry_time,

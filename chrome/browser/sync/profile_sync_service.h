@@ -384,6 +384,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual string16 GetLastSyncedTimeString() const;
 
+  // Returns a human readable string describing backend initialization state.
+  std::string GetBackendInitializationStateString() const;
+
   // Returns true if startup is suppressed (i.e. user has stopped syncing via
   // the google dashboard).
   virtual bool IsStartSuppressed() const;
@@ -623,8 +626,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
 
-  // Starts up the backend sync components.
-  virtual void StartUp();
   // Shuts down the backend sync components.
   // |sync_disabled| indicates if syncing is being disabled or not.
   void ShutdownImpl(bool sync_disabled);
@@ -725,6 +726,17 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   void ClearStaleErrors();
 
   void ClearUnrecoverableError();
+
+  enum StartUpDeferredOption {
+    STARTUP_BACKEND_DEFERRED,
+    STARTUP_IMMEDIATE
+  };
+  void StartUp(StartUpDeferredOption deferred_option);
+
+  // Starts up the backend sync components. |deferred_option| specifies whether
+  // this is being called as part of an immediate startup or startup was
+  // originally deferred and we're finally getting around to finishing.
+  void StartUpSlowBackendComponents(StartUpDeferredOption deferred_option);
 
   // About-flags experiment names for datatypes that aren't enabled by default
   // yet.

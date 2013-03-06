@@ -292,11 +292,21 @@ void ProfileSyncService::TryStart() {
   // but we haven't completed sync setup, we try to start sync anyway, since
   // it's possible we crashed/shutdown after logging in but before the backend
   // finished initializing the last time.
-  if (!HasSyncSetupCompleted() && !setup_in_progress_ && !auto_start_enabled_)
-    return;
-
-  // All systems Go for launch.
-  StartUp();
+  //
+  // However, the only time we actually need to start sync _immediately_ is if
+  // we haven't completed sync setup and the user is in the process of setting
+  // up - either they just signed in (for the first time) on an auto-start
+  // platform or they explicitly kicked off sync setup, and e.g we need to
+  // fetch account details like encryption state to populate UI. Otherwise,
+  // for performance reasons and maximizing parallelism at chrome startup, we
+  // defer the heavy lifting for sync init until things have calmed down.
+  if (HasSyncSetupCompleted()) {
+    StartUp(STARTUP_BACKEND_DEFERRED);
+  } else if (setup_in_progress_ || auto_start_enabled_) {
+    // We haven't completed sync setup. Start immediately if the user explicitly
+    // kicked this off or we're supposed to automatically start syncing.
+    StartUp(STARTUP_IMMEDIATE);
+  }
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -462,8 +472,7 @@ void ProfileSyncService::OnSyncConfigureRetry() {
   NotifyObservers();
 }
 
-
-void ProfileSyncService::StartUp() {
+void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
   // Don't start up multiple times.
   if (backend_.get()) {
     DVLOG(1) << "Skipping bringing up backend host.";
@@ -473,6 +482,8 @@ void ProfileSyncService::StartUp() {
   DCHECK(IsSyncEnabledAndLoggedIn());
 
   last_synced_time_ = sync_prefs_.GetLastSyncedTime();
+
+  DCHECK(start_up_time_.is_null());
   start_up_time_ = base::Time::Now();
 
 #if defined(OS_CHROMEOS)
@@ -482,6 +493,40 @@ void ProfileSyncService::StartUp() {
         sync_prefs_.GetSpareBootstrapToken());
   }
 #endif
+
+  if (!sync_global_error_.get()) {
+#if !defined(OS_ANDROID)
+    sync_global_error_.reset(new SyncGlobalError(this, signin()));
+#endif
+    GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
+        sync_global_error_.get());
+    AddObserver(sync_global_error_.get());
+  }
+
+  if (deferred_option == STARTUP_BACKEND_DEFERRED &&
+      CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kSyncEnableDeferredStartup)) {
+    return;
+  }
+
+  StartUpSlowBackendComponents(STARTUP_IMMEDIATE);
+}
+
+void ProfileSyncService::StartUpSlowBackendComponents(
+    StartUpDeferredOption deferred_option) {
+  // Don't start up multiple times.
+  if (backend_.get()) {
+    DVLOG(1) << "Skipping bringing up backend host.";
+    return;
+  }
+
+  DCHECK(!start_up_time_.is_null());
+  if (deferred_option == STARTUP_BACKEND_DEFERRED) {
+    base::TimeDelta time_deferred = base::Time::Now() - start_up_time_;
+    UMA_HISTOGRAM_TIMES("Sync.Startup.TimeDeferred", time_deferred);
+  }
+
+  DCHECK(IsSyncEnabledAndLoggedIn());
   CreateBackend();
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
@@ -502,15 +547,6 @@ void ProfileSyncService::StartUp() {
       backend_->AcknowledgeInvalidation(it->first, it->second);
     }
     ack_replay_queue_.clear();
-  }
-
-  if (!sync_global_error_.get()) {
-#if !defined(OS_ANDROID)
-    sync_global_error_.reset(new SyncGlobalError(this, signin()));
-#endif
-    GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-        sync_global_error_.get());
-    AddObserver(sync_global_error_.get());
   }
 }
 
@@ -781,16 +817,15 @@ void ProfileSyncService::OnBackendInitialized(
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeRestoreSuccess", success);
   }
 
-  if (!start_up_time_.is_null()) {
-    base::Time on_backend_initialized_time = base::Time::Now();
-    base::TimeDelta delta = on_backend_initialized_time - start_up_time_;
-    if (is_first_time_sync_configure_) {
-      UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeFirstTime", delta);
-    } else {
-      UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeRestoreTime", delta);
-    }
-    start_up_time_ = base::Time();
+  DCHECK(!start_up_time_.is_null());
+  base::Time on_backend_initialized_time = base::Time::Now();
+  base::TimeDelta delta = on_backend_initialized_time - start_up_time_;
+  if (is_first_time_sync_configure_) {
+    UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeFirstTime", delta);
+  } else {
+    UMA_HISTOGRAM_LONG_TIMES("Sync.BackendInitializeRestoreTime", delta);
   }
+  start_up_time_ = base::Time();
 
   if (!success) {
     // Something went unexpectedly wrong.  Play it safe: stop syncing at once
@@ -1253,6 +1288,15 @@ std::string ProfileSyncService::QuerySyncStatusSummary() {
   } else {
     return "Status unknown: Internal error?";
   }
+}
+
+std::string ProfileSyncService::GetBackendInitializationStateString() const {
+  if (sync_initialized())
+    return "Done";
+  else if (!start_up_time_.is_null())
+    return "Deferred";
+  else
+    return "Not started";
 }
 
 bool ProfileSyncService::QueryDetailedSyncStatus(

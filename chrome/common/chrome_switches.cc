@@ -1331,6 +1331,10 @@ const char kSyncThrowUnrecoverableError[]   = "sync-throw-unrecoverable-error";
 // Tries to connect to XMPP using SSLTCP first (for testing).
 const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
+// Enables deferring sync backend initialization until user initiated changes
+// occur.
+const char kSyncEnableDeferredStartup[] = "sync-enable-deferred-startup";
+
 // Enables tab dragging to create a real browser.
 const char kTabBrowserDragging[]            = "enable-tab-browser-dragging";
 
