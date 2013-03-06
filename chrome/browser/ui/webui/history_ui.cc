@@ -55,7 +55,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
-#include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -85,6 +84,32 @@ const char kIncognitoModeShortcut[] = "(Ctrl+Shift+N)";
 #else
 const char kIncognitoModeShortcut[] = "(Shift+Ctrl+N)";
 #endif
+
+// Format the URL and title for the given history query result.
+void SetURLAndTitle(DictionaryValue* result,
+                    const string16& title,
+                    const GURL& gurl) {
+  result->SetString("url", gurl.spec());
+
+  bool using_url_as_the_title = false;
+  string16 title_to_set(title);
+  if (title.empty()) {
+    using_url_as_the_title = true;
+    title_to_set = UTF8ToUTF16(gurl.spec());
+  }
+
+  // Since the title can contain BiDi text, we need to mark the text as either
+  // RTL or LTR, depending on the characters in the string. If we use the URL
+  // as the title, we mark the title as LTR since URLs are always treated as
+  // left to right strings.
+  if (base::i18n::IsRTL()) {
+    if (using_url_as_the_title)
+      base::i18n::WrapStringWithLTRFormatting(&title_to_set);
+    else
+      base::i18n::AdjustStringForLocaleDirection(&title_to_set);
+  }
+  result->SetString("title", title_to_set);
+}
 
 content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
@@ -175,6 +200,21 @@ void normalizeMonths(base::Time::Exploded* exploded) {
   }
 }
 
+// Comparison function for sorting history results from newest to oldest.
+bool SortByTimeDescending(Value* value1, Value* value2) {
+  DictionaryValue* result1;
+  DictionaryValue* result2;
+  double time1;
+  double time2;
+
+  if (value1->GetAsDictionary(&result1) && result1->GetDouble("time", &time1) &&
+      value2->GetAsDictionary(&result2) && result2->GetDouble("time", &time2)) {
+    return time1 > time2;
+  }
+  NOTREACHED() << "Unable to extract values";
+  return true;
+}
+
 // Returns the URL of a query result value.
 bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
   DictionaryValue* result_dict;
@@ -196,117 +236,6 @@ bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
 // BrowsingHistoryHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
-    const GURL& url, const string16& title, base::Time time,
-    const std::set<int64>& timestamps, bool is_search_result,
-    const string16& snippet) : all_timestamps(timestamps) {
-  this->url = url;
-  this->title = title;
-  this->time = time;
-  this->is_search_result = is_search_result;
-  this->snippet = snippet;
-}
-
-BrowsingHistoryHandler::HistoryEntry::HistoryEntry()
-    : is_search_result(false) {
-}
-
-BrowsingHistoryHandler::HistoryEntry::~HistoryEntry() {
-}
-
-void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
-    DictionaryValue* result) {
-  result->SetString("url", url.spec());
-
-  bool using_url_as_the_title = false;
-  string16 title_to_set(title);
-  if (title.empty()) {
-    using_url_as_the_title = true;
-    title_to_set = UTF8ToUTF16(url.spec());
-  }
-
-  // Since the title can contain BiDi text, we need to mark the text as either
-  // RTL or LTR, depending on the characters in the string. If we use the URL
-  // as the title, we mark the title as LTR since URLs are always treated as
-  // left to right strings.
-  if (base::i18n::IsRTL()) {
-    if (using_url_as_the_title)
-      base::i18n::WrapStringWithLTRFormatting(&title_to_set);
-    else
-      base::i18n::AdjustStringForLocaleDirection(&title_to_set);
-  }
-  result->SetString("title", title_to_set);
-}
-
-scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
-    BookmarkModel* bookmark_model, ManagedUserService* managed_user_service) {
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
-  SetUrlAndTitle(result.get());
-  result->SetDouble("time", time.ToJsTime());
-
-  // Pass the timestamps in a list.
-  scoped_ptr<ListValue> timestamps(new ListValue);
-  for (std::set<int64>::const_iterator it = all_timestamps.begin();
-       it != all_timestamps.end(); ++it) {
-    timestamps->AppendDouble(base::Time::FromInternalValue(*it).ToJsTime());
-  }
-  result->Set("allTimestamps", timestamps.release());
-
-  // Always pass the short date since it is needed both in the search and in
-  // the monthly view.
-  result->SetString("dateShort", base::TimeFormatShortDate(time));
-
-  // Only pass in the strings we need (search results need a shortdate
-  // and snippet, browse results need day and time information).
-  if (is_search_result) {
-    result->SetString("snippet", snippet);
-  } else {
-    base::Time midnight = base::Time::Now().LocalMidnight();
-    string16 date_str = TimeFormat::RelativeDate(time, &midnight);
-    if (date_str.empty()) {
-      date_str = base::TimeFormatFriendlyDate(time);
-    } else {
-      date_str = l10n_util::GetStringFUTF16(
-          IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
-          date_str,
-          base::TimeFormatFriendlyDate(time));
-    }
-    result->SetString("dateRelativeDay", date_str);
-    result->SetString("dateTimeOfDay", base::TimeFormatTimeOfDay(time));
-  }
-  result->SetBoolean("starred", bookmark_model->IsBookmarked(url));
-
-#if !defined(OS_ANDROID)
-  if (managed_user_service->ProfileIsManaged()) {
-    // URL exceptions take precedence over host exceptions.
-    int manual_behavior = managed_user_service->GetManualBehaviorForURL(url);
-    if (manual_behavior == ManagedUserService::MANUAL_NONE) {
-      manual_behavior =
-          managed_user_service->GetManualBehaviorForHost(url.host());
-    }
-    result->SetInteger("urlManualBehavior", manual_behavior);
-    result->SetInteger("hostManualBehavior",
-        managed_user_service->GetManualBehaviorForHost(url.host()));
-    std::vector<ManagedModeSiteList::Site*> sites;
-    managed_user_service->GetURLFilterForUIThread()->GetSites(url, &sites);
-    result->SetBoolean("urlInContentPack", !sites.empty());
-    sites.clear();
-    managed_user_service->GetURLFilterForUIThread()->GetSites(
-        url.GetWithEmptyPath(), &sites);
-    result->SetBoolean("hostInContentPack", !sites.empty());
-  }
-#endif
-
-  return result.Pass();
-}
-
-bool BrowsingHistoryHandler::HistoryEntry::SortByTimeDescending(
-    const BrowsingHistoryHandler::HistoryEntry& entry1,
-    const BrowsingHistoryHandler::HistoryEntry& entry2) {
-  return entry1.time > entry2.time;
-}
-
 BrowsingHistoryHandler::BrowsingHistoryHandler() {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
@@ -327,8 +256,8 @@ void BrowsingHistoryHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("queryHistory",
       base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeVisits",
-      base::Bind(&BrowsingHistoryHandler::HandleRemoveVisits,
+  web_ui()->RegisterMessageCallback("removeUrlsOnOneDay",
+      base::Bind(&BrowsingHistoryHandler::HandleRemoveUrlsOnOneDay,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("clearBrowsingData",
       base::Bind(&BrowsingHistoryHandler::HandleClearBrowsingData,
@@ -377,7 +306,7 @@ void BrowsingHistoryHandler::QueryHistory(
   history_request_consumer_.CancelAllRequests();
   web_history_request_.reset();
 
-  query_results_.clear();
+  results_value_.Clear();
   results_info_value_.Clear();
 
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
@@ -450,88 +379,51 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   QueryHistory(search_text, options);
 }
 
-void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
+void BrowsingHistoryHandler::HandleRemoveUrlsOnOneDay(const ListValue* args) {
   if (delete_task_tracker_.HasTrackedTasks()) {
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
-  history::WebHistoryService* web_history =
-      WebHistoryServiceFactory::GetForProfile(profile);
+  // Get day to delete data from.
+  double visit_time = 0;
+  if (!ExtractDoubleValue(args, &visit_time)) {
+    LOG(ERROR) << "Unable to extract double argument.";
+    web_ui()->CallJavascriptFunction("deleteFailed");
+    return;
+  }
+  base::Time begin_time = base::Time::FromJsTime(visit_time).LocalMidnight();
+  base::Time end_time = begin_time + base::TimeDelta::FromDays(1);
 
-  base::Time now = base::Time::Now();
-  std::vector<history::ExpireHistoryArgs> expire_list;
-  expire_list.reserve(args->GetSize());
+  // Get URLs.
+  DCHECK(urls_to_be_deleted_.empty());
+  for (ListValue::const_iterator v = args->begin() + 1;
+       v != args->end(); ++v) {
+    if ((*v)->GetType() != Value::TYPE_STRING)
+      continue;
+    string16 string16_value;
+    if (!(*v)->GetAsString(&string16_value))
+      continue;
 
-  for (ListValue::const_iterator it = args->begin(); it != args->end(); ++it) {
-    DictionaryValue* deletion;
-    string16 url;
-    ListValue* timestamps;
-
-    // Each argument is a dictionary with properties "url" and "timestamps".
-    if (!((*it)->GetAsDictionary(&deletion) &&
-        deletion->GetString("url", &url) &&
-        deletion->GetList("timestamps", &timestamps))) {
-      NOTREACHED() << "Unable to extract arguments";
-      return;
-    }
-    DCHECK(timestamps->GetSize() > 0);
-
-    // In order to ensure that visits will be deleted from the server and other
-    // clients (even if they are offline), create a sync delete directive for
-    // each visit to be deleted.
-    sync_pb::HistoryDeleteDirectiveSpecifics delete_directive;
-    sync_pb::GlobalIdDirective* global_id_directive =
-        delete_directive.mutable_global_id_directive();
-
-    double timestamp;
-    history::ExpireHistoryArgs* expire_args = NULL;
-    for (ListValue::const_iterator ts_iterator = timestamps->begin();
-         ts_iterator != timestamps->end(); ++ts_iterator) {
-      if (!(*ts_iterator)->GetAsDouble(&timestamp)) {
-        NOTREACHED() << "Unable to extract visit timestamp.";
-        continue;
-      }
-      base::Time visit_time = base::Time::FromJsTime(timestamp);
-      if (!expire_args) {
-        expire_list.resize(expire_list.size() + 1);
-        expire_args = &expire_list.back();
-        expire_args->SetTimeRangeForOneDay(visit_time);
-        expire_args->urls.insert(GURL(url));
-      }
-      // The local visit time is treated as a global ID for the visit.
-      global_id_directive->add_global_id(visit_time.ToInternalValue());
-    }
-
-    // Set the start and end time in microseconds since the Unix epoch.
-    global_id_directive->set_start_time_usec(
-        (expire_args->begin_time - base::Time::UnixEpoch()).InMicroseconds());
-
-    // Delete directives shouldn't have an end time in the future.
-    // TODO(dubroy): Use sane time (crbug.com/146090) here when it's ready.
-    base::Time end_time = std::min(expire_args->end_time, now);
-
-    // -1 because end time in delete directives is inclusive.
-    global_id_directive->set_end_time_usec(
-        (end_time - base::Time::UnixEpoch()).InMicroseconds() - 1);
-
-    // TODO(dubroy): Figure out the proper way to handle an error here.
-    if (web_history)
-      history_service->ProcessLocalDeleteDirective(delete_directive);
+    urls_to_be_deleted_.insert(GURL(string16_value));
   }
 
-  history_service->ExpireHistory(
-      expire_list,
+  Profile* profile = Profile::FromWebUI(web_ui());
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
+  hs->ExpireHistoryBetween(
+      urls_to_be_deleted_, begin_time, end_time,
       base::Bind(&BrowsingHistoryHandler::RemoveComplete,
                  base::Unretained(this)),
       &delete_task_tracker_);
 
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(profile);
   if (web_history) {
-    web_history_delete_request_ = web_history->ExpireHistory(
-      expire_list,
+    web_history_delete_request_ = web_history->ExpireHistoryBetween(
+      urls_to_be_deleted_,
+      begin_time,
+      end_time,
       base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
                  base::Unretained(this)));
   }
@@ -676,6 +568,67 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
   bookmark_utils::RemoveAllBookmarks(model, GURL(url));
 }
 
+DictionaryValue* BrowsingHistoryHandler::CreateQueryResultValue(
+    const GURL& url, const string16& title, base::Time visit_time,
+    bool is_search_result, const string16& snippet) {
+  DictionaryValue* result = new DictionaryValue();
+  SetURLAndTitle(result, title, url);
+  result->SetDouble("time", visit_time.ToJsTime());
+
+  // Until we get some JS i18n infrastructure, we also need to
+  // pass the dates in as strings. This could use some
+  // optimization.
+
+  // Always pass the short date since it is needed both in the search and in
+  // the monthly view.
+  result->SetString("dateShort",
+      base::TimeFormatShortDate(visit_time));
+  // Only pass in the strings we need (search results need a shortdate
+  // and snippet, browse results need day and time information).
+  if (is_search_result) {
+    result->SetString("snippet", snippet);
+  } else {
+    base::Time midnight = base::Time::Now().LocalMidnight();
+    string16 date_str = TimeFormat::RelativeDate(visit_time, &midnight);
+    if (date_str.empty()) {
+      date_str = base::TimeFormatFriendlyDate(visit_time);
+    } else {
+      date_str = l10n_util::GetStringFUTF16(
+          IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
+          date_str,
+          base::TimeFormatFriendlyDate(visit_time));
+    }
+    result->SetString("dateRelativeDay", date_str);
+    result->SetString("dateTimeOfDay", base::TimeFormatTimeOfDay(visit_time));
+  }
+  Profile* profile = Profile::FromWebUI(web_ui());
+  result->SetBoolean("starred",
+      BookmarkModelFactory::GetForProfile(profile)->IsBookmarked(url));
+
+#if !defined(OS_ANDROID)
+  ManagedUserService* service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  if (service->ProfileIsManaged()) {
+    // URL exceptions take precedence over host exceptions.
+    int manual_behavior = service->GetManualBehaviorForURL(url);
+    if (manual_behavior == ManagedUserService::MANUAL_NONE)
+      manual_behavior = service->GetManualBehaviorForHost(url.host());
+    result->SetInteger("urlManualBehavior", manual_behavior);
+    result->SetInteger("hostManualBehavior",
+                       service->GetManualBehaviorForHost(url.host()));
+    std::vector<ManagedModeSiteList::Site*> sites;
+    service->GetURLFilterForUIThread()->GetSites(url, &sites);
+    result->SetBoolean("urlInContentPack", !sites.empty());
+    sites.clear();
+    service->GetURLFilterForUIThread()->GetSites(
+        url.GetWithEmptyPath(), &sites);
+    result->SetBoolean("hostInContentPack", !sites.empty());
+  }
+#endif
+
+  return result;
+}
+
 #if defined(ENABLE_MANAGED_USERS)
 void BrowsingHistoryHandler::HandleSetElevated(const ListValue* elevated_arg) {
   bool elevated;
@@ -716,67 +669,57 @@ void BrowsingHistoryHandler::HandleManagedUserGetElevated(
 }
 #endif
 
-// static
-void BrowsingHistoryHandler::RemoveDuplicateResults(
-    std::vector<BrowsingHistoryHandler::HistoryEntry>* results) {
-  std::vector<BrowsingHistoryHandler::HistoryEntry> new_results;
-  // Maps a URL to the most recent entry on a particular day.
-  std::map<GURL,BrowsingHistoryHandler::HistoryEntry>
-      current_day_entries;
+void BrowsingHistoryHandler::RemoveDuplicateResults(ListValue* results) {
+  ListValue new_results;
+  std::set<string16> current_day_urls;  // Holds the unique URLs for a day.
 
   // Keeps track of the day that |current_day_urls| is holding the URLs for,
   // in order to handle removing per-day duplicates.
   base::Time current_day_midnight;
 
-  std::sort(
-      results->begin(), results->end(), HistoryEntry::SortByTimeDescending);
+  for (ListValue::iterator it = results->begin(); it != results->end(); ) {
+    Value* visit_value;
+    base::Time visit_time;
+    string16 url;
 
-  for (std::vector<BrowsingHistoryHandler::HistoryEntry>::const_iterator it =
-           results->begin(); it != results->end(); ++it) {
-    // Reset the list of found URLs when a visit from a new day is encountered.
-    if (current_day_midnight != it->time.LocalMidnight()) {
-      current_day_entries.clear();
-      current_day_midnight = it->time.LocalMidnight();
+    it = results->Erase(it, &visit_value);
+    GetResultTimeAndUrl(visit_value, &visit_time, &url);
+
+    if (current_day_midnight != visit_time.LocalMidnight()) {
+      current_day_urls.clear();
+      current_day_midnight = visit_time.LocalMidnight();
     }
 
     // Keep this visit if it's the first visit to this URL on the current day.
-    if (current_day_entries.count(it->url) == 0) {
-      current_day_entries.insert(
-          std::pair<GURL,BrowsingHistoryHandler::HistoryEntry>(it->url, *it));
-      new_results.push_back(*it);
+    if (current_day_urls.count(url) == 0) {
+      current_day_urls.insert(url);
+      new_results.Append(visit_value);
     } else {
-      // Keep track of the timestamps of all visits to the URL on the same day.
-      current_day_entries[it->url].all_timestamps.insert(
-          it->all_timestamps.begin(), it->all_timestamps.end());
+      delete visit_value;
     }
   }
-  results->swap(new_results);
+  results->Swap(&new_results);
 }
 
 void BrowsingHistoryHandler::ReturnResultsToFrontEnd(
     bool results_need_merge, int max_count) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile);
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
+  if (results_need_merge) {
+    std::sort(results_value_.begin(),
+              results_value_.end(),
+              SortByTimeDescending);
+    RemoveDuplicateResults(&results_value_);
+  }
 
-  if (results_need_merge)
-    RemoveDuplicateResults(&query_results_);
-
-  // Convert the result vector into a ListValue with at most |max_count|
-  // elements.
-  ListValue results_value;
-  int query_results_size = static_cast<int>(query_results_.size());
-  for (int i = 0; i < query_results_size && i < max_count; ++i) {
-    scoped_ptr<base::Value> value(
-        query_results_[i].ToValue(bookmark_model, managed_user_service));
-    results_value.Append(value.release());
+  // Truncate the result set if necessary.
+  if (max_count > 0) {
+    for (int i = results_value_.GetSize(); i > max_count; --i)
+      results_value_.Remove(i - 1, NULL);
   }
 
   web_ui()->CallJavascriptFunction(
-      "historyResult", results_info_value_, results_value);
+      "historyResult", results_info_value_, results_value_);
   results_info_value_.Clear();
-  query_results_.clear();
+  results_value_.Clear();
 }
 
 void BrowsingHistoryHandler::QueryComplete(
@@ -785,21 +728,14 @@ void BrowsingHistoryHandler::QueryComplete(
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
   // If we're appending to existing results, they will need merging.
-  bool needs_merge = query_results_.size() >  0;
+  bool needs_merge = results_value_.GetSize() >  0;
 
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
-
-    std::set<int64> timestamps;
-    timestamps.insert(page.visit_time().ToInternalValue());
-
-    query_results_.push_back(
-        HistoryEntry(page.url(),
-                     page.title(),
-                     page.visit_time(),
-                     timestamps,
-                     !search_text.empty(),
-                     page.snippet().text()));
+    results_value_.Append(
+        CreateQueryResultValue(
+            page.url(), page.title(), page.visit_time(), !search_text.empty(),
+            page.snippet().text()));
   }
 
   results_info_value_.SetString("term", search_text);
@@ -837,14 +773,12 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       const ListValue* ids = NULL;
       string16 url;
       string16 title;
-      base::Time visit_time;
 
       if (!(events->GetDictionary(i, &event) &&
           event->GetList("result", &results) &&
           results->GetDictionary(0, &result) &&
           result->GetString("url", &url) &&
-          result->GetList("id", &ids) &&
-          ids->GetSize() > 0)) {
+          result->GetList("id", &ids))) {
         LOG(WARNING) << "Improperly formed JSON response from history server.";
         continue;
       }
@@ -852,39 +786,24 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       // Title is optional, so the return value is ignored here.
       result->GetString("title", &title);
 
-      // Extract the timestamps of all the visits to this URL.
-      // They are referred to as "IDs" by the server.
-      std::set<int64> timestamps;
+      // Extract the timestamps of each visit to this URL.
       for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
         const DictionaryValue* id = NULL;
         string16 timestamp_string;
         int64 timestamp_usec;
 
-        if (!(ids->GetDictionary(j, &id) &&
+        if (ids->GetDictionary(j, &id) &&
             id->GetString("timestamp_usec", &timestamp_string) &&
-              base::StringToInt64(timestamp_string, &timestamp_usec))) {
-          NOTREACHED() << "Unable to extract timestamp.";
-          continue;
+            base::StringToInt64(timestamp_string, &timestamp_usec)) {
+          results_value_.Append(
+              CreateQueryResultValue(
+                  GURL(url),
+                  title,
+                  base::Time::FromJsTime(timestamp_usec / 1000),
+                  !search_text.empty(),
+                  string16()));
         }
-        // The timestamp on the server is a Unix time.
-        base::Time time = base::Time::UnixEpoch() +
-                          base::TimeDelta::FromMicroseconds(timestamp_usec);
-        timestamps.insert(time.ToInternalValue());
-
-        // Use the first timestamp as the visit time for this result.
-        // TODO(dubroy): Use the sane time instead once it is available.
-        if (visit_time.is_null())
-          visit_time = time;
       }
-      GURL gurl(url);
-      query_results_.push_back(
-          HistoryEntry(
-              gurl,
-              title,
-              visit_time,
-              timestamps,
-              !search_text.empty(),
-              string16()));
     }
   } else if (results_value) {
     NOTREACHED() << "Failed to parse JSON response.";

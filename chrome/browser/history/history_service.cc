@@ -1172,20 +1172,6 @@ void HistoryService::ExpireHistoryBetween(
       callback);
 }
 
-void HistoryService::ExpireHistory(
-    const std::vector<history::ExpireHistoryArgs>& expire_list,
-    const base::Closure& callback,
-    CancelableTaskTracker* tracker) {
-  DCHECK(thread_);
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(history_backend_.get());
-  tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
-      FROM_HERE,
-      base::Bind(&HistoryBackend::ExpireHistory, history_backend_, expire_list),
-      callback);
-}
-
 void HistoryService::BroadcastNotificationsHelper(
     int type,
     history::HistoryDetails* details) {

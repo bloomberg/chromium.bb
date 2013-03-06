@@ -2758,26 +2758,6 @@ void HistoryBackend::ExpireHistoryForTimes(
     db_->GetStartDate(&first_recorded_time_);
 }
 
-void HistoryBackend::ExpireHistory(
-    const std::vector<history::ExpireHistoryArgs>& expire_list) {
-  if (db_.get()) {
-    bool update_first_recorded_time = false;
-
-    for (std::vector<history::ExpireHistoryArgs>::const_iterator it =
-         expire_list.begin(); it != expire_list.end(); ++it) {
-      expirer_.ExpireHistoryBetween(it->urls, it->begin_time, it->end_time);
-
-      if (it->begin_time < first_recorded_time_)
-        update_first_recorded_time = true;
-    }
-    Commit();
-
-    // Update |first_recorded_time_| if any deletion might have affected it.
-    if (update_first_recorded_time)
-      db_->GetStartDate(&first_recorded_time_);
-  }
-}
-
 void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   if (!db_.get())
     return;
