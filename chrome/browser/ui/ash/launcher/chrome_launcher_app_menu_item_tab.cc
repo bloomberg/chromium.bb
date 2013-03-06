@@ -14,8 +14,9 @@
 ChromeLauncherAppMenuItemTab::ChromeLauncherAppMenuItemTab(
     const string16 title,
     const gfx::Image* icon,
-    content::WebContents* content)
-    : ChromeLauncherAppMenuItem(title, icon),
+    content::WebContents* content,
+    bool has_leading_separator)
+    : ChromeLauncherAppMenuItem(title, icon, has_leading_separator),
       content::WebContentsObserver(content) {
 }
 

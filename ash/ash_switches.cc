@@ -37,13 +37,22 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 const char kAshDisableAutoWindowPlacement[] =
     "ash-enable-auto-window-placement";
 
+// Disables boot animation v2, go back to v1.
+const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
+
 // Disables the limitter to throttle how quickly a user
 // can change display settings.
 const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
-// Disables boot animation v2, go back to v1.
-const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
+// Disables creating a launcher per display.
+const char kAshDisableLauncherPerDisplay[] = "ash-disable-launcher-per-display";
+
+// If present new lock animations are enabled.
+const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
+
+// Disable the per application grouping version of the launcher.
+const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 
 // Disables immersive fullscreen mode.
 const char kAshDisableImmersiveMode[] = "ash-disable-immersive-mode";
@@ -55,8 +64,10 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
-// Enable workspace switching via a three finger vertical scroll.
-const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
+// Enable the experiment to show all browser tabs in the browser menu of the
+// launcher.
+const char kAshEnableFullBrowserListInLauncher[] =
+    "ash-enable-full-browser-list-in-launcher";
 
 #if defined(OS_LINUX)
 // Enable memory monitoring.
@@ -67,14 +78,14 @@ const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 const char kAshEnableNewNetworkStatusArea[] =
     "ash-enable-new-network-status-area";
 
-// Disable the per application grouping version of the launcher.
-const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
-
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
+
+// Enable workspace switching via a three finger vertical scroll.
+const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 
 // Sets a window size, optional position, and optional scale factor.
 // "1024x768" creates a window of size 1024x768.
@@ -87,11 +98,11 @@ const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 
-// Disables creating a launcher per display.
-const char kAshDisableLauncherPerDisplay[] = "ash-disable-launcher-per-display";
-
-// If present new lock animations are enabled.
-const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
+// Overrides all displays' orientation. The value should be one of 0
+// (normal), 1 (90 degrees clockwise), 2 (180 degrees) or 3 (270
+// degrees clockwise).
+const char kAshOverrideDisplayOrientation[] =
+    "ash-override-display-orientation";
 
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
@@ -107,12 +118,6 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // lock the screen or shutdown the system immediately in response to a press
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
-
-// Overrides all displays' orientation. The value should be one of 0
-// (normal), 1 (90 degrees clockwise), 2 (180 degrees) or 3 (270
-// degrees clockwise).
-const char kAshOverrideDisplayOrientation[] =
-    "ash-override-display-orientation";
 
 }  // namespace switches
 }  // namespace ash

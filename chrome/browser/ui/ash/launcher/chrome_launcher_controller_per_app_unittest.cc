@@ -481,6 +481,11 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
   EXPECT_FALSE(items[0]->IsEnabled());
   for (size_t i = 0; i < expected_items; i++) {
     EXPECT_EQ(title[i], items[1 + i]->title());
+    // Check that the first real item has a leading separator.
+    if (i == 1)
+      EXPECT_TRUE(items[i]->HasLeadingSeparator());
+    else
+      EXPECT_FALSE(items[i]->HasLeadingSeparator());
   }
 
   scoped_ptr<ash::LauncherMenuModel> menu(

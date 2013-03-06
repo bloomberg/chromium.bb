@@ -24,7 +24,8 @@ class ChromeLauncherAppMenuItemTab
  public:
   ChromeLauncherAppMenuItemTab(const string16 title,
                                const gfx::Image* icon,
-                               content::WebContents* content);
+                               content::WebContents* content,
+                               bool has_leading_separator);
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
   virtual void Execute() OVERRIDE;

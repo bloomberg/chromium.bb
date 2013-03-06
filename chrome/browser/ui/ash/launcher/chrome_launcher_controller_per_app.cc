@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
 #include "ash/shell.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -1454,12 +1456,11 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), NULL));
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), NULL, false));
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-  int index = 1;
   for (BrowserList::const_iterator it = ash_browser_list->begin();
-       it != ash_browser_list->end(); ++it, ++index) {
+       it != ash_browser_list->end(); ++it) {
     Browser* browser = *it;
     // Make sure that the browser was already shown and had a proper window.
     if (std::find(ash_browser_list->begin_last_active(),
@@ -1472,13 +1473,33 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     else if (!IsBrowserRepresentedInBrowserList(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
-    WebContents* web_contents =
-        tab_strip->GetWebContentsAt(tab_strip->active_index());
-    gfx::Image app_icon = GetAppListIcon(web_contents);
-    items.push_back(new ChromeLauncherAppMenuItemBrowser(
-        web_contents->GetTitle(),
-        app_icon.IsEmpty() ? NULL : &app_icon,
-        browser));
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshEnableFullBrowserListInLauncher)) {
+      WebContents* web_contents =
+          tab_strip->GetWebContentsAt(tab_strip->active_index());
+      gfx::Image app_icon = GetAppListIcon(web_contents);
+      items.push_back(new ChromeLauncherAppMenuItemBrowser(
+          web_contents->GetTitle(),
+          app_icon.IsEmpty() ? NULL : &app_icon,
+          browser,
+          items.size() == 1));
+    } else {
+      // TODO(skuhne): If we go with this experiment - remove the unused
+      // ChromeLauncherAppMenuItemBrowser class - we might also want to add a
+      // unit test that all browser tabs are enumerated and browsers separated.
+      for (int index = 0; index  < tab_strip->count(); ++index) {
+        content::WebContents* web_contents =
+            tab_strip->GetWebContentsAt(index);
+        gfx::Image app_icon = GetAppListIcon(web_contents);
+        // Check if we need to insert a separator in front.
+        bool leading_separator = !index;
+        items.push_back(new ChromeLauncherAppMenuItemTab(
+            web_contents->GetTitle(),
+            app_icon.IsEmpty() ? NULL : &app_icon,
+            web_contents,
+            leading_separator));
+      }
+    }
   }
   // If only windowed applications are open, we return an empty list to
   // enforce the creation of a new browser.

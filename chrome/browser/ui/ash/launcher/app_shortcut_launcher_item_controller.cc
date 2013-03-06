@@ -113,7 +113,7 @@ ChromeLauncherAppMenuItems
 AppShortcutLauncherItemController::GetApplicationList() {
   ChromeLauncherAppMenuItems items;
   // Add the application name to the menu.
-  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL));
+  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
 
   std::vector<content::WebContents*> content_list =
       GetRunningApplications();
@@ -125,7 +125,8 @@ AppShortcutLauncherItemController::GetApplicationList() {
     items.push_back(new ChromeLauncherAppMenuItemTab(
         web_contents->GetTitle(),
         app_icon.IsEmpty() ? NULL : &app_icon,
-        web_contents));
+        web_contents,
+        i == 0));
   }
   return items.Pass();
 }

@@ -702,6 +702,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisablePerAppLauncher)
   },
+  {
+    "ash-enable-full-browser-list-in-launcher",
+    IDS_FLAGS_ASH_ENABLE_FULL_BROWSER_LIST_IN_LAUNCHER_NAME,
+    IDS_FLAGS_ASH_ENABLE_FULL_BROWSER_LIST_IN_LAUNCHER_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableFullBrowserListInLauncher)
+  },
 #endif
   {
     "per-tile-painting",

@@ -12,7 +12,10 @@
 // as the function which gets executed upon menu item click.
 class ChromeLauncherAppMenuItem {
  public:
-  ChromeLauncherAppMenuItem(const string16 title, const gfx::Image* icon);
+  // To insert a separator before this item set |has_leading_separator|.
+  ChromeLauncherAppMenuItem(const string16 title,
+                            const gfx::Image* icon,
+                            bool has_leading_separator);
 
   virtual ~ChromeLauncherAppMenuItem();
 
@@ -21,6 +24,9 @@ class ChromeLauncherAppMenuItem {
 
   // Retrieves the icon for this menu option.
   const gfx::Image& icon() const { return icon_; }
+
+  // Returns true if a separator should be inserted before this item.
+  const bool HasLeadingSeparator() const { return has_leading_separator_; }
 
   // Returns true if the item is active.
   virtual bool IsActive() const;
@@ -34,6 +40,9 @@ class ChromeLauncherAppMenuItem {
  private:
   const string16 title_;
   const gfx::Image icon_;
+
+  // True if the item has a separator in front of it.
+  const bool has_leading_separator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherAppMenuItem);
 };

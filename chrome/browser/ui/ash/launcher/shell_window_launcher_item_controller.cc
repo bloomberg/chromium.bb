@@ -172,7 +172,7 @@ ChromeLauncherAppMenuItems
 ShellWindowLauncherItemController::GetApplicationList() {
   ChromeLauncherAppMenuItems items;
   if (!launcher_controller()->GetPerAppInterface()) {
-    items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL));
+    items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
     for (size_t i = 0; i < shell_window_count(); i++) {
       gfx::Image* image = GetIconOfIndexedApp(i);
       items.push_back(new ChromeLauncherAppMenuItemV2App(
@@ -180,7 +180,8 @@ ShellWindowLauncherItemController::GetApplicationList() {
           image,
           app_id(),
           launcher_controller()->GetPerAppInterface(),
-          i));
+          i,
+          i == 0));
       delete image;
     }
   }

@@ -15,8 +15,9 @@
 ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
     const string16 title,
     const gfx::Image* icon,
-    Browser* browser)
-    : ChromeLauncherAppMenuItem(title, icon),
+    Browser* browser,
+    bool has_leading_separator)
+    : ChromeLauncherAppMenuItem(title, icon, has_leading_separator),
       browser_(browser) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 
-ChromeLauncherAppMenuItem::ChromeLauncherAppMenuItem(const string16 title,
-                                                     const gfx::Image* icon)
+ChromeLauncherAppMenuItem::ChromeLauncherAppMenuItem(
+    const string16 title,
+    const gfx::Image* icon,
+    bool has_leading_separator)
     : title_(title),
-      icon_(icon ? gfx::Image(*icon) : gfx::Image()) {
+      icon_(icon ? gfx::Image(*icon) : gfx::Image()),
+      has_leading_separator_(has_leading_separator) {
 }
 
 ChromeLauncherAppMenuItem::~ChromeLauncherAppMenuItem() {
