@@ -51,7 +51,7 @@ def GetHostOS():
 
 def DictToJSON(pydict):
   """Convert a dict to a JSON-formatted string."""
-  pretty_string = json.dumps(pydict, sort_keys=False, indent=2)
+  pretty_string = json.dumps(pydict, sort_keys=True, indent=2)
   # json.dumps sometimes returns trailing whitespace and does not put
   # a newline at the end.  This code fixes these problems.
   pretty_lines = pretty_string.split('\n')
