@@ -773,6 +773,8 @@ void NetworkStateListDetailedView::ConnectToNetwork(
       NetworkStateHandler::Get()->GetNetworkState(service_path);
   if (!network)
     return;
+  if (!network->IsConnectedState())
+    TrayNetworkStateObserver::AddConnectingNetwork(service_path);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableNewNetworkConfigurationHandlers) &&
       !network->IsConnectedState()) {
@@ -780,7 +782,6 @@ void NetworkStateListDetailedView::ConnectToNetwork(
         service_path,
         base::Bind(&base::DoNothing),
         chromeos::network_handler::ErrorCallback());
-    TrayNetworkStateObserver::AddConnectingNetwork(service_path);
   } else {
     // This will show the settings UI for a connected network.
     // TODO(stevenjb): Change the API to explicitly show network settings.

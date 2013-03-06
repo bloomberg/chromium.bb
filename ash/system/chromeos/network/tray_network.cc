@@ -550,23 +550,32 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
     gfx::ImageSkia* image,
     string16* label) {
   NetworkStateHandler* handler = NetworkStateHandler::Get();
-  const NetworkState* network = handler->ConnectedNetworkByType(
+  const NetworkState* connected_network = handler->ConnectedNetworkByType(
       NetworkStateHandler::kMatchTypeNonVirtual);
-  if (network && network->type() == flimflam::kTypeEthernet &&
-      icon_type == network_icon::ICON_TYPE_TRAY) {
-    *image = gfx::ImageSkia();  // Don't show ethernet in the tray.
-    return;
-  }
   const NetworkState* connecting_network = handler->ConnectingNetworkByType(
       NetworkStateHandler::kMatchTypeWireless);
+  if (!connecting_network && icon_type == network_icon::ICON_TYPE_TRAY)
+    connecting_network = handler->ConnectingNetworkByType(flimflam::kTypeVPN);
+
+  const NetworkState* network;
   // If we are connecting to a network, and there is either no connected
   // network, or the connection was user requested, use the connecting
   // network.
   if (connecting_network &&
-      (!network || TrayNetworkStateObserver::HasConnectingNetwork(
+      (!connected_network || TrayNetworkStateObserver::HasConnectingNetwork(
           connecting_network->path()))) {
     network = connecting_network;
+  } else {
+    network = connected_network;
   }
+
+  // Don't show ethernet in the tray
+  if (icon_type == network_icon::ICON_TYPE_TRAY &&
+      network && network->type() == flimflam::kTypeEthernet) {
+    *image = gfx::ImageSkia();
+    return;
+  }
+
   if (!network) {
     // If no connecting network, check if we are activating a network.
     const NetworkState* mobile_network = handler->FirstNetworkByType(

@@ -97,12 +97,12 @@ class VpnDefaultView : public TrayItemMore,
     NetworkStateHandler* handler = NetworkStateHandler::Get();
     const NetworkState* vpn = handler->FirstNetworkByType(
         flimflam::kTypeVPN);
-    if (!vpn) {
+    if (!vpn || (vpn->connection_state() == flimflam::kStateIdle)) {
       *image = network_icon::GetImageForDisconnectedNetwork(
           network_icon::ICON_TYPE_DEFAULT_VIEW, flimflam::kTypeVPN);
       if (label) {
         *label = l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);
+            IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
       }
       return;
     }
