@@ -38,6 +38,17 @@ class JavaBitmap;
 
 namespace {
 
+// Used for drawing directly to the screen. Bypasses resizing and swaps.
+class DirectOutputSurface : public cc::OutputSurface {
+ public:
+  DirectOutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
+      : cc::OutputSurface(context3d.Pass()) {}
+
+  virtual void Reshape(gfx::Size size) OVERRIDE {}
+  virtual void PostSubBuffer(gfx::Rect rect) OVERRIDE {}
+  virtual void SwapBuffers() OVERRIDE {}
+};
+
 static bool g_initialized = false;
 static webkit_glue::WebThreadImpl* g_impl_thread = NULL;
 static bool g_use_direct_gl = false;
@@ -275,13 +286,18 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::createOutputSurface() {
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = false;
     attrs.noAutomaticFlushes = true;
-    scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessImpl> context(
+    scoped_ptr<WebKit::WebGraphicsContext3D> context(
         webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
             attrs,
             window_,
             NULL));
-    return make_scoped_ptr(new cc::OutputSurface(
-        context.PassAs<WebKit::WebGraphicsContext3D>()));
+
+    if (!window_) {
+      return scoped_ptr<cc::OutputSurface>(
+          new DirectOutputSurface(context.Pass()));
+    }
+
+    return make_scoped_ptr(new cc::OutputSurface(context.Pass()));
   } else {
     DCHECK(window_ && surface_id_);
     WebKit::WebGraphicsContext3D::Attributes attrs;
