@@ -41,8 +41,8 @@ int GetLocalSessionHistoryLength(RenderView* render_view);
 
 void SetAllowOSMesaImageTransportForTesting();
 
-// Do not require a user gesture for focus change events.
-void DoNotRequireUserGestureForFocusChanges();
+// Suppress sending focus events from the renderer to the browser.
+void DoNotSendFocusEvents();
 
 // Sync the current session history to the browser process.
 void SyncNavigationState(RenderView* render_view);

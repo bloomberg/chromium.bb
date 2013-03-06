@@ -185,12 +185,12 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
 
-  // True if changing the focus of a RenderView requires a active user gesture.
-  bool require_user_gesture_for_focus() const {
-    return require_user_gesture_for_focus_;
+  // True if focus changes should be send via IPC to the browser.
+  bool should_send_focus_ipcs() const {
+    return should_send_focus_ipcs_;
   }
-  void set_require_user_gesture_for_focus(bool require_gesture) {
-    require_user_gesture_for_focus_ = require_gesture;
+  void set_should_send_focus_ipcs(bool send) {
+    should_send_focus_ipcs_ = send;
   }
 
   // True if RenderWidgets should report the newly requested size back to
@@ -408,7 +408,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool notify_webkit_of_modal_loop_;
 
   // The following flags are used to control layout test specific behavior.
-  bool require_user_gesture_for_focus_;
+  bool should_send_focus_ipcs_;
   bool short_circuit_size_updates_;
 
   // Timer that periodically calls IdleHandler.
