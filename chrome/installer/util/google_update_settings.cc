@@ -75,10 +75,10 @@ bool WriteGoogleUpdateStrKey(const wchar_t* const name,
   return WriteGoogleUpdateStrKeyInternal(dist, name, value);
 }
 
-bool WriteGoogleUpdateStrKeyMultiInstall(const wchar_t* const name,
+bool WriteGoogleUpdateStrKeyMultiInstall(BrowserDistribution* dist,
+                                         const wchar_t* const name,
                                          const std::wstring& value,
                                          bool system_level) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   bool result = WriteGoogleUpdateStrKeyInternal(dist, name, value);
   if (!InstallUtil::IsMultiInstall(dist, system_level))
     return result;
@@ -360,7 +360,16 @@ bool GoogleUpdateSettings::ClearReferral() {
 
 bool GoogleUpdateSettings::UpdateDidRunState(bool did_run,
                                              bool system_level) {
-  return WriteGoogleUpdateStrKeyMultiInstall(google_update::kRegDidRunField,
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  return UpdateDidRunStateForDistribution(dist, did_run, system_level);
+}
+
+bool GoogleUpdateSettings::UpdateDidRunStateForDistribution(
+    BrowserDistribution* dist,
+    bool did_run,
+    bool system_level) {
+  return WriteGoogleUpdateStrKeyMultiInstall(dist,
+                                             google_update::kRegDidRunField,
                                              did_run ? L"1" : L"0",
                                              system_level);
 }

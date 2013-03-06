@@ -196,9 +196,18 @@ bool IsAppHostPresent() {
   return !app_host_exe.empty();
 }
 
+InstallationState GetAppLauncherInstallationState() {
+  if (IsAppLauncherEnabledAtLevel(SYSTEM_LEVEL_INSTALLATION))
+    return INSTALLED_AT_SYSTEM_LEVEL;
+
+  if (IsAppLauncherEnabledAtLevel(USER_LEVEL_INSTALLATION))
+    return INSTALLED_AT_USER_LEVEL;
+
+  return NOT_INSTALLED;
+}
+
 bool IsAppLauncherPresent() {
-  return IsAppLauncherEnabledAtLevel(USER_LEVEL_INSTALLATION) ||
-      IsAppLauncherEnabledAtLevel(SYSTEM_LEVEL_INSTALLATION);
+  return GetAppLauncherInstallationState() != NOT_INSTALLED;
 }
 
 bool IsChromeBrowserPresent() {

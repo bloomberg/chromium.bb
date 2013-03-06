@@ -13,7 +13,13 @@ namespace chrome_launcher_support {
 
 enum InstallationLevel {
   USER_LEVEL_INSTALLATION,
-  SYSTEM_LEVEL_INSTALLATION
+  SYSTEM_LEVEL_INSTALLATION,
+};
+
+enum InstallationState {
+  NOT_INSTALLED,
+  INSTALLED_AT_USER_LEVEL,
+  INSTALLED_AT_SYSTEM_LEVEL,
 };
 
 // Returns the path to an existing setup.exe at the specified level, if it can
@@ -49,6 +55,10 @@ base::FilePath GetAnyAppHostPath();
 // Returns true if App Host is installed (system-level or user-level),
 // or in the same directory as the current executable.
 bool IsAppHostPresent();
+
+// Returns the app launcher installation state. If the launcher is installed
+// at both system level and user level, system level is returned.
+InstallationState GetAppLauncherInstallationState();
 
 // Returns true if App Launcher is installed (system-level or user-level).
 bool IsAppLauncherPresent();

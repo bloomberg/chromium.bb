@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -36,6 +37,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -103,6 +107,21 @@ string16 GetAppModelId() {
             chrome::kInitialProfile);
   }
   return ShellIntegration::GetAppListAppModelIdForProfile(initial_profile_path);
+}
+
+void SetDidRunForNDayActiveStats() {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  chrome_launcher_support::InstallationState launcher_state =
+      chrome_launcher_support::GetAppLauncherInstallationState();
+  if (launcher_state != chrome_launcher_support::NOT_INSTALLED) {
+    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_APP_HOST);
+    GoogleUpdateSettings::UpdateDidRunStateForDistribution(
+        dist,
+        true /* did_run */,
+        launcher_state == chrome_launcher_support::INSTALLED_AT_SYSTEM_LEVEL);
+  }
 }
 
 class AppListControllerDelegateWin : public AppListControllerDelegate {
@@ -440,6 +459,9 @@ void AppListController::DecrementPendingProfileLoads() {
 
 void AppListController::ShowAppList(Profile* profile) {
   DCHECK(profile);
+
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(SetDidRunForNDayActiveStats));
 
   if (win8::IsSingleWindowMetroMode()) {
     // This request came from Windows 8 in desktop mode, but chrome is currently
