@@ -53,8 +53,11 @@ AudioManagerPulse::AudioManagerPulse()
 }
 
 AudioManagerPulse::~AudioManagerPulse() {
-  DestroyPulse();
   Shutdown();
+
+  // The Pulse objects are the last things to be destroyed since Shutdown()
+  // needs them.
+  DestroyPulse();
 }
 
 // Implementation of AudioManager.
@@ -186,7 +189,6 @@ bool AudioManagerPulse::Init() {
 
   // Start the threaded mainloop.
   if (pa_threaded_mainloop_start(input_mainloop_)) {
-    DestroyPulse();
     return false;
   }
 

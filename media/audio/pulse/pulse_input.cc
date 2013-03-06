@@ -334,8 +334,8 @@ void PulseAudioInputStream::ReadData() {
 
     // TODO(xians): improve the code by implementing a WaitTillDataReady on the
     // input side.
-    DLOG(WARNING) << "OnData is being called consecutively, sleep 5ms to "
-                  << "wait until render consumes the data";
+    DVLOG(1) << "OnData is being called consecutively, sleep 5ms to "
+             << "wait until render consumes the data";
     base::PlatformThread::Sleep(
         base::TimeDelta::FromMilliseconds(5));
   }
