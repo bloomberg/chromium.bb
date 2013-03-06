@@ -11,6 +11,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {

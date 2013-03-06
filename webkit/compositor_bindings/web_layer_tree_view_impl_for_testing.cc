@@ -13,6 +13,7 @@
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
 #include "cc/output_surface.h"
+#include "cc/software_output_device.h"
 #include "cc/switches.h"
 #include "cc/thread.h"
 #include "cc/thread_impl.h"
@@ -24,7 +25,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
@@ -184,11 +184,9 @@ WebLayerTreeViewImplForTesting::createOutputSurface() {
       break;
     }
     case webkit_support::SOFTWARE_CONTEXT: {
-      using webkit::WebCompositorSupportSoftwareOutputDevice;
-      scoped_ptr<WebCompositorSupportSoftwareOutputDevice> software_device =
-          make_scoped_ptr(new WebCompositorSupportSoftwareOutputDevice);
-      surface.reset(new cc::OutputSurface(
-          software_device.PassAs<cc::SoftwareOutputDevice>()));
+      scoped_ptr<cc::SoftwareOutputDevice> software_device =
+          make_scoped_ptr(new cc::SoftwareOutputDevice);
+      surface.reset(new cc::OutputSurface(software_device.Pass()));
       break;
     }
     case webkit_support::MESA_CONTEXT: {

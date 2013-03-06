@@ -11,7 +11,6 @@
 #include "cc/direct_renderer.h"
 #include "cc/gl_renderer_draw_cache.h"
 #include "cc/io_surface_draw_quad.h"
-#include "cc/output_surface.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/renderer.h"
 #include "cc/solid_color_draw_quad.h"
@@ -23,6 +22,7 @@
 
 namespace cc {
 
+class OutputSurface;
 class ScopedResource;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;

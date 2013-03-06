@@ -7,6 +7,7 @@
 
 #define USE_CC_OUTPUT_SURFACE // TODO(danakj): Remove this.
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/software_output_device.h"
@@ -95,6 +96,9 @@ class CC_EXPORT OutputSurface : public WebKit::WebCompositorOutputSurface {
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool has_gl_discard_backbuffer_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 
 }  // namespace cc

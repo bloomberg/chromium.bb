@@ -8,6 +8,7 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2ext.h",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/surface",
   # TODO(danakj): Drop dependencies on WebKit Platform API from cc.
   "+third_party/WebKit/Source/Platform/chromium/public",
 # TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D

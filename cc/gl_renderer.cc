@@ -21,6 +21,7 @@
 #include "cc/gl_frame_data.h"
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"
+#include "cc/output_surface.h"
 #include "cc/priority_calculator.h"
 #include "cc/proxy.h"
 #include "cc/render_pass.h"
@@ -80,14 +81,16 @@ bool needsIOSurfaceReadbackWorkaround()
 
 scoped_ptr<GLRenderer> GLRenderer::create(RendererClient* client, OutputSurface* outputSurface, ResourceProvider* resourceProvider)
 {
-    scoped_ptr<GLRenderer> renderer(make_scoped_ptr(new GLRenderer(client, outputSurface, resourceProvider)));
+    scoped_ptr<GLRenderer> renderer(new GLRenderer(client, outputSurface, resourceProvider));
     if (!renderer->initialize())
         return scoped_ptr<GLRenderer>();
 
     return renderer.Pass();
 }
 
-GLRenderer::GLRenderer(RendererClient* client, OutputSurface* outputSurface, ResourceProvider* resourceProvider)
+GLRenderer::GLRenderer(RendererClient* client,
+                       OutputSurface* outputSurface,
+                       ResourceProvider* resourceProvider)
     : DirectRenderer(client, resourceProvider)
     , m_offscreenFramebufferId(0)
     , m_sharedGeometryQuad(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f))

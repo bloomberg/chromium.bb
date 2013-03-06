@@ -5,8 +5,12 @@
 #include "cc/software_renderer.h"
 
 #include "base/debug/trace_event.h"
+#include "cc/compositor_frame.h"
+#include "cc/compositor_frame_ack.h"
+#include "cc/compositor_frame_metadata.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/math_util.h"
+#include "cc/output_surface.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/software_output_device.h"
 #include "cc/solid_color_draw_quad.h"
@@ -52,16 +56,19 @@ bool isScaleAndTranslate(const SkMatrix& matrix)
 
 } // anonymous namespace
 
-scoped_ptr<SoftwareRenderer> SoftwareRenderer::create(RendererClient* client, ResourceProvider* resourceProvider, SoftwareOutputDevice* outputDevice)
+scoped_ptr<SoftwareRenderer> SoftwareRenderer::create(RendererClient* client, OutputSurface* outputSurface, ResourceProvider* resourceProvider)
 {
-    return make_scoped_ptr(new SoftwareRenderer(client, resourceProvider, outputDevice));
+    return make_scoped_ptr(new SoftwareRenderer(client, outputSurface, resourceProvider));
 }
 
-SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* resourceProvider, SoftwareOutputDevice* outputDevice)
+SoftwareRenderer::SoftwareRenderer(RendererClient* client,
+                                   OutputSurface* outputSurface,
+                                   ResourceProvider* resourceProvider)
     : DirectRenderer(client, resourceProvider)
+    , m_outputSurface(outputSurface)
     , m_visible(true)
     , m_isScissorEnabled(false)
-    , m_outputDevice(outputDevice)
+    , m_outputDevice(outputSurface->software_device())
     , m_skCurrentCanvas(0)
 {
     m_resourceProvider->setDefaultResourceType(ResourceProvider::Bitmap);
@@ -72,6 +79,9 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* res
     // The updater can access bitmaps while the SoftwareRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
     m_capabilities.usingPartialSwap = true;
+    if (m_client->hasImplThread())
+      m_capabilities.usingSwapCompleteCallback = true;
+    m_compositorFrame.software_frame_data.reset(new SoftwareFrameData());
 
     viewportChanged();
 }
@@ -87,22 +97,42 @@ const RendererCapabilities& SoftwareRenderer::capabilities() const
 
 void SoftwareRenderer::viewportChanged()
 {
-    m_outputDevice->DidChangeViewportSize(viewportSize());
+    m_outputDevice->Resize(viewportSize());
 }
 
 void SoftwareRenderer::beginDrawingFrame(DrawingFrame& frame)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::beginDrawingFrame");
-    m_skRootCanvas = make_scoped_ptr(new SkCanvas(m_outputDevice->Lock(true)->getSkBitmap()));
+    m_skRootCanvas = m_outputDevice->BeginPaint(
+        gfx::ToEnclosingRect(frame.rootDamageRect));
 }
 
 void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::finishDrawingFrame");
     m_currentFramebufferLock.reset();
-    m_skCurrentCanvas = 0;
-    m_skRootCanvas.reset();
-    m_outputDevice->Unlock();
+    m_skCurrentCanvas = NULL;
+    m_skRootCanvas = NULL;
+    if (settings().compositorFrameMessage) {
+        m_compositorFrame.metadata = m_client->makeCompositorFrameMetadata();
+        m_outputDevice->EndPaint(m_compositorFrame.software_frame_data.get());
+    } else {
+        m_outputDevice->EndPaint();
+    }
+}
+
+bool SoftwareRenderer::swapBuffers()
+{
+    if (settings().compositorFrameMessage)
+        m_outputSurface->SendFrameToParentCompositor(&m_compositorFrame);
+    return true;
+}
+
+void SoftwareRenderer::receiveCompositorFrameAck(const CompositorFrameAck& ack)
+{
+    if (m_client->hasImplThread())
+        m_client->onSwapBuffersComplete();
+    m_outputDevice->ReclaimDIB(ack.last_content_dib);
 }
 
 bool SoftwareRenderer::flippedFramebuffer() const
@@ -134,7 +164,7 @@ void SoftwareRenderer::finish()
 void SoftwareRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
-    m_skCurrentCanvas = m_skRootCanvas.get();
+    m_skCurrentCanvas = m_skRootCanvas;
 }
 
 bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& framebufferRect)
@@ -374,22 +404,14 @@ void SoftwareRenderer::drawUnsupportedQuad(const DrawingFrame& frame, const Draw
     m_skCurrentCanvas->drawRect(gfx::RectFToSkRect(quadVertexRect()), m_skCurrentPaint);
 }
 
-bool SoftwareRenderer::swapBuffers()
-{
-    if (m_client->hasImplThread())
-        m_client->onSwapBuffersComplete();
-    return true;
-}
-
 void SoftwareRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::getFramebufferPixels");
-    SkBitmap fullBitmap = m_outputDevice->Lock(false)->getSkBitmap();
     SkBitmap subsetBitmap;
-    SkIRect invertRect = SkIRect::MakeXYWH(rect.x(), viewportSize().height() - rect.bottom(), rect.width(), rect.height());
-    fullBitmap.extractSubset(&subsetBitmap, invertRect);
-    subsetBitmap.copyPixelsTo(pixels, rect.width() * rect.height() * 4, rect.width() * 4);
-    m_outputDevice->Unlock();
+    m_outputDevice->CopyToBitmap(rect, &subsetBitmap);
+    subsetBitmap.copyPixelsTo(pixels,
+                              4 * rect.width() * rect.height(),
+                              4 * rect.width());
 }
 
 void SoftwareRenderer::setVisible(bool visible)

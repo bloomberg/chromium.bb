@@ -7,7 +7,7 @@
 
 #include "cc/compositor_frame.h"
 #include "cc/output_surface.h"
-#include "cc/test/fake_software_output_device.h"
+#include "cc/software_output_device.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 

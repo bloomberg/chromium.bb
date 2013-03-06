@@ -5,62 +5,72 @@
 #include "content/renderer/gpu/compositor_software_output_device_gl_adapter.h"
 
 #include "base/debug/trace_event.h"
-#include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 #include <GLES2/gl2.h>
 
-using WebKit::WebImage;
-using WebKit::WebGraphicsContext3D;
-using WebKit::WebSize;
-
 namespace content {
 
-//------------------------------------------------------------------------------
-
 CompositorSoftwareOutputDeviceGLAdapter::
-    CompositorSoftwareOutputDeviceGLAdapter(WebGraphicsContext3D* context3D)
-    : initialized_(false),
-      program_(0),
+    CompositorSoftwareOutputDeviceGLAdapter(
+    WebKit::WebGraphicsContext3D* context3d)
+    : program_(0),
       vertex_shader_(0),
       fragment_shader_(0),
       vertex_buffer_(0),
-      framebuffer_texture_id_(0),
-      context3d_(context3D),
-      locked_for_write_(false) {
+      texture_id_(0),
+      context3d_(context3d) {
+  CHECK(context3d);
 }
 
 CompositorSoftwareOutputDeviceGLAdapter::
     ~CompositorSoftwareOutputDeviceGLAdapter() {
-  Destroy();
+  if (!device_)
+    return;
+
+  context3d_->makeContextCurrent();
+  context3d_->deleteShader(vertex_shader_);
+  context3d_->deleteShader(fragment_shader_);
+  context3d_->deleteProgram(program_);
+  context3d_->deleteBuffer(vertex_buffer_);
+  context3d_->deleteTexture(texture_id_);
 }
 
-WebImage* CompositorSoftwareOutputDeviceGLAdapter::Lock(bool forWrite) {
-  locked_for_write_ = forWrite;
-  image_ = device_->accessBitmap(forWrite);
-  return &image_;
+void CompositorSoftwareOutputDeviceGLAdapter::Resize(
+    const gfx::Size& viewport_size) {
+  if (!device_)
+    InitShaders();
+
+  cc::SoftwareOutputDevice::Resize(viewport_size);
+
+  context3d_->makeContextCurrent();
+  context3d_->ensureBackbufferCHROMIUM();
+  context3d_->viewport(0, 0, viewport_size.width(), viewport_size.height());
+  context3d_->reshape(viewport_size.width(), viewport_size.height());
 }
 
-void CompositorSoftwareOutputDeviceGLAdapter::Unlock() {
-  if (locked_for_write_)
-    Draw(device_->accessBitmap(false).pixelRef()->pixels());
-  image_.reset();
+void CompositorSoftwareOutputDeviceGLAdapter::EndPaint(
+    cc::SoftwareFrameData* frame_data) {
+  DCHECK(device_);
+  DCHECK(frame_data == NULL);
+
+  TRACE_EVENT0("renderer", "CompositorSoftwareOutputDeviceGLAdapter::EndPaint");
+  const SkBitmap& bitmap = device_->accessBitmap(false);
+
+  context3d_->makeContextCurrent();
+  context3d_->ensureBackbufferCHROMIUM();
+  context3d_->clear(GL_COLOR_BUFFER_BIT);
+  context3d_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+      viewport_size_.width(), viewport_size_.height(),
+      0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.pixelRef()->pixels());
+  context3d_->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  context3d_->prepareTexture();
 }
 
-void CompositorSoftwareOutputDeviceGLAdapter::DidChangeViewportSize(
-    gfx::Size size) {
-  if (!initialized_)
-    Initialize();
-
-  if (framebuffer_texture_size_ != gfx::Size(size))
-    Resize(size);
-}
-
-void CompositorSoftwareOutputDeviceGLAdapter::Initialize() {
+void CompositorSoftwareOutputDeviceGLAdapter::InitShaders() {
   // Vertex shader that flips the y axis.
   static const char g_vertex_shader[] =
     "attribute vec4 a_Position;"
@@ -126,59 +136,12 @@ void CompositorSoftwareOutputDeviceGLAdapter::Initialize() {
   context3d_->disable(GL_SCISSOR_TEST);
   context3d_->clearColor(0, 0, 1, 1);
 
-  initialized_ = true;
-}
-
-void CompositorSoftwareOutputDeviceGLAdapter::Destroy() {
-  if (!initialized_)
-    return;
-
-  context3d_->makeContextCurrent();
-  context3d_->deleteShader(vertex_shader_);
-  context3d_->deleteShader(fragment_shader_);
-  context3d_->deleteProgram(program_);
-  context3d_->deleteBuffer(vertex_buffer_);
-  if (framebuffer_texture_id_)
-    context3d_->deleteTexture(framebuffer_texture_id_);
-}
-
-void CompositorSoftwareOutputDeviceGLAdapter::Resize(
-    const gfx::Size& viewport_size) {
-  framebuffer_texture_size_ = viewport_size;
-  device_.reset(new SkDevice(SkBitmap::kARGB_8888_Config,
-      viewport_size.width(), viewport_size.height(), true));
-
-  context3d_->makeContextCurrent();
-  context3d_->ensureBackbufferCHROMIUM();
-  framebuffer_texture_id_ = context3d_->createTexture();
-  context3d_->bindTexture(GL_TEXTURE_2D, framebuffer_texture_id_);
+  texture_id_ = context3d_->createTexture();
+  context3d_->bindTexture(GL_TEXTURE_2D, texture_id_);
   context3d_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   context3d_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   context3d_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   context3d_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  context3d_->viewport(0, 0, viewport_size.width(), viewport_size.height());
-  context3d_->reshape(viewport_size.width(), viewport_size.height());
-}
-
-void CompositorSoftwareOutputDeviceGLAdapter::Draw(void* pixels) {
-  TRACE_EVENT0("renderer", "CompositorSoftwareOutputDeviceGLAdapter::Draw");
-  if (!initialized_)
-    NOTREACHED();
-  if (!framebuffer_texture_id_)
-    NOTREACHED();
-
-  context3d_->makeContextCurrent();
-  context3d_->ensureBackbufferCHROMIUM();
-  context3d_->clear(GL_COLOR_BUFFER_BIT);
-
-  context3d_->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-      framebuffer_texture_size_.width(), framebuffer_texture_size_.height(),
-      0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-  context3d_->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-  context3d_->prepareTexture();
 }
 
 }  // namespace content

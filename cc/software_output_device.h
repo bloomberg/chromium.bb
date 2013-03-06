@@ -5,25 +5,50 @@
 #ifndef CC_SOFTWARE_OUTPUT_DEVICE_H_
 #define CC_SOFTWARE_OUTPUT_DEVICE_H_
 
-#include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
+#include "base/basictypes.h"
+#include "cc/cc_export.h"
+#include "skia/ext/refptr.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/vector2d.h"
+#include "ui/surface/transport_dib.h"
+
+class SkBitmap;
+class SkDevice;
+class SkCanvas;
 
 namespace cc {
 
+class SoftwareFrameData;
+
 // This is a "tear-off" class providing software drawing support to
 // OutputSurface, such as to a platform-provided window framebuffer.
-class SoftwareOutputDevice {
+class CC_EXPORT SoftwareOutputDevice {
  public:
-  virtual ~SoftwareOutputDevice() {}
 
-  // Lock the framebuffer and return a pointer to a WebImage referring to its
-  // pixels. Set forWrite if you intend to change the pixels. Readback
-  // is supported whether or not forWrite is set.
-  // TODO(danakj): Switch this from WebImage to a Skia type.
-  virtual WebKit::WebImage* Lock(bool forWrite) = 0;
-  virtual void Unlock() = 0;
+  SoftwareOutputDevice();
+  virtual ~SoftwareOutputDevice();
 
-  virtual void DidChangeViewportSize(gfx::Size) = 0;
+  // SoftwareOutputDevice implementation
+  virtual void Resize(const gfx::Size& size);
+
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect);
+  virtual void EndPaint(SoftwareFrameData* frame_data=NULL);
+
+  virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output);
+  virtual void Scroll(const gfx::Vector2d& delta,
+                      const gfx::Rect& clip_rect);
+
+  // TODO(skaslev) Remove this after UberCompositor lands.
+  virtual void ReclaimDIB(TransportDIB::Handle handle);
+
+protected:
+  gfx::Size viewport_size_;
+  gfx::Rect damage_rect_;
+  skia::RefPtr<SkDevice> device_;
+  skia::RefPtr<SkCanvas> canvas_;
+
+  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDevice);
 };
 
 }  // namespace cc

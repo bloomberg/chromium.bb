@@ -10,6 +10,7 @@
 #include "cc/compositor_frame_metadata.h"
 #include "cc/delegated_frame_data.h"
 #include "cc/gl_frame_data.h"
+#include "cc/software_frame_data.h"
 
 namespace cc {
 
@@ -21,6 +22,7 @@ class CC_EXPORT CompositorFrame {
   CompositorFrameMetadata metadata;
   scoped_ptr<DelegatedFrameData> delegated_frame_data;
   scoped_ptr<GLFrameData> gl_frame_data;
+  scoped_ptr<SoftwareFrameData> software_frame_data;
 
   void AssignTo(CompositorFrame* target);
 };

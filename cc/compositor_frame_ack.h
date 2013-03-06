@@ -9,6 +9,7 @@
 #include "cc/cc_export.h"
 #include "cc/gl_frame_data.h"
 #include "cc/transferable_resource.h"
+#include "ui/surface/transport_dib.h"
 
 namespace cc {
 
@@ -19,6 +20,7 @@ class CC_EXPORT CompositorFrameAck {
 
   TransferableResourceArray resources;
   scoped_ptr<GLFrameData> gl_frame_data;
+  TransportDIB::Handle last_content_dib;
 };
 
 }  // namespace cc

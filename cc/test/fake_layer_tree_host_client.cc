@@ -21,9 +21,9 @@ scoped_ptr<OutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
 {
     if (m_useSoftwareRendering) {
         if (m_useDelegatingRenderer)
-            return FakeOutputSurface::CreateDelegatingSoftware(make_scoped_ptr(new FakeSoftwareOutputDevice).PassAs<SoftwareOutputDevice>()).PassAs<OutputSurface>();
+            return FakeOutputSurface::CreateDelegatingSoftware(make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
 
-        return FakeOutputSurface::CreateSoftware(make_scoped_ptr(new FakeSoftwareOutputDevice).PassAs<SoftwareOutputDevice>()).PassAs<OutputSurface>();
+        return FakeOutputSurface::CreateSoftware(make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
     }
 
     WebKit::WebGraphicsContext3D::Attributes attrs;

@@ -105,8 +105,6 @@
       'test/fake_tile_manager_client.h',
       'test/fake_output_surface.cc',
       'test/fake_output_surface.h',
-      'test/fake_software_output_device.cc',
-      'test/fake_software_output_device.h',
       'test/fake_video_frame_provider.cc',
       'test/fake_video_frame_provider.h',
       'test/fake_web_scrollbar.cc',

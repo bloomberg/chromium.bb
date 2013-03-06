@@ -7,22 +7,25 @@
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
+#include "cc/compositor_frame.h"
 #include "cc/direct_renderer.h"
 
 namespace cc {
 
+class OutputSurface;
+class SoftwareOutputDevice;
 class DebugBorderDrawQuad;
 class RendererClient;
 class RenderPassDrawQuad;
 class ResourceProvider;
-class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 public:
-    static scoped_ptr<SoftwareRenderer> create(RendererClient*, ResourceProvider*, SoftwareOutputDevice*);
+    static scoped_ptr<SoftwareRenderer> create(RendererClient*, OutputSurface*, ResourceProvider*);
+
     virtual ~SoftwareRenderer();
 
     virtual const RendererCapabilities& capabilities() const OVERRIDE;
@@ -39,6 +42,8 @@ public:
 
     virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE  { }
 
+    virtual void receiveCompositorFrameAck(const CompositorFrameAck&) OVERRIDE;
+
 protected:
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
     virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& framebufferRect) OVERRIDE;
@@ -53,7 +58,7 @@ protected:
     virtual void ensureScissorTestDisabled() OVERRIDE;
 
 private:
-    SoftwareRenderer(RendererClient*, ResourceProvider*, SoftwareOutputDevice*);
+    SoftwareRenderer(RendererClient*, OutputSurface*, ResourceProvider*);
 
     void clearCanvas(SkColor color);
     void setClipRect(const gfx::Rect& rect);
@@ -71,11 +76,13 @@ private:
     bool m_isScissorEnabled;
     gfx::Rect m_scissorRect;
 
+    OutputSurface* m_outputSurface;
     SoftwareOutputDevice* m_outputDevice;
-    scoped_ptr<SkCanvas> m_skRootCanvas;
+    SkCanvas* m_skRootCanvas;
     SkCanvas* m_skCurrentCanvas;
     SkPaint m_skCurrentPaint;
     scoped_ptr<ResourceProvider::ScopedWriteLockSoftware> m_currentFramebufferLock;
+    CompositorFrame m_compositorFrame;
 
     DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };
