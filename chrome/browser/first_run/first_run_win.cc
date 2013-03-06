@@ -328,7 +328,14 @@ bool ImportSettingsWin(Profile* profile,
   }
 
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
-  CommandLine import_cmd(cmdline.GetProgram());
+  base::FilePath chrome_exe(cmdline.GetProgram());
+  // |chrome_exe| cannot be a relative path as chrome.exe already changed its
+  // CWD in LoadChromeWithDirectory(), making the relative path used on the
+  // command-line invalid. The base name is sufficient given chrome.exe is in
+  // the CWD.
+  if (!chrome_exe.IsAbsolute())
+    chrome_exe = chrome_exe.BaseName();
+  CommandLine import_cmd(chrome_exe);
 
   const char* kSwitchNames[] = {
     switches::kUserDataDir,
