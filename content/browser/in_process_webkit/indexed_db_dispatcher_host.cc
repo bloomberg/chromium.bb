@@ -283,11 +283,18 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
 
 void IndexedDBDispatcherHost::FinishTransaction(
     int64 host_transaction_id, bool committed) {
+  TransactionIDToURLMap& transaction_url_map =
+          database_dispatcher_host_->transaction_url_map_;
+  TransactionIDToSizeMap& transaction_size_map =
+          database_dispatcher_host_->transaction_size_map_;
   if (committed)
-    Context()->TransactionComplete(
-        database_dispatcher_host_->transaction_url_map_[host_transaction_id]);
-  database_dispatcher_host_->transaction_url_map_.erase(host_transaction_id);
-  database_dispatcher_host_->transaction_size_map_.erase(host_transaction_id);
+    Context()->TransactionComplete(transaction_url_map[host_transaction_id]);
+  if (transaction_url_map.find(host_transaction_id) !=
+      transaction_url_map.end())
+    transaction_url_map.erase(host_transaction_id);
+  if (transaction_size_map.find(host_transaction_id) !=
+      transaction_size_map.end())
+    transaction_size_map.erase(host_transaction_id);
 }
 
 //////////////////////////////////////////////////////////////////////
