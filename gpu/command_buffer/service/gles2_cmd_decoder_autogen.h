@@ -975,11 +975,11 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetBooleanv(pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1015,17 +1015,10 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
-  glGetBufferParameteriv(target, pname, params);
-  GLenum error = glGetError();
-  if (error == GL_NO_ERROR) {
-    result->SetNumResults(num_values);
-  } else {
-    SetGLError(error, "", "");
-  }
+  DoGetBufferParameteriv(target, pname, params);
+  result->SetNumResults(num_values);
   return error::kNoError;
 }
-
 error::Error GLES2DecoderImpl::HandleGetError(
     uint32 immediate_data_size, const gles2::cmds::GetError& c) {
   typedef cmds::GetError::Result Result;
@@ -1054,11 +1047,11 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetFloatv(pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1099,11 +1092,11 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1130,11 +1123,11 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetIntegerv(pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1162,11 +1155,11 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetProgramiv(program, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1199,11 +1192,11 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetRenderbufferParameteriv(target, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1231,11 +1224,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetShaderiv(shader, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1267,11 +1260,11 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   glGetTexParameterfv(target, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1303,11 +1296,11 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   glGetTexParameteriv(target, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1335,11 +1328,11 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetVertexAttribfv(index, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -1367,11 +1360,11 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
+  CopyRealGLErrorsToWrapper();
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  CopyRealGLErrorsToWrapper();
   DoGetVertexAttribiv(index, pname, params);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {

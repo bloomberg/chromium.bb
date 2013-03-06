@@ -1233,6 +1233,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
   GLuint DoGetMaxValueInBufferCHROMIUM(
       GLuint buffer_id, GLsizei count, GLenum type, GLuint offset);
 
+  // Wrapper for glGetBufferParameteriv.
+  void DoGetBufferParameteriv(
+      GLenum target, GLenum pname, GLint* params);
+
   // Wrapper for glGetProgramiv.
   void DoGetProgramiv(
       GLuint program_id, GLenum pname, GLint* params);
@@ -4313,6 +4317,24 @@ void GLES2DecoderImpl::DoGetProgramiv(
   info->GetProgramiv(pname, params);
 }
 
+void GLES2DecoderImpl::DoGetBufferParameteriv(
+    GLenum target, GLenum pname, GLint* params) {
+  Buffer* buffer = GetBufferInfoForTarget(target);
+  if (!buffer) {
+    return;
+  }
+  switch (pname) {
+    case GL_BUFFER_SIZE:
+      *params = buffer->size();
+      break;
+    case GL_BUFFER_USAGE:
+      *params = buffer->usage();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 void GLES2DecoderImpl::DoBindAttribLocation(
     GLuint program, GLuint index, const char* name) {
   if (!StringIsValidForGLES(name)) {
@@ -5737,54 +5759,13 @@ bool GLES2DecoderImpl::IsDrawValid(
     return false;
   }
 
-  // true if any enabled, used divisor is zero
-  bool divisor0 = false;
-  // Validate all attribs currently enabled. If they are used by the current
-  // program then check that they have enough elements to handle the draw call.
-  // If they are not used by the current program check that they have a buffer
-  // assigned.
-  const VertexAttribManager::VertexAttribInfoList& infos =
-      state_.vertex_attrib_manager->GetEnabledVertexAttribInfos();
-  for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
-       infos.begin(); it != infos.end(); ++it) {
-    const VertexAttrib* info = *it;
-    const Program::VertexAttrib* attrib_info =
-        state_.current_program->GetAttribInfoByLocation(info->index());
-    if (attrib_info) {
-      divisor0 |= (info->divisor() == 0);
-      GLuint count = info->MaxVertexAccessed(primcount, max_vertex_accessed);
-      // This attrib is used in the current program.
-      if (!info->CanAccess(count)) {
-        SetGLError(
-            GL_INVALID_OPERATION, function_name,
-            (std::string(
-                 "attempt to access out of range vertices in attribute ") +
-             base::IntToString(info->index())).c_str());
-        return false;
-      }
-    } else {
-      // This attrib is not used in the current program.
-      if (!info->buffer()) {
-        SetGLError(
-            GL_INVALID_OPERATION, function_name,
-            (std::string(
-                 "attempt to render with no buffer attached to "
-                 "enabled attribute ") +
-                 base::IntToString(info->index())).c_str());
-        return false;
-      }
-    }
-  }
-
-  if (primcount && !divisor0) {
-    SetGLError(
-        GL_INVALID_OPERATION, function_name,
-        "attempt instanced render with all attributes having "
-        "non-zero divisors");
-    return false;
-  }
-
-  return true;
+  return state_.vertex_attrib_manager->ValidateBindings(
+      function_name,
+      this,
+      feature_info_.get(),
+      state_.current_program,
+      max_vertex_accessed,
+      primcount);
 }
 
 bool GLES2DecoderImpl::SimulateAttrib0(
@@ -6145,8 +6126,11 @@ error::Error GLES2DecoderImpl::DoDrawElements(
   }
 
   GLuint max_vertex_accessed;
-  if (!state_.vertex_attrib_manager->element_array_buffer()->
-      GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
+  Buffer* element_array_buffer =
+      state_.vertex_attrib_manager->element_array_buffer();
+
+  if (!element_array_buffer->GetMaxValueForRange(
+      offset, count, type, &max_vertex_accessed)) {
     SetGLError(GL_INVALID_OPERATION,
                function_name, "range out of bounds for buffer");
     return error::kNoError;
@@ -6168,12 +6152,27 @@ error::Error GLES2DecoderImpl::DoDrawElements(
         primcount)) {
       bool textures_set = SetBlackTextureForNonRenderableTextures();
       ApplyDirtyState();
+      // TODO(gman): Refactor to hide these details in BufferManager or
+      // VertexAttribManager.
       const GLvoid* indices = reinterpret_cast<const GLvoid*>(offset);
+      bool used_client_side_array = false;
+      if (element_array_buffer->IsClientSideArray()) {
+        used_client_side_array = true;
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        indices = element_array_buffer->GetRange(offset, 0);
+      }
+
       if (!instanced) {
         glDrawElements(mode, count, type, indices);
       } else {
         glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
       }
+
+      if (used_client_side_array) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
+                     element_array_buffer->service_id());
+      }
+
       ProcessPendingQueries();
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
@@ -7191,8 +7190,8 @@ void GLES2DecoderImpl::DoBufferData(
     SetGLError(GL_INVALID_VALUE, "glBufferData", "size < 0");
     return;
   }
-  Buffer* info = GetBufferInfoForTarget(target);
-  if (!info) {
+  Buffer* buffer = GetBufferInfoForTarget(target);
+  if (!buffer) {
     SetGLError(GL_INVALID_VALUE, "glBufferData", "unknown buffer");
     return;
   }
@@ -7202,23 +7201,7 @@ void GLES2DecoderImpl::DoBufferData(
     return;
   }
 
-  // Clear the buffer to 0 if no initial data was passed in.
-  scoped_array<int8> zero;
-  if (!data) {
-    zero.reset(new int8[size]);
-    memset(zero.get(), 0, size);
-    data = zero.get();
-  }
-
-  CopyRealGLErrorsToWrapper();
-  glBufferData(target, size, data, usage);
-  GLenum error = PeekGLError();
-  if (error == GL_NO_ERROR) {
-    buffer_manager()->SetInfo(info, size, usage);
-    info->SetRange(0, size, data);
-  } else {
-    buffer_manager()->SetInfo(info, 0, usage);
-  }
+  buffer_manager()->DoBufferData(this, buffer, size, usage, data);
 }
 
 error::Error GLES2DecoderImpl::HandleBufferData(
@@ -7255,16 +7238,13 @@ error::Error GLES2DecoderImpl::HandleBufferDataImmediate(
 
 void GLES2DecoderImpl::DoBufferSubData(
   GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-  Buffer* info = GetBufferInfoForTarget(target);
-  if (!info) {
+  Buffer* buffer = GetBufferInfoForTarget(target);
+  if (!buffer) {
     SetGLError(GL_INVALID_VALUE, "glBufferSubData", "unknown buffer");
     return;
   }
-  if (!info->SetRange(offset, size, data)) {
-    SetGLError(GL_INVALID_VALUE, "glBufferSubData", "out of range");
-    return;
-  }
-  glBufferSubData(target, offset, size, data);
+
+  buffer_manager()->DoBufferSubData(this, buffer, offset, size, data);
 }
 
 bool GLES2DecoderImpl::ClearLevel(

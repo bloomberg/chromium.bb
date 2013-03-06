@@ -261,6 +261,7 @@
         'command_buffer/tests/gl_texture_storage_unittests.cc',
         'command_buffer/tests/gl_unittests.cc',
         'command_buffer/tests/gl_virtual_contexts_unittests.cc',
+        'command_buffer/tests/gl_stream_draw_unittests.cc',
         'command_buffer/tests/occlusion_query_unittests.cc',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

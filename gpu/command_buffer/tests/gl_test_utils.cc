@@ -108,6 +108,24 @@ GLuint GLTestHelper::SetupUnitQuad(GLint position_location) {
   return vbo;
 }
 
+GLuint GLTestHelper::SetupColorsForUnitQuad(
+    GLint location, const GLfloat color[4], GLenum usage) {
+  GLuint vbo = 0;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  GLfloat vertices[6 * 4];
+  for (int ii = 0; ii < 6; ++ii) {
+    for (int jj = 0; jj < 4; ++jj) {
+      vertices[ii * 4 + jj] = color[jj];
+    }
+  }
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, usage);
+  glEnableVertexAttribArray(location);
+  glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+  return vbo;
+}
+
 bool GLTestHelper::CheckPixels(
     GLint x, GLint y, GLsizei width, GLsizei height, GLint tolerance,
     const uint8* color) {

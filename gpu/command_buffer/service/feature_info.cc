@@ -94,6 +94,7 @@ FeatureInfo::Workarounds::Workarounds()
       restore_scissor_on_fbo_change(false),
       flush_on_context_switch(false),
       delete_instead_of_resize_fbo(false),
+      use_client_side_arrays_for_stream_buffers(false),
       max_texture_size(0),
       max_cube_map_texture_size(0) {
 }
@@ -168,6 +169,7 @@ void FeatureInfo::AddFeatures() {
   bool is_mesa = false;
   bool is_qualcomm = false;
   bool is_imagination = false;
+  bool is_arm = false;
   for (size_t ii = 0; ii < arraysize(string_ids); ++ii) {
     const char* str = reinterpret_cast<const char*>(
           glGetString(string_ids[ii]));
@@ -180,6 +182,7 @@ void FeatureInfo::AddFeatures() {
       is_mesa |= string_set.Contains("mesa");
       is_qualcomm |= string_set.Contains("qualcomm");
       is_imagination |= string_set.Contains("imagination");
+      is_arm |= string_set.Contains("arm");
     }
   }
 
@@ -190,7 +193,6 @@ void FeatureInfo::AddFeatures() {
   feature_flags_.enable_shader_name_hashing =
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableShaderNameHashing);
-
 
   bool npot_ok = false;
 
@@ -335,6 +337,19 @@ void FeatureInfo::AddFeatures() {
       extensions.Contains("GL_ARB_vertex_array_object") ||
       extensions.Contains("GL_APPLE_vertex_array_object")) {
     feature_flags_.native_vertex_array_object = true;
+  }
+
+  // If the driver doesn't like uploading lots of buffer data constantly
+  // work around it by using client side arrays.
+  if (is_arm || is_imagination) {
+    workarounds_.use_client_side_arrays_for_stream_buffers = true;
+  }
+
+  // If we're using client_side_arrays we have to emulate
+  // vertex array objects since vertex array objects do not work
+  // with client side arrays.
+  if (workarounds_.use_client_side_arrays_for_stream_buffers) {
+    feature_flags_.native_vertex_array_object = false;
   }
 
   if (extensions.Contains("GL_OES_element_index_uint") ||

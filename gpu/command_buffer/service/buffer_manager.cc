@@ -7,18 +7,26 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace gpu {
 namespace gles2 {
 
-BufferManager::BufferManager(MemoryTracker* memory_tracker)
+BufferManager::BufferManager(
+    MemoryTracker* memory_tracker,
+    FeatureInfo* feature_info)
     : memory_tracker_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
+      feature_info_(feature_info),
       allow_buffers_on_multiple_targets_(false),
       buffer_info_count_(0),
-      have_context_(true) {
+      have_context_(true),
+      use_client_side_arrays_for_stream_buffers_(
+          feature_info ? feature_info->workarounds(
+              ).use_client_side_arrays_for_stream_buffers : 0) {
 }
 
 BufferManager::~BufferManager() {
@@ -70,7 +78,8 @@ Buffer::Buffer(BufferManager* manager, GLuint service_id)
       target_(0),
       size_(0),
       usage_(GL_STATIC_DRAW),
-      shadowed_(false) {
+      shadowed_(false),
+      is_client_side_array_(false) {
   manager_->StartTracking(this);
 }
 
@@ -86,14 +95,24 @@ Buffer::~Buffer() {
 }
 
 void Buffer::SetInfo(
-    GLsizeiptr size, GLenum usage, bool shadow) {
+    GLsizeiptr size, GLenum usage, bool shadow, const GLvoid* data,
+    bool is_client_side_array) {
   usage_ = usage;
+  is_client_side_array_ = is_client_side_array;
   if (size != size_ || shadow != shadowed_) {
     shadowed_ = shadow;
     size_ = size;
     ClearCache();
     if (shadowed_) {
       shadow_.reset(new int8[size]);
+    } else {
+      shadow_.reset();
+    }
+  }
+  if (shadowed_) {
+    if (data) {
+      memcpy(shadow_.get(), data, size);
+    } else {
       memset(shadow_.get(), 0, size);
     }
   }
@@ -217,15 +236,64 @@ bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   return false;
 }
 
+bool BufferManager::IsUsageClientSideArray(GLenum usage) {
+  return usage == GL_STREAM_DRAW && use_client_side_arrays_for_stream_buffers_;
+}
+
 void BufferManager::SetInfo(
-    Buffer* info, GLsizeiptr size, GLenum usage) {
+    Buffer* info, GLsizeiptr size, GLenum usage, const GLvoid* data) {
   DCHECK(info);
   memory_tracker_->TrackMemFree(info->size());
-  info->SetInfo(size,
-                usage,
-                info->target() == GL_ELEMENT_ARRAY_BUFFER ||
-                allow_buffers_on_multiple_targets_);
+  bool is_client_side_array = IsUsageClientSideArray(usage);
+  bool shadow = info->target() == GL_ELEMENT_ARRAY_BUFFER ||
+                allow_buffers_on_multiple_targets_ ||
+                is_client_side_array;
+  info->SetInfo(size, usage, shadow, data, is_client_side_array);
   memory_tracker_->TrackMemAlloc(info->size());
+}
+
+void BufferManager::DoBufferData(
+    GLES2Decoder* decoder,
+    Buffer* buffer,
+    GLsizeiptr size,
+    GLenum usage,
+    const GLvoid* data) {
+  // Clear the buffer to 0 if no initial data was passed in.
+  scoped_array<int8> zero;
+  if (!data) {
+    zero.reset(new int8[size]);
+    memset(zero.get(), 0, size);
+    data = zero.get();
+  }
+
+  decoder->CopyRealGLErrorsToWrapper();
+  if (IsUsageClientSideArray(usage)) {
+    glBufferData(buffer->target(), 0, NULL, usage);
+  } else {
+    glBufferData(buffer->target(), size, data, usage);
+  }
+  GLenum error = decoder->PeekGLError();
+  if (error == GL_NO_ERROR) {
+    SetInfo(buffer, size, usage, data);
+  } else {
+    SetInfo(buffer, 0, usage, NULL);
+  }
+}
+
+void BufferManager::DoBufferSubData(
+    GLES2Decoder* decoder,
+    Buffer* buffer,
+    GLintptr offset,
+    GLsizeiptr size,
+    const GLvoid* data) {
+  if (!buffer->SetRange(offset, size, data)) {
+    decoder->SetGLError(GL_INVALID_VALUE, "glBufferSubData", "out of range");
+    return;
+  }
+
+  if (!buffer->IsClientSideArray()) {
+    glBufferSubData(buffer->target(), offset, size, data);
+  }
 }
 
 bool BufferManager::SetTarget(Buffer* info, GLenum target) {

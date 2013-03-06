@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
@@ -109,7 +110,7 @@ TEST_F(VertexAttribManagerTest, Enable) {
 }
 
 TEST_F(VertexAttribManagerTest, SetAttribInfo) {
-  BufferManager buffer_manager(NULL);
+  BufferManager buffer_manager(NULL, NULL);
   buffer_manager.CreateBuffer(1, 2);
   Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
@@ -145,7 +146,8 @@ TEST_F(VertexAttribManagerTest, HaveFixedAttribs) {
 }
 
 TEST_F(VertexAttribManagerTest, CanAccess) {
-  BufferManager buffer_manager(NULL);
+  MockGLES2Decoder decoder;
+  BufferManager buffer_manager(NULL, NULL);
   buffer_manager.CreateBuffer(1, 2);
   Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
@@ -161,17 +163,23 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   EXPECT_FALSE(info->CanAccess(0));
 
   EXPECT_TRUE(buffer_manager.SetTarget(buffer, GL_ARRAY_BUFFER));
-  buffer_manager.SetInfo(buffer, 15, GL_STATIC_DRAW);
+  TestHelper::DoBufferData(
+      gl_.get(), &decoder, &buffer_manager, buffer, 15, GL_STATIC_DRAW, NULL,
+      GL_NO_ERROR);
 
   EXPECT_FALSE(info->CanAccess(0));
-  buffer_manager.SetInfo(buffer, 16, GL_STATIC_DRAW);
+  TestHelper::DoBufferData(
+      gl_.get(), &decoder, &buffer_manager, buffer, 16, GL_STATIC_DRAW, NULL,
+      GL_NO_ERROR);
   EXPECT_TRUE(info->CanAccess(0));
   EXPECT_FALSE(info->CanAccess(1));
 
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 1);
   EXPECT_FALSE(info->CanAccess(0));
 
-  buffer_manager.SetInfo(buffer, 32, GL_STATIC_DRAW);
+  TestHelper::DoBufferData(
+      gl_.get(), &decoder, &buffer_manager, buffer, 32, GL_STATIC_DRAW, NULL,
+      GL_NO_ERROR);
   EXPECT_TRUE(info->CanAccess(0));
   EXPECT_FALSE(info->CanAccess(1));
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0);
@@ -187,7 +195,7 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
 }
 
 TEST_F(VertexAttribManagerTest, Unbind) {
-  BufferManager buffer_manager(NULL);
+  BufferManager buffer_manager(NULL, NULL);
   buffer_manager.CreateBuffer(1, 2);
   buffer_manager.CreateBuffer(3, 4);
   Buffer* buffer1 = buffer_manager.GetBuffer(1);
@@ -222,6 +230,9 @@ TEST_F(VertexAttribManagerTest, Unbind) {
   manager_ = NULL;
   buffer_manager.Destroy(false);
 }
+
+// TODO(gman): Test ValidateBindings
+// TODO(gman): Test ValidateBindings with client side arrays.
 
 }  // namespace gles2
 }  // namespace gpu
