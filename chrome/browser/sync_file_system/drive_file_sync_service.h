@@ -110,7 +110,7 @@ class DriveFileSyncService
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
 
  private:
-  friend class DriveFileSyncServiceTest;
+  friend class DriveFileSyncServiceMockTest;
   friend class DriveFileSyncServiceSyncTest;
   class TaskToken;
   struct ProcessRemoteChangeParam;

@@ -100,7 +100,7 @@ class DriveFileSyncClient
 
  private:
   friend class DriveFileSyncClientTest;
-  friend class DriveFileSyncServiceTest;
+  friend class DriveFileSyncServiceMockTest;
 
   // Constructor for test use.
   DriveFileSyncClient(
