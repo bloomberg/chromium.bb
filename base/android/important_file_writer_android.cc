@@ -8,6 +8,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/files/important_file_writer.h"
+#include "base/threading/thread_restrictions.h"
 #include "jni/ImportantFileWriterAndroid_jni.h"
 
 namespace base {
@@ -17,6 +18,9 @@ static jboolean WriteFileAtomically(JNIEnv* env,
                                     jclass /* clazz */,
                                     jstring file_name,
                                     jbyteArray data) {
+  // This is called on the UI thread during shutdown to save tab data, so
+  // needs to enable IO.
+  base::ThreadRestrictions::ScopedAllowIO();
   std::string native_file_name;
   base::android::ConvertJavaStringToUTF8(env, file_name, &native_file_name);
   base::FilePath path(native_file_name);
