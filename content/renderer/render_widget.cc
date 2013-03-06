@@ -931,10 +931,11 @@ void RenderWidget::AnimateIfNeeded() {
                            &RenderWidget::AnimationCallback);
     animation_update_pending_ = false;
     if (is_accelerated_compositing_active_ && compositor_) {
-      compositor_->layer_tree_host()->updateAnimations(
-          base::TimeTicks::Now());
+      compositor_->Animate(base::TimeTicks::Now());
     } else {
-      webwidget_->animate(0.0);
+      double frame_begin_time =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+      webwidget_->animate(frame_begin_time);
     }
     return;
   }
@@ -1207,7 +1208,7 @@ void RenderWidget::DoDeferredUpdate() {
 void RenderWidget::Composite() {
   DCHECK(is_accelerated_compositing_active_);
   if (compositor_)  // TODO(jamesr): Figure out how this can be null.
-    compositor_->composite();
+    compositor_->Composite();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1356,7 +1357,7 @@ void RenderWidget::initializeLayerTreeView(
     WebKit::WebLayerTreeViewClient* client,
     const WebKit::WebLayer& root_layer,
     const WebKit::WebLayerTreeView::Settings& settings) {
-  compositor_ = RenderWidgetCompositor::Create(this, client, settings);
+  compositor_ = RenderWidgetCompositor::Create(this, settings);
   if (!compositor_)
     return;
 
@@ -2120,7 +2121,7 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
 void RenderWidget::GetRenderingStats(
     WebKit::WebRenderingStatsImpl& stats) const {
   if (compositor_)
-    compositor_->layer_tree_host()->renderingStats(&stats.rendering_stats);
+    compositor_->GetRenderingStats(&stats.rendering_stats);
 
   stats.rendering_stats.numAnimationFrames +=
       software_stats_.numAnimationFrames;

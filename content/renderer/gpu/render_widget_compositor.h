@@ -5,9 +5,14 @@
 #ifndef CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 #define CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
 
+#include "base/time.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_settings.h"
+#include "cc/rendering_stats.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+
+class SkPicture;
 
 namespace cc {
 class LayerTreeHost;
@@ -23,14 +28,16 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   // with the given settings. Returns NULL if initialization fails.
   static scoped_ptr<RenderWidgetCompositor> Create(
       RenderWidget* widget,
-      WebKit::WebLayerTreeViewClient* client,
       WebKit::WebLayerTreeView::Settings settings);
 
   virtual ~RenderWidgetCompositor();
 
-  cc::LayerTreeHost* layer_tree_host() const { return layer_tree_host_.get(); }
-
   void SetSuppressScheduleComposite(bool suppress);
+  void Animate(base::TimeTicks time);
+  void Composite();
+  void GetRenderingStats(cc::RenderingStats* stats);
+  skia::RefPtr<SkPicture> CapturePicture();
+  void EnableHidingTopControls(bool enable);
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();
@@ -58,8 +65,6 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void setNeedsAnimate();
   virtual void setNeedsRedraw();
   virtual bool commitRequested() const;
-  virtual void composite();
-  virtual void updateAnimations(double frame_begin_time);
   virtual void didStopFlinging();
   virtual bool compositeAndReadback(void *pixels, const WebKit::WebRect& rect);
   virtual void finishAllRendering();
@@ -91,15 +96,13 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
       OffscreenContextProviderForCompositorThread() OVERRIDE;
 
 private:
-  RenderWidgetCompositor(RenderWidget* widget,
-                         WebKit::WebLayerTreeViewClient* client);
+  explicit RenderWidgetCompositor(RenderWidget* widget);
 
   bool initialize(cc::LayerTreeSettings settings);
 
   bool threaded_;
   bool suppress_schedule_composite_;
   RenderWidget* widget_;
-  WebKit::WebLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 };
 

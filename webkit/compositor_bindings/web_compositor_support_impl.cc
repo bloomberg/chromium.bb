@@ -36,8 +36,6 @@ using WebKit::WebIOSurfaceLayer;
 using WebKit::WebImageLayer;
 using WebKit::WebImageLayer;
 using WebKit::WebLayer;
-using WebKit::WebLayerTreeView;
-using WebKit::WebLayerTreeViewClient;
 using WebKit::WebScrollbar;
 using WebKit::WebScrollbarLayer;
 using WebKit::WebScrollbarThemeGeometry;

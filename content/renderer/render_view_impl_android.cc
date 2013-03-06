@@ -12,9 +12,9 @@
 namespace content {
 
 void RenderViewImpl::OnEnableHidingTopControls(bool enable) {
-  DCHECK(compositor_ && compositor_->layer_tree_host());
-  if (compositor_ && compositor_->layer_tree_host()) {
-    compositor_->layer_tree_host()->enableHidingTopControls(enable);
+  DCHECK(compositor_);
+  if (compositor_) {
+    compositor_->EnableHidingTopControls(enable);
   }
 }
 

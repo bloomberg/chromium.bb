@@ -20,7 +20,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gl/gl_switches.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
@@ -81,10 +80,9 @@ bool GetSwitchValueAsFloat(
 // static
 scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       RenderWidget* widget,
-      WebKit::WebLayerTreeViewClient* client,
       WebKit::WebLayerTreeView::Settings web_settings) {
-  scoped_ptr<RenderWidgetCompositor> comp(
-      new RenderWidgetCompositor(widget, client));
+  scoped_ptr<RenderWidgetCompositor> compositor(
+      new RenderWidgetCompositor(widget));
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
@@ -240,17 +238,15 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.solidColorScrollbarThicknessDIP = 3;
 #endif
 
-  if (!comp->initialize(settings))
+  if (!compositor->initialize(settings))
     return scoped_ptr<RenderWidgetCompositor>();
 
-  return comp.Pass();
+  return compositor.Pass();
 }
 
-RenderWidgetCompositor::RenderWidgetCompositor(
-    RenderWidget* widget, WebKit::WebLayerTreeViewClient* client)
+RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget)
   : suppress_schedule_composite_(false),
-    widget_(widget),
-    client_(client) {
+    widget_(widget) {
 }
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
@@ -266,6 +262,26 @@ void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
     TRACE_EVENT_ASYNC_END0("gpu",
         "RenderWidgetCompositor::SetSuppressScheduleComposite", this);
   suppress_schedule_composite_ = suppress;
+}
+
+void RenderWidgetCompositor::Animate(base::TimeTicks time) {
+  layer_tree_host_->updateAnimations(time);
+}
+
+void RenderWidgetCompositor::Composite() {
+  layer_tree_host_->composite();
+}
+
+void RenderWidgetCompositor::GetRenderingStats(cc::RenderingStats* stats) {
+  layer_tree_host_->renderingStats(stats);
+}
+
+skia::RefPtr<SkPicture> RenderWidgetCompositor::CapturePicture() {
+  return layer_tree_host_->capturePicture();
+}
+
+void RenderWidgetCompositor::EnableHidingTopControls(bool enable) {
+  layer_tree_host_->enableHidingTopControls(enable);
 }
 
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
@@ -369,17 +385,6 @@ bool RenderWidgetCompositor::commitRequested() const {
   return layer_tree_host_->commitRequested();
 }
 
-void RenderWidgetCompositor::composite() {
-  layer_tree_host_->composite();
-}
-
-void RenderWidgetCompositor::updateAnimations(double frame_begin_time_sec) {
-  base::TimeTicks frame_begin_time =
-    base::TimeTicks::FromInternalValue(frame_begin_time_sec *
-                                       base::Time::kMicrosecondsPerSecond);
-  layer_tree_host_->updateAnimations(frame_begin_time);
-}
-
 void RenderWidgetCompositor::didStopFlinging() {
   layer_tree_host_->didStopFlinging();
 }
@@ -434,31 +439,28 @@ void RenderWidgetCompositor::animate(double monotonic_frame_begin_time) {
   widget_->webwidget()->animate(monotonic_frame_begin_time);
 }
 
-// Can delete from WebLayerTreeViewClient
 void RenderWidgetCompositor::layout() {
   widget_->webwidget()->layout();
 }
 
-// TODO(jamesr): This should go through WebWidget
 void RenderWidgetCompositor::applyScrollAndScale(gfx::Vector2d scroll_delta,
                                                  float page_scale) {
-  client_->applyScrollAndScale(scroll_delta, page_scale);
+  widget_->webwidget()->applyScrollAndScale(scroll_delta, page_scale);
 }
 
 scoped_ptr<cc::OutputSurface> RenderWidgetCompositor::createOutputSurface() {
   return widget_->CreateOutputSurface();
 }
 
-// TODO(jamesr): This should go through WebWidget
 void RenderWidgetCompositor::didRecreateOutputSurface(bool success) {
-  client_->didRecreateOutputSurface(success);
+  if (!success)
+    widget_->webwidget()->didExitCompositingMode();
 }
 
-// TODO(jamesr): This should go through WebWidget
 scoped_ptr<cc::InputHandler> RenderWidgetCompositor::createInputHandler() {
   scoped_ptr<cc::InputHandler> ret;
   scoped_ptr<WebKit::WebInputHandler> web_handler(
-      client_->createInputHandler());
+      widget_->webwidget()->createInputHandler());
   if (web_handler)
      ret = WebKit::WebToCCInputHandlerAdapter::create(web_handler.Pass());
   return ret.Pass();
