@@ -144,6 +144,12 @@ void OnOpenWindowForNewProfile(
     const ProfileManager::CreateCallback& callback,
     Profile* profile,
     Profile::CreateStatus status) {
+  // Invoke the callback before we open a window for this new profile, so the
+  // callback has a chance to update the profile state first (to do things like
+  // sign in the profile).
+  if (!callback.is_null())
+    callback.Run(profile, status);
+
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
 
     ProfileManager::FindOrCreateNewWindowForProfile(
@@ -153,8 +159,6 @@ void OnOpenWindowForNewProfile(
         desktop_type,
         false);
   }
-  if (!callback.is_null())
-    callback.Run(profile, status);
 }
 
 #if defined(OS_CHROMEOS)
