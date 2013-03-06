@@ -2,6 +2,7 @@ UNKNOWN_TYPE | shipto | Select a Saved Shipping Address |
 NAME_FIRST | shippingFirstName |  | First Name
 NAME_LAST | shippingLastName |  | Last Name
 ADDRESS_HOME_LINE1 | shippingAddress |  | Street Address
+UNKNOWN_TYPE | shippingPobox |  | true
 ADDRESS_HOME_LINE2 | shippingAddress2 |  | Apt / Flr / Bldg (optional)
 ADDRESS_HOME_CITY | shippingCity |  | City
 ADDRESS_HOME_STATE | shippingStates |  | 
@@ -9,9 +10,12 @@ ADDRESS_HOME_ZIP | shippingPostalCode |  | Postal Code
 ADDRESS_HOME_COUNTRY | shippingCountries |  | 
 PHONE_HOME_WHOLE_NUMBER | shippingPhone |  | Phone
 PHONE_HOME_WHOLE_NUMBER | altShippingPhone |  | Alternate Phone (optional)
+UNKNOWN_TYPE | billingIsShipping |  | true
+UNKNOWN_TYPE | defaultShipping |  | true
 NAME_FIRST | billingFirstName |  | First Name
 NAME_LAST | billingLastName |  | Last Name
 ADDRESS_BILLING_LINE1 | billingAddress |  | Street Address
+UNKNOWN_TYPE | billingPobox |  | true
 ADDRESS_BILLING_LINE2 | billingAddress2 |  | Apt / Flr / Bldg (optional)
 ADDRESS_BILLING_CITY | billingCity |  | City
 ADDRESS_BILLING_STATE | billingStates |  | 
@@ -19,9 +23,11 @@ ADDRESS_BILLING_ZIP | billingPostalCode |  | Postal Code
 ADDRESS_BILLING_COUNTRY | billingCountries |  | 
 PHONE_HOME_WHOLE_NUMBER | billingPhone |  | Phone
 PHONE_HOME_WHOLE_NUMBER | altBillingPhone |  | Alternate Phone (optional)
+UNKNOWN_TYPE | defaultBilling |  | true
 UNKNOWN_TYPE | savedCreditCard |  | 
 CREDIT_CARD_TYPE | payment_cardtype |  | 
 CREDIT_CARD_NUMBER | payment_acctnum |  | Card Number (no spaces or dashes)
 CREDIT_CARD_EXP_MONTH | expmonth |  | 
 CREDIT_CARD_EXP_4_DIGIT_YEAR | expyear |  | 
 CREDIT_CARD_VERIFICATION_CODE | payment_cidnew |  | CID / Security Code
+UNKNOWN_TYPE | makeDefaultCreditCard |  | true

@@ -1,3 +1,4 @@
+UNKNOWN_TYPE | selectedShippingAddress | Add a new shipping address | newAddress
 NAME_FIRST | currentShipment.shipmentAddress.firstName | First Name: | 
 NAME_LAST | currentShipment.shipmentAddress.lastName | Last Name: | 
 ADDRESS_HOME_LINE1 | currentShipment.shipmentAddress.address1 | Address: | 

@@ -1,6 +1,7 @@
 NAME_FIRST | ctl00$ctl00$cphBody$cphBody$txtSA_FirstName | First Name * | 
 NAME_LAST | ctl00$ctl00$cphBody$cphBody$txtSA_LastName | Last Name * | 
 ADDRESS_HOME_LINE1 | ctl00$ctl00$cphBody$cphBody$txtSA_Address1 | Address Line 1 * | 
+UNKNOWN_TYPE | ctl00$ctl00$cphBody$cphBody$cbSA_IsPOBox | P.O. Box | on
 ADDRESS_HOME_LINE2 | ctl00$ctl00$cphBody$cphBody$txtSA_Address2 | Address Line 2 | 
 ADDRESS_HOME_CITY | ctl00$ctl00$cphBody$cphBody$txtSA_City | City * | 
 ADDRESS_HOME_STATE | ctl00$ctl00$cphBody$cphBody$ddlSA_State | State * | 
@@ -9,3 +10,5 @@ PHONE_HOME_CITY_CODE | ctl00$ctl00$cphBody$cphBody$txtSA_Phone1 | Phone Number *
 PHONE_HOME_NUMBER | ctl00$ctl00$cphBody$cphBody$txtSA_Phone2 | ZIP Code * | 
 PHONE_HOME_NUMBER | ctl00$ctl00$cphBody$cphBody$txtSA_Phone3 | ZIP Code * | 
 UNKNOWN_TYPE | ctl00$ctl00$cphBody$cphBody$txtSA_PhoneExt | Ext. | 
+UNKNOWN_TYPE | ctl00$ctl00$cphBody$cphBody$cbSA_MatchBilling | This is also my billing address | on
+UNKNOWN_TYPE | ctl00$ctl00$cphBody$cphBody$cbSA_EmailSignup | Send me newsletters with exclusive online discounts, special announcements and health and behavior tips for my pet. | on
