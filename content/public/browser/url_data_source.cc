@@ -6,6 +6,8 @@
 
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
@@ -41,6 +43,13 @@ std::string URLDataSource::GetContentSecurityPolicyFrameSrc() const {
 
 bool URLDataSource::ShouldDenyXFrameOptions() const {
   return true;
+}
+
+bool URLDataSource::ShouldServiceRequest(const net::URLRequest* request) const {
+  if (request->url().SchemeIs(chrome::kChromeDevToolsScheme) ||
+      request->url().SchemeIs(chrome::kChromeUIScheme))
+    return true;
+  return false;
 }
 
 }  // namespace content

@@ -411,6 +411,11 @@ extern const int kNumberOfChromeDebugURLs;
 // Canonical schemes you can use as input to GURL.SchemeIs().
 extern const char kExtensionResourceScheme[];
 
+// The chrome-search: scheme is served by the same backend as chrome:.  However,
+// only specific URLDataSources are enabled to serve requests via the
+// chrome-search: scheme.  See |InstantIOContext::ShouldServiceRequest| and its
+// callers for details.  Note that WebUIBindings should never be granted to
+// chrome-search: pages.
 extern const char kChromeSearchScheme[];
 
 #if defined(OS_CHROMEOS)

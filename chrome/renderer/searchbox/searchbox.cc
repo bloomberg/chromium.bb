@@ -6,8 +6,10 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 namespace {
@@ -152,6 +154,9 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnThemeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
                         OnFontInformationReceived)
+    IPC_MESSAGE_HANDLER(
+        ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin,
+        OnGrantChromeSearchAccessFromOrigin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_InstantMostVisitedItemsChanged,
                         OnMostVisitedChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -286,6 +291,31 @@ void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
   }
 }
 
+void SearchBox::OnFontInformationReceived(const string16& omnibox_font,
+                                          size_t omnibox_font_size) {
+  omnibox_font_ = omnibox_font;
+  omnibox_font_size_ = omnibox_font_size;
+}
+
+void SearchBox::OnGrantChromeSearchAccessFromOrigin(const GURL& origin_url) {
+  string16 chrome_search_scheme(ASCIIToUTF16(chrome::kChromeSearchScheme));
+  WebKit::WebSecurityPolicy::addOriginAccessWhitelistEntry(
+      origin_url,
+      chrome_search_scheme,
+      ASCIIToUTF16(chrome::kChromeUIFaviconHost),
+      false);
+  WebKit::WebSecurityPolicy::addOriginAccessWhitelistEntry(
+      origin_url,
+      chrome_search_scheme,
+      ASCIIToUTF16(chrome::kChromeUIThemeHost),
+      false);
+  WebKit::WebSecurityPolicy::addOriginAccessWhitelistEntry(
+      origin_url,
+      chrome_search_scheme,
+      ASCIIToUTF16(chrome::kChromeUIThumbnailHost),
+      false);
+}
+
 double SearchBox::GetZoom() const {
   WebKit::WebView* web_view = render_view()->GetWebView();
   if (web_view) {
@@ -294,12 +324,6 @@ double SearchBox::GetZoom() const {
       return zoom;
   }
   return 1.0;
-}
-
-void SearchBox::OnFontInformationReceived(const string16& omnibox_font,
-                                          size_t omnibox_font_size) {
-  omnibox_font_ = omnibox_font;
-  omnibox_font_size_ = omnibox_font_size;
 }
 
 void SearchBox::Reset() {

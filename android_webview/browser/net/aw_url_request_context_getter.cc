@@ -106,23 +106,22 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
     set_protocol = job_factory->SetProtocolHandler(
         chrome::kDataScheme, new net::DataProtocolHandler());
     DCHECK(set_protocol);
-    DCHECK(blob_protocol_handler_);
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kBlobScheme, blob_protocol_handler_.release());
+        chrome::kBlobScheme, protocol_handlers_[chrome::kBlobScheme].release());
     DCHECK(set_protocol);
-    DCHECK(file_system_protocol_handler_);
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kFileSystemScheme, file_system_protocol_handler_.release());
+        chrome::kFileSystemScheme,
+        protocol_handlers_[chrome::kFileSystemScheme].release());
     DCHECK(set_protocol);
-    DCHECK(chrome_protocol_handler_);
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kChromeUIScheme, chrome_protocol_handler_.release());
+        chrome::kChromeUIScheme,
+        protocol_handlers_[chrome::kChromeUIScheme].release());
     DCHECK(set_protocol);
-    DCHECK(chrome_devtools_protocol_handler_);
     set_protocol = job_factory->SetProtocolHandler(
         chrome::kChromeDevToolsScheme,
-        chrome_devtools_protocol_handler_.release());
+        protocol_handlers_[chrome::kChromeDevToolsScheme].release());
     DCHECK(set_protocol);
+    protocol_handlers_.clear();
     // Create a chain of URLRequestJobFactories.  Keep |job_factory_| pointed
     // at the beginning of the chain.
     job_factory_ = CreateAndroidJobFactory(job_factory.Pass());
@@ -130,9 +129,6 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
         job_factory_.Pass(),
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
             new AwRequestInterceptor())));
-    job_factory_.reset(new net::ProtocolInterceptJobFactory(
-        job_factory_.Pass(),
-        developer_protocol_handler_.Pass()));
     url_request_context_->set_job_factory(job_factory_.get());
   }
   return url_request_context_.get();
@@ -144,21 +140,8 @@ AwURLRequestContextGetter::GetNetworkTaskRunner() const {
 }
 
 void AwURLRequestContextGetter::SetProtocolHandlers(
-    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-        blob_protocol_handler,
-    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-        file_system_protocol_handler,
-    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-        developer_protocol_handler,
-    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-        chrome_protocol_handler,
-    scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-        chrome_devtools_protocol_handler) {
-  blob_protocol_handler_ = blob_protocol_handler.Pass();
-  file_system_protocol_handler_ = file_system_protocol_handler.Pass();
-  developer_protocol_handler_ = developer_protocol_handler.Pass();
-  chrome_protocol_handler_ = chrome_protocol_handler.Pass();
-  chrome_devtools_protocol_handler_ = chrome_devtools_protocol_handler.Pass();
+    content::ProtocolHandlerMap* protocol_handlers) {
+  std::swap(protocol_handlers_, *protocol_handlers);
 }
 
 }  // namespace android_webview

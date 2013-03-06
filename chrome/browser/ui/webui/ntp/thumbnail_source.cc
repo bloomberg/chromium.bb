@@ -7,12 +7,14 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/memory/ref_counted_memory.h"
+#include "chrome/browser/instant/instant_io_context.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
+#include "net/url_request/url_request.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // Set ThumbnailService now as Profile isn't thread safe.
@@ -51,4 +53,11 @@ MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
   // TopSites can be accessed from the IO thread.
   return thumbnail_service_.get() ?
       NULL : content::URLDataSource::MessageLoopForRequestPath(path);
+}
+
+bool ThumbnailSource::ShouldServiceRequest(
+    const net::URLRequest* request) const {
+  if (request->url().SchemeIs(chrome::kChromeSearchScheme))
+    return InstantIOContext::ShouldServiceRequest(request);
+  return URLDataSource::ShouldServiceRequest(request);
 }

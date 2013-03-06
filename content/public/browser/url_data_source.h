@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_DELEGATE_H_
-#define CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_H_
+#define CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_H_
 
 #include <string>
 
@@ -16,10 +16,14 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace net {
+class URLRequest;
+}
+
 namespace content {
 class BrowserContext;
 
-// A URLDataSource is an object that can answer requests for data
+// A URLDataSource is an object that can answer requests for WebUI data
 // asynchronously. An implementation of URLDataSource should handle calls to
 // StartDataRequest() by starting its (implementation-specific) asynchronous
 // request for the data, then running the callback given in that method to
@@ -95,8 +99,15 @@ class CONTENT_EXPORT URLDataSource {
   // By default, the "X-Frame-Options: DENY" header is sent. To stop this from
   // happening, return false. It is OK to return false as needed.
   virtual bool ShouldDenyXFrameOptions() const;
+
+  // By default, only chrome: and chrome-devtools: requests are allowed.
+  // Override in specific WebUI data sources to enable for additional schemes or
+  // to implement fancier access control.  Typically used in concert with
+  // ContentBrowserClient::GetAdditionalWebUISchemes() to permit additional
+  // WebUI scheme support for an embedder.
+  virtual bool ShouldServiceRequest(const net::URLRequest* request) const;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_URL_DATA_SOURCE_H_

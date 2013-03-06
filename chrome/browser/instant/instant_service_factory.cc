@@ -33,5 +33,5 @@ bool InstantServiceFactory::ServiceRedirectedInIncognito() const {
 
 ProfileKeyedService* InstantServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new InstantService;
+  return new InstantService(profile);
 }

@@ -33,6 +33,8 @@ class ThemeSource : public content::URLDataSource {
   virtual MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
+  virtual bool ShouldServiceRequest(
+      const net::URLRequest* request) const OVERRIDE;
 
  private:
   // Fetch and send the theme bitmap.
