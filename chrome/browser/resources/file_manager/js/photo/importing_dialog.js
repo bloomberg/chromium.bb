@@ -38,7 +38,7 @@ ImportingDialog.prototype.initDom_ = function() {
   progressContainer.appendChild(this.text_);
 
   this.progress_ = util.createChild(progressContainer, 'progress-bar');
-  util.createChild(this.progress_, 'progress-track');
+  util.createChild(this.progress_, 'progress-track smoothed');
 
   this.cancelButton_.textContent =
       loadTimeData.getString('PHOTO_IMPORT_CANCEL_BUTTON');

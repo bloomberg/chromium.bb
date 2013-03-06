@@ -394,3 +394,7 @@ input[type='submit'][disabled]:hover {
   height: 10px;
   margin: -1px;
 }
+
+.progress-track.smoothed {
+  -webkit-transition: width 1s linear;
+}

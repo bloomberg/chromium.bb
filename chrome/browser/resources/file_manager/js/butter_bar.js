@@ -27,6 +27,7 @@ function ButterBar(dialogDom, copyManager, metadataCache) {
   this.deleteTaskId_ = null;
   this.currentMode_ = null;
   this.totalDeleted_ = 0;
+  this.lastProgressValue_ = 0;
 
   this.copyManager_.addEventListener('copy-progress',
                                      this.onCopyProgress_.bind(this));
@@ -147,8 +148,15 @@ ButterBar.prototype.update_ = function(message, opt_options) {
   }
   if (opt_options && 'progress' in opt_options) {
     butterMessage.classList.add('single-line');
-    this.butter_.querySelector('.progress-track').style.width =
-        (opt_options.progress * 100) + '%';
+    var progressTrack = this.butter_.querySelector('.progress-track');
+    // Smoothen the progress only when it goes forward. Especially do not
+    // do the transition effect if resetting to 0.
+    if (opt_options.progress > this.lastProgressValue_)
+      progressTrack.classList.add('smoothed');
+    else
+      progressTrack.classList.remove('smoothed');
+    progressTrack.style.width = (opt_options.progress * 100) + '%';
+    this.lastProgressValue_ = opt_options.progress;
   } else {
     butterMessage.classList.remove('single-line');
   }
