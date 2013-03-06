@@ -91,7 +91,6 @@ static const int kToolbarOverlap = 3;
 // Margins around the content.
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
-static const int kSearchDetachedTopMargin = 2;
 static const int kBottomMargin = 2;
 static const int kLeftMargin = 1;
 static const int kRightMargin = 1;
@@ -145,7 +144,7 @@ static const int kSearchNewTabBookmarkBarHeight = 36;
 // replaces ntp4; for now, while both versions exist, these new values are only
 // needed locally.
 static const int kSearchNewTabHorizontalPadding = 0;
-static const int kSearchNewTabVerticalPadding = 0;
+static const int kSearchNewTabVerticalPadding = 3;
 
 // Tag for the 'Apps Shortcut' button.
 static const int kAppsShortcutButtonTag = 2;
@@ -1674,28 +1673,23 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     return prefsize;
 
   int x = kLeftMargin;
-  int top_margin =
-      IsDetached() ? (chrome::search::IsInstantExtendedAPIEnabled()
-                          ? kSearchDetachedTopMargin : kDetachedTopMargin) : 0;
+  int top_margin = IsDetached() ? kDetachedTopMargin : 0;
   int y = top_margin;
   int width = View::width() - kRightMargin - kLeftMargin;
-  int height = -top_margin - kBottomMargin;
+  int height = browser_defaults::kBookmarkBarHeight - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
     x += static_cast<int>(GetNewtabHorizontalPadding() * current_state);
-    y += static_cast<int>(GetNewtabVerticalPadding() * current_state);
+    y += (View::height() - browser_defaults::kBookmarkBarHeight) / 2;
     width -= static_cast<int>(GetNewtabHorizontalPadding() * current_state);
-    height += View::height() -
-        static_cast<int>(GetNewtabVerticalPadding() * 2 * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
     // when animating in/out, as shrinking its height instead looks weird.  This
     // also matches how we layout infobars.
     y += View::height() - browser_defaults::kBookmarkBarHeight;
-    height += browser_defaults::kBookmarkBarHeight;
   }
 
   gfx::Size other_bookmarked_pref = other_bookmarked_button_->visible() ?
