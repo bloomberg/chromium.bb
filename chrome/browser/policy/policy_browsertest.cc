@@ -235,7 +235,7 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  string16 title = UTF8ToUTF16(url.spec() + " is not available");
+  string16 title = UTF8ToUTF16(url.spec() + " was blocked");
   EXPECT_EQ(title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
@@ -246,7 +246,7 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
       "var hasError = false;"
       "var error = document.getElementById('errorDetails');"
       "if (error)"
-      "  hasError = error.textContent.indexOf('Error 138') == 0;"
+      "  hasError = error.textContent.indexOf('Error 22') == 0;"
       "domAutomationController.send(hasError);",
       &result));
   EXPECT_TRUE(result);

@@ -43,15 +43,17 @@ static const char kAppWarningLearnMoreUrl[] =
 #endif  // defined(OS_CHROMEOS)
 
 enum NAV_SUGGESTIONS {
-  SUGGEST_NONE     = 0,
-  SUGGEST_RELOAD   = 1 << 0,
-  SUGGEST_HOSTNAME = 1 << 1,
-  SUGGEST_CHECK_CONNECTION = 1 << 2,
-  SUGGEST_DNS_CONFIG = 1 << 3,
-  SUGGEST_FIREWALL_CONFIG = 1 << 4,
-  SUGGEST_PROXY_CONFIG = 1 << 5,
-  SUGGEST_DISABLE_EXTENSION = 1 << 6,
-  SUGGEST_LEARNMORE = 1 << 7,
+  SUGGEST_NONE                  = 0,
+  SUGGEST_RELOAD                = 1 << 0,
+  SUGGEST_HOSTNAME              = 1 << 1,
+  SUGGEST_CHECK_CONNECTION      = 1 << 2,
+  SUGGEST_DNS_CONFIG            = 1 << 3,
+  SUGGEST_FIREWALL_CONFIG       = 1 << 4,
+  SUGGEST_PROXY_CONFIG          = 1 << 5,
+  SUGGEST_DISABLE_EXTENSION     = 1 << 6,
+  SUGGEST_LEARNMORE             = 1 << 7,
+  SUGGEST_VIEW_POLICIES         = 1 << 8,
+  SUGGEST_CONTACT_ADMINISTRATOR = 1 << 9,
 };
 
 struct LocalizedErrorMap {
@@ -278,6 +280,13 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_NETWORK_CHANGED,
    IDS_ERRORPAGES_DETAILS_NETWORK_CHANGED,
    SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION,
+  },
+  {net::ERR_BLOCKED_BY_ADMINISTRATOR,
+   IDS_ERRORPAGES_TITLE_BLOCKED,
+   IDS_ERRORPAGES_HEADING_BLOCKED_BY_ADMINISTRATOR,
+   IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR,
+   IDS_ERRORPAGES_DETAILS_BLOCKED_BY_ADMINISTRATOR,
+   SUGGEST_VIEW_POLICIES | SUGGEST_CONTACT_ADMINISTRATOR,
   },
 };
 
@@ -661,6 +670,22 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
       suggest_learn_more->SetString("learnMoreUrl", learn_more_url.spec());
       error_strings->Set("suggestionsLearnMore", suggest_learn_more);
     }
+  }
+
+  if (options.suggestions & SUGGEST_VIEW_POLICIES) {
+    DictionaryValue* suggestion = new DictionaryValue;
+    suggestion->SetString("msg",
+                          l10n_util::GetStringUTF16(
+                              IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES));
+    error_strings->Set("suggestionsViewPolicies", suggestion);
+  }
+
+  if (options.suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
+    DictionaryValue* suggestion = new DictionaryValue;
+    suggestion->SetString("msg",
+                          l10n_util::GetStringUTF16(
+                              IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR));
+    error_strings->Set("suggestionsContactAdministrator", suggestion);
   }
 }
 
