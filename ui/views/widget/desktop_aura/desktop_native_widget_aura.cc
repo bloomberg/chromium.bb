@@ -310,15 +310,6 @@ TooltipManager* DesktopNativeWidgetAura::GetTooltipManager() const {
   return tooltip_manager_.get();
 }
 
-bool DesktopNativeWidgetAura::IsScreenReaderActive() const {
-  return false;
-}
-
-void DesktopNativeWidgetAura::SendNativeAccessibilityEvent(
-      View* view,
-      ui::AccessibilityTypes::Event event_type) {
-}
-
 void DesktopNativeWidgetAura::SetCapture() {
   window_->SetCapture();
   // aura::Window doesn't implicitly update capture on the RootWindowHost, so
@@ -365,17 +356,6 @@ void DesktopNativeWidgetAura::SetWindowTitle(const string16& title) {
 
 void DesktopNativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                              const gfx::ImageSkia& app_icon) {
-}
-
-void DesktopNativeWidgetAura::SetAccessibleName(const string16& name) {
-}
-
-void DesktopNativeWidgetAura::SetAccessibleRole(
-    ui::AccessibilityTypes::Role role) {
-}
-
-void DesktopNativeWidgetAura::SetAccessibleState(
-    ui::AccessibilityTypes::State state) {
 }
 
 void DesktopNativeWidgetAura::InitModalType(ui::ModalType modal_type) {
@@ -507,10 +487,6 @@ void DesktopNativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
 
 void DesktopNativeWidgetAura::FlashFrame(bool flash_frame) {
   desktop_root_window_host_->FlashFrame(flash_frame);
-}
-
-bool DesktopNativeWidgetAura::IsAccessibleWidget() const {
-  return false;
 }
 
 void DesktopNativeWidgetAura::RunShellDrag(

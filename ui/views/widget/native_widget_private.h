@@ -115,14 +115,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // to update tooltips.
   virtual TooltipManager* GetTooltipManager() const = 0;
 
-  // Returns true if a system screen reader is active for the NativeWidget.
-  virtual bool IsScreenReaderActive() const = 0;
-
-  // Notify native Accessibility clients of an event.
-  virtual void SendNativeAccessibilityEvent(
-      View* view,
-      ui::AccessibilityTypes::Event event_type) = 0;
-
   // Sets or releases event capturing for this native widget.
   virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;
@@ -157,11 +149,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // app switching UI.
   virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
                               const gfx::ImageSkia& app_icon) = 0;
-
-  // Update native accessibility properties on the native window.
-  virtual void SetAccessibleName(const string16& name) = 0;
-  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
-  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
 
   // Initializes the modal type of the window to |modal_type|. Called from
   // NativeWidgetDelegate::OnNativeWidgetCreated() before the widget is
@@ -201,7 +188,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetOpacity(unsigned char opacity) = 0;
   virtual void SetUseDragFrame(bool use_drag_frame) = 0;
   virtual void FlashFrame(bool flash) = 0;
-  virtual bool IsAccessibleWidget() const = 0;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,
                             const gfx::Point& location,

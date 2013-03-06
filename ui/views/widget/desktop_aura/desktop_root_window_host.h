@@ -104,10 +104,6 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
                               const gfx::ImageSkia& app_icon) = 0;
 
-  virtual void SetAccessibleName(const string16& name) = 0;
-  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
-  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
-
   virtual void InitModalType(ui::ModalType modal_type) = 0;
 
   virtual void FlashFrame(bool flash_frame) = 0;

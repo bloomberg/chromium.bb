@@ -18,10 +18,6 @@ const int kDefaultVerticalDragThreshold = 8;
 
 namespace views {
 
-gfx::NativeViewAccessible View::GetNativeViewAccessible() {
-  return NULL;
-}
-
 int View::GetHorizontalDragThreshold() {
   // TODO(jennyz): This value may need to be adjusted for different platforms
   // and for different display density.

@@ -39,6 +39,8 @@
       ],
       'sources': [
         # All .cc, .h under views, except unittests
+        'accessibility/native_view_accessibility.cc',
+        'accessibility/native_view_accessibility.h',
         'accessibility/native_view_accessibility_win.cc',
         'accessibility/native_view_accessibility_win.h',
         'accessible_pane_view.cc',
@@ -499,6 +501,8 @@
             ['include', 'controls/menu/menu_config_win.cc'],
             ['include', 'controls/menu/menu_item_view_win.cc'],
             ['include', 'controls/menu/menu_separator_win.cc'],
+            ['include', 'accessibility/native_view_accessibility_win.cc'],
+            ['include', 'accessibility/native_view_accessibility_win.h'],
           ],
         }],
         ['use_aura==1 and OS=="linux" and chromeos==0', {

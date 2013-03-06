@@ -7,13 +7,15 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
-
 #include <oleacc.h>
+
 #include <UIAutomationCore.h>
 
-#include "base/memory/ref_counted.h"
+#include <vector>
+
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
 
@@ -22,8 +24,7 @@ enum TextBoundaryDirection;
 enum TextBoundaryType;
 }
 
-// Note: do not put NativeViewAccessibilityWin in the namespace "views";
-// Visual Studio 2005 does not allow an ATL::CComObject symbol in a namespace.
+namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -42,7 +43,8 @@ NativeViewAccessibilityWin
     public IAccessibleText,
     public IServiceProvider,
     public IAccessibleEx,
-    public IRawElementProviderSimple {
+    public IRawElementProviderSimple,
+    public NativeViewAccessibility {
  public:
   BEGIN_COM_MAP(NativeViewAccessibilityWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
@@ -54,10 +56,13 @@ NativeViewAccessibilityWin
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
   END_COM_MAP()
 
-  // Create method for view accessibility.
-  static scoped_refptr<NativeViewAccessibilityWin> Create(views::View* view);
-
   virtual ~NativeViewAccessibilityWin();
+
+  // NativeViewAccessibility.
+  virtual void NotifyAccessibilityEvent(
+      ui::AccessibilityTypes::Event event_type) OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeObject() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
   void set_view(views::View* view) { view_ = view; }
 
@@ -330,6 +335,8 @@ NativeViewAccessibilityWin
     return E_NOTIMPL;
   }
 
+  // Static methods
+
   // Returns a conversion from the event (as defined in accessibility_types.h)
   // to an MSAA event.
   static int32 MSAAEvent(ui::AccessibilityTypes::Event event);
@@ -361,7 +368,7 @@ NativeViewAccessibilityWin
   bool IsValidId(const VARIANT& child) const;
 
   // Helper function which sets applicable states of view.
-  void SetState(VARIANT* msaa_state, views::View* view);
+  void SetState(VARIANT* msaa_state, View* view);
 
   // Return the text to use for IAccessibleText.
   string16 TextForIAccessibleText();
@@ -385,7 +392,7 @@ NativeViewAccessibilityWin
   template <class Base> friend class CComObject;
 
   // Member View needed for view-specific calls.
-  views::View* view_;
+  View* view_;
 
   // A unique id for each object, needed for IAccessible2.
   long unique_id_;
@@ -393,7 +400,19 @@ NativeViewAccessibilityWin
   // Next unique id to assign.
   static long next_unique_id_;
 
+  // Circular queue size.
+  static const int kMaxViewStorageIds = 20;
+
+  // Circular queue of view storage ids corresponding to child ids
+  // used to post notifications using NotifyWinEvent.
+  static int view_storage_ids_[kMaxViewStorageIds];
+
+  // Next index into |view_storage_ids_| to use.
+  static int next_view_storage_id_index_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWin);
 };
+
+}  // namespace views
 
 #endif  // UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_WIN_H_

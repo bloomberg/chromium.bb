@@ -32,7 +32,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "ui/views/controls/native_control_win.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/drag_utils.h"
@@ -77,17 +76,12 @@ const int kDragFrameWindowAlpha = 200;
 
 }  // namespace
 
-// static
-bool NativeWidgetWin::screen_reader_active_ = false;
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, public:
 
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      accessibility_view_events_index_(-1),
-      accessibility_view_events_(kMaxAccessibilityViewEvents),
       has_non_client_view_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           message_handler_(new HWNDMessageHandler(this))) {
@@ -112,31 +106,6 @@ gfx::Font NativeWidgetWin::GetWindowTitleFont() {
 
 void NativeWidgetWin::Show(int show_state) {
   message_handler_->Show(show_state);
-}
-
-View* NativeWidgetWin::GetAccessibilityViewEventAt(int id) {
-  // Convert from MSAA child id.
-  id = -(id + 1);
-  DCHECK(id >= 0 && id < kMaxAccessibilityViewEvents);
-  return accessibility_view_events_[id];
-}
-
-int NativeWidgetWin::AddAccessibilityViewEvent(View* view) {
-  accessibility_view_events_index_ =
-      (accessibility_view_events_index_ + 1) % kMaxAccessibilityViewEvents;
-  accessibility_view_events_[accessibility_view_events_index_] = view;
-
-  // Convert to MSAA child id.
-  return -(accessibility_view_events_index_ + 1);
-}
-
-void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
-  for (std::vector<View*>::iterator it = accessibility_view_events_.begin();
-      it != accessibility_view_events_.end();
-      ++it) {
-    if (*it == view)
-      *it = NULL;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -197,8 +166,6 @@ gfx::Vector2d NativeWidgetWin::CalculateOffsetToAncestorWithLayer(
 void NativeWidgetWin::ViewRemoved(View* view) {
   if (drop_target_.get())
     drop_target_->ResetTargetViewIfEquals(view);
-
-  ClearAccessibilityViewEvent(view);
 }
 
 void NativeWidgetWin::SetNativeWindowProperty(const char* name, void* value) {
@@ -220,17 +187,6 @@ void* NativeWidgetWin::GetNativeWindowProperty(const char* name) const {
 
 TooltipManager* NativeWidgetWin::GetTooltipManager() const {
   return tooltip_manager_.get();
-}
-
-bool NativeWidgetWin::IsScreenReaderActive() const {
-  return screen_reader_active_;
-}
-
-void NativeWidgetWin::SendNativeAccessibilityEvent(
-    View* view,
-    ui::AccessibilityTypes::Event event_type) {
-  message_handler_->SendNativeAccessibilityEvent(
-      AddAccessibilityViewEvent(view), event_type);
 }
 
 void NativeWidgetWin::SetCapture() {
@@ -271,18 +227,6 @@ void NativeWidgetWin::SetWindowTitle(const string16& title) {
 void NativeWidgetWin::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon) {
   message_handler_->SetWindowIcons(window_icon, app_icon);
-}
-
-void NativeWidgetWin::SetAccessibleName(const string16& name) {
-  message_handler_->SetAccessibleName(name);
-}
-
-void NativeWidgetWin::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-  message_handler_->SetAccessibleRole(role);
-}
-
-void NativeWidgetWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
-  message_handler_->SetAccessibleState(state);
 }
 
 void NativeWidgetWin::InitModalType(ui::ModalType modal_type) {
@@ -440,10 +384,6 @@ void NativeWidgetWin::FlashFrame(bool flash) {
   message_handler_->FlashFrame(flash);
 }
 
-bool NativeWidgetWin::IsAccessibleWidget() const {
-  return screen_reader_active_;
-}
-
 void NativeWidgetWin::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    const gfx::Point& location,
@@ -505,10 +445,6 @@ void NativeWidgetWin::OnFinalMessage(HWND window) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, protected:
-
-void NativeWidgetWin::OnScreenReaderDetected() {
-  screen_reader_active_ = true;
-}
 
 HWNDMessageHandler* NativeWidgetWin::GetMessageHandler() {
   return message_handler_.get();
@@ -821,11 +757,6 @@ bool NativeWidgetWin::HandlePaintAccelerated(const gfx::Rect& invalid_rect) {
 
 void NativeWidgetWin::HandlePaint(gfx::Canvas* canvas) {
   delegate_->OnNativeWidgetPaint(canvas);
-}
-
-void NativeWidgetWin::HandleScreenReaderDetected() {
-  // TODO(beng): just consolidate this with OnScreenReaderDetected.
-  OnScreenReaderDetected();
 }
 
 bool NativeWidgetWin::HandleTooltipNotify(int w_param,

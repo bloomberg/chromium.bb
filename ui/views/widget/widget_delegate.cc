@@ -61,10 +61,6 @@ ui::AccessibilityTypes::Role WidgetDelegate::GetAccessibleWindowRole() const {
   return ui::AccessibilityTypes::ROLE_WINDOW;
 }
 
-ui::AccessibilityTypes::State WidgetDelegate::GetAccessibleWindowState() const {
-  return 0;
-}
-
 string16 WidgetDelegate::GetAccessibleWindowTitle() const {
   return GetWindowTitle();
 }

@@ -61,8 +61,6 @@ class VIEWS_EXPORT WidgetDelegate {
 
   virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const;
 
-  virtual ui::AccessibilityTypes::State GetAccessibleWindowState() const;
-
   // Returns the title to be read with screen readers.
   virtual string16 GetAccessibleWindowTitle() const;
 

@@ -9,15 +9,7 @@
 #include <initguid.h>
 #include <oleacc.h>
 
-#include "ui/views/accessibility/native_view_accessibility_win.h"
-
 namespace views {
-
-gfx::NativeViewAccessible View::GetNativeViewAccessible() {
-  if (!native_view_accessibility_win_.get())
-    native_view_accessibility_win_ = NativeViewAccessibilityWin::Create(this);
-  return native_view_accessibility_win_.get();
-}
 
 int View::GetHorizontalDragThreshold() {
   static int threshold = -1;

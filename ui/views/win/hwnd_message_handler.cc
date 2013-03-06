@@ -288,10 +288,6 @@ bool ProcessChildWindowMessage(UINT message,
 
 #endif
 
-// A custom MSAA object id used to determine if a screen reader is actively
-// listening for MSAA events.
-const int kCustomObjectID = 1;
-
 // The thickness of an auto-hide taskbar in pixels.
 const int kAutoHideTaskbarThicknessPx = 2;
 
@@ -737,71 +733,6 @@ void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
 
 void HWNDMessageHandler::SetTitle(const string16& title) {
   SetWindowText(hwnd(), title.c_str());
-  SetAccessibleName(title);
-}
-
-void HWNDMessageHandler::SetAccessibleName(const string16& name) {
-  // TODO(beng): figure out vis-a-vis aura.
-#if !defined(USE_AURA)
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr))
-    hr = pAccPropServices->SetHwndPropStr(hwnd(), OBJID_CLIENT, CHILDID_SELF,
-                                          PROPID_ACC_NAME, name.c_str());
-#endif
-}
-
-void HWNDMessageHandler::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-  // TODO(beng): figure out vis-a-vis aura.
-#if !defined(USE_AURA)
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    if (role) {
-      var.vt = VT_I4;
-      var.lVal = NativeViewAccessibilityWin::MSAARole(role);
-      hr = pAccPropServices->SetHwndProp(hwnd(), OBJID_CLIENT, CHILDID_SELF,
-                                         PROPID_ACC_ROLE, var);
-    }
-  }
-#endif
-}
-
-void HWNDMessageHandler::SetAccessibleState(
-    ui::AccessibilityTypes::State state) {
-  // TODO(beng): figure out vis-a-vis aura.
-#if !defined(USE_AURA)
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    if (state) {
-      var.vt = VT_I4;
-      var.lVal = NativeViewAccessibilityWin::MSAAState(state);
-      hr = pAccPropServices->SetHwndProp(hwnd(), OBJID_CLIENT, CHILDID_SELF,
-                                         PROPID_ACC_STATE, var);
-    }
-  }
-#endif
-}
-
-void HWNDMessageHandler::SendNativeAccessibilityEvent(
-    int id,
-    ui::AccessibilityTypes::Event event_type) {
-  // TODO(beng): figure out vis-a-vis aura.
-#if !defined(USE_AURA)
-  // Now call the Windows-specific method to notify MSAA clients of this
-  // event.  The widget gives us a temporary unique child ID to associate
-  // with this view so that clients can call get_accChild in
-  // NativeViewAccessibilityWin to retrieve the IAccessible associated
-  // with this view.
-  ::NotifyWinEvent(NativeViewAccessibilityWin::MSAAEvent(event_type), hwnd(),
-                   OBJID_CLIENT, id);
-#endif
 }
 
 void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
@@ -1285,9 +1216,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
   fullscreen_handler_->set_hwnd(hwnd());
 
-  // Attempt to detect screen readers by sending an event with our custom id.
-  NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
-
   // This message initializes the window so that focus border are shown for
   // windows.
   SendMessage(hwnd(),
@@ -1412,15 +1340,6 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
     // Create a reference that MSAA will marshall to the client.
     reference_result = LresultFromObject(IID_IAccessible, w_param,
         static_cast<IAccessible*>(root.Detach()));
-  }
-
-  if (kCustomObjectID == l_param) {
-    // An MSAA client requested our custom id. Assume that we have detected an
-    // active windows screen reader.
-    delegate_->HandleScreenReaderDetected();
-
-    // Return with failure.
-    return static_cast<LRESULT>(0L);
   }
 
   return reference_result;

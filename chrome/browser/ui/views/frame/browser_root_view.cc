@@ -117,11 +117,6 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
   return tabstrip()->OnPerformDrop(*mapped_event);
 }
 
-void BrowserRootView::GetAccessibleState(ui::AccessibleViewState* state) {
-  views::internal::RootView::GetAccessibleState(state);
-  state->name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-}
-
 std::string BrowserRootView::GetClassName() const {
   return kViewClassName;
 }

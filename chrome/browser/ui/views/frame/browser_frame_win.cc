@@ -271,11 +271,6 @@ void BrowserFrameWin::PostHandleMSG(UINT message,
   }
 }
 
-void BrowserFrameWin::OnScreenReaderDetected() {
-  content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-  NativeWidgetWin::OnScreenReaderDetected();
-}
-
 bool BrowserFrameWin::ShouldUseNativeFrame() const {
   if (!NativeWidgetWin::ShouldUseNativeFrame())
     return false;

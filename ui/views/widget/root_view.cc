@@ -17,6 +17,7 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 namespace internal {
@@ -596,7 +597,8 @@ void RootView::SetMouseHandler(View* new_mh) {
 }
 
 void RootView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_APPLICATION;
+  state->name = widget_->widget_delegate()->GetAccessibleWindowTitle();
+  state->role = widget_->widget_delegate()->GetAccessibleWindowRole();
 }
 
 void RootView::ReorderChildLayers(ui::Layer* parent_layer) {

@@ -244,19 +244,6 @@ TooltipManager* NativeWidgetAura::GetTooltipManager() const {
   return tooltip_manager_.get();
 }
 
-bool NativeWidgetAura::IsScreenReaderActive() const {
-  // http://crbug.com/102570
-  // NOTIMPLEMENTED();
-  return false;
-}
-
-void NativeWidgetAura::SendNativeAccessibilityEvent(
-    View* view,
-    ui::AccessibilityTypes::Event event_type) {
-  // http://crbug.com/102570
-  // NOTIMPLEMENTED();
-}
-
 void NativeWidgetAura::SetCapture() {
   window_->SetCapture();
 }
@@ -342,21 +329,6 @@ void NativeWidgetAura::SetWindowTitle(const string16& title) {
 void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                       const gfx::ImageSkia& app_icon) {
   // Aura doesn't have window icons.
-}
-
-void NativeWidgetAura::SetAccessibleName(const string16& name) {
-  // http://crbug.com/102570
-  // NOTIMPLEMENTED();
-}
-
-void NativeWidgetAura::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-  // http://crbug.com/102570
-  // NOTIMPLEMENTED();
-}
-
-void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
-  // http://crbug.com/102570
-  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
@@ -559,12 +531,6 @@ void NativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
 
 void NativeWidgetAura::FlashFrame(bool flash) {
   window_->SetProperty(aura::client::kDrawAttentionKey, flash);
-}
-
-bool NativeWidgetAura::IsAccessibleWidget() const {
-  // http://crbug.com/102570
-  // NOTIMPLEMENTED();
-  return false;
 }
 
 void NativeWidgetAura::RunShellDrag(View* view,

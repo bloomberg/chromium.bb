@@ -98,7 +98,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   DialogClientView* GetDialogClientView();
 
  protected:
-  // Overridden from WindowDelegate:
+  // Overridden from WidgetDelegate:
   virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const OVERRIDE;
 };
 

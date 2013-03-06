@@ -51,7 +51,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual void PostHandleMSG(UINT message,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
-  virtual void OnScreenReaderDetected() OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void ShowMaximizedWithBounds(

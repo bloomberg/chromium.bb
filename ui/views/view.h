@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
@@ -53,11 +54,6 @@ class Texture;
 class ThemeProvider;
 }
 
-#if defined(OS_WIN)
-class __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
-NativeViewAccessibilityWin;
-#endif
-
 namespace views {
 
 class Background;
@@ -69,6 +65,7 @@ class FocusManager;
 class FocusTraversable;
 class InputMethod;
 class LayoutManager;
+class NativeViewAccessibility;
 class ScrollView;
 class Widget;
 
@@ -871,6 +868,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns an instance of the native accessibility interface for this view.
   virtual gfx::NativeViewAccessible GetNativeViewAccessible();
 
+  // Notifies assistive technology that an accessibility event has
+  // occurred on this view, such as when the view is focused or when its
+  // value changes. Pass true for |send_native_event| except for rare
+  // cases where the view is a native control that's already sending a
+  // native accessibility event and the duplicate event would cause
+  // problems.
+  void NotifyAccessibilityEvent(ui::AccessibilityTypes::Event event_type,
+                                bool send_native_event);
+
   // Scrolling -----------------------------------------------------------------
   // TODO(beng): Figure out if this can live somewhere other than View, i.e.
   //             closer to ScrollView.
@@ -1486,11 +1492,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accessibility -------------------------------------------------------------
 
-  // The Windows-specific accessibility implementation for this view.
-#if defined(OS_WIN)
-  base::win::ScopedComPtr<NativeViewAccessibilityWin>
-      native_view_accessibility_win_;
-#endif
+  // Belongs to this view, but it's reference-counted on some platforms
+  // so we can't use a scoped_ptr. It's dereferenced in the destructor.
+  NativeViewAccessibility* native_view_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

@@ -198,9 +198,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called to compel the delegate to paint using the software path.
   virtual void HandlePaint(gfx::Canvas* canvas) = 0;
 
-  // Called when we have detected a screen reader.
-  virtual void HandleScreenReaderDetected() = 0;
-
   // Called to forward a WM_NOTIFY message to the tooltip manager.
   virtual bool HandleTooltipNotify(int w_param,
                                    NMHDR* l_param,

@@ -615,23 +615,6 @@ void DesktopRootWindowHostLinux::SetWindowIcons(
   NOTIMPLEMENTED();
 }
 
-void DesktopRootWindowHostLinux::SetAccessibleName(const string16& name) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
-void DesktopRootWindowHostLinux::SetAccessibleRole(
-    ui::AccessibilityTypes::Role role) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
-void DesktopRootWindowHostLinux::SetAccessibleState(
-    ui::AccessibilityTypes::State state) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
 void DesktopRootWindowHostLinux::InitModalType(ui::ModalType modal_type) {
   // TODO(erg):
   NOTIMPLEMENTED();

@@ -32,6 +32,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
@@ -44,7 +45,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "ui/views/accessibility/native_view_accessibility_win.h"
 #endif
 
 namespace {
@@ -187,7 +187,8 @@ View::View()
       context_menu_controller_(NULL),
       drag_controller_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(post_dispatch_handler_(
-          new internal::PostEventDispatchHandler(this))) {
+          new internal::PostEventDispatchHandler(this))),
+      native_view_accessibility_(NULL) {
   AddPostTargetHandler(post_dispatch_handler_.get());
 }
 
@@ -201,10 +202,10 @@ View::~View() {
       delete *i;
   }
 
-#if defined(OS_WIN)
-  if (native_view_accessibility_win_.get())
-    native_view_accessibility_win_->set_view(NULL);
-#endif
+  // Release ownership of the native accessibility object, but it's
+  // reference-counted on some platforms, so it may not be deleted right away.
+  if (native_view_accessibility_)
+    native_view_accessibility_->Destroy();
 }
 
 // Tree operations -------------------------------------------------------------
@@ -1177,6 +1178,30 @@ bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
           abs(delta.y()) > GetVerticalDragThreshold());
 }
 
+// Accessibility----------------------------------------------------------------
+
+gfx::NativeViewAccessible View::GetNativeViewAccessible() {
+  if (!native_view_accessibility_)
+    native_view_accessibility_ = NativeViewAccessibility::Create(this);
+  if (native_view_accessibility_)
+    return native_view_accessibility_->GetNativeObject();
+  return NULL;
+}
+
+void View::NotifyAccessibilityEvent(
+    ui::AccessibilityTypes::Event event_type,
+    bool send_native_event) {
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(this, event_type);
+
+  if (send_native_event) {
+    if (!native_view_accessibility_)
+      native_view_accessibility_ = NativeViewAccessibility::Create(this);
+    if (native_view_accessibility_)
+      native_view_accessibility_->NotifyAccessibilityEvent(event_type);
+  }
+}
+
 // Scrolling -------------------------------------------------------------------
 
 void View::ScrollRectToVisible(const gfx::Rect& rect) {
@@ -1442,8 +1467,7 @@ void View::OnFocus() {
   // TODO(beng): Investigate whether it's possible for us to move this to
   //             Focus().
   // Notify assistive technologies of the focus change.
-  GetWidget()->NotifyAccessibilityEvent(
-      this, ui::AccessibilityTypes::EVENT_FOCUS, true);
+  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, true);
 }
 
 void View::OnBlur() {

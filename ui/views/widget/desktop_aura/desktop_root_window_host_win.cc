@@ -328,20 +328,6 @@ void DesktopRootWindowHostWin::SetWindowIcons(
   message_handler_->SetWindowIcons(window_icon, app_icon);
 }
 
-void DesktopRootWindowHostWin::SetAccessibleName(const string16& name) {
-  message_handler_->SetAccessibleName(name);
-}
-
-void DesktopRootWindowHostWin::SetAccessibleRole(
-    ui::AccessibilityTypes::Role role) {
-  message_handler_->SetAccessibleRole(role);
-}
-
-void DesktopRootWindowHostWin::SetAccessibleState(
-    ui::AccessibilityTypes::State state) {
-  message_handler_->SetAccessibleState(state);
-}
-
 void DesktopRootWindowHostWin::InitModalType(ui::ModalType modal_type) {
   message_handler_->InitModalType(modal_type);
 }
@@ -739,9 +725,6 @@ bool DesktopRootWindowHostWin::HandlePaintAccelerated(
 
 void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
   root_window_host_delegate_->OnHostPaint();
-}
-
-void DesktopRootWindowHostWin::HandleScreenReaderDetected() {
 }
 
 bool DesktopRootWindowHostWin::HandleTooltipNotify(int w_param,

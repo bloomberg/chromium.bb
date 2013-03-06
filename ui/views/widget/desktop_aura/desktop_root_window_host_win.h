@@ -89,9 +89,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
   virtual void SetWindowIcons(const gfx::ImageSkia& window_icon,
                               const gfx::ImageSkia& app_icon) OVERRIDE;
-  virtual void SetAccessibleName(const string16& name) OVERRIDE;
-  virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) OVERRIDE;
-  virtual void SetAccessibleState(ui::AccessibilityTypes::State state) OVERRIDE;
   virtual void InitModalType(ui::ModalType modal_type) OVERRIDE;
   virtual void FlashFrame(bool flash_frame) OVERRIDE;
   virtual void OnNativeWidgetFocus() OVERRIDE;
@@ -187,7 +184,6 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
                                          HKL input_language_id) OVERRIDE;
   virtual bool HandlePaintAccelerated(const gfx::Rect& invalid_rect) OVERRIDE;
   virtual void HandlePaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void HandleScreenReaderDetected() OVERRIDE;
   virtual bool HandleTooltipNotify(int w_param,
                                    NMHDR* l_param,
                                    LRESULT* l_result) OVERRIDE;

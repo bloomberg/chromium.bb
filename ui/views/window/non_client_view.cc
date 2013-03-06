@@ -161,7 +161,7 @@ void NonClientView::ViewHierarchyChanged(bool is_add, View* parent,
 }
 
 void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
   state->name = accessible_name_;
 }
 
@@ -271,7 +271,7 @@ void NonClientFrameView::ShouldPaintAsActiveChanged() {
 }
 
 void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
 }
 
 std::string NonClientFrameView::GetClassName() const {

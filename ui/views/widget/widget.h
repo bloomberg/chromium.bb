@@ -461,9 +461,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns whether the Widget is visible to the user.
   virtual bool IsVisible() const;
 
-  // Returns whether the Widget is customized for accessibility.
-  bool IsAccessibleWidget() const;
-
   // Returns the ThemeProvider that provides theme resources for this Widget.
   virtual ui::ThemeProvider* GetThemeProvider() const;
 

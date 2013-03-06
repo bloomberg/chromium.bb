@@ -124,12 +124,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
 
   void SetTitle(const string16& title);
 
-  void SetAccessibleName(const string16& name);
-  void SetAccessibleRole(ui::AccessibilityTypes::Role role);
-  void SetAccessibleState(ui::AccessibilityTypes::State state);
-  void SendNativeAccessibilityEvent(int id,
-                                    ui::AccessibilityTypes::Event event_type);
-
   void SetCursor(HCURSOR cursor);
 
   void FrameTypeChanged();
