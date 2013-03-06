@@ -291,8 +291,6 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetClientWindowRect,
-                        OnSetClientWindowRect)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CaptureSessionHistory,
                         OnCaptureSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
@@ -493,13 +491,6 @@ void WebKitTestController::OnReload() {
 void WebKitTestController::OnLoadURLForFrame(const GURL& url,
                                              const std::string& frame_name) {
   main_window_->LoadURLForFrame(url, frame_name);
-}
-
-void WebKitTestController::OnSetClientWindowRect(const gfx::Rect& rect) {
-#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
-  main_window_->SizeTo(rect.width(), rect.height());
-  main_window_->web_contents()->GetRenderViewHost()->WasResized();
-#endif
 }
 
 void WebKitTestController::OnCaptureSessionHistory() {

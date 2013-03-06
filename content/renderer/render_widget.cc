@@ -1294,12 +1294,20 @@ void RenderWidget::didScrollRect(int dx, int dy,
 void RenderWidget::didAutoResize(const WebSize& new_size) {
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
     size_ = new_size;
-    need_update_rect_for_auto_resize_ = true;
     // If we don't clear PaintAggregator after changing autoResize state, then
     // we might end up in a situation where bitmap_rect is larger than the
     // view_size. By clearing PaintAggregator, we ensure that we don't end up
     // with invalid damage rects.
     paint_aggregator_.ClearPendingUpdate();
+
+    if (RenderThreadImpl::current()->short_circuit_size_updates()) {
+      setWindowRect(WebRect(rootWindowRect().x,
+                            rootWindowRect().y,
+                            new_size.width,
+                            new_size.height));
+    } else {
+      need_update_rect_for_auto_resize_ = true;
+    }
   }
 }
 
@@ -1543,8 +1551,15 @@ void RenderWidget::setToolTipText(const WebKit::WebString& text,
 
 void RenderWidget::setWindowRect(const WebRect& pos) {
   if (did_show_) {
-    Send(new ViewHostMsg_RequestMove(routing_id_, pos));
-    SetPendingWindowRect(pos);
+    if (!RenderThreadImpl::current()->short_circuit_size_updates()) {
+      Send(new ViewHostMsg_RequestMove(routing_id_, pos));
+      SetPendingWindowRect(pos);
+    } else {
+      WebSize new_size(pos.width, pos.height);
+      Resize(new_size, new_size, WebRect(), is_fullscreen_, NO_RESIZE_ACK);
+      view_screen_rect_ = pos;
+      window_screen_rect_ = pos;
+    }
   } else {
     initial_pos_ = pos;
   }

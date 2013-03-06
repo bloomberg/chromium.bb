@@ -82,4 +82,13 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
       ->SetFocusAndActivateForTesting(enable);
 }
 
+void EnableShortCircuitSizeUpdates() {
+  RenderThreadImpl::current()->set_short_circuit_size_updates(true);
+}
+
+void ForceResizeRenderView(RenderView* render_view,
+                           const WebKit::WebSize& new_size) {
+  static_cast<RenderViewImpl*>(render_view)->didAutoResize(new_size);
+}
+
 }  // namespace content

@@ -9,6 +9,7 @@
 
 namespace WebKit {
 class WebGamepads;
+struct WebSize;
 }
 
 namespace WebTestRunner {
@@ -50,6 +51,14 @@ void SyncNavigationState(RenderView* render_view);
 // the state of the renderer, and does not sync the focus to the browser
 // process.
 void SetFocusAndActivate(RenderView* render_view, bool enable);
+
+// When WebKit requests a size change, immediately report the new sizes back to
+// WebKit instead of waiting for the browser to acknowledge the new size.
+void EnableShortCircuitSizeUpdates();
+
+// Changes the window rect of the given render view.
+void ForceResizeRenderView(RenderView* render_view,
+                           const WebKit::WebSize& new_size);
 
 }  // namespace content
 

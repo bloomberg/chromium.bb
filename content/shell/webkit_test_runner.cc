@@ -314,8 +314,7 @@ std::string WebKitTestRunner::makeURLErrorDescription(
 }
 
 void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
-  Send(new ShellViewHostMsg_SetClientWindowRect(
-      routing_id(), gfx::Rect(rect)));
+  ForceResizeRenderView(render_view(), WebSize(rect.width, rect.height));
 }
 
 void WebKitTestRunner::showDevTools() {

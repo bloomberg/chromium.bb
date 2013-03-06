@@ -181,6 +181,15 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     require_user_gesture_for_focus_ = require_gesture;
   }
 
+  // True if RenderWidgets should report the newly requested size back to
+  // WebKit without waiting for the browser to acknowledge the size.
+  bool short_circuit_size_updates() const {
+    return short_circuit_size_updates_;
+  }
+  void set_short_circuit_size_updates(bool short_circuit) {
+    short_circuit_size_updates_ = short_circuit;
+  }
+
   IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
     return compositor_output_surface_filter_.get();
   }
@@ -381,7 +390,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
 
+  // The following flags are used to control layout test specific behavior.
   bool require_user_gesture_for_focus_;
+  bool short_circuit_size_updates_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThreadImpl> idle_timer_;
