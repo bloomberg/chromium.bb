@@ -6,9 +6,6 @@
 # to generate Java source files from templates that are processed
 # through the host C pre-processor.
 #
-# This assumes a GNU-compatible pre-processor installed as 'cpp'.
-# Only tested on Linux.
-#
 # To use this, create a gyp target with the following form:
 #  {
 #    'target_name': 'android_net_java_constants',
@@ -57,7 +54,8 @@
         '<(output_dir)/<(RULE_INPUT_ROOT).java'
       ],
       'action': [
-        'cpp',                 # invoke host pre-processor.
+        'gcc',                 # invoke host gcc.
+        '-E',                  # stop after preprocessing.
         '-x', 'c-header',      # treat sources as C header files
         '-P',                  # disable line markers, i.e. '#line 309'
         '-I', '<(DEPTH)',      # Add project top-level to include path
