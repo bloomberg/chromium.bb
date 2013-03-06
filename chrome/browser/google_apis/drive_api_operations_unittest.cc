@@ -454,6 +454,39 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
 }
 
+TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
+  // Set an expected data file containing the dummy file entry data.
+  // It'd be returned if we copy a file.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/file_entry.json");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<FileResource> file_resource;
+
+  // Copy the file to a new file named "new name".
+  drive::CopyResourceOperation* operation =
+      new drive::CopyResourceOperation(
+          &operation_registry_,
+          request_context_getter_.get(),
+          *url_generator_,
+          "resource_id",
+          "new name",
+          base::Bind(&CopyResultsFromFileResourceCallbackAndQuit,
+                     &error, &file_resource));
+  operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/drive/v2/files/resource_id/copy", http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"title\":\"new name\"}", http_request_.content);
+  EXPECT_TRUE(file_resource);
+}
+
 TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
   // Set data for the expected result. Directory entry should be returned
   // if the trashing entry is a directory, so using it here should be fine.

@@ -217,6 +217,51 @@ class RenameResourceOperation : public EntryActionOperation {
   DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
 };
 
+//=========================== CopyResourceOperation ============================
+
+// This class performs the operation for copying a resource.
+//
+// This class is designed to copy only the hosted documents at the moment,
+// but the operation (in server side) can work with regular files, too.
+// TODO(hidehiko): Extend this operation to adapt copy regular files on
+// server side (crbug.com/138273).
+//
+// Also, note that, at the moment, this operation copies the hosted document
+// to the root directory. However, the operation (in server side) supports
+// copying files into any directory on Drive API v2, while it is not supported
+// on GData WAPI. Now, we are on the way of migration from GData WAPI to
+// Drive API v2, so we drop the feature for now to reduce the migration
+// complexity.
+// TODO(hidehiko): Support the feature for the copy after the migration,
+// which should be somehow benficial (at least we can simplify
+// chromeos/drive/file_system/copy_operation).
+class CopyResourceOperation : public GetDataOperation {
+ public:
+  // |resource_id| is the resource id of the file to be copied.
+  // |new_name| is the name of the copied (newly created) file.
+  // |callback| must not be null.
+  CopyResourceOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
+      const std::string& resource_id,
+      const std::string& new_name,
+      const FileResourceCallback& callback);
+  virtual ~CopyResourceOperation();
+
+ protected:
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string resource_id_;
+  const std::string new_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(CopyResourceOperation);
+};
+
 //=========================== TrashResourceOperation ===========================
 
 // This class performs the operation for trashing a resource.

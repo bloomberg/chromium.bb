@@ -275,6 +275,47 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//=========================== CopyResourceOperation ============================
+
+CopyResourceOperation::CopyResourceOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& resource_id,
+    const std::string& new_name,
+    const FileResourceCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
+      new_name_(new_name) {
+  DCHECK(!callback.is_null());
+}
+
+CopyResourceOperation::~CopyResourceOperation() {
+}
+
+net::URLFetcher::RequestType CopyResourceOperation::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+GURL CopyResourceOperation::GetURL() const {
+  return url_generator_.GetFileCopyUrl(resource_id_);
+}
+
+bool CopyResourceOperation::GetContentData(std::string* upload_content_type,
+                                           std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  root.SetString("title", new_name_);
+  base::JSONWriter::Write(&root, upload_content);
+
+  DVLOG(1) << "CopyResource data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
 //=========================== TrashResourceOperation ===========================
 
 TrashResourceOperation::TrashResourceOperation(
