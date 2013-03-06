@@ -37,15 +37,13 @@
 
 #include <assert.h>
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
-#if _MSC_VER < 1600
-typedef SSIZE_T ssize_t;
-#endif
 #define PRIx64 "llx"
 #define PRIx32 "lx"
 #define snprintf _snprintf

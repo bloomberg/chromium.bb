@@ -43,6 +43,10 @@
 
 namespace google_breakpad {
 
+#ifdef _WIN32
+#define strtok_r strtok_s
+#endif
+
 template<typename V>
 bool CFIFrameInfo::FindCallerRegs(const RegisterValueMap<V> &registers,
                                   const MemoryRegion &memory,

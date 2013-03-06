@@ -51,6 +51,10 @@
 
 namespace google_breakpad {
 
+#ifdef _WIN32
+#define strtoull _strtoui64
+#endif
+
 struct WindowsFrameInfo {
  public:
   enum Validity {
