@@ -26,7 +26,6 @@ class DriveCacheMetadataTest : public testing::Test {
 
     persistent_directory_ = cache_paths_[DriveCache::CACHE_TYPE_PERSISTENT];
     tmp_directory_ = cache_paths_[DriveCache::CACHE_TYPE_TMP];
-    pinned_directory_ = cache_paths_[DriveCache::CACHE_TYPE_PINNED];
     outgoing_directory_ = cache_paths_[DriveCache::CACHE_TYPE_OUTGOING];
   }
 
@@ -50,9 +49,6 @@ class DriveCacheMetadataTest : public testing::Test {
     // "id_baz" is dirty but does not have a symlink in outgoing
     // directory. This file should be removed.
     CreateFile(persistent_directory_.AppendASCII("id_baz.local"));
-    // "id_bad" is in persistent directory, but does not have a link in
-    // pinned directory. This file should be removed.
-    CreateFile(persistent_directory_.AppendASCII("id_bad.md5bad"));
     // "id_symlink" is invalid, as symlink is not allowed here. This should
     // be removed.
     CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
@@ -67,26 +63,6 @@ class DriveCacheMetadataTest : public testing::Test {
     // should be removed.
     CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
                        tmp_directory_.AppendASCII("id_symlink_tmp"));
-
-    // Create symbolic links in pinned directory.
-    //
-    // "id_foo" is pinned, and present locally.
-    CreateSymbolicLink(persistent_directory_.AppendASCII("id_foo.md5foo"),
-                       pinned_directory_.AppendASCII("id_foo"));
-    // "id_corge" is pinned, but not present locally. It's properly pointing
-    // to /dev/null.
-    CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
-                       pinned_directory_.AppendASCII("id_corge"));
-    // "id_dangling" is pointing to a non-existent file. The symlink should
-    // be removed.
-    CreateSymbolicLink(persistent_directory_.AppendASCII("id_dangling.md5foo"),
-                       pinned_directory_.AppendASCII("id_dangling"));
-    // "id_outside" is pointing to a file outside of persistent
-    // directory. The symlink should be removed.
-    CreateSymbolicLink(tmp_directory_.AppendASCII("id_qux.md5qux"),
-                       pinned_directory_.AppendASCII("id_outside"));
-    // "id_not_symlink" is not a symlink. This should be removed.
-    CreateFile(pinned_directory_.AppendASCII("id_not_symlink"));
 
     // Create symbolic links in outgoing directory.
     //
@@ -135,7 +111,6 @@ class DriveCacheMetadataTest : public testing::Test {
   std::vector<base::FilePath> cache_paths_;
   base::FilePath persistent_directory_;
   base::FilePath tmp_directory_;
-  base::FilePath pinned_directory_;
   base::FilePath outgoing_directory_;
 };
 
@@ -243,20 +218,23 @@ TEST_F(DriveCacheMetadataTest, CacheTest) {
   EXPECT_TRUE(cache_entry.is_present());
 }
 
-TEST_F(DriveCacheMetadataTest, Initialization) {
+TEST_F(DriveCacheMetadataTest, CorruptDB) {
   using file_util::PathExists;
   using file_util::IsLink;
   SetUpCacheWithVariousFiles();
 
+  const base::FilePath db_path =
+      cache_paths_[DriveCache::CACHE_TYPE_META].Append(
+          DriveCacheMetadata::kDriveCacheMetadataDBPath);
+
+  // Write a bogus file.
+  std::string text("Hello world");
+  file_util::WriteFile(db_path, text.c_str(), text.length());
+
   // Some files are removed during cache initialization. Make sure these
   // exist beforehand.
   EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_baz.local")));
-  EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_bad.md5bad")));
   EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_quux.local")));
-  EXPECT_TRUE(PathExists(pinned_directory_.AppendASCII("id_not_symlink")));
-  EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_dangling")));
-  EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_outside")));
-  EXPECT_TRUE(IsLink(outgoing_directory_.AppendASCII("id_foo")));
   EXPECT_TRUE(IsLink(persistent_directory_.AppendASCII("id_symlink")));
   EXPECT_TRUE(IsLink(tmp_directory_.AppendASCII("id_symlink_tmp")));
 
@@ -264,19 +242,15 @@ TEST_F(DriveCacheMetadataTest, Initialization) {
 
   // Check contents in "persistent" directory.
   //
-  // "id_foo" is present and pinned.
+  // "id_foo" is moved to temporary directory.
   DriveCacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
   EXPECT_EQ("md5foo", cache_entry.md5());
-  EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
-            DriveCache::GetSubDirectoryType(cache_entry));
+  EXPECT_FALSE(cache_entry.is_persistent());
   EXPECT_TRUE(test_util::CacheStatesEqual(
-      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT |
-                              test_util::TEST_CACHE_STATE_PINNED |
-                              test_util::TEST_CACHE_STATE_PERSISTENT),
+      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT),
       cache_entry));
-  EXPECT_TRUE(PathExists(persistent_directory_.AppendASCII("id_foo.md5foo")));
-  EXPECT_TRUE(PathExists(pinned_directory_.AppendASCII("id_foo")));
+  EXPECT_TRUE(PathExists(tmp_directory_.AppendASCII("id_foo.md5foo")));
   // The invalid symlink in "outgoing" should be removed.
   EXPECT_FALSE(PathExists(outgoing_directory_.AppendASCII("id_foo")));
 
@@ -297,10 +271,6 @@ TEST_F(DriveCacheMetadataTest, Initialization) {
   EXPECT_FALSE(metadata_->GetCacheEntry("id_baz", "", &cache_entry));
   EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_baz.local")));
 
-  // "id_bad" should be removed during cache initialization.
-  EXPECT_FALSE(metadata_->GetCacheEntry("id_bad", "md5bad", &cache_entry));
-  EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_bad.md5bad")));
-
   // "id_symlink" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_symlink", "", &cache_entry));
   EXPECT_FALSE(PathExists(persistent_directory_.AppendASCII("id_symlink")));
@@ -319,33 +289,18 @@ TEST_F(DriveCacheMetadataTest, Initialization) {
 
   // "id_quux" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_quux", "md5qux", &cache_entry));
-  EXPECT_FALSE(PathExists(pinned_directory_.AppendASCII("id_quux.local")));
 
   // "id_symlink_tmp" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_symlink_tmp", "", &cache_entry));
-  EXPECT_FALSE(PathExists(pinned_directory_.AppendASCII("id_symlink_tmp")));
-
-  // Check contents in "pinned" directory.
-  //
-  // "id_corge" is pinned but not present.
-  ASSERT_TRUE(metadata_->GetCacheEntry("id_corge", "", &cache_entry));
-  EXPECT_EQ("", cache_entry.md5());
-  EXPECT_TRUE(test_util::CacheStatesEqual(
-      test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PINNED),
-      cache_entry));
-  EXPECT_TRUE(IsLink(pinned_directory_.AppendASCII("id_corge")));
 
   // "id_dangling" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_dangling", "", &cache_entry));
-  EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_dangling")));
 
   // "id_outside" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_outside", "", &cache_entry));
-  EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_outside")));
 
   // "id_not_symlink" should be removed during cache initialization.
   EXPECT_FALSE(metadata_->GetCacheEntry("id_not_symlink", "", &cache_entry));
-  EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_not_symlink")));
 }
 
 // Test DriveCacheMetadata::RemoveTemporaryFiles.
@@ -388,27 +343,6 @@ TEST_F(DriveCacheMetadataTest, RemoveTemporaryFiles) {
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));
   EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_4>", "", &cache_entry));
-}
-
-TEST_F(DriveCacheMetadataTest, CorruptDB) {
-  SetUpCacheWithVariousFiles();
-
-  const base::FilePath db_path =
-      cache_paths_[DriveCache::CACHE_TYPE_META].Append(
-          DriveCacheMetadata::kDriveCacheMetadataDBPath);
-
-  // Write a bogus file.
-  std::string text("Hello world");
-  file_util::WriteFile(db_path, text.c_str(), text.length());
-
-  SetUpCacheMetadata();
-
-  // "id_foo" is present and pinned.
-  DriveCacheEntry cache_entry;
-  ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
-  EXPECT_EQ("md5foo", cache_entry.md5());
-  EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
-            DriveCache::GetSubDirectoryType(cache_entry));
 }
 
 // Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.

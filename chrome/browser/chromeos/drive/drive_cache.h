@@ -66,9 +66,6 @@ class DriveCache {
   // This indexes into |DriveCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Downloaded feeds.
-    CACHE_TYPE_PINNED,         // Symlinks to files in persistent dir that are
-                               // pinned, or to /dev/null for non-existent
-                               // files.
     CACHE_TYPE_OUTGOING,       // Symlinks to files in persistent or tmp dir to
                                // be uploaded.
     CACHE_TYPE_PERSISTENT,     // Files that are pinned or modified locally,

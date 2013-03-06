@@ -276,11 +276,7 @@ class DriveCacheTest : public testing::Test {
         PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
                      DriveCache::CACHE_TYPE_PERSISTENT,
                      DriveCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
-    paths_to_verify.push_back(  // Index 2: CACHE_TYPE_TMP, but STATE_PINNED.
-        PathToVerify(cache_->GetCacheFilePath(resource_id, "",
-                     DriveCache::CACHE_TYPE_PINNED,
-                     DriveCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
-    paths_to_verify.push_back(  // Index 3: CACHE_TYPE_OUTGOING.
+    paths_to_verify.push_back(  // Index 2: CACHE_TYPE_OUTGOING.
         PathToVerify(cache_->GetCacheFilePath(resource_id, "",
                      DriveCache::CACHE_TYPE_OUTGOING,
                      DriveCache::CACHED_FILE_FROM_SERVER), base::FilePath()));
@@ -307,22 +303,12 @@ class DriveCacheTest : public testing::Test {
                            DriveCache::CACHE_TYPE_PERSISTENT,
                            DriveCache::CACHED_FILE_LOCALLY_MODIFIED);
 
-      // Change expected_existing_path of CACHE_TYPE_OUTGOING (index 3).
-      paths_to_verify[3].expected_existing_path =
+      // Change expected_existing_path of CACHE_TYPE_OUTGOING (index 2).
+      paths_to_verify[2].expected_existing_path =
           GetCacheFilePath(resource_id,
                            std::string(),
                            DriveCache::CACHE_TYPE_OUTGOING,
                            DriveCache::CACHED_FILE_FROM_SERVER);
-
-      if (cache_entry.is_pinned()) {
-         // Change expected_existing_path of CACHE_TYPE_TMP but STATE_PINNED
-         // (index 2).
-         paths_to_verify[2].expected_existing_path =
-             GetCacheFilePath(resource_id,
-                              std::string(),
-                              DriveCache::CACHE_TYPE_PINNED,
-                              DriveCache::CACHED_FILE_FROM_SERVER);
-      }
 
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         const struct PathToVerify& verify = paths_to_verify[i];
@@ -555,28 +541,8 @@ class DriveCacheTest : public testing::Test {
     else
       EXPECT_FALSE(exists);
 
-    // Verify symlink in pinned dir.
-    base::FilePath symlink_path = cache_->GetCacheFilePath(
-        resource_id,
-        std::string(),
-        DriveCache::CACHE_TYPE_PINNED,
-        DriveCache::CACHED_FILE_FROM_SERVER);
-    // Check that pin symlink exists, without dereferencing to target path.
-    exists = file_util::IsLink(symlink_path);
-    if (test_util::ToCacheEntry(expected_cache_state_).is_pinned()) {
-      EXPECT_TRUE(exists);
-      base::FilePath target_path;
-      EXPECT_TRUE(file_util::ReadSymbolicLink(symlink_path, &target_path));
-      if (test_util::ToCacheEntry(expected_cache_state_).is_present())
-        EXPECT_EQ(dest_path, target_path);
-      else
-        EXPECT_EQ(kSymLinkToDevNull, target_path.value());
-    } else {
-      EXPECT_FALSE(exists);
-    }
-
     // Verify symlink in outgoing dir.
-    symlink_path = cache_->GetCacheFilePath(
+    base::FilePath symlink_path = cache_->GetCacheFilePath(
         resource_id,
         std::string(),
         DriveCache::CACHE_TYPE_OUTGOING,

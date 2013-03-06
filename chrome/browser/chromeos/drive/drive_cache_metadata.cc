@@ -35,8 +35,7 @@ bool IsValidSymbolicLink(const base::FilePath& file_path,
                          DriveCache::CacheSubDirectoryType sub_dir_type,
                          const std::vector<base::FilePath>& cache_paths,
                          std::string* reason) {
-  DCHECK(sub_dir_type == DriveCache::CACHE_TYPE_PINNED ||
-         sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING);
+  DCHECK_EQ(DriveCache::CACHE_TYPE_OUTGOING, sub_dir_type);
 
   base::FilePath destination;
   if (!file_util::ReadSymbolicLink(file_path, &destination)) {
@@ -49,12 +48,6 @@ bool IsValidSymbolicLink(const base::FilePath& file_path,
     return false;
   }
 
-  // pinned-but-not-fetched files are symlinks to kSymLinkToDevNull.
-  if (sub_dir_type == DriveCache::CACHE_TYPE_PINNED &&
-      destination == base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull)) {
-    return true;
-  }
-
   // The destination file should be in the persistent directory.
   if (!cache_paths[DriveCache::CACHE_TYPE_PERSISTENT].IsParent(destination)) {
     *reason = "pointing to a file outside of persistent directory";
@@ -62,47 +55,6 @@ bool IsValidSymbolicLink(const base::FilePath& file_path,
   }
 
   return true;
-}
-
-// Remove invalid files from persistent directory.
-//
-// 1) dirty-but-not-committed files. The dirty files should be committed
-// (i.e. symlinks created in 'outgoing' directory) before shutdown, but the
-// symlinks may not be created if the system shuts down unexpectedly.
-//
-// 2) neither dirty nor pinned. Files in the persistent directory should be
-// in the either of the states.
-void RemoveInvalidFilesFromPersistentDirectory(
-    const ResourceIdToFilePathMap& persistent_file_map,
-    const ResourceIdToFilePathMap& outgoing_file_map,
-    DriveCacheMetadata::CacheMap* cache_map) {
-  for (ResourceIdToFilePathMap::const_iterator iter =
-           persistent_file_map.begin();
-       iter != persistent_file_map.end(); ++iter) {
-    const std::string& resource_id = iter->first;
-    const base::FilePath& file_path = iter->second;
-
-    DriveCacheMetadata::CacheMap::iterator cache_map_iter =
-        cache_map->find(resource_id);
-    if (cache_map_iter != cache_map->end()) {
-      const DriveCacheEntry& cache_entry = cache_map_iter->second;
-      // If the file is dirty but not committed, remove it.
-      if (cache_entry.is_dirty() &&
-          outgoing_file_map.count(resource_id) == 0) {
-        LOG(WARNING) << "Removing dirty-but-not-committed file: "
-                     << file_path.value();
-        file_util::Delete(file_path, false);
-        cache_map->erase(cache_map_iter);
-      } else if (!cache_entry.is_dirty() &&
-                 !cache_entry.is_pinned()) {
-        // If the file is neither dirty nor pinned, remove it.
-        LOG(WARNING) << "Removing persistent-but-dangling file: "
-                     << file_path.value();
-        file_util::Delete(file_path, false);
-        cache_map->erase(cache_map_iter);
-      }
-    }
-  }
 }
 
 // Scans cache subdirectory and build or update |cache_map|
@@ -134,30 +86,7 @@ void ScanCacheDirectory(
     // Determine cache state.
     DriveCacheEntry cache_entry;
     cache_entry.set_md5(md5);
-    // If we're scanning pinned directory and if entry already exists, just
-    // update its pinned state.
-    if (sub_dir_type == DriveCache::CACHE_TYPE_PINNED) {
-      std::string reason;
-      if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
-        LOG(WARNING) << "Removing an invalid symlink: " << current.value()
-                     << ": " << reason;
-        file_util::Delete(current, false);
-        continue;
-      }
-
-      DriveCacheMetadata::CacheMap::iterator iter =
-          cache_map->find(resource_id);
-      if (iter != cache_map->end()) {  // Entry exists, update pinned state.
-        iter->second.set_is_pinned(true);
-
-        processed_file_map->insert(std::make_pair(resource_id, current));
-        continue;
-      }
-      // Entry doesn't exist, this is a special symlink that refers to
-      // /dev/null; follow through to create an entry with the PINNED but not
-      // PRESENT state.
-      cache_entry.set_is_pinned(true);
-    } else if (sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING) {
+    if (sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
         LOG(WARNING) << "Removing an invalid symlink: " << current.value()
@@ -241,17 +170,6 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
                      cache_map,
                      &tmp_file_map);
 
-  // Then scan pinned directory to update existing entries in cache map, or
-  // create new ones for pinned symlinks to /dev/null which target nothing.
-  //
-  // Pinned directory should be scanned after the persistent directory as
-  // we'll add PINNED states to the existing files in the persistent
-  // directory per the contents of the pinned directory.
-  ResourceIdToFilePathMap pinned_file_map;
-  ScanCacheDirectory(cache_paths,
-                     DriveCache::CACHE_TYPE_PINNED,
-                     cache_map,
-                     &pinned_file_map);
   // Then scan outgoing directory to check if dirty-files are committed
   // properly (i.e. symlinks created in outgoing directory).
   ResourceIdToFilePathMap outgoing_file_map;
@@ -260,9 +178,37 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
                      cache_map,
                      &outgoing_file_map);
 
-  RemoveInvalidFilesFromPersistentDirectory(persistent_file_map,
-                                            outgoing_file_map,
-                                            cache_map);
+  // On DB corruption, keep only dirty-and-committed files in persistent
+  // directory. Other files are deleted or moved to temporary directory.
+  for (ResourceIdToFilePathMap::const_iterator iter =
+           persistent_file_map.begin();
+       iter != persistent_file_map.end(); ++iter) {
+    const std::string& resource_id = iter->first;
+    const base::FilePath& file_path = iter->second;
+
+    DriveCacheMetadata::CacheMap::iterator cache_map_iter =
+        cache_map->find(resource_id);
+    if (cache_map_iter != cache_map->end()) {
+      DriveCacheEntry* cache_entry = &cache_map_iter->second;
+      const bool is_dirty = cache_entry->is_dirty();
+      const bool is_committed = outgoing_file_map.count(resource_id) != 0;
+      if (!is_dirty && !is_committed) {
+        // If the file is not dirty nor committed, move to temporary directory.
+        base::FilePath new_file_path =
+            cache_paths[DriveCache::CACHE_TYPE_TMP].Append(
+                file_path.BaseName());
+        DLOG(WARNING) << "Moving: " << file_path.value()
+                      << " to: " << new_file_path.value();
+        file_util::Move(file_path, new_file_path);
+        cache_entry->set_is_persistent(false);
+      } else if (!is_dirty || !is_committed) {
+        // If the file is not dirty-and-committed, remove it.
+        DLOG(WARNING) << "Removing: " << file_path.value();
+        file_util::Delete(file_path, false);
+        cache_map->erase(cache_map_iter);
+      }
+    }
+  }
   DVLOG(1) << "Directory scan finished";
 }
 
