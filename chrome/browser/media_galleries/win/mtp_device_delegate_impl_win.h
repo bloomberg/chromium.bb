@@ -5,18 +5,18 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_DELEGATE_IMPL_WIN_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_DELEGATE_IMPL_WIN_H_
 
-#include <portabledeviceapi.h>
+#include <queue>
 
-#include <string>
-
+#include "base/callback.h"
+#include "base/location.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/string16.h"
-#include "base/synchronization/lock.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
-#include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/media/mtp_device_delegate.h"
+#include "webkit/fileapi/async_file_util.h"
+#include "webkit/fileapi/media/mtp_device_async_delegate.h"
 
 namespace base {
 class FilePath;
@@ -25,87 +25,193 @@ class SequencedTaskRunner;
 
 namespace chrome {
 
+class SnapshotFileDetails;
+struct SnapshotRequestInfo;
+
 // MTPDeviceDelegateImplWin is used to communicate with the media transfer
-// protocol (MTP) device to complete isolated file system operations. MTP
+// protocol (MTP) device to complete file system operations. These operations
+// are performed asynchronously on a blocking pool thread since the device
+// access may be slow and may take a long time to complete. MTP
 // device can have multiple data storage partitions. MTPDeviceDelegateImplWin
 // is instantiated per MTP device storage partition using
-// CreateMTPDeviceDelegate(). MTPDeviceDelegateImplWin lives on a sequenced
-// task runner thread, except for CancelPendingTasksAndDeleteDelegate() which
-// happens on the UI thread.
-class MTPDeviceDelegateImplWin : public fileapi::MTPDeviceDelegate {
- private:
-  friend void OnGotStorageInfoCreateDelegate(
-      const string16& device_location,
-      base::SequencedTaskRunner* media_task_runner,
-      const CreateMTPDeviceDelegateCallback& callback,
-      const string16& pnp_device_id,
-      const string16& storage_object_id);
+// CreateMTPDeviceAsyncDelegate(). MTPDeviceDelegateImplWin lives on the IO
+// thread.
+class MTPDeviceDelegateImplWin : public fileapi::MTPDeviceAsyncDelegate {
+ public:
+  // Structure used to represent MTP device storage partition details.
+  struct StorageDeviceInfo {
+    StorageDeviceInfo(const string16& pnp_device_id,
+                      const string16& registered_device_path,
+                      const string16& storage_object_id);
 
-  friend class base::DeleteHelper<MTPDeviceDelegateImplWin>;
+    // The PnP Device Id, used to open the device for communication,
+    // e.g. "\\?\usb#vid_04a9&pid_3073#12#{6ac27878-a6fa-4155-ba85-f1d4f33}".
+    const string16 pnp_device_id;
+
+    // The media file system root path, which is obtained during the
+    // registration of MTP device storage partition as a file system,
+    // e.g. "\\MTP:StorageSerial:SID-{10001,E,9823}:237483".
+    const string16 registered_device_path;
+
+    // The MTP device storage partition object identifier, used to enumerate the
+    // storage contents, e.g. "s10001".
+    const string16 storage_object_id;
+  };
+
+ private:
+  friend void OnGetStorageInfoCreateDelegate(
+      const string16& device_location,
+      const CreateMTPDeviceAsyncDelegateCallback& callback,
+      string16* pnp_device_id,
+      string16* storage_object_id,
+      bool succeeded);
+
+  enum InitializationState {
+    UNINITIALIZED = 0,
+    PENDING_INIT,
+    INITIALIZED
+  };
+
+  // Used to represent pending task details.
+  struct PendingTaskInfo {
+    PendingTaskInfo(const tracked_objects::Location& location,
+                    const base::Callback<base::PlatformFileError(void)>& task,
+                    const base::Callback<void(base::PlatformFileError)>& reply);
+
+    const tracked_objects::Location location;
+    const base::Callback<base::PlatformFileError(void)> task;
+    const base::Callback<void(base::PlatformFileError)> reply;
+  };
 
   // Defers the device initializations until the first file operation request.
-  // Do all the initializations in LazyInit() function.
-  MTPDeviceDelegateImplWin(const string16& fs_root_path,
+  // Do all the initializations in EnsureInitAndRunTask() function.
+  MTPDeviceDelegateImplWin(const string16& registered_device_path,
                            const string16& pnp_device_id,
-                           const string16& storage_object_id,
-                           base::SequencedTaskRunner* media_task_runner);
+                           const string16& storage_object_id);
 
   // Destructed via CancelPendingTasksAndDeleteDelegate().
   virtual ~MTPDeviceDelegateImplWin();
 
-  // MTPDeviceDelegate:
-  virtual base::PlatformFileError GetFileInfo(
+  // MTPDeviceAsyncDelegate:
+  virtual void GetFileInfo(
       const base::FilePath& file_path,
-      base::PlatformFileInfo* file_info) OVERRIDE;
-  virtual scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      CreateFileEnumerator(const base::FilePath& root,
-                           bool recursive) OVERRIDE;
-  virtual base::PlatformFileError CreateSnapshotFile(
+      const GetFileInfoSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void ReadDirectory(
+      const base::FilePath& root,
+      const ReadDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
-      base::PlatformFileInfo* file_info) OVERRIDE;
+      const CreateSnapshotFileSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
 
-  // Returns whether the device is ready for communication.
-  bool LazyInit();
-
-  // Returns the object id of the file object specified by the |file_path|,
-  // e.g. if the |file_path| is "\\MTP:StorageSerial:SID-{1001,,192}:125\DCIM"
-  // and |registered_device_path_| is "\\MTP:StorageSerial:SID-{1001,,192}:125",
-  // this function returns the identifier of the "DCIM" folder object.
+  // Ensures the device is initialized for communication by doing a
+  // call-and-reply to a blocking pool thread. |task_info.task| runs on a
+  // blocking pool thread and |task_info.reply| runs on the IO thread.
   //
-  // Returns an empty string if the device is detached while the request is in
-  // progress.
-  string16 GetFileObjectIdFromPath(const string16& file_path);
+  // If the device is already initialized, post the |task_info.task|
+  // immediately on a blocking pool thread.
+  //
+  // If the device is uninitialized, store the |task_info| in a pending task
+  // list and then runs all the pending tasks once the device is successfully
+  // initialized.
+  void EnsureInitAndRunTask(const PendingTaskInfo& task_info);
 
-  // The PnP Device Id, used to open the device for communication,
-  // e.g. "\\?\usb#vid_04a9&pid_3073#12#{6ac27878-a6fa-4155-ba85-f1d4f33}".
-  const string16 pnp_device_id_;
+  // Writes data chunk from the device to the snapshot file path based on the
+  // parameters in |current_snapshot_details_| by doing a call-and-reply to a
+  // blocking pool thread.
+  void WriteDataChunkIntoSnapshotFile();
 
-  // The media file system root path, which is obtained during the registration
-  // of MTP device storage partition as a file system,
-  // e.g. "\\MTP:StorageSerial:SID-{10001,E,9823}:237483".
-  const string16 registered_device_path_;
+  // Processes the next pending request.
+  void ProcessNextPendingRequest();
 
-  // The MTP device storage partition object identifier, used to enumerate the
-  // storage contents, e.g. "s10001".
-  const string16 storage_object_id_;
+  // Handles the event that the device is initialized. |succeeded| indicates
+  // whether device initialization succeeded or not. If the device is
+  // successfully initialized, runs the next pending task.
+  void OnInitCompleted(bool succeeded);
 
-  // The task runner where most of the class lives and runs (save for
-  // CancelPendingTasksAndDeleteDelegate).
+  // Called when GetFileInfo() completes. |file_info| specifies the requested
+  // file details. |error| specifies the platform file error code.
+  //
+  // If the GetFileInfo() succeeds, |success_callback| is invoked to notify the
+  // caller about the |file_info| details.
+  //
+  // If the GetFileInfo() fails, |file_info| is not set and |error_callback| is
+  // invoked to notify the caller about the platform file |error|.
+  void OnGetFileInfo(const GetFileInfoSuccessCallback& success_callback,
+                     const ErrorCallback& error_callback,
+                     base::PlatformFileInfo* file_info,
+                     base::PlatformFileError error);
+
+  // Called when ReadDirectory() completes. |file_list| contains the directory
+  // file entries information. |error| specifies the platform file error code.
+  //
+  // If the ReadDirectory() succeeds, |success_callback| is invoked to notify
+  // the caller about the directory file entries.
+  //
+  // If the ReadDirectory() fails, |file_list| is not set and |error_callback|
+  // is invoked to notify the caller about the platform file |error|.
+  void OnDidReadDirectory(const ReadDirectorySuccessCallback& success_callback,
+                          const ErrorCallback& error_callback,
+                          fileapi::AsyncFileUtil::EntryList* file_list,
+                          base::PlatformFileError error);
+
+  // Called when the get file stream request completes.
+  // |file_details.request_info| contains the CreateSnapshot request param
+  // details. |error| specifies the platform file error code.
+  //
+  // If the file stream of the device file is successfully
+  // fetched, |file_details| will contain the required details for the creation
+  // of the snapshot file.
+  //
+  // If the get file stream request fails, |error| is set accordingly.
+  void OnGetFileStream(scoped_ptr<SnapshotFileDetails> file_details,
+                       base::PlatformFileError error);
+
+  // Called when WriteDataChunkIntoSnapshotFile() completes.
+  // |bytes_written| specifies the number of bytes written into the
+  // |snapshot_file_path| during the last write operation.
+  //
+  // If the write operation succeeds, |bytes_written| is set to a non-zero
+  // value.
+  //
+  // If the write operation fails, |bytes_written| is set to zero.
+  void OnWroteDataChunkIntoSnapshotFile(
+      const base::FilePath& snapshot_file_path,
+      DWORD bytes_written);
+
+  // Portable device initialization state.
+  InitializationState init_state_;
+
+  // The task runner where the device operation tasks runs.
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
-  // The portable device.
-  base::win::ScopedComPtr<IPortableDevice> device_;
+  // Device storage partition details
+  // (e.g. device path, PnP device id and storage object id).
+  StorageDeviceInfo storage_device_info_;
 
-  // The lock to protect |cancel_pending_tasks_|. |cancel_pending_tasks_| is
-  // set on the UI thread when the
-  // (1) Browser application is in shutdown mode (or)
-  // (2) Last extension using this MTP device is destroyed (or)
-  // (3) Attached MTP device is removed (or)
-  // (4) User revoked the MTP device gallery permission.
-  base::Lock cancel_tasks_lock_;
-  bool cancel_pending_tasks_;
+  // Used to track the current state of the snapshot file (e.g how many bytes
+  // written to the snapshot file, optimal data transfer size, source file
+  // stream, etc).
+  //
+  // A snapshot file is created incrementally. CreateSnapshotFile request reads
+  // and writes the snapshot file data in chunks. In order to retain the order
+  // of the snapshot file requests, make sure there is only one active snapshot
+  // file request at any time.
+  scoped_ptr<SnapshotFileDetails> current_snapshot_details_;
+
+  // A list of pending tasks that needs to be run when the device is
+  // initialized or when the current task in progress is complete.
+  std::queue<PendingTaskInfo> pending_tasks_;
+
+  // Used to make sure only one task is in progress at any time.
+  bool task_in_progress_;
+
+  // For callbacks that may run after destruction.
+  base::WeakPtrFactory<MTPDeviceDelegateImplWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplWin);
 };

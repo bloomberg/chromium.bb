@@ -10,167 +10,258 @@
 
 #include <vector>
 
-#include "base/file_util.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sequenced_task_runner_helpers.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/win/mtp_device_operations_util.h"
-#include "chrome/browser/media_galleries/win/recursive_mtp_device_object_enumerator.h"
+#include "chrome/browser/media_galleries/win/portable_device_map_service.h"
+#include "chrome/browser/media_galleries/win/snapshot_file_details.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/fileapi/file_snapshot_policy.h"
+#include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/file_system_util.h"
 
 namespace chrome {
 
 namespace {
 
 // Gets the details of the MTP partition storage specified by the
-// |storage_path| on the UI thread. If the storage details are valid, creates a
-// MTP device delegate on the media task runner.
-void GetStorageInfoAndMaybeCreateDelegate(
-    const string16& storage_path,
-    const scoped_refptr<base::SequencedTaskRunner>& media_task_runner,
-    const CreateMTPDeviceDelegateCallback& callback) {
+// |storage_path| on the UI thread. Returns true if the storage details are
+// valid and returns false otherwise.
+bool GetStorageInfoOnUIThread(const string16& storage_path,
+                              string16* pnp_device_id,
+                              string16* storage_object_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!storage_path.empty());
-  DCHECK(media_task_runner.get());
+  DCHECK(pnp_device_id);
+  DCHECK(storage_object_id);
   string16 storage_device_id;
   RemoveChars(storage_path, L"\\\\", &storage_device_id);
   DCHECK(!storage_device_id.empty());
   // TODO(gbillock): Take the StorageMonitor as an argument.
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   DCHECK(monitor);
-  string16 pnp_device_id;
-  string16 storage_object_id;
-  if ((!monitor->GetMTPStorageInfoFromDeviceId(
-          UTF16ToUTF8(storage_device_id), &pnp_device_id,
-          &storage_object_id)) ||
-       pnp_device_id.empty() ||
-       storage_object_id.empty())
-    return;
-  media_task_runner->PostTask(FROM_HERE,
-                              base::Bind(&OnGotStorageInfoCreateDelegate,
-                                         storage_path,
-                                         media_task_runner,
-                                         callback,
-                                         pnp_device_id,
-                                         storage_object_id));
+  return monitor->GetMTPStorageInfoFromDeviceId(
+      UTF16ToUTF8(storage_device_id), pnp_device_id, storage_object_id);
 }
 
-}  // namespace
-
-// Used by GetStorageInfoAndMaybeCreateDelegate() to create the MTP device
-// delegate on the media task runner.
-void OnGotStorageInfoCreateDelegate(
-    const string16& device_location,
-    base::SequencedTaskRunner* media_task_runner,
-    const CreateMTPDeviceDelegateCallback& callback,
-    const string16& pnp_device_id,
-    const string16& storage_object_id) {
-  DCHECK(media_task_runner);
-  DCHECK(media_task_runner->RunsTasksOnCurrentThread());
-  callback.Run(new MTPDeviceDelegateImplWin(device_location,
-                                            pnp_device_id,
-                                            storage_object_id,
-                                            media_task_runner));
+scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken media_sequence_token =
+      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
+  return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 
-void CreateMTPDeviceDelegate(const string16& device_location,
-                             base::SequencedTaskRunner* media_task_runner,
-                             const CreateMTPDeviceDelegateCallback& callback) {
-  DCHECK(media_task_runner);
-  DCHECK(media_task_runner->RunsTasksOnCurrentThread());
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetStorageInfoAndMaybeCreateDelegate,
-                 device_location,
-                 make_scoped_refptr(media_task_runner),
-                 callback));
+// Returns the object id of the file object specified by the |file_path|,
+// e.g. if the |file_path| is "\\MTP:StorageSerial:SID-{1001,,192}:125\DCIM"
+// and |device_info.registered_device_path_| is
+// "\\MTP:StorageSerial:SID-{1001,,192}:125", this function returns the
+// identifier of the "DCIM" folder object.
+//
+// Returns an empty string if the device is detached while the request is in
+// progress or when the |file_path| is invalid.
+string16 GetFileObjectIdFromPathOnBlockingPoolThread(
+    const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
+    const base::FilePath& file_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!file_path.empty());
+  IPortableDevice* device =
+      PortableDeviceMapService::GetInstance()->GetPortableDevice(
+          device_info.registered_device_path);
+  if (!device)
+    return string16();
+
+  if (device_info.registered_device_path == file_path.value())
+    return device_info.storage_object_id;
+
+  base::FilePath relative_path;
+  if (!base::FilePath(device_info.registered_device_path).AppendRelativePath(
+          file_path, &relative_path))
+    return string16();
+
+  std::vector<string16> path_components;
+  relative_path.GetComponents(&path_components);
+  DCHECK(!path_components.empty());
+  string16 parent_id(device_info.storage_object_id);
+  string16 file_object_id;
+  for (size_t i = 0; i < path_components.size(); ++i) {
+    file_object_id =
+        media_transfer_protocol::GetObjectIdFromName(device, parent_id,
+                                                     path_components[i]);
+    if (file_object_id.empty())
+      break;
+    parent_id = file_object_id;
+  }
+  return file_object_id;
 }
 
-// MTPDeviceDelegateImplWin ---------------------------------------------------
-
-MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
-    const string16& fs_root_path,
-    const string16& pnp_device_id,
-    const string16& storage_object_id,
-    base::SequencedTaskRunner* media_task_runner)
-    : registered_device_path_(fs_root_path),
-      pnp_device_id_(pnp_device_id),
-      storage_object_id_(storage_object_id),
-      media_task_runner_(media_task_runner),
-      cancel_pending_tasks_(false) {
-  DCHECK(!pnp_device_id_.empty());
-  DCHECK(!storage_object_id_.empty());
-  DCHECK(media_task_runner_.get());
-}
-
-MTPDeviceDelegateImplWin::~MTPDeviceDelegateImplWin() {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
-}
-
-base::PlatformFileError MTPDeviceDelegateImplWin::GetFileInfo(
-    const base::FilePath& file_path,
-    base::PlatformFileInfo* file_info) {
-  if (!LazyInit())
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  string16 object_id = GetFileObjectIdFromPath(file_path.value());
-  if (object_id.empty())
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return media_transfer_protocol::GetFileEntryInfo(device_.get(), object_id,
-                                                   file_info);
-}
-
+// Returns a pointer to a new instance of AbstractFileEnumerator for the given
+// |root| directory. Called on a blocking pool thread.
 scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-    MTPDeviceDelegateImplWin::CreateFileEnumerator(const base::FilePath& root,
-                                                   bool recursive) {
+CreateFileEnumeratorOnBlockingPoolThread(
+    const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
+    const base::FilePath& root) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!device_info.registered_device_path.empty());
+  DCHECK(!root.empty());
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
       file_enumerator(new fileapi::FileSystemFileUtil::EmptyFileEnumerator());
-  if (root.empty() || !LazyInit())
+  IPortableDevice* device =
+      PortableDeviceMapService::GetInstance()->GetPortableDevice(
+          device_info.registered_device_path);
+  if (!device)
     return file_enumerator.Pass();
 
-  string16 object_id = GetFileObjectIdFromPath(root.value());
+  string16 object_id = GetFileObjectIdFromPathOnBlockingPoolThread(device_info,
+                                                                   root);
   if (object_id.empty())
     return file_enumerator.Pass();
 
   MTPDeviceObjectEntries entries;
-  if (!media_transfer_protocol::GetDirectoryEntries(device_.get(), object_id,
+  if (!media_transfer_protocol::GetDirectoryEntries(device, object_id,
                                                     &entries) ||
       entries.empty())
     return file_enumerator.Pass();
 
-  if (recursive) {
-    file_enumerator.reset(
-        new RecursiveMTPDeviceObjectEnumerator(device_.get(), entries));
-  } else {
-    file_enumerator.reset(new MTPDeviceObjectEnumerator(entries));
-  }
+  file_enumerator.reset(new MTPDeviceObjectEnumerator(entries));
   return file_enumerator.Pass();
 }
 
-base::PlatformFileError MTPDeviceDelegateImplWin::CreateSnapshotFile(
-    const base::FilePath& device_file_path,
-    const base::FilePath& local_path,
+// Opens the device for communication on a blocking pool thread.
+// |pnp_device_id| specifies the PnP device id.
+// |registered_device_path| specifies the registered file system root path for
+// the given device.
+bool OpenDeviceOnBlockingPoolThread(const string16& pnp_device_id,
+                                    const string16& registered_device_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!pnp_device_id.empty());
+  DCHECK(!registered_device_path.empty());
+  base::win::ScopedComPtr<IPortableDevice> device =
+      media_transfer_protocol::OpenDevice(pnp_device_id);
+  bool init_succeeded = device.get() != NULL;
+  if (init_succeeded) {
+    PortableDeviceMapService::GetInstance()->AddPortableDevice(
+        registered_device_path, device.get());
+  }
+  return init_succeeded;
+}
+
+// Gets the |file_path| details from the MTP device specified by the
+// |device_info.registered_device_path|. On success, |error| is set to
+// base::PLATFORM_FILE_OK and fills in |file_info|. On failure, |error| is set
+// to corresponding platform file error and |file_info| is not set.
+base::PlatformFileError GetFileInfoOnBlockingPoolThread(
+    const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
+    const base::FilePath& file_path,
     base::PlatformFileInfo* file_info) {
-  if (!LazyInit())
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!device_info.registered_device_path.empty());
+  DCHECK(!file_path.empty());
+  DCHECK(file_info);
+  IPortableDevice* device =
+      PortableDeviceMapService::GetInstance()->GetPortableDevice(
+          device_info.registered_device_path);
+  if (!device)
     return base::PLATFORM_FILE_ERROR_FAILED;
-  string16 file_object_id = GetFileObjectIdFromPath(device_file_path.value());
-  if (file_object_id.empty())
+
+  string16 object_id = GetFileObjectIdFromPathOnBlockingPoolThread(device_info,
+                                                                   file_path);
+  if (object_id.empty())
     return base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFileError error = GetFileInfo(device_file_path, file_info);
+  return media_transfer_protocol::GetFileEntryInfo(device, object_id,
+                                                   file_info);
+}
+
+// Reads the |root| directory file entries on a blocking pool thread. On
+// success, |error| is set to base::PLATFORM_FILE_OK and |entries| contains the
+// directory file entries. On failure, |error| is set to platform file error
+// and |entries| is not set.
+base::PlatformFileError ReadDirectoryOnBlockingPoolThread(
+    const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
+    const base::FilePath& root,
+    fileapi::AsyncFileUtil::EntryList* entries) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!root.empty());
+  DCHECK(entries);
+  base::PlatformFileInfo file_info;
+  base::PlatformFileError error = GetFileInfoOnBlockingPoolThread(device_info,
+                                                                  root,
+                                                                  &file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  if (file_info->is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  if (!media_transfer_protocol::WriteFileObjectContentToPath(device_.get(),
-                                                             file_object_id,
-                                                             local_path))
+
+  if (!file_info.is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+  base::FilePath current;
+  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> file_enum =
+      CreateFileEnumeratorOnBlockingPoolThread(device_info, root);
+  while (!(current = file_enum->Next()).empty()) {
+    fileapi::AsyncFileUtil::Entry entry;
+    entry.is_directory = file_enum->IsDirectory();
+    entry.name = fileapi::VirtualPath::BaseName(current).value();
+    entry.size = file_enum->Size();
+    entry.last_modified_time = file_enum->LastModifiedTime();
+    entries->push_back(entry);
+  }
+  return error;
+}
+
+// Gets the device file stream object on a blocking pool thread.
+// |device_info| contains the device storage partition details.
+// On success, returns base::PLATFORM_FILE_OK and file stream details are set in
+// |file_details|. On failure, returns a platform file error and file stream
+// details are not set in |file_details|.
+base::PlatformFileError GetFileStreamOnBlockingPoolThread(
+    const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
+    SnapshotFileDetails* file_details) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(file_details);
+  DCHECK(!file_details->request_info().device_file_path.empty());
+  DCHECK(!file_details->request_info().snapshot_file_path.empty());
+  IPortableDevice* device =
+      PortableDeviceMapService::GetInstance()->GetPortableDevice(
+          device_info.registered_device_path);
+  if (!device)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  string16 file_object_id =
+      GetFileObjectIdFromPathOnBlockingPoolThread(
+          device_info, file_details->request_info().device_file_path);
+  if (file_object_id.empty())
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  base::PlatformFileInfo file_info;
+  base::PlatformFileError error =
+      GetFileInfoOnBlockingPoolThread(
+          device_info,
+          file_details->request_info().device_file_path,
+          &file_info);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (file_info.size == 0)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  DWORD optimal_transfer_size = 0;
+  base::win::ScopedComPtr<IStream> file_stream;
+  HRESULT hr = media_transfer_protocol::GetFileStreamForObject(
+      device,
+      file_object_id,
+      file_stream.Receive(),
+      &optimal_transfer_size);
+  if (hr != S_OK)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   // LocalFileStreamReader is used to read the contents of the snapshot file.
@@ -180,62 +271,334 @@ base::PlatformFileError MTPDeviceDelegateImplWin::CreateSnapshotFile(
   //
   // Users will use HTML5 FileSystem Entry getMetadata() interface to get the
   // actual last modified time of the media file.
-  file_info->last_modified = base::Time();
+  file_info.last_modified = base::Time();
+
+  DCHECK_GT(optimal_transfer_size, 0U);
+  file_details->set_file_info(file_info);
+  file_details->set_device_file_stream(file_stream);
+  file_details->set_optimal_transfer_size(optimal_transfer_size);
   return error;
 }
 
-void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  {
-    base::AutoLock locked(cancel_tasks_lock_);
-    cancel_pending_tasks_ = true;
-  }
-  media_task_runner_->DeleteSoon(FROM_HERE, this);
+// Copies the data chunk from device file to the snapshot file based on the
+// parameters specified by |file_details|.
+// Returns the total number of bytes written to the snapshot file.
+DWORD WriteDataChunkIntoSnapshotFileOnBlockingPoolThread(
+    const SnapshotFileDetails& file_details) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return media_transfer_protocol::CopyDataChunkToLocalFile(
+      file_details.device_file_stream(),
+      file_details.request_info().snapshot_file_path,
+      file_details.optimal_transfer_size());
 }
 
-bool MTPDeviceDelegateImplWin::LazyInit() {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
-  // Both OpenDevice() (which we call below) and any operations our callers do
-  // may take some time. Abort them immediately if we're in the process of
-  // shutting down.
-  {
-    base::AutoLock locked(cancel_tasks_lock_);
-    if (cancel_pending_tasks_)
-      return false;
-  }
-  if (device_.get())
-    return true;  // Already successfully initialized.
-  device_ = media_transfer_protocol::OpenDevice(pnp_device_id_);
-  return (device_.get() != NULL);
+void DeletePortableDeviceOnBlockingPoolThread(
+    const string16& registered_device_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  PortableDeviceMapService::GetInstance()->RemovePortableDevice(
+      registered_device_path);
 }
 
-string16 MTPDeviceDelegateImplWin::GetFileObjectIdFromPath(
-    const string16& file_path) {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
+
+}  // namespace
+
+// Used by CreateMTPDeviceAsyncDelegate() to create the MTP device
+// delegate on the IO thread.
+void OnGetStorageInfoCreateDelegate(
+    const string16& device_location,
+    const CreateMTPDeviceAsyncDelegateCallback& callback,
+    string16* pnp_device_id,
+    string16* storage_object_id,
+    bool succeeded) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(pnp_device_id);
+  DCHECK(storage_object_id);
+  if (!succeeded)
+    return;
+  callback.Run(new MTPDeviceDelegateImplWin(device_location,
+                                            *pnp_device_id,
+                                            *storage_object_id));
+}
+
+void CreateMTPDeviceAsyncDelegate(
+    const string16& device_location,
+    const CreateMTPDeviceAsyncDelegateCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!device_location.empty());
+  string16* pnp_device_id = new string16;
+  string16* storage_object_id = new string16;
+  content::BrowserThread::PostTaskAndReplyWithResult<bool>(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetStorageInfoOnUIThread,
+                 device_location,
+                 base::Unretained(pnp_device_id),
+                 base::Unretained(storage_object_id)),
+      base::Bind(&OnGetStorageInfoCreateDelegate,
+                 device_location,
+                 callback,
+                 base::Owned(pnp_device_id),
+                 base::Owned(storage_object_id)));
+}
+
+// MTPDeviceDelegateImplWin ---------------------------------------------------
+
+MTPDeviceDelegateImplWin::StorageDeviceInfo::StorageDeviceInfo(
+    const string16& pnp_device_id,
+    const string16& registered_device_path,
+    const string16& storage_object_id)
+   : pnp_device_id(pnp_device_id),
+     registered_device_path(registered_device_path),
+     storage_object_id(storage_object_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+}
+
+MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
+    const tracked_objects::Location& location,
+    const base::Callback<base::PlatformFileError(void)>& task,
+    const base::Callback<void(base::PlatformFileError)>& reply)
+    : location(location),
+      task(task),
+      reply(reply) {
+}
+
+MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
+    const string16& registered_device_path,
+    const string16& pnp_device_id,
+    const string16& storage_object_id)
+    : storage_device_info_(pnp_device_id, registered_device_path,
+                           storage_object_id),
+      init_state_(UNINITIALIZED),
+      media_task_runner_(GetSequencedTaskRunner()),
+      task_in_progress_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!registered_device_path.empty());
+  DCHECK(!pnp_device_id.empty());
+  DCHECK(!storage_object_id.empty());
+  DCHECK(media_task_runner_.get());
+}
+
+MTPDeviceDelegateImplWin::~MTPDeviceDelegateImplWin() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+}
+
+void MTPDeviceDelegateImplWin::GetFileInfo(
+    const base::FilePath& file_path,
+    const GetFileInfoSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!file_path.empty());
-  if (registered_device_path_ == file_path)
-    return storage_object_id_;
+  base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
+  EnsureInitAndRunTask(
+      PendingTaskInfo(FROM_HERE,
+                      base::Bind(&GetFileInfoOnBlockingPoolThread,
+                                 storage_device_info_,
+                                 file_path,
+                                 base::Unretained(file_info)),
+                      base::Bind(&MTPDeviceDelegateImplWin::OnGetFileInfo,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 success_callback,
+                                 error_callback,
+                                 base::Owned(file_info))));
+}
 
-  string16 actual_file_path(file_path);
-  ReplaceFirstSubstringAfterOffset(&actual_file_path, 0,
-                                   registered_device_path_, string16());
-  DCHECK(!actual_file_path.empty());
-  typedef std::vector<string16> PathComponents;
-  PathComponents path_components;
-  base::SplitString(actual_file_path, L'\\', &path_components);
-  DCHECK(!path_components.empty());
-  string16 parent_id(storage_object_id_);
-  string16 file_object_id;
-  for (PathComponents::const_iterator path_iter = path_components.begin() + 1;
-       path_iter != path_components.end(); ++path_iter) {
-    file_object_id = media_transfer_protocol::GetObjectIdFromName(device_,
-                                                                  parent_id,
-                                                                  *path_iter);
-    if (file_object_id.empty())
-      break;
-    parent_id = file_object_id;
+void MTPDeviceDelegateImplWin::ReadDirectory(
+    const base::FilePath& root,
+    const ReadDirectorySuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!root.empty());
+  fileapi::AsyncFileUtil::EntryList* entries =
+      new fileapi::AsyncFileUtil::EntryList;
+  EnsureInitAndRunTask(
+      PendingTaskInfo(FROM_HERE,
+                      base::Bind(&ReadDirectoryOnBlockingPoolThread,
+                                 storage_device_info_,
+                                 root,
+                                 base::Unretained(entries)),
+                      base::Bind(&MTPDeviceDelegateImplWin::OnDidReadDirectory,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 success_callback,
+                                 error_callback,
+                                 base::Owned(entries))));
+}
+
+void MTPDeviceDelegateImplWin::CreateSnapshotFile(
+    const base::FilePath& device_file_path,
+    const base::FilePath& snapshot_file_path,
+    const CreateSnapshotFileSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!device_file_path.empty());
+  DCHECK(!snapshot_file_path.empty());
+  scoped_ptr<SnapshotFileDetails> file_details(
+      new SnapshotFileDetails(SnapshotRequestInfo(device_file_path,
+                                                  snapshot_file_path,
+                                                  success_callback,
+                                                  error_callback)));
+  // Passing a raw SnapshotFileDetails* to the blocking pool is safe, because
+  // it is owned by |file_details| in the reply callback.
+  EnsureInitAndRunTask(
+      PendingTaskInfo(FROM_HERE,
+                      base::Bind(&GetFileStreamOnBlockingPoolThread,
+                                 storage_device_info_,
+                                 file_details.get()),
+                      base::Bind(&MTPDeviceDelegateImplWin::OnGetFileStream,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 base::Passed(&file_details))));
+}
+
+void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  PortableDeviceMapService::GetInstance()->MarkPortableDeviceForDeletion(
+      storage_device_info_.registered_device_path);
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DeletePortableDeviceOnBlockingPoolThread,
+                 storage_device_info_.registered_device_path));
+  while (!pending_tasks_.empty())
+    pending_tasks_.pop();
+  delete this;
+}
+
+void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(
+    const PendingTaskInfo& task_info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if ((init_state_ == INITIALIZED) && !task_in_progress_) {
+    DCHECK(pending_tasks_.empty());
+    DCHECK(!current_snapshot_details_.get());
+    base::PostTaskAndReplyWithResult(media_task_runner_,
+                                     task_info.location,
+                                     task_info.task,
+                                     task_info.reply);
+    task_in_progress_ = true;
+    return;
   }
-  return file_object_id;
+
+  pending_tasks_.push(task_info);
+  if (init_state_ == UNINITIALIZED) {
+    init_state_ = PENDING_INIT;
+    base::PostTaskAndReplyWithResult(
+        media_task_runner_,
+        FROM_HERE,
+        base::Bind(&OpenDeviceOnBlockingPoolThread,
+                   storage_device_info_.pnp_device_id,
+                   storage_device_info_.registered_device_path),
+        base::Bind(&MTPDeviceDelegateImplWin::OnInitCompleted,
+                   weak_ptr_factory_.GetWeakPtr()));
+    task_in_progress_ = true;
+  }
+}
+
+void MTPDeviceDelegateImplWin::WriteDataChunkIntoSnapshotFile() {
+  DCHECK(current_snapshot_details_.get());
+  base::PostTaskAndReplyWithResult(
+      media_task_runner_,
+      FROM_HERE,
+      base::Bind(&WriteDataChunkIntoSnapshotFileOnBlockingPoolThread,
+                 *current_snapshot_details_),
+      base::Bind(&MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 current_snapshot_details_->request_info().snapshot_file_path));
+}
+
+void MTPDeviceDelegateImplWin::ProcessNextPendingRequest() {
+  DCHECK(!task_in_progress_);
+  if (pending_tasks_.empty())
+    return;
+  const PendingTaskInfo& task_info = pending_tasks_.front();
+  task_in_progress_ = true;
+  base::PostTaskAndReplyWithResult(media_task_runner_,
+                                   task_info.location,
+                                   task_info.task,
+                                   task_info.reply);
+  pending_tasks_.pop();
+}
+
+void MTPDeviceDelegateImplWin::OnInitCompleted(bool succeeded) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  init_state_ = succeeded ? INITIALIZED : UNINITIALIZED;
+  task_in_progress_ = false;
+  if (succeeded)
+    ProcessNextPendingRequest();
+}
+
+void MTPDeviceDelegateImplWin::OnGetFileInfo(
+    const GetFileInfoSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    base::PlatformFileInfo* file_info,
+    base::PlatformFileError error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(file_info);
+  if (error == base::PLATFORM_FILE_OK)
+    success_callback.Run(*file_info);
+  else
+    error_callback.Run(error);
+  task_in_progress_ = false;
+  ProcessNextPendingRequest();
+}
+
+void MTPDeviceDelegateImplWin::OnDidReadDirectory(
+    const ReadDirectorySuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    fileapi::AsyncFileUtil::EntryList* file_list,
+    base::PlatformFileError error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(file_list);
+  if (error == base::PLATFORM_FILE_OK)
+    success_callback.Run(*file_list, false /*no more entries*/);
+  else
+    error_callback.Run(error);
+  task_in_progress_ = false;
+  ProcessNextPendingRequest();
+}
+
+void MTPDeviceDelegateImplWin::OnGetFileStream(
+    scoped_ptr<SnapshotFileDetails> file_details,
+    base::PlatformFileError error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(file_details);
+  DCHECK(!file_details->request_info().device_file_path.empty());
+  DCHECK(!file_details->request_info().snapshot_file_path.empty());
+  DCHECK(!current_snapshot_details_.get());
+  if (error != base::PLATFORM_FILE_OK) {
+    file_details->request_info().error_callback.Run(error);
+    task_in_progress_ = false;
+    ProcessNextPendingRequest();
+    return;
+  }
+  DCHECK(file_details->device_file_stream());
+  current_snapshot_details_.reset(file_details.release());
+  WriteDataChunkIntoSnapshotFile();
+}
+
+void MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile(
+    const base::FilePath& snapshot_file_path,
+    DWORD bytes_written) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!snapshot_file_path.empty());
+  if (!current_snapshot_details_.get())
+    return;
+  DCHECK_EQ(
+      current_snapshot_details_->request_info().snapshot_file_path.value(),
+      snapshot_file_path.value());
+
+  if (current_snapshot_details_->AddBytesWritten(bytes_written)) {
+    if (!current_snapshot_details_->IsSnapshotFileWriteComplete()) {
+      WriteDataChunkIntoSnapshotFile();
+      return;
+    }
+    current_snapshot_details_->request_info().success_callback.Run(
+        current_snapshot_details_->file_info(),
+        current_snapshot_details_->request_info().snapshot_file_path);
+  } else {
+    current_snapshot_details_->request_info().error_callback.Run(
+        base::PLATFORM_FILE_ERROR_FAILED);
+  }
+  task_in_progress_ = false;
+  current_snapshot_details_.reset();
+  ProcessNextPendingRequest();
 }
 
 }  // namespace chrome

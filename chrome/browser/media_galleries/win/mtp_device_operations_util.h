@@ -47,12 +47,30 @@ bool GetDirectoryEntries(IPortableDevice* device,
                          const string16& directory_object_id,
                          MTPDeviceObjectEntries* object_entries);
 
-// Writes the data of the object specified by |file_object_id| from the given
-// MTP |device| to the file specified by |local_path|. On success, returns
-// true and writes the object data in |local_path|. On failure, returns false.
-bool WriteFileObjectContentToPath(IPortableDevice* device,
-                                  const string16& file_object_id,
-                                  const base::FilePath& local_path);
+// Gets an IStream interface to read the object content data from the |device|.
+// |file_object_id| specifies the device file object identifier.
+// On success, returns S_OK and sets |file_stream| and |optimal_transfer_size|.
+// On failure, returns an error code and |file_stream| and
+// |optimal_transfer_size| are not set.
+HRESULT GetFileStreamForObject(IPortableDevice* device,
+                               const string16& file_object_id,
+                               IStream** file_stream,
+                               DWORD* optimal_transfer_size);
+
+// Copies a data chunk from |stream| to the file specified by the |local_path|.
+// |optimal_transfer_size| specifies the optimal data transfer size.
+//
+// On success, appends the data chunk in |local_path| and returns a non-zero
+// value indicating the total number of bytes written to the file specified
+// by the |local_path|. If the end of the |stream| is not reached,
+// the return value will be equal to |optimal_transfer_size|. If the end of the
+// |stream| is reached, the return value will be less than or equal to
+// |optimal_transfer_size|.
+//
+// On failure, returns 0.
+DWORD CopyDataChunkToLocalFile(IStream* stream,
+                               const base::FilePath& local_path,
+                               size_t optimal_transfer_size);
 
 // Returns the identifier of the object specified by the |object_name|.
 // |parent_id| specifies the object's parent identifier.

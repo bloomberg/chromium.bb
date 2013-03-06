@@ -16,7 +16,7 @@
 
 // Use asynchronous MTP device delegate API.
 // TODO(kmadhusu): remove this define and make this default.
-#if 0
+#if defined(OS_WIN)
 #define USE_MTP_DEVICE_ASYNC_DELEGATE
 #endif
 

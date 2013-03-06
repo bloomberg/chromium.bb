@@ -15,6 +15,7 @@
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/media/mtp_device_async_delegate.h"
+#include "webkit/fileapi/media/mtp_device_file_system_config.h"
 #include "webkit/fileapi/media/mtp_device_map_service.h"
 
 namespace fileapi {
@@ -38,7 +39,7 @@ MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
       context->mtp_device_delegate_url());
 }
 
-// Called on the blocking pool thread to create a snapshot file to hold the
+// Called on a blocking pool thread to create a snapshot file to hold the
 // contents of |device_file_path|. The snapshot file is created in
 // "profile_path/kDeviceMediaAsyncFileUtilTempDir" directory. If the snapshot
 // file is created successfully, |snapshot_file_path| will be a non-empty file
@@ -68,7 +69,12 @@ DeviceMediaAsyncFileUtil::~DeviceMediaAsyncFileUtil() {
 // static
 DeviceMediaAsyncFileUtil* DeviceMediaAsyncFileUtil::Create(
     const base::FilePath& profile_path) {
+#if defined(USE_MTP_DEVICE_ASYNC_DELEGATE)
+  DCHECK(!profile_path.empty());
+  return new DeviceMediaAsyncFileUtil(profile_path);
+#else
   return NULL;
+#endif
 }
 
 bool DeviceMediaAsyncFileUtil::CreateOrOpen(

@@ -12,6 +12,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -84,40 +85,6 @@ base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
                                      enum_object_ids.Receive())))
     return enum_object_ids;
   return base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs>();
-}
-
-// Writes data from |stream| to the file specified by |local_path|. On success,
-// returns true and the stream contents are appended to the file.
-// TODO(kmadhusu) Deprecate this function after fixing crbug.com/110119.
-bool WriteStreamContentsToFile(IStream* stream,
-                               size_t optimal_transfer_size,
-                               const base::FilePath& local_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(stream);
-  DCHECK(!local_path.empty());
-  if (optimal_transfer_size == 0U)
-    return false;
-  DWORD read = 0;
-  HRESULT hr = S_OK;
-  std::string buffer;
-  do {
-    hr = stream->Read(WriteInto(&buffer, optimal_transfer_size + 1),
-                      optimal_transfer_size, &read);
-    // IStream::Read() returns S_FALSE when the actual number of bytes read from
-    // the stream object is less than the number of bytes requested (aka
-    // |optimal_transfer_size|). This indicates the end of the stream has been
-    // reached. Therefore, it is fine to return true when Read() returns
-    // S_FALSE.
-    if ((hr != S_OK) && (hr != S_FALSE))
-      return false;
-    if (read) {
-      int data_len = std::min<int>(read, buffer.length());
-      if (file_util::AppendToFile(local_path, buffer.c_str(), data_len) !=
-              data_len)
-        return false;
-    }
-  } while (read > 0);
-  return true;
 }
 
 // Returns whether the object is a directory/folder/album. |properties_values|
@@ -377,32 +344,54 @@ bool GetDirectoryEntries(IPortableDevice* device,
                                    object_entries);
 }
 
-bool WriteFileObjectContentToPath(IPortableDevice* device,
-                                  const string16& file_object_id,
-                                  const base::FilePath& local_path) {
+HRESULT GetFileStreamForObject(IPortableDevice* device,
+                               const string16& file_object_id,
+                               IStream** file_stream,
+                               DWORD* optimal_transfer_size) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!file_object_id.empty());
-  DCHECK(!local_path.empty());
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
   if (!content)
-    return false;
+    return E_FAIL;
 
   base::win::ScopedComPtr<IPortableDeviceResources> resources;
   HRESULT hr = content->Transfer(resources.Receive());
   if (FAILED(hr))
-    return false;
+    return hr;
+  return resources->GetStream(file_object_id.c_str(), WPD_RESOURCE_DEFAULT,
+                              STGM_READ, optimal_transfer_size,
+                              file_stream);
+}
 
-  base::win::ScopedComPtr<IStream> file_stream;
-  DWORD optimal_transfer_size = 0;
-  hr = resources->GetStream(file_object_id.c_str(), WPD_RESOURCE_DEFAULT,
-                            STGM_READ, &optimal_transfer_size,
-                            file_stream.Receive());
+DWORD CopyDataChunkToLocalFile(IStream* stream,
+                               const base::FilePath& local_path,
+                               size_t optimal_transfer_size) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(stream);
+  DCHECK(!local_path.empty());
+  if (optimal_transfer_size == 0U)
+    return 0U;
+  DWORD bytes_read = 0;
+  std::string buffer;
+  HRESULT hr = stream->Read(WriteInto(&buffer, optimal_transfer_size + 1),
+                            optimal_transfer_size, &bytes_read);
+  // IStream::Read() returns S_FALSE when the actual number of bytes read from
+  // the stream object is less than the number of bytes requested (aka
+  // |optimal_transfer_size|). This indicates the end of the stream has been
+  // reached.
   if (FAILED(hr))
-    return false;
-  return WriteStreamContentsToFile(file_stream.get(), optimal_transfer_size,
-                                   local_path);
+    return 0U;
+  DCHECK_GT(bytes_read, 0U);
+  CHECK_LE(bytes_read, buffer.length());
+  int data_len =
+      base::checked_numeric_cast<int>(
+          std::min(bytes_read,
+                   base::checked_numeric_cast<DWORD>(buffer.length())));
+  if (file_util::AppendToFile(local_path, buffer.c_str(), data_len) != data_len)
+    return 0U;
+  return data_len;
 }
 
 string16 GetObjectIdFromName(IPortableDevice* device,
