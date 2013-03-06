@@ -158,13 +158,13 @@ bool Manifest::ValidateManifest(
   }
 
   // Also generate warnings for keys that are not features.
-  for (base::DictionaryValue::key_iterator key = value_->begin_keys();
-      key != value_->end_keys(); ++key) {
-    if (!BaseFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
+  for (base::DictionaryValue::Iterator it(*value_); !it.IsAtEnd();
+       it.Advance()) {
+    if (!BaseFeatureProvider::GetManifestFeatures()->GetFeature(it.key())) {
       warnings->push_back(InstallWarning(
           InstallWarning::FORMAT_TEXT,
           base::StringPrintf("Unrecognized manifest key '%s'.",
-                             (*key).c_str())));
+                             it.key().c_str())));
     }
   }
   return true;

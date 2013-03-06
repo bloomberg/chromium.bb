@@ -130,25 +130,27 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
   // Initialize all intents.
   DictionaryValue* intents = NULL;
   if (manifest->GetDictionary(keys::kIntents, &intents)) {
-    DictionaryValue::key_iterator it = intents->begin_keys();
-    for ( ; it != intents->end_keys(); ++it) {
+    for (DictionaryValue::Iterator it(*intents); !it.IsAtEnd(); it.Advance()) {
+      Value* value = NULL;
+      intents->GetWithoutPathExpansion(it.key(), &value);
       ListValue* actions = NULL;
       DictionaryValue* action = NULL;
 
       // Actions have either a dict or a list of dicts - handle both cases.
-      if (intents->GetListWithoutPathExpansion(*it, &actions)) {
+      if (value->GetAsList(&actions)) {
         for (size_t i = 0; i < actions->GetSize(); ++i) {
           action = NULL;
-          if (actions->GetDictionary(i, &action)) {
-            if (!LocalizeManifestValue(keys::kIntentTitle, messages,
-                                       action, error))
-              return false;
+          if (actions->GetDictionary(i, &action) &&
+              !LocalizeManifestValue(keys::kIntentTitle, messages,
+                                     action, error)) {
+            return false;
           }
         }
-      } else if (intents->GetDictionaryWithoutPathExpansion(*it, &action)) {
+      } else if (value->GetAsDictionary(&action)) {
         if (!LocalizeManifestValue(keys::kIntentTitle, messages,
-                                   action, error))
+                                   action, error)) {
           return false;
+        }
       }
     }
   }

@@ -126,9 +126,8 @@ void AddAllStringValues(const ListValue& from, std::vector<std::string>* to) {
 // Gets the keys of a DictionaryValue.
 std::vector<std::string> GetKeys(const DictionaryValue& dict) {
   std::vector<std::string> keys;
-  for (DictionaryValue::key_iterator it = dict.begin_keys();
-      it != dict.end_keys(); ++it) {
-    keys.push_back(*it);
+  for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
+    keys.push_back(it.key());
   }
   return keys;
 }

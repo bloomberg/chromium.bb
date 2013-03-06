@@ -423,38 +423,34 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
   ScopedVector<const StringMatchTest> name_match;
   ScopedVector<const StringMatchTest> value_match;
 
-  for (DictionaryValue::key_iterator key = tests->begin_keys();
-       key != tests->end_keys();
-       ++key) {
+  for (DictionaryValue::Iterator it(*tests); !it.IsAtEnd(); it.Advance()) {
     bool is_name = false;  // Is this test for header name?
     StringMatchTest::MatchType match_type;
-    if (*key == keys::kNamePrefixKey) {
+    if (it.key() == keys::kNamePrefixKey) {
       is_name = true;
       match_type = StringMatchTest::kPrefix;
-    } else if (*key == keys::kNameSuffixKey) {
+    } else if (it.key() == keys::kNameSuffixKey) {
       is_name = true;
       match_type = StringMatchTest::kSuffix;
-    } else if (*key == keys::kNameContainsKey) {
+    } else if (it.key() == keys::kNameContainsKey) {
       is_name = true;
       match_type = StringMatchTest::kContains;
-    } else if (*key == keys::kNameEqualsKey) {
+    } else if (it.key() == keys::kNameEqualsKey) {
       is_name = true;
       match_type = StringMatchTest::kEquals;
-    } else if (*key == keys::kValuePrefixKey) {
+    } else if (it.key() == keys::kValuePrefixKey) {
       match_type = StringMatchTest::kPrefix;
-    } else if (*key == keys::kValueSuffixKey) {
+    } else if (it.key() == keys::kValueSuffixKey) {
       match_type = StringMatchTest::kSuffix;
-    } else if (*key == keys::kValueContainsKey) {
+    } else if (it.key() == keys::kValueContainsKey) {
       match_type = StringMatchTest::kContains;
-    } else if (*key == keys::kValueEqualsKey) {
+    } else if (it.key() == keys::kValueEqualsKey) {
       match_type = StringMatchTest::kEquals;
     } else {
       NOTREACHED();  // JSON schema type checking should prevent this.
       return scoped_ptr<const HeaderMatchTest>(NULL);
     }
-    const Value* content = NULL;
-    // This should not fire, we already checked that |key| is there.
-    CHECK(tests->Get(*key, &content));
+    const Value* content = &it.value();
 
     ScopedVector<const StringMatchTest>* tests =
         is_name ? &name_match : &value_match;

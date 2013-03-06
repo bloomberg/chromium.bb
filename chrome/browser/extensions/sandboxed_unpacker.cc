@@ -733,10 +733,9 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
   }
 
   // Write our parsed catalogs back to disk.
-  for (DictionaryValue::key_iterator key_it = catalogs.begin_keys();
-       key_it != catalogs.end_keys(); ++key_it) {
-    DictionaryValue* catalog;
-    if (!catalogs.GetDictionaryWithoutPathExpansion(*key_it, &catalog)) {
+  for (DictionaryValue::Iterator it(catalogs); !it.IsAtEnd(); it.Advance()) {
+    const DictionaryValue* catalog = NULL;
+    if (!it.value().GetAsDictionary(&catalog)) {
       // Invalid catalog data.
       ReportFailure(
           INVALID_CATALOG_DATA,
@@ -749,7 +748,7 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
     // TODO(viettrungluu): Fix the |FilePath::FromWStringHack(UTF8ToWide())|
     // hack and remove the corresponding #include.
     base::FilePath relative_path =
-        base::FilePath::FromWStringHack(UTF8ToWide(*key_it));
+        base::FilePath::FromWStringHack(UTF8ToWide(it.key()));
     relative_path = relative_path.Append(Extension::kMessagesFilename);
     if (relative_path.IsAbsolute() || relative_path.ReferencesParent()) {
       // Invalid path for catalog.

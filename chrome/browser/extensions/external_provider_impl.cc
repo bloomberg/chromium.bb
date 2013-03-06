@@ -99,10 +99,9 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
   std::set<std::string> unsupported_extensions;
 
   // Notify ExtensionService about all the extensions this provider has.
-  for (DictionaryValue::key_iterator i = prefs_->begin_keys();
-       i != prefs_->end_keys(); ++i) {
-    const std::string& extension_id = *i;
-    DictionaryValue* extension;
+  for (DictionaryValue::Iterator i(*prefs_); !i.IsAtEnd(); i.Advance()) {
+    const std::string& extension_id = i.key();
+    const DictionaryValue* extension = NULL;
 
     if (!Extension::IdIsValid(extension_id)) {
       LOG(WARNING) << "Malformed extension dictionary: key "
@@ -110,7 +109,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
       continue;
     }
 
-    if (!prefs_->GetDictionaryWithoutPathExpansion(extension_id, &extension)) {
+    if (!i.value().GetAsDictionary(&extension)) {
       LOG(WARNING) << "Malformed extension dictionary: key "
                    << extension_id.c_str()
                    << " has a value that is not a dictionary.";
@@ -118,7 +117,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
     }
 
     base::FilePath::StringType external_crx;
-    Value* external_version_value;
+    const Value* external_version_value = NULL;
     std::string external_version;
     std::string external_update_url;
 
@@ -155,7 +154,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
     }
 
     // Check that extension supports current browser locale.
-    ListValue* supported_locales = NULL;
+    const ListValue* supported_locales = NULL;
     if (extension->GetList(kSupportedLocales, &supported_locales)) {
       std::vector<std::string> browser_locales;
       l10n_util::GetParentLocales(g_browser_process->GetApplicationLocale(),

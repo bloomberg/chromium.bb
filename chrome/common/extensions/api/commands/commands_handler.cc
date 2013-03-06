@@ -86,12 +86,12 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
 
   int command_index = 0;
-  for (DictionaryValue::key_iterator iter = dict->begin_keys();
-       iter != dict->end_keys(); ++iter) {
+  for (DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
+       iter.Advance()) {
     ++command_index;
 
     const DictionaryValue* command = NULL;
-    if (!dict->GetDictionary(*iter, &command)) {
+    if (!iter.value().GetAsDictionary(&command)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           extension_manifest_errors::kInvalidKeyBindingDictionary,
           base::IntToString(command_index));
@@ -99,7 +99,7 @@ bool CommandsHandler::Parse(Extension* extension, string16* error) {
     }
 
     scoped_ptr<extensions::Command> binding(new Command());
-    if (!binding->Parse(command, *iter, command_index, error))
+    if (!binding->Parse(command, iter.key(), command_index, error))
       return false;  // |error| already set.
 
     std::string command_name = binding->command_name();

@@ -100,21 +100,14 @@ class ExtensionUITest : public testing::Test {
     std::string paths_details = " - expected (" +
         expected_output_path.MaybeAsASCII() + ") vs. actual (" +
         extension_path.MaybeAsASCII() + ")";
-    for (DictionaryValue::key_iterator key = expected_output_data->begin_keys();
-        key != expected_output_data->end_keys();
-        ++key) {
-      Value* expected_value = NULL;
+    for (DictionaryValue::Iterator field(*expected_output_data);
+         !field.IsAtEnd(); field.Advance()) {
+      const Value* expected_value = &field.value();
       Value* actual_value = NULL;
-      EXPECT_TRUE(expected_output_data->Get(*key, &expected_value)) <<
-          *key + " is missing" + paths_details;
-      EXPECT_TRUE(actual_output_data->Get(*key, &actual_value)) <<
-          *key + " is missing" + paths_details;
-      if (expected_value == NULL) {
-        EXPECT_EQ(NULL, actual_value) << *key + paths_details;
-      } else {
-        EXPECT_TRUE(expected_value->Equals(actual_value)) << *key +
-            paths_details;
-      }
+      EXPECT_TRUE(actual_output_data->Get(field.key(), &actual_value)) <<
+          field.key() + " is missing" + paths_details;
+      EXPECT_TRUE(expected_value->Equals(actual_value)) << field.key() +
+          paths_details;
     }
   }
 

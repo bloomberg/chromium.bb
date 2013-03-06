@@ -208,7 +208,8 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
 
   // Add all new settings to local settings.
   while (!new_sync_state->empty()) {
-    std::string key = *new_sync_state->begin_keys();
+    DictionaryValue::Iterator first_entry(*new_sync_state);
+    std::string key = first_entry.key();
     Value* value = NULL;
     CHECK(new_sync_state->RemoveWithoutPathExpansion(key, &value));
     changes.push_back(
@@ -216,7 +217,7 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
             syncer::SyncChange::ACTION_ADD,
             extension_id_,
             key,
-            scoped_ptr<Value>(value)));
+            make_scoped_ptr(value)));
   }
 
   if (changes.empty())

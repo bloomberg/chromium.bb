@@ -229,9 +229,9 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
   }
   scoped_ptr<URLOverrides> url_overrides(new URLOverrides);
   // Validate that the overrides are all strings
-  for (DictionaryValue::key_iterator iter = overrides->begin_keys();
-       iter != overrides->end_keys(); ++iter) {
-    std::string page = *iter;
+  for (DictionaryValue::Iterator iter(*overrides); !iter.IsAtEnd();
+         iter.Advance()) {
+    std::string page = iter.key();
     std::string val;
     // Restrict override pages to a list of supported URLs.
     bool is_override = (page != chrome::kChromeUINewTabHost &&
@@ -247,7 +247,7 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
                      page == chrome::kChromeUIFileManagerHost));
 #endif
 
-    if (is_override || !overrides->GetStringWithoutPathExpansion(*iter, &val)) {
+    if (is_override || !iter.value().GetAsString(&val)) {
       *error = ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
       return false;
     }

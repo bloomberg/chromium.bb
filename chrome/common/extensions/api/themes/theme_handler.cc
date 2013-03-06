@@ -23,10 +23,9 @@ bool LoadThemeImages(const DictionaryValue* theme_value,
   const DictionaryValue* images_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
     // Validate that the images are all strings.
-    for (DictionaryValue::key_iterator iter = images_value->begin_keys();
-         iter != images_value->end_keys(); ++iter) {
-      std::string val;
-      if (!images_value->GetString(*iter, &val)) {
+    for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+         iter.Advance()) {
+      if (!iter.value().IsType(Value::TYPE_STRING)) {
         *error = ASCIIToUTF16(errors::kInvalidThemeImages);
         return false;
       }
@@ -42,13 +41,13 @@ bool LoadThemeColors(const DictionaryValue* theme_value,
   const DictionaryValue* colors_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
     // Validate that the colors are RGB or RGBA lists.
-    for (DictionaryValue::key_iterator iter = colors_value->begin_keys();
-         iter != colors_value->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
+         iter.Advance()) {
       const ListValue* color_list = NULL;
       double alpha = 0.0;
       int color = 0;
       // The color must be a list...
-      if (!colors_value->GetListWithoutPathExpansion(*iter, &color_list) ||
+      if (!iter.value().GetAsList(&color_list) ||
           // ... and either 3 items (RGB) or 4 (RGBA).
           ((color_list->GetSize() != 3) &&
            ((color_list->GetSize() != 4) ||
@@ -76,11 +75,11 @@ bool LoadThemeTints(const DictionaryValue* theme_value,
     return true;
 
   // Validate that the tints are all reals.
-  for (DictionaryValue::key_iterator iter = tints_value->begin_keys();
-       iter != tints_value->end_keys(); ++iter) {
+  for (DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
+       iter.Advance()) {
     const ListValue* tint_list = NULL;
     double v = 0.0;
-    if (!tints_value->GetListWithoutPathExpansion(*iter, &tint_list) ||
+    if (!iter.value().GetAsList(&tint_list) ||
         tint_list->GetSize() != 3 ||
         !tint_list->GetDouble(0, &v) ||
         !tint_list->GetDouble(1, &v) ||

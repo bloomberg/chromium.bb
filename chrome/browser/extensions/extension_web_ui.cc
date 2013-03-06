@@ -195,7 +195,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
   const DictionaryValue* overrides =
       profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   std::string page = url->host();
-  const ListValue* url_list;
+  const ListValue* url_list = NULL;
   if (!overrides || !overrides->GetList(page, &url_list))
     return false;
 
@@ -267,20 +267,19 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
   // internal URL
   // chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/main.html#1 to
   // chrome://bookmarks/#1 for display in the omnibox.
-  for (DictionaryValue::key_iterator it = overrides->begin_keys(),
-       end = overrides->end_keys(); it != end; ++it) {
-    const ListValue* url_list;
-    if (!overrides->GetList(*it, &url_list))
+  for (DictionaryValue::Iterator it(*overrides); !it.IsAtEnd(); it.Advance()) {
+    const ListValue* url_list = NULL;
+    if (!it.value().GetAsList(&url_list))
       continue;
 
-    for (ListValue::const_iterator it2 = url_list->begin(),
-         end2 = url_list->end(); it2 != end2; ++it2) {
+    for (ListValue::const_iterator it2 = url_list->begin();
+         it2 != url_list->end(); ++it2) {
       std::string override;
       if (!(*it2)->GetAsString(&override))
         continue;
       if (StartsWithASCII(url->spec(), override, true)) {
-        GURL original_url(chrome::kChromeUIScheme + std::string("://") + *it +
-                          url->spec().substr(override.length()));
+        GURL original_url(chrome::kChromeUIScheme + std::string("://") +
+                          it.key() + url->spec().substr(override.length()));
         *url = original_url;
         return true;
       }
@@ -305,7 +304,7 @@ void ExtensionWebUI::RegisterChromeURLOverrides(
   URLOverrides::URLOverrideMap::const_iterator iter = overrides.begin();
   for (; iter != overrides.end(); ++iter) {
     const std::string& key = iter->first;
-    ListValue* page_overrides;
+    ListValue* page_overrides = NULL;
     if (!all_overrides->GetList(key, &page_overrides)) {
       page_overrides = new ListValue();
       all_overrides->Set(key, page_overrides);
@@ -358,7 +357,7 @@ void ExtensionWebUI::UnregisterChromeURLOverride(const std::string& page,
   PrefService* prefs = profile->GetPrefs();
   DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
   DictionaryValue* all_overrides = update.Get();
-  ListValue* page_overrides;
+  ListValue* page_overrides = NULL;
   if (!all_overrides->GetList(page, &page_overrides)) {
     // If it's being unregistered, it should already be in the list.
     NOTREACHED();
@@ -379,7 +378,7 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
   URLOverrides::URLOverrideMap::const_iterator iter = overrides.begin();
   for (; iter != overrides.end(); ++iter) {
     const std::string& page = iter->first;
-    ListValue* page_overrides;
+    ListValue* page_overrides = NULL;
     if (!all_overrides->GetList(page, &page_overrides)) {
       // If it's being unregistered, it should already be in the list.
       NOTREACHED();

@@ -87,12 +87,12 @@ bool FileHandlersParser::Parse(Extension* extension, string16* error) {
 
   DCHECK(extension->is_platform_app());
 
-  for (DictionaryValue::key_iterator iter(all_handlers->begin_keys());
-       iter != all_handlers->end_keys(); ++iter) {
+  for (DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
+       iter.Advance()) {
     // A file handler entry is a title and a list of MIME types to handle.
     const DictionaryValue* handler = NULL;
-    if (all_handlers->GetDictionaryWithoutPathExpansion(*iter, &handler)) {
-      if (!LoadFileHandler(*iter, *handler, &info->file_handlers, error))
+    if (iter.value().GetAsDictionary(&handler)) {
+      if (!LoadFileHandler(iter.key(), *handler, &info->file_handlers, error))
         return false;
     } else {
       *error = ASCIIToUTF16(extension_manifest_errors::kInvalidFileHandlers);

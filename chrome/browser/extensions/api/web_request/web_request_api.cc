@@ -467,11 +467,10 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
   if (!value.HasKey("urls"))
     return false;
 
-  for (DictionaryValue::key_iterator key = value.begin_keys();
-       key != value.end_keys(); ++key) {
-    if (*key == "urls") {
+  for (DictionaryValue::Iterator it(value); !it.IsAtEnd(); it.Advance()) {
+    if (it.key() == "urls") {
       const ListValue* urls_value = NULL;
-      if (!value.GetList("urls", &urls_value))
+      if (!it.value().GetAsList(&urls_value))
         return false;
       for (size_t i = 0; i < urls_value->GetSize(); ++i) {
         std::string url;
@@ -487,9 +486,9 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         }
         urls.AddPattern(pattern);
       }
-    } else if (*key == "types") {
+    } else if (it.key() == "types") {
       const ListValue* types_value = NULL;
-      if (!value.GetList("types", &types_value))
+      if (!it.value().GetAsList(&types_value))
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
         std::string type_str;
@@ -499,11 +498,11 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
           return false;
         types.push_back(type);
       }
-    } else if (*key == "tabId") {
-      if (!value.GetInteger("tabId", &tab_id))
+    } else if (it.key() == "tabId") {
+      if (!it.value().GetAsInteger(&tab_id))
         return false;
-    } else if (*key == "windowId") {
-      if (!value.GetInteger("windowId", &window_id))
+    } else if (it.key() == "windowId") {
+      if (!it.value().GetAsInteger(&window_id))
         return false;
     } else {
       return false;
