@@ -140,7 +140,9 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
 #if !defined(OS_MACOSX)
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
   ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
-                                ui::Clipboard::BUFFER_STANDARD);
+                                ui::Clipboard::BUFFER_STANDARD,
+                                content::BrowserContext::
+                                    GetMarkerForOffTheRecordContext(profile));
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
@@ -204,7 +206,8 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
   bookmark_pasteboard_helper_mac::WriteToPasteboard(
       bookmark_pasteboard_helper_mac::kCopyPastePasteboard,
       elements,
-      profile_path_);
+      profile_path_,
+      content::BrowserContext::GetMarkerForOffTheRecordContext(profile));
 }
 
 bool BookmarkNodeData::ReadFromClipboard() {

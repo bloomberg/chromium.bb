@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -100,10 +101,10 @@ int GetEditFontPixelSize(bool popup_window_mode) {
 }
 
 // This will write |url| and |text| to the clipboard as a well-formed URL.
-void DoCopyURL(const GURL& url, const string16& text) {
+void DoCopyURL(const GURL& url, const string16& text, Profile* profile) {
   BookmarkNodeData data;
   data.ReadFromTuple(url, text);
-  data.WriteToClipboard(NULL);
+  data.WriteToClipboard(profile);
 }
 
 }  // namespace
@@ -653,10 +654,13 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), IsSelectAll(),
                              &selected_text, &url, &write_url);
   if (write_url) {
-    DoCopyURL(url, selected_text);
+    DoCopyURL(url, selected_text, model()->profile());
   } else {
     ui::ScopedClipboardWriter scoped_clipboard_writer(
-        ui::Clipboard::GetForCurrentThread(), ui::Clipboard::BUFFER_STANDARD);
+        ui::Clipboard::GetForCurrentThread(),
+        ui::Clipboard::BUFFER_STANDARD,
+        content::BrowserContext::GetMarkerForOffTheRecordContext(
+            model()->profile()));
     scoped_clipboard_writer.WriteText(selected_text);
   }
 }
@@ -829,7 +833,9 @@ string16 OmniboxViewViews::GetSelectedText() const {
 }
 
 void OmniboxViewViews::CopyURL() {
-  DoCopyURL(toolbar_model()->GetURL(), toolbar_model()->GetText(false));
+  DoCopyURL(toolbar_model()->GetURL(),
+            toolbar_model()->GetText(false),
+            model()->profile());
 }
 
 void OmniboxViewViews::OnPaste() {
