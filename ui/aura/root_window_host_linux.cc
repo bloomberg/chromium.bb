@@ -882,14 +882,14 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
           if (!expanded.Contains(touchev.location()))
             break;
         }
-        // X maps the touch-surface to the size of the X root-window.
-        // In multi-monitor setup, Coordinate Transformation Matrix
-        // repositions the touch-surface onto part of X root-window
-        // containing aura root-window corresponding to the touchscreen.
-        // However, if aura root-window has non-zero origin,
-        // we need to relocate the event into aura root-window coordinates.
-        touchev.Relocate(bounds_.origin());
       }
+      // X maps the touch-surface to the size of the X root-window.
+      // In multi-monitor setup, Coordinate Transformation Matrix
+      // repositions the touch-surface onto part of X root-window
+      // containing aura root-window corresponding to the touchscreen.
+      // However, if aura root-window has non-zero origin,
+      // we need to relocate the event into aura root-window coordinates.
+      touchev.Relocate(bounds_.origin());
 #endif  // defined(OS_CHROMEOS)
       delegate_->OnHostTouchEvent(&touchev);
       break;
