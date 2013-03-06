@@ -34,8 +34,8 @@ using content::UserMetricsAction;
 
 namespace {
 
-const char* GetInstantPrefName(Profile* profile) {
-  return chrome::search::IsInstantExtendedAPIEnabled(profile) ?
+const char* GetInstantPrefName() {
+  return chrome::search::IsInstantExtendedAPIEnabled() ?
       prefs::kInstantExtendedEnabled : prefs::kInstantEnabled;
 }
 
@@ -49,7 +49,7 @@ namespace chrome {
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
       instant_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-               chrome::search::IsInstantExtendedAPIEnabled(profile())),
+               chrome::search::IsInstantExtendedAPIEnabled()),
       instant_unload_handler_(browser),
       initialized_theme_info_(false) {
   PrefService* prefs = profile()->GetPrefs();
@@ -87,7 +87,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
 
   profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
-      GetInstantPrefName(profile()),
+      GetInstantPrefName(),
       base::Bind(&BrowserInstantController::ResetInstant,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
@@ -111,7 +111,7 @@ BrowserInstantController::~BrowserInstantController() {
 
 bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
   return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
-         profile->GetPrefs()->GetBoolean(GetInstantPrefName(profile));
+         profile->GetPrefs()->GetBoolean(GetInstantPrefName());
 }
 
 void BrowserInstantController::RegisterUserPrefs(

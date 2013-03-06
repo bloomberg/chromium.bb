@@ -291,7 +291,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   // TODO(dcblack): once we are done refactoring the omnibox so we don't need to
   // use FinalizeInstantQuery anymore, we can take out this check and remove
   // this provider from kInstantExtendedOmniboxProviders.
-  if (!chrome::search::IsInstantExtendedAPIEnabled(profile_)) {
+  if (!chrome::search::IsInstantExtendedAPIEnabled()) {
     DoHistoryQuery(minimal_changes);
     StartOrStopSuggestQuery(minimal_changes);
   }
@@ -1399,5 +1399,5 @@ void SearchProvider::UpdateDone() {
   done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
            (instant_finalized_ ||
             (!chrome::BrowserInstantController::IsInstantEnabled(profile_) &&
-             !chrome::search::IsInstantExtendedAPIEnabled(profile_))));
+             !chrome::search::IsInstantExtendedAPIEnabled())));
 }

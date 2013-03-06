@@ -13,7 +13,7 @@ namespace search {
 SearchDelegate::SearchDelegate(SearchModel* browser_search_model,
                                ToolbarModel* toolbar_model)
     : browser_model_(browser_search_model),
-      tab_model_(NULL) {
+      tab_model_() {
 }
 
 SearchDelegate::~SearchDelegate() {
@@ -29,8 +29,6 @@ void SearchDelegate::OnTabActivated(content::WebContents* web_contents) {
     tab_model_->RemoveObserver(this);
   tab_model_ =
       chrome::search::SearchTabHelper::FromWebContents(web_contents)->model();
-  DCHECK_EQ(tab_model_->web_contents(), web_contents);
-  browser_model_->set_web_contents(web_contents);
   browser_model_->SetMode(tab_model_->mode());
   tab_model_->AddObserver(this);
 }
@@ -48,7 +46,6 @@ void SearchDelegate::StopObservingTab(content::WebContents* web_contents) {
       chrome::search::SearchTabHelper::FromWebContents(web_contents);
   if (search_tab_helper->model() == tab_model_) {
     tab_model_->RemoveObserver(this);
-    browser_model_->set_web_contents(NULL);
     tab_model_ = NULL;
   }
 }

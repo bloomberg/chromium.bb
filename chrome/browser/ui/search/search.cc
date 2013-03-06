@@ -176,8 +176,7 @@ bool IsInstantURL(const GURL& url,
 
 string16 GetSearchTermsImpl(const content::WebContents* contents,
                             const content::NavigationEntry* entry) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (!IsQueryExtractionEnabled(profile))
+  if (!IsQueryExtractionEnabled())
     return string16();
 
   // For security reasons, don't extract search terms if the page is not being
@@ -186,6 +185,7 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   // faking search terms in the URL. Random pages can't get into the Instant
   // renderer and scripting doesn't work cross-process, so if the page is in
   // the Instant process, we know it isn't being exploited.
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   if (!IsRenderedInInstantProcess(contents, profile))
     return string16();
 
@@ -240,16 +240,13 @@ InstantExtendedDefault GetInstantExtendedDefaultSetting() {
   return kInstantExtendedActivationDefault;
 }
 
-bool IsInstantExtendedAPIEnabled(const Profile* profile) {
-  return EmbeddedSearchPageVersion(profile) != kEmbeddedPageVersionDisabled;
+bool IsInstantExtendedAPIEnabled() {
+  return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
 }
 
 // Determine what embedded search page version to request from the user's
 // default search provider. If 0, the embedded search UI should not be enabled.
-uint64 EmbeddedSearchPageVersion(const Profile* profile) {
-  if (!profile || profile->IsOffTheRecord())
-    return kEmbeddedPageVersionDisabled;
-
+uint64 EmbeddedSearchPageVersion() {
   // Check the command-line/about:flags setting first, which should have
   // precedence and allows the trial to not be reported (if it's never queried).
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -277,14 +274,14 @@ uint64 EmbeddedSearchPageVersion(const Profile* profile) {
   return kEmbeddedPageVersionDisabled;
 }
 
-bool IsQueryExtractionEnabled(const Profile* profile) {
+bool IsQueryExtractionEnabled() {
 #if defined(OS_IOS)
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   return cl->HasSwitch(switches::kEnableQueryExtraction);
 #else
   // On desktop, query extraction is controlled by the instant-extended-api
   // flag.
-  return IsInstantExtendedAPIEnabled(profile);
+  return IsInstantExtendedAPIEnabled();
 #endif
 }
 
@@ -326,7 +323,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   if (!template_url)
     return false;
 
-  const bool extended_enabled = IsInstantExtendedAPIEnabled(profile);
+  const bool extended_enabled = IsInstantExtendedAPIEnabled();
   return extended_enabled &&
       IsInstantURL(entry->GetVirtualURL(), extended_enabled, template_url) &&
       GetSearchTermsImpl(contents, entry).empty();
@@ -339,7 +336,7 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
 
   return ShouldAssignURLToInstantRendererImpl(
              url,
-             IsInstantExtendedAPIEnabled(profile),
+             IsInstantExtendedAPIEnabled(),
              template_url);
 }
 

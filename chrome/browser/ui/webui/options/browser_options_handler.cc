@@ -409,8 +409,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   string16 instant_learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
   int instant_message_id = IDS_INSTANT_PREF_WITH_WARNING;
-  if (chrome::search::IsInstantExtendedAPIEnabled(
-      Profile::FromWebUI(web_ui()))) {
+  if (chrome::search::IsInstantExtendedAPIEnabled()) {
     instant_message_id = IDS_INSTANT_EXTENDED_PREF_WITH_WARNING;
     values->SetString("instant_enabled", "instant_extended.enabled");
   } else {

@@ -720,8 +720,7 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   if (model()->popup_model()->IsOpen()) {
     // If instant extended is enabled then allow users to press tab to select
     // results from the omnibox popup.
-    BOOL enableTabAutocomplete =
-        chrome::search::IsInstantExtendedAPIEnabled(model()->profile());
+    BOOL enableTabAutocomplete = chrome::search::IsInstantExtendedAPIEnabled();
 
     if (cmd == @selector(insertBacktab:)) {
       if (model()->popup_model()->selected_line_state() ==

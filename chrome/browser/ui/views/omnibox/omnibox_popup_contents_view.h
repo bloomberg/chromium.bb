@@ -154,8 +154,6 @@ class OmniboxPopupContentsView : public views::View,
   // The edit view that invokes us.
   OmniboxView* omnibox_view_;
 
-  Profile* profile_;
-
   // An object that the popup positions itself against.
   views::View* location_bar_;
 

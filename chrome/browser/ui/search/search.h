@@ -46,16 +46,16 @@ enum InstantExtendedDefault {
 // instant_extended.enabled pref to by default.
 InstantExtendedDefault GetInstantExtendedDefaultSetting();
 
-// Returns whether the Instant Extended API is enabled in this profile.
-bool IsInstantExtendedAPIEnabled(const Profile* profile);
+// Returns whether the Instant Extended API is enabled.
+bool IsInstantExtendedAPIEnabled();
 
 // Returns the value to pass to the &espv CGI parameter when loading the
 // embedded search page from the user's default search provider. Will be
 // 0 if the Instant Extended API is not enabled.
-uint64 EmbeddedSearchPageVersion(const Profile* profile);
+uint64 EmbeddedSearchPageVersion();
 
 // Returns whether query extraction is enabled.
-bool IsQueryExtractionEnabled(const Profile* profile);
+bool IsQueryExtractionEnabled();
 
 // Returns the search terms attached to a specific NavigationEntry, or empty
 // string otherwise. Does not consider IsQueryExtractionEnabled(), so most

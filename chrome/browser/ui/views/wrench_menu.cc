@@ -1074,8 +1074,6 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         break;
 
       case IDC_RECENT_TABS_MENU:
-        DCHECK(chrome::search::IsInstantExtendedAPIEnabled(
-            browser_->profile()));
         DCHECK(!recent_tabs_menu_model_delegate_.get());
         recent_tabs_menu_model_delegate_.reset(
             new RecentTabsMenuModelDelegate(model->GetSubmenuModelAt(i),

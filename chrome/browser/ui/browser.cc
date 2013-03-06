@@ -368,7 +368,7 @@ Browser::Browser(const CreateParams& params)
   tab_strip_model_->AddObserver(this);
 
   toolbar_model_.reset(new ToolbarModelImpl(toolbar_model_delegate_.get()));
-  search_model_.reset(new chrome::search::SearchModel(NULL));
+  search_model_.reset(new chrome::search::SearchModel());
   search_delegate_.reset(
       new chrome::search::SearchDelegate(search_model_.get(),
                                          toolbar_model_.get()));
@@ -1861,7 +1861,7 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 }
 
 void Browser::UpdateSearchState(WebContents* contents) {
-  if (chrome::search::IsInstantExtendedAPIEnabled(profile_))
+  if (chrome::search::IsInstantExtendedAPIEnabled())
     search_delegate_->OnTabActivated(contents);
 }
 

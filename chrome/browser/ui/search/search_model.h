@@ -9,10 +9,6 @@
 #include "base/observer_list.h"
 #include "chrome/common/search_types.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace chrome {
 namespace search {
 
@@ -22,7 +18,7 @@ class SearchModelObserver;
 // changes.
 class SearchModel {
  public:
-  explicit SearchModel(content::WebContents* web_contents);
+  SearchModel();
   ~SearchModel();
 
   // Change the mode.  Change notifications are sent to observers.  An animated
@@ -36,22 +32,9 @@ class SearchModel {
   void AddObserver(SearchModelObserver* observer);
   void RemoveObserver(SearchModelObserver* observer);
 
-  // This can be NULL if this is the browser model and it's accessed during
-  // startup or shutdown.
-  const content::WebContents* web_contents() const {
-    return web_contents_;
-  }
-
-  void set_web_contents(content::WebContents* web_contents) {
-    web_contents_ = web_contents;
-  }
-
  private:
   // The display mode of UI elements such as the toolbar, the tab strip, etc.
   Mode mode_;
-
-  // Weak. Used to access current profile to determine incognito status.
-  content::WebContents* web_contents_;
 
   // Observers.
   ObserverList<SearchModelObserver> observers_;

@@ -174,7 +174,7 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
 
 void OmniboxUIHandler::ResetController() {
   controller_.reset(new AutocompleteController(profile_, this,
-      chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
+      chrome::search::IsInstantExtendedAPIEnabled() ?
           AutocompleteClassifier::kInstantExtendedOmniboxProviders :
           AutocompleteClassifier::kDefaultOmniboxProviders));
 }

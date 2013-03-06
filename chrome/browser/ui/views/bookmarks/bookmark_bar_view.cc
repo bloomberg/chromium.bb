@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
@@ -333,14 +332,16 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       extension_misc::APP_LAUNCH_BOOKMARK_BAR);
 }
 
-int GetNewtabHorizontalPadding(const chrome::search::Mode& mode) {
-  return mode.is_ntp() ? kSearchNewTabHorizontalPadding :
-      BookmarkBarView::kNewtabHorizontalPadding;
+int GetNewtabHorizontalPadding() {
+  return chrome::search::IsInstantExtendedAPIEnabled()
+         ? kSearchNewTabHorizontalPadding
+         : BookmarkBarView::kNewtabHorizontalPadding;
 }
 
-int GetNewtabVerticalPadding(const chrome::search::Mode& mode) {
-  return mode.is_ntp() ? kSearchNewTabVerticalPadding :
-      BookmarkBarView::kNewtabVerticalPadding;
+int GetNewtabVerticalPadding() {
+  return chrome::search::IsInstantExtendedAPIEnabled()
+         ? kSearchNewTabVerticalPadding
+         : BookmarkBarView::kNewtabVerticalPadding;
 }
 
 }  // namespace
@@ -671,8 +672,7 @@ gfx::Size BookmarkBarView::GetMinimumSize() {
 
   if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    width += 2 * static_cast<int>(GetNewtabHorizontalPadding(
-        browser_->search_model()->mode()) * current_state);
+    width += 2 * static_cast<int>(GetNewtabHorizontalPadding() * current_state);
   }
 
   gfx::Size other_bookmarked_pref;
@@ -1673,10 +1673,10 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   if (!parent() && !compute_bounds_only)
     return prefsize;
 
-  const chrome::search::Mode& mode = browser_->search_model()->mode();
   int x = kLeftMargin;
-  int top_margin = IsDetached() ?
-      (mode.is_ntp() ? kSearchDetachedTopMargin : kDetachedTopMargin) : 0;
+  int top_margin =
+      IsDetached() ? (chrome::search::IsInstantExtendedAPIEnabled()
+                          ? kSearchDetachedTopMargin : kDetachedTopMargin) : 0;
   int y = top_margin;
   int width = View::width() - kRightMargin - kLeftMargin;
   int height = -top_margin - kBottomMargin;
@@ -1684,11 +1684,11 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
   if (IsDetached()) {
     double current_state = 1 - size_animation_->GetCurrentValue();
-    x += static_cast<int>(GetNewtabHorizontalPadding(mode) * current_state);
-    y += static_cast<int>(GetNewtabVerticalPadding(mode) * current_state);
-    width -= static_cast<int>(GetNewtabHorizontalPadding(mode) * current_state);
+    x += static_cast<int>(GetNewtabHorizontalPadding() * current_state);
+    y += static_cast<int>(GetNewtabVerticalPadding() * current_state);
+    width -= static_cast<int>(GetNewtabHorizontalPadding() * current_state);
     height += View::height() -
-        static_cast<int>(GetNewtabVerticalPadding(mode) * 2 * current_state);
+        static_cast<int>(GetNewtabVerticalPadding() * 2 * current_state);
     separator_margin -= static_cast<int>(kSeparatorMargin * current_state);
   } else {
     // For the attached appearance, pin the content to the bottom of the bar
@@ -1794,10 +1794,11 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     x += kRightMargin;
     prefsize.set_width(x);
     if (IsDetached()) {
-      x += static_cast<int>(GetNewtabHorizontalPadding(mode) *
+      x += static_cast<int>(GetNewtabHorizontalPadding() *
           (1 - size_animation_->GetCurrentValue()));
-      int ntp_bookmark_bar_height = mode.is_ntp() ?
-          kSearchNewTabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
+      int ntp_bookmark_bar_height =
+          chrome::search::IsInstantExtendedAPIEnabled()
+          ? kSearchNewTabBookmarkBarHeight : chrome::kNTPBookmarkBarHeight;
       prefsize.set_height(
           browser_defaults::kBookmarkBarHeight +
           static_cast<int>(
@@ -1815,7 +1816,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 }
 
 bool BookmarkBarView::ShouldShowAppsShortcut() const {
-  return chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()) &&
+  return chrome::search::IsInstantExtendedAPIEnabled() &&
       browser_->profile()->GetPrefs()->GetBoolean(
           prefs::kShowAppsShortcutInBookmarkBar);
 }

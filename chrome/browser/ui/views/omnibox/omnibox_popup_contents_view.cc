@@ -64,7 +64,7 @@ OmniboxPopupView* OmniboxPopupContentsView::Create(
     OmniboxView* omnibox_view,
     OmniboxEditModel* edit_model,
     views::View* location_bar) {
-  if (chrome::search::IsInstantExtendedAPIEnabled(edit_model->profile()))
+  if (chrome::search::IsInstantExtendedAPIEnabled())
     return new OmniboxPopupNonView(edit_model);
 
   OmniboxPopupContentsView* view = NULL;
@@ -87,7 +87,6 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     views::View* location_bar)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
-      profile_(edit_model->profile()),
       location_bar_(location_bar),
       font_(font.DeriveFont(kEditFontAdjust)),
       ignore_mouse_drag_(false),

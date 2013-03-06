@@ -53,9 +53,6 @@ class SearchTabHelper : public content::NotificationObserver,
   // Sets the mode of the model based on the current URL of web_contents().
   void UpdateModel();
 
-  // Returns the web contents associated with the tab that owns this helper.
-  const content::WebContents* web_contents() const;
-
   const bool is_search_enabled_;
 
   // Tracks the last value passed to OmniboxEditModelChanged().
@@ -65,6 +62,8 @@ class SearchTabHelper : public content::NotificationObserver,
   SearchModel model_;
 
   content::NotificationRegistrar registrar_;
+
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

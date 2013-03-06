@@ -198,7 +198,7 @@ bool BookmarkContextMenuControllerViews::IsItemChecked(int id) const {
     return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 
   // This should only be available when instant extended is enabled.
-  DCHECK(chrome::search::IsInstantExtendedAPIEnabled(profile_));
+  DCHECK(chrome::search::IsInstantExtendedAPIEnabled());
   DCHECK_EQ(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT, id);
   return profile_->GetPrefs()->GetBoolean(
       prefs::kShowAppsShortcutInBookmarkBar);
@@ -306,7 +306,7 @@ void BookmarkContextMenuControllerViews::BuildMenu() {
 
   delegate_->AddSeparator();
   delegate_->AddItemWithStringId(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-  if (chrome::search::IsInstantExtendedAPIEnabled(profile_)) {
+  if (chrome::search::IsInstantExtendedAPIEnabled()) {
     delegate_->AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT,
                                IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
   }

@@ -2462,9 +2462,6 @@ void OmniboxViewWin::EmphasizeURLComponents() {
       GetText(), model()->GetDesiredTLD(), &scheme, &host);
   const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
-  bool instant_extended_api_enabled =
-      chrome::search::IsInstantExtendedAPIEnabled(parent_view_->profile());
-
   // Set the baseline emphasis.
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
@@ -2588,9 +2585,6 @@ void OmniboxViewWin::DrawSlashForInsecureScheme(HDC hdc,
       SkIntToScalar(0),
       SkIntToScalar(PosFromChar(sel.cpMax).x - scheme_rect.left),
       SkIntToScalar(scheme_rect.Height()) };
-
-  bool instant_extended_api_enabled =
-      chrome::search::IsInstantExtendedAPIEnabled(parent_view_->profile());
 
   // Draw the unselected portion of the stroke.
   sk_canvas->save();
@@ -2801,7 +2795,7 @@ void OmniboxViewWin::BuildContextMenu() {
     context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
     context_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-    if (chrome::search::IsQueryExtractionEnabled(parent_view_->profile()))
+    if (chrome::search::IsQueryExtractionEnabled())
       context_menu_contents_->AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
     context_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
     // GetContextualLabel() will override this next label with the

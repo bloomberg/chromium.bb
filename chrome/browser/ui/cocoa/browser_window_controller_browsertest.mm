@@ -92,12 +92,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     [[controller() bookmarkBarController] setInnerContentAnimationsEnabled:NO];
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    if (web_contents_)
-      browser()->search_model()->set_web_contents(NULL);
-    web_contents_.reset();
-  }
-
   BrowserWindowController* controller() const {
     return [BrowserWindowController browserWindowControllerForWindow:
         browser()->window()->GetNativeWindow()];
@@ -105,9 +99,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
 
   void ShowInstantResults() {
     chrome::search::EnableInstantExtendedAPIForTesting();
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(browser()->profile())));
-    browser()->search_model()->set_web_contents(web_contents_.get());
     chrome::search::Mode mode(chrome::search::Mode::MODE_SEARCH_SUGGESTIONS,
                               chrome::search::Mode::ORIGIN_SEARCH);
     browser()->search_model()->SetMode(mode);
@@ -117,9 +108,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
 
   void ShowInstantNTP() {
     chrome::search::EnableInstantExtendedAPIForTesting();
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(browser()->profile())));
-    browser()->search_model()->set_web_contents(web_contents_.get());
     chrome::search::Mode mode(chrome::search::Mode::MODE_NTP,
                               chrome::search::Mode::ORIGIN_NTP);
     browser()->search_model()->SetMode(mode);
@@ -187,7 +175,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<InfoBarDelegate> info_bar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowControllerTest);
