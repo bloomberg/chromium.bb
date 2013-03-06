@@ -421,7 +421,6 @@ void LauncherView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-  UpdateFirstButtonPadding();
   LauncherStatusChanged();
   overflow_button_ = new OverflowButton(this);
   overflow_button_->set_context_menu_controller(this);
@@ -432,7 +431,6 @@ void LauncherView::Init() {
 }
 
 void LauncherView::OnShelfAlignmentChanged() {
-  UpdateFirstButtonPadding();
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
   tooltip_->UpdateArrowLocation();
@@ -902,21 +900,6 @@ void LauncherView::ToggleOverflowBubble() {
   overflow_bubble_->Show(overflow_button_, overflow_view);
 
   Shell::GetInstance()->UpdateShelfVisibility();
-}
-
-void LauncherView::UpdateFirstButtonPadding() {
-  ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
-
-  // Creates an empty border for first launcher button to make included leading
-  // inset act as the button's padding. This is only needed on button creation
-  // and when shelf alignment changes.
-  if (view_model_->view_size() > 0) {
-    view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
-        shelf->PrimaryAxisValue(0, leading_inset()),
-        shelf->PrimaryAxisValue(leading_inset(), 0),
-        0,
-        0));
-  }
 }
 
 void LauncherView::OnFadeOutAnimationEnded() {
