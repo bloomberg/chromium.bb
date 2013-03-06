@@ -36,7 +36,8 @@ using content::BrowserThread;
 SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),
-      succeeded_(false) {
+      succeeded_(false),
+      client_(new SpellingServiceClient) {
   if (proxy && proxy->GetProfile()) {
     integrate_spelling_service_.Init(prefs::kSpellCheckUseSpellingService,
                                      proxy->GetProfile()->GetPrefs());
@@ -103,7 +104,6 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     SpellingServiceClient::ServiceType type = SpellingServiceClient::SUGGEST;
     if (useSpellingService)
       type = SpellingServiceClient::SPELLCHECK;
-    client_.reset(new SpellingServiceClient);
     bool result = client_->RequestTextCheck(
         profile, type, params.misspelled_word,
         base::Bind(&SpellingMenuObserver::OnTextCheckComplete,

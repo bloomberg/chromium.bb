@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -74,9 +75,6 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   SpellingServiceClient();
   virtual ~SpellingServiceClient();
 
-  // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // Sends a text-check request to the Spelling service. When we send a request
   // to the Spelling service successfully, this function returns true. (This
   // does not mean the service finishes checking text successfully.) We will
@@ -90,8 +88,23 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   static bool IsAvailable(Profile* profile, ServiceType type);
 
  private:
+  struct TextCheckCallbackData {
+    TextCheckCallbackData(TextCheckCompleteCallback callback, string16 text);
+    ~TextCheckCallbackData();
+
+    // The callback function to be called when we receive a response from the
+    // Spelling service and parse it.
+    TextCheckCompleteCallback callback;
+
+    // The text checked by the Spelling service.
+    string16 text;
+  };
+
+  // net::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
-  // function is overriden by unit tests to prevent them from actually sending
+  // function is overridden by unit tests to prevent them from actually sending
   // requests to the Spelling service.
   virtual net::URLFetcher* CreateURLFetcher(const GURL& url);
 
@@ -100,14 +113,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
                      std::vector<SpellCheckResult>* results);
 
   // The URLFetcher object used for sending a JSON-RPC request.
-  scoped_ptr<net::URLFetcher> fetcher_;
-
-  // The callback function to be called when we receive a response from the
-  // Spelling service and parse it.
-  TextCheckCompleteCallback callback_;
-
-  // The text checked by the Spelling service.
-  string16 text_;
+  std::map<const net::URLFetcher*, TextCheckCallbackData*> spellcheck_fetchers_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -62,6 +63,8 @@ SpellingServiceClient::SpellingServiceClient() {
 }
 
 SpellingServiceClient::~SpellingServiceClient() {
+  STLDeleteContainerPairPointers(spellcheck_fetchers_.begin(),
+                                 spellcheck_fetchers_.end());
 }
 
 bool SpellingServiceClient::RequestTextCheck(
@@ -107,14 +110,13 @@ bool SpellingServiceClient::RequestTextCheck(
       api_key.c_str());
 
   GURL url = GURL(kSpellingServiceURL);
-  fetcher_.reset(CreateURLFetcher(url));
-  fetcher_->SetRequestContext(profile->GetRequestContext());
-  fetcher_->SetUploadData("application/json", request);
-  fetcher_->SetLoadFlags(
+  net::URLFetcher* fetcher = CreateURLFetcher(url);
+  fetcher->SetRequestContext(profile->GetRequestContext());
+  fetcher->SetUploadData("application/json", request);
+  fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->Start();
-  text_ = text;
-  callback_ = callback;
+  spellcheck_fetchers_[fetcher] = new TextCheckCallbackData(callback, text);
+  fetcher->Start();
   return true;
 }
 
@@ -161,17 +163,31 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
   }
 }
 
+SpellingServiceClient::TextCheckCallbackData::TextCheckCallbackData(
+    TextCheckCompleteCallback callback,
+    string16 text)
+      : callback(callback),
+        text(text) {
+}
+
+SpellingServiceClient::TextCheckCallbackData::~TextCheckCallbackData() {
+}
+
 void SpellingServiceClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  scoped_ptr<net::URLFetcher> clean_up_fetcher(fetcher_.release());
+  DCHECK(spellcheck_fetchers_[source]);
+  scoped_ptr<const net::URLFetcher> fetcher(source);
+  scoped_ptr<TextCheckCallbackData>
+      callback_data(spellcheck_fetchers_[fetcher.get()]);
   bool success = false;
   std::vector<SpellCheckResult> results;
-  if (source->GetResponseCode() / 100 == 2) {
+  if (fetcher->GetResponseCode() / 100 == 2) {
     std::string data;
-    source->GetResponseAsString(&data);
+    fetcher->GetResponseAsString(&data);
     success = ParseResponse(data, &results);
   }
-  callback_.Run(success, text_, results);
+  callback_data->callback.Run(success, callback_data->text, results);
+  spellcheck_fetchers_.erase(fetcher.get());
 }
 
 net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {

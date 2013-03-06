@@ -19,7 +19,8 @@
 using content::BrowserThread;
 
 SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
-    : render_process_id_(render_process_id)
+    : render_process_id_(render_process_id),
+      client_(new SpellingServiceClient)
 #if !defined(OS_MACOSX)
       ,
       route_id_(0),
@@ -119,7 +120,6 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
                                                 success,
                                                 text,
                                                 results));
-  client_.reset();
 }
 
 // CallSpellingService always executes the callback OnTextCheckComplete.
@@ -132,7 +132,6 @@ void SpellCheckMessageFilter::CallSpellingService(int document_tag,
   if (host)
     profile = Profile::FromBrowserContext(host->GetBrowserContext());
 
-  client_.reset(new SpellingServiceClient);
   client_->RequestTextCheck(
     profile, SpellingServiceClient::SPELLCHECK, text,
     base::Bind(&SpellCheckMessageFilter::OnTextCheckComplete,
