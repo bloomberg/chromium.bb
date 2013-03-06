@@ -379,6 +379,12 @@ void ManagedUserService::Init() {
           &ManagedUserService::OnDefaultFilteringBehaviorChanged,
           base::Unretained(this)));
 
+  // TODO(bauerb): Setting the default value here does not currently trigger
+  // the proper notification. Once that is fixed use SetDefaultPrefValue
+  // instead.
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kForceSafeSearch))
+    profile_->GetPrefs()->SetBoolean(prefs::kForceSafeSearch, true);
+
   // Initialize the filter.
   OnDefaultFilteringBehaviorChanged();
   UpdateSiteLists();
