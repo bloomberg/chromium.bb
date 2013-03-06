@@ -41,9 +41,9 @@ class MediaGalleriesPrivateEventRouter
  private:
   // RemovableStorageObserver implementation.
   virtual void OnRemovableStorageAttached(
-      const chrome::StorageMonitor::StorageInfo& info) OVERRIDE;
+      const chrome::StorageInfo& info) OVERRIDE;
   virtual void OnRemovableStorageDetached(
-      const chrome::StorageMonitor::StorageInfo& info) OVERRIDE;
+      const chrome::StorageInfo& info) OVERRIDE;
 
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);

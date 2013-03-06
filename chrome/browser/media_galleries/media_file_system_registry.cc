@@ -556,8 +556,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   if (!monitor)
     return preferences;
-  std::vector<StorageMonitor::StorageInfo> existing_devices =
-      monitor->GetAttachedStorage();
+  std::vector<StorageInfo> existing_devices = monitor->GetAttachedStorage();
   for (size_t i = 0; i < existing_devices.size(); i++) {
     if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
       continue;
@@ -570,7 +569,7 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
-    const StorageMonitor::StorageInfo& info) {
+    const StorageInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Since revoking a gallery in the ExtensionGalleriesHost may cause it

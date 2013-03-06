@@ -241,7 +241,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
 
   // Add a new auto detected gallery.
   path = MakePath("new_auto");
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.name = ASCIIToUTF16("NewAutoGallery");
   id = gallery_prefs()->AddGalleryWithName(info.device_id, info.name,
@@ -290,7 +290,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(path, &gallery_info));
   EXPECT_EQ(kInvalidMediaGalleryPrefId, gallery_info.pref_id);
   EXPECT_EQ(path.BaseName().LossyDisplayName(), gallery_info.display_name);
-  StorageMonitor::StorageInfo other_info;
+  StorageInfo other_info;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &other_info,
                                           &relative_path);
   EXPECT_EQ(other_info.device_id, gallery_info.device_id);
@@ -311,7 +311,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
 
 TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
   MediaGalleryPrefId id;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath path;
   base::FilePath relative_path;
   base::Time now = base::Time::Now();
@@ -350,7 +350,7 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
 TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
   MediaGalleryPrefId id, metadata_id;
   base::FilePath path;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   base::Time now = base::Time::Now();
   Verify();
@@ -392,7 +392,7 @@ TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
 TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   MediaGalleryPrefId auto_id, id;
   base::FilePath path;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   Verify();
 
@@ -438,7 +438,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
 TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   MediaGalleryPrefId auto_id, user_added_id, to_blacklist_id, id;
   base::FilePath path;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   Verify();
 
@@ -559,7 +559,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
 TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
   MediaGalleryPrefId auto_id, id;
   base::FilePath path;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   Verify();
 
@@ -588,7 +588,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
 
 TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   base::FilePath path;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   Verify();
 
@@ -670,7 +670,7 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
 
   // Add a new auto detected gallery.
   base::FilePath path = MakePath("new_auto");
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info,
                                           &relative_path);

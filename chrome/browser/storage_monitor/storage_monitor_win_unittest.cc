@@ -280,15 +280,15 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
   EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
 
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   EXPECT_FALSE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("G:\\")), &info));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\")), &info));
-  StorageMonitor::StorageInfo info1;
+  StorageInfo info1;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\subdir")), &info1));
-  StorageMonitor::StorageInfo info2;
+  StorageInfo info2;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\subdir\\sub")), &info2));
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
@@ -423,7 +423,7 @@ TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
 
   // A connected removable device.
   base::FilePath removable_device(L"F:\\");
-  StorageMonitor::StorageInfo device_info;
+  StorageInfo device_info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(removable_device, &device_info));
 
   std::string unique_id;

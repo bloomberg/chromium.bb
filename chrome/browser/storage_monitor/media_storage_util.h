@@ -72,10 +72,9 @@ class MediaStorageUtil {
 
   // Given |path|, fill in |device_info|, and |relative_path|
   // (from the root of the device) if they are not NULL.
-  static bool GetDeviceInfoFromPath(
-      const base::FilePath& path,
-      StorageMonitor::StorageInfo* device_info,
-      base::FilePath* relative_path);
+  static bool GetDeviceInfoFromPath(const base::FilePath& path,
+                                    StorageInfo* device_info,
+                                    base::FilePath* relative_path);
 
   // Get a base::FilePath for the given |device_id|.  If the device isn't a mass
   // storage type, the base::FilePath will be empty.  This does not check that

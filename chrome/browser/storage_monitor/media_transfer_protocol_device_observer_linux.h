@@ -39,7 +39,7 @@ class MediaTransferProtocolDeviceObserverLinux
   // Finds the storage that contains |path| and populates |storage_info|.
   // Returns false if unable to find the storage.
   bool GetStorageInfoForPath(const base::FilePath& path,
-                             StorageMonitor::StorageInfo* storage_info) const;
+                             StorageInfo* storage_info) const;
 
   // Set the volume notifications object to be used when new
   // MTP devices are found.
@@ -57,8 +57,7 @@ class MediaTransferProtocolDeviceObserverLinux
 
  private:
   // Mapping of storage location and mtp storage info object.
-  typedef std::map<std::string, StorageMonitor::StorageInfo>
-      StorageLocationToInfoMap;
+  typedef std::map<std::string, StorageInfo> StorageLocationToInfoMap;
 
   // Enumerate existing mtp storage devices.
   void EnumerateStorages();

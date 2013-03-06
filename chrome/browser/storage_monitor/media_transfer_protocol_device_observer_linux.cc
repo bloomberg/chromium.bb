@@ -163,7 +163,7 @@ MediaTransferProtocolDeviceObserverLinux::GetInstance() {
 
 bool MediaTransferProtocolDeviceObserverLinux::GetStorageInfoForPath(
     const base::FilePath& path,
-    StorageMonitor::StorageInfo* storage_info) const {
+    StorageInfo* storage_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -211,8 +211,7 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
 
     DCHECK(!ContainsKey(storage_map_, location));
 
-    StorageMonitor::StorageInfo storage_info(
-        device_id, device_name, location);
+    StorageInfo storage_info(device_id, device_name, location);
     storage_map_[location] = storage_info;
     notifications_->ProcessAttach(storage_info);
   } else {

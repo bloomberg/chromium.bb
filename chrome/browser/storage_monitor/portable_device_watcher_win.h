@@ -99,8 +99,7 @@ class PortableDeviceWatcherWin {
 
   // Key: MTP device storage unique id.
   // Value: Metadata for the given storage.
-  typedef std::map<std::string, StorageMonitor::StorageInfo>
-      MTPStorageMap;
+  typedef std::map<std::string, StorageInfo> MTPStorageMap;
 
   // Key: MTP device plug and play ID string.
   // Value: Vector of device storage objects.

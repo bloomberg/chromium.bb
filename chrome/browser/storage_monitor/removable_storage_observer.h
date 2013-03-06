@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_OBSERVER_H_
 #define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_STORAGE_OBSERVER_H_
 
-#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 
 namespace chrome {
 
@@ -15,13 +15,11 @@ class RemovableStorageObserver {
  public:
   // When a removable storage device is attached, this
   // event is triggered.
-  virtual void OnRemovableStorageAttached(
-      const StorageMonitor::StorageInfo& info) {}
+  virtual void OnRemovableStorageAttached(const StorageInfo& info) {}
 
   // When a removable storage device is detached, this
   // event is triggered.
-  virtual void OnRemovableStorageDetached(
-      const StorageMonitor::StorageInfo& info) {}
+  virtual void OnRemovableStorageDetached(const StorageInfo& info) {}
 
  protected:
   virtual ~RemovableStorageObserver() {}

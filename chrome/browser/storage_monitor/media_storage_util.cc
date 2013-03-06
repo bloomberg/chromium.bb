@@ -55,7 +55,7 @@ void ValidatePathOnFileThread(
                           base::Bind(callback, file_util::PathExists(path)));
 }
 
-typedef std::vector<StorageMonitor::StorageInfo> StorageInfoList;
+typedef std::vector<StorageInfo> StorageInfoList;
 
 bool IsRemovableStorageAttached(const std::string& id) {
   StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
@@ -251,15 +251,14 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
 }
 
 // TODO(kmadhusu) Write unit tests for GetDeviceInfoFromPath().
-bool MediaStorageUtil::GetDeviceInfoFromPath(
-      const base::FilePath& path,
-      StorageMonitor::StorageInfo* device_info,
-      base::FilePath* relative_path) {
+bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
+                                             StorageInfo* device_info,
+                                             base::FilePath* relative_path) {
   if (!path.IsAbsolute())
     return false;
 
   bool found_device = false;
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   found_device = monitor->GetStorageInfoForPath(path, &info);
 

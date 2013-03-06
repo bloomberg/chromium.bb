@@ -13,23 +13,6 @@ namespace chrome {
 
 static StorageMonitor* g_storage_monitor = NULL;
 
-StorageMonitor::StorageInfo::StorageInfo()
-    : total_size_in_bytes(0) {
-}
-
-StorageMonitor::StorageInfo::StorageInfo(
-    const std::string& id,
-    const string16& device_name,
-    const base::FilePath::StringType& device_location)
-    : device_id(id),
-      name(device_name),
-      location(device_location),
-      total_size_in_bytes(0) {
-}
-
-StorageMonitor::StorageInfo::~StorageInfo() {
-}
-
 StorageMonitor::Receiver::~Receiver() {
 }
 
@@ -40,8 +23,7 @@ class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
 
   virtual ~ReceiverImpl() {}
 
-  virtual void ProcessAttach(
-      const StorageMonitor::StorageInfo& info) OVERRIDE;
+  virtual void ProcessAttach(const StorageInfo& info) OVERRIDE;
 
   virtual void ProcessDetach(const std::string& id) OVERRIDE;
 
@@ -49,13 +31,11 @@ class StorageMonitor::ReceiverImpl : public StorageMonitor::Receiver {
   StorageMonitor* notifications_;
 };
 
-void StorageMonitor::ReceiverImpl::ProcessAttach(
-    const StorageMonitor::StorageInfo& info) {
+void StorageMonitor::ReceiverImpl::ProcessAttach(const StorageInfo& info) {
   notifications_->ProcessAttach(info);
 }
 
-void StorageMonitor::ReceiverImpl::ProcessDetach(
-    const std::string& id) {
+void StorageMonitor::ReceiverImpl::ProcessDetach(const std::string& id) {
   notifications_->ProcessDetach(id);
 }
 
@@ -63,8 +43,7 @@ StorageMonitor* StorageMonitor::GetInstance() {
   return g_storage_monitor;
 }
 
-std::vector<StorageMonitor::StorageInfo>
-StorageMonitor::GetAttachedStorage() const {
+std::vector<StorageInfo> StorageMonitor::GetAttachedStorage() const {
   std::vector<StorageInfo> results;
 
   base::AutoLock lock(storage_lock_);
@@ -125,8 +104,7 @@ StorageMonitor::Receiver* StorageMonitor::receiver() const {
   return receiver_.get();
 }
 
-void StorageMonitor::ProcessAttach(
-    const StorageInfo& info) {
+void StorageMonitor::ProcessAttach(const StorageInfo& info) {
   {
     base::AutoLock lock(storage_lock_);
     if (ContainsKey(storage_map_, info.device_id)) {

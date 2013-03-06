@@ -87,8 +87,8 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
 
   void Attach() {
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-        chrome::StorageMonitor::StorageInfo(
-            device_id_, ASCIIToUTF16(kDeviceName), kDevicePath));
+        chrome::StorageInfo(device_id_, ASCIIToUTF16(kDeviceName),
+                            kDevicePath));
     WaitForDeviceEvents();
   }
 

@@ -80,7 +80,7 @@ void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
-    const chrome::StorageMonitor::StorageInfo& info) {
+    const chrome::StorageInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
@@ -97,7 +97,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
-    const chrome::StorageMonitor::StorageInfo& info) {
+    const chrome::StorageInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();

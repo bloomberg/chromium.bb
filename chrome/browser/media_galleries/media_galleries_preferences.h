@@ -128,8 +128,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService,
   void RemoveGalleryChangeObserver(GalleryChangeObserver* observer);
 
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageAttached(
-      const StorageMonitor::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
 
   // Lookup a media gallery and fill in information about it and return true if
   // it exists. Return false if it does not, filling in default information.

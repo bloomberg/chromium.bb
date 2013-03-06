@@ -167,8 +167,9 @@ void StorageMonitorCros::OnFormatEvent(
     const std::string& device_path) {
 }
 
-bool StorageMonitorCros::GetStorageInfoForPath(const base::FilePath& path,
-                                               StorageInfo* device_info) const {
+bool StorageMonitorCros::GetStorageInfoForPath(
+    const base::FilePath& path,
+    chrome::StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -239,11 +240,11 @@ void StorageMonitorCros::AddMountedPathOnUIThread(
   std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
                                                                  unique_id);
   StorageObjectInfo object_info = {
-      StorageInfo(device_id, device_label, mount_info.mount_path),
+      chrome::StorageInfo(device_id, device_label, mount_info.mount_path),
       storage_size_in_bytes
   };
   mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
-  receiver()->ProcessAttach(StorageInfo(
+  receiver()->ProcessAttach(chrome::StorageInfo(
       device_id,
       chrome::GetDisplayNameForDevice(storage_size_in_bytes, device_label),
       mount_info.mount_path));

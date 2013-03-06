@@ -169,7 +169,7 @@ TEST_F(StorageMonitorMacTest, GetStorageInfo) {
   EXPECT_EQ(mount_point_.value(),
             mock_storage_observer_->last_attached().location);
 
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(mount_point_.AppendASCII("foo"),
                                               &info));
   EXPECT_EQ(info.device_id, device_id_);

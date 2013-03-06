@@ -14,13 +14,13 @@ MockRemovableStorageObserver::~MockRemovableStorageObserver() {
 }
 
 void MockRemovableStorageObserver::OnRemovableStorageAttached(
-    const StorageMonitor::StorageInfo& info) {
+    const StorageInfo& info) {
   attach_calls_++;
   last_attached_ = info;
 }
 
 void MockRemovableStorageObserver::OnRemovableStorageDetached(
-    const StorageMonitor::StorageInfo& info) {
+    const StorageInfo& info) {
   detach_calls_++;
   last_detached_ = info;
 }

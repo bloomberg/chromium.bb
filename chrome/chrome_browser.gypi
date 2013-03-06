@@ -1940,6 +1940,8 @@
         'browser/storage_monitor/portable_device_watcher_win.h',
         'browser/storage_monitor/removable_device_constants.cc',
         'browser/storage_monitor/removable_device_constants.h',
+        'browser/storage_monitor/storage_info.cc',
+        'browser/storage_monitor/storage_info.h',
         'browser/storage_monitor/storage_monitor_chromeos.cc',
         'browser/storage_monitor/storage_monitor_chromeos.h',
         'browser/storage_monitor/storage_monitor_linux.cc',

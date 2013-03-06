@@ -618,7 +618,7 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
 
-  StorageMonitor::StorageInfo device_info;
+  StorageInfo device_info;
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_a, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
   EXPECT_EQ(test_path_a.value(), device_info.location);

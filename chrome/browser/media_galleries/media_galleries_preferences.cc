@@ -226,7 +226,7 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
       continue;
 
     base::FilePath relative_path;
-    StorageMonitor::StorageInfo info;
+    StorageInfo info;
     if (MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {
       // TODO(gbillock): Add in the volume metadata here when available.
       AddGalleryWithName(info.device_id, info.name, relative_path,
@@ -279,7 +279,7 @@ void MediaGalleriesPreferences::RemoveGalleryChangeObserver(
 }
 
 void MediaGalleriesPreferences::OnRemovableStorageAttached(
-    const StorageMonitor::StorageInfo& info) {
+    const StorageInfo& info) {
   if (!MediaStorageUtil::IsMediaDevice(info.device_id))
     return;
 
@@ -300,7 +300,7 @@ void MediaGalleriesPreferences::OnRemovableStorageAttached(
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
     const base::FilePath& path,
     MediaGalleryPrefInfo* gallery_info) const {
-  StorageMonitor::StorageInfo info;
+  StorageInfo info;
   base::FilePath relative_path;
   if (!MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {
     if (gallery_info)

@@ -615,10 +615,9 @@ void PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent(
     // partition identifier to the storage name. E.g.: "Nexus 7 (s10001)"
     string16 storage_name(name + L" (" + storage_iter->object_temporary_id +
         L')');
-    storage_map_[storage_id] = StorageMonitor::StorageInfo(
-        storage_id, storage_name, location);
+    storage_map_[storage_id] = StorageInfo(storage_id, storage_name, location);
     if (storage_notifications_) {
-      storage_notifications_->ProcessAttach(StorageMonitor::StorageInfo(
+      storage_notifications_->ProcessAttach(StorageInfo(
           storage_id, storage_name, GetStoragePathFromStorageId(storage_id)));
     }
   }
