@@ -21,7 +21,7 @@ AwCookieAccessPolicy::~AwCookieAccessPolicy() {
 }
 
 AwCookieAccessPolicy::AwCookieAccessPolicy()
-    : allow_access_(false) {
+    : allow_access_(true) {
 }
 
 AwCookieAccessPolicy* AwCookieAccessPolicy::GetInstance() {
