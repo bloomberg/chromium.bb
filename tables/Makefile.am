@@ -57,6 +57,7 @@ table_files = \
 	devanagari.cti \
 	digits6DotsPlusDot6.uti \
 	digits6Dots.uti \
+	litdigits6Dots.uti \
 	digits8Dots.uti \
 	dra.ctb \
 	en_CA.ctb \

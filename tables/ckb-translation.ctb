@@ -54,16 +54,7 @@ begcomp 456-346
 endcomp 456-156
 
 # the decimal digits
-litdigit 1 1
-litdigit 2 12
-litdigit 3 14
-litdigit 4 145
-litdigit 5 15
-litdigit 6 124
-litdigit 7 1245
-litdigit 8 125
-litdigit 9 24
-litdigit 0 245
+include litdigits6Dots.uti
 
 # Letters are defined in en-chardefs
 # punctuation

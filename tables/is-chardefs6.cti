@@ -64,16 +64,8 @@ punctuation   \x002D 36              #45    - HYPHEN-MINUS
 punctuation   \x002E 3               #46    . FULL STOP PERIOD
 sign          \x002F 34             #47    / SOLIDUS SLASH
 
-litdigit         \x0030 245             #48    0 DIGIT ZERO
-litdigit         \x0031 1              #49    1 DIGIT ONE
-litdigit         \x0032 12             #50    2 DIGIT TWO
-litdigit         \x0033 14             #51    3 DIGIT THREE
-litdigit         \x0034 145            #52    4 DIGIT FOUR
-litdigit         \x0035 15             #53    5 DIGIT FIVE
-litdigit         \x0036 124            #54    6 DIGIT SIX
-litdigit         \x0037 1245           #55    7 DIGIT SEVEN
-litdigit         \x0038 125            #56    8 DIGIT EIGHT
-litdigit         \x0039 24             #57    9 DIGIT NINE
+include litdigits6Dots.uti
+
 punctuation   \x003A 25              #58    : COLON
 punctuation   \x003B 23              #59    ; SEMICOLON
 math          \x003C 5-246              #60    < LESS-THAN SIGN
