@@ -108,12 +108,14 @@ class NonActivatableSettingsBubble : public views::BubbleDelegateView {
 struct NetworkInfo {
   NetworkInfo(const std::string& path)
       : service_path(path),
+        disable(false),
         highlight(false) {
   }
 
   std::string service_path;
   string16 label;
   gfx::ImageSkia image;
+  bool disable;
   bool highlight;
 };
 
@@ -431,6 +433,8 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
         network, network_icon::ICON_TYPE_LIST);
     info->highlight =
         network->IsConnectedState() || network->IsConnectingState();
+    info->disable =
+        network->activation_state() == flimflam::kActivationStateActivating;
   }
 
   // Get the updated list entries
@@ -444,6 +448,7 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
        it != service_path_map_.end(); ++it) {
     if (new_service_paths.find(it->first) == new_service_paths.end()) {
       remove_service_paths.insert(it->first);
+      network_map_.erase(it->second);
       scroll_content()->RemoveChildView(it->second);
       needs_relayout = true;
     }
@@ -506,7 +511,8 @@ bool NetworkStateListDetailedView::UpdateNetworkChild(
     container->SchedulePaint();
     needs_relayout = OrderChild(container, index);
   }
-
+  if (info->disable)
+    container->SetEnabled(false);
   network_map_[container] = info->service_path;
   service_path_map_[info->service_path] = container;
   return needs_relayout;

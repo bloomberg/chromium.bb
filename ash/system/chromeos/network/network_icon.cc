@@ -583,13 +583,28 @@ gfx::ImageSkia GetImageForDisconnectedNetwork(IconType icon_type,
 string16 GetLabelForNetwork(const chromeos::NetworkState* network,
                             IconType icon_type) {
   DCHECK(network);
+  std::string activation_state = network->activation_state();
   if (icon_type == ICON_TYPE_LIST) {
+    // Show "<network>: [Connecting|Activating]..."
     if (network->IsConnectingState()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
           UTF8ToUTF16(network->name()));
     }
+    if (activation_state == flimflam::kActivationStateActivating) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
+          UTF8ToUTF16(network->name()));
+    }
+    // Show "Activate <network>" in list view only.
+    if (activation_state == flimflam::kActivationStateNotActivated ||
+        activation_state == flimflam::kActivationStatePartiallyActivated) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
+          UTF8ToUTF16(network->name()));
+    }
   } else {
+    // Show "[Connected to|Connecting to|Activating] <network>" (non-list view).
     if (network->IsConnectedState()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED, UTF8ToUTF16(network->name()));
@@ -598,8 +613,18 @@ string16 GetLabelForNetwork(const chromeos::NetworkState* network,
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING, UTF8ToUTF16(network->name()));
     }
+    if (activation_state == flimflam::kActivationStateActivating) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING, UTF8ToUTF16(network->name()));
+    }
   }
-  return UTF8ToUTF16(network->name());
+
+  // Otherwise just show the network name or 'Ethernet'.
+  if (network->type() == flimflam::kTypeEthernet) {
+    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ETHERNET);
+  } else {
+    return UTF8ToUTF16(network->name());
+  }
 }
 
 int GetCellularUninitializedMsg() {

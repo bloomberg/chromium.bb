@@ -568,6 +568,15 @@ void TrayNetwork::GetNetworkStateHandlerImageAndLabel(
     network = connecting_network;
   }
   if (!network) {
+    // If no connecting network, check if we are activating a network.
+    const NetworkState* mobile_network = handler->FirstNetworkByType(
+        NetworkStateHandler::kMatchTypeMobile);
+    if (mobile_network && (mobile_network->activation_state() ==
+                           flimflam::kActivationStateActivating)) {
+      network = mobile_network;
+    }
+  }
+  if (!network) {
     // If no connecting network, check for cellular initializing.
     int uninitialized_msg = network_icon::GetCellularUninitializedMsg();
     if (uninitialized_msg != 0) {

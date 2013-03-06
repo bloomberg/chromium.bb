@@ -1053,13 +1053,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             return;
 
           info.description = l10n_util::GetStringFUTF16(
-              IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
-              info.name);
+              IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE, info.name);
         } else if (state == ACTIVATION_STATE_ACTIVATING) {
           info.description = l10n_util::GetStringFUTF16(
-              IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-              info.name, l10n_util::GetStringUTF16(
-                  IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING));
+              IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING, info.name);
         } else if (network->connecting()) {
           info.description = l10n_util::GetStringFUTF16(
               IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
