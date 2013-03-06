@@ -443,4 +443,18 @@ ImportedFaviconUsage::~ImportedFaviconUsage() {
 
 VisitDatabaseObserver::~VisitDatabaseObserver() {}
 
+ExpireHistoryArgs::ExpireHistoryArgs() {
+}
+
+ExpireHistoryArgs::~ExpireHistoryArgs() {
+}
+
+void ExpireHistoryArgs::SetTimeRangeForOneDay(base::Time time) {
+  begin_time = time.LocalMidnight();
+
+  // Due to DST, leap seconds, etc., the next day at midnight may be more than
+  // 24 hours away, so add 36 hours and round back down to midnight.
+  end_time = (begin_time + base::TimeDelta::FromHours(36)).LocalMidnight();
+}
+
 }  // namespace history

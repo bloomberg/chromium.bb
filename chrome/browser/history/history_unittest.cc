@@ -1336,9 +1336,9 @@ TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOffline) {
       (base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(1))
       .ToInternalValue());
 
-  EXPECT_TRUE(
-      history_service_->ProcessLocalDeleteDirective(delete_directive).IsSet());
-
+  syncer::SyncError err =
+      history_service_->ProcessLocalDeleteDirective(delete_directive);
+  EXPECT_TRUE(err.IsSet());
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(9, query_url_row_.visit_count());
 }
@@ -1432,16 +1432,18 @@ TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOnline) {
           scoped_ptr<syncer::SyncChangeProcessor>(
               new SyncChangeProcessorDelegate(&change_processor)),
           scoped_ptr<syncer::SyncErrorFactory>()).error().IsSet());
-  EXPECT_FALSE(
-      history_service_->ProcessLocalDeleteDirective(delete_directive).IsSet());
+
+  syncer::SyncError err =
+      history_service_->ProcessLocalDeleteDirective(delete_directive);
+  EXPECT_FALSE(err.IsSet());
   EXPECT_EQ(1u, change_processor.GetChanges().size());
 
   EXPECT_TRUE(QueryURL(history_service_.get(), test_url));
   EXPECT_EQ(9, query_url_row_.visit_count());
 
   history_service_->StopSyncing(syncer::HISTORY_DELETE_DIRECTIVES);
-  EXPECT_TRUE(
-      history_service_->ProcessLocalDeleteDirective(delete_directive).IsSet());
+  err = history_service_->ProcessLocalDeleteDirective(delete_directive);
+  EXPECT_TRUE(err.IsSet());
   EXPECT_EQ(1u, change_processor.GetChanges().size());
 }
 

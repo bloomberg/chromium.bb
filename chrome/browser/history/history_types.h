@@ -818,6 +818,19 @@ class VisitDatabaseObserver {
   virtual void OnAddVisit(const BriefVisitInfo& info) = 0;
 };
 
+struct ExpireHistoryArgs {
+  ExpireHistoryArgs();
+  ~ExpireHistoryArgs();
+
+  // Sets |begin_time| and |end_time| to the beginning and end of the day (in
+  // local time) on which |time| occurs.
+  void SetTimeRangeForOneDay(base::Time time);
+
+  std::set<GURL> urls;
+  base::Time begin_time;
+  base::Time end_time;
+};
+
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_

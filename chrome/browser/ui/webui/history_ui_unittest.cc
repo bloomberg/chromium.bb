@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "history_ui.h"
+#include "chrome/browser/ui/webui/history_ui.h"
 
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,37 +20,28 @@ const base::Time baseline_time = base::Time::UnixEpoch().LocalMidnight();
 
 // For each item in |results|, create a new Value representing the visit, and
 // insert it into |list_value|.
-void AddResultsToList(TestResult* results,
-                      int results_size,
-                      ListValue* list_value) {
-  for (int i = 0; i < results_size; ++i) {
-    DictionaryValue* result = new DictionaryValue;
-    result->SetString("url", results[i].url);
-    base::Time time =
-        baseline_time + base::TimeDelta::FromHours(results[i].hour_offset);
-    result->SetDouble("time", time.ToJsTime());
-    list_value->Append(result);
+void AddQueryResults(
+    TestResult* test_results,
+    int test_results_size,
+    std::vector<BrowsingHistoryHandler::HistoryEntry>* results) {
+  for (int i = 0; i < test_results_size; ++i) {
+    BrowsingHistoryHandler::HistoryEntry entry;
+    entry.time = baseline_time +
+                 base::TimeDelta::FromHours(test_results[i].hour_offset);
+    entry.url = GURL(test_results[i].url);
+    results->push_back(entry);
   }
 }
 
-// Returns true if the result at |index| in |results| matches the test data
-// given by |correct_result|, otherwise returns false.
+// Returns true if |result| matches the test data given by |correct_result|,
+// otherwise returns false.
 bool ResultEquals(
-    const ListValue& results, int index, TestResult correct_result) {
-  const DictionaryValue* result;
-  string16 url;
-  double timestamp;
+    const BrowsingHistoryHandler::HistoryEntry& result,
+    const TestResult& correct_result) {
+  base::Time correct_time =
+      baseline_time + base::TimeDelta::FromHours(correct_result.hour_offset);
 
-  if (results.GetDictionary(index, &result) &&
-      result->GetDouble("time", &timestamp) &&
-      result->GetString("url", &url)) {
-    base::Time correct_time =
-        baseline_time + base::TimeDelta::FromHours(correct_result.hour_offset);
-    return base::Time::FromJsTime(timestamp) == correct_time &&
-        url == ASCIIToUTF16(correct_result.url);
-  }
-  NOTREACHED();
-  return false;
+  return result.time == correct_time && result.url == GURL(correct_result.url);
 }
 
 }  // namespace
@@ -64,15 +55,15 @@ TEST(HistoryUITest, RemoveDuplicateResults) {
       { "http://google.com", 0 },
       { "http://google.de", 1 },
       { "http://google.com", 2 },
-      { "http://google.com", 3 }
+      { "http://google.com", 3 }  // Most recent.
     };
-    ListValue results;
-    AddResultsToList(test_data, arraysize(test_data), &results);
+    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
+    AddQueryResults(test_data, arraysize(test_data), &results);
     BrowsingHistoryHandler::RemoveDuplicateResults(&results);
 
-    ASSERT_EQ(2U, results.GetSize());
-    EXPECT_TRUE(ResultEquals(results, 0, test_data[0]));
-    EXPECT_TRUE(ResultEquals(results, 1, test_data[1]));
+    ASSERT_EQ(2U, results.size());
+    EXPECT_TRUE(ResultEquals(results[0], test_data[3]));
+    EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
   }
 
   {
@@ -80,15 +71,15 @@ TEST(HistoryUITest, RemoveDuplicateResults) {
     TestResult test_data[] = {
       { "http://google.com", 0 },
       { "http://google.com", 23 },
-      { "http://google.com", 24 },
+      { "http://google.com", 24 },  // Most recent.
     };
-    ListValue results;
-    AddResultsToList(test_data, arraysize(test_data), &results);
+    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
+    AddQueryResults(test_data, arraysize(test_data), &results);
     BrowsingHistoryHandler::RemoveDuplicateResults(&results);
 
-    ASSERT_EQ(2U, results.GetSize());
-    EXPECT_TRUE(ResultEquals(results, 0, test_data[0]));
-    EXPECT_TRUE(ResultEquals(results, 1, test_data[2]));
+    ASSERT_EQ(2U, results.size());
+    EXPECT_TRUE(ResultEquals(results[0], test_data[2]));
+    EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
   }
 
   {
@@ -104,16 +95,16 @@ TEST(HistoryUITest, RemoveDuplicateResults) {
       { "http://google.de", 24 },
       { "http://google.com", 25 },
       { "http://google.de", 26 },
-      { "http://google.com", 27 },
+      { "http://google.com", 27 },  // Most recent.
     };
-    ListValue results;
-    AddResultsToList(test_data, arraysize(test_data), &results);
+    std::vector<BrowsingHistoryHandler::HistoryEntry> results;
+    AddQueryResults(test_data, arraysize(test_data), &results);
     BrowsingHistoryHandler::RemoveDuplicateResults(&results);
 
-    ASSERT_EQ(4U, results.GetSize());
-    EXPECT_TRUE(ResultEquals(results, 0, test_data[0]));
-    EXPECT_TRUE(ResultEquals(results, 1, test_data[1]));
-    EXPECT_TRUE(ResultEquals(results, 2, test_data[4]));
-    EXPECT_TRUE(ResultEquals(results, 3, test_data[5]));
+    ASSERT_EQ(4U, results.size());
+    EXPECT_TRUE(ResultEquals(results[0], test_data[7]));
+    EXPECT_TRUE(ResultEquals(results[1], test_data[6]));
+    EXPECT_TRUE(ResultEquals(results[2], test_data[3]));
+    EXPECT_TRUE(ResultEquals(results[3], test_data[2]));
   }
 }
