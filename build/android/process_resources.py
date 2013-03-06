@@ -29,6 +29,9 @@ def ParseArgs():
   parser.add_option('--res-dir', help='directory containing resources')
   parser.add_option('--out-res-dir',
                     help='directory to hold crunched resources')
+  # This is part of a temporary fix for crbug.com/177552.
+  # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+  parser.add_option('--ignore', help='this argument is ignored')
   (options, args) = parser.parse_args()
 
   if args:

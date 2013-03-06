@@ -138,6 +138,11 @@
             '--R-dir', '<(R_dir)',
             '--res-dir', '<(res_dir)',
             '--out-res-dir', '<(out_res_dir)',
+
+            # Add list of inputs to the command line, so if inputs change
+            # (e.g. if a resource if removed), the command will be re-run.
+            # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+            '--ignore', '>(_inputs)',
           ],
         },
       ],
@@ -173,6 +178,11 @@
         '-DJAR_NAME=<(jar_name)',
         '-DOUT_DIR=<(ant_build_out)/<(_target_name)',
         '-DJAVAC_INCLUDES=>(javac_includes)',
+
+        # Add list of inputs to the command line, so if inputs change
+        # (e.g. if a Java file is removed), the command will be re-run.
+        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+        '-DTHIS_IS_IGNORED=>(_inputs)',
 
         '-Dbasedir=<(java_in_dir)',
         '-buildfile',

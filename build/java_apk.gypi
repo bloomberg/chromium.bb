@@ -201,6 +201,11 @@
         '-DPROGUARD_FLAGS=>(proguard_flags)',
         '-DPROGUARD_ENABLED=>(proguard_enabled)',
 
+        # Add list of inputs to the command line, so if inputs change
+        # (e.g. if a Java file is removed), the command will be re-run.
+        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
+        '-DTHIS_IS_IGNORED=>(_inputs)',
+
         '-Dbasedir=<(java_in_dir)',
         '-buildfile',
         '<(DEPTH)/build/android/ant/chromium-apk.xml',
