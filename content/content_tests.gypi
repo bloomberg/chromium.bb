@@ -24,8 +24,6 @@
         '..',
       ],
       'sources': [
-        'public/test/accessibility_test_utils_win.cc',
-        'public/test/accessibility_test_utils_win.h',
         'public/test/browser_test.h',
         'public/test/browser_test_base.cc',
         'public/test/browser_test_base.h',
@@ -696,10 +694,6 @@
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            'browser/accessibility/dump_accessibility_tree_helper.cc',
-            'browser/accessibility/dump_accessibility_tree_helper.h',
-            'browser/accessibility/dump_accessibility_tree_helper_mac.mm',
-            'browser/accessibility/dump_accessibility_tree_helper_win.cc',
             'browser/appcache/appcache_browsertest.cc',
             'browser/bookmarklet_browsertest.cc',
             'browser/browser_plugin/browser_plugin_host_browsertest.cc',
@@ -830,13 +824,11 @@
             ['OS=="linux"', {
               'sources!': [
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-                'browser/accessibility/dump_accessibility_tree_helper.cc',
               ],
             }],
             ['OS=="android"', {
               'sources!': [
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-                'browser/accessibility/dump_accessibility_tree_helper.cc',
                 # These are included via dependency on content_common and hence
                 # we get multiple definition errors in a shared library build.
                 # Other builds need it as the symbols are not exported.
@@ -864,8 +856,6 @@
               'sources!': [
                 'browser/accessibility/accessibility_win_browsertest.cc',
                 'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-                'browser/accessibility/dump_accessibility_tree_helper_win.cc',
-                'browser/accessibility/dump_accessibility_tree_helper.cc',
                 'browser/plugin_browsertest.cc',
               ],
             }],
