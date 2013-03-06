@@ -5315,7 +5315,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
         Boo... You have no extensions :-(
       </message>
-      <message name="IDS_EXTENSIONS_APPS_DEVTOOL" desc="Title for the apps devtool app.">
+      <message name="IDS_APPS_DEVTOOL_TITLE" desc="Title for the apps devtool app.">
         Apps Developer Tool
       </message>
       <message name="IDS_EXTENSIONS_PERMISSIONS_HEADING" desc="Heading for permissions dialog in apps_devtools">
@@ -5323,6 +5323,18 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
       <message name="IDS_EXTENSIONS_PERMISSIONS_CLOSE" desc="Close button for permissions dialog in apps_devtools">
         Close
+      </message>
+      <message name="IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load app/extension' button.">
+        Load unpacked app/extension
+      </message>
+      <message name="IDS_APPS_DEVTOOL_PACK_BUTTON" desc="Text for the 'Pack app/extension' button.">
+        Pack app/extension
+      </message>
+      <message name="IDS_APPS_DEVTOOL_UPDATE_BUTTON" desc="Text for the 'Update app/extensions' button.">
+        Update apps/extensions now
+      </message>
+      <message name="IDS_APPS_DEVTOOL_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
+        Boo... You have no apps or extensions :-(
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> instead?

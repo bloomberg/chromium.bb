@@ -781,8 +781,9 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
     dict->SetString(id, l10n_util::GetStringUTF16(idr))
   SET_STRING("extensionSettings", IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
 
-  SET_STRING("extensionSettingsNoExtensions", IDS_EXTENSIONS_NONE_INSTALLED);
-  SET_STRING("extensionSettingsAppsDevtool", IDS_EXTENSIONS_APPS_DEVTOOL);
+  SET_STRING("appsDevtoolNoItems",
+             IDS_APPS_DEVTOOL_NONE_INSTALLED);
+  SET_STRING("appsDevtoolTitle", IDS_APPS_DEVTOOL_TITLE);
   SET_STRING("extensionSettingsGetMoreExtensions", IDS_GET_MORE_EXTENSIONS);
   SET_STRING("extensionSettingsExtensionId", IDS_EXTENSIONS_ID);
   SET_STRING("extensionSettingsExtensionPath", IDS_EXTENSIONS_PATH);
@@ -815,12 +816,12 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsSideloadWipeout",
              IDS_OPTIONS_SIDELOAD_WIPEOUT_BANNER);
   SET_STRING("extensionSettingsShowButton", IDS_EXTENSIONS_SHOW_BUTTON);
-  SET_STRING("extensionSettingsLoadUnpackedButton",
-             IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON);
-  SET_STRING("extensionSettingsPackButton", IDS_EXTENSIONS_PACK_BUTTON);
+  SET_STRING("appsDevtoolLoadUnpackedButton",
+             IDS_APPS_DEVTOOL_LOAD_UNPACKED_BUTTON);
+  SET_STRING("appsDevtoolPackButton", IDS_APPS_DEVTOOL_PACK_BUTTON);
   SET_STRING("extensionSettingsCommandsLink",
              IDS_EXTENSIONS_COMMANDS_CONFIGURE);
-  SET_STRING("extensionSettingsUpdateButton", IDS_EXTENSIONS_UPDATE_BUTTON);
+  SET_STRING("appsDevtoolUpdateButton", IDS_APPS_DEVTOOL_UPDATE_BUTTON);
   SET_STRING("extensionSettingsWarningsTitle", IDS_EXTENSION_WARNINGS_TITLE);
   SET_STRING("extensionSettingsShowDetails", IDS_EXTENSIONS_SHOW_DETAILS);
   SET_STRING("extensionSettingsHideDetails", IDS_EXTENSIONS_HIDE_DETAILS);
