@@ -30,7 +30,7 @@
   *DefaultOption: 65536KB
   *Option: 16384KB {
     *Name: "16MB"
-    *MemoryConfigKB: PAIR(16384, 13950)
+    *MemoryConfigKB: PAIR(16384, 16384)
   }
   *Option: 65536KB {
     *Name: "64MB"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <comdef.h>
 #include <iomanip>
 #include <windows.h>
 #include <winspool.h>
@@ -97,6 +98,7 @@ void SetGoogleUpdateKeys() {
 }
 
 void SetGoogleUpdateError(const string16& message) {
+  LOG(ERROR) << message;
   base::win::RegKey key;
   if (key.Create(HKEY_LOCAL_MACHINE, cloud_print::kGoogleUpdateClientStateKey,
                  KEY_SET_VALUE) != ERROR_SUCCESS) {
@@ -271,7 +273,7 @@ UINT CALLBACK CabinetCallback(PVOID data,
   return NO_ERROR;
 }
 
-void ReadyPpdDependencies(const base::FilePath& destination) {
+void ReadyDriverDependencies(const base::FilePath& destination) {
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // GetCorePrinterDrivers and GetPrinterDriverPackagePath only exist on
     // Vista and later. Winspool.drv must be delayloaded so these calls don't
@@ -309,11 +311,21 @@ void ReadyPpdDependencies(const base::FilePath& destination) {
   }
 }
 
-HRESULT InstallPpd(const base::FilePath& install_path) {
+HRESULT InstallDriver(const base::FilePath& install_path) {
   base::ScopedTempDir temp_path;
   if (!temp_path.CreateUniqueTempDir())
     return HRESULT_FROM_WIN32(ERROR_CANNOT_MAKE);
-  ReadyPpdDependencies(temp_path.path());
+  ReadyDriverDependencies(temp_path.path());
+
+  std::vector<string16> dependent_array;
+  // Add all files. AddPrinterDriverEx will removes unnecessary.
+  for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
+    base::FilePath file_path = temp_path.path().Append(kDependencyList[i]);
+    if (file_util::PathExists(file_path))
+      dependent_array.push_back(file_path.value());
+    else
+      LOG(WARNING) << "File is missing: " << file_path.BaseName().value();
+  }
 
   // Set up paths for the files we depend on.
   base::FilePath data_file = install_path.Append(kDataFileName);
@@ -337,15 +349,6 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   driver_info.pDriverPath = const_cast<LPWSTR>(xps_path.value().c_str());
   driver_info.pConfigFile = const_cast<LPWSTR>(ui_path.value().c_str());
 
-  std::vector<string16> dependent_array;
-  // Add all files. AddPrinterDriverEx will removes unnecessary.
-  for (size_t i = 0; i < arraysize(kDependencyList); ++i) {
-    base::FilePath file_path = temp_path.path().Append(kDependencyList[i]);
-    if (file_util::PathExists(file_path))
-      dependent_array.push_back(file_path.value());
-    else
-      LOG(WARNING) << "File is missing: " << file_path.BaseName().value();
-  }
   string16 dependent_files(JoinString(dependent_array, L'\n'));
   dependent_files.push_back(L'\n');
   std::replace(dependent_files.begin(), dependent_files.end(), L'\n', L'\0');
@@ -368,7 +371,7 @@ HRESULT InstallPpd(const base::FilePath& install_path) {
   return S_OK;
 }
 
-HRESULT UninstallPpd() {
+HRESULT UninstallDriver() {
   int tries = 3;
   string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
   while (!DeletePrinterDriverEx(NULL,
@@ -497,15 +500,15 @@ HRESULT RegisterVirtualDriver(const base::FilePath& install_path) {
     return HRESULT_FROM_WIN32(ERROR_OLD_WIN_VERSION);
   }
 
-  result = RegisterPortMonitor(true, install_path);
+  result = InstallDriver(install_path);
   if (FAILED(result)) {
-    LOG(ERROR) << "Unable to register port monitor.";
+    LOG(ERROR) << "Unable to install driver.";
     return result;
   }
 
-  result = InstallPpd(install_path);
+  result = RegisterPortMonitor(true, install_path);
   if (FAILED(result)) {
-    LOG(ERROR) << "Unable to install Ppd.";
+    LOG(ERROR) << "Unable to register port monitor.";
     return result;
   }
 
@@ -538,9 +541,9 @@ HRESULT TryUnregisterVirtualDriver() {
     LOG(ERROR) << "Unable to delete printer.";
     return result;
   }
-  result = UninstallPpd();
+  result = UninstallDriver();
   if (FAILED(result)) {
-    LOG(ERROR) << "Unable to remove PPD.";
+    LOG(ERROR) << "Unable to remove driver.";
     return result;
   }
   // The second argument is ignored if the first is false.
@@ -682,7 +685,8 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   CommandLine::Init(0, NULL);
   HRESULT retval = ExecuteCommands();
 
-  LOG(INFO) << "HRESULT=0x" << std::setbase(16) << retval;
+  LOG(INFO) << _com_error(retval).ErrorMessage() << " HRESULT=0x" <<
+               std::setbase(16) << retval;
 
   // Installer is silent by default as required by Google Update.
   if (CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
