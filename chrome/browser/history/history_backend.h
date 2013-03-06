@@ -445,6 +445,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Calls ExpireHistoryBackend::ExpireHistoryForTimes and commits the change.
   void ExpireHistoryForTimes(const std::vector<base::Time>& times);
 
+  // Calls ExpireHistoryBetween() once for each element in the vector.
+  // The fields of |ExpireHistoryArgs| map directly to the arguments of
+  // of ExpireHistoryBetween().
+  void ExpireHistory(const std::vector<ExpireHistoryArgs>& expire_list);
+
   // Bookmarks -----------------------------------------------------------------
 
   // Notification that a URL is no longer bookmarked. If there are no visits

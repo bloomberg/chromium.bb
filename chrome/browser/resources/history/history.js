@@ -17,7 +17,6 @@
 var historyModel;
 var historyView;
 var pageState;
-var deleteQueue = [];
 var selectionAnchor = -1;
 var activeVisit = null;
 
@@ -90,6 +89,8 @@ function Visit(result, continued, model) {
 
   // Whether this is the continuation of a previous day.
   this.continued = continued;
+
+  this.allTimestamps = result.allTimestamps;
 }
 
 // Visit, public: -------------------------------------------------------------
@@ -191,8 +192,19 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   }
 
   this.domNode_ = node;
+  node.visit = this;
 
   return node;
+};
+
+/**
+ * Remove this visit from the history.
+ */
+Visit.prototype.removeFromHistory = function() {
+  var self = this;
+  this.model_.removeVisitsFromHistory([this], function() {
+    removeEntryFromView(self.domNode_);
+  });
 };
 
 // Visit, private: ------------------------------------------------------------
@@ -291,19 +303,6 @@ Visit.prototype.addFaviconToElement_ = function(el) {
  */
 Visit.prototype.showMoreFromSite_ = function() {
   setSearch(this.getDomainFromURL_(this.url_));
-};
-
-/**
- * Remove a single entry from the history.
- * @private
- */
-Visit.prototype.removeFromHistory_ = function() {
-  var self = this;
-  var onSuccessCallback = function() {
-    removeEntryFromView(self.domNode_);
-  };
-  queueURLsForDeletion(this.date, [this.url_], onSuccessCallback);
-  deleteNextInQueue();
 };
 
 /**
@@ -443,10 +442,10 @@ HistoryModel.prototype.addResults = function(info, results) {
   var lastVisit = this.visits_.slice(-1)[0];
   var lastDay = lastVisit ? lastVisit.dateRelativeDay : null;
 
-  for (var i = 0, thisResult; thisResult = results[i]; i++) {
-    var thisDay = thisResult.dateRelativeDay;
+  for (var i = 0, result; result = results[i]; i++) {
+    var thisDay = result.dateRelativeDay;
     var isSameDay = lastDay == thisDay;
-    this.visits_.push(new Visit(thisResult, isSameDay, this));
+    this.visits_.push(new Visit(result, isSameDay, this));
     lastDay = thisDay;
   }
 
@@ -477,6 +476,33 @@ HistoryModel.prototype.getNumberedRange = function(start, end) {
 HistoryModel.prototype.hasMoreResults = function() {
   return this.haveDataForPage_(this.requestedPage_ + 1) ||
       !this.isQueryFinished_;
+};
+
+/**
+ * Removes a list of visits from the history, and calls |callback| when the
+ * removal has successfully completed.
+ * @param {Array<Visit>} visits The visits to remove.
+ * @param {Function} callback The function to call after removal succeeds.
+ */
+HistoryModel.prototype.removeVisitsFromHistory = function(visits, callback) {
+  var toBeRemoved = [];
+  for (var i = 0; i < visits.length; i++) {
+    toBeRemoved.push({
+      url: visits[i].url_,
+      timestamps: visits[i].allTimestamps
+    });
+  }
+  chrome.send('removeVisits', toBeRemoved);
+  this.deleteCompleteCallback_ = callback;
+};
+
+/**
+ * Called when visits have been succesfully removed from the history.
+ */
+HistoryModel.prototype.deleteComplete = function() {
+  // Call the callback, with 'this' undefined inside the callback.
+  this.deleteCompleteCallback_.call();
+  this.deleteCompleteCallback_ = null;
 };
 
 // Getter and setter for HistoryModel.rangeInDays_.
@@ -1339,7 +1365,7 @@ function load() {
   };
 
   $('remove-visit').addEventListener('activate', function(e) {
-    activeVisit.removeFromHistory_();
+    activeVisit.removeFromHistory();
     activeVisit = null;
   });
   $('more-from-site').addEventListener('activate', function(e) {
@@ -1464,19 +1490,6 @@ function updateHostStatus(statusElement, newStatus) {
 
 
 /**
- * Delete the next item in our deletion queue.
- */
-function deleteNextInQueue() {
-  if (deleteQueue.length > 0) {
-    // Call the native function to remove history entries.
-    // First arg is a time (in ms since the epoch) identifying the day.
-    // Remaining args are URLs of history entries from that day to delete.
-    chrome.send('removeUrlsOnOneDay',
-                [deleteQueue[0].date.getTime()].concat(deleteQueue[0].urls));
-  }
-}
-
-/**
  * Click handler for the 'Clear browsing data' dialog.
  * @param {Event} e The click event.
  */
@@ -1485,70 +1498,42 @@ function openClearBrowsingData(e) {
 }
 
 /**
- * Queue a set of URLs from the same day for deletion.
- * @param {Date} date A date indicating the day the URLs were visited.
- * @param {Array} urls Array of URLs from the same day to be deleted.
- * @param {Function} opt_callback An optional callback to be executed when
- *        the deletion is complete.
- */
-function queueURLsForDeletion(date, urls, opt_callback) {
-  deleteQueue.push({ 'date': date, 'urls': urls, 'callback': opt_callback });
-}
-
-function reloadHistory() {
-  historyView.reload();
-}
-
-/**
  * Click handler for the 'Remove selected items' button.
- * Collect IDs from the checked checkboxes and send to Chrome for deletion.
+ * Confirms the deletion with the user, and then deletes the selected visits.
  */
 function removeItems() {
   var checked = $('results-display').querySelectorAll(
       '.entry-box input[type=checkbox]:checked:not([disabled])');
-  var urls = [];
   var disabledItems = [];
-  var queue = [];
-  var date = new Date();
+  var toBeRemoved = [];
 
   for (var i = 0; i < checked.length; i++) {
     var checkbox = checked[i];
-    var cbDate = new Date(checkbox.time);
-    if (date.getFullYear() != cbDate.getFullYear() ||
-        date.getMonth() != cbDate.getMonth() ||
-        date.getDate() != cbDate.getDate()) {
-      if (urls.length > 0) {
-        queue.push([date, urls]);
-      }
-      urls = [];
-      date = cbDate;
-    }
-    var link = findAncestorByClass(checkbox, 'entry-box').querySelector('a');
+    var entry = findAncestorByClass(checkbox, 'entry');
+    toBeRemoved.push(entry.visit);
+
+    // Disable the checkbox and put a strikethrough style on the link, so the
+    // user can see what will be deleted.
+    var link = entry.querySelector('a');
     checkbox.disabled = true;
     link.classList.add('to-be-removed');
     disabledItems.push(checkbox);
-    urls.push(link.href);
   }
-  if (urls.length > 0) {
-    queue.push([date, urls]);
-  }
-  if (checked.length > 0 && confirm(loadTimeData.getString('deletewarning'))) {
-    for (var i = 0; i < queue.length; i++) {
-      // Reload the page when the final entry has been deleted.
-      var callback = i == 0 ? reloadHistory : null;
 
-      queueURLsForDeletion(queue[i][0], queue[i][1], callback);
-    }
-    deleteNextInQueue();
-  } else {
-    // If the remove is cancelled, return the checkboxes to their
-    // enabled, non-line-through state.
-    for (var i = 0; i < disabledItems.length; i++) {
-      var checkbox = disabledItems[i];
-      var link = findAncestorByClass(checkbox, 'entry-box').querySelector('a');
-      checkbox.disabled = false;
-      link.classList.remove('to-be-removed');
-    }
+  if (checked.length && confirm(loadTimeData.getString('deletewarning'))) {
+    historyModel.removeVisitsFromHistory(toBeRemoved, function() {
+      historyView.reload();
+    });
+    return;
+  }
+
+  // Return everything to its previous state.
+  for (var i = 0; i < disabledItems.length; i++) {
+    var checkbox = disabledItems[i];
+    checkbox.disabled = false;
+
+    var link = findAncestorByClass(checkbox, 'entry-box').querySelector('a');
+    link.classList.remove('to-be-removed');
   }
 }
 
@@ -1721,30 +1706,17 @@ function historyResult(info, results) {
 }
 
 /**
- * Our history system calls this function when a deletion has finished.
+ * Called by the history backend when history removal is successful.
  */
 function deleteComplete() {
-  if (deleteQueue.length > 0) {
-    // Remove the successfully deleted entry from the queue.
-    if (deleteQueue[0].callback)
-      deleteQueue[0].callback.apply();
-    deleteQueue.splice(0, 1);
-    deleteNextInQueue();
-  } else {
-    console.error('Received deleteComplete but queue is empty.');
-  }
+  historyModel.deleteComplete();
 }
 
 /**
- * Our history system calls this function if a delete is not ready (e.g.
- * another delete is in-progress).
+ * Called by the history backend when history removal is unsuccessful.
  */
 function deleteFailed() {
   window.console.log('Delete failed');
-
-  // The deletion failed - try again later.
-  // TODO(dubroy): We should probably give up at some point.
-  setTimeout(deleteNextInQueue, 500);
 }
 
 /**

@@ -15,6 +15,7 @@ function createHistoryEntry(timestamp) {
   return {
     dateTimeOfDay: d.getHours() + ':' + d.getMinutes(),
     dateRelativeDay: d.toDateString(),
+    allTimestamps: [timestamp],
     starred: false,
     time: timestamp,
     title: d.toString(),  // Use the stringified date as the title.
@@ -133,7 +134,7 @@ HistoryWebUITest.prototype = {
     BaseHistoryWebUITest.prototype.preLoad.call(this);
 
     this.registerMockHandler_(
-        'removeUrlsOnOneDay', this.removeUrlsStub_.bind(this));
+        'removeVisits', this.removeVisitsStub_.bind(this));
 
     // Prepare a list of fake history results. The entries will begin at
     // 1:00 AM on Sept 2, 2008, and will be spaced two minutes apart.
@@ -178,23 +179,35 @@ HistoryWebUITest.prototype = {
   },
 
   /**
-   * Stub for the 'removeUrlsOnOneDay' message to the history backend.
+   * Stub for the 'removeVisits' message to the history backend.
    * This will modify the fake history data in the test instance, so that
    * further 'queryHistory' messages will not contain the deleted entries.
-   * @param {Array} arguments The original arguments to removeUrlsOnOneDay.
+   * @param {Array} arguments The original arguments to removeVisits.
    */
-  removeUrlsStub_: function(args) {
-    var day = new Date(args[0]).toDateString();
-    var urls = args.slice(1);
+  removeVisitsStub_: function(args) {
+    for (var i = 0; i < args.length; ++i) {
+      var url = args[i].url;
+      var timestamps = args[i].timestamps;
+      assertEquals(timestamps.length, 1);
+      this.removeVisitsToUrl_(url, new Date(timestamps[0]));
+    }
+    callFrontendAsync('deleteComplete');
+  },
 
-    // Remove the matching URLs from the fake history data.
+  /**
+   * Removes any visits to |url| on the same day as |date| from the fake
+   * history data.
+   * @param {string} url
+   * @param {Date} date
+   */
+  removeVisitsToUrl_: function(url, date) {
+    var day = date.toDateString();
     var newHistory = [];
     for (var i = 0, visit; visit = this.fakeHistory_[i]; ++i) {
-      if (urls.indexOf(visit.url) < 0 || visit.dateRelativeDay != day)
+      if (url != visit.url || visit.dateRelativeDay != day)
         newHistory.push(visit);
     }
     this.fakeHistory_ = newHistory;
-    callFrontendAsync('deleteComplete');
   }
 };
 

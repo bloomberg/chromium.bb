@@ -231,29 +231,29 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
   return request.PassAs<Request>();
 }
 
-scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistoryBetween(
-    const std::set<GURL>& urls,
-    base::Time begin_time,
-    base::Time end_time,
-    const WebHistoryService::ExpireWebHistoryCallback& callback) {
-
-  // Determine the timestamps representing the beginning and end of the day.
-  std::string min_timestamp = ServerTimeString(begin_time);
-  std::string max_timestamp = ServerTimeString(end_time);
-
+scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
+    const std::vector<ExpireHistoryArgs>& expire_list,
+    const ExpireWebHistoryCallback& callback) {
   DictionaryValue delete_request;
-  ListValue* deletions = new ListValue;
-  delete_request.Set("del", deletions);
+  scoped_ptr<ListValue> deletions(new ListValue);
 
-  for (std::set<GURL>::const_iterator it = urls.begin();
-       it != urls.end(); ++it) {
-    DictionaryValue* deletion = new DictionaryValue;
-    deletion->SetString("type", "CHROME_HISTORY");
-    deletion->SetString("url", it->spec());
-    deletion->SetString("min_timestamp_usec", min_timestamp);
-    deletion->SetString("max_timestamp_usec", max_timestamp);
-    deletions->Append(deletion);
+  for (std::vector<ExpireHistoryArgs>::const_iterator it = expire_list.begin();
+       it != expire_list.end(); ++it) {
+    // Convert the times to server timestamps.
+    std::string min_timestamp = ServerTimeString(it->begin_time);
+    std::string max_timestamp = ServerTimeString(it->end_time);
+
+    for (std::set<GURL>::const_iterator url_iterator = it->urls.begin();
+         url_iterator != it->urls.end(); ++url_iterator) {
+      scoped_ptr<DictionaryValue> deletion(new DictionaryValue);
+      deletion->SetString("type", "CHROME_HISTORY");
+      deletion->SetString("url", url_iterator->spec());
+      deletion->SetString("min_timestamp_usec", min_timestamp);
+      deletion->SetString("max_timestamp_usec", max_timestamp);
+      deletions->Append(deletion.release());
+    }
   }
+  delete_request.Set("del", deletions.release());
   std::string post_data;
   base::JSONWriter::Write(&delete_request, &post_data);
 
