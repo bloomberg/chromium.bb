@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
+#include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
@@ -89,11 +90,23 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
 
+#if defined(OS_WIN)
+  void DeleteProcessWaitableEvent(base::WaitableEvent* event);
+  void OnProcessExitedEarly(base::WaitableEvent* event);
+#endif
+
   ChildProcessData data_;
   BrowserChildProcessHostDelegate* delegate_;
   scoped_ptr<ChildProcessHost> child_process_host_;
 
   scoped_ptr<ChildProcessLauncher> child_process_;
+
+#if defined(OS_WIN)
+  // Watches to see if the child process exits before the IPC channel has
+  // been connected. Thereafter, its exit is determined by an error on the
+  // IPC channel.
+  base::WaitableEventWatcher early_exit_watcher_;
+#endif
 };
 
 }  // namespace content

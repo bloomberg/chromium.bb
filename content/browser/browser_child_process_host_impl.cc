@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/profiler_message_filter.h"
@@ -109,6 +110,10 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   g_child_process_list.Get().remove(this);
+
+#if defined(OS_WIN)
+  DeleteProcessWaitableEvent(early_exit_watcher_.GetWatchedEvent());
+#endif
 }
 
 // static
@@ -227,9 +232,17 @@ bool BrowserChildProcessHostImpl::OnMessageReceived(
 }
 
 void BrowserChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
+#if defined(OS_WIN)
+  // From this point onward, the exit of the child process is detected by an
+  // error on the IPC channel.
+  DeleteProcessWaitableEvent(early_exit_watcher_.GetWatchedEvent());
+  early_exit_watcher_.StopWatching();
+#endif
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&NotifyProcessHostConnected, data_));
+
   delegate_->OnChannelConnected(peer_pid);
 }
 
@@ -290,8 +303,43 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
     delete delegate_;  // Will delete us
     return;
   }
+
+#if defined(OS_WIN)
+  // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the
+  // child process exits. This watcher is stopped once the IPC channel is
+  // connected and the exit of the child process is detecter by an error on the
+  // IPC channel thereafter.
+  DCHECK(!early_exit_watcher_.GetWatchedEvent());
+  early_exit_watcher_.StartWatching(
+      new base::WaitableEvent(child_process_->GetHandle()),
+      base::Bind(&BrowserChildProcessHostImpl::OnProcessExitedEarly,
+                 base::Unretained(this)));
+#endif
+
   data_.handle = child_process_->GetHandle();
   delegate_->OnProcessLaunched();
 }
+
+#if defined(OS_WIN)
+
+void BrowserChildProcessHostImpl::DeleteProcessWaitableEvent(
+    base::WaitableEvent* event) {
+  if (!event)
+    return;
+
+  // The WaitableEvent does not own the process handle so ensure it does not
+  // close it.
+  event->Release();
+
+  delete event;
+}
+
+void BrowserChildProcessHostImpl::OnProcessExitedEarly(
+    base::WaitableEvent* event) {
+  DeleteProcessWaitableEvent(event);
+  OnChildDisconnected();
+}
+
+#endif
 
 }  // namespace content
