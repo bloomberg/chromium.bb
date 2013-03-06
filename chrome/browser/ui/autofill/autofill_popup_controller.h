@@ -21,8 +21,8 @@ class RectF;
 // This interface provides data to an AutofillPopupView.
 class AutofillPopupController {
  public:
-  // Called when the view is going down.
-  virtual void ViewDestroyed() = 0;
+  // Called when the popup should get hidden.
+  virtual void Hide() = 0;
 
   // Recalculates the height and width of the popup and triggers a redraw.
   virtual void UpdateBoundsAndRedrawPopup() = 0;

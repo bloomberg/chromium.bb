@@ -19,9 +19,7 @@ AutofillPopupViewAndroid::AutofillPopupViewAndroid(
     AutofillPopupController* controller)
     : controller_(controller) {}
 
-AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {
-  controller_->ViewDestroyed();
-}
+AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {}
 
 void AutofillPopupViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -37,6 +35,8 @@ void AutofillPopupViewAndroid::Show() {
 }
 
 void AutofillPopupViewAndroid::Hide() {
+  AutofillPopupView::Hide();
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillPopupGlue_dismiss(env, java_object_.obj());
 }
