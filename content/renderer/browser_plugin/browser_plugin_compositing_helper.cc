@@ -4,6 +4,7 @@
 
 #include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 
+#include "cc/context_provider.h"
 #include "cc/solid_color_layer.h"
 #include "cc/texture_layer.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -11,7 +12,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
@@ -67,10 +67,14 @@ void BrowserPluginCompositingHelper::FreeMailboxMemory(
   if (mailbox_name.empty())
     return;
 
-  WebKit::WebGraphicsContext3D *context =
-     WebKit::WebSharedGraphicsContext3D::mainThreadContext();
-  if (!context)
+  scoped_refptr<cc::ContextProvider> context_provider =
+      RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
+  if (!context_provider->InitializeOnMainThread())
     return;
+  if (!context_provider->BindToCurrentThread())
+    return;
+
+  WebKit::WebGraphicsContext3D *context = context_provider->Context3d();
   // When a buffer is released from the compositor, we also get a
   // sync point that specifies when in the command buffer
   // it's safe to use it again.
