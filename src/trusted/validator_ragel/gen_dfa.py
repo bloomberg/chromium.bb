@@ -1452,6 +1452,14 @@ def main():
             Attribute('nacl-amd64-forbidden') in instruction.attributes):
           continue
 
+        # TODO(shcherbina): Remove it once compilation time problem
+        # (https://code.google.com/p/nativeclient/issues/detail?id=3327)
+        # is resolved.
+        if Attribute('CPUFeature_AVX') in instruction.attributes:
+          continue
+        if Attribute('CPUFeature_XOP') in instruction.attributes:
+          continue
+
       instruction_names.add((instruction.GetNameAsIdentifier(),
                              instruction.name))
 
