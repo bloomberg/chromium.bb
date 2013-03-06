@@ -64,13 +64,9 @@ ComponentCloudPolicyStore::Delegate::~Delegate() {}
 
 ComponentCloudPolicyStore::ComponentCloudPolicyStore(
     Delegate* delegate,
-    ResourceCache* cache,
-    const std::string& username,
-    const std::string& dm_token)
+    ResourceCache* cache)
     : delegate_(delegate),
-      cache_(cache),
-      username_(username),
-      dm_token_(dm_token) {}
+      cache_(cache) {}
 
 ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
   DCHECK(CalledOnValidThread());
@@ -107,9 +103,17 @@ const std::string& ComponentCloudPolicyStore::GetCachedHash(
   return it == cached_hashes_.end() ? EmptyString() : it->second;
 }
 
+void ComponentCloudPolicyStore::SetCredentials(const std::string& username,
+                                               const std::string& dm_token) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(username_.empty() || username == username_);
+  DCHECK(dm_token_.empty() || dm_token == dm_token_);
+  username_ = username;
+  dm_token_ = dm_token;
+}
+
 void ComponentCloudPolicyStore::Load() {
   DCHECK(CalledOnValidThread());
-
   typedef std::map<std::string, std::string> ContentMap;
 
   // Load all cached policy protobufs for each domain.
@@ -252,6 +256,9 @@ bool ComponentCloudPolicyStore::ValidateProto(
     const std::string& settings_entity_id,
     em::ExternalPolicyData* payload,
     em::PolicyData* policy_data) {
+  if (username_.empty() || dm_token_.empty())
+    return false;
+
   scoped_ptr<ComponentCloudPolicyValidator> validator(
       ComponentCloudPolicyValidator::Create(proto.Pass()));
   validator->ValidateUsername(username_);

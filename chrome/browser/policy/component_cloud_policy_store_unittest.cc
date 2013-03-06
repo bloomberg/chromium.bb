@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/component_cloud_policy_store.h"
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -59,11 +60,9 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     cache_.reset(new ResourceCache(temp_dir_.path()));
-    store_.reset(
-        new ComponentCloudPolicyStore(&store_delegate_,
-                                      cache_.get(),
-                                      ComponentPolicyBuilder::kFakeUsername,
-                                      ComponentPolicyBuilder::kFakeToken));
+    store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
+    store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
+                           ComponentPolicyBuilder::kFakeToken);
 
     builder_.policy_data().set_policy_type(
         dm_protocol::kChromeExtensionPolicyType);
@@ -157,6 +156,41 @@ TEST_F(ComponentCloudPolicyStoreTest, ValidatePolicyBadPayload) {
   EXPECT_FALSE(store_->ValidatePolicy(CreateResponse(), &ns, &payload));
 }
 
+TEST_F(ComponentCloudPolicyStoreTest, ValidateNoCredentials) {
+  store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
+  em::ExternalPolicyData payload;
+  PolicyNamespace ns;
+  EXPECT_FALSE(store_->ValidatePolicy(CreateResponse(), &ns, &payload));
+}
+
+TEST_F(ComponentCloudPolicyStoreTest, ValidateWrongCredentials) {
+  em::ExternalPolicyData payload;
+  PolicyNamespace ns;
+  // Verify that the default response validates with the right credentials.
+  EXPECT_TRUE(store_->ValidatePolicy(CreateResponse(), &ns, &payload));
+  // Now store that response.
+  EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
+  EXPECT_TRUE(store_->Store(
+      ns, CreateSerializedResponse(), TestPolicyHash(), kTestPolicy));
+  Mock::VerifyAndClearExpectations(&store_delegate_);
+  EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
+  // And verify that the response data in the cache.
+  std::map<std::string, std::string> contents;
+  cache_->LoadAllSubkeys("extension-policy", &contents);
+  EXPECT_FALSE(contents.empty());
+
+  // Try loading the cached response data with wrong credentials.
+  ComponentCloudPolicyStore another_store(&store_delegate_, cache_.get());
+  another_store.SetCredentials("wrongdude@example.com", "wrongtoken");
+  another_store.Load();
+  const PolicyBundle empty_bundle;
+  EXPECT_TRUE(another_store.policy().Equals(empty_bundle));
+
+  // The failure to read wiped the cache.
+  cache_->LoadAllSubkeys("extension-policy", &contents);
+  EXPECT_TRUE(contents.empty());
+}
+
 TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
   // Initially empty.
   EXPECT_TRUE(IsEmpty());
@@ -204,10 +238,9 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
   EXPECT_EQ(TestPolicyHash(), store_->GetCachedHash(ns));
 
   // Loading from the cache validates the policy data again.
-  ComponentCloudPolicyStore another_store(&store_delegate_,
-                                          cache_.get(),
-                                          ComponentPolicyBuilder::kFakeUsername,
-                                          ComponentPolicyBuilder::kFakeToken);
+  ComponentCloudPolicyStore another_store(&store_delegate_, cache_.get());
+  another_store.SetCredentials(ComponentPolicyBuilder::kFakeUsername,
+                               ComponentPolicyBuilder::kFakeToken);
   another_store.Load();
   EXPECT_TRUE(another_store.policy().Equals(expected_bundle_));
   EXPECT_EQ(TestPolicyHash(), another_store.GetCachedHash(ns));
@@ -253,12 +286,11 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
 
   // Loading the store again will still see |ns|.
-  ComponentCloudPolicyStore another_store(&store_delegate_,
-                                          cache_.get(),
-                                          ComponentPolicyBuilder::kFakeUsername,
-                                          ComponentPolicyBuilder::kFakeToken);
+  ComponentCloudPolicyStore another_store(&store_delegate_, cache_.get());
   const PolicyBundle empty_bundle;
   EXPECT_TRUE(another_store.policy().Equals(empty_bundle));
+  another_store.SetCredentials(ComponentPolicyBuilder::kFakeUsername,
+                               ComponentPolicyBuilder::kFakeToken);
   another_store.Load();
   EXPECT_TRUE(another_store.policy().Equals(expected_bundle_));
 
@@ -272,11 +304,9 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
   EXPECT_TRUE(store_->policy().Equals(empty_bundle));
 
   // And they aren't loaded anymore either.
-  ComponentCloudPolicyStore yet_another_store(
-      &store_delegate_,
-      cache_.get(),
-      ComponentPolicyBuilder::kFakeUsername,
-      ComponentPolicyBuilder::kFakeToken);
+  ComponentCloudPolicyStore yet_another_store(&store_delegate_, cache_.get());
+  yet_another_store.SetCredentials(ComponentPolicyBuilder::kFakeUsername,
+                                   ComponentPolicyBuilder::kFakeToken);
   yet_another_store.Load();
   EXPECT_TRUE(yet_another_store.policy().Equals(empty_bundle));
 }

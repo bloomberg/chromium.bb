@@ -66,11 +66,9 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     cache_.reset(new ResourceCache(temp_dir_.path()));
-    store_.reset(
-        new ComponentCloudPolicyStore(&store_delegate_,
-                                      cache_.get(),
-                                      ComponentPolicyBuilder::kFakeUsername,
-                                      ComponentPolicyBuilder::kFakeToken));
+    store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
+    store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
+                           ComponentPolicyBuilder::kFakeToken);
     fetcher_factory_.set_remove_fetcher_on_delete(true);
     scoped_refptr<net::URLRequestContextGetter> request_context;
     task_runner_ = new base::TestSimpleTaskRunner();

@@ -39,12 +39,8 @@ class ComponentCloudPolicyStore : public base::NonThreadSafe {
   };
 
   // Both the |delegate| and the |cache| must outlive this object.
-  // |username| and |dm_token| are used to validate the cached data, and data
-  // stored later.
   ComponentCloudPolicyStore(Delegate* delegate,
-                            ResourceCache* cache,
-                            const std::string& username,
-                            const std::string& dm_token);
+                            ResourceCache* cache);
   ~ComponentCloudPolicyStore();
 
   // Helper that returns true for PolicyDomains that can be managed by this
@@ -68,6 +64,12 @@ class ComponentCloudPolicyStore : public base::NonThreadSafe {
   // The cached hash for namespace |ns|, or the empty string if |ns| is not
   // cached.
   const std::string& GetCachedHash(const PolicyNamespace& ns) const;
+
+  // |username| and |dm_token| are used to validate the cached data, and data
+  // stored later.
+  // All ValidatePolicy() requests without credentials fail.
+  void SetCredentials(const std::string& username,
+                      const std::string& dm_token);
 
   // Loads and validates all the currently cached protobufs and policy data.
   // This is performed synchronously, and policy() will return the cached
