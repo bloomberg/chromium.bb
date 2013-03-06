@@ -104,6 +104,9 @@ class WebKitTestController : public base::NonThreadSafe,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const LoadCommittedDetails& details,
+      const FrameNavigateParams& params) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // NotificationObserver implementation.
@@ -112,15 +115,10 @@ class WebKitTestController : public base::NonThreadSafe,
                        const NotificationDetails& details) OVERRIDE;
 
  private:
-  enum WhetherToQuitMessageLoop {
-    QUIT_MESSAGE_LOOP,
-    DO_NOT_QUIT_MESSAGE_LOOP,
-  };
-
   static WebKitTestController* instance_;
 
   void TimeoutHandler();
-  void DiscardMainWindow(WhetherToQuitMessageLoop quit_message_loop);
+  void DiscardMainWindow();
   void SendTestConfiguration();
 
   // Message handlers.
@@ -146,6 +144,8 @@ class WebKitTestController : public base::NonThreadSafe,
   Shell* main_window_;
 
   int current_pid_;
+  bool prune_history_;
+  bool is_running_test_;
 
   bool is_compositing_test_;
 
