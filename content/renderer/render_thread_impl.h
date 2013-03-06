@@ -22,10 +22,12 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
+class GrContext;
 class SkBitmap;
 struct ViewMsg_New_Params;
 
 namespace WebKit {
+class WebGraphicsContext3D;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 }
@@ -41,6 +43,10 @@ class ScopedCOMInitializer;
 #endif
 }
 
+namespace cc {
+class ContextProvider;
+}
+
 namespace IPC {
 class ForwardingMessageFilter;
 }
@@ -51,6 +57,12 @@ class AudioHardwareConfig;
 
 namespace v8 {
 class Extension;
+}
+
+namespace webkit {
+namespace gpu {
+class GrContextForWebGraphicsContext3D;
+}
 }
 
 namespace content {
@@ -216,7 +228,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   }
 
 
-
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
   WebKit::WebMediaStreamCenter* CreateMediaStreamCenter(
@@ -261,6 +272,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Handle loss of the shared GpuVDAContext3D context above.
   static void OnGpuVDAContextLoss();
+
+  scoped_refptr<cc::ContextProvider> OffscreenContextProviderForMainThread();
+  scoped_refptr<cc::ContextProvider>
+      OffscreenContextProviderForCompositorThread();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on
@@ -340,6 +355,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   void IdleHandlerInForegroundTab();
 
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateOffscreenContext3d();
+
   // These objects live solely on the render thread.
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
@@ -406,6 +423,12 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
+
+  class RendererContextProviderCommandBuffer;
+  scoped_refptr<RendererContextProviderCommandBuffer>
+      shared_contexts_main_thread_;
+  scoped_refptr<RendererContextProviderCommandBuffer>
+      shared_contexts_compositor_thread_;
 
   ObserverList<RenderProcessObserver> observers_;
 

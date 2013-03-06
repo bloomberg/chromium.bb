@@ -29,8 +29,7 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
-
-  bool DestroyedOnMainThread();
+  virtual bool DestroyedOnMainThread() OVERRIDE;
 
  protected:
   virtual ~ContextProviderCommandBuffer();

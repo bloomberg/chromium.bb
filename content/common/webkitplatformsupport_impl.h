@@ -11,7 +11,6 @@
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
 namespace content {
-class GpuChannelHostFactory;
 
 // This is a specialization of WebKitPlatformSupportImpl that implements the
 // embedder functions in terms of ContentClient.
@@ -35,14 +34,6 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
   virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketBridge(
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
-
-  static void SetOffscreenContextFactoryForTest(
-      OffscreenContextFactory factory);
-
- protected:
-  virtual GpuChannelHostFactory* GetGpuChannelHostFactory();
 };
 
 }  // namespace content

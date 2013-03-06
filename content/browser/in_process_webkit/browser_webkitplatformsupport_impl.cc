@@ -120,9 +120,4 @@ int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
   return file_util::Delete(path, false) ? 0 : 1;
 }
 
-GpuChannelHostFactory*
-BrowserWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
-  return BrowserGpuChannelHostFactory::instance();
-}
-
 }  // namespace content

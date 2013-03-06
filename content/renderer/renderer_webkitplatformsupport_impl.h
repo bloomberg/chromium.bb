@@ -14,6 +14,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 
+namespace cc {
+class ContextProvider;
+}
+
 namespace webkit_glue {
 class WebClipboardImpl;
 }
@@ -101,6 +105,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       WebKit::WebMediaStreamCenterClient* client);
   virtual bool processMemorySizesInBytes(
       size_t* private_bytes, size_t* shared_bytes);
+  virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  virtual WebKit::WebGraphicsContext3D* sharedOffscreenGraphicsContext3D();
+  virtual GrContext* sharedOffscreenGrContext();
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -113,9 +121,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   // Set WebGamepads to return when sampleGamepads() is invoked.
   static void SetMockGamepadsForTesting(const WebKit::WebGamepads& pads);
-
- protected:
-  virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
@@ -157,6 +162,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+
+  scoped_refptr<cc::ContextProvider> shared_offscreen_context_;
 };
 
 }  // namespace content

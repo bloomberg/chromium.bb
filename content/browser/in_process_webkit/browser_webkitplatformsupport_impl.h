@@ -41,9 +41,6 @@ class BrowserWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
 
- protected:
-  virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
-
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
 };

@@ -12,10 +12,12 @@
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
 #include "base/utf_string_conversions.h"
+#include "cc/context_provider.h"
 #include "content/common/database_util.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/fileapi/webblobregistry_impl.h"
 #include "content/common/fileapi/webfilesystem_impl.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/npobject_util.h"
@@ -52,6 +54,7 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -828,11 +831,6 @@ void RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(
   g_test_gamepads.Get() = pads;
 }
 
-GpuChannelHostFactory*
-RendererWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
-  return RenderThreadImpl::current();
-}
-
 //------------------------------------------------------------------------------
 
 WebKit::WebHyphenator* RendererWebKitPlatformSupportImpl::hyphenator() {
@@ -851,5 +849,49 @@ bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
       new ViewHostMsg_GetProcessMemorySizes(private_bytes, shared_bytes));
   return true;
 }
+
+//------------------------------------------------------------------------------
+
+WebKit::WebGraphicsContext3D*
+RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
+  // The WebGraphicsContext3DInProcessImpl code path is used for
+  // layout tests (though not through this code) as well as for
+  // debugging and bringing up new ports.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
+    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+        attributes, false);
+  } else {
+    return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+        RenderThreadImpl::current(),
+        attributes,
+        GURL(attributes.topDocumentURL));
+  }
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebGraphicsContext3D* RendererWebKitPlatformSupportImpl::
+    sharedOffscreenGraphicsContext3D() {
+  if (!shared_offscreen_context_ ||
+      shared_offscreen_context_->DestroyedOnMainThread()) {
+    shared_offscreen_context_ =
+        RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
+  }
+  if (!shared_offscreen_context_->InitializeOnMainThread())
+    return NULL;
+  if (!shared_offscreen_context_->BindToCurrentThread())
+    return NULL;
+  return shared_offscreen_context_->Context3d();
+}
+
+//------------------------------------------------------------------------------
+
+GrContext* RendererWebKitPlatformSupportImpl::sharedOffscreenGrContext() {
+  if (!shared_offscreen_context_)
+    return NULL;
+  return shared_offscreen_context_->GrContext();
+}
+
 
 }  // namespace content

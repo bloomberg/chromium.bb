@@ -344,11 +344,13 @@ void CompositorImpl::scheduleComposite() {
 }
 
 class NullContextProvider : public cc::ContextProvider {
-  virtual bool InitializeOnMainThread() { return false; }
-  virtual bool BindToCurrentThread() { return false; }
-  virtual WebKit::WebGraphicsContext3D* Context3d() { return NULL; }
-  virtual class GrContext* GrContext() { return NULL; }
-  virtual void VerifyContexts() {}
+  virtual bool InitializeOnMainThread() OVERRIDE { return false; }
+  virtual bool BindToCurrentThread() OVERRIDE { return false; }
+  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
+  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
+  virtual void VerifyContexts() OVERRIDE {}
+  virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
+
  protected:
   virtual ~NullContextProvider() {}
 };

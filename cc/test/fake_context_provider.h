@@ -26,8 +26,7 @@ class FakeContextProvider : public cc::ContextProvider {
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual void VerifyContexts() OVERRIDE;
-
-  bool DestroyedOnMainThread();
+  virtual bool DestroyedOnMainThread() OVERRIDE;
 
  protected:
   virtual ~FakeContextProvider();
