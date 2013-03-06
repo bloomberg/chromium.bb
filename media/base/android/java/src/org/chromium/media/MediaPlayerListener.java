@@ -9,8 +9,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -18,7 +16,7 @@ import org.chromium.base.JNINamespace;
 // This class implements all the listener interface for android mediaplayer.
 // Callbacks will be sent to the native class for processing.
 @JNINamespace("media")
-class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPreparedListener,
+class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     MediaPlayer.OnCompletionListener,
     MediaPlayer.OnBufferingUpdateListener,
     MediaPlayer.OnSeekCompleteListener,
@@ -106,15 +104,9 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
     }
 
     @Override
-    public void onCallStateChanged(int type, String number) {
-        if (type != TelephonyManager.CALL_STATE_IDLE) {
-            nativeOnMediaInterrupted(mNativeMediaPlayerListener);
-        }
-    }
-
-    @Override
     public void onAudioFocusChange(int focusChange) {
-        if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS ||
+                focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
             nativeOnMediaInterrupted(mNativeMediaPlayerListener);
         }
     }
@@ -122,16 +114,6 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
     @CalledByNative
     public void releaseResources() {
         if (mContext != null) {
-            if (PackageManager.PERMISSION_GRANTED ==
-                mContext.checkCallingOrSelfPermission(permission.READ_PHONE_STATE)) {
-                // Unregister the listener.
-                TelephonyManager mgr =
-                        (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-                if (mgr != null) {
-                    mgr.listen(this, PhoneStateListener.LISTEN_NONE);
-                }
-            }
-
             // Unregister the wish for audio focus.
             AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             if (am != null) {
@@ -144,7 +126,7 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
     private static MediaPlayerListener create(int nativeMediaPlayerListener,
             Context context, MediaPlayer mediaPlayer) {
         final MediaPlayerListener listener =
-            new MediaPlayerListener(nativeMediaPlayerListener, context);
+                new MediaPlayerListener(nativeMediaPlayerListener, context);
         mediaPlayer.setOnBufferingUpdateListener(listener);
         mediaPlayer.setOnCompletionListener(listener);
         mediaPlayer.setOnErrorListener(listener);
@@ -154,15 +136,6 @@ class MediaPlayerListener extends PhoneStateListener implements MediaPlayer.OnPr
         if (PackageManager.PERMISSION_GRANTED ==
                 context.checkCallingOrSelfPermission(permission.WAKE_LOCK)) {
             mediaPlayer.setWakeMode(context, android.os.PowerManager.FULL_WAKE_LOCK);
-        }
-
-        if (PackageManager.PERMISSION_GRANTED ==
-            context.checkCallingOrSelfPermission(permission.READ_PHONE_STATE)) {
-            TelephonyManager mgr =
-                    (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            if (mgr != null) {
-                mgr.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
-            }
         }
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
