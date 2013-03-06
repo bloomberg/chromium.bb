@@ -156,6 +156,15 @@ std::string DeriveCommandLine(const GURL& start_url,
             ::switches::kRegisterPepperPlugins).c_str());
   }
 
+  // TODO(zelidrag): Remove this hack that get us around compositing bug from
+  // http://crbug.com/179256 once that bug is resolved.
+  if (command_line->HasSwitch(::switches::kForceAppMode)) {
+    std::string switch_to_remove("--");
+    switch_to_remove.append(cc::switches::kEnablePartialSwap);
+    cmd_line_str = cmd_line_str.replace(cmd_line_str.find(switch_to_remove),
+                                        switch_to_remove.length(), "");
+  }
+
   return cmd_line_str;
 }
 
@@ -275,6 +284,10 @@ std::string GetKioskAppCommandLine(const std::string& app_id) {
   app_switches.SetString(::switches::kForceAppMode, std::string());
   app_switches.SetString(::switches::kAppId, app_id);
   app_switches.SetString(::switches::kLoginUser, std::string());
+  // TODO(zelidrag): Move the next switch to /sbin/session_manager_setup.sh
+  // instead once http://crbug.com/179256 is resolved.
+  app_switches.SetString(::switches::kEnableBrowserPluginCompositing,
+                         std::string());
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   CommandLine new_command_line(browser_command_line.GetProgram());
