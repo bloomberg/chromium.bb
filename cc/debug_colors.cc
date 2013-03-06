@@ -124,10 +124,15 @@ SkColor DebugColors::MissingPictureFillColor() { return SK_ColorMAGENTA; }
 
 // ======= HUD widget colors =======
 
+SkColor DebugColors::HUDBackgroundColor() { return SkColorSetARGB(215, 17, 17, 17); }
+SkColor DebugColors::HUDSeparatorLineColor() { return SkColorSetARGB(255, 130, 130, 130); }
+SkColor DebugColors::HUDIndicatorLineColor() { return SkColorSetARGB(255, 80, 80, 80); }
+
 SkColor DebugColors::PlatformLayerTreeTextColor() { return SK_ColorRED; }
 SkColor DebugColors::FPSDisplayTextAndGraphColor() { return SK_ColorRED; }
+SkColor DebugColors::MemoryDisplayTextColor() { return SkColorSetARGB(255, 220, 220, 220); }
 
-// Paint time display has the same green as used for paint time in the WebInspector
-SkColor DebugColors::PaintTimeDisplayTextAndGraphColor() { return SkColorSetRGB(95, 160, 80); }
+// Paint time display in green (similar to paint times in the WebInspector)
+SkColor DebugColors::PaintTimeDisplayTextAndGraphColor() { return SkColorSetRGB(75, 155, 55); }
 
 }  // namespace cc

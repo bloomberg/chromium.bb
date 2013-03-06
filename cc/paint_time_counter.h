@@ -44,7 +44,7 @@ class PaintTimeCounter {
 
   void ClearHistory();
 
-  typedef RingBuffer<Entry, 90> RingBufferType;
+  typedef RingBuffer<Entry, 200> RingBufferType;
   RingBufferType::Iterator Begin() const { return ring_buffer_.Begin(); }
   RingBufferType::Iterator End() const { return ring_buffer_.End(); }
 

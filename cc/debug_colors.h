@@ -88,8 +88,13 @@ class DebugColors {
   static SkColor NonPaintedFillColor();
   static SkColor MissingPictureFillColor();
 
+  static SkColor HUDBackgroundColor();
+  static SkColor HUDSeparatorLineColor();
+  static SkColor HUDIndicatorLineColor();
+
   static SkColor PlatformLayerTreeTextColor();
   static SkColor FPSDisplayTextAndGraphColor();
+  static SkColor MemoryDisplayTextColor();
   static SkColor PaintTimeDisplayTextAndGraphColor();
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DebugColors);
