@@ -403,7 +403,8 @@ void WalletClient::OnURLFetchComplete(
   RequestType type = request_type_;
   request_type_ = NO_PENDING_REQUEST;
 
-  if (!(type == ACCEPT_LEGAL_DOCUMENTS || SEND_STATUS) && !response_dict) {
+  if (!(type == ACCEPT_LEGAL_DOCUMENTS || type == SEND_STATUS) &&
+      !response_dict) {
     HandleMalformedResponse(old_request.get());
     return;
   }

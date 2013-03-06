@@ -715,6 +715,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kAcceptLegalDocumentsValidRequest, GetData(fetcher));
+  fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -1381,6 +1382,7 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest, GetData(fetcher));
+  fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -1400,6 +1402,7 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(")]}'");  // Invalid JSON. Should be ignored.
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
