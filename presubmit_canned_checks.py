@@ -796,7 +796,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None,
   owner_email = owner_email or input_api.change.author_email
 
   if author_counts_as_owner and owner_email:
-    reviewers_plus_owner = set([owner_email]).union(reviewers or set())
+    reviewers_plus_owner = set([owner_email]).union(reviewers)
     missing_files = owners_db.files_not_covered_by(affected_files,
         reviewers_plus_owner)
   else:
@@ -833,7 +833,7 @@ def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   """
   issue_props = _GetRietveldIssueProps(input_api, True)
   if not issue_props:
-    return None, None
+    return None, set()
 
   if not approval_needed:
     return issue_props['owner_email'], set(issue_props['reviewers'])
