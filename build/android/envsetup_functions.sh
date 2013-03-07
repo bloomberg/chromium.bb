@@ -270,10 +270,20 @@ ${ANDROID_SDK_VERSION}
   ANDROID_SDK=$(python -c \
       "import os.path; print os.path.relpath('${ANDROID_SDK_ROOT}', \
       '${ANDROID_BUILD_TOP}')")
-  ANDROID_SDK_TOOLS=$(python -c \
-      "import os.path; \
-      print os.path.relpath('${ANDROID_SDK_ROOT}/../tools/linux', \
-      '${ANDROID_BUILD_TOP}')")
+  case "${host_os}" in
+    "linux")
+      ANDROID_SDK_TOOLS=$(python -c \
+          "import os.path; \
+          print os.path.relpath('${ANDROID_SDK_ROOT}/../tools/linux', \
+          '${ANDROID_BUILD_TOP}')")
+      ;;
+    "mac")
+      ANDROID_SDK_TOOLS=$(python -c \
+          "import os.path; \
+          print os.path.relpath('${ANDROID_SDK_ROOT}/../tools/darwin', \
+          '${ANDROID_BUILD_TOP}')")
+      ;;
+  esac
   DEFINES+=" android_build_type=1"
   DEFINES+=" android_src=\$(GYP_ABS_ANDROID_TOP_DIR)"
   DEFINES+=" android_sdk=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}"
