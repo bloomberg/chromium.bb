@@ -22,9 +22,15 @@ namespace {
 
 const DWORD kMaxPathBufLen = MAX_PATH + 1;
 
-bool IsRemovable(const string16& mount_point) {
+enum DeviceType {
+  FLOPPY,
+  REMOVABLE,
+  FIXED,
+};
+
+DeviceType GetDeviceType(const string16& mount_point) {
   if (GetDriveType(mount_point.c_str()) != DRIVE_REMOVABLE)
-    return false;
+    return FIXED;
 
   // We don't consider floppy disks as removable, so check for that.
   string16 device = mount_point;
@@ -33,8 +39,8 @@ bool IsRemovable(const string16& mount_point) {
   string16 device_path;
   if (!QueryDosDevice(device.c_str(), WriteInto(&device_path, kMaxPathBufLen),
                       kMaxPathBufLen))
-    return true;
-  return device_path.find(L"Floppy") == string16::npos;
+    return REMOVABLE;
+  return device_path.find(L"Floppy") == string16::npos ? REMOVABLE : FLOPPY;
 }
 
 // Returns 0 if the devicetype is not volume.
@@ -81,11 +87,17 @@ bool GetDeviceDetails(const base::FilePath& device_path,
     return false;
   }
 
+  DeviceType device_type = GetDeviceType(mount_point);
   if (removable)
-    *removable = IsRemovable(mount_point);
+    *removable = (device_type == REMOVABLE);
 
   if (device_location)
     *device_location = mount_point;
+
+  // If we're adding a floppy drive, return without querying any more
+  // drive metadata -- it will cause the floppy drive to seek.
+  if (device_type == FLOPPY)
+    return true;
 
   if (volume_size)
     *volume_size = GetVolumeSize(mount_point);
@@ -140,10 +152,7 @@ std::vector<base::FilePath> GetAttachedDevices() {
     if (GetVolumePathNamesForVolumeName(volume_name.c_str(),
                                         WriteInto(&volume_path, kMaxPathBufLen),
                                         kMaxPathBufLen, &return_count)) {
-      if (IsRemovable(volume_path))
-        result.push_back(base::FilePath(volume_path));
-    } else {
-      DPLOG(ERROR);
+      result.push_back(base::FilePath(volume_path));
     }
     if (!FindNextVolume(find_handle, WriteInto(&volume_name, kMaxPathBufLen),
                         kMaxPathBufLen)) {
