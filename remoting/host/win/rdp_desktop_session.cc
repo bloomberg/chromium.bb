@@ -45,12 +45,16 @@ void RdpDesktopSession::OnRdpConnected(const net::IPEndPoint& client_endpoint) {
   net::SockaddrStorage sockaddr;
   CHECK(client_endpoint.ToSockAddr(sockaddr.addr, &sockaddr.addr_len));
 
-  event_handler_->OnRdpConnected(reinterpret_cast<byte*>(sockaddr.addr),
-                                 sockaddr.addr_len);
+  HRESULT result = event_handler_->OnRdpConnected(
+      reinterpret_cast<byte*>(sockaddr.addr), sockaddr.addr_len);
+  CHECK(SUCCEEDED(result)) << "OnRdpConnected() failed: 0x"
+                           << std::hex << result << std::dec << ".";
 }
 
 void RdpDesktopSession::OnRdpClosed() {
-  event_handler_->OnRdpClosed();
+  HRESULT result = event_handler_->OnRdpClosed();
+  CHECK(SUCCEEDED(result)) << "OnRdpClosed() failed: 0x" << std::hex << result
+                           << std::dec << ".";
 }
 
 } // namespace remoting
