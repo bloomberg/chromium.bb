@@ -267,15 +267,15 @@ class MockMediaSource {
     DCHECK(chunk_demuxer_.get());
     DCHECK_LT(current_position_, file_data_->GetDataSize());
     DCHECK_LE(current_position_ + size, file_data_->GetDataSize());
-    CHECK(chunk_demuxer_->AppendData(
-        kSourceId, file_data_->GetData() + current_position_, size));
+    chunk_demuxer_->AppendData(
+        kSourceId, file_data_->GetData() + current_position_, size);
     current_position_ += size;
   }
 
   void AppendAtTime(const base::TimeDelta& timestampOffset,
                     const uint8* pData, int size) {
     CHECK(chunk_demuxer_->SetTimestampOffset(kSourceId, timestampOffset));
-    CHECK(chunk_demuxer_->AppendData(kSourceId, pData, size));
+    chunk_demuxer_->AppendData(kSourceId, pData, size);
     CHECK(chunk_demuxer_->SetTimestampOffset(kSourceId, base::TimeDelta()));
   }
 

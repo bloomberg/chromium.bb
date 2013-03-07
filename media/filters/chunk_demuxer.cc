@@ -837,7 +837,7 @@ Ranges<TimeDelta> ChunkDemuxer::ComputeIntersection() const {
   return result;
 }
 
-bool ChunkDemuxer::AppendData(const std::string& id,
+void ChunkDemuxer::AppendData(const std::string& id,
                               const uint8* data,
                               size_t length) {
   DVLOG(1) << "AppendData(" << id << ", " << length << ")";
@@ -864,7 +864,7 @@ bool ChunkDemuxer::AppendData(const std::string& id,
     }
 
     if (length == 0u)
-      return true;
+      return;
 
     DCHECK(data);
 
@@ -873,7 +873,7 @@ bool ChunkDemuxer::AppendData(const std::string& id,
         DCHECK(IsValidId(id));
         if (!stream_parser_map_[id]->Parse(data, length)) {
           ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
-          return true;
+          return;
         }
         break;
 
@@ -881,16 +881,19 @@ bool ChunkDemuxer::AppendData(const std::string& id,
         DCHECK(IsValidId(id));
         if (!stream_parser_map_[id]->Parse(data, length)) {
           ReportError_Locked(PIPELINE_ERROR_DECODE);
-          return true;
+          return;
         }
       } break;
 
+      case PARSE_ERROR:
+        DVLOG(1) << "AppendData(): Ignoring data after a parse error.";
+        return;
+
       case WAITING_FOR_INIT:
       case ENDED:
-      case PARSE_ERROR:
       case SHUTDOWN:
         DVLOG(1) << "AppendData(): called in unexpected state " << state_;
-        return false;
+        return;
     }
 
     // Check to see if data was appended at the pending seek point. This
@@ -907,8 +910,6 @@ bool ChunkDemuxer::AppendData(const std::string& id,
 
   if (!cb.is_null())
     cb.Run(PIPELINE_OK);
-
-  return true;
 }
 
 void ChunkDemuxer::Abort(const std::string& id) {

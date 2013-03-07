@@ -76,9 +76,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Gets the currently buffered ranges for the specified ID.
   Ranges<base::TimeDelta> GetBufferedRanges(const std::string& id) const;
 
-  // Appends media data to the source buffer associated with |id|. Returns
-  // false if this method is called in an invalid state.
-  bool AppendData(const std::string& id, const uint8* data, size_t length);
+  // Appends media data to the source buffer associated with |id|.
+  void AppendData(const std::string& id, const uint8* data, size_t length);
 
   // Aborts parsing the current segment and reset the parser to a state where
   // it can accept a new segment.

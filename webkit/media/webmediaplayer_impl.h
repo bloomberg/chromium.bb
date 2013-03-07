@@ -77,6 +77,9 @@ class WebMediaPlayerImpl
   virtual ~WebMediaPlayerImpl();
 
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
+  virtual void load(const WebKit::WebURL& url,
+                    WebKit::WebMediaSource* media_source,
+                    CORSMode cors_mode);
   virtual void cancelLoad();
 
   // Playback controls.
@@ -142,21 +145,6 @@ class WebMediaPlayerImpl
 
   virtual WebKit::WebAudioSourceProvider* audioSourceProvider();
 
-  virtual AddIdStatus sourceAddId(
-      const WebKit::WebString& id,
-      const WebKit::WebString& type,
-      const WebKit::WebVector<WebKit::WebString>& codecs);
-  virtual bool sourceRemoveId(const WebKit::WebString& id);
-  virtual WebKit::WebTimeRanges sourceBuffered(const WebKit::WebString& id);
-  virtual bool sourceAppend(const WebKit::WebString& id,
-                            const unsigned char* data,
-                            unsigned length);
-  virtual bool sourceAbort(const WebKit::WebString& id);
-  virtual void sourceSetDuration(double new_duration);
-  virtual void sourceEndOfStream(EndOfStreamStatus status);
-  virtual bool sourceSetTimestampOffset(const WebKit::WebString& id,
-                                        double offset);
-
   virtual MediaKeyException generateKeyRequest(
       const WebKit::WebString& key_system,
       const unsigned char* init_data,
@@ -186,7 +174,7 @@ class WebMediaPlayerImpl
   void OnPipelineError(media::PipelineStatus error);
   void OnPipelineBufferingState(
       media::Pipeline::BufferingState buffering_state);
-  void OnDemuxerOpened();
+  void OnDemuxerOpened(scoped_ptr<WebKit::WebMediaSource> media_source);
   void OnKeyAdded(const std::string& key_system, const std::string& session_id);
   void OnKeyError(const std::string& key_system,
                   const std::string& session_id,
@@ -204,6 +192,9 @@ class WebMediaPlayerImpl
   void SetOpaque(bool);
 
  private:
+  // Contains common logic used across the different types loading.
+  void LoadSetup(const WebKit::WebURL& url);
+
   // Called after asynchronous initialization of a data source completed.
   void DataSourceInitialized(const GURL& gurl, bool success);
 

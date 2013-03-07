@@ -107,7 +107,6 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   audio_renderer_ = media_stream_client_->GetAudioRenderer(url);
 
   if (video_frame_provider_ || audio_renderer_) {
-    GetClient()->sourceOpened();
     GetClient()->setOpaque(true);
     if (audio_renderer_)
       audio_renderer_->Start();
@@ -123,6 +122,12 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   } else {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
   }
+}
+
+void WebMediaPlayerMS::load(const WebKit::WebURL& url,
+                            WebKit::WebMediaSource* media_source,
+                            CORSMode cors_mode) {
+  NOTIMPLEMENTED();
 }
 
 void WebMediaPlayerMS::cancelLoad() {

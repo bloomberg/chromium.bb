@@ -29,6 +29,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
@@ -38,6 +39,7 @@
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_params.h"
 #include "webkit/media/webmediaplayer_util.h"
+#include "webkit/media/webmediasourceclient_impl.h"
 #include "webkit/media/webvideoframe_impl.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
@@ -96,6 +98,9 @@ COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
 
 #define BIND_TO_RENDER_LOOP(function) \
   media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr()))
+
+#define BIND_TO_RENDER_LOOP_1(function, arg1) \
+  media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr(), arg1))
 
 #define BIND_TO_RENDER_LOOP_2(function, arg1, arg2) \
   media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr(), arg1, arg2))
@@ -256,33 +261,10 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  GURL gurl(url);
-  UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(gurl), kMaxURLScheme);
-
-  // Handle any volume/preload changes that occured before load().
-  setVolume(GetClient()->volume());
-  setPreload(GetClient()->preload());
-
-  SetNetworkState(WebMediaPlayer::NetworkStateLoading);
-  SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
-  media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
-
-  // Media source pipelines can start immediately.
-  if (!url.isEmpty() && url == GetClient()->sourceURL()) {
-    chunk_demuxer_ = new media::ChunkDemuxer(
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
-        base::Bind(&LogMediaSourceError, media_log_));
-
-    BuildMediaSourceCollection(chunk_demuxer_,
-                               media_thread_.message_loop_proxy(),
-                               filter_collection_.get());
-    supports_save_ = false;
-    StartPipeline();
-    return;
-  }
+  LoadSetup(url);
 
   // Otherwise it's a regular request which requires resolving the URL first.
+  GURL gurl(url);
   data_source_ = new BufferedDataSource(
       main_loop_, frame_, media_log_, base::Bind(
           &WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr()));
@@ -297,6 +279,39 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   BuildDefaultCollection(data_source_,
                          media_thread_.message_loop_proxy(),
                          filter_collection_.get());
+}
+
+void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
+                              WebKit::WebMediaSource* media_source,
+                              CORSMode cors_mode) {
+  scoped_ptr<WebKit::WebMediaSource> ms(media_source);
+  LoadSetup(url);
+
+  // Media source pipelines can start immediately.
+  chunk_demuxer_ = new media::ChunkDemuxer(
+      BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnDemuxerOpened,
+                            base::Passed(&ms)),
+      BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
+      base::Bind(&LogMediaSourceError, media_log_));
+
+  BuildMediaSourceCollection(chunk_demuxer_,
+                             media_thread_.message_loop_proxy(),
+                             filter_collection_.get());
+  supports_save_ = false;
+  StartPipeline();
+}
+
+void WebMediaPlayerImpl::LoadSetup(const WebKit::WebURL& url) {
+  GURL gurl(url);
+  UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(gurl), kMaxURLScheme);
+
+  // Handle any volume/preload changes that occurred before load().
+  setVolume(GetClient()->volume());
+  setPreload(GetClient()->preload());
+
+  SetNetworkState(WebMediaPlayer::NetworkStateLoading);
+  SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
+  media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 }
 
 void WebMediaPlayerImpl::cancelLoad() {
@@ -655,90 +670,6 @@ void WebMediaPlayerImpl::putCurrentFrame(
   delete web_video_frame;
 }
 
-#define COMPILE_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \
-    COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::webkit_name) == \
-                   static_cast<int>(media::ChunkDemuxer::chromium_name), \
-                   mismatching_status_enums)
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusOk, kOk);
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusNotSupported, kNotSupported);
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusReachedIdLimit, kReachedIdLimit);
-#undef COMPILE_ASSERT_MATCHING_ENUM
-
-WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
-    const WebKit::WebString& id,
-    const WebKit::WebString& type,
-    const WebKit::WebVector<WebKit::WebString>& codecs) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  std::vector<std::string> new_codecs(codecs.size());
-  for (size_t i = 0; i < codecs.size(); ++i)
-    new_codecs[i] = codecs[i].utf8().data();
-
-  return static_cast<WebMediaPlayer::AddIdStatus>(
-      chunk_demuxer_->AddId(id.utf8().data(), type.utf8().data(), new_codecs));
-}
-
-bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
-  DCHECK(!id.isEmpty());
-  chunk_demuxer_->RemoveId(id.utf8().data());
-  return true;
-}
-
-WebKit::WebTimeRanges WebMediaPlayerImpl::sourceBuffered(
-    const WebKit::WebString& id) {
-  return ConvertToWebTimeRanges(
-      chunk_demuxer_->GetBufferedRanges(id.utf8().data()));
-}
-
-bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,
-                                      const unsigned char* data,
-                                      unsigned length) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  if (!chunk_demuxer_->AppendData(id.utf8().data(), data, length))
-    return false;
-
-  return true;
-}
-
-bool WebMediaPlayerImpl::sourceAbort(const WebKit::WebString& id) {
-  chunk_demuxer_->Abort(id.utf8().data());
-  return true;
-}
-
-void WebMediaPlayerImpl::sourceSetDuration(double new_duration) {
-  DCHECK_GE(new_duration, 0);
-  chunk_demuxer_->SetDuration(new_duration);
-}
-
-void WebMediaPlayerImpl::sourceEndOfStream(
-    WebMediaPlayer::EndOfStreamStatus status) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  media::PipelineStatus pipeline_status = media::PIPELINE_OK;
-
-  switch (status) {
-    case WebMediaPlayer::EndOfStreamStatusNoError:
-      break;
-    case WebMediaPlayer::EndOfStreamStatusNetworkError:
-      pipeline_status = media::PIPELINE_ERROR_NETWORK;
-      break;
-    case WebMediaPlayer::EndOfStreamStatusDecodeError:
-      pipeline_status = media::PIPELINE_ERROR_DECODE;
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
-
-  if (!chunk_demuxer_->EndOfStream(pipeline_status))
-    DVLOG(1) << "EndOfStream call failed.";
-}
-
-bool WebMediaPlayerImpl::sourceSetTimestampOffset(const WebKit::WebString& id,
-                                                  double offset) {
-  base::TimeDelta time_offset = base::TimeDelta::FromMicroseconds(
-      offset * base::Time::kMicrosecondsPerSecond);
-  return chunk_demuxer_->SetTimestampOffset(id.utf8().data(), time_offset);
-}
-
 // Helper enum for reporting generateKeyRequest/addKey histograms.
 enum MediaKeyException {
   kUnknownResultId,
@@ -1000,9 +931,10 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
   Repaint();
 }
 
-void WebMediaPlayerImpl::OnDemuxerOpened() {
+void WebMediaPlayerImpl::OnDemuxerOpened(
+    scoped_ptr<WebKit::WebMediaSource> media_source) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  GetClient()->sourceOpened();
+  media_source->open(new WebMediaSourceClientImpl(chunk_demuxer_));
 }
 
 void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,

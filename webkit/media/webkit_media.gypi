@@ -93,6 +93,8 @@
         'webmediaplayer_params.h',
         'webmediaplayer_util.cc',
         'webmediaplayer_util.h',
+        'webmediasourceclient_impl.cc',
+        'webmediasourceclient_impl.h',
         'webvideoframe_impl.cc',
         'webvideoframe_impl.h',
       ],
