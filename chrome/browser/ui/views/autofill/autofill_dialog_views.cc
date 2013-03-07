@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1113,35 +1114,45 @@ bool AutofillDialogViews::ValidateForm() {
     if (!group->container->visible())
       continue;
 
+    scoped_ptr<DetailInput> cvc_input;
+    DetailOutputMap detail_outputs;
+    std::map<AutofillFieldType, base::Callback<void(bool)> > field_map;
+
     if (group->manual_input->visible()) {
       for (TextfieldMap::iterator iter = group->textfields.begin();
            iter != group->textfields.end(); ++iter) {
-        if (!controller_->InputIsValid(iter->first->type,
-                                       iter->second->textfield()->text())) {
-          iter->second->SetInvalid(true);
-          all_valid = false;
-        }
+        detail_outputs[iter->first] = iter->second->textfield()->text();
+        field_map[iter->first->type] =
+            base::Bind(&DecoratedTextfield::SetInvalid,
+                       base::Unretained(iter->second));
       }
-
       for (ComboboxMap::iterator iter = group->comboboxes.begin();
            iter != group->comboboxes.end(); ++iter) {
-        const DetailInput* input = iter->first;
         views::Combobox* combobox = iter->second;
         string16 item =
             combobox->model()->GetItemAt(combobox->selected_index());
-        if (!controller_->InputIsValid(input->type, item)) {
-          combobox->SetInvalid(true);
-          all_valid = false;
-        }
+        detail_outputs[iter->first] = item;
+        field_map[iter->first->type] =
+            base::Bind(&views::Combobox::SetInvalid,
+                       base::Unretained(iter->second));
       }
     } else if (group->section == SECTION_CC) {
       DecoratedTextfield* decorated_cvc =
           group->suggested_info->decorated_textfield();
-      if (!controller_->InputIsValid(CREDIT_CARD_VERIFICATION_CODE,
-                                     decorated_cvc->textfield()->text())) {
-        decorated_cvc->SetInvalid(true);
-        all_valid = false;
-      }
+      cvc_input.reset(new DetailInput);
+      cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
+      detail_outputs[cvc_input.get()] = decorated_cvc->textfield()->text();
+      field_map[cvc_input->type] =
+          base::Bind(&DecoratedTextfield::SetInvalid,
+                     base::Unretained(decorated_cvc));
+    }
+
+    std::vector<AutofillFieldType> invalid_inputs;
+    invalid_inputs = controller_->InputsAreValid(detail_outputs);
+    for (std::vector<AutofillFieldType>::const_iterator iter =
+        invalid_inputs.begin(); iter != invalid_inputs.end(); ++iter) {
+      field_map[*iter].Run(true);
+      all_valid = false;
     }
   }
 

@@ -116,6 +116,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                   const string16& user_input) const OVERRIDE;
   virtual bool InputIsValid(AutofillFieldType type, const string16& value)
       OVERRIDE;
+  virtual std::vector<AutofillFieldType> InputsAreValid(
+      const DetailOutputMap& inputs) OVERRIDE;
   virtual void UserEditedOrActivatedInput(const DetailInput* input,
                                           DialogSection section,
                                           gfx::NativeView parent_view,

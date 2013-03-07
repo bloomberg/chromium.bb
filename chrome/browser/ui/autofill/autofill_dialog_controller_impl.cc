@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -688,6 +689,24 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
   }
 
   return !value.empty();
+}
+
+std::vector<AutofillFieldType> AutofillDialogControllerImpl::InputsAreValid(
+    const DetailOutputMap& inputs) {
+  std::vector<AutofillFieldType> invalid_fields;
+  for (DetailOutputMap::const_iterator iter = inputs.begin();
+       iter != inputs.end(); ++iter) {
+    if (!InputIsValid(iter->first->type, iter->second))
+      invalid_fields.push_back(iter->first->type);
+  }
+
+  // TODO(groby): Add cross-field validation.
+
+  // De-duplicate invalid fields.
+  std::sort(invalid_fields.begin(), invalid_fields.end());
+  invalid_fields.erase(std::unique(
+      invalid_fields.begin(), invalid_fields.end()), invalid_fields.end());
+  return invalid_fields;
 }
 
 void AutofillDialogControllerImpl::UserEditedOrActivatedInput(

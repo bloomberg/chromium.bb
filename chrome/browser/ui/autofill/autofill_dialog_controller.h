@@ -106,6 +106,11 @@ class AutofillDialogController {
   virtual bool InputIsValid(AutofillFieldType type,
                             const string16& value) = 0;
 
+  // Decides whether the combination of all |inputs| is valid, returns a
+  // vector of all invalid fields.
+  virtual std::vector<AutofillFieldType> InputsAreValid(
+      const DetailOutputMap& inputs) = 0;
+
   // Called when the user changes the contents of a text field or activates it
   // (by focusing and then clicking it). |was_edit| is true when the function
   // was called in response to the user editing the text field.
