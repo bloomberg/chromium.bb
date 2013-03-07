@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
@@ -973,50 +972,7 @@ void DriveFileSystem::RefreshDirectoryAfterGetEntryInfo(
 
   change_list_loader_->LoadDirectoryFromServer(
       entry_proto->resource_id(),
-      base::Bind(&DriveFileSystem::RefreshDirectoryAfterLoadDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 entry_proto->resource_id(),
-                 directory_path,
-                 callback));
-}
-
-void DriveFileSystem::RefreshDirectoryAfterLoadDirectory(
-    const std::string& directory_resource_id,
-    const base::FilePath& directory_path,
-    const FileOperationCallback& callback,
-    const ScopedVector<google_apis::ResourceList>& resource_list,
-    DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    LOG(ERROR) << "Failed to load directory: " << directory_path.value()
-               << ": " << error;
-    callback.Run(error);
-    return;
-  }
-
-  ChangeListProcessor change_list_processor(resource_metadata_.get());
-  change_list_processor.FeedToEntryProtoMap(resource_list, NULL, NULL);
-  resource_metadata_->RefreshDirectory(
-      directory_resource_id,
-      change_list_processor.entry_proto_map(),
-      base::Bind(&DriveFileSystem::RefreshDirectoryAfterRefreshDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void DriveFileSystem::RefreshDirectoryAfterRefreshDirectory(
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    const base::FilePath& directory_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  callback.Run(error);
-  // Also notify the observers.
-  if (error == DRIVE_FILE_OK)
-    OnDirectoryChanged(directory_path);
+      callback);
 }
 
 void DriveFileSystem::UpdateFileByResourceId(

@@ -59,10 +59,10 @@ class ChangeListLoader {
   void LoadFromCache(const FileOperationCallback& callback);
 
   // Starts retrieving feed for a directory specified by |directory_resource_id|
-  // from the server. Upon completion, |feed_load_callback| is invoked.
-  // |feed_load_callback| must not be null.
+  // from the server. Upon completion, |callback| is invoked.
+  // |callback| must not be null.
   void LoadDirectoryFromServer(const std::string& directory_resource_id,
-                               const LoadFeedListCallback& feed_load_callback);
+                               const FileOperationCallback& callback);
 
   // Starts retrieving search results for |search_query| from the server.
   // If |next_feed| is set, this is the feed url that will be fetched.
@@ -103,6 +103,21 @@ class ChangeListLoader {
 
   // Starts root feed load from the server, with details specified in |params|.
   void LoadFromServer(scoped_ptr<LoadFeedParams> params);
+
+  // Part of LoadDirectoryFromServer(). Called after
+  // LoadFromServer() is complete.
+  void LoadDirectoryFromServerAfterLoad(
+      const std::string& directory_resource_id,
+      const FileOperationCallback& callback,
+      const ScopedVector<google_apis::ResourceList>& resource_list,
+      DriveFileError error);
+
+  // Part of LoadDirectoryFromServer(). Called after
+  // DriveResourceMetadata::RefreshDirectory() is complete.
+  void LoadDirectoryFromServerAfterRefresh(
+      const FileOperationCallback& callback,
+      DriveFileError error,
+      const base::FilePath& directory_path);
 
   // Callback for handling root directory refresh from the cache.
   void OnProtoLoaded(LoadRootFeedParams* params, DriveFileError error);

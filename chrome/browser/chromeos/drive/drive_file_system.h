@@ -428,22 +428,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Part of RefreshDirectory(). Called after
-  // ChangeListLoader::LoadDirectoryFromServer() is complete.
-  void RefreshDirectoryAfterLoadDirectory(
-      const std::string& directory_resource_id,
-      const base::FilePath& directory_path,
-      const FileOperationCallback& callback,
-      const ScopedVector<google_apis::ResourceList>& resource_list,
-      DriveFileError error);
-
-  // Part of RefreshDirectory(). Called after
-  // DriveResourceMetadata::RefreshDirectory() is complete.
-  void RefreshDirectoryAfterRefreshDirectory(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const base::FilePath& directory_path);
-
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the
   // PlatformFileInfo part of the |entry_proto| with the locally modified info.

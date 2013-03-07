@@ -378,12 +378,59 @@ void ChangeListLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
 
 void ChangeListLoader::LoadDirectoryFromServer(
     const std::string& directory_resource_id,
-    const LoadFeedListCallback& feed_load_callback) {
-  DCHECK(!feed_load_callback.is_null());
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  scoped_ptr<LoadFeedParams> params(new LoadFeedParams(feed_load_callback));
+  scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
+      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterLoad,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_resource_id,
+                 callback)));
   params->directory_resource_id = directory_resource_id;
   LoadFromServer(params.Pass());
+}
+
+void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
+    const std::string& directory_resource_id,
+    const FileOperationCallback& callback,
+    const ScopedVector<google_apis::ResourceList>& resource_list,
+    DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != DRIVE_FILE_OK) {
+    LOG(ERROR) << "Failed to load directory: " << directory_resource_id
+               << ": " << error;
+    callback.Run(error);
+    return;
+  }
+
+  // Do not use |change_list_processor_| as it may be in use for other
+  // purposes.
+  ChangeListProcessor change_list_processor(resource_metadata_);
+  change_list_processor.FeedToEntryProtoMap(resource_list, NULL, NULL);
+  resource_metadata_->RefreshDirectory(
+      directory_resource_id,
+      change_list_processor.entry_proto_map(),
+      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
+    const FileOperationCallback& callback,
+    DriveFileError error,
+    const base::FilePath& directory_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  callback.Run(error);
+  // Also notify the observers.
+  if (error == DRIVE_FILE_OK) {
+    FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
+                      OnDirectoryChanged(directory_path));
+  }
 }
 
 void ChangeListLoader::SearchFromServer(
