@@ -317,7 +317,7 @@ ActionChoice.prototype.viewFiles_ = function() {
     });
   } else {
     var url = util.platform.getURL('main.html') + '#' + path;
-    util.platform.createWindow(url);
+    chrome.fileBrowserPrivate.openNewWindow(url);
   }
 };
 
