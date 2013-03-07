@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/threading/thread.h"
+#include "base/threading/worker_pool.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
@@ -23,6 +24,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/gpu/gpu_child_thread.h"
+#include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -654,6 +656,17 @@ void GpuProcessHost::DeleteImage(int client_id,
 
 void GpuProcessHost::OnInitialized(bool result) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
+
+#if defined(OS_WIN)
+  // Only collect D3D11 statistics if D3D was successfully initialized in
+  // the GPU process.
+  if (result) {
+    base::WorkerPool::PostTask(
+        FROM_HERE,
+        base::Bind(&gpu_info_collector::CollectD3D11Support),
+        false);
+  }
+#endif
 }
 
 void GpuProcessHost::OnChannelEstablished(

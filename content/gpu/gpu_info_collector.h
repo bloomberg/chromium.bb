@@ -12,6 +12,15 @@
 
 namespace gpu_info_collector {
 
+// Advanced Micro Devices has interesting configurations on laptops were
+// there are two videocards that can alternatively a given process output.
+enum AMDVideoCardType {
+  UNKNOWN,
+  STANDALONE,
+  INTEGRATED,
+  SWITCHABLE
+};
+
 // Collect GPU vendor_id and device ID.
 CONTENT_EXPORT bool CollectGpuID(uint32* vendor_id, uint32* device_id);
 
@@ -48,14 +57,11 @@ void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
 void MergeGPUInfoGL(content::GPUInfo* basic_gpu_info,
                     const content::GPUInfo& context_gpu_info);
 
-// Advanced Micro Devices has interesting configurations on laptops were
-// there are two videocards that can alternatively a given process output.
-enum AMDVideoCardType {
-  UNKNOWN,
-  STANDALONE,
-  INTEGRATED,
-  SWITCHABLE
-};
+#if defined(OS_WIN)
+// Collects information about the level of D3D11 support and records it in
+// the UMA stats. Records no stats when D3D11 in not supported at all.
+void CollectD3D11Support();
+#endif
 
 }  // namespace gpu_info_collector
 
