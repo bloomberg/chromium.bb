@@ -13,6 +13,7 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/message_center_switches.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_simple_view.h"
@@ -202,8 +203,7 @@ MessageView* NotificationView::Create(
   // one of the use-the-new-style flags are set. This preserves the appearance
   // of notifications created by existing code that uses webkitNotifications.
   if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          message_center::switches::kEnableRichNotifications) &&
+      !IsRichNotificationEnabled() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           message_center::switches::kEnableNewSimpleNotifications)) {
     return new MessageSimpleView(list_delegate, notification);

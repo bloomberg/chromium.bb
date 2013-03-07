@@ -19,9 +19,9 @@
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(USE_ASH)
-// These tests do not apply on Ash where notifications do not instantiate
-// a new renderer.
+#if !defined(ENABLE_MESSAGE_CENTER)
+// These tests do not apply with Message Center platforms
+// where notifications do not instantiate a new renderer.
 
 class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
  public:
@@ -79,4 +79,4 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
 
-#endif  // !USE_ASH
+#endif  // !ENABLE_MESSAGE_CENTER
