@@ -37,6 +37,12 @@ void SuggestionsMenuModel::AddKeyedItem(
   AddCheckItem(items_.size() - 1, item);
 }
 
+void SuggestionsMenuModel::AddKeyedItemWithIcon(
+    const std::string& key, const string16& item, const gfx::Image& icon) {
+  AddKeyedItem(key, item);
+  SetIcon(items_.size() - 1, icon);
+}
+
 void SuggestionsMenuModel::Reset() {
   checked_item_ = 0;
   items_.clear();

@@ -41,6 +41,12 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   // Adds an item and its identifying key to the model. Keys needn't be unique.
   void AddKeyedItem(const std::string& key, const string16& display_label);
 
+  // As above, but also accepts an image which will be displayed alongside the
+  // text.
+  void AddKeyedItemWithIcon(const std::string& key,
+                            const string16& display_label,
+                            const gfx::Image& icon);
+
   // Resets the model to empty.
   void Reset();
 

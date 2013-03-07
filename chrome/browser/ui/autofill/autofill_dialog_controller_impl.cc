@@ -1207,9 +1207,10 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
       const std::vector<wallet::WalletItems::MaskedInstrument*>& instruments =
           wallet_items_->instruments();
       for (size_t i = 0; i < instruments.size(); ++i) {
-        suggested_cc_billing_.AddKeyedItem(
+        suggested_cc_billing_.AddKeyedItemWithIcon(
             base::IntToString(i),
-            instruments[i]->descriptive_name());
+            instruments[i]->descriptive_name(),
+            instruments[i]->CardIcon());
       }
     }
 
@@ -1219,8 +1220,12 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
   } else {
     PersonalDataManager* manager = GetManager();
     const std::vector<CreditCard*>& cards = manager->credit_cards();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     for (size_t i = 0; i < cards.size(); ++i) {
-      suggested_cc_.AddKeyedItem(cards[i]->guid(), cards[i]->Label());
+      suggested_cc_.AddKeyedItemWithIcon(
+          cards[i]->guid(),
+          cards[i]->Label(),
+          rb.GetImageNamed(cards[i]->IconResourceId()));
     }
 
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
