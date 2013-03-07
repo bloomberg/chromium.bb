@@ -485,16 +485,12 @@ syllableBreak ()
 	wordEnd--;
 	break;
       }
-  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart + 1, 
+  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart, 
   hyphens))
     return 0;
 /* If the number at the beginning of the syllable is odd or all 
 * numbers are even there is no syllable break. Otherwise there is.*/
-  k = src - wordStart;
-  if (hyphens[k] & 1)
-    return 0;
-  k++;
-  for (; k < (src - wordStart + transCharslen); k++)
+  for (k = src - wordStart+1; k < (src - wordStart + transCharslen); k++) 
     if (hyphens[k] & 1)
       return 1;
   return 0;
