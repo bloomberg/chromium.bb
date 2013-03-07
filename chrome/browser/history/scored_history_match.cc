@@ -221,6 +221,20 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     raw_score = std::min(kMaxTotalScore, raw_score);
   }
 
+  // TODO(mpearson): Refactor this test to use a new member variable
+  // |max_assigned_score_for_non_inlineable_results|.
+  // When doing HUP-like scoring, don't allow a non-inlineable result
+  // to beat the score of good inlineable results.  This is a problem
+  // because if a non-inlineable result ends up with the highest score
+  // from HistoryQuick provider, all HistoryQuick results get demoted
+  // to non-inlineable scores (scores less than 1200).  This is a
+  // problem because there are good inlineable results and they should
+  // appear with their proper scores, not demoted scores.
+  if (also_do_hup_like_scoring && !can_inline &&
+      (raw_score >= HistoryURLProvider::kScoreForBestInlineableResult)) {
+    raw_score = HistoryURLProvider::kScoreForBestInlineableResult - 1;
+  }
+
   if (also_do_hup_like_scoring && can_inline) {
     // HistoryURL-provider-like scoring gives any result that is
     // capable of being inlined a certain minimum score.  Some of these
