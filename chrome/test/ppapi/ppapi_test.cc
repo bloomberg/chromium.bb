@@ -321,6 +321,7 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
 
   // Enable running NaCl outside of the store.
   command_line->AppendSwitch(switches::kEnableNaCl);
+  command_line->AppendSwitch(switches::kEnablePnacl);
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
 }
 
@@ -338,6 +339,13 @@ std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
                       test_case.c_str());
 }
 
+// Append the correct mode and testcase string
+std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
+                                           const std::string& test_case) {
+  return StringPrintf("%smode=nacl_pnacl&testcase=%s", base.c_str(),
+                      test_case.c_str());
+}
+
 void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
     CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
@@ -348,6 +356,7 @@ void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
 
   // Enable running NaCl outside of the store.
   command_line->AppendSwitch(switches::kEnableNaCl);
+  command_line->AppendSwitch(switches::kEnablePnacl);
 }
 
 // Append the correct mode and testcase string

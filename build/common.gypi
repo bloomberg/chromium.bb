@@ -981,6 +981,9 @@
     # Native Client is enabled by default.
     'disable_nacl%': 0,
 
+    # Portable Native Client is enabled by default.
+    'disable_pnacl%': 0,
+
     # Whether to build full debug version for Debug configuration on Android.
     # Compared to full debug version, the default Debug configuration on Android
     # has no full v8 debug, has size optimization and linker gc section, so that

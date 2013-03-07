@@ -134,6 +134,13 @@ class PPAPINaClGLibcTest : public PPAPINaClTest {
                                  const std::string& test_case) OVERRIDE;
 };
 
+// NaCl plugin test runner for the PNaCl + Newlib runtime.
+class PPAPINaClPNaClTest : public PPAPINaClTest {
+ public:
+  virtual std::string BuildQuery(const std::string& base,
+                                 const std::string& test_case) OVERRIDE;
+};
+
 class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;

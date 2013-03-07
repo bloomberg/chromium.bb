@@ -232,6 +232,11 @@ onload = function() {
     obj.setAttribute("src", "ppapi_nacl_tests_glibc.nmf");
     obj.setAttribute("type", "application/x-nacl");
     obj.setAttribute("mode", mode);
+  } else if (mode == "nacl_pnacl") {
+    obj = document.createElement("EMBED");
+    obj.setAttribute("src", "ppapi_nacl_tests_pnacl.nmf");
+    obj.setAttribute("type", "application/x-nacl");
+    obj.setAttribute("mode", mode);
   } else {
     var mimeType = "application/x-ppapi-tests";
     if (mimeType in navigator.mimeTypes) {

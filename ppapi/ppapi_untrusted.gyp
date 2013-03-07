@@ -103,6 +103,10 @@
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_cpp.a',
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi.a',
         ],
+        'extra_deps_pnacl': [
+          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib/libppapi_cpp.a',
+          '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib/libppapi.a',
+        ],
         'sources': [
           '<@(test_common_source_files)',
           '<@(test_nacl_source_files)',
@@ -113,8 +117,13 @@
       },
       'conditions': [
         ['target_arch!="arm"', {
+          # This is user code (vs IRT code), so tls accesses do not
+          # need to be indirect through a function call.
+          # For PNaCl, the -mtls-use-call flag is localized to the
+          # IRT's translation command, so it is unnecessary to
+          # counteract that flag here.
           'variables': {
-            'compile_flags': [
+            'gcc_compile_flags': [
               '-mno-tls-use-call',
             ],
           },
@@ -152,6 +161,60 @@
             'msvs_cygwin_shell': 1,
           },
         ],
+        }],
+        # Test PNaCl pre-translated code (pre-translated to save bot time).
+        # We only care about testing that code generation is correct,
+        # and in-browser translation is tested elsewhere.
+        # NOTE: native_client/build/untrusted.gypi dictates that
+        # PNaCl only generate x86-32 and x86-64 on x86 platforms,
+        # or ARM on ARM platforms, not all versions always.
+        # The same goes for the PNaCl shims. So, we have two variations here.
+        ['disable_pnacl==0 and target_arch!="arm"', {
+          'variables': {
+            'build_pnacl_newlib': 1,
+            'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
+          },
+          # Shim is a dependency for the nexe because we pre-translate.
+          'dependencies': [
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
+          ],
+         'actions': [
+            {
+              'action_name': 'Generate PNACL NEWLIB NMF',
+              'inputs': ['>(out_pnacl_newlib_x86_32_nexe)',
+                         '>(out_pnacl_newlib_x86_64_nexe)'],
+              'outputs': ['>(nmf_pnacl)'],
+              'action': [
+                'python',
+                '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
+                '>@(_inputs)',
+                '--output=>(nmf_pnacl)',
+              ],
+            },
+          ],
+        }],
+        ['disable_pnacl==0 and target_arch=="arm"', {
+          'variables': {
+            'build_pnacl_newlib': 1,
+            'nmf_pnacl%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl.nmf',
+          },
+          # Shim is a dependency for the nexe because we pre-translate.
+          'dependencies': [
+            '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
+          ],
+          'actions': [
+            {
+              'action_name': 'Generate PNACL NEWLIB NMF',
+              'inputs': ['>(out_pnacl_newlib_arm_nexe)'],
+              'outputs': ['>(nmf_pnacl)'],
+              'action': [
+                'python',
+                '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
+                '>@(_inputs)',
+                '--output=>(nmf_pnacl)',
+              ],
+            },
+          ],
         }],
       ],
     },
