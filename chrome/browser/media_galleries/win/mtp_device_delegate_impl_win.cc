@@ -251,18 +251,18 @@ base::PlatformFileError GetFileStreamOnBlockingPoolThread(
           &file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  if (file_info.size == 0)
-    return base::PLATFORM_FILE_ERROR_FAILED;
 
   DWORD optimal_transfer_size = 0;
   base::win::ScopedComPtr<IStream> file_stream;
-  HRESULT hr = media_transfer_protocol::GetFileStreamForObject(
-      device,
-      file_object_id,
-      file_stream.Receive(),
-      &optimal_transfer_size);
-  if (hr != S_OK)
-    return base::PLATFORM_FILE_ERROR_FAILED;
+  if (file_info.size > 0) {
+    HRESULT hr = media_transfer_protocol::GetFileStreamForObject(
+        device,
+        file_object_id,
+        file_stream.Receive(),
+        &optimal_transfer_size);
+    if (hr != S_OK)
+      return base::PLATFORM_FILE_ERROR_FAILED;
+  }
 
   // LocalFileStreamReader is used to read the contents of the snapshot file.
   // Snapshot file modification time does not match the last modified time
@@ -273,7 +273,7 @@ base::PlatformFileError GetFileStreamOnBlockingPoolThread(
   // actual last modified time of the media file.
   file_info.last_modified = base::Time();
 
-  DCHECK_GT(optimal_transfer_size, 0U);
+  DCHECK(file_info.size == 0 || optimal_transfer_size > 0U);
   file_details->set_file_info(file_info);
   file_details->set_device_file_stream(file_stream);
   file_details->set_optimal_transfer_size(optimal_transfer_size);
@@ -282,10 +282,13 @@ base::PlatformFileError GetFileStreamOnBlockingPoolThread(
 
 // Copies the data chunk from device file to the snapshot file based on the
 // parameters specified by |file_details|.
-// Returns the total number of bytes written to the snapshot file.
+// Returns the total number of bytes written to the snapshot file for non-empty
+// files, or 0 on failure. For empty files, just return 0.
 DWORD WriteDataChunkIntoSnapshotFileOnBlockingPoolThread(
     const SnapshotFileDetails& file_details) {
   base::ThreadRestrictions::AssertIOAllowed();
+  if (file_details.file_info().size == 0)
+    return 0;
   return media_transfer_protocol::CopyDataChunkToLocalFile(
       file_details.device_file_stream(),
       file_details.request_info().snapshot_file_path,
@@ -347,9 +350,9 @@ MTPDeviceDelegateImplWin::StorageDeviceInfo::StorageDeviceInfo(
     const string16& pnp_device_id,
     const string16& registered_device_path,
     const string16& storage_object_id)
-   : pnp_device_id(pnp_device_id),
-     registered_device_path(registered_device_path),
-     storage_object_id(storage_object_id) {
+    : pnp_device_id(pnp_device_id),
+      registered_device_path(registered_device_path),
+      storage_object_id(storage_object_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 }
 
@@ -568,7 +571,8 @@ void MTPDeviceDelegateImplWin::OnGetFileStream(
     ProcessNextPendingRequest();
     return;
   }
-  DCHECK(file_details->device_file_stream());
+  DCHECK(file_details->file_info().size == 0 ||
+         file_details->device_file_stream());
   current_snapshot_details_.reset(file_details.release());
   WriteDataChunkIntoSnapshotFile();
 }
@@ -584,11 +588,27 @@ void MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile(
       current_snapshot_details_->request_info().snapshot_file_path.value(),
       snapshot_file_path.value());
 
-  if (current_snapshot_details_->AddBytesWritten(bytes_written)) {
-    if (!current_snapshot_details_->IsSnapshotFileWriteComplete()) {
-      WriteDataChunkIntoSnapshotFile();
-      return;
+  bool succeeded = false;
+  bool should_continue = false;
+  if (current_snapshot_details_->file_info().size > 0) {
+    if (current_snapshot_details_->AddBytesWritten(bytes_written)) {
+      if (current_snapshot_details_->IsSnapshotFileWriteComplete()) {
+        succeeded = true;
+      } else {
+        should_continue = true;
+      }
     }
+  } else {
+    // Handle empty files.
+    DCHECK_EQ(0U, bytes_written);
+    succeeded = true;
+  }
+
+  if (should_continue) {
+    WriteDataChunkIntoSnapshotFile();
+    return;
+  }
+  if (succeeded) {
     current_snapshot_details_->request_info().success_callback.Run(
         current_snapshot_details_->file_info(),
         current_snapshot_details_->request_info().snapshot_file_path);
