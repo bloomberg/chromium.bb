@@ -18,80 +18,14 @@ BOT_ASSIGNMENT = {
         python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
     'xp-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
-    'vista-64-newlib-dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
-    'vista-64-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
-    'win7-64-glibc-dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
-    'win7-64-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
 
-    ### OBSOLETE REMOVE BEGIN ###
-    'win8-64-glibc-dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
-    'win8-64-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
-    ### OBSOLETE REMOVE END ###
-
-    'win8-64-newlib-dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
-    'win8-64-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
     'xp-bare-newlib-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
     'xp-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
-    'win7-32-bare-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib',
-    'win7-32-bare-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc',
-    'win7-64-bare-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
-    'win7-64-bare-glibc-opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
-    'win7-64-arm-newlib-opt':
-        python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
-    'mac10.6-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'mac10.7-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'mac10.6-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'mac10.7-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'mac10.7-arm-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt arm newlib --no-gyp',
-    'lucid-32-newlib-dbg':
-        python + ' buildbot/buildbot_standard.py dbg 32 newlib',
-    'lucid-32-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'lucid-32-glibc-dbg':
-        python + ' buildbot/buildbot_standard.py dbg 32 glibc',
-    'lucid-32-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'lucid-64-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'lucid-64-newlib-dbg':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib',
-    'lucid-64-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 64 newlib',
-    'lucid-64-glibc-dbg':
-        python + ' buildbot/buildbot_standard.py dbg 64 glibc',
-    'lucid-64-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 64 glibc',
-    'lucid-64-arm-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt arm newlib --no-gyp',
+
     'lucid-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
-    'lucid-32-bare-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'lucid-32-bare-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'lucid-64-bare-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 64 newlib',
-    'lucid-64-bare-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 64 glibc',
 
     # Clang.
     'lucid_64-newlib-dbg-clang':
@@ -169,43 +103,6 @@ BOT_ASSIGNMENT = {
     'nacl-win64_glibc_opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
 
-    ### OBSOLETE REMOVE BEGIN ###
-    'nacl-win8-64_glibc_dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 glibc',
-    'nacl-win8-64_glibc_opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
-    ### OBSOLETE REMOVE END ###
-
-    'nacl-win8-64_newlib_dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
-    'nacl-win8-64_newlib_opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
-    'nacl-win7_64_arm_newlib_opt':
-        python + ' buildbot\\buildbot_standard.py opt arm newlib --no-gyp',
-    'nacl-mac10.6_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'nacl-mac10.6_glibc_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'nacl-mac10.7_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'nacl-mac10.7_glibc_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'nacl-mac10.7_arm_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt arm newlib --no-gyp',
-    'nacl-lucid32_newlib_dbg':
-        python + ' buildbot/buildbot_standard.py dbg 32 newlib',
-    'nacl-lucid32_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
-    'nacl-lucid32_glibc_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
-    'nacl-lucid64_newlib_dbg':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib',
-    'nacl-lucid64_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 64 newlib',
-    'nacl-lucid64_glibc_opt':
-        python + ' buildbot/buildbot_standard.py opt 64 glibc',
-    'nacl-lucid64_arm_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt arm newlib --no-gyp',
     'nacl-lucid64_validator_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'nacl-lucid64_newlib_dbg_valgrind':
@@ -331,6 +228,38 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl_merge.sh spec2k-arm-bot',
 
 }
+
+for platform in [
+    'vista', 'win7', 'win7_64', 'win8', 'win32', 'win64',
+    'mac10.6', 'mac10.7', 'mac10.8',
+    'lucid', 'precise']:
+  for arch in ['', '32', '64', 'arm']:
+    arch_flags = ''
+    real_arch = arch
+    arch_part = '-' + arch
+    if arch == 'arm':
+      arch_flags += ' --no-gyp'
+    if arch == '':
+      arch_part = ''
+      real_arch = '32'
+    if platform.startswith('mac'):
+      arch_flags += ' --clang'
+    for mode in ['dbg', 'opt']:
+      for libc in ['newlib', 'glibc']:
+        # Buildbots.
+        for bare in ['', '-bare']:
+          BOT_ASSIGNMENT.update({
+            platform + arch_part + bare + '-' + libc + '-' + mode:
+            python + ' buildbot/buildbot_standard.py ' +
+            mode + ' ' + real_arch + ' ' + libc + arch_flags
+          })
+        # Trybots
+        for arch_sep in ['', '-', '_']:
+          BOT_ASSIGNMENT.update({
+            'nacl-' + platform + arch_sep + arch + '_' + libc + '_' + mode:
+            python + ' buildbot/buildbot_standard.py ' +
+            mode + ' ' + real_arch + ' ' + libc + arch_flags
+          })
 
 
 IRT_ARCHIVE_BUILDERS = [
