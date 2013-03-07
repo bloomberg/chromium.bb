@@ -1236,7 +1236,8 @@ void OneClickSigninHelper::DidStopLoading(
       if (source_ != SyncPromoUI::SOURCE_SETTINGS &&
           source_ != SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
         signin_tracker_.reset(new SigninTracker(profile, this));
-        RedirectToNTP(true);
+        // Show the NTP, but don't show the signed-in bubble yet.
+        RedirectToNTP(false);
       }
       break;
     }
@@ -1306,5 +1307,7 @@ void OneClickSigninHelper::SigninFailed(const GoogleServiceAuthError& error) {
 }
 
 void OneClickSigninHelper::SigninSuccess() {
+  // Signed in now, so show the signed-in bubble.
+  RedirectToNTP(true);
   signin_tracker_.reset();
 }
