@@ -152,21 +152,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v2 or later)',
         'UNKNOWN',
     ],
-
-    # http://crbug.com/98107
-    'ppapi/c/documentation/check.sh': [
-        'UNKNOWN',
-    ],
-    'ppapi/cpp/documentation/check.sh': [
-        'UNKNOWN',
-    ],
-    'ppapi/lib/gl/include': [
-        'UNKNOWN',
-    ],
-    'ppapi/native_client/tests/earth/earth_image.inc': [
-        'UNKNOWN',
-    ],
-
     'third_party/WebKit': [
         'UNKNOWN',
     ],
