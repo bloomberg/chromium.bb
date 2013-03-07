@@ -33,6 +33,7 @@ const int kFrameRate = 30;
 
 class MockFrameObserver : public VideoCaptureDevice::EventHandler {
  public:
+  MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnFrameInfo, void(const VideoCaptureCapability& info));
   MOCK_METHOD6(OnIncomingCapturedFrame, void(const uint8* data,
@@ -41,8 +42,9 @@ class MockFrameObserver : public VideoCaptureDevice::EventHandler {
                                              int rotation,
                                              bool flip_vert,
                                              bool flip_horiz));
-  MOCK_METHOD2(OnIncomingCapturedVideoFrame, void(media::VideoFrame* frame,
-                                                  base::Time timestamp));
+  MOCK_METHOD2(OnIncomingCapturedVideoFrame,
+      void(const scoped_refptr<media::VideoFrame>& frame,
+           base::Time timestamp));
 };
 
 // TODO(sergeyu): Move this to a separate file where it can be reused.

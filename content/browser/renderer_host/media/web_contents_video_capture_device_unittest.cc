@@ -296,6 +296,11 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
     }
   }
 
+  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+
   virtual void OnIncomingCapturedFrame(
       const uint8* data,
       int length,
@@ -320,8 +325,9 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
     PostColorOrError(color);
   }
 
-  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
-                                            base::Time timestamp) OVERRIDE {
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::Time timestamp) OVERRIDE {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
     EXPECT_EQ(media::VideoFrame::YV12, frame->format());
     uint8 yuv[3] = {0};

@@ -22,13 +22,6 @@
 
 namespace {
 
-void ResetBufferYV12(uint8* buffer, int width, int height) {
-  int y_size = width * height;
-  memset(buffer, 0, y_size);
-  buffer += y_size;
-  memset(buffer, 128, y_size / 2);
-}
-
 // TODO(wjia): Support stride.
 void RotatePackedYV12Frame(
     const uint8* src,
@@ -55,8 +48,8 @@ void RotatePackedYV12Frame(
 
 namespace content {
 
-// The number of DIBs VideoCaptureController allocate.
-static const size_t kNoOfDIBS = 3;
+// The number of buffers that VideoCaptureBufferPool should allocate.
+static const int kNoOfBuffers = 3;
 
 struct VideoCaptureController::ControllerClient {
   ControllerClient(
@@ -77,7 +70,7 @@ struct VideoCaptureController::ControllerClient {
   VideoCaptureControllerID controller_id;
   VideoCaptureControllerEventHandler* event_handler;
 
-  // Handle to the render process that will receive the DIBs.
+  // Handle to the render process that will receive the capture buffers.
   base::ProcessHandle render_process_handle;
   media::VideoCaptureParams parameters;
 
@@ -86,25 +79,6 @@ struct VideoCaptureController::ControllerClient {
 
   // State of capture session, controlled by VideoCaptureManager directly.
   bool session_closed;
-};
-
-struct VideoCaptureController::SharedDIB {
-  SharedDIB(base::SharedMemory* ptr)
-      : shared_memory(ptr),
-        rotation(0),
-        references(0) {
-  }
-
-  ~SharedDIB() {}
-
-  // The memory created to be shared with renderer processes.
-  scoped_ptr<base::SharedMemory> shared_memory;
-
-  int rotation;
-
-  // Number of renderer processes which hold this shared memory.
-  // renderer process is represented by VidoeCaptureHost.
-  int references;
 };
 
 VideoCaptureController::VideoCaptureController(
@@ -144,7 +118,7 @@ void VideoCaptureController::StartCapture(
 
   ControllerClient* client = new ControllerClient(id, event_handler,
                                                   render_process, params);
-  // In case capture has been started, need to check different condtions.
+  // In case capture has been started, need to check different conditions.
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
   // TODO(wjia): Temporarily disable restarting till client supports resampling.
 #if 0
@@ -164,8 +138,7 @@ void VideoCaptureController::StartCapture(
     // This client's resolution is no larger than what's currently requested.
     // When frame_info has been returned by device, send them to client.
     if (frame_info_available_) {
-      int buffer_size = (frame_info_.width * frame_info_.height * 3) / 2;
-      SendFrameInfoAndBuffers(client, buffer_size);
+      SendFrameInfoAndBuffers(client);
     }
     controller_clients_.push_back(client);
     return;
@@ -208,16 +181,7 @@ void VideoCaptureController::StopCapture(
   for (std::set<int>::iterator buffer_it = client->buffers.begin();
        buffer_it != client->buffers.end(); ++buffer_it) {
     int buffer_id = *buffer_it;
-    DIBMap::iterator dib_it = owned_dibs_.find(buffer_id);
-    if (dib_it == owned_dibs_.end())
-      continue;
-
-    {
-      base::AutoLock lock(lock_);
-      DCHECK_GT(dib_it->second->references, 0)
-          << "The buffer is not used by renderer.";
-      dib_it->second->references -= 1;
-    }
+    buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
   }
   client->buffers.clear();
 
@@ -257,70 +221,30 @@ void VideoCaptureController::ReturnBuffer(
 
   ControllerClient* client = FindClient(id, event_handler,
                                         controller_clients_);
-  DIBMap::iterator dib_it = owned_dibs_.find(buffer_id);
+
   // If this buffer is not held by this client, or this client doesn't exist
   // in controller, do nothing.
   if (!client ||
-      client->buffers.find(buffer_id) == client->buffers.end() ||
-      dib_it == owned_dibs_.end())
+      client->buffers.find(buffer_id) == client->buffers.end())
     return;
 
   client->buffers.erase(buffer_id);
-  {
-    base::AutoLock lock(lock_);
-    DCHECK_GT(dib_it->second->references, 0)
-        << "The buffer is not used by renderer.";
-    dib_it->second->references -= 1;
-    if (dib_it->second->references > 0)
-      return;
-  }
+  buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
 
   // When all buffers have been returned by clients and device has been
   // called to stop, check if restart is needed. This could happen when
   // capture needs to be restarted due to resolution change.
-  if (!ClientHasDIB() && state_ == VIDEO_CAPTURE_STATE_STOPPING) {
+  if (!buffer_pool_->IsAnyBufferHeldForConsumers() &&
+      state_ == VIDEO_CAPTURE_STATE_STOPPING) {
     PostStopping();
   }
 }
 
-bool VideoCaptureController::ReserveSharedMemory(int* buffer_id_out,
-                                                 uint8** yplane,
-                                                 uint8** uplane,
-                                                 uint8** vplane,
-                                                 int rotation) {
-  int buffer_id = 0;
-  base::SharedMemory* dib = NULL;
-  {
-    base::AutoLock lock(lock_);
-    for (DIBMap::iterator dib_it = owned_dibs_.begin();
-         dib_it != owned_dibs_.end(); dib_it++) {
-      if (dib_it->second->references == 0) {
-        buffer_id = dib_it->first;
-        // Use special value "-1" in order to not be treated as buffer at
-        // renderer side.
-        dib_it->second->references = -1;
-        dib = dib_it->second->shared_memory.get();
-        if (rotation != dib_it->second->rotation) {
-          ResetBufferYV12(static_cast<uint8*>(dib->memory()),
-                          frame_info_.width, frame_info_.height);
-          dib_it->second->rotation = rotation;
-        }
-        break;
-      }
-    }
-  }
-
-  if (!dib)
-    return false;
-
-  *buffer_id_out = buffer_id;
-  CHECK_GE(dib->created_size(),
-           static_cast<size_t>(frame_info_.width * frame_info_.height * 3) / 2);
-  uint8* target = static_cast<uint8*>(dib->memory());
-  *yplane = target;
-  *uplane = *yplane + frame_info_.width * frame_info_.height;
-  *vplane = *uplane + (frame_info_.width * frame_info_.height) / 4;
-  return true;
+scoped_refptr<media::VideoFrame> VideoCaptureController::ReserveOutputBuffer() {
+  base::AutoLock lock(buffer_pool_lock_);
+  if (!buffer_pool_)
+    return NULL;
+  return buffer_pool_->ReserveForProducer(0);
 }
 
 // Implements VideoCaptureDevice::EventHandler.
@@ -337,12 +261,20 @@ void VideoCaptureController::OnIncomingCapturedFrame(
           frame_info_.color == media::VideoCaptureCapability::kYV12 ||
           (rotation == 0 && !flip_vert && !flip_horiz));
 
-  int buffer_id = 0;
-  uint8* yplane = NULL;
-  uint8* uplane = NULL;
-  uint8* vplane = NULL;
-  if (!ReserveSharedMemory(&buffer_id, &yplane, &uplane, &vplane, rotation))
+  scoped_refptr<media::VideoFrame> dst;
+  {
+    base::AutoLock lock(buffer_pool_lock_);
+    if (!buffer_pool_)
+      return;
+    dst = buffer_pool_->ReserveForProducer(rotation);
+  }
+
+  if (!dst)
     return;
+
+  uint8* yplane = dst->data(media::VideoFrame::kYPlane);
+  uint8* uplane = dst->data(media::VideoFrame::kUPlane);
+  uint8* vplane = dst->data(media::VideoFrame::kVPlane);
 
   // Do color conversion from the camera format to I420.
   switch (frame_info_.color) {
@@ -419,16 +351,40 @@ void VideoCaptureController::OnIncomingCapturedFrame(
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                 this, buffer_id, timestamp));
+                 this, dst, timestamp));
 }
 
 // OnIncomingCapturedVideoFrame is called the thread running the capture device.
 void VideoCaptureController::OnIncomingCapturedVideoFrame(
-    media::VideoFrame* frame,
+    const scoped_refptr<media::VideoFrame>& frame,
     base::Time timestamp) {
+
+  scoped_refptr<media::VideoFrame> target;
+  {
+    base::AutoLock lock(buffer_pool_lock_);
+
+    if (!buffer_pool_)
+      return;
+
+    // If this is a frame that belongs to the buffer pool, we can forward it
+    // directly to the IO thread and be done.
+    if (buffer_pool_->RecognizeReservedBuffer(frame)) {
+      BrowserThread::PostTask(BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
+                     this, frame, timestamp));
+      return;
+    }
+    // Otherwise, this is a frame that belongs to the caller, and we must copy
+    // it to a frame from the buffer pool.
+    target = buffer_pool_->ReserveForProducer(0);
+  }
+
+  if (!target)
+    return;
+
   // Validate the inputs.
-  gfx::Size target_size = gfx::Size(frame_info_.width, frame_info_.height);
-  if (frame->coded_size() != target_size)
+  if (frame->coded_size() != target->coded_size())
     return;  // Only exact copies are supported.
   if (!(frame->format() == media::VideoFrame::I420 ||
         frame->format() == media::VideoFrame::YV12 ||
@@ -436,27 +392,6 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
     NOTREACHED() << "Unsupported format passed to OnIncomingCapturedVideoFrame";
     return;
   }
-
-  // Carve out a shared memory buffer.
-  int buffer_id = 0;
-  uint8* yplane = NULL;
-  uint8* uplane = NULL;
-  uint8* vplane = NULL;
-  if (!ReserveSharedMemory(&buffer_id, &yplane, &uplane, &vplane, 0))
-    return;
-
-  scoped_refptr<media::VideoFrame> target_as_frame(
-      media::VideoFrame::WrapExternalYuvData(
-          media::VideoFrame::YV12,  // Actually I420, but it's equivalent here.
-          target_size, gfx::Rect(target_size), target_size,
-          frame_info_.width,        // y stride
-          frame_info_.width / 2,    // v stride
-          frame_info_.width / 2,    // u stride
-          yplane,
-          uplane,
-          vplane,
-          base::TimeDelta(),
-          base::Bind(&base::DoNothing)));
 
   const int kYPlane = media::VideoFrame::kYPlane;
   const int kUPlane = media::VideoFrame::kUPlane;
@@ -482,27 +417,27 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
       media::CopyYPlane(frame->data(kYPlane),
                         frame->stride(kYPlane),
                         frame->rows(kYPlane),
-                        target_as_frame);
+                        target);
       media::CopyUPlane(frame->data(kUPlane),
                         frame->stride(kUPlane),
                         frame->rows(kUPlane),
-                        target_as_frame);
+                        target);
       media::CopyVPlane(frame->data(kVPlane),
                         frame->stride(kVPlane),
                         frame->rows(kVPlane),
-                        target_as_frame);
+                        target);
       break;
     }
     case media::VideoFrame::RGB32: {
       media::ConvertRGB32ToYUV(frame->data(kRGBPlane),
-                               target_as_frame->data(kYPlane),
-                               target_as_frame->data(kUPlane),
-                               target_as_frame->data(kVPlane),
-                               target_size.width(),
-                               target_size.height(),
+                               target->data(kYPlane),
+                               target->data(kUPlane),
+                               target->data(kVPlane),
+                               target->coded_size().width(),
+                               target->coded_size().height(),
                                frame->stride(kRGBPlane),
-                               target_as_frame->stride(kYPlane),
-                               target_as_frame->stride(kUPlane));
+                               target->stride(kYPlane),
+                               target->stride(kUPlane));
       break;
     }
   }
@@ -510,7 +445,7 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                 this, buffer_id, timestamp));
+                 this, target, timestamp));
 }
 
 void VideoCaptureController::OnError() {
@@ -541,9 +476,7 @@ void VideoCaptureController::OnFrameInfo(
 }
 
 VideoCaptureController::~VideoCaptureController() {
-  // Delete all DIBs.
-  STLDeleteContainerPairSecondPointers(owned_dibs_.begin(),
-                                       owned_dibs_.end());
+  buffer_pool_ = NULL;  // Release all buffers.
   STLDeleteContainerPointers(controller_clients_.begin(),
                              controller_clients_.end());
   STLDeleteContainerPointers(pending_clients_.begin(),
@@ -558,8 +491,18 @@ void VideoCaptureController::OnDeviceStopped() {
 }
 
 void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
-    int buffer_id, base::Time timestamp) {
+    const scoped_refptr<media::VideoFrame>& reserved_frame,
+    base::Time timestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!buffer_pool_)
+    return;
+
+  int buffer_id = buffer_pool_->RecognizeReservedBuffer(reserved_frame);
+  if (!buffer_id) {
+    NOTREACHED();
+    return;
+  }
 
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
@@ -575,40 +518,24 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
     }
   }
 
-  base::AutoLock lock(lock_);
-  if (owned_dibs_.find(buffer_id) != owned_dibs_.end()) {
-    DCHECK_EQ(owned_dibs_[buffer_id]->references, -1);
-    owned_dibs_[buffer_id]->references = count;
-  }
+  buffer_pool_->HoldForConsumers(reserved_frame, buffer_id, count);
 }
 
 void VideoCaptureController::DoFrameInfoOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(owned_dibs_.empty())
+  DCHECK(!buffer_pool_)
       << "Device is restarted without releasing shared memory.";
 
   // Allocate memory only when device has been started.
   if (state_ != VIDEO_CAPTURE_STATE_STARTED)
     return;
 
-  bool frames_created = true;
-  const size_t needed_size = (frame_info_.width * frame_info_.height * 3) / 2;
-  {
-    base::AutoLock lock(lock_);
-    for (size_t i = 1; i <= kNoOfDIBS; ++i) {
-      scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-      if (!shared_memory->CreateAndMapAnonymous(needed_size)) {
-        frames_created = false;
-        break;
-      }
-      ResetBufferYV12(static_cast<uint8*>(shared_memory->memory()),
-                      frame_info_.width, frame_info_.height);
-      SharedDIB* dib = new SharedDIB(shared_memory.release());
-      owned_dibs_.insert(std::make_pair(i, dib));
-    }
-  }
-  // Check whether all DIBs were created successfully.
-  if (!frames_created) {
+  scoped_refptr<VideoCaptureBufferPool> buffer_pool =
+      new VideoCaptureBufferPool(
+          gfx::Size(frame_info_.width, frame_info_.height), kNoOfBuffers);
+
+  // Check whether all buffers were created successfully.
+  if (!buffer_pool->Allocate()) {
     state_ = VIDEO_CAPTURE_STATE_ERROR;
     for (ControllerClients::iterator client_it = controller_clients_.begin();
          client_it != controller_clients_.end(); ++client_it) {
@@ -616,11 +543,16 @@ void VideoCaptureController::DoFrameInfoOnIOThread() {
     }
     return;
   }
+
+  {
+    base::AutoLock lock(buffer_pool_lock_);
+    buffer_pool_ = buffer_pool;
+  }
   frame_info_available_ = true;
 
   for (ControllerClients::iterator client_it = controller_clients_.begin();
        client_it != controller_clients_.end(); ++client_it) {
-    SendFrameInfoAndBuffers((*client_it), static_cast<int>(needed_size));
+    SendFrameInfoAndBuffers(*client_it);
   }
 }
 
@@ -646,24 +578,20 @@ void VideoCaptureController::DoDeviceStoppedOnIOThread() {
   }
 }
 
-void VideoCaptureController::SendFrameInfoAndBuffers(
-    ControllerClient* client, int buffer_size) {
+void VideoCaptureController::SendFrameInfoAndBuffers(ControllerClient* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(frame_info_available_);
   client->event_handler->OnFrameInfo(client->controller_id,
                                      frame_info_.width, frame_info_.height,
                                      frame_info_.frame_rate);
-  for (DIBMap::iterator dib_it = owned_dibs_.begin();
-       dib_it != owned_dibs_.end(); dib_it++) {
-    base::SharedMemory* shared_memory = dib_it->second->shared_memory.get();
-    int index = dib_it->first;
-    base::SharedMemoryHandle remote_handle;
-    shared_memory->ShareToProcess(client->render_process_handle,
-                                  &remote_handle);
+  for (int buffer_id = 1; buffer_id <= buffer_pool_->count(); ++buffer_id) {
+    base::SharedMemoryHandle remote_handle =
+        buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle);
+
     client->event_handler->OnBufferCreated(client->controller_id,
                                            remote_handle,
-                                           buffer_size,
-                                           index);
+                                           buffer_pool_->GetMemorySize(),
+                                           buffer_id);
   }
 }
 
@@ -704,12 +632,12 @@ void VideoCaptureController::PostStopping() {
 
   // When clients still have some buffers, or device has not been stopped yet,
   // do nothing.
-  if (ClientHasDIB() || device_in_use_)
+  if (buffer_pool_->IsAnyBufferHeldForConsumers() || device_in_use_)
     return;
 
   {
-    base::AutoLock lock(lock_);
-    STLDeleteValues(&owned_dibs_);
+    base::AutoLock lock(buffer_pool_lock_);
+    buffer_pool_ = NULL;
   }
 
   // No more client. Therefore the controller is stopped.
@@ -742,17 +670,6 @@ void VideoCaptureController::PostStopping() {
   video_capture_manager_->Start(current_params_, this);
   state_ = VIDEO_CAPTURE_STATE_STARTED;
   device_in_use_ = true;
-}
-
-bool VideoCaptureController::ClientHasDIB() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::AutoLock lock(lock_);
-  for (DIBMap::iterator dib_it = owned_dibs_.begin();
-       dib_it != owned_dibs_.end(); dib_it++) {
-    if (dib_it->second->references > 0)
-      return true;
-  }
-  return false;
 }
 
 }  // namespace content

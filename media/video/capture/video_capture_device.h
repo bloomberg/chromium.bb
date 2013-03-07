@@ -6,7 +6,7 @@
 // device support in Chromium. It provides the interface for OS dependent
 // implementations.
 // The class is created and functions are invoked on a thread owned by
-// VideoCaptureManager. Capturing is done on other threads depended on the OS
+// VideoCaptureManager. Capturing is done on other threads, depending on the OS
 // specific implementation.
 
 #ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_H_
@@ -36,24 +36,66 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   class MEDIA_EXPORT EventHandler {
    public:
+
+    // Reserve an output buffer into which a video frame can be captured
+    // directly. If all buffers are currently busy, returns NULL.
+    //
+    // The returned VideoFrames will always be allocated with a YV12 format. The
+    // size will match that specified by an earlier call to OnFrameInfo. It is
+    // the VideoCaptureDevice's responsibility to obey whatever stride and
+    // memory layout are indicated on the returned VideoFrame object.
+    //
+    // The output buffer stays reserved for use by the calling
+    // VideoCaptureDevice until either the last reference to the VideoFrame is
+    // released, or until the buffer is passed back to the EventHandler's
+    // OnIncomingCapturedFrame() method.
+    //
+    // Threading note: After VideoCaptureDevice::DeAllocate() occurs, the
+    // VideoCaptureDevice is not permitted to make any additional calls through
+    // its EventHandler. However, any VideoFrames returned from the EventHandler
+    // DO remain valid after DeAllocate(). The VideoCaptureDevice must still
+    // eventually release them, but it may do so later -- e.g., after a queued
+    // capture operation completes.
+    virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() = 0;
+
     // Captured a new video frame as a raw buffer. The size, color format, and
     // layout are taken from the parameters specified by an earlier call to
     // OnFrameInfo(). |data| must be packed, with no padding between rows and/or
     // color planes.
+    //
+    // This method will try to reserve an output buffer and copy from |data|
+    // into the output buffer. If no output buffer is available, the frame will
+    // be silently dropped.
     virtual void OnIncomingCapturedFrame(const uint8* data,
                                          int length,
                                          base::Time timestamp,
                                          int rotation,  // Clockwise.
                                          bool flip_vert,
                                          bool flip_horiz) = 0;
-    // Captured a new video frame, held in a VideoFrame container. |frame| must
-    // be allocated as RGB32, YV12 or I420, and the size must match that
-    // specified by an earlier call to OnFrameInfo().
-    virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
-                                              base::Time timestamp) = 0;
+
+    // Captured a new video frame, held in a VideoFrame container.
+    //
+    // If |frame| was created via the ReserveOutputBuffer() mechanism, then the
+    // frame delivery is guaranteed (it will not be silently dropped), and
+    // delivery will require no additional copies in the browser process. For
+    // such frames, the VideoCaptureDevice's reservation on the output buffer
+    // ends immediately. The VideoCaptureDevice may not read or write the
+    // underlying memory afterwards, and it should release its references to
+    // |frame| as soon as possible, to allow buffer reuse.
+    //
+    // If |frame| was NOT created via ReserveOutputBuffer(), then this method
+    // will try to reserve an output buffer and copy from |frame| into the
+    // output buffer. If no output buffer is available, the frame will be
+    // silently dropped. |frame| must be allocated as RGB32, YV12 or I420, and
+    // the size must match that specified by an earlier call to OnFrameInfo().
+    virtual void OnIncomingCapturedVideoFrame(
+        const scoped_refptr<media::VideoFrame>& frame,
+        base::Time timestamp) = 0;
+
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be DeAllocate()-ed.
     virtual void OnError() = 0;
+
     // Called when VideoCaptureDevice::Allocate() has been called to inform of
     // the resulting frame size.
     virtual void OnFrameInfo(const VideoCaptureCapability& info) = 0;
@@ -87,7 +129,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   // Deallocates the camera. This means other applications can use it. After
   // this function has been called the capture device is reset to the state it
-  // was when created.
+  // was when created. After DeAllocate() is called, the VideoCaptureDevice is
+  // not permitted to make any additional calls to its EventHandler.
   virtual void DeAllocate() = 0;
 
   // Get the name of the capture device.

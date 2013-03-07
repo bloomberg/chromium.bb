@@ -44,6 +44,9 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 // Needed as an input argument to Start().
 class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
  public:
+  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
+    return NULL;
+  }
   virtual void OnError() OVERRIDE {}
   virtual void OnFrameInfo(
       const media::VideoCaptureCapability& info) OVERRIDE {}
@@ -53,8 +56,9 @@ class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
                                        int rotation,
                                        bool flip_vert,
                                        bool flip_horiz) OVERRIDE {}
-  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
-                                            base::Time timestamp) OVERRIDE {}
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::Time timestamp) OVERRIDE {}
 };
 
 // Test class

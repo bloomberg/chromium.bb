@@ -58,6 +58,7 @@ namespace media {
 
 class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
  public:
+  MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(OnErr, void());
   MOCK_METHOD4(OnFrameInfo, void(int width, int height, int frame_rate,
                                  VideoCaptureCapability::Format format));
@@ -84,8 +85,9 @@ class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
     wait_event_->Signal();
   }
 
-  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
-                                            base::Time timestamp) OVERRIDE {
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::Time timestamp) OVERRIDE {
     wait_event_->Signal();
   }
 

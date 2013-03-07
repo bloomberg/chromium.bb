@@ -23,7 +23,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
 #include "base/synchronization/lock.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
+#include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_device.h"
@@ -31,6 +33,7 @@
 
 namespace content {
 class VideoCaptureManager;
+class VideoCaptureBufferPool;
 
 class CONTENT_EXPORT VideoCaptureController
     : public base::RefCountedThreadSafe<VideoCaptureController>,
@@ -65,14 +68,16 @@ class CONTENT_EXPORT VideoCaptureController
                     int buffer_id);
 
   // Implement media::VideoCaptureDevice::EventHandler.
+  virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE;
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
                                        base::Time timestamp,
                                        int rotation,
                                        bool flip_vert,
                                        bool flip_horiz) OVERRIDE;
-  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
-                                            base::Time timestamp) OVERRIDE;
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::Time timestamp) OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnFrameInfo(
       const media::VideoCaptureCapability& info) OVERRIDE;
@@ -90,13 +95,15 @@ class CONTENT_EXPORT VideoCaptureController
   void OnDeviceStopped();
 
   // Worker functions on IO thread.
-  void DoIncomingCapturedFrameOnIOThread(int buffer_id, base::Time timestamp);
+  void DoIncomingCapturedFrameOnIOThread(
+      const scoped_refptr<media::VideoFrame>& captured_frame,
+      base::Time timestamp);
   void DoFrameInfoOnIOThread();
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
 
   // Send frame info and init buffers to |client|.
-  void SendFrameInfoAndBuffers(ControllerClient* client, int buffer_size);
+  void SendFrameInfoAndBuffers(ControllerClient* client);
 
   // Find a client of |id| and |handler| in |clients|.
   ControllerClient* FindClient(
@@ -113,26 +120,12 @@ class CONTENT_EXPORT VideoCaptureController
   // can stay in kStopping state, or go to kStopped, or restart capture.
   void PostStopping();
 
-  // Check if any DIB is used by client.
-  bool ClientHasDIB();
+  // Protects access to the |buffer_pool_| pointer on non-IO threads.
+  // TODO(nick): Make it so that this lock isn't required.
+  base::Lock buffer_pool_lock_;
 
-  // DIB reservation. Locate an available DIB object, reserve it, and provide
-  // the caller the reserved DIB's buffer_id as well as pointers to its color
-  // planes. Returns true if successful.
-  bool ReserveSharedMemory(int* buffer_id_out,
-                           uint8** yplane,
-                           uint8** uplane,
-                           uint8** vplane,
-                           int rotation);
-
-  // Lock to protect free_dibs_ and owned_dibs_.
-  base::Lock lock_;
-
-  struct SharedDIB;
-  typedef std::map<int /*buffer_id*/, SharedDIB*> DIBMap;
-  // All DIBs created by this object.
-  // It's modified only on IO thread.
-  DIBMap owned_dibs_;
+  // The pool of shared-memory buffers used for capturing.
+  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
 
   // All clients served by this controller.
   ControllerClients controller_clients_;
@@ -146,6 +139,7 @@ class CONTENT_EXPORT VideoCaptureController
   // It's modified on caller thread, assuming there is only one OnFrameInfo()
   // call per StartCapture().
   media::VideoCaptureCapability frame_info_;
+
   // Chopped pixels in width/height in case video capture device has odd numbers
   // for width/height.
   int chopped_width_;
