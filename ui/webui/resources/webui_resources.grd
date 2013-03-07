@@ -49,6 +49,8 @@ without changes to the corresponding grd file. -->
                  file="css/bubble.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_BUBBLE_BUTTON"
                  file="css/bubble_button.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_BUTTER_BAR"
+                 file="css/butter_bar.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_DIALOGS"
                  file="css/dialogs.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_LIST"

@@ -141,6 +141,12 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("blockitems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
   source->AddLocalizedString("lockButton", IDS_HISTORY_LOCK_BUTTON);
   source->AddLocalizedString("unlockButton", IDS_HISTORY_UNLOCK_BUTTON);
+  source->AddLocalizedString("hasSyncedResults",
+                             IDS_HISTORY_HAS_SYNCED_RESULTS);
+  source->AddLocalizedString("noResponseFromServer",
+                             IDS_HISTORY_NO_RESPONSE_FROM_SERVER);
+  source->AddBoolean("isFullHistorySyncEnabled",
+                     WebHistoryServiceFactory::GetForProfile(profile) != NULL);
   source->AddBoolean("groupByDomain",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
@@ -399,7 +405,7 @@ bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
 
 void BrowsingHistoryHandler::WebHistoryTimeout() {
   // TODO(dubroy): Communicate the failure to the front end.
-  if (!results_info_value_.empty())
+  if (!history_request_consumer_.HasPendingRequests())
     ReturnResultsToFrontEnd();
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -441,6 +447,9 @@ void BrowsingHistoryHandler::QueryHistory(
     web_history_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
         this, &BrowsingHistoryHandler::WebHistoryTimeout);
+
+    // Set this to false until the results actually arrive.
+    results_info_value_.SetBoolean("hasSyncedResults", false);
   }
 }
 
@@ -980,7 +989,8 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
   } else if (results_value) {
     NOTREACHED() << "Failed to parse JSON response.";
   }
-  if (!results_info_value_.empty())
+  results_info_value_.SetBoolean("hasSyncedResults", true);
+  if (!history_request_consumer_.HasPendingRequests())
     ReturnResultsToFrontEnd();
 }
 

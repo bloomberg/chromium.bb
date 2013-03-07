@@ -449,6 +449,15 @@ HistoryModel.prototype.addResults = function(info, results) {
     lastDay = thisDay;
   }
 
+  if (loadTimeData.getBoolean('isFullHistorySyncEnabled')) {
+    if (info.hasSyncedResults) {
+      this.view_.showNotification(loadTimeData.getString('hasSyncedResults'));
+    } else {
+      this.view_.showNotification(
+          loadTimeData.getString('noResponseFromServer'), true);
+    }
+  }
+
   this.updateSearch_();
 };
 
@@ -899,6 +908,27 @@ HistoryView.prototype.updateManagedEntries = function(entries) {
     if (url in urlEntries)
       updateHostStatus(filterStatusDiv, urlEntries[url]);
   }
+};
+
+/**
+ * Shows the notification bar at the top of the page with |innerHTML| as its
+ * content.
+ * @param {string} innerHTML The HTML content of the warning.
+ * @param {boolean} isWarning If true, style the notification as a warning.
+ */
+HistoryView.prototype.showNotification = function(innerHTML, isWarning) {
+  var bar = $('notification-bar');
+  bar.innerHTML = innerHTML;
+  bar.hidden = false;
+  if (isWarning)
+    bar.classList.add('warning');
+  else
+    bar.classList.remove('warning');
+
+  // Make sure that any links in the HTML are targeting the top level.
+  var links = bar.querySelectorAll('a');
+  for (var i = 0; i < links.length; i++)
+    links[i].target = '_top';
 };
 
 // HistoryView, private: ------------------------------------------------------

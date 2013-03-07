@@ -46,6 +46,22 @@ html[dir=rtl] #lock-unlock-button {
   top: 3px;
 }
 
+#notification-bar {
+  float: right;
+  padding-bottom: 4px;
+  padding-top: 4px;
+}
+
+html[dir=rtl] #notification-bar {
+  float: left;
+}
+
+#notification-bar:not(.warning) {
+  background-color: inherit;
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+
 #editing-controls,
 #filter-controls,
 #results-display {
