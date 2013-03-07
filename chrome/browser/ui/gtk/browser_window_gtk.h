@@ -288,23 +288,26 @@ class BrowserWindowGtk
   // Invalidate window to force repaint.
   void InvalidateWindow();
 
-  // Top level window.
+  // Top level window. NULL after the window starts closing.
   GtkWindow* window_;
   // Determines whether window was shown.
   bool window_has_shown_;
   // GtkAlignment that holds the interior components of the chromium window.
-  // This is used to draw the custom frame border and content shadow.
+  // This is used to draw the custom frame border and content shadow. Owned by
+  // window_.
   GtkWidget* window_container_;
   // VBox that holds everything (tabs, toolbar, bookmarks bar, tab contents).
+  // Owned by window_container_.
   GtkWidget* window_vbox_;
-  // VBox that holds everything below the toolbar.
+  // VBox that holds everything below the toolbar. Owned by
+  // render_area_floating_container_.
   GtkWidget* render_area_vbox_;
   // Floating container that holds the render area. It is needed to position
-  // the findbar.
+  // the findbar. Owned by render_area_event_box_.
   GtkWidget* render_area_floating_container_;
-  // EventBox that holds render_area_floating_container_.
+  // EventBox that holds render_area_floating_container_. Owned by window_vbox_.
   GtkWidget* render_area_event_box_;
-  // Border between toolbar and render area.
+  // Border between toolbar and render area. Owned by render_area_vbox_.
   GtkWidget* toolbar_border_;
 
   scoped_ptr<Browser> browser_;
@@ -524,9 +527,11 @@ class BrowserWindowGtk
   DevToolsWindow* devtools_window_;
 
   // Split pane containing the contents_container_ and the devtools_container_.
+  // Owned by contents_vsplit_.
   GtkWidget* contents_hsplit_;
 
   // Split pane containing the contents_hsplit_ and the devtools_container_.
+  // Owned by render_area_vbox_.
   GtkWidget* contents_vsplit_;
 
   // The tab strip.  Always non-NULL.
