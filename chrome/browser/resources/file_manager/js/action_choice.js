@@ -18,7 +18,7 @@ function ActionChoice(dom, filesystem, params) {
   this.dom_ = dom;
   this.document_ = this.dom_.ownerDocument;
   this.metadataCache_ = params.metadataCache;
-  this.volumeManager_ = new VolumeManager();
+  this.volumeManager_ = VolumeManager.getInstance();
   this.volumeManager_.addEventListener('externally-unmounted',
      this.onDeviceUnmounted_.bind(this));
 
@@ -174,12 +174,19 @@ ActionChoice.prototype.loadSource_ = function(source) {
         FileType.isVisible);
   }.bind(this);
 
+  var onReady = function() {
+    util.resolvePath(this.filesystem_.root, source, onEntry, function() {
+      this.recordAction_('error');
+      this.close_();
+    }.bind(this));
+  }.bind(this);
+
   this.sourceEntry_ = null;
   metrics.startInterval('PhotoImport.Scan');
-  util.resolvePath(this.filesystem_.root, source, onEntry, function() {
-    this.recordAction_('error');
-    this.close_();
-  }.bind(this));
+  if (!this.volumeManager_.isReady())
+    this.volumeManager_.addEventListener('ready', onReady);
+  else
+    onReady();
 };
 
 /**
