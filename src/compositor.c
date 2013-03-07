@@ -1859,10 +1859,11 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 
 	weston_compositor_wake(compositor);
 
-	if (value)
-		weston_compositor_run_axis_binding(compositor, seat,
-						   time, axis, value);
-	else
+	if (!value)
+		return;
+
+	if (weston_compositor_run_axis_binding(compositor, seat,
+						   time, axis, value))
 		return;
 
 	if (pointer->focus_resource)

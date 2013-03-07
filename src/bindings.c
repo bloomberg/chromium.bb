@@ -250,7 +250,7 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 	}
 }
 
-WL_EXPORT void
+WL_EXPORT int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_seat *seat,
 				   uint32_t time, uint32_t axis,
@@ -262,8 +262,11 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 		if (b->axis == axis && b->modifier == seat->modifier_state) {
 			weston_axis_binding_handler_t handler = b->handler;
 			handler(&seat->seat, time, axis, value, b->data);
+			return 1;
 		}
 	}
+
+	return 0;
 }
 
 WL_EXPORT int

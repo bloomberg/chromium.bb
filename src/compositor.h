@@ -656,7 +656,7 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 				     struct weston_seat *seat, uint32_t time,
 				     uint32_t button,
 				     enum wl_pointer_button_state value);
-void
+int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_seat *seat, uint32_t time,
 				   uint32_t axis, int32_t value);
