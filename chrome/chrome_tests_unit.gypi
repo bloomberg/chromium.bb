@@ -1524,6 +1524,7 @@
         'common/extensions/api/i18n/default_locale_manifest_unittest.cc',
         'common/extensions/api/icons/icons_manifest_unittest.cc',
         'common/extensions/api/identity/extension_manifests_auth_unittest.cc',
+        'common/extensions/api/page_launcher/page_launcher_manifest_unittest.cc',
         'common/extensions/command_unittest.cc',
         'common/extensions/csp_validator_unittest.cc',
         'common/extensions/extension_constants_unittest.cc',

@@ -1,0 +1,8 @@
+{
+  "name": "PageLauncher Test",
+  "version": "1",
+  "page_launcher": {
+    "default_icon": "image.jpg",
+    "default_title": "title"
+  }
+}
