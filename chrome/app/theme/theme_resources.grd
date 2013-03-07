@@ -839,6 +839,7 @@
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="throbber_waiting.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING" file="tab_recording.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING_MASK" file="common/tab_recording_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_CAPTURE" file="tab_capture.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_CAPTURE_GLOW" file="tab_capture_glow.png" />
       <if expr="pp_ifdef('use_ash')">
