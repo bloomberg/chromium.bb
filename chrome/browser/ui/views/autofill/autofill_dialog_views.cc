@@ -878,32 +878,19 @@ views::View* AutofillDialogViews::CreateSignInContainer() {
 
 views::View* AutofillDialogViews::CreateMainContainer() {
   main_container_ = new views::View();
-  views::GridLayout* layout = new views::GridLayout(main_container_);
-  main_container_->SetLayoutManager(layout);
+  main_container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           views::kUnrelatedControlVerticalSpacing));
 
-  const int single_column_set = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(single_column_set);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-
-  layout->StartRow(0, single_column_set);
   account_chooser_ = new AccountChooser(controller_);
   if (!views::DialogDelegate::UseNewStyle())
-    layout->AddView(account_chooser_);
+    main_container_->AddChildView(account_chooser_);
 
-  layout->StartRowWithPadding(0, single_column_set,
-                              0, views::kRelatedControlVerticalSpacing);
   notification_area_ = new NotificationArea();
   notification_area_->set_arrow_centering_anchor(account_chooser_);
-  layout->AddView(notification_area_);
+  main_container_->AddChildView(notification_area_);
 
-  layout->StartRowWithPadding(0, single_column_set,
-                              0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(CreateDetailsContainer());
+  main_container_->AddChildView(CreateDetailsContainer());
   return main_container_;
 }
 
