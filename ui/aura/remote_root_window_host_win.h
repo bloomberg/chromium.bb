@@ -166,6 +166,18 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
+  // Helper function to dispatch a keyboard message to the desired target.
+  // The default target is the RootWindowHostDelegate. For nested message loop
+  // invocations we post a synthetic keyboard message directly into the message
+  // loop. The dispatcher for the nested loop would then decide how this
+  // message is routed.
+  void DispatchKeyboardMessage(ui::EventType type,
+                               uint32 vkey,
+                               uint32 repeat_count,
+                               uint32 scan_code,
+                               uint32 flags,
+                               bool is_character);
+
   RootWindowHostDelegate* delegate_;
   IPC::Sender* host_;
   scoped_ptr<ui::ViewProp> prop_;

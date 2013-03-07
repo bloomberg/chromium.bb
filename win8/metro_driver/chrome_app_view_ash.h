@@ -86,6 +86,10 @@ class ChromeAppViewAsh
   HRESULT OnKeyUp(winui::Core::ICoreWindow* sender,
                   winui::Core::IKeyEventArgs* args);
 
+  // Invoked for system keys like Alt, etc.
+  HRESULT OnAcceleratorKeyDown(winui::Core::ICoreDispatcher* sender,
+                               winui::Core::IAcceleratorKeyEventArgs* args);
+
   HRESULT OnCharacterReceived(winui::Core::ICoreWindow* sender,
                               winui::Core::ICharacterReceivedEventArgs* args);
 
@@ -103,6 +107,8 @@ class ChromeAppViewAsh
   EventRegistrationToken keyup_token_;
   EventRegistrationToken character_received_token_;
   EventRegistrationToken visibility_changed_token_;
+  EventRegistrationToken accel_keydown_token_;
+  EventRegistrationToken accel_keyup_token_;
 
   // Keep state about which button is currently down, if any, as PointerMoved
   // events do not contain that state, but Ash's MouseEvents need it.

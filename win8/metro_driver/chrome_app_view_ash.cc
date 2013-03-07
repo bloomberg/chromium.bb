@@ -37,6 +37,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::KeyEventArgs*> KeyEventHandler;
 
 typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreDispatcher*,
+    winui::Core::AcceleratorKeyEventArgs*> AcceleratorKeyEventHandler;
+
+typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::CharacterReceivedEventArgs*> CharEventHandler;
 
@@ -309,6 +313,21 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   hr = window_->add_KeyUp(mswr::Callback<KeyEventHandler>(
       this, &ChromeAppViewAsh::OnKeyUp).Get(),
       &keyup_token_);
+  CheckHR(hr);
+
+  mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher;
+  hr = window_->get_Dispatcher(&dispatcher);
+  CheckHR(hr, "Get Dispatcher failed.");
+
+  mswr::ComPtr<winui::Core::ICoreAcceleratorKeys> accelerator_keys;
+  hr = dispatcher.CopyTo(__uuidof(winui::Core::ICoreAcceleratorKeys),
+                         reinterpret_cast<void**>(
+                            accelerator_keys.GetAddressOf()));
+  CheckHR(hr, "QI for ICoreAcceleratorKeys failed.");
+  hr = accelerator_keys->add_AcceleratorKeyActivated(
+      mswr::Callback<AcceleratorKeyEventHandler>(
+          this, &ChromeAppViewAsh::OnAcceleratorKeyDown).Get(),
+      &accel_keydown_token_);
   CheckHR(hr);
 
   hr = window_->add_PointerWheelChanged(mswr::Callback<PointerEventHandler>(
@@ -637,6 +656,55 @@ HRESULT ChromeAppViewAsh::OnKeyUp(
                                                  status.RepeatCount,
                                                  status.ScanCode,
                                                  GetKeyboardEventFlags()));
+  return S_OK;
+}
+
+HRESULT ChromeAppViewAsh::OnAcceleratorKeyDown(
+    winui::Core::ICoreDispatcher* sender,
+    winui::Core::IAcceleratorKeyEventArgs* args) {
+  winsys::VirtualKey virtual_key;
+  HRESULT hr = args->get_VirtualKey(&virtual_key);
+  if (FAILED(hr))
+    return hr;
+  winui::Core::CorePhysicalKeyStatus status;
+  hr = args->get_KeyStatus(&status);
+  if (FAILED(hr))
+    return hr;
+
+  winui::Core::CoreAcceleratorKeyEventType event_type;
+  hr = args->get_EventType(&event_type);
+  if (FAILED(hr))
+    return hr;
+
+  // The AURA event handling code does not handle the system key down event for
+  // the Alt key if we pass in the flag EF_ALT_DOWN.
+  uint32 keyboard_flags = GetKeyboardEventFlags() & ~ui::EF_ALT_DOWN;
+
+  switch (event_type) {
+    case winui::Core::CoreAcceleratorKeyEventType_SystemCharacter:
+      ui_channel_->Send(new MetroViewerHostMsg_Character(virtual_key,
+                                                         status.RepeatCount,
+                                                         status.ScanCode,
+                                                         keyboard_flags));
+      break;
+
+    case winui::Core::CoreAcceleratorKeyEventType_SystemKeyDown:
+      ui_channel_->Send(new MetroViewerHostMsg_KeyDown(virtual_key,
+                                                       status.RepeatCount,
+                                                       status.ScanCode,
+                                                       keyboard_flags));
+      break;
+
+    case winui::Core::CoreAcceleratorKeyEventType_SystemKeyUp:
+      ui_channel_->Send(new MetroViewerHostMsg_KeyUp(virtual_key,
+                                                     status.RepeatCount,
+                                                     status.ScanCode,
+                                                     keyboard_flags));
+      break;
+
+    default:
+      break;
+  }
   return S_OK;
 }
 
