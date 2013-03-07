@@ -62,8 +62,6 @@
         'views/notifier_settings_view.h',
         'views/notification_view.cc',
         'views/notification_view.h',
-        'views/quiet_mode_bubble.cc',
-        'views/quiet_mode_bubble.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

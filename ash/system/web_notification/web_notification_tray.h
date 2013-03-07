@@ -14,7 +14,6 @@
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/widget/widget_observer.h"
 
 // Status area tray for showing browser and app notifications. This hosts
 // a MessageCenter class which manages the notification list. This class
@@ -26,6 +25,7 @@
 
 namespace views {
 class ImageButton;
+class MenuRunner;
 }
 
 namespace message_center {
@@ -47,8 +47,7 @@ class ASH_EXPORT WebNotificationTray
     : public internal::TrayBackgroundView,
       public views::TrayBubbleView::Delegate,
       public message_center::MessageCenterTrayDelegate,
-      public views::ButtonListener,
-      public views::WidgetObserver {
+      public views::ButtonListener {
  public:
   explicit WebNotificationTray(
       internal::StatusAreaWidget* status_area_widget);
@@ -97,9 +96,6 @@ class ASH_EXPORT WebNotificationTray
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from WidgetObserver.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
-
   // Overridden from MessageCenterTrayDelegate.
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
   virtual bool ShowMessageCenter() OVERRIDE;
@@ -122,11 +118,11 @@ class ASH_EXPORT WebNotificationTray
   // the message center.
   bool ShouldShowMessageCenter();
 
- // Returns true if it should show the quiet mode bubble.
-  bool ShouldShowQuietModeBubble(const ui::Event& event);
+  // Returns true if it should show the quiet mode menu.
+  bool ShouldShowQuietModeMenu(const ui::Event& event);
 
-  // Shows the quiet mode bubble.
-  void ShowQuietModeBubble();
+  // Shows the quiet mode menu.
+  void ShowQuietModeMenu();
 
   internal::WebNotificationBubbleWrapper* message_center_bubble() const {
     return message_center_bubble_.get();
@@ -134,10 +130,6 @@ class ASH_EXPORT WebNotificationTray
 
   internal::WebNotificationBubbleWrapper* popup_bubble() const {
     return popup_bubble_.get();
-  }
-
-  message_center::QuietModeBubble* quiet_mode_bubble() const {
-    return quiet_mode_bubble_.get();
   }
 
   // Testing accessors.
@@ -149,7 +141,7 @@ class ASH_EXPORT WebNotificationTray
   scoped_ptr<internal::WebNotificationBubbleWrapper> message_center_bubble_;
   scoped_ptr<internal::WebNotificationBubbleWrapper> popup_bubble_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
-  scoped_ptr<message_center::QuietModeBubble> quiet_mode_bubble_;
+  scoped_ptr<views::MenuRunner> quiet_mode_menu_runner_;
   views::ImageButton* button_;
 
   bool show_message_center_on_unlock_;

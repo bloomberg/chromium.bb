@@ -25,10 +25,10 @@
 #include "ui/message_center/views/message_center_bubble.h"
 #include "ui/message_center/views/message_popup_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
-#include "ui/message_center/views/quiet_mode_bubble.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/widget/widget_observer.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 #if defined(OS_CHROMEOS)
 
@@ -107,9 +107,6 @@ WebNotificationTray::~WebNotificationTray() {
   message_center_bubble_.reset();
   popup_bubble_.reset();
   popup_collection_.reset();
-  if (quiet_mode_bubble() && quiet_mode_bubble()->GetBubbleWidget())
-    quiet_mode_bubble()->GetBubbleWidget()->RemoveObserver(this);
-  quiet_mode_bubble_.reset();
 }
 
 // Public methods.
@@ -217,7 +214,24 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
       status_area_widget()->ShouldShowWebNotifications();
 }
 
-bool WebNotificationTray::ShouldShowQuietModeBubble(const ui::Event& event) {
+void WebNotificationTray::ShowQuietModeMenu() {
+  views::MenuModelAdapter menu_model_adapter(
+      message_center_tray_->CreateQuietModeMenu());
+  quiet_mode_menu_runner_.reset(
+      new views::MenuRunner(menu_model_adapter.CreateMenu()));
+  gfx::Point point;
+  views::View::ConvertPointToScreen(this, &point);
+  ignore_result(quiet_mode_menu_runner_->RunMenuAt(
+      GetWidget(),
+      NULL,
+      gfx::Rect(point, bounds().size()),
+      views::MenuItemView::BUBBLE_ABOVE,
+      views::MenuRunner::HAS_MNEMONICS));
+  quiet_mode_menu_runner_.reset();
+  GetShelfLayoutManager()->UpdateAutoHideState();
+}
+
+bool WebNotificationTray::ShouldShowQuietModeMenu(const ui::Event& event) {
   // TODO(mukai): Add keyboard event handler.
   if (!event.IsMouseEvent())
     return false;
@@ -226,18 +240,6 @@ bool WebNotificationTray::ShouldShowQuietModeBubble(const ui::Event& event) {
       static_cast<const ui::MouseEvent*>(&event);
 
   return mouse_event->IsRightMouseButton();
-}
-
-void WebNotificationTray::ShowQuietModeBubble() {
-  aura::Window* parent = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      internal::kShellWindowId_SettingBubbleContainer);
-  quiet_mode_bubble_.reset(new message_center::QuietModeBubble(
-      button_,
-      parent,
-      message_center_tray_->message_center()->notification_list()));
-  quiet_mode_bubble()->GetBubbleWidget()->StackAtTop();
-  quiet_mode_bubble()->GetBubbleWidget()->AddObserver(this);
 }
 
 void WebNotificationTray::UpdateAfterLoginStatusChange(
@@ -264,7 +266,8 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
 }
 
 bool WebNotificationTray::ShouldBlockLauncherAutoHide() const {
-  return IsMessageCenterBubbleVisible() || quiet_mode_bubble() != NULL;
+  return IsMessageCenterBubbleVisible() ||
+      (quiet_mode_menu_runner_.get() && quiet_mode_menu_runner_->IsRunning());
 }
 
 bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
@@ -306,9 +309,6 @@ void WebNotificationTray::AnchorUpdated() {
     message_center_bubble()->bubble_view()->UpdateBubble();
     UpdateBubbleViewArrow(message_center_bubble()->bubble_view());
   }
-  // Quiet mode settings bubble has to be on top.
-  if (quiet_mode_bubble() && quiet_mode_bubble()->GetBubbleWidget())
-    quiet_mode_bubble()->GetBubbleWidget()->StackAtTop();
 }
 
 string16 WebNotificationTray::GetAccessibleNameForTray() {
@@ -328,11 +328,11 @@ void WebNotificationTray::HideBubbleWithView(
 }
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {
-  if (!quiet_mode_bubble() && ShouldShowQuietModeBubble(event)) {
-    ShowQuietModeBubble();
+  if (ShouldShowQuietModeMenu(event)) {
+    ShowQuietModeMenu();
     return true;
   }
-  quiet_mode_bubble_.reset();
+
   if (message_center_bubble())
     message_center_tray_->HideMessageCenterBubble();
   else
@@ -378,13 +378,6 @@ void WebNotificationTray::ButtonPressed(views::Button* sender,
   PerformAction(event);
 }
 
-void WebNotificationTray::OnWidgetDestroying(views::Widget* widget) {
-  if (quiet_mode_bubble() && quiet_mode_bubble()->GetBubbleWidget() == widget) {
-    widget->RemoveObserver(this);
-  }
-  quiet_mode_bubble_.reset();
-}
-
 void WebNotificationTray::OnMessageCenterTrayChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   message_center::MessageCenter* message_center =
@@ -424,10 +417,9 @@ void WebNotificationTray::OnMessageCenterTrayChanged() {
 }
 
 bool WebNotificationTray::ClickedOutsideBubble() {
-  // Only hide the message center and quiet mode bubble.
-  if (!message_center_bubble() && !quiet_mode_bubble())
+  // Only hide the message center.
+  if (!message_center_bubble())
     return false;
-  quiet_mode_bubble_.reset();
   message_center_tray_->HideMessageCenterBubble();
   return true;
 }

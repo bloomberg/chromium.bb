@@ -35,7 +35,6 @@ class NotificationBubbleWrapperWin;
 // tray icon on click.
 class WebNotificationTrayWin
     : public message_center::MessageCenterTrayDelegate,
-      public ui::SimpleMenuModel::Delegate,
       public StatusIconObserver {
  public:
   WebNotificationTrayWin();
@@ -66,14 +65,6 @@ class WebNotificationTrayWin
   // Changes the icon and hovertext based on number of unread notifications.
   void UpdateStatusIcon();
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view);
-
-  // SimpleMenuModel::Delegate implementation.
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, WebNotifications);

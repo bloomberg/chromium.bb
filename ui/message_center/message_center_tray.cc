@@ -6,9 +6,19 @@
 
 #include "base/observer_list.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ui_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
 namespace message_center {
+namespace {
+
+// Menu commands
+const int kToggleQuietMode = 0;
+const int kEnableQuietModeHour = 1;
+const int kEnableQuietModeDay = 2;
+
+}
 
 MessageCenterTray::MessageCenterTray(
     MessageCenterTrayDelegate* delegate,
@@ -84,6 +94,18 @@ bool MessageCenterTray::HidePopupBubble() {
   return true;
 }
 
+ui::MenuModel* MessageCenterTray::CreateQuietModeMenu() {
+  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
+
+  menu->AddCheckItem(kToggleQuietMode,
+                     l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE));
+  menu->AddItem(kEnableQuietModeHour,
+                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR));
+  menu->AddItem(kEnableQuietModeDay,
+                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1DAY));
+  return menu;
+}
+
 void MessageCenterTray::OnMessageCenterChanged(bool new_notification) {
   if (message_center_visible_) {
     if (message_center_->NotificationCount() == 0)
@@ -102,6 +124,34 @@ void MessageCenterTray::OnMessageCenterChanged(bool new_notification) {
     ShowPopupBubble();
 
   NotifyMessageCenterTrayChanged();
+}
+
+bool MessageCenterTray::IsCommandIdChecked(int command_id) const {
+  if (command_id != kToggleQuietMode)
+    return false;
+  return message_center()->quiet_mode();
+}
+
+bool MessageCenterTray::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+bool MessageCenterTray::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void MessageCenterTray::ExecuteCommand(int command_id) {
+  if (command_id == kToggleQuietMode) {
+    bool in_quiet_mode = message_center()->quiet_mode();
+    message_center()->notification_list()->SetQuietMode(!in_quiet_mode);
+    return;
+  }
+  base::TimeDelta expires_in = command_id == kEnableQuietModeDay ?
+      base::TimeDelta::FromDays(1):
+      base::TimeDelta::FromHours(1);
+  message_center()->notification_list()->EnterQuietModeWithExpire(expires_in);
 }
 
 void MessageCenterTray::NotifyMessageCenterTrayChanged() {

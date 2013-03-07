@@ -30,11 +30,6 @@
 
 namespace {
 
-// Menu commands
-const int kToggleQuietMode = 0;
-const int kEnableQuietModeHour = 1;
-const int kEnableQuietModeDay = 2;
-
 // Tray constants
 const int kScreenEdgePadding = 2;
 
@@ -251,46 +246,9 @@ void WebNotificationTrayWin::HideBubbleWithView(
   }
 }
 
-bool WebNotificationTrayWin::IsCommandIdChecked(int command_id) const {
-  if (command_id != kToggleQuietMode)
-    return false;
-  return message_center_tray_->message_center()->quiet_mode();
-}
-
-bool WebNotificationTrayWin::IsCommandIdEnabled(int command_id) const {
-  return true;
-}
-
-bool WebNotificationTrayWin::GetAcceleratorForCommandId(
-    int command_id,
-    ui::Accelerator* accelerator) {
-  return false;
-}
-
-void WebNotificationTrayWin::ExecuteCommand(int command_id) {
-  if (command_id == kToggleQuietMode) {
-    bool in_quiet_mode = message_center()->quiet_mode();
-    message_center()->notification_list()->SetQuietMode(!in_quiet_mode);
-    return;
-  }
-  base::TimeDelta expires_in = command_id == kEnableQuietModeDay ?
-      base::TimeDelta::FromDays(1):
-      base::TimeDelta::FromHours(1);
-  message_center()->notification_list()->EnterQuietModeWithExpire(expires_in);
-}
-
 void WebNotificationTrayWin::AddQuietModeMenu(StatusIcon* status_icon) {
   DCHECK(status_icon);
-  ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
-
-  menu->AddCheckItem(kToggleQuietMode,
-                     l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE));
-  menu->AddItem(kEnableQuietModeHour,
-                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR));
-  menu->AddItem(kEnableQuietModeDay,
-                l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_QUIET_MODE_1DAY));
-
-  status_icon->SetContextMenu(menu);
+  status_icon->SetContextMenu(message_center_tray_->CreateQuietModeMenu());
 }
 
 message_center::MessageCenterBubble*
