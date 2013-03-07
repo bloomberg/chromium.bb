@@ -65,9 +65,8 @@ const char kUnregisterSwitch[] = "unregister";
 const wchar_t kVersionKey[] = L"pv";
 const wchar_t kNameKey[] = L"name";
 const DWORD kInstallerResultFailedCustomError = 1;
-const wchar_t kRegValueLastInstallerResult[] = L"LastInstallerResult";
-const wchar_t kRegValueLastInstallerResultUIString[] =
-    L"LastInstallerResultUIString";
+const wchar_t kRegValueInstallerResult[] = L"InstallerResult";
+const wchar_t kRegValueInstallerResultUIString[] = L"InstallerResultUIString";
 
 void SetGoogleUpdateKeys() {
   base::win::RegKey key;
@@ -105,9 +104,9 @@ void SetGoogleUpdateError(const string16& message) {
     LOG(ERROR) << "Unable to open key";
   }
 
-  if (key.WriteValue(kRegValueLastInstallerResult,
+  if (key.WriteValue(kRegValueInstallerResult,
                      kInstallerResultFailedCustomError) != ERROR_SUCCESS ||
-      key.WriteValue(kRegValueLastInstallerResultUIString,
+      key.WriteValue(kRegValueInstallerResultUIString,
                      message.c_str()) != ERROR_SUCCESS) {
       LOG(ERROR) << "Unable to set registry keys";
   }
