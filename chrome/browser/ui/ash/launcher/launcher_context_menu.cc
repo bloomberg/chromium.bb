@@ -69,8 +69,6 @@ void LauncherContextMenu::Init() {
   if (is_valid_item()) {
     if (item_.type == ash::TYPE_APP_SHORTCUT ||
         item_.type == ash::TYPE_WINDOWED_APP) {
-      DCHECK(item_.type == ash::TYPE_APP_SHORTCUT &&
-             controller_->IsPinned(item_.id));
       // V1 apps can be started from the menu - but V2 apps should not.
       if  (!controller_->IsPlatformApp(item_.id)) {
         AddItem(MENU_OPEN_NEW, string16());
@@ -85,7 +83,8 @@ void LauncherContextMenu::Init() {
         AddItem(MENU_CLOSE,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
       }
-      if (!controller_->IsPlatformApp(item_.id)) {
+      if (!controller_->IsPlatformApp(item_.id) &&
+          item_.type != ash::TYPE_WINDOWED_APP) {
         AddSeparator(ui::NORMAL_SEPARATOR);
         AddCheckItemWithStringId(
             LAUNCH_TYPE_REGULAR_TAB,
