@@ -446,8 +446,11 @@ GURL GetEffectiveURLForSignin(const GURL& url) {
   CHECK(SigninManager::IsWebBasedSigninFlowURL(url));
 
   GURL effective_url(SigninManager::kChromeSigninEffectiveSite);
+  // Copy the path because the argument to SetPathStr must outlive
+  // the Replacements object.
+  const std::string path_copy(url.path());
   GURL::Replacements replacements;
-  replacements.SetPathStr(url.path());
+  replacements.SetPathStr(path_copy);
   effective_url = effective_url.ReplaceComponents(replacements);
   return effective_url;
 }
