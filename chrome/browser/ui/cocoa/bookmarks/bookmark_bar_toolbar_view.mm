@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 
+#include "chrome/browser/instant/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -11,7 +12,6 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/ntp_background_util.h"
-#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"

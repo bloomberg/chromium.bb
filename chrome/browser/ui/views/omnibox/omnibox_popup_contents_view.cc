@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
+#include "chrome/browser/instant/search.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
-#include "chrome/browser/ui/search/search.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"

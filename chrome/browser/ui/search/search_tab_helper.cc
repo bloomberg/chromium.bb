@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
-#include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/instant/search.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"

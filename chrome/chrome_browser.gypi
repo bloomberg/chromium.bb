@@ -970,6 +970,8 @@
         'browser/instant/instant_tab.h',
         'browser/instant/instant_unload_handler.cc',
         'browser/instant/instant_unload_handler.h',
+        'browser/instant/search.cc',
+        'browser/instant/search.h',
         'browser/internal_auth.cc',
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',

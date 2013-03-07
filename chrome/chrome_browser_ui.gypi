@@ -1257,8 +1257,6 @@
         'browser/ui/sad_tab_types.h',
         'browser/ui/screen_capture_infobar_delegate.cc',
         'browser/ui/screen_capture_infobar_delegate.h',
-        'browser/ui/search/search.cc',
-        'browser/ui/search/search.h',
         'browser/ui/search/search_delegate.cc',
         'browser/ui/search/search_delegate.h',
         'browser/ui/search/search_model.cc',

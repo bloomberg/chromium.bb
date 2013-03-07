@@ -4,9 +4,9 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/instant/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
