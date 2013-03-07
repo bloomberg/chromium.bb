@@ -1707,6 +1707,8 @@ gl_renderer_destroy(struct weston_compositor *ec)
 
 	eglTerminate(gr->egl_display);
 	eglReleaseThread();
+
+	free(gr);
 }
 
 static int

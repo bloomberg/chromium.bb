@@ -2002,6 +2002,7 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	wl_list_remove(&shsurf->surface_destroy_listener.link);
 	shsurf->surface->configure = NULL;
 	ping_timer_destroy(shsurf);
+	free(shsurf->title);
 
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
