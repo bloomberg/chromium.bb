@@ -1630,6 +1630,7 @@
    fun:ash::CursorManager::SetDeviceScaleFactor
    fun:ash::Shell::Init
 }
+# TODO(thestig): bug_169185_a and bug_169185_b may be obsolete?
 {
    bug_169185_a
    Heapcheck:Leak
@@ -1674,13 +1675,17 @@
    fun:v8::internal::CallStubCompiler::GetCode
    fun:v8::internal::CallStubCompiler::CompileCallGlobal
    fun:v8::internal::StubCache::ComputeCallGlobal
-   fun:v8::internal::CallICBase::ComputeMonomorphicStub
-   fun:v8::internal::CallICBase::UpdateCaches
-   fun:v8::internal::CallICBase::LoadFunction
-   fun:v8::internal::CallIC_Miss
-   ...
-   fun:*Invoke
-   fun:v8::internal::Execution::New
+}
+{
+   bug_169185_d
+   Heapcheck:Leak
+   fun:v8::internal::SkipList::Update
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Heap::CreateCode
+   fun:v8::internal::Factory::NewCode
+   fun:v8::internal::RegExpMacroAssemblerX64::GetCode
+   fun:v8::internal::RegExpCompiler::Assemble
+   fun:v8::internal::RegExpEngine::Compile
 }
 {
    bug_169678
@@ -1770,7 +1775,7 @@
    fun:*StartSync
    ...
    fun:OneClickSigninHelper::DidStopLoading
-   fun:OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test::TestBody
+   fun:OneClickSigninHelperTest*::TestBody
 }
 {
    bug_175435:
