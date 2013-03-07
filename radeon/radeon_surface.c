@@ -1063,7 +1063,7 @@ static int si_surface_init_linear_aligned(struct radeon_surface_manager *surf_ma
     for (i = start_level; i <= surf->last_level; i++) {
         surf->level[i].mode = RADEON_SURF_MODE_LINEAR_ALIGNED;
         si_surf_minify(surf, surf->level+i, surf->bpe, i, xalign, yalign,
-		       zalign, slice_align, offset);
+                       zalign, slice_align, offset);
         /* level0 and first mipmap need to have alignment */
         offset = surf->bo_size;
         if ((i == 0)) {
@@ -1149,6 +1149,12 @@ static int si_surface_init(struct radeon_surface_manager *surf_man,
 
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
+
+    /* those are already handled by the kernel tile mode array but we still
+     * need value that won't be rejected by kernel set tiling function
+     */
+    surf->tile_split = 0;
+    surf->stencil_tile_split = 0;
 
     if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
         /* zbuffer only support 1D or 2D tiled surface */
