@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
@@ -20,8 +21,8 @@ class TrayBackgroundView;
 class TrayEventFilter;
 
 // Creates and manages the Widget and EventFilter components of a bubble.
-
-class TrayBubbleWrapper : public views::WidgetObserver {
+class TrayBubbleWrapper : public views::WidgetObserver,
+                          public base::SupportsWeakPtr<TrayBubbleWrapper> {
  public:
   TrayBubbleWrapper(TrayBackgroundView* tray,
                     views::TrayBubbleView* bubble_view);
@@ -36,8 +37,15 @@ class TrayBubbleWrapper : public views::WidgetObserver {
   const views::Widget* bubble_widget() const { return bubble_widget_; }
 
  private:
+  void HideBubbleWithView();
+
+  // unowned. |tray_| owns this and it should outlive.
   TrayBackgroundView* tray_;
-  views::TrayBubbleView* bubble_view_;  // unowned
+
+  // unowned.
+  views::TrayBubbleView* bubble_view_;
+
+  // unowned.
   views::Widget* bubble_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleWrapper);

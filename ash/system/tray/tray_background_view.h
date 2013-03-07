@@ -87,7 +87,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual string16 GetAccessibleNameForTray() = 0;
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
-  // is closed.
+  // is closed. |bubble_view| may be already destroyed.
   virtual void HideBubbleWithView(const views::TrayBubbleView* bubble_view) = 0;
 
   // Called by the bubble wrapper when a click event occurs outside the bubble.
