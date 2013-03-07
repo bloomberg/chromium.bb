@@ -115,25 +115,7 @@ size_t VideoLayerImpl::numPlanes() const
     if (m_convertYUV)
         return 1;
 
-    switch (m_frame->format()) {
-#if defined(GOOGLE_TV)
-    case media::VideoFrame::HOLE:
-        return 0;
-#endif
-    case media::VideoFrame::RGB32:
-        return 1;
-    case media::VideoFrame::YV12:
-    case media::VideoFrame::YV16:
-        return 3;
-    case media::VideoFrame::INVALID:
-    case media::VideoFrame::EMPTY:
-    case media::VideoFrame::I420:
-        break;
-    case media::VideoFrame::NATIVE_TEXTURE:
-        return 0;
-    }
-    NOTREACHED();
-    return 0;
+    return media::VideoFrame::NumPlanes(m_frame->format());
 }
 
 void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
@@ -436,7 +418,7 @@ void VideoLayerImpl::freePlaneData(ResourceProvider* resourceProvider)
 
 void VideoLayerImpl::freeUnusedPlaneData(ResourceProvider* resourceProvider)
 {
-    size_t firstUnusedPlane = numPlanes();
+    const size_t firstUnusedPlane = numPlanes();
     for (size_t i = firstUnusedPlane; i < media::VideoFrame::kMaxPlanes; ++i)
         m_framePlanes[i].freeData(resourceProvider);
 }

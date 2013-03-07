@@ -136,6 +136,13 @@ scoped_refptr<VideoFrame> VideoFrame::CreateBlackFrame(const gfx::Size& size) {
 }
 
 #if defined(GOOGLE_TV)
+// This block and other blocks wrapped around #if defined(GOOGLE_TV) is not
+// maintained by the general compositor team. Please contact the following
+// people instead:
+//
+// wonsik@chromium.org
+// ycheo@chromium.org
+
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
     const gfx::Size& size) {
@@ -145,6 +152,28 @@ scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
   return frame;
 }
 #endif
+
+// static
+size_t VideoFrame::NumPlanes(Format format) {
+  switch (format) {
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(GOOGLE_TV)
+    case VideoFrame::HOLE:
+#endif
+      return 0;
+    case VideoFrame::RGB32:
+      return 1;
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+      return 3;
+    case VideoFrame::EMPTY:
+    case VideoFrame::I420:
+    case VideoFrame::INVALID:
+      break;
+  }
+  NOTREACHED() << "Unsupported video frame format: " << format;
+  return 0;
+}
 
 static inline size_t RoundUp(size_t value, size_t alignment) {
   // Check that |alignment| is a power of 2.
@@ -236,25 +265,7 @@ VideoFrame::~VideoFrame() {
 }
 
 bool VideoFrame::IsValidPlane(size_t plane) const {
-  switch (format_) {
-    case RGB32:
-      return plane == kRGBPlane;
-
-    case YV12:
-    case YV16:
-      return plane == kYPlane || plane == kUPlane || plane == kVPlane;
-
-    case NATIVE_TEXTURE:
-      NOTREACHED() << "NATIVE_TEXTUREs don't use plane-related methods!";
-      return false;
-
-    default:
-      break;
-  }
-
-  // Intentionally leave out non-production formats.
-  NOTREACHED() << "Unsupported video frame format: " << format_;
-  return false;
+  return (plane < NumPlanes(format_));
 }
 
 int VideoFrame::stride(size_t plane) const {

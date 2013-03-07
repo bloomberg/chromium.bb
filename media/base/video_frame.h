@@ -133,6 +133,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   static scoped_refptr<VideoFrame> CreateHoleFrame(const gfx::Size& size);
 #endif
 
+  static size_t NumPlanes(Format format);
+
   Format format() const { return format_; }
 
   const gfx::Size& coded_size() const { return coded_size_; }
