@@ -17,17 +17,13 @@ _SURFACE_TEXTURE_TIMESTAMP_RE = '\d+'
 
 
 class SurfaceStatsCollector(object):
-  """Collects surface stats for a window from the output of SurfaceFlinger.
+  """Collects surface stats for a SurfaceView from the output of SurfaceFlinger.
 
   Args:
-    adb: the adb coonection to use.
-    window_package: Package name of the window.
-    window_activity: Activity name of the window.
+    adb: the adb connection to use.
   """
-  def __init__(self, adb, window_package, window_activity, trace_tag):
+  def __init__(self, adb, trace_tag):
     self._adb = adb
-    self._window_package = window_package
-    self._window_activity = window_activity
     self._trace_tag = trace_tag
     self._collector_thread = None
     self._use_legacy_method = False
@@ -151,8 +147,7 @@ class SurfaceStatsCollector(object):
     # The command returns nothing if it is supported, otherwise returns many
     # lines of result just like 'dumpsys SurfaceFlinger'.
     results = self._adb.RunShellCommand(
-        'dumpsys SurfaceFlinger --latency-clear %s/%s' %
-        (self._window_package, self._window_activity))
+        'dumpsys SurfaceFlinger --latency-clear SurfaceView')
     return not len(results)
 
   def _GetSurfaceFlingerLatencyData(self, previous_timestamp, latencies):
@@ -196,9 +191,12 @@ class SurfaceStatsCollector(object):
     # (each time the number above changes, we have a "jank").
     # If this happens a lot during an animation, the animation appears
     # janky, even if it runs at 60 fps in average.
+    #
+    # We use the special "SurfaceView" window name because the statistics for
+    # the activity's main window are not updated when the main web content is
+    # composited into a SurfaceView.
     results = self._adb.RunShellCommand(
-        'dumpsys SurfaceFlinger --latency %s/%s' %
-        (self._window_package, self._window_activity), log_result=True)
+        'dumpsys SurfaceFlinger --latency SurfaceView', log_result=True)
     if not len(results):
       return (None, None)
 
