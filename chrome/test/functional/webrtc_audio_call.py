@@ -82,10 +82,10 @@ class WebrtcAudioCallTest(webrtc_test_base.WebrtcTestBase):
       self._AudioCallWithGetUserMedia(duration_seconds=5)
 
     def EnsureNotAllSilent(output_no_silence):
-      self.assertGreater(os.path.getsize(output_no_silence),
-                         _SIZE_OF_EMPTY_WAV_FILE_BYTES,
-                         msg=('The test recorded only silence. Ensure your '
-                              'machine is correctly configured for this test.'))
+      self.assertTrue(os.path.getsize(output_no_silence) >
+                      _SIZE_OF_EMPTY_WAV_FILE_BYTES,
+                      msg=('The test recorded only silence. Ensure your '
+                           'machine is correctly configured for this test.'))
 
     self._RecordAndVerify(record_duration_seconds=10,
                           sound_producing_function=CallWithMic,
