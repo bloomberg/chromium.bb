@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the notification API.
+// Custom bindings for the notifications API.
 
-var binding = require('binding').Binding.create('experimental.notification');
+var binding = require('binding').Binding.create('notifications');
 
 var sendRequest = require('sendRequest').sendRequest;
 var imageUtil = require('imageUtil');
@@ -123,12 +123,12 @@ function genHandle(failure_function) {
 var handleCreate = genHandle(function(callback, id) { callback(id); });
 var handleUpdate = genHandle(function(callback, id) { callback(false); });
 
-var experimentalNotificationCustomHook = function(bindingsAPI, extensionId) {
+var notificationsCustomHook = function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setHandleRequest('create', handleCreate);
   apiFunctions.setHandleRequest('update', handleCreate);
 };
 
-binding.registerCustomHook(experimentalNotificationCustomHook);
+binding.registerCustomHook(notificationsCustomHook);
 
 exports.binding = binding.generate();

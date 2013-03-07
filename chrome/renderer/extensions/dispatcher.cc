@@ -798,8 +798,6 @@ void Dispatcher::PopulateSourceMap() {
       IDR_EXPERIMENTAL_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.notification",
-                             IDR_NOTIFICATION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("fileBrowserHandler",
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
@@ -811,6 +809,8 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("mediaGalleries",
                              IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("notifications",
+                             IDR_NOTIFICATIONS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("omnibox", IDR_OMNIBOX_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageActions",
                              IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS);

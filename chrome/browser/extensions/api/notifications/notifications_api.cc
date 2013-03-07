@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/notification/notification_api.h"
+#include "chrome/browser/extensions/api/notifications/notifications_api.h"
 
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,7 +15,9 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
@@ -24,9 +26,9 @@ namespace {
 
 const char kResultKey[] = "result";
 
-class NotificationApiDelegate : public NotificationDelegate {
+class NotificationsApiDelegate : public NotificationDelegate {
  public:
-  NotificationApiDelegate(ApiFunction* api_function,
+  NotificationsApiDelegate(ApiFunction* api_function,
                           Profile* profile,
                           const std::string& extension_id,
                           const std::string& id)
@@ -85,7 +87,7 @@ class NotificationApiDelegate : public NotificationDelegate {
   }
 
  private:
-  virtual ~NotificationApiDelegate() {}
+  virtual ~NotificationsApiDelegate() {}
 
   void SendEvent(const std::string& name, scoped_ptr<ListValue> args) {
     scoped_ptr<Event> event(new Event(name, args.Pass()));
@@ -105,43 +107,37 @@ class NotificationApiDelegate : public NotificationDelegate {
   const std::string id_;
   const std::string scoped_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationApiDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NotificationsApiDelegate);
 };
 
 }  // namespace
 
-NotificationApiFunction::NotificationApiFunction() {
+bool NotificationsApiFunction::IsNotificationsApiAvailable() {
+  // TODO(miket): remove/change this check when we leave dev.
+  if (chrome::VersionInfo::CHANNEL_DEV < Feature::GetCurrentChannel())
+    return false;
+
+  // We need to check this explicitly rather than letting
+  // _permission_features.json enforce it, because we're sharing the
+  // chrome.notifications permissions namespace with WebKit notifications.
+  if (!(GetExtension()->is_platform_app() || GetExtension()->is_extension()))
+    return false;
+
+  return true;
 }
 
-NotificationApiFunction::~NotificationApiFunction() {
+NotificationsApiFunction::NotificationsApiFunction() {
 }
 
-message_center::NotificationType
-NotificationApiFunction::MapApiTemplateTypeToType(
-    api::experimental_notification::TemplateType type) {
-  switch (type) {
-    case api::experimental_notification::TEMPLATE_TYPE_NONE:
-    case api::experimental_notification::TEMPLATE_TYPE_SIMPLE:
-      return message_center::NOTIFICATION_TYPE_SIMPLE;
-    case api::experimental_notification::TEMPLATE_TYPE_BASIC:
-      return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
-    case api::experimental_notification::TEMPLATE_TYPE_IMAGE:
-      return message_center::NOTIFICATION_TYPE_IMAGE;
-    case api::experimental_notification::TEMPLATE_TYPE_LIST:
-      return message_center::NOTIFICATION_TYPE_MULTIPLE;
-    default:
-      // Gracefully handle newer application code that is running on an older
-      // runtime that doesn't recognize the requested template.
-      return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
-  }
+NotificationsApiFunction::~NotificationsApiFunction() {
 }
 
 // If older notification runtime is used, MessageCenter is not built.
 // Use simpler bridge then, ignoring all options.
 #if !defined (ENABLE_MESSAGE_CENTER)
-void NotificationApiFunction::CreateNotification(
+void NotificationsApiFunction::CreateNotification(
     const std::string& id,
-    api::experimental_notification::NotificationOptions* options) {
+    api::notifications::NotificationOptions* options) {
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->template_type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
@@ -151,7 +147,7 @@ void NotificationApiFunction::CreateNotification(
   // Ignore options if running on the old notification runtime.
   scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
 
-  NotificationApiDelegate* api_delegate(new NotificationApiDelegate(
+  NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
       this,
       profile(),
       extension_->id(),
@@ -164,9 +160,9 @@ void NotificationApiFunction::CreateNotification(
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 }
 #else  // defined(ENABLE_MESSAGE_CENTER)
-void NotificationApiFunction::CreateNotification(
+void NotificationsApiFunction::CreateNotification(
     const std::string& id,
-    api::experimental_notification::NotificationOptions* options) {
+    api::notifications::NotificationOptions* options) {
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->template_type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
@@ -184,7 +180,7 @@ void NotificationApiFunction::CreateNotification(
                                *options->event_time);
   if (options->buttons.get()) {
     if (options->buttons->size() > 0) {
-      linked_ptr<api::experimental_notification::NotificationButton> button =
+      linked_ptr<api::notifications::NotificationButton> button =
           (*options->buttons)[0];
       optional_fields->SetString(message_center::kButtonOneTitleKey,
                                  UTF8ToUTF16(button->title));
@@ -193,7 +189,7 @@ void NotificationApiFunction::CreateNotification(
                                    UTF8ToUTF16(*button->icon_url));
     }
     if (options->buttons->size() > 1) {
-      linked_ptr<api::experimental_notification::NotificationButton> button =
+      linked_ptr<api::notifications::NotificationButton> button =
           (*options->buttons)[1];
       optional_fields->SetString(message_center::kButtonTwoTitleKey,
                                  UTF8ToUTF16(button->title));
@@ -220,7 +216,7 @@ void NotificationApiFunction::CreateNotification(
     base::ListValue* items = new base::ListValue();
     std::vector<
       linked_ptr<
-        api::experimental_notification::NotificationItem> >::iterator i;
+        api::notifications::NotificationItem> >::iterator i;
     for (i = options->items->begin(); i != options->items->end(); ++i) {
       base::DictionaryValue* item = new base::DictionaryValue();
       item->SetString(message_center::kItemTitleKey,
@@ -232,7 +228,7 @@ void NotificationApiFunction::CreateNotification(
     optional_fields->Set(message_center::kItemsKey, items);
   }
 
-  NotificationApiDelegate* api_delegate(new NotificationApiDelegate(
+  NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
       this,
       profile(),
       extension_->id(),
@@ -246,33 +242,53 @@ void NotificationApiFunction::CreateNotification(
 }
 #endif  // !defined(ENABLE_MESSAGE_CENTER)
 
-bool NotificationApiFunction::IsNotificationApiEnabled() {
+bool NotificationsApiFunction::IsNotificationsApiEnabled() {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile());
   return service->IsExtensionEnabled(extension_->id());
 }
 
-bool NotificationApiFunction::RunImpl() {
-  if (!IsNotificationApiEnabled()) {
+bool NotificationsApiFunction::RunImpl() {
+  if (IsNotificationsApiAvailable() && IsNotificationsApiEnabled()) {
+    return RunNotificationsApi();
+  } else {
     SendResponse(false);
     return true;
   }
-
-  return RunNotificationApi();
 }
 
-const char kNotificationPrefix[] = "extension.api.";
+message_center::NotificationType
+NotificationsApiFunction::MapApiTemplateTypeToType(
+    api::notifications::TemplateType type) {
+  switch (type) {
+    case api::notifications::TEMPLATE_TYPE_NONE:
+    case api::notifications::TEMPLATE_TYPE_SIMPLE:
+      return message_center::NOTIFICATION_TYPE_SIMPLE;
+    case api::notifications::TEMPLATE_TYPE_BASIC:
+      return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
+    case api::notifications::TEMPLATE_TYPE_IMAGE:
+      return message_center::NOTIFICATION_TYPE_IMAGE;
+    case api::notifications::TEMPLATE_TYPE_LIST:
+      return message_center::NOTIFICATION_TYPE_MULTIPLE;
+    default:
+      // Gracefully handle newer application code that is running on an older
+      // runtime that doesn't recognize the requested template.
+      return message_center::NOTIFICATION_TYPE_BASE_FORMAT;
+  }
+}
+
+const char kNotificationPrefix[] = "extensions.api.";
 
 static uint64 next_id_ = 0;
 
-NotificationCreateFunction::NotificationCreateFunction() {
+NotificationsCreateFunction::NotificationsCreateFunction() {
 }
 
-NotificationCreateFunction::~NotificationCreateFunction() {
+NotificationsCreateFunction::~NotificationsCreateFunction() {
 }
 
-bool NotificationCreateFunction::RunNotificationApi() {
-  params_ = api::experimental_notification::Create::Params::Create(*args_);
+bool NotificationsCreateFunction::RunNotificationsApi() {
+  params_ = api::notifications::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   // If the caller provided a notificationId, use that. Otherwise, generate
@@ -296,18 +312,18 @@ bool NotificationCreateFunction::RunNotificationApi() {
   return true;
 }
 
-NotificationUpdateFunction::NotificationUpdateFunction() {
+NotificationsUpdateFunction::NotificationsUpdateFunction() {
 }
 
-NotificationUpdateFunction::~NotificationUpdateFunction() {
+NotificationsUpdateFunction::~NotificationsUpdateFunction() {
 }
 
-bool NotificationUpdateFunction::RunNotificationApi() {
-  params_ = api::experimental_notification::Update::Params::Create(*args_);
+bool NotificationsUpdateFunction::RunNotificationsApi() {
+  params_ = api::notifications::Update::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   if (g_browser_process->notification_ui_manager()->
-      DoesIdExist(NotificationApiDelegate::CreateScopedIdentifier(
+      DoesIdExist(NotificationsApiDelegate::CreateScopedIdentifier(
           extension_->id(), params_->notification_id))) {
     CreateNotification(params_->notification_id, &params_->options);
     SetResult(Value::CreateBooleanValue(true));
@@ -320,18 +336,18 @@ bool NotificationUpdateFunction::RunNotificationApi() {
   return true;
 }
 
-NotificationClearFunction::NotificationClearFunction() {
+NotificationsClearFunction::NotificationsClearFunction() {
 }
 
-NotificationClearFunction::~NotificationClearFunction() {
+NotificationsClearFunction::~NotificationsClearFunction() {
 }
 
-bool NotificationClearFunction::RunNotificationApi() {
-  params_ = api::experimental_notification::Clear::Params::Create(*args_);
+bool NotificationsClearFunction::RunNotificationsApi() {
+  params_ = api::notifications::Clear::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   bool cancel_result = g_browser_process->notification_ui_manager()->
-      CancelById(NotificationApiDelegate::CreateScopedIdentifier(
+      CancelById(NotificationsApiDelegate::CreateScopedIdentifier(
           extension_->id(), params_->notification_id));
 
   SetResult(Value::CreateBooleanValue(cancel_result));

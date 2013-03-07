@@ -15,7 +15,6 @@ Galore.controller = {
     controller.prefix = chrome.runtime.getURL('').slice(0, -1);
     controller.view = Galore.view.create(this.prepare_.bind(controller));
     controller.listen_('onDisplayed');
-    controller.listen_('onError');
     controller.listen_('onClosed');
     controller.listen_('onClicked');
     controller.listen_('onButtonClicked');
@@ -25,7 +24,7 @@ Galore.controller = {
   /** @private */
   listen_: function(event) {
     var listener = this.event_.bind(this, event);
-    chrome.experimental.notification[event].addListener(listener);
+    chrome.notifications[event].addListener(listener);
   },
 
   /** @private */
@@ -52,15 +51,15 @@ Galore.controller = {
     var id = this.id_();
     var priority = this.view.getPriority();
     var expanded = this.expand_(options, type, priority);
-    if (chrome.experimental.notification.create) {
-      chrome.experimental.notification.create(id, expanded, function() {});
+    if (chrome.notifications.create) {
+      chrome.notifications.create(id, expanded, function() {});
     } else {
       expanded.replaceId = id;
       delete expanded.buttonOneIconUrl;
       delete expanded.buttonOneTitle;
       delete expanded.buttonTwoIconUrl;
       delete expanded.buttonTwoTitle;
-      chrome.experimental.notification.show(expanded, function() {});
+      chrome.notifications.show(expanded, function() {});
     }
     this.event_('create', id, 'priority: ' + priority);
   },

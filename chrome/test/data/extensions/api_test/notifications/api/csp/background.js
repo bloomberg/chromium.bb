@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const notification = chrome.experimental.notification;
+const notifications = chrome.notifications;
 
 var idString = "foo";
 
@@ -21,7 +21,7 @@ var testCSP = function() {
     title: "Attention!",
     message: "Check out Cirque du Soleil"
   };
-  notification.create(idString, options, onCreateCallback);
+  notifications.create(idString, options, onCreateCallback);
 };
 
 function testDataURL() {
@@ -41,7 +41,7 @@ function testDataURL() {
     title: "Attention!",
     message: "Check out Cirque du Soleil"
   };
-  notification.create(idString, options, onCreateCallback);
+  notifications.create(idString, options, onCreateCallback);
 }
 
 function testCSPUpdateIconURL() {
@@ -63,7 +63,7 @@ function testCSPUpdateIconURL() {
       title: "Attention!",
       message: "Check out Cirque du Soleil"
     };
-    notification.update(idString, options2, onUpdateCallback);
+    notifications.update(idString, options2, onUpdateCallback);
   }
   var options = {
     templateType: "basic",
@@ -73,7 +73,7 @@ function testCSPUpdateIconURL() {
     title: "Attention!",
     message: "Check out Cirque du Soleil"
   };
-  notification.create(idString, options, onCreateCallback);
+  notifications.create(idString, options, onCreateCallback);
 }
 
 function testCSPUpdateImageURL() {
@@ -98,7 +98,7 @@ function testCSPUpdateImageURL() {
       title: "Attention!",
       message: "Check out Cirque du Soleil"
     };
-    notification.update(idString, options2, onUpdateCallback);
+    notifications.update(idString, options2, onUpdateCallback);
   }
   var options = {
     templateType: "image",
@@ -111,7 +111,7 @@ function testCSPUpdateImageURL() {
     title: "Attention!",
     message: "Check out Cirque du Soleil"
   };
-  notification.create(idString, options, onCreateCallback);
+  notifications.create(idString, options, onCreateCallback);
 }
 
 function testCSPUpdateButtonIconURL() {
@@ -139,7 +139,7 @@ function testCSPUpdateButtonIconURL() {
       } ],
       message: "Check out Cirque du Soleil"
     };
-    notification.update(idString, options2, onUpdateCallback);
+    notifications.update(idString, options2, onUpdateCallback);
   }
   var options = {
     templateType: "basic",
@@ -155,7 +155,7 @@ function testCSPUpdateButtonIconURL() {
     } ],
     message: "Check out Cirque du Soleil"
   };
-  notification.create(idString, options, onCreateCallback);
+  notifications.create(idString, options, onCreateCallback);
 }
 chrome.test.runTests([
     testCSP,

@@ -89,12 +89,11 @@ const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";
 const char kOnGalleryChangedEventName[] =
     "mediaGalleriesPrivate.onGalleryChanged";
 
-const char kOnNotificationDisplayed[] = "experimental.notification.onDisplayed";
-const char kOnNotificationError[] = "experimental.notification.onError";
-const char kOnNotificationClosed[] = "experimental.notification.onClosed";
-const char kOnNotificationClicked[] = "experimental.notification.onClicked";
-const char kOnNotificationButtonClicked[] =
-    "experimental.notification.onButtonClicked";
+const char kOnNotificationDisplayed[] = "notifications.onDisplayed";
+const char kOnNotificationError[] = "notifications.onError";
+const char kOnNotificationClosed[] = "notifications.onClosed";
+const char kOnNotificationClicked[] = "notifications.onClicked";
+const char kOnNotificationButtonClicked[] = "notifications.onButtonClicked";
 
 const char kOnNetworksChanged[] = "networkingPrivate.onNetworksChanged";
 const char kOnNetworkListChanged[] = "networkingPrivate.onNetworkListChanged";

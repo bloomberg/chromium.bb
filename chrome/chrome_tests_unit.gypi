@@ -728,6 +728,7 @@
         'browser/extensions/api/idle/idle_api_unittest.cc',
         'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
         'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
+        'browser/extensions/api/notifications/notifications_api_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',

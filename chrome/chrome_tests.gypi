@@ -1169,7 +1169,7 @@
         'browser/extensions/api/messaging/native_messaging_apitest.cc',
         'browser/extensions/api/metrics_private/metrics_apitest.cc',
         'browser/extensions/api/module/module_apitest.cc',
-        'browser/extensions/api/notification/notification_apitest.cc',
+        'browser/extensions/api/notifications/notifications_apitest.cc',
         'browser/extensions/api/omnibox/omnibox_apitest.cc',
         'browser/extensions/api/page_capture/page_capture_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',

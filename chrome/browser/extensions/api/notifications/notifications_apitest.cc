@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/notification/notification_api.h"
+#include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
@@ -19,7 +20,7 @@ namespace utils = extension_function_test_utils;
 
 namespace {
 
-class NotificationApiTest : public ExtensionApiTest {
+class NotificationsApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -42,15 +43,15 @@ class NotificationApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
   // Create a new notification. A lingering output of this block is the
-  // notification ID, which we'll use in later parts of this test.
+  // notifications ID, which we'll use in later parts of this test.
   std::string notification_id;
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
   {
-    scoped_refptr<extensions::NotificationCreateFunction>
+    scoped_refptr<extensions::NotificationsCreateFunction>
         notification_function(
-            new extensions::NotificationCreateFunction());
+            new extensions::NotificationsCreateFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
@@ -73,9 +74,9 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
 
   // Update the existing notification.
   {
-    scoped_refptr<extensions::NotificationUpdateFunction>
+    scoped_refptr<extensions::NotificationsUpdateFunction>
         notification_function(
-            new extensions::NotificationUpdateFunction());
+            new extensions::NotificationsUpdateFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
@@ -105,9 +106,9 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
 
   // Update a nonexistent notification.
   {
-    scoped_refptr<extensions::NotificationUpdateFunction>
+    scoped_refptr<extensions::NotificationsUpdateFunction>
         notification_function(
-            new extensions::NotificationUpdateFunction());
+            new extensions::NotificationsUpdateFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
@@ -131,9 +132,9 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
 
   // Clear a nonexistent notification.
   {
-    scoped_refptr<extensions::NotificationClearFunction>
+    scoped_refptr<extensions::NotificationsClearFunction>
         notification_function(
-            new extensions::NotificationClearFunction());
+            new extensions::NotificationsClearFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
@@ -150,9 +151,9 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
 
   // Clear the notification we created.
   {
-    scoped_refptr<extensions::NotificationClearFunction>
+    scoped_refptr<extensions::NotificationsClearFunction>
         notification_function(
-            new extensions::NotificationClearFunction());
+            new extensions::NotificationsClearFunction());
 
     notification_function->set_extension(empty_extension.get());
     notification_function->set_has_callback(true);
@@ -168,10 +169,10 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
-  scoped_refptr<extensions::NotificationCreateFunction>
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestBaseFormatNotification) {
+  scoped_refptr<extensions::NotificationsCreateFunction>
       notification_create_function(
-          new extensions::NotificationCreateFunction());
+          new extensions::NotificationsCreateFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   notification_create_function->set_extension(empty_extension.get());
@@ -207,10 +208,10 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
   ASSERT_TRUE(notification_id.length() > 0);
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
-  scoped_refptr<extensions::NotificationCreateFunction>
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestMultipleItemNotification) {
+  scoped_refptr<extensions::NotificationsCreateFunction>
       notification_create_function(
-          new extensions::NotificationCreateFunction());
+          new extensions::NotificationsCreateFunction());
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   notification_create_function->set_extension(empty_extension.get());
@@ -248,23 +249,23 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
   ASSERT_TRUE(notification_id.length() > 0);
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestEvents) {
-  ASSERT_TRUE(RunExtensionTest("notification/api/events")) << message_;
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestEvents) {
+  ASSERT_TRUE(RunExtensionTest("notifications/api/events")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestCSP) {
-    ASSERT_TRUE(RunExtensionTest("notification/api/csp")) << message_;
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestCSP) {
+  ASSERT_TRUE(RunExtensionTest("notifications/api/csp")) << message_;
 }
 
 #ifdef ENABLE_MESSAGE_CENTER
 #if !defined(OS_WIN) || !defined(USE_ASH)
 
-IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestByUser) {
+IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
   if (!message_center::IsRichNotificationEnabled())
     return;
 
   const extensions::Extension* extension =
-      LoadExtensionAndWait("notification/api/by_user");
+      LoadExtensionAndWait("notifications/api/by_user");
   ASSERT_TRUE(extension) << message_;
 
   {

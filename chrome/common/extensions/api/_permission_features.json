@@ -277,6 +277,9 @@
     ]
   },
   "notifications": {
+    // Note that the chrome.notifications API is currently restricted
+    // to dev channel, extension/platform_app. This isn't done through
+    // this file, but rather on a method-by-method basis.
     "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"

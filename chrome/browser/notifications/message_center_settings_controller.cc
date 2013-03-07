@@ -55,10 +55,8 @@ void MessageCenterSettingsController::GetNotifierList(
   for (ExtensionSet::const_iterator iter = extension_set->begin();
        iter != extension_set->end(); ++iter) {
     const extensions::Extension* extension = *iter;
-    // Currently, our notification API is provided for experimental apps.
-    // TODO(mukai, miket): determine the actual rule and fix here.
-    if (!extension->is_app() || !extension->HasAPIPermission(
-            extensions::APIPermission::kExperimental)) {
+    if (!extension->HasAPIPermission(
+      extensions::APIPermission::kNotification)) {
       continue;
     }
 

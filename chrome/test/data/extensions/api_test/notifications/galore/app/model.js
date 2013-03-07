@@ -40,8 +40,8 @@ Galore.NOTIFICATIONS = [
         title: 'Althe Frazon',
         message: 'Lorem ipsum',
         buttons: [
-          {title: 'Call', iconUrl: '$@/images/call-16x16.jpg'},
-          {title: 'Send Email', iconUrl: '$@/images/send-16x16.jpg'},
+          {title: 'Call', iconUrl: '$@/images/call-16x16.png'},
+          {title: 'Send Email', iconUrl: '$@/images/send-16x16.png'},
         ]
       },
       {
@@ -105,29 +105,25 @@ Galore.NOTIFICATIONS = [
         iconUrl: '$@/images/flower1-$%x$%.jpg',
         title: 'Notification #$#: Daffodils!',
         message: 'Narcissus',
-        imageUrl: '$@/images/image1-300x225.jpg',
-        buttons: [
-          {title: 'Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing'},
-          {title: 'Elit Sed Do'},
-        ]
+        imageUrl: '$@/images/Image1-300x225.jpg'
       },
       {
         iconUrl: '$@/images/flower2-$%x$%.jpg',
         title: 'Notification #$#: Sunflowers!',
         message: 'Helianthus annuus',
-        imageUrl: '$@/images/image2-300x225.jpg'
+        imageUrl: '$@/images/Image2-300x225.jpg'
       },
       {
         iconUrl: '$@/images/flower3-$%x$%.jpg',
         title: 'Notification #$#: Poinsettias!',
         message: 'Euphorbia pulcherrima',
-        imageUrl: '$@/images/image3-300x172.jpg'
+        imageUrl: '$@/images/Image3-300x172.jpg'
       },
       {
         iconUrl: '$@/images/flower4-$%x$%.jpg',
         title: 'Notification #$#: Heather!',
         message: 'Calluna vulgaris',
-        imageUrl: '$@/images/image4-200x300.jpg'
+        imageUrl: '$@/images/Image4-200x300.jpg'
       }
     ]
   },

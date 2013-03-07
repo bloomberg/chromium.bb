@@ -80,7 +80,7 @@ function createNotification(card, notificationsUrlInfo) {
 
   // Create a notification or quietly update if it already exists.
   // TODO(vadimt): Implement non-quiet updates.
-  chrome.experimental.notification.create(
+  chrome.notifications.create(
       notificationId,
       card,
       function(assignedNotificationId) {});
@@ -125,7 +125,7 @@ function parseAndShowNotificationCards(response) {
     // Delete notifications that didn't receive an update.
     for (var notificationId in items.activeNotifications)
       if (!items.activeNotifications[notificationId].hasUpdate) {
-        chrome.experimental.notification.delete(
+        chrome.notifications.delete(
             notificationId,
             function(wasDeleted) {});
     }
@@ -236,7 +236,7 @@ function onNotificationClicked(notificationId, area) {
 }
 
 /**
- * Callback for chrome.experimental.notification.onClosed event.
+ * Callback for chrome.notifications.onClosed event.
  * @param {string} notificationId Unique identifier of the notification.
  * @param {boolean} byUser Whether the notification was closed by the user.
  */
@@ -296,14 +296,14 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
   updateNotificationsCards();
 });
 
-chrome.experimental.notification.onClicked.addListener(
+chrome.notifications.onClicked.addListener(
     function(notificationId) {
       onNotificationClicked(notificationId, 'message');
     });
 
-chrome.experimental.notification.onButtonClicked.addListener(
+chrome.notifications.onButtonClicked.addListener(
     function(notificationId, buttonIndex) {
       onNotificationClicked(notificationId, 'button' + buttonIndex);
     });
 
-chrome.experimental.notification.onClosed.addListener(onNotificationClosed);
+chrome.notifications.onClosed.addListener(onNotificationClosed);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const notification = chrome.experimental.notification;
+const notifications = chrome.experimental.notifications;
 var theOnlyTestDone = null;
 
 var notificationData = {
@@ -27,8 +27,8 @@ function createCallback(id) { }
 
 var onClosedHooks = {
   BIFF: function() {
-    notification.create("BLAT", notificationData, createCallback);
-    notification.create("BLOT", notificationData, createCallback);
+    notifications.create("BLAT", notificationData, createCallback);
+    notifications.create("BLOT", notificationData, createCallback);
   },
 };
 
@@ -48,15 +48,15 @@ function onClosedListener(id, by_user) {
     theOnlyTestDone();
 }
 
-notification.onClosed.addListener(onClosedListener);
+notifications.onClosed.addListener(onClosedListener);
 
 function theOnlyTest() {
   theOnlyTestDone = chrome.test.callbackAdded();
 
-  notification.create("FOO", notificationData, createCallback);
-  notification.create("BAR", notificationData, createCallback);
-  notification.create("BAT", notificationData, createCallback);
-  notification.create("BIFF", notificationData, createCallback);
+  notifications.create("FOO", notificationData, createCallback);
+  notifications.create("BAR", notificationData, createCallback);
+  notifications.create("BAT", notificationData, createCallback);
+  notifications.create("BIFF", notificationData, createCallback);
 }
 
 chrome.test.runTests([ theOnlyTest ]);
