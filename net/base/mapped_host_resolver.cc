@@ -18,19 +18,28 @@ MappedHostResolver::MappedHostResolver(scoped_ptr<HostResolver> impl)
 MappedHostResolver::~MappedHostResolver() {
 }
 
-int MappedHostResolver::Resolve(const RequestInfo& info,
+int MappedHostResolver::Resolve(const RequestInfo& original_info,
                                 AddressList* addresses,
                                 const CompletionCallback& callback,
                                 RequestHandle* out_req,
                                 const BoundNetLog& net_log) {
-  return impl_->Resolve(ApplyRules(info), addresses, callback, out_req,
-                        net_log);
+  RequestInfo info = original_info;
+  int rv = ApplyRules(&info);
+  if (rv != OK)
+    return rv;
+
+  return impl_->Resolve(info, addresses, callback, out_req, net_log);
 }
 
-int MappedHostResolver::ResolveFromCache(const RequestInfo& info,
+int MappedHostResolver::ResolveFromCache(const RequestInfo& original_info,
                                          AddressList* addresses,
                                          const BoundNetLog& net_log) {
-  return impl_->ResolveFromCache(ApplyRules(info), addresses, net_log);
+  RequestInfo info = original_info;
+  int rv = ApplyRules(&info);
+  if (rv != OK)
+    return rv;
+
+  return impl_->ResolveFromCache(info, addresses, net_log);
 }
 
 void MappedHostResolver::CancelRequest(RequestHandle req) {
@@ -45,13 +54,14 @@ HostCache* MappedHostResolver::GetHostCache() {
   return impl_->GetHostCache();
 }
 
-HostResolver::RequestInfo MappedHostResolver::ApplyRules(
-    const RequestInfo& info) const {
-  RequestInfo modified_info = info;
-  HostPortPair host_port(info.host_port_pair());
-  if (rules_.RewriteHost(&host_port))
-    modified_info.set_host_port_pair(host_port);
-  return modified_info;
+int MappedHostResolver::ApplyRules(RequestInfo* info) const {
+  HostPortPair host_port(info->host_port_pair());
+  if (rules_.RewriteHost(&host_port)) {
+    if (host_port.host() == "~NOTFOUND")
+      return ERR_NAME_NOT_RESOLVED;
+    info->set_host_port_pair(host_port);
+  }
+  return OK;
 }
 
 }  // namespace net

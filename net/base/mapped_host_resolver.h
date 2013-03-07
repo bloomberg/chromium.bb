@@ -30,7 +30,9 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   //   "MAP" <hostname_pattern> <replacement_host> [":" <replacement_port>]
   //   "EXCLUDE" <hostname_pattern>
   //
-  // The <replacement_host> can be either a hostname, or an IP address literal.
+  // The <replacement_host> can be either a hostname, or an IP address literal,
+  // or "~NOTFOUND". If it is "~NOTFOUND" then all matched hostnames will fail
+  // to be resolved with ERR_NAME_NOT_RESOLVED.
   //
   // Returns true if the rule was successfully parsed and added.
   bool AddRuleFromString(const std::string& rule_string) {
@@ -56,8 +58,9 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   virtual HostCache* GetHostCache() OVERRIDE;
 
  private:
-  // Modify the request |info| according to |rules_|.
-  RequestInfo ApplyRules(const RequestInfo& info) const;
+  // Modify the request |info| according to |rules_|. Returns either OK or
+  // the network error code that the hostname's resolution mapped to.
+  int ApplyRules(RequestInfo* info) const;
 
   scoped_ptr<HostResolver> impl_;
 

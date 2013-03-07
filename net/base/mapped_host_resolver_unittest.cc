@@ -180,6 +180,40 @@ TEST(MappedHostResolverTest, ParseInvalidRules) {
   EXPECT_FALSE(resolver->AddRuleFromString("INCLUDE x :10"));
 }
 
+// Test mapping hostnames to resolving failures.
+TEST(MappedHostResolverTest, MapToError) {
+  scoped_ptr<MockHostResolver> resolver_impl(new MockHostResolver());
+  resolver_impl->rules()->AddRule("*", "192.168.1.5");
+
+  scoped_ptr<MappedHostResolver> resolver(
+      new MappedHostResolver(resolver_impl.PassAs<HostResolver>()));
+
+  int rv;
+  AddressList address_list;
+
+  // Remap *.google.com to resolving failures.
+  EXPECT_TRUE(resolver->AddRuleFromString("MAP *.google.com ~NOTFOUND"));
+
+  // Try resolving www.google.com --> Should give an error.
+  TestCompletionCallback callback1;
+  rv = resolver->Resolve(HostResolver::RequestInfo(
+                             HostPortPair("www.google.com", 80)),
+                         &address_list, callback1.callback(), NULL,
+                         BoundNetLog());
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
+
+  // Try resolving www.foo.com --> Should succeed.
+  TestCompletionCallback callback2;
+  rv = resolver->Resolve(HostResolver::RequestInfo(
+                             HostPortPair("www.foo.com", 80)),
+                         &address_list, callback2.callback(), NULL,
+                         BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  rv = callback2.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("192.168.1.5:80", FirstAddress(address_list));
+}
+
 }  // namespace
 
 }  // namespace net
