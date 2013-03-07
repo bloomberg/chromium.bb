@@ -822,10 +822,10 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	proxy_destroyed = !!(proxy->flags & WL_PROXY_FLAG_DESTROYED);
 
 	proxy->refcount--;
-	if (!proxy->refcount)
-		free(proxy);
-
 	if (proxy_destroyed) {
+		if (!proxy->refcount)
+			free(proxy);
+
 		wl_closure_destroy(closure);
 		return;
 	}
