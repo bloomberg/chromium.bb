@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const notifications = chrome.experimental.notifications;
+const notifications = chrome.notifications;
 var theOnlyTestDone = null;
 
 var notificationData = {
