@@ -5997,76 +5997,69 @@
    fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
 }
 {
-   bug_162829_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EE8toStringIN3WTF6StringEEET_v
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EEcvN3WTF6StringEEv
-   fun:_ZN7WebCore*atabase*Callback*
-   ...
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   bug_162829_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EE8toStringIN3WTF6StringEEET_v
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EEcvN3WTF6StringEEv
-   fun:_ZN7WebCore*V8SQLTransaction*Callback*
-   ...
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
    # storage/indexeddb/basics-workers.html
    # storage/indexeddb/open-twice-workers.html
-   # storage/indexeddb/pending-activity-workers.html
-   # storage/indexeddb/deletedatabase-delayed-by-open-and-versionchange-workers.html
-   bug_162829_e
+   bug_162829_k
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN25TestWebKitPlatformSupport10idbFactoryEv
-   fun:_ZN6WebKit22IDBFactoryBackendProxyC1Ev
-   fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
-   fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
-   fun:_ZN7WebCore28WorkerContextIndexedDatabase9indexedDBEv
-   fun:_ZN7WebCore28WorkerContextIndexedDatabase9indexedDBEPNS_22ScriptExecutionContextE
+   fun:_ZN6WebKit*WebIDBFactory*create
+   fun:_ZN17TestWebIDBFactory*GetFactory*
+   fun:_ZN17TestWebIDBFactory*open*
+   fun:_ZN6WebKit*IDBFactoryBackendProxy*open*
+   fun:_ZN7WebCore*IDBFactory*openInternal*
+   fun:_ZN7WebCore*IDBFactory*open*
 }
 {
-   # storage/indexeddb/pending-activity-workers.html
+   # http/tests/security/cross-origin-worker-indexeddb.html
+   # storage/indexeddb/cursor-advance-workers.html
    # storage/indexeddb/index-basics-workers.html
-   bug_162829_f
+   bug_162829_l
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7WebCore11ScriptState10forContextEN2v85LocalINS1_7ContextEEE
-   fun:_ZN7WebCore11ScriptState7currentEv
-   fun:_ZN7WebCore24IDBObjectStoreV8InternalL11*Callback*
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN6WebKit*WebIDBFactory*create*
+   fun:_ZN17TestWebIDBFactory*GetFactory*
+   fun:_ZN17TestWebIDBFactory*deleteDatabase*
+   fun:_ZN6WebKit*IDBFactoryBackendProxy*deleteDatabase*
+   fun:_ZN7WebCore*IDBFactory*deleteDatabase*
 }
 {
-   # storage/indexeddb/objectstore-basics-workers.html
-   bug_162829_i
+   # storage/indexeddb/factory-basics-workers.html
+   bug_162829_m
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EE8toStringIN3WTF12AtomicStringEEET_v
-   fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EEcvN3WTF12AtomicStringEEv
-   fun:_ZN7WebCore20IDBRequestV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN6WebKit*WebIDBFactory*create*
+   fun:_ZN17TestWebIDBFactory*GetFactory*
+   fun:_ZN17TestWebIDBFactory*getDatabaseNames*
+   fun:_ZN6WebKit*IDBFactoryBackendProxy*
+   fun:_ZN7WebCore*IDBFactory*getDatabaseNames*
 }
 {
+   # storage/indexeddb/cursor-advance-workers.html
+   # storage/indexeddb/index-basics-workers.html
    # storage/indexeddb/objectstore-basics-workers.html
-   bug_162829_j
+   # storage/indexeddb/pending-activity-workers.html
+   # (Stack has addMethod / putMethod depending on test)
+   bug_162829_n
    Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7WebCore30IDBTransactionBackendInterfaceEEnwEm
-   fun:_ZN7WebCore25IDBTransactionBackendImpl6createElRKN3WTF6VectorIlLm0EEENS_14IDBTransaction4ModeEPNS_22IDBDatabaseBackendImplE
-   fun:_ZN7WebCore22IDBDatabaseBackendImpl17createTransactionElRKN3WTF6VectorIlLm0EEENS_14IDBTransaction4ModeE
+   fun:_Znw*
+   fun:_ZN7WebCore*ScriptState*forContext*
+   fun:_ZN7WebCore*ScriptState*current*
+   fun:_ZN7WebCore*IDBObjectStoreV8Internal*Method*
+   fun:_ZN7WebCore*IDBObjectStoreV8Internal*Method*
    ...
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN7WebCore*V8WorkerContext*
+}
+{
+   # storage/indexeddb/objectstore-basics-workers.html
+   bug_162829_o
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore*v8StringToWebCoreString*
+   fun:_ZN7WebCore*V8StringResource*
+   fun:_ZN7WebCore*V8StringResource*
+   fun:_ZN7WebCore*IDBRequestV8Internal*addEventListenerMethod*
+   ...
+   fun:_ZN7WebCore*V8WorkerContext*
 }
 {
    bug_163111
