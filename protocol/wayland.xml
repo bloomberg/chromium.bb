@@ -755,10 +755,10 @@
 
 	The initial surface contents are void; there is no content.
 	wl_surface.attach assigns the given wl_buffer as the pending wl_buffer.
-	wl_surface.commit applies the pending wl_buffer as the new
+	wl_surface.commit makes the pending wl_buffer the new
 	surface contents, and the size of the surface becomes the size of
-	the wl_buffer. The wl_buffer is also kept as pending, until
-	changed by wl_surface.attach or the wl_buffer is destroyed.
+	the wl_buffer. After commit, there is no pending buffer until the
+	next attach.
 
 	Committing a pending wl_buffer allows the compositor to read the
 	pixels in the wl_buffer. The compositor may access the pixels at any
@@ -770,8 +770,6 @@
 	event, and is not used by the compositor.
 
 	Destroying the wl_buffer after wl_buffer.release does not change the
-	surface contents, even if the wl_buffer is still pending for the
-	next commit. In such case, the next commit does not change the
 	surface contents. However, if the client destroys the wl_buffer
 	before receiving wl_buffer.release, the surface contents become
 	undefined immediately.
@@ -788,11 +786,10 @@
     <request name="damage">
       <description summary="mark part of the surface damaged">
 	This request is used to describe the regions where the pending
-	buffer (or if pending buffer is none, the current buffer as updated
-	in-place) on the next wl_surface.commit will be different from the
-	current buffer, and needs to be repainted. The pending buffer can be
-	set by wl_surface.attach. The compositor ignores the parts of the
-	damage that fall outside of the surface.
+	buffer is different from the current surface contents, and where
+	the surface therefore needs to be repainted. The pending buffer must
+	be set by wl_surface.attach before sending damage. The compositor
+	ignores the parts of the damage that fall outside of the surface.
 
 	Damage is double-buffered state, see wl_surface.commit.
 
@@ -894,7 +891,7 @@
 	On commit, a pending wl_buffer is applied first, all other state
 	second. This means that all coordinates in double-buffered state are
 	relative to the new wl_buffer coming into use, except for
-	wl_surface.attach itself. If the pending wl_buffer is none, the
+	wl_surface.attach itself. If there is no pending wl_buffer, the
 	coordinates are relative to the current surface contents.
 
 	All requests that need a commit to become effective are documented
