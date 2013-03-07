@@ -42,12 +42,6 @@ class BASE_EXPORT ScopedNSExceptionEnabler {
 BASE_EXPORT bool GetNSExceptionsAllowed();
 BASE_EXPORT void SetNSExceptionsAllowed(bool allowed);
 
-// Executes [target performSelector:sel] with fatal-exceptions turned
-// off, and returns the result.  If an exception is thrown during the
-// perform, nil is returned.
-// TODO(shess): Deprecated, convert to RunBlockIgnoringExceptions().
-BASE_EXPORT id PerformSelectorIgnoringExceptions(NSObject* target, SEL sel);
-
 // Executes |block| with fatal-exceptions turned off, and returns the
 // result.  If an exception is thrown during the perform, nil is
 // returned.

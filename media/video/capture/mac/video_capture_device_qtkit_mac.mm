@@ -23,7 +23,7 @@
   // following catches any exceptions and continues in an orderly
   // fashion with no devices detected.
   NSArray* captureDevices =
-      base::mac::RunBlockIgnoringExceptions(^() {
+      base::mac::RunBlockIgnoringExceptions(^{
           return [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo];
       });
 

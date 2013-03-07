@@ -38,9 +38,9 @@ const unsigned int kShortLanguageCodeSize = 2;
 // browser.
 NSSpellChecker* SharedSpellChecker() {
   return base::mac::ObjCCastStrict<NSSpellChecker>(
-      base::mac::PerformSelectorIgnoringExceptions(
-          [NSSpellChecker class],
-          @selector(sharedSpellChecker)));
+      base::mac::RunBlockIgnoringExceptions(^{
+          return [NSSpellChecker sharedSpellChecker];
+      }));
 }
 
 // A private utility function to convert hunspell language codes to OS X

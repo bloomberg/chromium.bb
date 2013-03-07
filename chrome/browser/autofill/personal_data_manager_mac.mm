@@ -75,8 +75,9 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
   // reports, so it is unknown whether they would be caught by AppKit and nil
   // returned, or if they would take down the app. In either case, avoid
   // crashing. http://crbug.com/129022
-  ABAddressBook* addressBook = base::mac::PerformSelectorIgnoringExceptions(
-      NSClassFromString(@"ABAddressBook"), @selector(sharedAddressBook));
+  ABAddressBook* addressBook = base::mac::RunBlockIgnoringExceptions(^{
+      return [ABAddressBook sharedAddressBook];
+  });
   ABPerson* me = [addressBook me];
   if (!me)
     return;
