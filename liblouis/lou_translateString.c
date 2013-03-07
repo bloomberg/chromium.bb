@@ -36,7 +36,7 @@ Library
 #include "louis.h"
 #include "transcommon.ci"
 
-static int translateString (void);
+static int translateString ();
 static int compbrlStart = 0;
 static int compbrlEnd = 0;
 
@@ -326,7 +326,7 @@ static TranslationTableOpcode indicOpcode;
 static const TranslationTableRule *indicRule;
 static int dontContract = 0;
 
-static int doCompbrl (void);
+static int doCompbrl ();
 
 static int
 hyphenate (const widechar * word, int wordSize, char *hyphens)
@@ -463,12 +463,12 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 }
 
 static int
-syllableBreak (void)
+syllableBreak ()
 {
   int wordStart;
   int wordEnd;
   int k;
-  char hyphens[MAXSTRING];
+  char hyphens[100];
   for (wordStart = src; wordStart >= 0; wordStart--)
     if (!((findCharOrDots (currentInput[wordStart], 0))->attributes &
 	  CTC_Letter))
@@ -485,7 +485,8 @@ syllableBreak (void)
 	wordEnd--;
 	break;
       }
-  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart, hyphens))
+  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart + 1, 
+  hyphens))
     return 0;
 /* If the number at the beginning of the syllable is odd or all 
 * numbers are even there is no syllable break. Otherwise there is.*/
@@ -504,7 +505,7 @@ static widechar before, after;
 static TranslationTableCharacterAttributes beforeAttributes;
 static TranslationTableCharacterAttributes afterAttributes;
 static void
-setBefore (void)
+setBefore ()
 {
   if (src >= 2 && currentInput[src - 1] == ENDSEGMENT)
     before = currentInput[src - 2];
@@ -601,7 +602,7 @@ markWords (const TranslationTableOffset * offset)
 }
 
 static int
-insertIndicators (void)
+insertIndicators ()
 {
 /*Insert italic, bold, etc. indicators before words*/
   int typeMark;
@@ -705,7 +706,7 @@ validMatch ()
 }
 
 static int
-checkMultCaps (void)
+checkMultCaps ()
 {
   int k;
   for (k = 0; k < table->lenBeginCaps; k++)
@@ -776,7 +777,7 @@ endEmphasis (const TranslationTableOffset * offset)
 }
 
 static int
-doCompEmph (void)
+doCompEmph ()
 {
   int endEmph;
   for (endEmph = src; (typebuf[endEmph] & computer_braille) && endEmph
@@ -1093,7 +1094,7 @@ insertBrailleIndicators (int finish)
 }
 
 static int
-onlyLettersBehind (void)
+onlyLettersBehind ()
 {
   /* Actually, spaces, then letters */
   int k;
@@ -1115,7 +1116,7 @@ onlyLettersBehind (void)
 }
 
 static int
-onlyLettersAhead (void)
+onlyLettersAhead ()
 {
   /* Actullly, spaces, then letters */
   int k;
@@ -1137,7 +1138,7 @@ onlyLettersAhead (void)
 }
 
 static int
-noCompbrlAhead (void)
+noCompbrlAhead ()
 {
   int start = src + transCharslen;
   int end;
@@ -1224,7 +1225,7 @@ noCompbrlAhead (void)
 static widechar const *repwordStart;
 static int repwordLength;
 static int
-isRepeatedWord (void)
+isRepeatedWord ()
 {
   int start;
   if (src == 0 || !checkAttr (currentInput[src - 1], CTC_Letter, 0))
@@ -1246,7 +1247,7 @@ isRepeatedWord (void)
 }
 
 static void
-for_selectRule (void)
+for_selectRule ()
 {
 /*check for valid Translations. Return value is in transRule. */
   int length = srcmax - src;
@@ -1595,7 +1596,7 @@ putCharacters (const widechar * characters, int count)
 }
 
 static int
-doCompbrl (void)
+doCompbrl ()
 {
 /*Handle strings containing substrings defined by the compbrl opcode*/
   int stringEnd;
@@ -1671,7 +1672,7 @@ doCompTrans (int start, int end)
 }
 
 static int
-doNocont (void)
+doNocont ()
 {
 /*Handle strings containing substrings defined by the nocont opcode*/
   if (checkAttr (currentInput[src], CTC_Space, 0) || dontContract
@@ -1692,7 +1693,7 @@ doNocont (void)
 }
 
 static int
-markSyllables (void)
+markSyllables ()
 {
   int k;
   int syllableMarker = 0;
@@ -1782,7 +1783,7 @@ markSyllables (void)
 }
 
 static int
-translateString (void)
+translateString ()
 {
 /*Main translation routine */
   int k;
