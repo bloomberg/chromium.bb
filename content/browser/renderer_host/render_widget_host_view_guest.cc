@@ -28,9 +28,6 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       is_hidden_(false),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
   host_->SetView(this);
-
-  enable_compositing_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserPluginCompositing);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {
@@ -103,34 +100,22 @@ void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  DCHECK(enable_compositing_);
   // If accelerated surface buffers are getting swapped then we're not using
   // the software path.
   guest_->clear_damage_buffer();
-  if (enable_compositing_) {
-    guest_->SendMessageToEmbedder(
-        new BrowserPluginMsg_BuffersSwapped(
-            guest_->instance_id(),
-            params.size,
-            params.mailbox_name,
-            params.route_id,
-            gpu_host_id));
-  }
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_BuffersSwapped(
+          guest_->instance_id(),
+          params.size,
+          params.mailbox_name,
+          params.route_id,
+          gpu_host_id));
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
     int gpu_host_id) {
-  DCHECK(enable_compositing_);
-  if (enable_compositing_) {
-    guest_->SendMessageToEmbedder(
-        new BrowserPluginMsg_BuffersSwapped(
-            guest_->instance_id(),
-            params.surface_size,
-            params.mailbox_name,
-            params.route_id,
-            gpu_host_id));
-  }
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
@@ -187,11 +172,8 @@ bool RenderWidgetHostViewGuest::HasFocus() const {
 }
 
 bool RenderWidgetHostViewGuest::IsSurfaceAvailableForCopy() const {
-  DCHECK(enable_compositing_);
-  if (enable_compositing_)
-    return true;
-  else
-    return platform_view_->IsSurfaceAvailableForCopy();
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
@@ -265,11 +247,7 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceRelease() {
 
 bool RenderWidgetHostViewGuest::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
-  DCHECK(enable_compositing_);
-  if (enable_compositing_)
-    return false;
-  else
-    return platform_view_->HasAcceleratedSurface(desired_size);
+  return false;
 }
 
 void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {

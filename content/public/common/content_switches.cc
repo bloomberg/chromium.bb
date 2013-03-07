@@ -260,8 +260,8 @@ const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
 // Enables browser plugin compositing experiment.
-const char kEnableBrowserPluginCompositing[] =
-    "enable-browser-plugin-compositing";
+const char kDisableBrowserPluginCompositing[] =
+    "disable-browser-plugin-compositing";
 
 // Enables browser plugin for all types of pages.
 const char kEnableBrowserPluginForAllViewTypes[] =

@@ -178,7 +178,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   RenderWidgetHostImpl* host_;
 
   BrowserPluginGuest *guest_;
-  bool enable_compositing_;
   bool is_hidden_;
   // The platform view for this RenderWidgetHostView.
   // RenderWidgetHostViewGuest mostly only cares about stuff related to

@@ -632,8 +632,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   // Disable compositing in guests until we have compositing path implemented
   // for guests.
-  bool guest_compositing_enabled = command_line.HasSwitch(
-      switches::kEnableBrowserPluginCompositing);
+  bool guest_compositing_enabled = !command_line.HasSwitch(
+      switches::kDisableBrowserPluginCompositing);
   if (rvh->GetProcess()->IsGuest() && !guest_compositing_enabled) {
     prefs.force_compositing_mode = false;
     prefs.accelerated_compositing_enabled = false;

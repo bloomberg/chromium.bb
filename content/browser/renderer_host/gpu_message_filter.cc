@@ -49,10 +49,8 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
   share_contexts_ = true;
 #else
   // Share contexts when compositing webview plugin.
-  // Keep this behind a flag for now until we can run a
-  // stability experiment.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginCompositing))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBrowserPluginCompositing))
     share_contexts_ = true;
 #endif
 }

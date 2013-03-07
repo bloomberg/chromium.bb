@@ -73,6 +73,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kDisableAcceleratedOverflowScroll,
       ::switches::kDisableAcceleratedPlugins,
       ::switches::kDisableAcceleratedVideoDecode,
+      ::switches::kDisableBrowserPluginCompositing,
       ::switches::kDisableEncryptedMedia,
       ::switches::kDisableForceCompositingMode,
       ::switches::kDisableGpuWatchdog,
@@ -84,7 +85,6 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
       ::switches::kEnableAcceleratedOverflowScroll,
-      ::switches::kEnableBrowserPluginCompositing,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableGestureTapHighlight,
       ::switches::kEnableLogging,
@@ -284,10 +284,6 @@ std::string GetKioskAppCommandLine(const std::string& app_id) {
   app_switches.SetString(::switches::kForceAppMode, std::string());
   app_switches.SetString(::switches::kAppId, app_id);
   app_switches.SetString(::switches::kLoginUser, std::string());
-  // TODO(zelidrag): Move the next switch to /sbin/session_manager_setup.sh
-  // instead once http://crbug.com/179256 is resolved.
-  app_switches.SetString(::switches::kEnableBrowserPluginCompositing,
-                         std::string());
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   CommandLine new_command_line(browser_command_line.GetProgram());
