@@ -228,7 +228,6 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
 class FixedSizedScrollView : public views::ScrollView {
  public:
   FixedSizedScrollView() {
-    set_focusable(true);
     set_notify_enter_exit_on_child(true);
     if (IsRichNotificationEnabled()) {
       set_background(views::Background::CreateSolidBackground(
@@ -357,7 +356,6 @@ class MessageCenterContentsView : public views::View {
   }
 
   void FocusContents() {
-    scroller_->RequestFocus();
   }
 
   void Update(const NotificationList::Notifications& notifications)  {
