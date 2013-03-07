@@ -123,16 +123,10 @@ class DriveResourceMetadataInterface {
   virtual void SetLargestChangestamp(int64 value,
                                      const FileOperationCallback& callback) = 0;
 
-  // Adds |entry| to directory with path |directory_path| and invoke the
-  // callback asynchronously. |callback| must not be null.
-  virtual void AddEntryToDirectory(const base::FilePath& directory_path,
-                                   scoped_ptr<google_apis::ResourceEntry> entry,
-                                   const FileMoveCallback& callback) = 0;
-
   // Adds |entry_proto| to the metadata tree, based on its parent_resource_id.
   // |callback| must not be null.
-  virtual void AddEntryToParent(const DriveEntryProto& entry_proto,
-                                const FileMoveCallback& callback) = 0;
+  virtual void AddEntry(const DriveEntryProto& entry_proto,
+                        const FileMoveCallback& callback) = 0;
 
   // Moves entry specified by |file_path| to the directory specified by
   // |directory_path| and calls the callback asynchronously. Removes the entry
@@ -232,12 +226,8 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   virtual void SetLargestChangestamp(
       int64 value,
       const FileOperationCallback& callback) OVERRIDE;
-  virtual void AddEntryToDirectory(
-      const base::FilePath& directory_path,
-      scoped_ptr<google_apis::ResourceEntry> entry,
-      const FileMoveCallback& callback) OVERRIDE;
-  virtual void AddEntryToParent(const DriveEntryProto& entry_proto,
-                                const FileMoveCallback& callback) OVERRIDE;
+  virtual void AddEntry(const DriveEntryProto& entry_proto,
+                        const FileMoveCallback& callback) OVERRIDE;
   virtual void MoveEntryToDirectory(const base::FilePath& file_path,
                                     const base::FilePath& directory_path,
                                     const FileMoveCallback& callback) OVERRIDE;
@@ -339,12 +329,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
 
   // Searches for |file_path| synchronously.
   DriveEntry* FindEntryByPathSync(const base::FilePath& file_path);
-
-  // Helper function to add |entry_proto| as a child to |directory|.
-  // |callback| must not be null.
-  void AddEntryToDirectoryInternal(DriveDirectory* directory,
-                                   const DriveEntryProto& entry_proto,
-                                   const FileMoveCallback& callback);
 
   // Helper function to get a parent directory given |parent_resource_id|.
   // Returns root if |parent_resource_id| is empty. Returns NULL if

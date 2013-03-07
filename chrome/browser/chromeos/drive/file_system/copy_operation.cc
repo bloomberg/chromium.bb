@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "content/public/browser/browser_thread.h"
@@ -227,16 +228,14 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   }
   DCHECK(resource_entry);
 
-  // |entry| was added in the root directory on the server, so we should
-  // first add it to |root_| to mirror the state and then move it to the
+  // The entry was added in the root directory on the server, so we should
+  // first add it to the root to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
-  metadata_->AddEntryToDirectory(
-      base::FilePath(kDriveRootDirectory),
-      resource_entry.Pass(),
-      base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dir_path,
-                 callback));
+  metadata_->AddEntry(ConvertResourceEntryToDriveEntryProto(*resource_entry),
+                      base::Bind(&CopyOperation::MoveEntryFromRootDirectory,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 dir_path,
+                                 callback));
 }
 
 void CopyOperation::MoveEntryFromRootDirectory(
@@ -383,8 +382,7 @@ void CopyOperation::OnTransferCompleted(
   DCHECK(!callback.is_null());
 
   if (error == google_apis::DRIVE_UPLOAD_OK && resource_entry.get()) {
-    drive_file_system_->AddUploadedFile(drive_path.DirName(),
-                                        resource_entry.Pass(),
+    drive_file_system_->AddUploadedFile(resource_entry.Pass(),
                                         file_path,
                                         callback);
   } else {

@@ -1304,7 +1304,6 @@ void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
 }
 
 void DriveFileSystem::AddUploadedFile(
-    const base::FilePath& directory_path,
     scoped_ptr<google_apis::ResourceEntry> entry,
     const base::FilePath& file_content_path,
     const FileOperationCallback& callback) {
@@ -1319,9 +1318,8 @@ void DriveFileSystem::AddUploadedFile(
                                entry->resource_id(),
                                entry->file_md5());
 
-  resource_metadata_->AddEntryToDirectory(
-      directory_path,
-      entry.Pass(),
+  resource_metadata_->AddEntry(
+      ConvertResourceEntryToDriveEntryProto(*entry),
       base::Bind(&DriveFileSystem::AddUploadedFileToCache,
                  weak_ptr_factory_.GetWeakPtr(), params));
 }

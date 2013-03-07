@@ -329,13 +329,12 @@ class DriveFileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
-  // Adds a file entry from |doc_entry| under |directory_path|, and modifies
-  // the cache state. Adds a new file entry, and store its content from
-  // |file_content_path| into the cache.
+  // Adds a file entry from |doc_entry|, and modifies the cache state.
+  // Adds a new file entry, and store its content from |file_content_path| into
+  // the cache.
   //
   // |callback| must not be null.
-  virtual void AddUploadedFile(const base::FilePath& directory_path,
-                               scoped_ptr<google_apis::ResourceEntry> doc_entry,
+  virtual void AddUploadedFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
                                const base::FilePath& file_content_path,
                                const FileOperationCallback& callback) = 0;
 

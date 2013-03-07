@@ -102,8 +102,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
                       const SearchCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(const base::FilePath& directory_path,
-                               scoped_ptr<google_apis::ResourceEntry> doc_entry,
+  virtual void AddUploadedFile(scoped_ptr<google_apis::ResourceEntry> doc_entry,
                                const base::FilePath& file_content_path,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual void GetMetadata(

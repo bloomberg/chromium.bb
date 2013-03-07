@@ -177,30 +177,29 @@ void ChangeListProcessor::ContinueApplyEntryProto(
     }
   } else if (error == DRIVE_FILE_ERROR_NOT_FOUND && !entry_proto.deleted()) {
     // Adding a new entry.
-    AddEntryToParent(entry_proto);
+    AddEntry(entry_proto);
   } else {
     // Continue.
     ApplyNextEntryProtoAsync();
   }
 }
 
-void ChangeListProcessor::AddEntryToParent(const DriveEntryProto& entry_proto) {
+void ChangeListProcessor::AddEntry(const DriveEntryProto& entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  resource_metadata_->AddEntryToParent(
+  resource_metadata_->AddEntry(
       entry_proto,
-      base::Bind(&ChangeListProcessor::NotifyForAddEntryToParent,
+      base::Bind(&ChangeListProcessor::NotifyForAddEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  entry_proto.file_info().is_directory()));
 }
 
-void ChangeListProcessor::NotifyForAddEntryToParent(
-    bool is_directory,
-    DriveFileError error,
-    const base::FilePath& file_path) {
+void ChangeListProcessor::NotifyForAddEntry(bool is_directory,
+                                            DriveFileError error,
+                                            const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "NotifyForAddEntryToParent " << file_path.value();
+  DVLOG(1) << "NotifyForAddEntry " << file_path.value();
   if (error == DRIVE_FILE_OK) {
     // Notify if a directory has been created.
     if (is_directory)

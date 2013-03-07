@@ -96,12 +96,12 @@ class ChangeListProcessor {
 
   // Helper function to add |entry_proto| to its parent. Updates changed_dirs_
   // as a side effect.
-  void AddEntryToParent(const DriveEntryProto& entry_proto);
+  void AddEntry(const DriveEntryProto& entry_proto);
 
-  // Callback for DriveResourceMetadata::AddEntryToParent.
-  void NotifyForAddEntryToParent(bool is_directory,
-                                 DriveFileError error,
-                                 const base::FilePath& file_path);
+  // Callback for DriveResourceMetadata::AddEntry.
+  void NotifyForAddEntry(bool is_directory,
+                         DriveFileError error,
+                         const base::FilePath& file_path);
 
   // Removes entry pointed to by |resource_id| from its parent. Updates
   // changed_dirs_ as a side effect.

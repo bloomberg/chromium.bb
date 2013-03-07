@@ -260,36 +260,6 @@ void DriveResourceMetadata::SetLargestChangestamp(
       FROM_HERE, base::Bind(callback, DRIVE_FILE_OK));
 }
 
-void DriveResourceMetadata::AddEntryToDirectory(
-    const base::FilePath& directory_path,
-    scoped_ptr<google_apis::ResourceEntry> entry,
-    const FileMoveCallback& callback) {
-  DCHECK(!directory_path.empty());
-  DCHECK(!callback.is_null());
-
-  if (!entry.get()) {
-    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-
-  DriveEntry* dir_entry = FindEntryByPathSync(directory_path);
-  if (!dir_entry) {
-    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  DriveDirectory* directory = dir_entry->AsDriveDirectory();
-  if (!directory) {
-    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  AddEntryToDirectoryInternal(
-      directory,
-      ConvertResourceEntryToDriveEntryProto(*entry),
-      callback);
-}
-
 void DriveResourceMetadata::MoveEntryToDirectory(
     const base::FilePath& file_path,
     const base::FilePath& directory_path,
@@ -617,9 +587,8 @@ void DriveResourceMetadata::RefreshDirectory(
       base::Bind(callback, DRIVE_FILE_OK, directory->GetFilePath()));
 }
 
-void DriveResourceMetadata::AddEntryToParent(
-    const DriveEntryProto& entry_proto,
-    const FileMoveCallback& callback) {
+void DriveResourceMetadata::AddEntry(const DriveEntryProto& entry_proto,
+                                     const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -628,13 +597,7 @@ void DriveResourceMetadata::AddEntryToParent(
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
-  AddEntryToDirectoryInternal(parent, entry_proto, callback);
-}
 
-void DriveResourceMetadata::AddEntryToDirectoryInternal(
-    DriveDirectory* directory,
-    const DriveEntryProto& entry_proto,
-    const FileMoveCallback& callback) {
   scoped_ptr<DriveEntry> new_entry = CreateDriveEntryFromProto(entry_proto);
   if (!new_entry.get()) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
@@ -642,9 +605,8 @@ void DriveResourceMetadata::AddEntryToDirectoryInternal(
   }
 
   DriveEntry* added_entry = new_entry.release();
-  directory->AddEntry(added_entry);  // Transfers ownership.
-  DVLOG(1) << "AddEntryToDirectoryInternal "
-           << added_entry->GetFilePath().value();
+  parent->AddEntry(added_entry);  // Transfers ownership.
+  DVLOG(1) << "AddEntry "  << added_entry->GetFilePath().value();
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(callback, DRIVE_FILE_OK, added_entry->GetFilePath()));
 }

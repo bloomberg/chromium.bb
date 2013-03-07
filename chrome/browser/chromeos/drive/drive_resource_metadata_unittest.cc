@@ -160,7 +160,7 @@ bool DriveResourceMetadataTest::AddDriveEntryProto(
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
 
-  resource_metadata->AddEntryToParent(
+  resource_metadata->AddEntry(
       entry_proto,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -838,7 +838,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   EXPECT_EQ("file9", entry_proto->base_name());
 }
 
-TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
+TEST_F(DriveResourceMetadataTest, AddEntry) {
   int sequence_id = 100;
   DriveEntryProto file_entry_proto = CreateDriveEntryProto(
       sequence_id++, false, "resource_id:dir3");
@@ -847,7 +847,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   base::FilePath drive_file_path;
 
   // Add to dir3.
-  resource_metadata_->AddEntryToParent(
+  resource_metadata_->AddEntry(
       file_entry_proto,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -860,7 +860,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   DriveEntryProto file_entry_proto2 = CreateDriveEntryProto(
       sequence_id++, false, "");
 
-  resource_metadata_->AddEntryToParent(
+  resource_metadata_->AddEntry(
       file_entry_proto2,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -872,7 +872,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   DriveEntryProto dir_entry_proto = CreateDriveEntryProto(
       sequence_id++, true, "resource_id:dir1");
 
-  resource_metadata_->AddEntryToParent(
+  resource_metadata_->AddEntry(
       dir_entry_proto,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
@@ -885,7 +885,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
   DriveEntryProto file_entry_proto3 = CreateDriveEntryProto(
       sequence_id++, false, "resource_id:invalid");
 
-  resource_metadata_->AddEntryToParent(
+  resource_metadata_->AddEntry(
       file_entry_proto3,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));

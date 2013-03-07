@@ -171,7 +171,6 @@ void FakeDriveFileSystem::GetAvailableSpace(
 }
 
 void FakeDriveFileSystem::AddUploadedFile(
-    const base::FilePath& directory_path,
     scoped_ptr<google_apis::ResourceEntry> doc_entry,
     const base::FilePath& file_content_path,
     const FileOperationCallback& callback) {

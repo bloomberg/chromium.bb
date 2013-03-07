@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -164,9 +165,8 @@ void CreateDirectoryOperation::AddNewDirectory(
     return;
   }
 
-  metadata_->AddEntryToDirectory(
-      created_directory_path.DirName(),
-      entry.Pass(),
+  metadata_->AddEntry(
+      ConvertResourceEntryToDriveEntryProto(*entry),
       base::Bind(&CreateDirectoryOperation::ContinueCreateDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
