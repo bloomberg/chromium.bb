@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/dump_accessibility_tree_helper.h"
+#include "content/browser/accessibility/accessibility_tree_formatter.h"
 
 #include <oleacc.h>
 
@@ -12,21 +12,20 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_node_data.h"
-#include "content/public/test/accessibility_test_utils_win.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
 
-void DumpAccessibilityTreeHelper::Initialize() {
+void AccessibilityTreeFormatter::Initialize() {
   ui::win::CreateATLModuleIfNeeded();
 }
 
-string16 DumpAccessibilityTreeHelper::ToString(
+string16 AccessibilityTreeFormatter::ToString(
     BrowserAccessibility* node, char* prefix) {
   BrowserAccessibilityWin* acc_obj = node->ToBrowserAccessibilityWin();
 
@@ -160,25 +159,30 @@ string16 DumpAccessibilityTreeHelper::ToString(
   return UTF8ToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }
 
+// static
 const base::FilePath::StringType
-DumpAccessibilityTreeHelper::GetActualFileSuffix() const {
+AccessibilityTreeFormatter::GetActualFileSuffix() {
   return FILE_PATH_LITERAL("-actual-win.txt");
 }
 
+// static
 const base::FilePath::StringType
-DumpAccessibilityTreeHelper::GetExpectedFileSuffix() const {
+AccessibilityTreeFormatter::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-win.txt");
 }
 
-const std::string DumpAccessibilityTreeHelper::GetAllowEmptyString() const {
+// static
+const std::string AccessibilityTreeFormatter::GetAllowEmptyString() {
   return "@WIN-ALLOW-EMPTY:";
 }
 
-const std::string DumpAccessibilityTreeHelper::GetAllowString() const {
+// static
+const std::string AccessibilityTreeFormatter::GetAllowString() {
   return "@WIN-ALLOW:";
 }
 
-const std::string DumpAccessibilityTreeHelper::GetDenyString() const {
+// static
+const std::string AccessibilityTreeFormatter::GetDenyString() {
   return "@WIN-DENY:";
 }
 

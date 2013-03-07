@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TREE_HELPER_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TREE_HELPER_H_
+#ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_H_
+#define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_H_
 
 #include <vector>
 
@@ -11,20 +11,25 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
-// A utility class for retrieving platform specific accessibility information.
+class RenderViewHost;
+
+// A utility class for formatting platform-specific accessibility information,
+// for use in testing, debugging, and developer tools.
 // This is extended by a subclass for each platform where accessibility is
 // implemented.
-class DumpAccessibilityTreeHelper {
+class CONTENT_EXPORT AccessibilityTreeFormatter {
  public:
-  DumpAccessibilityTreeHelper();
-  virtual ~DumpAccessibilityTreeHelper();
+  explicit AccessibilityTreeFormatter(BrowserAccessibility* node);
+  virtual ~AccessibilityTreeFormatter();
+
+  static AccessibilityTreeFormatter* Create(RenderViewHost* rvh);
 
   // Dumps a BrowserAccessibility tree into a string.
-  void DumpAccessibilityTree(BrowserAccessibility* node,
-                             string16* contents);
+  void FormatAccessibilityTree(string16* contents);
 
   // A single filter specification. See GetAllowString() and GetDenyString()
   // for more information.
@@ -50,8 +55,8 @@ class DumpAccessibilityTreeHelper {
   // HTML test:      test-file.html
   // Expected:       test-file-expected-mac.txt.
   // Auto-generated: test-file-actual-mac.txt
-  const base::FilePath::StringType GetActualFileSuffix() const;
-  const base::FilePath::StringType GetExpectedFileSuffix() const;
+  static const base::FilePath::StringType GetActualFileSuffix();
+  static const base::FilePath::StringType GetExpectedFileSuffix();
 
   // A platform-specific string that indicates a given line in a file
   // is an allow-empty, allow or deny filter. Example:
@@ -66,14 +71,14 @@ class DumpAccessibilityTreeHelper {
   // @MAC-DENY:subrole*
   // -->
   // <p>Text</p>
-  const std::string GetAllowEmptyString() const;
-  const std::string GetAllowString() const;
-  const std::string GetDenyString() const;
+  static const std::string GetAllowEmptyString();
+  static const std::string GetAllowString();
+  static const std::string GetDenyString();
 
  protected:
-  void RecursiveDumpAccessibilityTree(BrowserAccessibility* node,
-                                      string16* contents,
-                                      int indent);
+  void RecursiveFormatAccessibilityTree(BrowserAccessibility* node,
+                                        string16* contents,
+                                        int indent);
 
   // Returns a platform specific representation of a BrowserAccessibility.
   // Should be zero or more complete lines, each with |prefix| prepended
@@ -82,17 +87,18 @@ class DumpAccessibilityTreeHelper {
 
   void Initialize();
 
-  bool MatchesFilters(const string16& text, bool default_result);
+  bool MatchesFilters(const string16& text, bool default_result) const;
   void StartLine();
   void Add(bool include_by_default, const string16& attr);
   string16 FinishLine();
 
+  BrowserAccessibility* node_;
   std::vector<Filter> filters_;
   string16 line_;
 
-  DISALLOW_COPY_AND_ASSIGN(DumpAccessibilityTreeHelper);
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityTreeFormatter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TREE_HELPER_H_
+#endif  // CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_H_

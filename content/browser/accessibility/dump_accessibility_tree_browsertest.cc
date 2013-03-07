@@ -13,9 +13,9 @@
 #include "base/string16.h"
 #include "base/strings/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/dump_accessibility_tree_helper.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/web_contents.h"
@@ -44,7 +44,7 @@ const char kSignalDiff[] = "*";
 
 }  // namespace
 
-typedef DumpAccessibilityTreeHelper::Filter Filter;
+typedef AccessibilityTreeFormatter::Filter Filter;
 
 // This test takes a snapshot of the platform BrowserAccessibility tree and
 // tests it against an expected baseline.
@@ -98,9 +98,12 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
          iter != lines.end();
          ++iter) {
       const std::string& line = *iter;
-      const std::string& allow_empty_str = helper_.GetAllowEmptyString();
-      const std::string& allow_str = helper_.GetAllowString();
-      const std::string& deny_str = helper_.GetDenyString();
+      const std::string& allow_empty_str =
+          AccessibilityTreeFormatter::GetAllowEmptyString();
+      const std::string& allow_str =
+          AccessibilityTreeFormatter::GetAllowString();
+      const std::string& deny_str =
+          AccessibilityTreeFormatter::GetDenyString();
       if (StartsWithASCII(line, allow_empty_str, true)) {
         filters->push_back(
           Filter(UTF8ToUTF16(line.substr(allow_empty_str.size())),
@@ -116,8 +119,6 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
   }
 
   void RunTest(const base::FilePath::CharType* file_path);
-
-  DumpAccessibilityTreeHelper helper_;
 };
 
 void DumpAccessibilityTreeTest::RunTest(
@@ -147,20 +148,12 @@ void DumpAccessibilityTreeTest::RunTest(
   std::string html_contents;
   file_util::ReadFileToString(html_file, &html_contents);
 
-  // Parse filters in the test file.
-  std::vector<Filter> filters;
-  AddDefaultFilters(&filters);
-  ParseFilters(html_contents, &filters);
-  helper_.SetFilters(filters);
-
   // Read the expected file.
   std::string expected_contents_raw;
   base::FilePath expected_file =
     base::FilePath(html_file.RemoveExtension().value() +
-             helper_.GetExpectedFileSuffix());
-  file_util::ReadFileToString(
-      expected_file,
-      &expected_contents_raw);
+                   AccessibilityTreeFormatter::GetExpectedFileSuffix());
+  file_util::ReadFileToString(expected_file, &expected_contents_raw);
 
   // Tolerate Windows-style line endings (\r\n) in the expected file:
   // normalize by deleting all \r from the file (if any) to leave only \n.
@@ -185,11 +178,18 @@ void DumpAccessibilityTreeTest::RunTest(
   // Wait for the tree.
   loop_runner->Run();
 
+  AccessibilityTreeFormatter formatter(
+      host_view->GetBrowserAccessibilityManager()->GetRoot());
+
+  // Parse filters in the test file.
+  std::vector<Filter> filters;
+  AddDefaultFilters(&filters);
+  ParseFilters(html_contents, &filters);
+  formatter.SetFilters(filters);
+
   // Perform a diff (or write the initial baseline).
   string16 actual_contents_utf16;
-  helper_.DumpAccessibilityTree(
-      host_view->GetBrowserAccessibilityManager()->GetRoot(),
-      &actual_contents_utf16);
+  formatter.FormatAccessibilityTree(&actual_contents_utf16);
   std::string actual_contents = UTF16ToUTF8(actual_contents_utf16);
   std::vector<std::string> actual_lines, expected_lines;
   Tokenize(actual_contents, "\n", &actual_lines);
@@ -226,7 +226,7 @@ void DumpAccessibilityTreeTest::RunTest(
   if (!file_util::PathExists(expected_file)) {
     base::FilePath actual_file =
         base::FilePath(html_file.RemoveExtension().value() +
-                       helper_.GetActualFileSuffix());
+                       AccessibilityTreeFormatter::GetActualFileSuffix());
 
     EXPECT_TRUE(file_util::WriteFile(
         actual_file, actual_contents.c_str(), actual_contents.size()));
