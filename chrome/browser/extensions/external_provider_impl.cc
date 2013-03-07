@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/external_provider_impl.h"
 
+#include <set>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -13,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -93,7 +97,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
   if (!service_) return;
 
   prefs_.reset(prefs);
-  ready_ = true; // Queries for extensions are allowed from this point.
+  ready_ = true;  // Queries for extensions are allowed from this point.
 
   // Set of unsupported extensions that need to be deleted from prefs_.
   std::set<std::string> unsupported_extensions;
@@ -236,7 +240,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
       service_->OnExternalExtensionFileFound(extension_id, &version, path,
                                              crx_location_, creation_flags,
                                              auto_acknowledge_);
-    } else { // if (has_external_update_url)
+    } else {  // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Manifest::INVALID_LOCATION) {
         LOG(WARNING) << "This provider does not support installing external "
@@ -336,6 +340,10 @@ void ExternalProviderImpl::CreateExternalProviders(
   // It would only slowdown tests and make them flaky.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDefaultApps))
+    return;
+
+  // No external app install in app mode.
+  if (chrome::IsRunningInForcedAppMode())
     return;
 
   // On Mac OS, items in /Library/... should be written by the superuser.

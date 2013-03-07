@@ -782,6 +782,7 @@
         'browser/extensions/extension_warning_service_unittest.cc',
         'browser/extensions/extensions_quota_service_unittest.cc',
         'browser/extensions/external_policy_loader_unittest.cc',
+        'browser/extensions/external_provider_impl_chromeos_unittest.cc',
         'browser/extensions/menu_manager_unittest.cc',
         'browser/extensions/page_action_controller_unittest.cc',
         'browser/extensions/permissions_updater_unittest.cc',
