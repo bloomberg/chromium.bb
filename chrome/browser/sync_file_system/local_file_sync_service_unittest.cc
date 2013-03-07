@@ -81,12 +81,12 @@ void OnGetFileMetadata(const tracked_objects::Location& where,
 
 ACTION_P(MockStatusCallback, status) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, status));
+      FROM_HERE, base::Bind(arg4, status));
 }
 
 ACTION_P2(MockStatusCallbackAndRecordChange, status, changes) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, status));
+      FROM_HERE, base::Bind(arg4, status));
   changes->push_back(arg0);
 }
 
@@ -334,13 +334,21 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_->GetMetadata(kFile, &info, &platform_path));
 
+  ASSERT_FALSE(info.is_directory);
+  ASSERT_EQ(kTestFileDataSize, info.size);
+
+  SyncFileMetadata metadata;
+  metadata.file_type = SYNC_FILE_TYPE_FILE;
+  metadata.size = info.size;
+  metadata.last_modified = info.last_modified;
+
   // The local_change_processor's ApplyLocalChange should be called once
   // with ADD_OR_UPDATE change for TYPE_FILE.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   const FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                           SYNC_FILE_TYPE_FILE);
   EXPECT_CALL(local_change_processor,
-              ApplyLocalChange(change, platform_path, kFile, _))
+              ApplyLocalChange(change, platform_path, metadata, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
 
   local_service_->ProcessLocalChange(
@@ -376,7 +384,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
   // return SYNC_FILE_ERROR_NOT_FOUND (as mocked).
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   const FileChange change(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_FILE);
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, kFile, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(change, _, _, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_FILE_ERROR_NOT_FOUND));
 
   // The sync should succeed anyway.
@@ -447,7 +455,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
   // twice for FILE_TYPE and FILE_DIRECTORY.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   std::vector<FileChange> changes;
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, kPath, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, _, kPath, _))
       .Times(2)
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes))
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
@@ -532,7 +540,7 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
   // Next local sync should pick up the recorded change.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
   std::vector<FileChange> changes;
-  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, kURL, _))
+  EXPECT_CALL(local_change_processor, ApplyLocalChange(_, _, _, kURL, _))
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
   {
     base::RunLoop run_loop;

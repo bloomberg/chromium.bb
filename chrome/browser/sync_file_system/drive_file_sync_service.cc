@@ -539,6 +539,7 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
 void DriveFileSyncService::ApplyLocalChange(
     const FileChange& local_file_change,
     const base::FilePath& local_file_path,
+    const SyncFileMetadata& local_file_metadata,
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
@@ -548,8 +549,9 @@ void DriveFileSyncService::ApplyLocalChange(
       FROM_HERE, TASK_TYPE_DATABASE, "Apply local change"));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::ApplyLocalChange,
-        AsWeakPtr(), local_file_change, local_file_path, url, callback));
+        &DriveFileSyncService::ApplyLocalChange, AsWeakPtr(),
+        local_file_change, local_file_path, local_file_metadata,
+        url, callback));
     return;
   }
 
@@ -609,14 +611,15 @@ void DriveFileSyncService::ApplyLocalChange(
                      AsWeakPtr(), base::Passed(&token), url, callback));
       return;
     }
-    case LOCAL_SYNC_OPERATION_NONE: {
+    case LOCAL_SYNC_OPERATION_NONE_CONFLICTED:
+      // The file is already conflicted.
+      // (Fall through)
+    case LOCAL_SYNC_OPERATION_NONE:
       FinalizeLocalSync(token.Pass(), callback, SYNC_STATUS_OK);
       return;
-    }
-    case LOCAL_SYNC_OPERATION_CONFLICT: {
+    case LOCAL_SYNC_OPERATION_CONFLICT:
       HandleConflictForLocalSync(token.Pass(), url, callback);
       return;
-    }
     case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE: {
       // Mark the file as to-be-fetched.
       DriveMetadata metadata;
@@ -1105,7 +1108,7 @@ DriveFileSyncService::ResolveLocalSyncOperationType(
   if (has_metadata && metadata.conflicted()) {
     // The file has been marked as conflicted.
     if (local_file_change.IsAddOrUpdate())
-      return LOCAL_SYNC_OPERATION_NONE;
+      return LOCAL_SYNC_OPERATION_NONE_CONFLICTED;
     else if (local_file_change.IsDelete())
       return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
     NOTREACHED();

@@ -355,6 +355,7 @@ void LocalFileSyncService::DidGetFileForLocalSync(
   processor->ApplyLocalChange(
       sync_file_info.changes.front(),
       sync_file_info.local_file_path,
+      sync_file_info.metadata,
       sync_file_info.url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
                  AsWeakPtr(), processor,
@@ -404,6 +405,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
   processor->ApplyLocalChange(
       changes.front(),
       sync_file_info.local_file_path,
+      sync_file_info.metadata,
       url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
                  AsWeakPtr(), processor, sync_file_info,

@@ -96,6 +96,7 @@ class DriveFileSyncService
   virtual void ApplyLocalChange(
       const FileChange& change,
       const base::FilePath& local_file_path,
+      const SyncFileMetadata& local_file_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
 
@@ -185,6 +186,7 @@ class DriveFileSyncService
     LOCAL_SYNC_OPERATION_UPDATE,
     LOCAL_SYNC_OPERATION_DELETE,
     LOCAL_SYNC_OPERATION_NONE,
+    LOCAL_SYNC_OPERATION_NONE_CONFLICTED,
     LOCAL_SYNC_OPERATION_CONFLICT,
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
     LOCAL_SYNC_OPERATION_FAIL,

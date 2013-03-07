@@ -318,6 +318,11 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_NONE;
   }
 
+  bool IsLocalSyncOperationNoneConflicted(
+      DriveFileSyncService::LocalSyncOperationType type) {
+    return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_NONE_CONFLICTED;
+  }
+
   bool IsLocalSyncOperationConflict(
       DriveFileSyncService::LocalSyncOperationType type) {
     return type == DriveFileSyncService::LOCAL_SYNC_OPERATION_CONFLICT;
@@ -832,7 +837,7 @@ TEST_F(DriveFileSyncServiceMockTest, ResolveLocalSyncOperationType) {
   metadata_store()->UpdateEntry(url, metadata,
                                 base::Bind(&DidUpdateEntry));
 
-  EXPECT_TRUE(IsLocalSyncOperationNone(
+  EXPECT_TRUE(IsLocalSyncOperationNoneConflicted(
       ResolveLocalSyncOperationType(local_add_or_update_change, url)));
   EXPECT_TRUE(IsLocalSyncOperationResolveToRemote(
       ResolveLocalSyncOperationType(local_delete_change, url)));

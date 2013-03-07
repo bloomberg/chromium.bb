@@ -9,6 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/file_change.h"
+#include "webkit/fileapi/syncable/sync_file_metadata.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -17,7 +18,7 @@ using ::testing::Return;
 namespace sync_file_system {
 
 MockLocalChangeProcessor::MockLocalChangeProcessor() {
-  ON_CALL(*this, ApplyLocalChange(_, _, _, _))
+  ON_CALL(*this, ApplyLocalChange(_, _, _, _, _))
       .WillByDefault(Invoke(this,
                             &MockLocalChangeProcessor::ApplyLocalChangeStub));
 }
@@ -28,6 +29,7 @@ MockLocalChangeProcessor::~MockLocalChangeProcessor() {
 void MockLocalChangeProcessor::ApplyLocalChangeStub(
     const FileChange& change,
     const base::FilePath& local_file_path,
+    const SyncFileMetadata& local_file_metadata,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
