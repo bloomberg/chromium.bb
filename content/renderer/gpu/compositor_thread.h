@@ -9,9 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "webkit/glue/webthread_impl.h"
 
 namespace WebKit {
 class WebInputEvent;
@@ -40,9 +40,7 @@ class CompositorThread {
                        int input_handler_id,
                        const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
-  webkit_glue::WebThreadImpl* GetWebThread() { return &thread_; }
-
-  MessageLoop* message_loop() { return thread_.message_loop(); }
+  base::MessageLoopProxy* message_loop_proxy() const;
 
  private:
   // Callback only from the compositor's thread.
@@ -66,7 +64,7 @@ class CompositorThread {
                    scoped_refptr<InputHandlerWrapper> > InputHandlerMap;
   InputHandlerMap input_handlers_;
 
-  webkit_glue::WebThreadImpl thread_;
+  base::Thread thread_;
   scoped_refptr<InputEventFilter> filter_;
 };
 
