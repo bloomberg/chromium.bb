@@ -8,7 +8,6 @@
 
 #include "base/rand_util.h"
 #include "crypto/hmac.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/texture_definition.h"
 
@@ -18,10 +17,6 @@ namespace gles2 {
 MailboxName::MailboxName() {
   std::fill(key, key + sizeof(key), 0);
   std::fill(signature, signature + sizeof(signature), 0);
-}
-
-MailboxName::MailboxName(const ::gpu::Mailbox& mailbox) {
-  std::copy(mailbox.name, mailbox.name + sizeof(mailbox.name), key);
 }
 
 MailboxManager::MailboxManager()

@@ -293,10 +293,8 @@ public:
     }
 
     void setMailbox(char mailbox_char) {
-        gpu::Mailbox name;
-        memset(name.name, mailbox_char, sizeof(name.name));
         TextureMailbox mailbox(
-            name,
+            std::string(64, mailbox_char),
             base::Bind(
                 &TextureLayerImplWithMailboxThreadedCallback::releaseCallback,
                 base::Unretained(this)));

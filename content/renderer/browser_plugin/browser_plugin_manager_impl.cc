@@ -100,7 +100,7 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
 void BrowserPluginManagerImpl::OnUnhandledSwap(const IPC::Message& message,
                                                int instance_id,
                                                const gfx::Size& size,
-                                               gpu::Mailbox mailbox_name,
+                                               std::string mailbox_name,
                                                int gpu_route_id,
                                                int gpu_host_id) {
   // After the BrowserPlugin object sends a destroy message to the

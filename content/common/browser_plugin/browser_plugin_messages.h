@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/public/common/common_param_traits.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -208,7 +207,7 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_BuffersSwappedACK,
                     int /* instance_id */,
                     int /* route_id */,
                     int /* gpu_host_id */,
-                    gpu::Mailbox /* mailbox_name */,
+                    std::string /* mailbox_name */,
                     uint32 /* sync_point */)
 
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
@@ -385,7 +384,7 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_UpdatedName,
 IPC_MESSAGE_CONTROL5(BrowserPluginMsg_BuffersSwapped,
                      int /* instance_id */,
                      gfx::Size /* size */,
-                     gpu::Mailbox /* mailbox_name */,
+                     std::string /* mailbox_name */,
                      int /* route_id */,
                      int /* gpu_host_id */)
 

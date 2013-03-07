@@ -19,7 +19,6 @@
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -49,7 +48,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox_name)
+  IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(gfx::Size, size)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
@@ -66,7 +65,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
   IPC_STRUCT_MEMBER(int, y)
   IPC_STRUCT_MEMBER(int, width)
   IPC_STRUCT_MEMBER(int, height)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox_name)
+  IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(gfx::Size, surface_size)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
@@ -79,7 +78,7 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
-  IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox_name)
+  IPC_STRUCT_MEMBER(std::string, mailbox_name)
   IPC_STRUCT_MEMBER(uint32, sync_point)
 #if defined(OS_MACOSX)
   IPC_STRUCT_MEMBER(int32, renderer_id)

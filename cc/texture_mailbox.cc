@@ -12,6 +12,18 @@ TextureMailbox::TextureMailbox()
 }
 
 TextureMailbox::TextureMailbox(
+    const std::string& mailbox_name,
+    const ReleaseCallback& mailbox_callback)
+    : callback_(mailbox_callback),
+      sync_point_(0) {
+  DCHECK(mailbox_name.empty() == mailbox_callback.is_null());
+  if (!mailbox_name.empty()) {
+    CHECK(mailbox_name.size() == sizeof(name_.name));
+    name_.SetName(reinterpret_cast<const int8*>(mailbox_name.data()));
+  }
+}
+
+TextureMailbox::TextureMailbox(
     const gpu::Mailbox& mailbox_name,
     const ReleaseCallback& mailbox_callback)
     : callback_(mailbox_callback),

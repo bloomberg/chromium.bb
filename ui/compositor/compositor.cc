@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/context_provider.h"
@@ -19,7 +20,6 @@
 #include "cc/layer_tree_host.h"
 #include "cc/output_surface.h"
 #include "cc/thread_impl.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
@@ -262,8 +262,8 @@ Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
 Texture::~Texture() {
 }
 
-gpu::Mailbox Texture::Produce() {
-  return gpu::Mailbox();
+std::string Texture::Produce() {
+  return EmptyString();
 }
 
 CompositorLock::CompositorLock(Compositor* compositor)

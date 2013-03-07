@@ -44,10 +44,6 @@ class Canvas;
 class Display;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace ui {
 class CompositorLock;
 class InputMethod;
@@ -364,12 +360,12 @@ class RenderWidgetHostViewAura
   // The common entry point for full buffer updates from renderer
   // and GPU process.
   void BuffersSwapped(const gfx::Size& size,
-                      const gpu::Mailbox& mailbox_name,
+                      const std::string& mailbox_name,
                       const BufferPresentedCallback& ack_callback);
 
   bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
                           const gfx::Rect& damage_rect,
-                          const gpu::Mailbox& mailbox_name,
+                          const std::string& mailbox_name,
                           const BufferPresentedCallback& ack_callback);
 
   void SwapBuffersCompleted(

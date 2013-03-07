@@ -63,9 +63,9 @@ void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
 // We use a shared graphics context accessible from the main
 // thread to do it.
 void BrowserPluginCompositingHelper::FreeMailboxMemory(
-    const gpu::Mailbox& mailbox_name,
+    const std::string& mailbox_name,
     unsigned sync_point) {
-  if (mailbox_name.IsZero())
+  if (mailbox_name.empty())
     return;
 
   scoped_refptr<cc::ContextProvider> context_provider =
@@ -87,12 +87,14 @@ void BrowserPluginCompositingHelper::FreeMailboxMemory(
 
   unsigned texture_id = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, texture_id);
-  context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name.name);
+  context->consumeTextureCHROMIUM(
+      GL_TEXTURE_2D,
+      reinterpret_cast<const int8*>(mailbox_name.data()));
   context->deleteTexture(texture_id);
 }
 
 void BrowserPluginCompositingHelper::MailboxReleased(
-    const gpu::Mailbox& mailbox_name,
+    const std::string& mailbox_name,
     int gpu_route_id,
     int gpu_host_id,
     unsigned sync_point) {
@@ -154,7 +156,7 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
 
 void BrowserPluginCompositingHelper::OnBuffersSwapped(
     const gfx::Size& size,
-    const gpu::Mailbox& mailbox_name,
+    const std::string& mailbox_name,
     int gpu_route_id,
     int gpu_host_id,
     float device_scale_factor) {
@@ -201,9 +203,9 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     texture_layer_->setBounds(device_scale_adjusted_size);
   }
 
-  bool current_mailbox_valid = !mailbox_name.IsZero();
+  bool current_mailbox_valid = !mailbox_name.empty();
   if (!last_mailbox_valid_) {
-    MailboxReleased(gpu::Mailbox(), gpu_route_id, gpu_host_id, 0);
+    MailboxReleased(std::string(), gpu_route_id, gpu_host_id, 0);
     if (!current_mailbox_valid)
       return;
   }

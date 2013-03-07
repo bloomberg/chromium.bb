@@ -214,7 +214,9 @@ bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_.size == current_size_);
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.size = backbuffer_.size;
-  params.mailbox_name = backbuffer_.mailbox_name;
+  const MailboxName& name = backbuffer_.mailbox_name;
+  params.mailbox_name.assign(
+      reinterpret_cast<const char*>(&name), sizeof(name));
 
   glFlush();
   ProduceTexture(&backbuffer_);
@@ -254,7 +256,9 @@ bool TextureImageTransportSurface::PostSubBuffer(
   params.y = y;
   params.width = width;
   params.height = height;
-  params.mailbox_name = backbuffer_.mailbox_name;
+  const MailboxName& name = backbuffer_.mailbox_name;
+  params.mailbox_name.assign(
+      reinterpret_cast<const char*>(&name), sizeof(name));
 
   glFlush();
   ProduceTexture(&backbuffer_);
@@ -312,10 +316,12 @@ void TextureImageTransportSurface::OnBufferPresented(
 }
 
 void TextureImageTransportSurface::BufferPresentedImpl(
-    const gpu::Mailbox& mailbox_name) {
+    const std::string& mailbox_name) {
   DCHECK(!backbuffer_.service_id);
-  if (!mailbox_name.IsZero()) {
-    backbuffer_.mailbox_name = mailbox_name;
+  if (!mailbox_name.empty()) {
+    DCHECK(mailbox_name.length() == GL_MAILBOX_SIZE_CHROMIUM);
+    mailbox_name.copy(reinterpret_cast<char *>(&backbuffer_.mailbox_name),
+                      sizeof(MailboxName));
     ConsumeTexture(&backbuffer_);
   }
 
@@ -364,7 +370,7 @@ void TextureImageTransportSurface::ReleaseBackTexture() {
 
   glDeleteTextures(1, &backbuffer_.service_id);
   backbuffer_.service_id = 0;
-  backbuffer_.mailbox_name = gpu::Mailbox();
+  backbuffer_.mailbox_name = MailboxName();
   glFlush();
   CHECK_GL_ERROR();
 }
@@ -395,13 +401,12 @@ void TextureImageTransportSurface::CreateBackTexture() {
   }
 
   if (!backbuffer_.service_id) {
-    gpu::Mailbox& name = backbuffer_.mailbox_name;
-    // This slot should be uninitialized.
-    DCHECK(name.IsZero());
-
     MailboxName new_mailbox_name;
+    MailboxName& name = backbuffer_.mailbox_name;
+    // This slot should be uninitialized.
+    DCHECK(!memcmp(&name, &new_mailbox_name, sizeof(MailboxName)));
     mailbox_manager_->GenerateMailboxName(&new_mailbox_name);
-    name.SetName(new_mailbox_name.key);
+    name = new_mailbox_name;
     glGenTextures(1, &backbuffer_.service_id);
   }
 
@@ -444,13 +449,13 @@ void TextureImageTransportSurface::ConsumeTexture(Texture* texture) {
   DCHECK(!texture->service_id);
 
   scoped_ptr<TextureDefinition> definition(mailbox_manager_->ConsumeTexture(
-      GL_TEXTURE_2D, MailboxName(texture->mailbox_name)));
+      GL_TEXTURE_2D, texture->mailbox_name));
   if (definition.get()) {
     texture->service_id = definition->ReleaseServiceId();
     texture->size = gfx::Size(definition->level_infos()[0][0].width,
                              definition->level_infos()[0][0].height);
   } else {
-    texture->mailbox_name = gpu::Mailbox();
+    texture->mailbox_name = MailboxName();
   }
 }
 
@@ -484,12 +489,12 @@ void TextureImageTransportSurface::ProduceTexture(Texture* texture) {
   // at which point we consume the correct texture back.
   bool success = mailbox_manager_->ProduceTexture(
       GL_TEXTURE_2D,
-      MailboxName(texture->mailbox_name),
+      texture->mailbox_name,
       definition.release(),
       NULL);
   DCHECK(success);
   texture->service_id = 0;
-  texture->mailbox_name = gpu::Mailbox();
+  texture->mailbox_name = MailboxName();
 }
 
 }  // namespace content

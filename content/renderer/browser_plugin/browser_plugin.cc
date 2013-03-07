@@ -411,7 +411,7 @@ void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
 
 void BrowserPlugin::OnBuffersSwapped(int instance_id,
                                      const gfx::Size& size,
-                                     gpu::Mailbox mailbox_name,
+                                     std::string mailbox_name,
                                      int gpu_route_id,
                                      int gpu_host_id) {
   DCHECK(instance_id == instance_id_);

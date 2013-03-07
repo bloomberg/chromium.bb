@@ -17,10 +17,6 @@ class SolidColorLayer;
 class TextureLayer;
 }
 
-namespace gpu {
-struct Mailbox;
-}
-
 namespace WebKit {
 class WebPluginContainer;
 class WebLayer;
@@ -40,7 +36,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   void EnableCompositing(bool);
   void OnContainerDestroy();
   void OnBuffersSwapped(const gfx::Size& size,
-                        const gpu::Mailbox& mailbox_name,
+                        const std::string& mailbox_name,
                         int gpu_route_id,
                         int gpu_host_id,
                         float device_scale_factor);
@@ -50,9 +46,9 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   friend class base::RefCounted<BrowserPluginCompositingHelper>;
  private:
   ~BrowserPluginCompositingHelper();
-  void FreeMailboxMemory(const gpu::Mailbox& mailbox_name,
+  void FreeMailboxMemory(const std::string& mailbox_name,
                          unsigned sync_point);
-  void MailboxReleased(const gpu::Mailbox& mailbox_name,
+  void MailboxReleased(const std::string& mailbox_name,
                        int gpu_route_id,
                        int gpu_host_id,
                        unsigned sync_point);
