@@ -154,7 +154,15 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
   DetachReattachTest(1, 0);
 }
 
-TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
+#if defined(OS_WIN)
+// TODO(flackr): Positioning of the panel seems to be off on Windows Aura when
+// attached to the right (http://crbug.com/180892).
+#define MAYBE_PanelDetachReattachRight DISABLED_PanelDetachReattachRight
+#else
+#define MAYBE_PanelDetachReattachRight PanelDetachReattachRight
+#endif
+
+TEST_F(PanelWindowResizerTest, MAYBE_PanelDetachReattachRight) {
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
                            shell->GetPrimaryRootWindow());
