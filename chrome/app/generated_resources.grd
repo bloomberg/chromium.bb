@@ -8036,14 +8036,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_OUTSIDE_CONTENT_PACKS_BLOCK_RADIO" desc="A radio button in the Managed User Settings dialog for blocking a managed user to view sites that do not belong to the installed whitelist.">
         Block
       </message>
-       <message name="IDS_ADVANCED_MANAGED_USER_LABEL" desc="A label in the Managed User Settings dialog for other managed user settings.">
+      <message name="IDS_ADVANCED_MANAGED_USER_LABEL" desc="A label in the Managed User Settings dialog for other managed user settings.">
         Advanced settings
       </message>
        <message name="IDS_SAFE_SEARCH_ENABLED" desc="A checkbox in the Managed User Settings dialog for enabling SafeSearch.">
         Enable Google's SafeSearch
-      </message>
-       <message name="IDS_SIGNIN_SYNC_DISABLED" desc="A checkbox in the Managed User Settings dialog for disabling sign in or sync.">
-        Disable signing into Chrome
       </message>
       <message name="IDS_HISTORY_DELETION_DISABLED" desc="A checkbox in the Managed User Settings dialog for tracking history of managed user.">
         Disable incognito windows and deleting history
@@ -8063,7 +8060,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ENTER_PASSPHRASE_LABEL" desc="A label for entering a passphrase to save.">
         Enter a passphrase:
       </message>
-       <message name="IDS_CONFIRM_PASSPHRASE_LABEL" desc="A label for re-entering a passphrase to save.">
+      <message name="IDS_CONFIRM_PASSPHRASE_LABEL" desc="A label for re-entering a passphrase to save.">
         Confirm the passphrase:
       </message>
       <message name="IDS_PASSPHRASE_MISMATCH" desc="A warning message which is displayed when the passphrase entered as confirmation does not match the passphrase.">
@@ -8089,7 +8086,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_BYPASS_BLOCK_MESSAGE" desc="A label for allowing custodians to allow a blocked site.">
         Custodians can also allow this site.
       </message>
-       <message name="IDS_BYPASS_BLOCK_BUTTON" desc="A button for allowing blocked site.">
+      <message name="IDS_BYPASS_BLOCK_BUTTON" desc="A button for allowing blocked site.">
         Preview
       </message>
 

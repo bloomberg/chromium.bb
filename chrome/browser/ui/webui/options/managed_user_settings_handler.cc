@@ -17,7 +17,9 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
 
 using content::UserMetricsAction;
@@ -72,7 +74,7 @@ void ManagedUserSettingsHandler::GetLocalizedValues(
     // Other managed user settings
     { "advancedManagedUserSettings", IDS_ADVANCED_MANAGED_USER_LABEL },
     { "enableSafeSearch", IDS_SAFE_SEARCH_ENABLED },
-    { "disableProfileSignIn", IDS_SIGNIN_SYNC_DISABLED },
+    { "allowSignIn", IDS_SIGNIN_SYNC_ALLOWED },
     { "disableHistoryDeletion", IDS_HISTORY_DELETION_DISABLED },
     { "usePassphrase", IDS_USE_PASSPHRASE_LABEL },
     { "setPassphrase", IDS_SET_PASSPHRASE_BUTTON }
