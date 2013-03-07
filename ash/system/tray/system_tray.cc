@@ -364,6 +364,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                                            kTrayPopupMinWidth,
                                            kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
+    init_params.close_on_deactivate = false;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
       // is created.
@@ -476,8 +477,6 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   } else if (notification_bubble_.get() &&
              bubble_view == notification_bubble_->bubble_view()) {
     DestroyNotificationBubble();
-  } else {
-    UpdateNotificationBubble();
   }
 }
 
