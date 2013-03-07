@@ -22,6 +22,9 @@
 typedef signed char GLbyte;
 
 namespace gpu {
+
+struct Mailbox;
+
 namespace gles2 {
 
 class TextureDefinition;
@@ -32,6 +35,7 @@ class TextureManager;
 // group. It is a random key signed with a hash of a private key.
 struct GPU_EXPORT MailboxName {
   MailboxName();
+  explicit MailboxName(const ::gpu::Mailbox& mailbox);
   GLbyte key[GL_MAILBOX_SIZE_CHROMIUM / 2];
   GLbyte signature[GL_MAILBOX_SIZE_CHROMIUM / 2];
 };

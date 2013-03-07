@@ -321,10 +321,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
                                                 ack_params));
 
-  if (!params.mailbox_name.empty() &&
-      params.mailbox_name.length() != GL_MAILBOX_SIZE_CHROMIUM)
-    return;
-
   RenderWidgetHostViewPort* view = GetRenderWidgetHostViewFromSurfaceID(
       params.surface_id);
   if (!view)
@@ -352,10 +348,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
       host_id_,
       new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
                                                 ack_params));
-
-  if (!params.mailbox_name.empty() &&
-      params.mailbox_name.length() != GL_MAILBOX_SIZE_CHROMIUM)
-    return;
 
   RenderWidgetHostViewPort* view =
       GetRenderWidgetHostViewFromSurfaceID(params.surface_id);

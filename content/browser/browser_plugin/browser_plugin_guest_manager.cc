@@ -211,7 +211,7 @@ void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
     int instance_id,
     int route_id,
     int gpu_host_id,
-    const std::string& mailbox_name,
+    const gpu::Mailbox& mailbox_name,
     uint32 sync_point) {
   BrowserPluginGuest::AcknowledgeBufferPresent(route_id,
                                                gpu_host_id,

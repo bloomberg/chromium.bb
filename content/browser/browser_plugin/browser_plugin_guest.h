@@ -50,6 +50,10 @@ struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
 struct WebDropData;
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace WebKit {
 class WebInputEvent;
 }
@@ -181,7 +185,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // BrowserPluginGuest is already destroyed.
   static void AcknowledgeBufferPresent(int route_id,
                                        int gpu_host_id,
-                                       const std::string& mailbox_name,
+                                       const gpu::Mailbox& mailbox_name,
                                        uint32 sync_point);
 
   // Returns whether BrowserPluginGuest is interested in receiving the given
@@ -292,7 +296,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void OnSwapBuffersACK(int instance_id,
                         int route_id,
                         int gpu_host_id,
-                        const std::string& mailbox_name,
+                        const gpu::Mailbox& mailbox_name,
                         uint32 sync_point);
 
   void OnTerminateGuest(int instance_id);

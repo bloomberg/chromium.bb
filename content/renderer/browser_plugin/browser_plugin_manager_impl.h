@@ -16,6 +16,10 @@ namespace gfx {
 class Point;
 }
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace content {
 
 class BrowserPluginManagerImpl : public BrowserPluginManager {
@@ -46,7 +50,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   void OnUnhandledSwap(const IPC::Message& message,
                        int instance_id,
                        const gfx::Size& size,
-                       std::string mailbox_name,
+                       gpu::Mailbox mailbox_name,
                        int gpu_route_id,
                        int gpu_host_id);
 

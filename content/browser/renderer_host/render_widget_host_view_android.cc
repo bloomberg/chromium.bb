@@ -40,7 +40,7 @@ namespace content {
 namespace {
 
 void InsertSyncPointAndAckForGpu(
-    int gpu_host_id, int route_id, const std::string& return_mailbox) {
+    int gpu_host_id, int route_id, const gpu::Mailbox& return_mailbox) {
   uint32 sync_point =
       ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
@@ -496,26 +496,13 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  if (params.mailbox_name.empty())
+  if (params.mailbox_name.IsZero())
     return;
-
-  std::string return_mailbox;
-  if (!current_mailbox_.IsZero()) {
-    return_mailbox.assign(
-        reinterpret_cast<const char*>(current_mailbox_.name),
-        sizeof(current_mailbox_.name));
-  }
 
   base::Closure callback = base::Bind(&InsertSyncPointAndAckForGpu,
                                       gpu_host_id, params.route_id,
-                                      return_mailbox);
-
-  gpu::Mailbox mailbox;
-  std::copy(params.mailbox_name.data(),
-            params.mailbox_name.data() + params.mailbox_name.length(),
-            reinterpret_cast<char*>(mailbox.name));
-
-  BuffersSwapped(mailbox, params.size, callback);
+                                      current_mailbox_);
+  BuffersSwapped(params.mailbox_name, params.size, callback);
 }
 
 void RenderWidgetHostViewAndroid::BuffersSwapped(

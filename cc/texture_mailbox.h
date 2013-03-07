@@ -18,8 +18,6 @@ class CC_EXPORT TextureMailbox {
  public:
   typedef base::Callback<void(unsigned)> ReleaseCallback;
   TextureMailbox();
-  TextureMailbox(const std::string& mailbox_name,
-                 const ReleaseCallback& callback);
   TextureMailbox(const gpu::Mailbox& mailbox_name,
                  const ReleaseCallback& callback);
   TextureMailbox(const gpu::Mailbox& mailbox_name,

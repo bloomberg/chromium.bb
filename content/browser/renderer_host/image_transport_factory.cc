@@ -162,32 +162,23 @@ class ImageTransportClientTexture : public OwnedTexture {
                      host_context->createTexture()) {
   }
 
-  virtual void Consume(const std::string& mailbox_name,
+  virtual void Consume(const gpu::Mailbox& mailbox_name,
                        const gfx::Size& new_size) OVERRIDE {
-    DCHECK(mailbox_name.size() == GL_MAILBOX_SIZE_CHROMIUM);
-    mailbox_name_ = mailbox_name;
-    if (mailbox_name.empty())
-      return;
-
     DCHECK(host_context_ && texture_id_);
+    mailbox_name_ = mailbox_name;
     host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
-    host_context_->consumeTextureCHROMIUM(
-        GL_TEXTURE_2D,
-        reinterpret_cast<const signed char*>(mailbox_name.c_str()));
+    host_context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name.name);
     size_ = new_size;
     host_context_->shallowFlushCHROMIUM();
   }
 
-  virtual std::string Produce() OVERRIDE {
-    std::string name;
-    if (!mailbox_name_.empty()) {
-      DCHECK(host_context_ && texture_id_);
-      host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
-      host_context_->produceTextureCHROMIUM(
-          GL_TEXTURE_2D,
-          reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
-      mailbox_name_.swap(name);
-    }
+  virtual gpu::Mailbox Produce() OVERRIDE {
+    DCHECK(!mailbox_name_.IsZero());
+    DCHECK(host_context_ && texture_id_);
+    host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
+    host_context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name_.name);
+    gpu::Mailbox name;
+    std::swap(mailbox_name_, name);
     return name;
   }
 
@@ -195,7 +186,7 @@ class ImageTransportClientTexture : public OwnedTexture {
   virtual ~ImageTransportClientTexture() {}
 
  private:
-  std::string mailbox_name_;
+  gpu::Mailbox mailbox_name_;
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 

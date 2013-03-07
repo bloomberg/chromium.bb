@@ -445,7 +445,7 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
 void BrowserPluginGuest::AcknowledgeBufferPresent(
     int route_id,
     int gpu_host_id,
-    const std::string& mailbox_name,
+    const gpu::Mailbox& mailbox_name,
     uint32 sync_point) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
   ack_params.mailbox_name = mailbox_name;
@@ -728,7 +728,7 @@ void BrowserPluginGuest::OnRespondPermission(
 void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
                                           int route_id,
                                           int gpu_host_id,
-                                          const std::string& mailbox_name,
+                                          const gpu::Mailbox& mailbox_name,
                                           uint32 sync_point) {
   AcknowledgeBufferPresent(route_id, gpu_host_id, mailbox_name, sync_point);
 

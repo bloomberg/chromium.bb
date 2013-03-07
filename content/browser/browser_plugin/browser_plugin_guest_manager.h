@@ -22,6 +22,10 @@ namespace gfx {
 class Point;
 }
 
+namespace gpu {
+struct Mailbox;
+}
+
 namespace IPC {
 class Message;
 }  // namespace IPC
@@ -92,7 +96,7 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   void OnUnhandledSwapBuffersACK(int instance_id,
                                  int route_id,
                                  int gpu_host_id,
-                                 const std::string& mailbox_name,
+                                 const gpu::Mailbox& mailbox_name,
                                  uint32 sync_point);
 
   // Static factory instance (always NULL outside of tests).
