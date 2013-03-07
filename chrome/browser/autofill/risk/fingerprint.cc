@@ -8,15 +8,12 @@
 #include "base/callback.h"
 #include "base/cpu.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -42,17 +39,6 @@ namespace risk {
 namespace {
 
 const int32 kFingerprinterVersion = 1;
-
-// Returns the delta between the time at which Chrome was installed and the Unix
-// epoch.
-base::TimeDelta GetInstallTimestamp() {
-  PrefService* prefs = g_browser_process->local_state();
-  base::Time install_time =
-      base::Time::FromTimeT(prefs->GetInt64(prefs::kInstallDate));
-  // The install date should always be available and initialized.
-  DCHECK(!install_time.is_null());
-  return install_time - base::Time::UnixEpoch();
-}
 
 // Returns the delta between the local timezone and UTC.
 base::TimeDelta GetTimezoneOffset() {
@@ -108,7 +94,7 @@ void AddPluginsToFingerprint(const std::vector<webkit::WebPluginInfo>& plugins,
   }
 }
 
-// Adds the list of HTTP accept languages in |prefs| to the |machine|.
+// Adds the list of HTTP accept languages to the |machine|.
 void AddAcceptLanguagesToFingerprint(
     const std::string& accept_languages_str,
     Fingerprint_MachineCharacteristics* machine) {
@@ -185,7 +171,10 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const gfx::Rect& window_bounds,
       const gfx::Rect& content_bounds,
       const WebScreenInfo& screen_info,
-      const PrefService& prefs,
+      const std::string& version,
+      const std::string& charset,
+      const std::string& accept_languages,
+      const base::Time& install_time,
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
  private:
@@ -213,8 +202,10 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   const gfx::Rect window_bounds_;
   const gfx::Rect content_bounds_;
   const WebScreenInfo screen_info_;
+  const std::string version_;
   const std::string charset_;
   const std::string accept_languages_;
+  const base::Time install_time_;
 
   // Data that will be loaded asynchronously.
   scoped_ptr<base::ListValue> fonts_;
@@ -232,17 +223,24 @@ FingerprintDataLoader::FingerprintDataLoader(
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebScreenInfo& screen_info,
-    const PrefService& prefs,
+    const std::string& version,
+    const std::string& charset,
+    const std::string& accept_languages,
+    const base::Time& install_time,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
       gaia_id_(gaia_id),
       window_bounds_(window_bounds),
       content_bounds_(content_bounds),
       screen_info_(screen_info),
-      charset_(prefs.GetString(prefs::kDefaultCharset)),
-      accept_languages_(prefs.GetString(prefs::kAcceptLanguages)),
+      version_(version),
+      charset_(charset),
+      accept_languages_(accept_languages),
+      install_time_(install_time),
       has_loaded_plugins_(false),
       callback_(callback) {
+  DCHECK(!install_time_.is_null());
+
   // TODO(isherman): Investigating http://crbug.com/174296
   LOG(WARNING) << "Loading fingerprint data.";
 
@@ -330,14 +328,16 @@ void FingerprintDataLoader::FillFingerprint() {
       fingerprint->mutable_machine_characteristics();
 
   machine->set_operating_system_build(GetOperatingSystemVersion());
-  machine->set_browser_install_time_hours(GetInstallTimestamp().InHours());
+  // We use the delta between the install time and the Unix epoch, in hours.
+  machine->set_browser_install_time_hours(
+      (install_time_ - base::Time::UnixEpoch()).InHours());
   machine->set_utc_offset_ms(GetTimezoneOffset().InMilliseconds());
   machine->set_browser_language(
       content::GetContentClient()->browser()->GetApplicationLocale());
   machine->set_charset(charset_);
   machine->set_user_agent(content::GetContentClient()->GetUserAgent());
   machine->set_ram(base::SysInfo::AmountOfPhysicalMemory());
-  machine->set_browser_build(chrome::VersionInfo().Version());
+  machine->set_browser_build(version_);
   AddFontsToFingerprint(*fonts_, machine);
   AddPluginsToFingerprint(plugins_, machine);
   AddAcceptLanguagesToFingerprint(accept_languages_, machine);
@@ -378,7 +378,10 @@ void GetFingerprint(
     int64 gaia_id,
     const gfx::Rect& window_bounds,
     const content::WebContents& web_contents,
-    const PrefService& prefs,
+    const std::string& version,
+    const std::string& charset,
+    const std::string& accept_languages,
+    const base::Time& install_time,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   gfx::Rect content_bounds;
   web_contents.GetView()->GetContainerBounds(&content_bounds);
@@ -390,7 +393,8 @@ void GetFingerprint(
     host_view->GetRenderWidgetHost()->GetWebScreenInfo(&screen_info);
 
   internal::GetFingerprintInternal(
-      gaia_id, window_bounds, content_bounds, screen_info, prefs, callback);
+      gaia_id, window_bounds, content_bounds, screen_info, version, charset,
+      accept_languages, install_time, callback);
 }
 
 namespace internal {
@@ -400,12 +404,16 @@ void GetFingerprintInternal(
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebKit::WebScreenInfo& screen_info,
-    const PrefService& prefs,
+    const std::string& version,
+    const std::string& charset,
+    const std::string& accept_languages,
+    const base::Time& install_time,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // Begin loading all of the data that we need to load asynchronously.
   // This class is responsible for freeing its own memory.
   new FingerprintDataLoader(gaia_id, window_bounds, content_bounds, screen_info,
-                            prefs, callback);
+                            version, charset, accept_languages, install_time,
+                            callback);
 }
 
 }  // namespace internal

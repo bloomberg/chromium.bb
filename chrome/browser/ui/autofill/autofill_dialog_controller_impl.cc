@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -1399,8 +1401,15 @@ void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
   gfx::Rect window_bounds =
       GetBaseWindowForWebContents(web_contents())->GetBounds();
 
+  PrefService* user_prefs = profile_->GetPrefs();
+  std::string charset = user_prefs->GetString(prefs::kDefaultCharset);
+  std::string accept_languages = user_prefs->GetString(prefs::kAcceptLanguages);
+  base::Time install_time = base::Time::FromTimeT(
+      g_browser_process->local_state()->GetInt64(prefs::kInstallDate));
+
   risk::GetFingerprint(
-      gaia_id, window_bounds, *web_contents(), *profile_->GetPrefs(),
+      gaia_id, window_bounds, *web_contents(),
+      chrome::VersionInfo().Version(), charset, accept_languages, install_time,
       base::Bind(&AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData,
                  weak_ptr_factory_.GetWeakPtr()));
 }
