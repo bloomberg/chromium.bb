@@ -292,7 +292,7 @@ class GitSourceControl(SourceControl):
 
     return not results[1]
 
-  def ResolveToRevision(self, revision_to_check, depot, search=1):
+  def ResolveToRevision(self, revision_to_check, depot, search):
     """If an SVN revision is supplied, try to resolve it to a git SHA1.
 
     Args:
@@ -300,7 +300,8 @@ class GitSourceControl(SourceControl):
         resolved to a git SHA1.
       depot: The depot the revision_to_check is from.
       search: The number of changelists to try if the first fails to resolve
-        to a git hash.
+        to a git hash. If the value is negative, the function will search
+        backwards chronologically, otherwise it will search forward.
 
     Returns:
       A string containing a git SHA1 hash, otherwise None.
@@ -316,7 +317,12 @@ class GitSourceControl(SourceControl):
     svn_revision = int(revision_to_check)
     git_revision = None
 
-    for i in xrange(svn_revision, svn_revision - search, -1):
+    if search > 0:
+      search_range = xrange(svn_revision, svn_revision + search, 1)
+    else:
+      search_range = xrange(svn_revision, svn_revision + search, -1)
+
+    for i in search_range:
       svn_pattern = 'git-svn-id: %s@%d' %\
                     (depot_svn, i)
       cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern, 'origin/master']
@@ -686,7 +692,7 @@ class BisectPerformanceMetrics(object):
       for d in DEPOT_DEPS_NAME[depot]['depends']:
         self.ChangeToDepotWorkingDirectory(d)
 
-        dependant_rev = self.source_control.ResolveToRevision(svn_rev, d, 1000)
+        dependant_rev = self.source_control.ResolveToRevision(svn_rev, d, -1000)
 
         if dependant_rev:
           revisions_to_sync.append([d, dependant_rev])
@@ -956,9 +962,9 @@ class BisectPerformanceMetrics(object):
 
     # If they passed SVN CL's, etc... we can try match them to git SHA1's.
     bad_revision = self.source_control.ResolveToRevision(bad_revision_in,
-                                                         'src')
+                                                         'src', 100)
     good_revision = self.source_control.ResolveToRevision(good_revision_in,
-                                                          'src')
+                                                          'src', -100)
 
     if bad_revision is None:
       results['error'] = 'Could\'t resolve [%s] to SHA1.' % (bad_revision_in,)
