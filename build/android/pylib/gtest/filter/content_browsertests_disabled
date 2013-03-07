@@ -10,6 +10,7 @@ AudioLayoutTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
 EncryptedMediaTest.InvalidKeySystem
+IndexedDBBrowserTest.DoesntHangTest
 IndexedDBBrowserTest.NullKeyPathPersistence
 IndexedDBBrowserTest.VersionChangeCrashResilience
 IndexedDBBrowserTest.ValueSizeTest
