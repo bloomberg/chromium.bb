@@ -4,14 +4,13 @@
 
 package org.chromium.content.app;
 
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.JNINamespace;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
+import org.chromium.content.common.ResultCodes;
 import org.chromium.content.common.TraceEvent;
 
 /**
@@ -78,20 +77,24 @@ public class LibraryLoader {
      * this is called on will be the thread that runs the native code's static initializers.
      * See the comment in doInBackground() for more considerations on this.
      *
-     * @return Whether the native library was successfully loaded.
+     * @throws ProcessInitException if the native library failed to load.
      */
-    public static void loadNow() {
+    public static void loadNow() throws ProcessInitException {
         if (sLibrary == null) {
             assert false : "No library specified to load.  Call setLibraryToLoad before first.";
         }
-        synchronized (sLoadedLock) {
-            if (!sLoaded) {
-                assert !sInitialized;
-                Log.i(TAG, "loading: " + sLibrary);
-                System.loadLibrary(sLibrary);
-                Log.i(TAG, "loaded: " + sLibrary);
-                sLoaded = true;
+        try {
+            synchronized (sLoadedLock) {
+                if (!sLoaded) {
+                    assert !sInitialized;
+                    Log.i(TAG, "loading: " + sLibrary);
+                    System.loadLibrary(sLibrary);
+                    Log.i(TAG, "loaded: " + sLibrary);
+                    sLoaded = true;
+                }
             }
+        } catch (UnsatisfiedLinkError e) {
+            throw new ProcessInitException(ResultCodes.RESULT_CODE_NATIVE_LIBRARY_LOAD_FAILED, e);
         }
     }
 

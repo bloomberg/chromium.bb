@@ -312,6 +312,7 @@
             'common_aidl',
             'content_common',
             'page_transition_types_java',
+            'result_codes_java',
           ],
           'variables': {
             'java_in_dir': '../content/public/android/java',
@@ -339,6 +340,18 @@
           'variables': {
             'package_name': 'org/chromium/content/browser',
             'template_deps': ['public/common/page_transition_types_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'result_codes_java',
+          'type': 'none',
+          'sources': [
+            'public/android/java/src/org/chromium/content/common/ResultCodes.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/common',
+            'template_deps': ['public/common/result_codes_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
