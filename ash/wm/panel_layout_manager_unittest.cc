@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "ash/wm/panel_layout_manager.h"
-
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -72,7 +72,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         internal::kShellWindowId_PanelContainer);
   }
 
-  void GetCalloutWidgetForPanel(aura::Window* panel, views::Widget** widget) {
+  views::Widget* GetCalloutWidgetForPanel(aura::Window* panel) {
     PanelLayoutManager* manager =
         static_cast<PanelLayoutManager*>(GetPanelContainer()->layout_manager());
     DCHECK(manager);
@@ -81,7 +81,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         panel);
     DCHECK(found != manager->panel_windows_.end());
     DCHECK(found->callout_widget);
-    *widget = found->callout_widget;
+    return reinterpret_cast<views::Widget*>(found->callout_widget);
   }
 
   void PanelInScreen(aura::Window* panel) {
@@ -118,36 +118,79 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
     gfx::Rect window_bounds = panel->GetBoundsInRootWindow();
+    gfx::Rect launcher_bounds = launcher->widget()->GetWindowBoundsInScreen();
+    ShelfAlignment alignment = GetAlignment();
 
-    // The horizontal bounds of the panel window should contain the bounds of
-    // the launcher icon.
-    EXPECT_LE(window_bounds.x(), icon_bounds.x());
-    EXPECT_GE(window_bounds.right(), icon_bounds.right());
-    EXPECT_EQ(launcher->widget()->GetWindowBoundsInScreen().y(),
-              window_bounds.bottom());
+    if (IsHorizontal(alignment)) {
+      // The horizontal bounds of the panel window should contain the bounds of
+      // the launcher icon.
+      EXPECT_LE(window_bounds.x(), icon_bounds.x());
+      EXPECT_GE(window_bounds.right(), icon_bounds.right());
+    } else {
+      // The vertical bounds of the panel window should contain the bounds of
+      // the launcher icon.
+      EXPECT_LE(window_bounds.y(), icon_bounds.y());
+      EXPECT_GE(window_bounds.bottom(), icon_bounds.bottom());
+    }
+
+    switch (alignment) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        EXPECT_EQ(launcher_bounds.y(), window_bounds.bottom());
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        EXPECT_EQ(launcher_bounds.right(), window_bounds.x());
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        EXPECT_EQ(launcher_bounds.x(), window_bounds.right());
+        break;
+      case SHELF_ALIGNMENT_TOP:
+        EXPECT_EQ(launcher_bounds.bottom(), window_bounds.y());
+        break;
+    }
   }
 
   void IsCalloutAboveLauncherIcon(aura::Window* panel) {
     // Flush the message loop, since callout updates use a delayed task.
     MessageLoop::current()->RunUntilIdle();
-    views::Widget* widget = NULL;
-    GetCalloutWidgetForPanel(panel, &widget);
+    views::Widget* widget = GetCalloutWidgetForPanel(panel);
 
     Launcher* launcher = Launcher::ForPrimaryDisplay();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
+    gfx::Rect panel_bounds = panel->GetBoundsInRootWindow();
+    gfx::Rect callout_bounds = widget->GetWindowBoundsInScreen();
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
     EXPECT_TRUE(widget->IsVisible());
-    EXPECT_EQ(panel->GetBoundsInRootWindow().bottom(),
-              widget->GetWindowBoundsInScreen().y());
-    EXPECT_NEAR(icon_bounds.CenterPoint().x(),
-                widget->GetWindowBoundsInScreen().CenterPoint().x(),
-                1);
+
+    ShelfAlignment alignment = GetAlignment();
+    switch (alignment) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        EXPECT_EQ(panel_bounds.bottom(), callout_bounds.y());
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        EXPECT_EQ(panel_bounds.x(), callout_bounds.right());
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        EXPECT_EQ(panel_bounds.right(), callout_bounds.x());
+        break;
+      case SHELF_ALIGNMENT_TOP:
+        EXPECT_EQ(panel_bounds.y(), callout_bounds.bottom());
+        break;
+    }
+
+    if (IsHorizontal(alignment)) {
+      EXPECT_NEAR(icon_bounds.CenterPoint().x(),
+                  widget->GetWindowBoundsInScreen().CenterPoint().x(),
+                  1);
+    } else {
+      EXPECT_NEAR(icon_bounds.CenterPoint().y(),
+                  widget->GetWindowBoundsInScreen().CenterPoint().y(),
+                  1);
+    }
   }
 
   bool IsPanelCalloutVisible(aura::Window* panel) {
-    views::Widget* widget = NULL;
-    GetCalloutWidgetForPanel(panel, &widget);
+    views::Widget* widget = GetCalloutWidgetForPanel(panel);
     return widget->IsVisible();
   }
 
@@ -176,8 +219,23 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test_api.RunMessageLoopUntilAnimationsDone();
   }
 
+  void SetAlignment(ShelfAlignment alignment) {
+    ash::Shell* shell = ash::Shell::GetInstance();
+    shell->SetShelfAlignment(alignment, shell->GetPrimaryRootWindow());
+  }
+
+  ShelfAlignment GetAlignment() {
+    ash::Shell* shell = ash::Shell::GetInstance();
+    return shell->GetShelfAlignment(shell->GetPrimaryRootWindow());
+  }
+
  private:
   scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
+
+  bool IsHorizontal(ShelfAlignment alignment) {
+    return alignment == SHELF_ALIGNMENT_BOTTOM ||
+           alignment == SHELF_ALIGNMENT_TOP;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTest);
 };
@@ -460,6 +518,30 @@ TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
   EXPECT_EQ(root_windows[1], p2_d2->GetRootWindow());
   EXPECT_TRUE(root_windows[0]->GetBoundsInScreen().Contains(
       p1_d2->GetBoundsInScreen()));
+}
+
+TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
+  SetAlignment(SHELF_ALIGNMENT_LEFT);
+  IsPanelAboveLauncherIcon(w.get());
+  IsCalloutAboveLauncherIcon(w.get());
+}
+
+TEST_F(PanelLayoutManagerTest, AlignmentRight) {
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
+  SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  IsPanelAboveLauncherIcon(w.get());
+  IsCalloutAboveLauncherIcon(w.get());
+}
+
+TEST_F(PanelLayoutManagerTest, AlignmentTop) {
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
+  SetAlignment(SHELF_ALIGNMENT_TOP);
+  IsPanelAboveLauncherIcon(w.get());
+  IsCalloutAboveLauncherIcon(w.get());
 }
 
 }  // namespace internal

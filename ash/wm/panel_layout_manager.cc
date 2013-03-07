@@ -9,6 +9,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/property_util.h"
@@ -47,14 +48,35 @@ const int kArrowHeight = 10;
 
 class CalloutWidgetBackground : public views::Background {
  public:
-  CalloutWidgetBackground() {}
+  CalloutWidgetBackground() : alignment_(SHELF_ALIGNMENT_BOTTOM) {
+  }
+
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
     SkPath path;
-    // TODO(dcheng): Verify if this results in off by one errors.
-    path.moveTo(SkIntToScalar(0), SkIntToScalar(0));
-    path.lineTo(SkIntToScalar(kArrowWidth / 2), SkIntToScalar(kArrowHeight));
-    path.lineTo(SkIntToScalar(kArrowWidth), SkIntToScalar(0));
-
+    switch (alignment_) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        path.moveTo(SkIntToScalar(0), SkIntToScalar(0));
+        path.lineTo(SkIntToScalar(kArrowWidth / 2),
+                    SkIntToScalar(kArrowHeight));
+        path.lineTo(SkIntToScalar(kArrowWidth), SkIntToScalar(0));
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        path.moveTo(SkIntToScalar(kArrowHeight), SkIntToScalar(kArrowWidth));
+        path.lineTo(SkIntToScalar(0), SkIntToScalar(kArrowWidth / 2));
+        path.lineTo(SkIntToScalar(kArrowHeight), SkIntToScalar(0));
+        break;
+      case SHELF_ALIGNMENT_TOP:
+        path.moveTo(SkIntToScalar(0), SkIntToScalar(kArrowHeight));
+        path.lineTo(SkIntToScalar(kArrowWidth / 2), SkIntToScalar(0));
+        path.lineTo(SkIntToScalar(kArrowWidth), SkIntToScalar(kArrowHeight));
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        path.moveTo(SkIntToScalar(0), SkIntToScalar(0));
+        path.lineTo(SkIntToScalar(kArrowHeight),
+                    SkIntToScalar(kArrowWidth / 2));
+        path.lineTo(SkIntToScalar(0), SkIntToScalar(kArrowWidth));
+        break;
+    }
     // Use the same opacity and colors as the header for now.
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
@@ -63,28 +85,34 @@ class CalloutWidgetBackground : public views::Background {
     canvas->DrawPath(path, paint);
   }
 
+  void set_alignment(ShelfAlignment alignment) {
+    alignment_ = alignment;
+  }
+
  private:
+  ShelfAlignment alignment_;
+
   DISALLOW_COPY_AND_ASSIGN(CalloutWidgetBackground);
 };
 
 struct VisiblePanelPositionInfo {
   VisiblePanelPositionInfo()
-      : min_x(0),
-        max_x(0),
-        x(0),
-        width(0),
+      : min_major(0),
+        max_major(0),
+        major_pos(0),
+        major_length(0),
         window(NULL) {}
 
-  int min_x;
-  int max_x;
-  int x;
-  int width;
+  int min_major;
+  int max_major;
+  int major_pos;
+  int major_length;
   aura::Window* window;
 };
 
-bool CompareWindowX(const VisiblePanelPositionInfo& win1,
-                    const VisiblePanelPositionInfo& win2) {
-  return win1.x < win2.x;
+bool CompareWindowMajor(const VisiblePanelPositionInfo& win1,
+                        const VisiblePanelPositionInfo& win2) {
+  return win1.major_pos < win2.major_pos;
 }
 
 void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
@@ -95,30 +123,83 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
 
   if (num_panels == 2) {
     // If there are two adjacent overlapping windows, separate them by the
-    // minimum width necessary.
+    // minimum major_length necessary.
     std::vector<VisiblePanelPositionInfo>::iterator second = first + 1;
-    int separation = (*first).width + kPanelIdealSpacing;
-    int overlap = (*first).x + separation - (*second).x;
-    (*first).x = std::max((*first).min_x, (*first).x - overlap / 2);
-    (*second).x = std::min((*second).max_x, (*first).x + separation);
+    int separation = (*first).major_length + kPanelIdealSpacing;
+    int overlap = (*first).major_pos + separation - (*second).major_pos;
+    (*first).major_pos = std::max((*first).min_major,
+                                  (*first).major_pos - overlap / 2);
+    (*second).major_pos = std::min((*second).max_major,
+                                   (*first).major_pos + separation);
     // Recalculate the first panel position in case the second one was
     // constrained on the right.
-    (*first).x = std::max((*first).min_x, (*second).x - separation);
+    (*first).major_pos = std::max((*first).min_major,
+                                  (*second).major_pos - separation);
     return;
   }
 
   // If there are more than two overlapping windows, fan them out from minimum
   // position to maximum position equally spaced.
-  int delta = ((*(last - 1)).max_x - (*first).min_x) / (num_panels - 1);
-  int x = (*first).min_x;
+  int delta = ((*(last - 1)).max_major - (*first).min_major) / (num_panels - 1);
+  int major_pos = (*first).min_major;
   for (std::vector<VisiblePanelPositionInfo>::iterator iter = first;
       iter != last; ++iter) {
-    (*iter).x = std::max((*iter).min_x, std::min((*iter).max_x, x));
-    x += delta;
+    (*iter).major_pos = std::max((*iter).min_major,
+                                 std::min((*iter).max_major, major_pos));
+    major_pos += delta;
   }
 }
 
 }  // namespace
+
+class PanelCalloutWidget : public views::Widget {
+ public:
+  explicit PanelCalloutWidget(aura::Window* container)
+      : background_(NULL) {
+    InitWidget(container);
+  }
+
+  void SetAlignment(ShelfAlignment alignment) {
+    gfx::Rect callout_bounds = GetWindowBoundsInScreen();
+    if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+        alignment == SHELF_ALIGNMENT_TOP) {
+      callout_bounds.set_width(kArrowWidth);
+      callout_bounds.set_height(kArrowHeight);
+    } else {
+      callout_bounds.set_width(kArrowHeight);
+      callout_bounds.set_height(kArrowWidth);
+    }
+    GetNativeWindow()->SetBounds(callout_bounds);
+    background_->set_alignment(alignment);
+  }
+
+ private:
+  void InitWidget(aura::Window* parent) {
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_POPUP;
+    params.transparent = true;
+    params.can_activate = false;
+    params.keep_on_top = true;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = parent;
+    params.bounds = ScreenAsh::ConvertRectToScreen(parent, gfx::Rect());
+    params.bounds.set_width(kArrowWidth);
+    params.bounds.set_height(kArrowHeight);
+    // Why do we need this and can_activate = false?
+    set_focus_on_creation(false);
+    Init(params);
+    DCHECK_EQ(GetNativeView()->GetRootWindow(), parent->GetRootWindow());
+    views::View* content_view = new views::View;
+    background_ = new CalloutWidgetBackground;
+    content_view->set_background(background_);
+    SetContentsView(content_view);
+  }
+
+  // Weak pointer owned by this widget's content view.
+  CalloutWidgetBackground* background_;
+
+  DISALLOW_COPY_AND_ASSIGN(PanelCalloutWidget);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager public implementation:
@@ -132,6 +213,7 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
   DCHECK(panel_container);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       AddObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
@@ -140,6 +222,7 @@ PanelLayoutManager::~PanelLayoutManager() {
     launcher_->RemoveIconObserver(this);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void PanelLayoutManager::Shutdown() {
@@ -190,7 +273,7 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
     return;
   PanelInfo panel_info;
   panel_info.window = child;
-  panel_info.callout_widget = CreateCalloutWidget();
+  panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
   panel_windows_.push_back(panel_info);
   child->AddObserver(this);
   Relayout();
@@ -268,6 +351,15 @@ void PanelLayoutManager::OnLauncherIconPositionsChanged() {
   Relayout();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager, ash::ShellObserver implementation:
+
+void PanelLayoutManager::OnShelfAlignmentChanged(
+    aura::RootWindow* root_window) {
+  if (panel_container_->GetRootWindow() == root_window)
+    Relayout();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, WindowObserver implementation:
 
@@ -300,8 +392,8 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
       gained_active->type() == aura::client::WINDOW_TYPE_PANEL &&
       gained_active->parent() == panel_container_) {
     UpdateStacking(gained_active);
+    UpdateCallouts();
   }
-  UpdateCallouts();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -329,15 +421,20 @@ void PanelLayoutManager::Relayout() {
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  int launcher_top = launcher_->widget()->GetWindowBoundsInScreen().y();
-  int panel_left_bounds = kPanelIdealSpacing;
-  int panel_right_bounds =
-      panel_container_->bounds().width() - kPanelIdealSpacing;
+  ShelfAlignment alignment = launcher_->alignment();
+  bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
+                    alignment == SHELF_ALIGNMENT_BOTTOM;
+  gfx::Rect launcher_bounds = launcher_->widget()->GetWindowBoundsInScreen();
+  int panel_start_bounds = kPanelIdealSpacing;
+  int panel_end_bounds = horizontal ?
+      panel_container_->bounds().width() - kPanelIdealSpacing :
+      panel_container_->bounds().height() - kPanelIdealSpacing;
   aura::Window* active_panel = NULL;
   std::vector<VisiblePanelPositionInfo> visible_panels;
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     aura::Window* panel = iter->window;
+    iter->callout_widget->SetAlignment(alignment);
     if (!panel->IsVisible() || panel == dragged_panel_)
       continue;
 
@@ -347,7 +444,6 @@ void PanelLayoutManager::Relayout() {
     // An empty rect indicates that there is no icon for the panel in the
     // launcher. Just use the current bounds, as there's no icon to draw the
     // panel above.
-    // TODO(dcheng): Need to anchor to overflow icon.
     if (icon_bounds.IsEmpty())
       continue;
 
@@ -361,14 +457,23 @@ void PanelLayoutManager::Relayout() {
                                                    icon_bounds);
     gfx::Point icon_origin = icon_bounds.origin();
     VisiblePanelPositionInfo position_info;
-    position_info.min_x = std::max(panel_left_bounds, icon_origin.x() +
-        icon_bounds.width() - panel->bounds().width());
-    position_info.max_x = std::min(icon_origin.x(),
-                                   panel_right_bounds - kPanelIdealSpacing -
-                                   panel->bounds().width());
-    position_info.x = icon_origin.x() + icon_bounds.width() / 2 -
-                      panel->bounds().width() / 2;
-    position_info.width = panel->bounds().width();
+    if (horizontal) {
+      position_info.min_major = std::max(panel_start_bounds, icon_origin.x() +
+          icon_bounds.width() - panel->bounds().width());
+      position_info.max_major = std::min(icon_origin.x(), panel_end_bounds -
+          panel->bounds().width());
+      position_info.major_pos = icon_origin.x() + icon_bounds.width() / 2 -
+          panel->bounds().width() / 2;
+      position_info.major_length = panel->bounds().width();
+    } else {
+      position_info.min_major = std::max(panel_start_bounds, icon_origin.y() +
+          icon_bounds.height() - panel->bounds().height());
+      position_info.max_major = std::min(icon_origin.y(), panel_end_bounds -
+          panel->bounds().height());
+      position_info.major_pos = icon_origin.y() + icon_bounds.height() / 2 -
+          panel->bounds().height() / 2;
+      position_info.major_length = panel->bounds().height();
+    }
     position_info.window = panel;
     visible_panels.push_back(position_info);
   }
@@ -378,11 +483,11 @@ void PanelLayoutManager::Relayout() {
   // the panels start at least a full panel width apart this overlap will
   // never completely obscure a panel.
   // TODO(flackr): Rearrange panels if new overlaps are introduced.
-  std::sort(visible_panels.begin(), visible_panels.end(), CompareWindowX);
+  std::sort(visible_panels.begin(), visible_panels.end(), CompareWindowMajor);
   size_t first_overlapping_panel = 0;
   for (size_t i = 1; i < visible_panels.size(); ++i) {
-    if (visible_panels[i - 1].x + visible_panels[i - 1].width
-        < visible_panels[i].x) {
+    if (visible_panels[i - 1].major_pos + visible_panels[i - 1].major_length
+        < visible_panels[i].major_pos) {
       FanOutPanels(visible_panels.begin() + first_overlapping_panel,
                    visible_panels.begin() + i);
       first_overlapping_panel = i;
@@ -393,8 +498,24 @@ void PanelLayoutManager::Relayout() {
 
   for (size_t i = 0; i < visible_panels.size(); ++i) {
     gfx::Rect bounds = visible_panels[i].window->bounds();
-    bounds.set_x(visible_panels[i].x);
-    bounds.set_y(launcher_top - bounds.height());
+    if (horizontal)
+      bounds.set_x(visible_panels[i].major_pos);
+    else
+      bounds.set_y(visible_panels[i].major_pos);
+    switch (alignment) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        bounds.set_y(launcher_bounds.y() - bounds.height());
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        bounds.set_x(launcher_bounds.right());
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        bounds.set_x(launcher_bounds.x() - bounds.width());
+        break;
+      case SHELF_ALIGNMENT_TOP:
+        bounds.set_y(launcher_bounds.bottom());
+        break;
+    }
     SetChildBoundsDirect(visible_panels[i].window, bounds);
   }
 
@@ -449,6 +570,10 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
 }
 
 void PanelLayoutManager::UpdateCallouts() {
+  ShelfAlignment alignment = launcher_->alignment();
+  bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
+                    alignment == SHELF_ALIGNMENT_BOTTOM;
+
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     aura::Window* panel = iter->window;
@@ -464,9 +589,28 @@ void PanelLayoutManager::UpdateCallouts() {
     }
 
     gfx::Rect callout_bounds = callout_widget->GetWindowBoundsInScreen();
-    callout_bounds.set_x(
-        icon_bounds.x() + (icon_bounds.width() - callout_bounds.width()) / 2);
-    callout_bounds.set_y(bounds.bottom());
+    if (horizontal) {
+      callout_bounds.set_x(
+          icon_bounds.x() + (icon_bounds.width() - callout_bounds.width()) / 2);
+    } else {
+      callout_bounds.set_y(
+          icon_bounds.y() + (icon_bounds.height() -
+                             callout_bounds.height()) / 2);
+    }
+    switch (alignment) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        callout_bounds.set_y(bounds.bottom());
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        callout_bounds.set_x(bounds.x() - callout_bounds.width());
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        callout_bounds.set_x(bounds.right());
+        break;
+      case SHELF_ALIGNMENT_TOP:
+        callout_bounds.set_y(bounds.y() - callout_bounds.height());
+        break;
+    }
     callout_bounds = ScreenAsh::ConvertRectFromScreen(
         callout_widget->GetNativeWindow()->parent(),
         callout_bounds);
@@ -476,29 +620,6 @@ void PanelLayoutManager::UpdateCallouts() {
                                       panel);
     callout_widget->Show();
   }
-}
-
-views::Widget* PanelLayoutManager::CreateCalloutWidget() {
-  views::Widget* callout_widget = new views::Widget;
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.transparent = true;
-  params.can_activate = false;
-  params.keep_on_top = true;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = panel_container_;
-  params.bounds = ScreenAsh::ConvertRectToScreen(panel_container_, gfx::Rect());
-  params.bounds.set_width(kArrowWidth);
-  params.bounds.set_height(kArrowHeight);
-  // Why do we need this and can_activate = false?
-  callout_widget->set_focus_on_creation(false);
-  callout_widget->Init(params);
-  DCHECK_EQ(callout_widget->GetNativeView()->GetRootWindow(),
-            panel_container_->GetRootWindow());
-  views::View* content_view = new views::View;
-  content_view->set_background(new CalloutWidgetBackground);
-  callout_widget->SetContentsView(content_view);
-  return callout_widget;
 }
 
 }  // namespace internal

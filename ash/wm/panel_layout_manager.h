@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_icon_observer.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -33,6 +34,7 @@ namespace ash {
 class Launcher;
 
 namespace internal {
+class PanelCalloutWidget;
 
 // PanelLayoutManager is responsible for organizing panels within the
 // workspace. It is associated with a specific container window (i.e.
@@ -46,6 +48,7 @@ namespace internal {
 class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,
       public ash::LauncherIconObserver,
+      public ash::ShellObserver,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver {
  public:
@@ -76,6 +79,9 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from ash::LauncherIconObserver
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;
 
+  // Overridden from ash::ShellObserver
+  virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
+
   // Overridden from aura::WindowObserver
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -105,8 +111,7 @@ class ASH_EXPORT PanelLayoutManager
     // The callout widget for this panel. This pointer must be managed
     // manually as this structure is used in a std::list. See
     // http://www.chromium.org/developers/smart-pointer-guidelines
-    views::Widget* callout_widget;
-
+    PanelCalloutWidget* callout_widget;
   };
 
   typedef std::list<PanelInfo> PanelList;

@@ -5,7 +5,7 @@
 #include "ash/wm/panel_window_resizer.h"
 
 #include "ash/launcher/launcher.h"
-#include "ash/root_window_controller.h"
+#include "ash/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -34,9 +34,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
     panel_layout_manager_ = static_cast<internal::PanelLayoutManager*>(
         GetPanelContainer()->layout_manager());
-    launcher_top_ = panel_layout_manager_->launcher()->widget()->
-        GetWindowBoundsInScreen().y();
-    EXPECT_EQ(launcher_top_, window_->bounds().bottom());
+    launcher_bounds_ = panel_layout_manager_->launcher()->widget()->
+        GetWindowBoundsInScreen();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -83,11 +82,61 @@ class PanelWindowResizerTest : public test::AshTestBase {
         window, point_in_parent, window_component).release());
   }
 
+  void DragStart() {
+    resizer_.reset(CreatePanelWindowResizer(window_.get(), gfx::Point(),
+                                            HTCAPTION));
+    ASSERT_TRUE(resizer_.get());
+  }
+
+  void DragMove(int dx, int dy) {
+    resizer_->Drag(CalculateDragPoint(*resizer_, dx, dy), 0);
+  }
+
+  void DragEnd() {
+    resizer_->CompleteDrag(0);
+    resizer_.reset();
+  }
+
+  // Test dragging the panel slightly, then detaching, and then reattaching
+  // dragging out by the vector (dx, dy).
+  void DetachReattachTest(int dx, int dy) {
+    EXPECT_TRUE(window_->GetProperty(kPanelAttachedKey));
+    DragStart();
+    gfx::Rect initial_bounds = window_->bounds();
+
+    // Drag the panel slightly. The window should still be snapped to the
+    // launcher.
+    DragMove(dx * 5, dy * 5);
+    EXPECT_EQ(initial_bounds.x(), window_->bounds().x());
+    EXPECT_EQ(initial_bounds.y(), window_->bounds().y());
+
+    // Drag further out and the window should now move to the cursor.
+    DragMove(dx * 100, dy * 100);
+    EXPECT_EQ(initial_bounds.x() + dx * 100, window_->bounds().x());
+    EXPECT_EQ(initial_bounds.y() + dy * 100, window_->bounds().y());
+
+    // The panel should be detached when the drag completes.
+    DragEnd();
+    EXPECT_FALSE(window_->GetProperty(kPanelAttachedKey));
+
+    DragStart();
+    // Drag the panel down.
+    DragMove(dx * -95, dy * -95);
+    // Release the mouse and the panel should be reattached.
+    DragEnd();
+
+    // The panel should be reattached and have snapped to the launcher.
+    EXPECT_TRUE(window_->GetProperty(kPanelAttachedKey));
+    EXPECT_EQ(initial_bounds.x(), window_->bounds().x());
+    EXPECT_EQ(initial_bounds.y(), window_->bounds().y());
+  }
+
   aura::test::TestWindowDelegate delegate_;
   scoped_ptr<aura::Window> window_;
+  scoped_ptr<PanelWindowResizer> resizer_;
   aura::Window* panel_container_;
   internal::PanelLayoutManager* panel_layout_manager_;
-  int launcher_top_;
+  gfx::Rect launcher_bounds_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
@@ -95,42 +144,27 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
 // Verifies a window can be dragged from the panel and detached and then
 // reattached.
-TEST_F(PanelWindowResizerTest, PanelDetachReattach) {
-  EXPECT_TRUE(window_->GetProperty(kPanelAttachedKey));
-  {
-    scoped_ptr<PanelWindowResizer> resizer(CreatePanelWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    gfx::Rect initial_bounds = window_->bounds();
+TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
+  DetachReattachTest(0, -1);
+}
 
-    // Drag the panel up slightly. The window should still be snapped to the
-    // launcher.
-    resizer->Drag(CalculateDragPoint(*resizer, 0, -5), 0);
-    EXPECT_EQ(initial_bounds.y(), window_->bounds().y());
+TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, shell->GetPrimaryRootWindow());
+  DetachReattachTest(1, 0);
+}
 
-    // Drag further up and the window should now move to the cursor.
-    resizer->Drag(CalculateDragPoint(*resizer, 0, -100), 0);
-    EXPECT_EQ(initial_bounds.y() - 100, window_->bounds().y());
+TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
+                           shell->GetPrimaryRootWindow());
+  DetachReattachTest(-1, 0);
+}
 
-    resizer->CompleteDrag(0);
-  }
-  // The panel should be detached.
-  EXPECT_FALSE(window_->GetProperty(kPanelAttachedKey));
-
-  {
-    scoped_ptr<PanelWindowResizer> resizer(CreatePanelWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    gfx::Rect initial_bounds = window_->bounds();
-
-    // Drag the panel down.
-    resizer->Drag(CalculateDragPoint(*resizer, 0, 95), 0);
-    // Release the mouse and the panel should be reattached.
-    resizer->CompleteDrag(0);
-  }
-  // The panel should be reattached and have snapped to the launcher.
-  EXPECT_TRUE(window_->GetProperty(kPanelAttachedKey));
-  EXPECT_EQ(launcher_top_, window_->bounds().bottom());
+TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  shell->SetShelfAlignment(SHELF_ALIGNMENT_TOP, shell->GetPrimaryRootWindow());
+  DetachReattachTest(0, 1);
 }
 
 }  // namespace internal

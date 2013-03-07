@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/panel_layout_manager.h"
@@ -101,12 +102,37 @@ PanelWindowResizer::PanelWindowResizer(const Details& details)
 bool PanelWindowResizer::AttachToLauncher(gfx::Rect* bounds) {
   bool should_attach = false;
   if (panel_layout_manager_) {
-    int launcher_top = panel_layout_manager_->launcher()->widget()->
-        GetWindowBoundsInScreen().y();
-    if (bounds->y() >= (launcher_top - bounds->height() -
-                        kPanelSnapToLauncherDistance)) {
-      should_attach = true;
-      bounds->set_y(launcher_top - bounds->height());
+    gfx::Rect launcher_bounds = panel_layout_manager_->launcher()->widget()->
+        GetWindowBoundsInScreen();
+    switch (panel_layout_manager_->launcher()->alignment()) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        if (bounds->bottom() >= (launcher_bounds.y() -
+                                 kPanelSnapToLauncherDistance)) {
+          should_attach = true;
+          bounds->set_y(launcher_bounds.y() - bounds->height());
+        }
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        if (bounds->x() <= (launcher_bounds.right() +
+                            kPanelSnapToLauncherDistance)) {
+          should_attach = true;
+          bounds->set_x(launcher_bounds.right());
+        }
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        if (bounds->right() >= (launcher_bounds.x() -
+                                kPanelSnapToLauncherDistance)) {
+          should_attach = true;
+          bounds->set_x(launcher_bounds.x() - bounds->width());
+        }
+        break;
+      case SHELF_ALIGNMENT_TOP:
+        if (bounds->y() <= (launcher_bounds.bottom() +
+                            kPanelSnapToLauncherDistance)) {
+          should_attach = true;
+          bounds->set_y(launcher_bounds.bottom());
+        }
+        break;
     }
   }
   return should_attach;
