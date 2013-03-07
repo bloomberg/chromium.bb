@@ -328,9 +328,20 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateNode(
 
 bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   // This method updates one node in the tree based on serialized data
-  // received from the renderer. First, look up the node by id. If it's
-  // not found, then either the root of the tree is being swapped, or
-  // we're out of sync with the renderer and this is a serious error.
+  // received from the renderer.
+
+  // Create a set of child ids in |src| for fast lookup. If a duplicate id is
+  // found, exit now with a fatal error before changing anything else.
+  std::set<int32> new_child_ids;
+  for (size_t i = 0; i < src.child_ids.size(); ++i) {
+    if (new_child_ids.find(src.child_ids[i]) != new_child_ids.end())
+      return false;
+    new_child_ids.insert(src.child_ids[i]);
+  }
+
+  // Look up the node by id. If it's not found, then either the root
+  // of the tree is being swapped, or we're out of sync with the renderer
+  // and this is a serious error.
   BrowserAccessibility* instance = GetFromRendererID(src.id);
   if (!instance) {
     if (src.role != AccessibilityNodeData::ROLE_ROOT_WEB_AREA)
@@ -357,12 +368,6 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   // parent and new parent, which could lead to a double-free.
   // If a node is reparented, the renderer will always send us a fresh
   // copy of the node.
-  std::set<int32> new_child_ids;
-  for (size_t i = 0; i < src.child_ids.size(); ++i) {
-    if (new_child_ids.find(src.child_ids[i]) != new_child_ids.end())
-      return false;
-    new_child_ids.insert(src.child_ids[i]);
-  }
   const std::vector<BrowserAccessibility*>& old_children = instance->children();
   for (size_t i = 0; i < old_children.size(); ++i) {
     int old_id = old_children[i]->renderer_id();
@@ -373,14 +378,18 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   // Now build a vector of new children, reusing objects that were already
   // children of this node before.
   std::vector<BrowserAccessibility*> new_children;
+  bool success = true;
   for (size_t i = 0; i < src.child_ids.size(); i++) {
     int32 child_renderer_id = src.child_ids[i];
     int32 index_in_parent = static_cast<int32>(i);
     BrowserAccessibility* child = GetFromRendererID(child_renderer_id);
     if (child) {
       if (child->parent() != instance) {
-        instance->SwapChildren(new_children);
-        return false;
+        // This is a serious error - nodes should never be reparented.
+        // If this case occurs, continue so this node isn't left in an
+        // inconsistent state, but return failure at the end.
+        success = false;
+        continue;
       }
       child->UpdateParent(instance, index_in_parent);
     } else {
@@ -406,7 +415,7 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
   if ((src.state >> AccessibilityNodeData::STATE_FOCUSED) & 1)
     SetFocus(instance, false);
 
-  return true;
+  return success;
 }
 
 }  // namespace content
