@@ -41,13 +41,11 @@ Bool NaClDfaStubOutCPUUnsupportedInstruction(const uint8_t *begin,
                                              const uint8_t *end,
                                              uint32_t info,
                                              void *callback_data) {
-  /* TODO(khim): change ABI to pass next_existing instead.  */
-  const uint8_t *next = end + 1;
   UNREFERENCED_PARAMETER(callback_data);
 
   /* Stub-out instructions unsupported on this CPU, but valid on other CPUs.  */
   if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
-    memset((uint8_t *)begin, NACL_HALT_OPCODE, next - begin);
+    memset((uint8_t *)begin, NACL_HALT_OPCODE, end - begin);
     return TRUE;
   } else {
     return FALSE;
@@ -59,9 +57,7 @@ Bool NaClDfaProcessCodeCopyInstruction(const uint8_t *begin_new,
                                        uint32_t info_new,
                                        void *callback_data) {
   struct CodeCopyCallbackData *data = callback_data;
-  /* TODO(khim): change ABI to pass next_existing instead.  */
-  const uint8_t *next_new = end_new + 1;
-  size_t instruction_length = next_new - begin_new;
+  size_t instruction_length = end_new - begin_new;
 
   /* Sanity check: instruction must be no longer than 17 bytes.  */
   CHECK(instruction_length <= MAX_INSTRUCTION_LENGTH);
