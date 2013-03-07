@@ -13,10 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -24,7 +21,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "google_apis/gaia/oauth2_mint_token_flow.h"
 
 using content::RenderProcessHost;
 using extensions::permissions_api_helpers::PackPermissionSet;
@@ -36,58 +32,6 @@ namespace {
 
 const char kOnAdded[] = "permissions.onAdded";
 const char kOnRemoved[] = "permissions.onRemoved";
-
-// An object to link the lifetime of an OAuth2MintTokenFlow to a Profile.
-// The flow should not outlive the profile because the request context will
-// become invalid.
-class OAuth2GrantRecorder : public OAuth2MintTokenFlow::Delegate,
-                            public content::NotificationObserver {
- public:
-  OAuth2GrantRecorder(Profile* profile, const Extension* extension)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(flow_(
-          profile->GetRequestContext(),
-          this,
-          OAuth2MintTokenFlow::Parameters(
-              TokenServiceFactory::GetForProfile(profile)->
-                  GetOAuth2LoginRefreshToken(),
-              extension->id(),
-              OAuth2Info::GetOAuth2Info(extension).client_id,
-              OAuth2Info::GetOAuth2Info(extension).scopes,
-              OAuth2MintTokenFlow::MODE_RECORD_GRANT))) {
-    notification_registrar_.Add(this,
-                                chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                content::Source<Profile>(profile));
-
-    flow_.Start();
-  }
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) OVERRIDE {
-    DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
-    delete this;
-  }
-
-  // OAuth2MintTokenFlow::Delegate:
-  virtual void OnMintTokenSuccess(const std::string& access_token) OVERRIDE {
-    delete this;
-  }
-  virtual void OnIssueAdviceSuccess(
-      const IssueAdviceInfo& issue_advice) OVERRIDE {
-    delete this;
-  }
-  virtual void OnMintTokenFailure(
-      const GoogleServiceAuthError& error) OVERRIDE {
-    delete this;
-  }
-
- private:
-  virtual ~OAuth2GrantRecorder() {}
-
-  OAuth2MintTokenFlow flow_;
-  content::NotificationRegistrar notification_registrar_;
-};
 
 }  // namespace
 
@@ -108,7 +52,7 @@ void PermissionsUpdater::AddPermissions(
   UpdateActivePermissions(extension, total.get());
 
   // Update the granted permissions so we don't auto-disable the extension.
-  GrantActivePermissions(extension, false);
+  GrantActivePermissions(extension);
 
   NotifyPermissionsUpdated(ADDED, extension, added.get());
 }
@@ -130,8 +74,7 @@ void PermissionsUpdater::RemovePermissions(
   NotifyPermissionsUpdated(REMOVED, extension, removed.get());
 }
 
-void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
-                                                bool record_oauth2_grant) {
+void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
   CHECK(extension);
 
   // We only maintain the granted permissions prefs for INTERNAL and LOAD
@@ -139,20 +82,6 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension,
   if (!Manifest::IsUnpackedLocation(extension->location()) &&
       extension->location() != Manifest::INTERNAL)
     return;
-
-  if (record_oauth2_grant) {
-    // Only record OAuth grant if:
-    // 1. The extension has client id and scopes.
-    // 2. The user is signed in to Chrome.
-    const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension);
-    if (!oauth2_info.client_id.empty() && !oauth2_info.scopes.empty()) {
-      TokenService* token_service = TokenServiceFactory::GetForProfile(
-          profile_);
-      if (token_service && token_service->HasOAuthLoginToken()) {
-        new OAuth2GrantRecorder(profile_, extension);
-      }
-    }
-  }
 
   GetExtensionPrefs()->AddGrantedPermissions(extension->id(),
                                              extension->GetActivePermissions());

@@ -86,8 +86,7 @@ void ExtensionEnableFlow::InstallUIProceed() {
     return;
   }
 
-  service->GrantPermissionsAndEnableExtension(extension,
-                                              prompt_->record_oauth2_grant());
+  service->GrantPermissionsAndEnableExtension(extension);
   delegate_->ExtensionEnableFlowFinished();  // |delegate_| may delete us.
 }
 

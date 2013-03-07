@@ -991,19 +991,18 @@ void ExtensionService::DisableExtension(
 }
 
 void ExtensionService::GrantPermissionsAndEnableExtension(
-    const Extension* extension, bool record_oauth2_grant) {
-  GrantPermissions(extension, record_oauth2_grant);
+    const Extension* extension) {
+  GrantPermissions(extension);
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_ReEnable");
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
 }
 
-void ExtensionService::GrantPermissions(const Extension* extension,
-                                        bool record_oauth2_grant) {
+void ExtensionService::GrantPermissions(const Extension* extension) {
   CHECK(extension);
   extensions::PermissionsUpdater perms_updater(profile());
-  perms_updater.GrantActivePermissions(extension, record_oauth2_grant);
+  perms_updater.GrantActivePermissions(extension);
 }
 
 // static
@@ -2224,7 +2223,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   // Silently grant all active permissions to default apps only on install.
   // After install they should behave like other apps.
   if (is_default_app_install)
-    GrantPermissions(extension, true);
+    GrantPermissions(extension);
 
   if (is_extension_upgrade) {
     // Other than for unpacked extensions, CrxInstaller should have guaranteed

@@ -108,8 +108,7 @@ ExtensionDisabledDialogDelegate::~ExtensionDisabledDialogDelegate() {
 }
 
 void ExtensionDisabledDialogDelegate::InstallUIProceed() {
-  service_->GrantPermissionsAndEnableExtension(
-      extension_, install_ui_->record_oauth2_grant());
+  service_->GrantPermissionsAndEnableExtension(extension_);
   Release();
 }
 

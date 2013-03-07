@@ -70,7 +70,7 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
   if (service_weak_.get()) {
     extensions::PermissionsUpdater perms_updater(service_weak_->profile());
-    perms_updater.GrantActivePermissions(extension_, false);
+    perms_updater.GrantActivePermissions(extension_);
     service_weak_->OnExtensionInstalled(
         extension_,
         syncer::StringOrdinal(),
@@ -267,7 +267,7 @@ void UnpackedInstaller::OnLoaded() {
   }
 
   PermissionsUpdater perms_updater(service_weak_->profile());
-  perms_updater.GrantActivePermissions(extension_, false);
+  perms_updater.GrantActivePermissions(extension_);
 
   if (launch_on_load_)
     service_weak_->ScheduleLaunchOnLoad(extension_->id());

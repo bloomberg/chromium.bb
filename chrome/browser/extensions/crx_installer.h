@@ -378,9 +378,6 @@ class CrxInstaller
   // still consider the installation 'handled'.
   bool did_handle_successfully_;
 
-  // Whether we should record an oauth2 grant upon successful install.
-  bool record_oauth2_grant_;
-
   // Whether we should produce an error if the manifest declares requirements
   // that are not met. If false and there is an unmet requirement, the install
   // will continue but the extension will be distabled.

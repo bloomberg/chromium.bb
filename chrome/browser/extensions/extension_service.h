@@ -382,14 +382,12 @@ class ExtensionService
   // permissions in the |extension|'s manifest and re-enables the
   // extension.
   void GrantPermissionsAndEnableExtension(
-      const extensions::Extension* extension,
-      bool record_oauth2_grant);
+      const extensions::Extension* extension);
 
   // Updates the |extension|'s granted permissions lists to include all
   // permissions in the |extensions|'s manifest.
   void GrantPermissions(
-      const extensions::Extension* extension,
-      bool record_oauth2_grant);
+      const extensions::Extension* extension);
 
   // Check for updates (or potentially new extensions from external providers)
   void CheckForExternalUpdates();

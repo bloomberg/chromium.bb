@@ -41,8 +41,7 @@ class PermissionsUpdater {
 
   // Adds all permissions in the |extension|'s active permissions to its
   // granted permission set.
-  void GrantActivePermissions(const Extension* extension,
-                              bool record_oauth2_grant);
+  void GrantActivePermissions(const Extension* extension);
 
   // Sets the |extension|'s active permissions to |permissions|.
   void UpdateActivePermissions(const Extension* extension,

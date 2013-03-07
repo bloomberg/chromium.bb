@@ -104,7 +104,6 @@ CrxInstaller::CrxInstaller(
       creation_flags_(Extension::NO_FLAGS),
       off_store_install_allow_reason_(OffStoreInstallDisallowed),
       did_handle_successfully_(true),
-      record_oauth2_grant_(false),
       error_on_unsupported_requirements_(false),
       requirements_checker_(new RequirementsChecker()),
       has_requirement_errors_(false),
@@ -127,7 +126,6 @@ CrxInstaller::CrxInstaller(
     approved_ = true;
     expected_manifest_.reset(approval->parsed_manifest->DeepCopy());
     expected_id_ = approval->extension_id;
-    record_oauth2_grant_ = approval->record_oauth2_grant;
   }
 
   show_dialog_callback_ = approval->show_dialog_callback;
@@ -482,8 +480,7 @@ void CrxInstaller::InstallUIProceed() {
   // and if it is false, this function is called in response to
   // ExtensionInstallPrompt::ConfirmInstall().
   if (update_from_settings_page_) {
-    frontend_weak_->GrantPermissionsAndEnableExtension(
-        extension_.get(), client_->record_oauth2_grant());
+    frontend_weak_->GrantPermissionsAndEnableExtension(extension_.get());
   } else {
     if (!installer_task_runner_->PostTask(
             FROM_HERE,
@@ -643,15 +640,12 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     if (client_)
       client_->OnInstallSuccess(extension_.get(), install_icon_.get());
 
-    if (client_ && !approved_)
-      record_oauth2_grant_ = client_->record_oauth2_grant();
-
     // We update the extension's granted permissions if the user already
     // approved the install (client_ is non NULL), or we are allowed to install
     // this silently.
     if (client_ || allow_silent_install_) {
       PermissionsUpdater perms_updater(profile());
-      perms_updater.GrantActivePermissions(extension_, record_oauth2_grant_);
+      perms_updater.GrantActivePermissions(extension_);
     }
   }
 
