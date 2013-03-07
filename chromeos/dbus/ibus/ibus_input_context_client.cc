@@ -8,7 +8,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/dbus/ibus/ibus_engine_service.h"
+#include "chromeos/dbus/ibus/ibus_panel_service.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -362,57 +365,70 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
 // TODO(nona): Use this on ChromeOS device once crbug.com/171351 is fixed.
 class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
  public:
-  IBusInputContextClientDaemonlessImpl() {}
+  IBusInputContextClientDaemonlessImpl()
+      : is_xkb_layout_(true),
+        initialized_(false)
+  {}
   virtual ~IBusInputContextClientDaemonlessImpl() {}
 
   // IBusInputContextClient override.
   virtual void Initialize(dbus::Bus* bus,
                           const dbus::ObjectPath& object_path) OVERRIDE {
-    // TODO(nona): Implement this.
+    initialized_ = true;
   }
 
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusBridge::Get()->SetInputContextHandler(handler);
   }
 
   virtual void SetSetCursorLocationHandler(
       const SetCursorLocationHandler& set_cursor_location_handler) OVERRIDE {
-    // TODO(nona): Implement this.
   }
 
   virtual void UnsetSetCursorLocationHandler() OVERRIDE {
-    // TODO(nona): Implement this.
   }
 
   virtual void ResetObjectProxy() OVERRIDE {
-    // TODO(nona): Implement this.
+    initialized_ = false;
   }
 
   virtual bool IsObjectProxyReady() const OVERRIDE {
-    // Always true on daemon-less implementation.
-    return true;
+    return initialized_;
   }
 
   virtual void SetCapabilities(uint32 capability) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->SetCapability(
+          static_cast<IBusEngineHandlerInterface::IBusCapability>(capability));
   }
 
   virtual void FocusIn() OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->FocusIn();
   }
 
   virtual void FocusOut() OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->FocusOut();
   }
 
   virtual void Reset() OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->Reset();
   }
 
   virtual void SetCursorLocation(const ibus::Rect& cursor_location,
                                  const ibus::Rect& composition_head) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusPanelCandidateWindowHandlerInterface* candidate_window =
+        IBusBridge::Get()->GetCandidateWindowHandler();
+
+    if (candidate_window)
+      candidate_window->SetCursorLocation(cursor_location, composition_head);
   }
 
   virtual void ProcessKeyEvent(
@@ -421,8 +437,9 @@ class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
       uint32 state,
       const ProcessKeyEventCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
-    // TODO(nona): Implement this.
-    callback.Run(false);
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->ProcessKeyEvent(keyval, keycode, state, callback);
   }
 
   virtual void SetSurroundingText(const std::string& text,
@@ -433,19 +450,25 @@ class IBusInputContextClientDaemonlessImpl : public IBusInputContextClient {
 
   virtual void PropertyActivate(const std::string& key,
                                 ibus::IBusPropertyState state) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->PropertyActivate(key,
+                               static_cast<ibus::IBusPropertyState>(state));
   }
 
   virtual bool IsXKBLayout() OVERRIDE {
-    // TODO(nona): Implement this.
-    return true;
+    return is_xkb_layout_;
   }
 
   virtual void SetIsXKBLayout(bool is_xkb_layout) OVERRIDE {
-    // TODO(nona): Implement this.
+    is_xkb_layout_ = is_xkb_layout;
   }
 
  private:
+  // True if the current input method is xkb layout.
+  bool is_xkb_layout_;
+  bool initialized_;
+
   DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientDaemonlessImpl);
 };
 
