@@ -230,7 +230,8 @@ BOT_ASSIGNMENT = {
 }
 
 for platform in [
-    'vista', 'win7', 'win7_64', 'win8', 'win32', 'win64',
+    'vista', 'win7', 'win8', 'win32', 'win64',
+    'win7_64', 'win7-64', 'lucid-64',  # For win7-64-arm etc.
     'mac10.6', 'mac10.7', 'mac10.8',
     'lucid', 'precise']:
   for arch in ['', '32', '64', 'arm']:
