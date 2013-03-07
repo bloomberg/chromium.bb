@@ -25,8 +25,4 @@ ExtensionServiceTest.*
 AutocompleteActionPredictorTest.RecommendActionURL
 
 # http://crbug.com/180467
-HttpNetworkTransactionSpdy3Test.*
-SpdyNetworkTransactionSpdy3Test.*
-SearchProviderTest.*
-SearchTest.*
-DriveApiOperationsTest.CopyResourceOperation
+HttpPipeliningCompatibilityClientTest.*
