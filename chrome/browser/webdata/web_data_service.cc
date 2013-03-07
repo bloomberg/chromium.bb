@@ -29,7 +29,7 @@
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 #ifdef DEBUG
 #include "content/public/browser/browser_thread.h"
 #endif

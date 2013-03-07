@@ -21,8 +21,8 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/form_field_data.h"
 #include "chrome/test/base/thread_observer_helper.h"
+#include "components/autofill/common/form_field_data.h"
 
 using base::WaitableEvent;
 using content::BrowserThread;

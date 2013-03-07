@@ -1,6 +1,7 @@
 include_rules = [
   "+breakpad",  # For Breakpad constants.
   "+chrome/plugin",  # For checking whether we're a plugin process.
+  "+components/autofill/common",
   "+device/bluetooth",  # For BluetoothDevicePermission
   "+device/media_transfer_protocol",  # For MediaTransferProtocolManager
   "+device/usb",  # For UsbDevicePermission

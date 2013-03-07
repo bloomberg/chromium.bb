@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/password_form_fill_data.h"
+#include "components/autofill/common/password_form_fill_data.h"
 
 #include "base/logging.h"
-#include "chrome/common/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 
 PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
 }

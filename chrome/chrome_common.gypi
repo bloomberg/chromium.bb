@@ -88,10 +88,6 @@
         'common/attrition_experiments.h',
         'common/auto_start_linux.cc',
         'common/auto_start_linux.h',
-        'common/autofill/autocheckout_status.h',
-        'common/autofill/web_element_descriptor.cc',
-        'common/autofill/web_element_descriptor.h',
-        'common/autofill_messages.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
         'common/automation_events.cc',
@@ -280,14 +276,6 @@
         'common/extensions/web_accessible_resources_handler.h',
         'common/external_ipc_fuzzer.h',
         'common/external_ipc_fuzzer.cc',
-        'common/form_data.cc',
-        'common/form_data.h',
-        'common/form_data_predictions.cc',
-        'common/form_data_predictions.h',
-        'common/form_field_data.cc',
-        'common/form_field_data.h',
-        'common/form_field_data_predictions.cc',
-        'common/form_field_data_predictions.h',
         'common/icon_with_badge_image_source.cc',
         'common/icon_with_badge_image_source.h',
         'common/instant_types.cc',
@@ -337,8 +325,6 @@
         'common/nacl_types.cc',
         'common/nacl_types.h',
         'common/one_click_signin_messages.h',
-        'common/password_form_fill_data.cc',
-        'common/password_form_fill_data.h',
         'common/password_generation_util.cc',
         'common/password_generation_util.h',
         'common/pepper_flash.cc',
@@ -401,6 +387,7 @@
           'dependencies': [
             '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
+            '<(DEPTH)/components/components.gyp:autofill_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
             '<(DEPTH)/printing/printing.gyp:printing',
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
@@ -527,7 +514,7 @@
         ['enable_automation==0', {
           'sources/': [
             ['exclude', '^common/automation_']
-	  ]
+          ]
         }],
         ['use_system_nspr==1', {
           'dependencies': [

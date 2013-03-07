@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_AUTOFILL_WEB_ELEMENT_DESCRIPTOR_H_
-#define CHROME_COMMON_AUTOFILL_WEB_ELEMENT_DESCRIPTOR_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_WEB_ELEMENT_DESCRIPTOR_H_
+#define COMPONENTS_AUTOFILL_COMMON_WEB_ELEMENT_DESCRIPTOR_H_
 
 #include <string>
 
@@ -28,4 +28,4 @@ struct WebElementDescriptor {
 
 }  // namespace autofill
 
-#endif  // CHROME_COMMON_AUTOFILL_WEB_ELEMENT_DESCRIPTOR_H_
+#endif  // COMPONENTS_AUTOFILL_COMMON_WEB_ELEMENT_DESCRIPTOR_H_

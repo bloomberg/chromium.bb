@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/form_data.h"
-#include "chrome/common/form_field_data.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/common/form_data.h"
+#include "components/autofill/common/form_field_data.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

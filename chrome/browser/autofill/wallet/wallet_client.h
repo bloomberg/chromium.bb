@@ -14,7 +14,7 @@
 #include "chrome/browser/autofill/wallet/encryption_escrow_client.h"
 #include "chrome/browser/autofill/wallet/encryption_escrow_client_observer.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
-#include "chrome/common/autofill/autocheckout_status.h"
+#include "components/autofill/common/autocheckout_status.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;

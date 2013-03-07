@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOCHECKOUT_PAGE_META_DATA_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/autofill/web_element_descriptor.h"
+#include "components/autofill/common/web_element_descriptor.h"
 
 namespace autofill {
 

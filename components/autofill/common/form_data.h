@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FORM_DATA_H__
-#define CHROME_COMMON_FORM_DATA_H__
+#ifndef COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__
+#define COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__
 
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/common/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 
@@ -38,4 +38,4 @@ struct FormData {
   content::SSLStatus ssl_status;
 };
 
-#endif  // CHROME_COMMON_FORM_DATA_H__
+#endif  // COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__

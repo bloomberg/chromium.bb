@@ -23,7 +23,7 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/validation.h"
-#include "chrome/common/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 #include "grit/generated_resources.h"
 #include "grit/webkit_resources.h"
 #include "third_party/icu/public/common/unicode/uloc.h"

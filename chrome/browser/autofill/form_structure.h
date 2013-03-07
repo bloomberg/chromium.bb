@@ -14,7 +14,7 @@
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/common/autofill/web_element_descriptor.h"
+#include "components/autofill/common/web_element_descriptor.h"
 #include "googleurl/src/gurl.h"
 
 struct FormData;

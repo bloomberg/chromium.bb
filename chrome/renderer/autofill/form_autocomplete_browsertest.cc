@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/time.h"
-#include "chrome/common/autofill_messages.h"
-#include "chrome/common/form_data.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"

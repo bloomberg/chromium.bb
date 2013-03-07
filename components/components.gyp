@@ -4,6 +4,7 @@
 
 {
   'includes': [
+    'autofill.gypi',
     'auto_login_parser.gypi',
     'components_tests.gypi',
     'navigation_interception.gypi',

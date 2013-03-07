@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_
-#define CHROME_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_
+#define COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_
 
 #include <string>
 #include <vector>
 
-#include "chrome/common/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 
 // Stores information about a field in a form.
 struct FormFieldDataPredictions {
@@ -23,4 +23,4 @@ struct FormFieldDataPredictions {
   std::string overall_type;
 };
 
-#endif  // CHROME_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_
+#endif  // COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_

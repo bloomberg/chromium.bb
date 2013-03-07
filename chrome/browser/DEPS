@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/installer",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",
+  "+components/autofill/common",
   "+components/auto_login_parser",
   "+components/navigation_interception",
   "+components/user_prefs",

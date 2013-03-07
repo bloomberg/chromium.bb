@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_AUTOFILL_AUTOCHECKOUT_STATUS_H_
-#define CHROME_COMMON_AUTOFILL_AUTOCHECKOUT_STATUS_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_AUTOCHECKOUT_STATUS_H_
+#define COMPONENTS_AUTOFILL_COMMON_AUTOCHECKOUT_STATUS_H_
 
 namespace autofill {
 
@@ -16,4 +16,4 @@ enum AutocheckoutStatus {
 
 }  // namespace autofill
 
-#endif  // CHROME_COMMON_AUTOFILL_AUTOCHECKOUT_STATUS_H_
+#endif  // COMPONENTS_AUTOFILL_COMMON_AUTOCHECKOUT_STATUS_H_

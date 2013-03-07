@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FORM_DATA_PREDICTIONS_H__
-#define CHROME_COMMON_FORM_DATA_PREDICTIONS_H__
+#ifndef COMPONENTS_AUTOFILL_COMMON_FORM_DATA_PREDICTIONS_H__
+#define COMPONENTS_AUTOFILL_COMMON_FORM_DATA_PREDICTIONS_H__
 
 #include <string>
 #include <vector>
 
-#include "chrome/common/form_data.h"
-#include "chrome/common/form_field_data_predictions.h"
+#include "components/autofill/common/form_data.h"
+#include "components/autofill/common/form_field_data_predictions.h"
 
 // Holds information about a form to be filled and/or submitted.
 struct FormDataPredictions {
@@ -27,4 +27,4 @@ struct FormDataPredictions {
   ~FormDataPredictions();
 };
 
-#endif  // CHROME_COMMON_FORM_DATA_PREDICTIONS_H__
+#endif  // COMPONENTS_AUTOFILL_COMMON_FORM_DATA_PREDICTIONS_H__

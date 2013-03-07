@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FORM_FIELD_DATA_H_
-#define CHROME_COMMON_FORM_FIELD_DATA_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_
+#define COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_
 
 #include <vector>
 
@@ -59,4 +59,4 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.is_checkable, actual.is_checkable); \
   } while (0)
 
-#endif  // CHROME_COMMON_FORM_FIELD_DATA_H_
+#endif  // COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_

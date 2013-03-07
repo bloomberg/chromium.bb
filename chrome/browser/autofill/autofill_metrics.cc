@@ -9,7 +9,7 @@
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "chrome/common/form_data.h"
+#include "components/autofill/common/form_data.h"
 
 namespace {
 

@@ -23,10 +23,10 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/form_data.h"
-#include "chrome/common/form_data_predictions.h"
-#include "chrome/common/form_field_data.h"
-#include "chrome/common/form_field_data_predictions.h"
+#include "components/autofill/common/form_data.h"
+#include "components/autofill/common/form_data_predictions.h"
+#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/common/form_field_data_predictions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace {

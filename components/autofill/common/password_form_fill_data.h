@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PASSWORD_FORM_FILL_DATA_H_
-#define CHROME_COMMON_PASSWORD_FORM_FILL_DATA_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H_
+#define COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H_
 
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/form_data.h"
+#include "components/autofill/common/form_data.h"
 #include "content/public/common/password_form.h"
 
 // Structure used for autofilling password forms.
@@ -43,4 +43,4 @@ void InitPasswordFormFillData(
     bool wait_for_username_before_autofill,
     PasswordFormFillData* result);
 
-#endif  // CHROME_COMMON_PASSWORD_FORM_FILL_DATA_H__
+#endif  // COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H__

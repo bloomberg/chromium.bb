@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/common/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 
 class AutofillField : public FormFieldData {
  public:

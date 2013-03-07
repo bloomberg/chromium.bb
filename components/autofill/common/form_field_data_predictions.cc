@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/form_field_data_predictions.h"
+#include "components/autofill/common/form_field_data_predictions.h"
 
 FormFieldDataPredictions::FormFieldDataPredictions() {
 }
