@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebImageLayer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
@@ -18,8 +19,8 @@ class WebImageLayerImpl : public WebImageLayer {
   virtual ~WebImageLayerImpl();
 
   // WebImageLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual void setBitmap(SkBitmap) OVERRIDE;
+  virtual WebLayer* layer();
+  virtual void setBitmap(SkBitmap);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

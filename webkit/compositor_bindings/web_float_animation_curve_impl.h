@@ -15,6 +15,7 @@ class KeyframedFloatAnimationCurve;
 }
 
 namespace WebKit {
+struct WebFloatKeyframe;
 
 class WebFloatAnimationCurveImpl : public WebFloatAnimationCurve {
  public:
@@ -22,18 +23,18 @@ class WebFloatAnimationCurveImpl : public WebFloatAnimationCurve {
   virtual ~WebFloatAnimationCurveImpl();
 
   // WebAnimationCurve implementation.
-  virtual AnimationCurveType type() const OVERRIDE;
+  virtual AnimationCurveType type() const;
 
   // WebFloatAnimationCurve implementation.
-  virtual void add(const WebFloatKeyframe&) OVERRIDE;
-  virtual void add(const WebFloatKeyframe&, TimingFunctionType) OVERRIDE;
+  virtual void add(const WebFloatKeyframe&);
+  virtual void add(const WebFloatKeyframe&, TimingFunctionType);
   virtual void add(const WebFloatKeyframe&,
                    double x1,
                    double y1,
                    double x2,
-                   double y2) OVERRIDE;
+                   double y2);
 
-  virtual float getValue(double time) const OVERRIDE;
+  virtual float getValue(double time) const;
 
   scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 

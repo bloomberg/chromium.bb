@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebIOSurfaceLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
@@ -17,8 +18,8 @@ class WebIOSurfaceLayerImpl : public WebIOSurfaceLayer {
   virtual ~WebIOSurfaceLayerImpl();
 
   // WebIOSurfaceLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual void setIOSurfaceProperties(unsigned io_surface_id, WebSize) OVERRIDE;
+  virtual WebLayer* layer();
+  virtual void setIOSurfaceProperties(unsigned io_surface_id, WebSize);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

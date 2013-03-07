@@ -12,7 +12,9 @@
 namespace webkit { class WebToCCVideoFrameProvider; }
 
 namespace WebKit {
+
 class WebLayerImpl;
+class WebVideoFrameProvider;
 
 class WebVideoLayerImpl : public WebVideoLayer {
  public:
@@ -21,8 +23,8 @@ class WebVideoLayerImpl : public WebVideoLayer {
   virtual ~WebVideoLayerImpl();
 
   // WebVideoLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual bool active() const OVERRIDE;
+  virtual WebLayer* layer();
+  virtual bool active() const;
 
  private:
   scoped_ptr<webkit::WebToCCVideoFrameProvider> provider_adapter_;

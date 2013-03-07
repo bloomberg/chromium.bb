@@ -16,24 +16,26 @@ class KeyframedTransformAnimationCurve;
 
 namespace WebKit {
 
+class WebTransformKeyframe;
+
 class WebTransformAnimationCurveImpl : public WebTransformAnimationCurve {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformAnimationCurveImpl();
   virtual ~WebTransformAnimationCurveImpl();
 
   // WebAnimationCurve implementation.
-  virtual AnimationCurveType type() const OVERRIDE;
+  virtual AnimationCurveType type() const;
 
   // WebTransformAnimationCurve implementation.
-  virtual void add(const WebTransformKeyframe&) OVERRIDE;
-  virtual void add(const WebTransformKeyframe&, TimingFunctionType) OVERRIDE;
+  virtual void add(const WebTransformKeyframe&);
+  virtual void add(const WebTransformKeyframe&, TimingFunctionType);
   virtual void add(const WebTransformKeyframe&,
                    double x1,
                    double y1,
                    double x2,
-                   double y2) OVERRIDE;
+                   double y2);
 
-  virtual WebTransformationMatrix getValue(double time) const OVERRIDE;
+  virtual WebTransformationMatrix getValue(double time) const;
 
   scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 

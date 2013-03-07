@@ -12,6 +12,7 @@
 namespace cc { class Animation; }
 
 namespace WebKit {
+class WebAnimationCurve;
 
 class WebAnimationImpl : public WebAnimation {
  public:
@@ -22,16 +23,16 @@ class WebAnimationImpl : public WebAnimation {
   virtual ~WebAnimationImpl();
 
   // WebAnimation implementation
-  virtual int id() OVERRIDE;
-  virtual TargetProperty targetProperty() const OVERRIDE;
-  virtual int iterations() const OVERRIDE;
-  virtual void setIterations(int) OVERRIDE;
-  virtual double startTime() const OVERRIDE;
-  virtual void setStartTime(double monotonic_time) OVERRIDE;
-  virtual double timeOffset() const OVERRIDE;
-  virtual void setTimeOffset(double monotonic_time) OVERRIDE;
-  virtual bool alternatesDirection() const OVERRIDE;
-  virtual void setAlternatesDirection(bool) OVERRIDE;
+  virtual int id();
+  virtual TargetProperty targetProperty() const;
+  virtual int iterations() const;
+  virtual void setIterations(int);
+  virtual double startTime() const;
+  virtual void setStartTime(double monotonic_time);
+  virtual double timeOffset() const;
+  virtual void setTimeOffset(double monotonic_time);
+  virtual bool alternatesDirection() const;
+  virtual void setAlternatesDirection(bool);
 
   scoped_ptr<cc::Animation> cloneToAnimation();
 

@@ -13,6 +13,7 @@
 namespace WebKit {
 
 class WebLayerImpl;
+struct WebFloatRect;
 
 class WebExternalTextureLayerImpl : public WebExternalTextureLayer,
                                     public cc::TextureLayerClient {
@@ -22,14 +23,14 @@ class WebExternalTextureLayerImpl : public WebExternalTextureLayer,
   virtual ~WebExternalTextureLayerImpl();
 
   // WebExternalTextureLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual void setTextureId(unsigned) OVERRIDE;
-  virtual void setFlipped(bool) OVERRIDE;
-  virtual void setUVRect(const WebFloatRect&) OVERRIDE;
-  virtual void setOpaque(bool) OVERRIDE;
-  virtual void setPremultipliedAlpha(bool) OVERRIDE;
-  virtual void willModifyTexture() OVERRIDE;
-  virtual void setRateLimitContext(bool) OVERRIDE;
+  virtual WebLayer* layer();
+  virtual void setTextureId(unsigned);
+  virtual void setFlipped(bool);
+  virtual void setUVRect(const WebFloatRect&);
+  virtual void setOpaque(bool);
+  virtual void setPremultipliedAlpha(bool);
+  virtual void willModifyTexture();
+  virtual void setRateLimitContext(bool);
 
   // TextureLayerClient implementation.
   virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;

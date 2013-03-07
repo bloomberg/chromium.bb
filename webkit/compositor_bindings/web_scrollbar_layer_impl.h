@@ -10,7 +10,11 @@
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace WebKit {
+
 class WebLayerImpl;
+class WebScrollbar;
+class WebScrollbarThemeGeometry;
+class WebScrollbarThemePainter;
 
 class WebScrollbarLayerImpl : public WebScrollbarLayer {
  public:
@@ -21,8 +25,8 @@ class WebScrollbarLayerImpl : public WebScrollbarLayer {
   virtual ~WebScrollbarLayerImpl();
 
   // WebScrollbarLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual void setScrollLayer(WebLayer*) OVERRIDE;
+  virtual WebLayer* layer();
+  virtual void setScrollLayer(WebLayer*);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

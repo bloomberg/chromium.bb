@@ -6,7 +6,16 @@
 #define WebLayerImpl_h
 
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebColor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc { class Layer; }
@@ -15,6 +24,11 @@ namespace cc { class Layer; }
 class SkImageFilter;
 
 namespace WebKit {
+class WebAnimationDelegate;
+class WebFilterOperations;
+class WebLayerScrollClient;
+class WebTransformationMatrix;
+struct WebFloatRect;
 
 class WebLayerImpl : public WebLayer {
  public:
@@ -26,76 +40,75 @@ class WebLayerImpl : public WebLayer {
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT cc::Layer* layer() const;
 
   // WebLayer implementation.
-  virtual int id() const OVERRIDE;
-  virtual void invalidateRect(const WebFloatRect&) OVERRIDE;
-  virtual void invalidate() OVERRIDE;
-  virtual void addChild(WebLayer*) OVERRIDE;
-  virtual void insertChild(WebLayer*, size_t index) OVERRIDE;
-  virtual void replaceChild(WebLayer* reference, WebLayer* new_layer) OVERRIDE;
-  virtual void removeFromParent() OVERRIDE;
-  virtual void removeAllChildren() OVERRIDE;
-  virtual void setAnchorPoint(const WebFloatPoint&) OVERRIDE;
-  virtual WebFloatPoint anchorPoint() const OVERRIDE;
-  virtual void setAnchorPointZ(float) OVERRIDE;
-  virtual float anchorPointZ() const OVERRIDE;
-  virtual void setBounds(const WebSize&) OVERRIDE;
-  virtual WebSize bounds() const OVERRIDE;
-  virtual void setMasksToBounds(bool) OVERRIDE;
-  virtual bool masksToBounds() const OVERRIDE;
-  virtual void setMaskLayer(WebLayer*) OVERRIDE;
-  virtual void setReplicaLayer(WebLayer*) OVERRIDE;
-  virtual void setOpacity(float) OVERRIDE;
-  virtual float opacity() const OVERRIDE;
-  virtual void setOpaque(bool) OVERRIDE;
-  virtual bool opaque() const OVERRIDE;
-  virtual void setPosition(const WebFloatPoint&) OVERRIDE;
-  virtual WebFloatPoint position() const OVERRIDE;
-  virtual void setSublayerTransform(const SkMatrix44&) OVERRIDE;
-  virtual void setSublayerTransform(const WebTransformationMatrix&) OVERRIDE;
-  virtual SkMatrix44 sublayerTransform() const OVERRIDE;
-  virtual void setTransform(const SkMatrix44&) OVERRIDE;
-  virtual void setTransform(const WebTransformationMatrix&) OVERRIDE;
-  virtual SkMatrix44 transform() const OVERRIDE;
-  virtual void setDrawsContent(bool) OVERRIDE;
-  virtual bool drawsContent() const OVERRIDE;
-  virtual void setPreserves3D(bool) OVERRIDE;
-  virtual void setUseParentBackfaceVisibility(bool) OVERRIDE;
-  virtual void setBackgroundColor(WebColor) OVERRIDE;
+  virtual int id() const;
+  virtual void invalidateRect(const WebFloatRect&);
+  virtual void invalidate();
+  virtual void addChild(WebLayer*);
+  virtual void insertChild(WebLayer*, size_t index);
+  virtual void replaceChild(WebLayer* reference, WebLayer* new_layer);
+  virtual void removeFromParent();
+  virtual void removeAllChildren();
+  virtual void setAnchorPoint(const WebFloatPoint&);
+  virtual WebFloatPoint anchorPoint() const;
+  virtual void setAnchorPointZ(float);
+  virtual float anchorPointZ() const;
+  virtual void setBounds(const WebSize&);
+  virtual WebSize bounds() const;
+  virtual void setMasksToBounds(bool);
+  virtual bool masksToBounds() const;
+  virtual void setMaskLayer(WebLayer*);
+  virtual void setReplicaLayer(WebLayer*);
+  virtual void setOpacity(float);
+  virtual float opacity() const;
+  virtual void setOpaque(bool);
+  virtual bool opaque() const;
+  virtual void setPosition(const WebFloatPoint&);
+  virtual WebFloatPoint position() const;
+  virtual void setSublayerTransform(const SkMatrix44&);
+  virtual void setSublayerTransform(const WebTransformationMatrix&);
+  virtual SkMatrix44 sublayerTransform() const;
+  virtual void setTransform(const SkMatrix44&);
+  virtual void setTransform(const WebTransformationMatrix&);
+  virtual SkMatrix44 transform() const;
+  virtual void setDrawsContent(bool);
+  virtual bool drawsContent() const;
+  virtual void setPreserves3D(bool);
+  virtual void setUseParentBackfaceVisibility(bool);
+  virtual void setBackgroundColor(WebColor);
   virtual WebColor backgroundColor() const;
   virtual void setFilter(SkImageFilter*);
-  virtual void setFilters(const WebFilterOperations&) OVERRIDE;
-  virtual void setBackgroundFilters(const WebFilterOperations&) OVERRIDE;
-  virtual void setDebugName(WebString) OVERRIDE;
-  virtual void setAnimationDelegate(WebAnimationDelegate*) OVERRIDE;
-  virtual bool addAnimation(WebAnimation*) OVERRIDE;
-  virtual void removeAnimation(int animation_id) OVERRIDE;
-  virtual void removeAnimation(int animation_id, WebAnimation::TargetProperty)
-      OVERRIDE;
-  virtual void pauseAnimation(int animation_id, double time_offset) OVERRIDE;
-  virtual void suspendAnimations(double monotonic_time) OVERRIDE;
-  virtual void resumeAnimations(double monotonic_time) OVERRIDE;
-  virtual bool hasActiveAnimation() OVERRIDE;
-  virtual void transferAnimationsTo(WebLayer*) OVERRIDE;
-  virtual void setForceRenderSurface(bool) OVERRIDE;
-  virtual void setScrollPosition(WebPoint) OVERRIDE;
-  virtual WebPoint scrollPosition() const OVERRIDE;
-  virtual void setMaxScrollPosition(WebSize) OVERRIDE;
+  virtual void setFilters(const WebFilterOperations&);
+  virtual void setBackgroundFilters(const WebFilterOperations&);
+  virtual void setDebugName(WebString);
+  virtual void setAnimationDelegate(WebAnimationDelegate*);
+  virtual bool addAnimation(WebAnimation*);
+  virtual void removeAnimation(int animation_id);
+  virtual void removeAnimation(int animation_id, WebAnimation::TargetProperty);
+  virtual void pauseAnimation(int animation_id, double time_offset);
+  virtual void suspendAnimations(double monotonic_time);
+  virtual void resumeAnimations(double monotonic_time);
+  virtual bool hasActiveAnimation();
+  virtual void transferAnimationsTo(WebLayer*);
+  virtual void setForceRenderSurface(bool);
+  virtual void setScrollPosition(WebPoint);
+  virtual WebPoint scrollPosition() const;
+  virtual void setMaxScrollPosition(WebSize);
   virtual WebSize maxScrollPosition() const;
-  virtual void setScrollable(bool) OVERRIDE;
+  virtual void setScrollable(bool);
   virtual bool scrollable() const;
-  virtual void setHaveWheelEventHandlers(bool) OVERRIDE;
+  virtual void setHaveWheelEventHandlers(bool);
   virtual bool haveWheelEventHandlers() const;
-  virtual void setShouldScrollOnMainThread(bool) OVERRIDE;
+  virtual void setShouldScrollOnMainThread(bool);
   virtual bool shouldScrollOnMainThread() const;
-  virtual void setNonFastScrollableRegion(const WebVector<WebRect>&) OVERRIDE;
+  virtual void setNonFastScrollableRegion(const WebVector<WebRect>&);
   virtual WebVector<WebRect> nonFastScrollableRegion() const;
   virtual void setTouchEventHandlerRegion(const WebVector<WebRect>&);
   virtual WebVector<WebRect> touchEventHandlerRegion() const;
-  virtual void setIsContainerForFixedPositionLayers(bool) OVERRIDE;
+  virtual void setIsContainerForFixedPositionLayers(bool);
   virtual bool isContainerForFixedPositionLayers() const;
-  virtual void setFixedToContainerLayer(bool) OVERRIDE;
+  virtual void setFixedToContainerLayer(bool);
   virtual bool fixedToContainerLayer() const;
-  virtual void setScrollClient(WebLayerScrollClient*) OVERRIDE;
+  virtual void setScrollClient(WebLayerScrollClient*);
 
  protected:
   scoped_refptr<cc::Layer> layer_;

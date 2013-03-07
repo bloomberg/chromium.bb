@@ -24,16 +24,16 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
   virtual ~WebLayerImplFixedBounds();
 
   // WebLayerImpl overrides.
-  virtual void invalidateRect(const WebFloatRect&) OVERRIDE;
-  virtual void setAnchorPoint(const WebFloatPoint&) OVERRIDE;
-  virtual void setBounds(const WebSize&) OVERRIDE;
-  virtual WebSize bounds() const OVERRIDE;
-  virtual void setSublayerTransform(const SkMatrix44&) OVERRIDE;
-  virtual void setSublayerTransform(const WebTransformationMatrix&) OVERRIDE;
-  virtual SkMatrix44 sublayerTransform() const OVERRIDE;
-  virtual void setTransform(const SkMatrix44&) OVERRIDE;
-  virtual void setTransform(const WebTransformationMatrix&) OVERRIDE;
-  virtual SkMatrix44 transform() const OVERRIDE;
+  virtual void invalidateRect(const WebFloatRect&);
+  virtual void setAnchorPoint(const WebFloatPoint&);
+  virtual void setBounds(const WebSize&);
+  virtual WebSize bounds() const;
+  virtual void setSublayerTransform(const SkMatrix44&);
+  virtual void setSublayerTransform(const WebTransformationMatrix&);
+  virtual SkMatrix44 sublayerTransform() const;
+  virtual void setTransform(const SkMatrix44&);
+  virtual void setTransform(const WebTransformationMatrix&);
+  virtual SkMatrix44 transform() const;
 
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT void SetFixedBounds(const gfx::Size&);
 

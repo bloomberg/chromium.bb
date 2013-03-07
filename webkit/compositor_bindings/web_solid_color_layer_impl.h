@@ -6,6 +6,7 @@
 #define WebSolidColorLayerImpl_h
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebColor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
@@ -18,8 +19,8 @@ class WebSolidColorLayerImpl : public WebSolidColorLayer {
   virtual ~WebSolidColorLayerImpl();
 
   // WebSolidColorLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual void setBackgroundColor(WebColor) OVERRIDE;
+  virtual WebLayer* layer();
+  virtual void setBackgroundColor(WebColor);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

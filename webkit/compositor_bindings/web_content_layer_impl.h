@@ -26,12 +26,12 @@ class WebContentLayerImpl : public WebContentLayer,
       WebContentLayerClient*);
 
   // WebContentLayer implementation.
-  virtual WebLayer* layer() OVERRIDE;
-  virtual void setDoubleSided(bool) OVERRIDE;
-  virtual void setBoundsContainPageScale(bool) OVERRIDE;
-  virtual bool boundsContainPageScale() const OVERRIDE;
-  virtual void setUseLCDText(bool) OVERRIDE;
-  virtual void setDrawCheckerboardForMissingTiles(bool) OVERRIDE;
+  virtual WebLayer* layer();
+  virtual void setDoubleSided(bool);
+  virtual void setBoundsContainPageScale(bool);
+  virtual bool boundsContainPageScale() const;
+  virtual void setUseLCDText(bool);
+  virtual void setDrawCheckerboardForMissingTiles(bool);
   virtual void setAutomaticallyComputeRasterScale(bool);
 
  protected:

@@ -41,33 +41,31 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
 
   virtual ~ClientAdapter() {}
 
-  virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type)
-      OVERRIDE {
+  virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) {
     return static_cast<WebInputHandlerClient::ScrollStatus>(
         client_->scrollBegin(
             point, static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
   }
 
-  virtual bool scrollByIfPossible(WebPoint point, WebSize offset) OVERRIDE {
+  virtual bool scrollByIfPossible(WebPoint point, WebSize offset) {
     return client_->scrollBy(point, offset);
   }
 
-  virtual void scrollEnd() OVERRIDE { client_->scrollEnd(); }
+  virtual void scrollEnd() { client_->scrollEnd(); }
 
-  virtual void pinchGestureBegin() OVERRIDE { client_->pinchGestureBegin(); }
+  virtual void pinchGestureBegin() { client_->pinchGestureBegin(); }
 
-  virtual void pinchGestureUpdate(float magnify_delta, WebPoint anchor)
-      OVERRIDE {
+  virtual void pinchGestureUpdate(float magnify_delta, WebPoint anchor) {
     client_->pinchGestureUpdate(magnify_delta, anchor);
   }
 
-  virtual void pinchGestureEnd() OVERRIDE { client_->pinchGestureEnd(); }
+  virtual void pinchGestureEnd() { client_->pinchGestureEnd(); }
 
   virtual void startPageScaleAnimation(WebSize target_position,
                                        bool anchor_point,
                                        float page_scale,
                                        double start_time_sec,
-                                       double duration_sec) OVERRIDE {
+                                       double duration_sec) {
     base::TimeTicks start_time = base::TimeTicks::FromInternalValue(
         start_time_sec * base::Time::kMicrosecondsPerSecond);
     base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
@@ -76,7 +74,7 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
         target_position, anchor_point, page_scale, start_time, duration);
   }
 
-  virtual void scheduleAnimation() OVERRIDE { client_->scheduleAnimation(); }
+  virtual void scheduleAnimation() { client_->scheduleAnimation(); }
 
   virtual bool haveTouchEventHandlersAt(WebPoint point) {
     return client_->haveTouchEventHandlersAt(point);
