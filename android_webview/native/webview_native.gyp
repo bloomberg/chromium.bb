@@ -68,7 +68,7 @@
       'target_name': 'android_jar_jni_headers',
       'type': 'none',
       'variables': {
-        'jni_gen_dir': 'android_webview',
+        'jni_gen_package': 'android_webview',
         'input_java_class': 'java/io/InputStream.class',
         'input_jar_file': '<(android_sdk)/android.jar',
       },
@@ -93,7 +93,7 @@
           '../java/src/org/chromium/android_webview/JsResultHandler.java',
       ],
       'variables': {
-        'jni_gen_dir': 'android_webview',
+        'jni_gen_package': 'android_webview',
       },
       'includes': [ '../../build/jni_generator.gypi' ],
       'dependencies': [

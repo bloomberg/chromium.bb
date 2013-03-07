@@ -34,7 +34,7 @@
     'public/android/java/src/org/chromium/content/common/TraceEvent.java',
    ],
   'variables': {
-    'jni_gen_dir': 'content'
+    'jni_gen_package': 'content'
   },
   'includes': [ '../build/jni_generator.gypi' ],
 }

@@ -1113,7 +1113,7 @@
             'android/java/src/org/chromium/base/ThreadUtils.java',
           ],
           'variables': {
-            'jni_gen_dir': 'base',
+            'jni_gen_package': 'base',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

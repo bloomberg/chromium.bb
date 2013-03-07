@@ -1402,7 +1402,7 @@
           'target_name': 'media_player_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'media',
+            'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaPlayer.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },
@@ -1419,7 +1419,7 @@
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
           ],
           'variables': {
-            'jni_gen_dir': 'media',
+            'jni_gen_package': 'media',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
@@ -1427,7 +1427,7 @@
           'target_name': 'camera_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'media',
+            'jni_gen_package': 'media',
             'input_java_class': 'android/hardware/Camera.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },
@@ -1443,7 +1443,7 @@
             'base/android/java/src/org/chromium/media/VideoCapture.java',
           ],
           'variables': {
-            'jni_gen_dir': 'media',
+            'jni_gen_package': 'media',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
@@ -1451,7 +1451,7 @@
           'target_name': 'media_codec_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'media',
+            'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaCodec.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },
@@ -1461,7 +1461,7 @@
           'target_name': 'media_format_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'media',
+            'jni_gen_package': 'media',
             'input_java_class': 'android/media/MediaFormat.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },

@@ -3156,7 +3156,7 @@
             'android/java/src/org/chromium/chrome/browser/WebsiteSettingsPopup.java',
           ],
           'variables': {
-            'jni_gen_dir': 'chrome',
+            'jni_gen_package': 'chrome',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

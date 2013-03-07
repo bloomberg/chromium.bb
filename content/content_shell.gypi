@@ -587,7 +587,7 @@
             ],
           },
           'variables': {
-            'jni_gen_dir': 'content/shell',
+            'jni_gen_package': 'content/shell',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

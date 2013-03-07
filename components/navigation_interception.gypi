@@ -68,7 +68,7 @@
                 'navigation_interception/android/java/src/org/chromium/components/navigation_interception/NavigationParams.java',
               ],
               'variables': {
-                'jni_gen_dir': 'navigation_interception',
+                'jni_gen_package': 'navigation_interception',
               },
               'includes': [ '../build/jni_generator.gypi' ],
             },

@@ -359,7 +359,7 @@
           'target_name': 'surface_texture_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'content',
+            'jni_gen_package': 'content',
             'input_java_class': 'android/graphics/SurfaceTexture.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },
@@ -369,7 +369,7 @@
           'target_name': 'surface_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'content',
+            'jni_gen_package': 'content',
             'input_java_class': 'android/view/Surface.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },
@@ -379,7 +379,7 @@
           'target_name': 'java_set_jni_headers',
           'type': 'none',
           'variables': {
-            'jni_gen_dir': 'content',
+            'jni_gen_package': 'content',
             'input_java_class': 'java/util/HashSet.class',
             'input_jar_file': '<(android_sdk)/android.jar',
           },

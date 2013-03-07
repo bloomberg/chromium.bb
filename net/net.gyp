@@ -2407,7 +2407,7 @@
             'android/java/src/org/chromium/net/ProxyChangeListener.java',
           ],
           'variables': {
-            'jni_gen_dir': 'net',
+            'jni_gen_package': 'net',
           },
           'direct_dependent_settings': {
             'include_dirs': [
@@ -2423,7 +2423,7 @@
             'android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java',
           ],
           'variables': {
-            'jni_gen_dir': 'net',
+            'jni_gen_package': 'net',
           },
           'direct_dependent_settings': {
             'include_dirs': [

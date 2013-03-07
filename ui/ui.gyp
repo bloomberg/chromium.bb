@@ -857,7 +857,7 @@
              'android/java/src/org/chromium/ui/SelectFileDialog.java',
            ],
            'variables': {
-             'jni_gen_dir': 'ui',
+             'jni_gen_package': 'ui',
            },
            'includes': [ '../build/jni_generator.gypi' ],
          },

@@ -79,7 +79,7 @@
             'java/src/org/chromium/native_test/ChromeNativeTestActivity.java'
           ],
           'variables': {
-            'jni_gen_dir': 'testing',
+            'jni_gen_package': 'testing',
           },
           'includes': [ '../../build/jni_generator.gypi' ],
           # So generated jni headers can be found by targets that

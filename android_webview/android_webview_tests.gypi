@@ -80,7 +80,7 @@
           '../android_webview/unittestjava/src/org/chromium/android_webview/unittest/InputStreamUnittest.java',
       ],
       'variables': {
-        'jni_gen_dir': 'android_webview_unittests',
+        'jni_gen_package': 'android_webview_unittests',
       },
       'includes': [ '../build/jni_generator.gypi' ],
     },
