@@ -287,9 +287,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // browser process.
   void SetInstanceID(int instance_id);
 
-  // Requests media access permission from the embedder.
-  void RequestMediaPermission(int request_id,
-                              const base::DictionaryValue& request_info);
   // Informs the BrowserPlugin that the guest's permission request has been
   // allowed or denied by the embedder.
   void RespondPermission(BrowserPluginPermissionType permission_type,

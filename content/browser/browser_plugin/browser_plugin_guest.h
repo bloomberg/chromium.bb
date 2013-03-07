@@ -333,6 +333,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                          const std::string& name);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
+  // Helpers for |OnRespondPermission|.
+  void OnRespondPermissionMedia(int request_id, bool should_allow);
+
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;
 
@@ -359,9 +362,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
 
-  // A counter to generate unique request id for a media access request.
+  // A counter to generate unique request id for a permission request.
   // We only need the ids to be unique for a given BrowserPluginGuest.
-  int current_media_access_request_id_;
+  int next_permission_request_id_;
   // A map to store WebContents's media request object and callback.
   // We need to store these because we need a roundtrip to the embedder to know
   // if we allow or disallow the request. The key of the map is unique only for

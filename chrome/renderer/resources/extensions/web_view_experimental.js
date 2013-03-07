@@ -13,8 +13,8 @@
 
 var WebView = require('webview').WebView;
 
-/** @type {string} */
-var REQUEST_TYPE_MEDIA = 'media';
+/** @type {Array.<string>} */
+var PERMISSION_TYPES = ['media'];
 
 /** @type {string} */
 var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
@@ -35,8 +35,8 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {
     });
     var requestId = detail.requestId;
 
-    if (detail.permission == REQUEST_TYPE_MEDIA &&
-        detail.requestId !== undefined) {
+    if (detail.requestId !== undefined &&
+        PERMISSION_TYPES.indexOf(detail.permission) >= 0) {
       // TODO(lazyboy): Also fill in evt.details (see webview specs).
       // http://crbug.com/141197.
       var decisionMade = false;
@@ -63,7 +63,7 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {
 
       // Make browser plugin track lifetime of |request|.
       objectNode['-internal-persistObject'](
-          request, REQUEST_TYPE_MEDIA, requestId);
+          request, detail.permission, requestId);
 
       var defaultPrevented = !node.dispatchEvent(evt);
       if (!decisionMade && !defaultPrevented) {

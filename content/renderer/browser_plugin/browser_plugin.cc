@@ -72,6 +72,17 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
 static std::string GetInternalEventName(const char* event_name) {
   return base::StringPrintf("-internal-%s", event_name);
 }
+
+static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
+  switch (type) {
+    case BrowserPluginPermissionTypeMedia:
+      return browser_plugin::kPermissionTypeMedia;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return "";
+}
 }  // namespace
 
 BrowserPlugin::BrowserPlugin(
@@ -533,12 +544,34 @@ void BrowserPlugin::OnLockMouse(int instance_id,
 }
 
 void BrowserPlugin::OnRequestPermission(
-    int instance_id,
+    int /*instance_id*/,
     BrowserPluginPermissionType permission_type,
     int request_id,
     const base::DictionaryValue& request_info) {
-  if (permission_type == BrowserPluginPermissionTypeMedia)
-    RequestMediaPermission(request_id, request_info);
+  if (!HasEventListeners(browser_plugin::kEventRequestPermission)) {
+    // Automatically deny the request if there are no event listeners for
+    // permissionrequest.
+    RespondPermission(
+        permission_type, request_id, false /* allow */);
+    return;
+  }
+  DCHECK(!pending_permission_requests_.count(request_id));
+  pending_permission_requests_.insert(
+      std::make_pair(request_id,
+                     std::make_pair(request_id, permission_type)));
+
+  std::map<std::string, base::Value*> props;
+  props[browser_plugin::kPermission] =
+      base::Value::CreateStringValue(PermissionTypeToString(permission_type));
+  props[browser_plugin::kRequestId] =
+      base::Value::CreateIntegerValue(request_id);
+
+  // Fill in the info provided by the browser.
+  for (DictionaryValue::Iterator iter(request_info); !iter.IsAtEnd();
+           iter.Advance()) {
+    props[iter.key()] = iter.value().DeepCopy();
+  }
+  TriggerEvent(browser_plugin::kEventRequestPermission, &props);
 }
 
 void BrowserPlugin::OnSetCursor(int instance_id, const WebCursor& cursor) {
@@ -559,35 +592,6 @@ void BrowserPlugin::OnUnlockMouse(int instance_id) {
 
 void BrowserPlugin::OnUpdatedName(int instance_id, const std::string& name) {
   UpdateDOMAttribute(browser_plugin::kAttributeName, name);
-}
-
-void BrowserPlugin::RequestMediaPermission(
-    int request_id, const base::DictionaryValue& request_info) {
-  if (!HasEventListeners(browser_plugin::kEventRequestPermission)) {
-    // Automatically deny the request if there are no event listeners for
-    // permissionrequest.
-    RespondPermission(
-        BrowserPluginPermissionTypeMedia, request_id, false /* allow */);
-    return;
-  }
-  DCHECK(!pending_permission_requests_.count(request_id));
-  pending_permission_requests_.insert(
-      std::make_pair(request_id,
-                     std::make_pair(request_id,
-                                    BrowserPluginPermissionTypeMedia)));
-
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kPermission] =
-      base::Value::CreateStringValue(browser_plugin::kPermissionTypeMedia);
-  props[browser_plugin::kRequestId] =
-      base::Value::CreateIntegerValue(request_id);
-
-  // Fill in the info provided by the browser.
-  for (DictionaryValue::Iterator iter(request_info); !iter.IsAtEnd();
-           iter.Advance()) {
-    props[iter.key()] = iter.value().DeepCopy();
-  }
-  TriggerEvent(browser_plugin::kEventRequestPermission, &props);
 }
 
 bool BrowserPlugin::HasEventListeners(const std::string& event_name) {
@@ -992,19 +996,10 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
 
 void BrowserPlugin::RespondPermission(
     BrowserPluginPermissionType permission_type, int request_id, bool allow) {
-  switch (permission_type) {
-    case BrowserPluginPermissionTypeMedia:
-      browser_plugin_manager()->Send(
-          new BrowserPluginHostMsg_RespondPermission(
-              render_view_->GetRoutingID(), instance_id_,
-              BrowserPluginPermissionTypeMedia, request_id, allow));
-      break;
-    case BrowserPluginPermissionTypeUnknown:
-    default:
-      // Not a valid permission type.
-      NOTREACHED();
-      break;
-  }
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_RespondPermission(
+          render_view_->GetRoutingID(), instance_id_, permission_type,
+          request_id, allow));
 }
 
 void BrowserPlugin::RespondPermissionIfRequestIsPending(

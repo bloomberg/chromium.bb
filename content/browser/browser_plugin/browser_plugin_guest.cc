@@ -73,7 +73,7 @@ BrowserPluginGuest::BrowserPluginGuest(
       auto_size_enabled_(params.auto_size_params.enable),
       max_auto_size_(params.auto_size_params.max_size),
       min_auto_size_(params.auto_size_params.min_size),
-      current_media_access_request_id_(0) {
+      next_permission_request_id_(0) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
   GetWebContents()->GetBrowserPluginGuestManager()->AddGuest(instance_id_,
@@ -701,28 +701,14 @@ void BrowserPluginGuest::OnRespondPermission(
     BrowserPluginPermissionType permission_type,
     int request_id,
     bool should_allow) {
-  if (permission_type != BrowserPluginPermissionTypeMedia)
-    return;
-
-  MediaStreamRequestsMap::iterator media_request_iter =
-      media_requests_map_.find(request_id);
-  if (media_request_iter == media_requests_map_.end()) {
-    LOG(INFO) << "Not a valid request ID.";
-    return;
+  switch (permission_type) {
+    case BrowserPluginPermissionTypeMedia:
+      OnRespondPermissionMedia(request_id, should_allow);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  const content::MediaStreamRequest& request = media_request_iter->second.first;
-  const content::MediaResponseCallback& callback =
-      media_request_iter->second.second;
-
-  if (should_allow && embedder_web_contents_) {
-    // Re-route the request to the embedder's WebContents; the guest gets the
-    // permission this way.
-    embedder_web_contents_->RequestMediaAccessPermission(request, callback);
-  } else {
-    // Deny the request.
-    callback.Run(content::MediaStreamDevices());
-  }
-  media_requests_map_.erase(media_request_iter);
 }
 
 void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
@@ -861,7 +847,7 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     callback.Run(content::MediaStreamDevices());
     return;
   }
-  int request_id = current_media_access_request_id_++;
+  int request_id = next_permission_request_id_++;
   media_requests_map_.insert(
       std::make_pair(request_id,
                      std::make_pair(request, callback)));
@@ -929,6 +915,29 @@ void BrowserPluginGuest::OnUpdateRect(
 
   SendMessageToEmbedder(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
+}
+
+void BrowserPluginGuest::OnRespondPermissionMedia(
+    int request_id, bool should_allow) {
+  MediaStreamRequestsMap::iterator media_request_iter =
+      media_requests_map_.find(request_id);
+  if (media_request_iter == media_requests_map_.end()) {
+    LOG(INFO) << "Not a valid request ID.";
+    return;
+  }
+  const content::MediaStreamRequest& request = media_request_iter->second.first;
+  const content::MediaResponseCallback& callback =
+      media_request_iter->second.second;
+
+  if (should_allow && embedder_web_contents_) {
+    // Re-route the request to the embedder's WebContents; the guest gets the
+    // permission this way.
+    embedder_web_contents_->RequestMediaAccessPermission(request, callback);
+  } else {
+    // Deny the request.
+    callback.Run(content::MediaStreamDevices());
+  }
+  media_requests_map_.erase(media_request_iter);
 }
 
 }  // namespace content
