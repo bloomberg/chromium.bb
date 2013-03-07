@@ -45,6 +45,7 @@ public class ImeTest extends ContentShellTestBase {
     private ImeAdapter mImeAdapter;
     private ContentView mContentView;
     private TestCallbackHelperContainer mCallbackContainer;
+    private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     @Override
     public void setUp() throws Exception {
@@ -53,8 +54,9 @@ public class ImeTest extends ContentShellTestBase {
         launchContentShellWithUrl(DATA_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
-        getImeAdapter().setInputMethodManagerWrapper(
-                new TestInputMethodManagerWrapper(getContentViewCore()));
+        mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(getContentViewCore());
+        getImeAdapter().setInputMethodManagerWrapper(mInputMethodManagerWrapper);
+        assertEquals(0, mInputMethodManagerWrapper.mShowSoftInputCounter);
         getContentViewCore().setAdapterInputConnectionFactory(
                 new TestAdapterInputConnectionFactory());
 
@@ -74,6 +76,7 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(0, mConnection.mSelectionEnd);
         assertEquals(-1, mConnection.mCompositionStart);
         assertEquals(-1, mConnection.mCompositionEnd);
+        assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
     }
 
     @MediumTest
@@ -108,6 +111,7 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(1, mConnection.mSelectionEnd);
         assertEquals(0, mConnection.mCompositionStart);
         assertEquals(1, mConnection.mCompositionEnd);
+        assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
 
         mImeAdapter.checkCompositionQueueAndCallNative("he", 1, false);
         assertWaitForSetEditableCallback(3, mConnection);
@@ -116,6 +120,7 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(2, mConnection.mSelectionEnd);
         assertEquals(0, mConnection.mCompositionStart);
         assertEquals(2, mConnection.mCompositionEnd);
+        assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
 
         mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, false);
         assertWaitForSetEditableCallback(4, mConnection);
@@ -124,6 +129,7 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(3, mConnection.mSelectionEnd);
         assertEquals(0, mConnection.mCompositionStart);
         assertEquals(3, mConnection.mCompositionEnd);
+        assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
 
         mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, true);
         assertWaitForSetEditableCallback(5, mConnection);
@@ -132,6 +138,7 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(3, mConnection.mSelectionEnd);
         assertEquals(-1, mConnection.mCompositionStart);
         assertEquals(-1, mConnection.mCompositionEnd);
+        assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
     }
 
     @SmallTest
@@ -429,6 +436,7 @@ public class ImeTest extends ContentShellTestBase {
     private static class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         private ContentViewCore mContentViewCore;
         private InputConnection mInputConnection;
+        private int mShowSoftInputCounter = 0;
 
         public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
             super(null);
@@ -442,6 +450,7 @@ public class ImeTest extends ContentShellTestBase {
 
         @Override
         public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
+            mShowSoftInputCounter++;
             if (mInputConnection != null) return;
             mInputConnection = mContentViewCore.onCreateInputConnection(new EditorInfo());
         }
