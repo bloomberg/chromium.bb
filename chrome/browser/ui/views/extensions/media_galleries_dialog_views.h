@@ -45,7 +45,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
@@ -62,7 +61,9 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   // Adds a checkbox or updates an existing checkbox. Returns true if a new one
   // was added.
-  bool AddOrUpdateGallery(const MediaGalleryPrefInfo* gallery, bool permitted);
+  bool AddOrUpdateGallery(const MediaGalleryPrefInfo* gallery,
+                          bool permitted,
+                          views::View* container);
 
   MediaGalleriesDialogController* controller_;
 
@@ -75,7 +76,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // A map from media gallery to views::Checkbox view.
   CheckboxMap checkbox_map_;
 
-  views::View* checkbox_container_;
+  // Pointer to the button to add a new gallery. Owned by parent in
+  // the dialog views tree.
   views::LabelButton* add_gallery_button_;
 
   // This tracks whether the confirm button can be clicked. It starts as false
