@@ -283,8 +283,11 @@ void DriveResourceMetadata::MoveEntryToDirectory(
   } else if (!destination->AsDriveDirectory()) {
     error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
   } else {
-    if (entry->parent())
-      entry->parent()->RemoveChild(entry);
+    DriveDirectory* parent =
+        entry->parent_resource_id().empty() ? NULL :
+        GetEntryByResourceId(entry->parent_resource_id())->AsDriveDirectory();
+    if (parent)
+      parent->RemoveChild(entry);
 
     destination->AsDriveDirectory()->AddEntry(entry);
     moved_file_path = entry->GetFilePath();
@@ -317,7 +320,9 @@ void DriveResourceMetadata::RenameEntry(
   }
 
   entry->set_title(new_name);
-  DCHECK(entry->parent());
+
+  DriveEntry* parent = GetEntryByResourceId(entry->parent_resource_id());
+  DCHECK(parent);
   // After changing the title of the entry, call MoveEntryToDirectory to
   // remove the entry from its parent directory and then add it back in order to
   // go through the file name de-duplication.
@@ -325,7 +330,7 @@ void DriveResourceMetadata::RenameEntry(
   // changed, but not the file_name. MoveEntryToDirectory calls RemoveChild to
   // remove the child based on the old file_name, and then re-adds the child by
   // first assigning the new title to file_name. http://crbug.com/30157
-  MoveEntryToDirectory(file_path, entry->parent()->GetFilePath(), callback);
+  MoveEntryToDirectory(file_path, parent->GetFilePath(), callback);
 }
 
 void DriveResourceMetadata::RemoveEntryFromParent(
@@ -346,7 +351,8 @@ void DriveResourceMetadata::RemoveEntryFromParent(
     return;
   }
 
-  DriveDirectory* parent = entry->parent();
+  DriveDirectory* parent =
+      GetEntryByResourceId(entry->parent_resource_id())->AsDriveDirectory();
   DCHECK(parent);
 
   DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
@@ -508,7 +514,11 @@ void DriveResourceMetadata::RefreshEntry(
   }
 
   DriveEntry* old_entry = GetEntryByResourceId(drive_entry->resource_id());
-  DriveDirectory* old_parent = old_entry ? old_entry->parent() : NULL;
+  DriveDirectory* old_parent = NULL;
+  if (old_entry && !old_entry->parent_resource_id().empty()) {
+    old_parent = GetEntryByResourceId(
+        old_entry->parent_resource_id())->AsDriveDirectory();
+  }
   DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
 
   scoped_ptr<DriveEntryProto> result_entry_proto(new DriveEntryProto);

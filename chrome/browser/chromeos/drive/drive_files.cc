@@ -19,8 +19,7 @@ namespace drive {
 // DriveEntry class.
 
 DriveEntry::DriveEntry(DriveResourceMetadata* resource_metadata)
-    : parent_(NULL),
-      resource_metadata_(resource_metadata),
+    : resource_metadata_(resource_metadata),
       deleted_(false) {
   DCHECK(resource_metadata);
 }
@@ -48,15 +47,16 @@ const DriveDirectory* DriveEntry::AsDriveDirectoryConst() const {
 
 base::FilePath DriveEntry::GetFilePath() const {
   base::FilePath path;
-  if (parent())
-    path = parent()->GetFilePath();
+  DriveEntry* parent = parent_resource_id_.empty() ? NULL :
+      resource_metadata_->GetEntryByResourceId(parent_resource_id_);
+  if (parent)
+    path = parent->GetFilePath();
   path = path.Append(base_name());
   return path;
 }
 
-void DriveEntry::SetParent(DriveDirectory* parent) {
-  parent_ = parent;
-  parent_resource_id_ = parent ? parent->resource_id() : "";
+void DriveEntry::set_parent_resource_id(const std::string& parent_resource_id) {
+  parent_resource_id_ = parent_resource_id;
 }
 
 void DriveEntry::SetBaseNameFromTitle() {
@@ -104,7 +104,8 @@ DriveDirectory* DriveDirectory::AsDriveDirectory() {
 }
 
 void DriveDirectory::AddEntry(DriveEntry* entry) {
-  DCHECK(!entry->parent());
+  DCHECK(entry->parent_resource_id().empty() ||
+         entry->parent_resource_id() == resource_id_);
 
   // Try to add the entry to resource map.
   if (!resource_metadata_->AddEntryToResourceMap(entry)) {
@@ -151,7 +152,7 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
   if (entry->AsDriveDirectory())
     child_directories_.insert(std::make_pair(entry->base_name(),
                                              entry->resource_id()));
-  entry->SetParent(this);
+  entry->set_parent_resource_id(resource_id_);
 }
 
 void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
@@ -172,7 +173,7 @@ void DriveDirectory::TakeOverEntry(const std::string& resource_id) {
   DriveEntry* entry = resource_metadata_->GetEntryByResourceId(resource_id);
   DCHECK(entry);
   resource_metadata_->RemoveEntryFromResourceMap(resource_id);
-  entry->SetParent(NULL);
+  entry->set_parent_resource_id(std::string());
   AddEntry(entry);
 }
 
@@ -209,7 +210,7 @@ void DriveDirectory::RemoveChild(DriveEntry* entry) {
   child_files_.erase(base_name);
   child_directories_.erase(base_name);
 
-  entry->SetParent(NULL);
+  entry->set_parent_resource_id(std::string());
 }
 
 void DriveDirectory::RemoveChildren() {

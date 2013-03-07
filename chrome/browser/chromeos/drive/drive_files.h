@@ -55,8 +55,6 @@ class DriveEntry {
   // DriveEntryProto.
   void ToProtoFull(DriveEntryProto* proto) const;
 
-  // Return the parent of this entry. NULL for root.
-  DriveDirectory* parent() const { return parent_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
 
   // This is not the full path, use GetFilePath for that.
@@ -105,14 +103,14 @@ class DriveEntry {
   virtual void SetBaseNameFromTitle();
 
  protected:
-  // For access to SetParent from AddEntry.
+  // For access to set_parent_resource_id() from AddEntry.
   friend class DriveDirectory;
 
   explicit DriveEntry(DriveResourceMetadata* resource_metadata);
 
   // Sets the parent directory of this file system entry.
   // It is intended to be used by DriveDirectory::AddEntry() only.
-  void SetParent(DriveDirectory* parent);
+  void set_parent_resource_id(const std::string& parent_resource_id);
 
   base::PlatformFileInfo file_info_;
   // Title of this file (i.e. the 'title' attribute associated with a regular
@@ -137,7 +135,6 @@ class DriveEntry {
   // due to de-duplication (See AddEntry).
   base::FilePath::StringType base_name_;
 
-  DriveDirectory* parent_;
   // Weak pointer to DriveResourceMetadata.
   DriveResourceMetadata* resource_metadata_;
   bool deleted_;
