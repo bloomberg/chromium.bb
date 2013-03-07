@@ -1213,6 +1213,33 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, FocusCollapsedStackedPanel) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 2 stacked panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  gfx::Rect panel1_initial_bounds = gfx::Rect(100, 50, 200, 150);
+  Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
+  gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
+  Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
+  ASSERT_EQ(2, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(2, stack->num_panels());
+
+  // Collapse a panel.
+  panel2->Minimize();
+  WaitForBoundsAnimationFinished(panel2);
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_FALSE(panel2->IsActive());
+
+  // Focus the panel. Expect the panel is expanded.
+  panel2->Activate();
+  WaitForPanelActiveState(panel2, SHOW_AS_ACTIVE);
+  EXPECT_FALSE(panel2->IsMinimized());
+
+  panel_manager->CloseAll();
+}
+
 IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
                        UpdateStackedPanelsOnPrimaryDisplayChange) {
   PanelManager* panel_manager = PanelManager::GetInstance();

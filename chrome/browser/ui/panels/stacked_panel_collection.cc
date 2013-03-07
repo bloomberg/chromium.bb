@@ -263,7 +263,10 @@ void StackedPanelCollection::ResizePanelWindow(
 }
 
 void StackedPanelCollection::ActivatePanel(Panel* panel) {
-  // Nothing to do.
+  // Make sure the panel is expanded when activated so the user input
+  // does not go into a collapsed window.
+  if (panel->IsMinimized())
+    panel->SetExpansionState(Panel::EXPANDED);
 }
 
 void StackedPanelCollection::MinimizePanel(Panel* panel) {
