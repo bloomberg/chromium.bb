@@ -266,10 +266,15 @@
     'layout_tests': {
       'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/',
     },
-    'linux-sandboxing': {
+    'linux_fonts': {
+      'filepath': 'ui/gfx/font_render_params_.*|'\
+                  'ui/gfx/platform_font_pango.*|'\
+                  'ui/gfx/render_text_linux.*',
+    },
+    'linux_sandboxing': {
       'filepath': 'sandbox/linux/',
     },
-    'linux-seccomp-bpf': {
+    'linux_seccomp_bpf': {
       'filepath': 'content/common/sandbox.*linux.cc',
     },
     'locale_settings': {
@@ -619,8 +624,9 @@
                 'melevin@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'labs': ['thakis@chromium.org'],
-    'linux-sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
-    'linux-seccomp-bpf': ['jln+watch@chromium.org'],
+    'linux_fonts': ['derat+watch@chromium.org'],
+    'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
+    'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
     'mac': ['sail+watch@chromium.org'],
     'managed_users': ['pam+watch@chromium.org'],
