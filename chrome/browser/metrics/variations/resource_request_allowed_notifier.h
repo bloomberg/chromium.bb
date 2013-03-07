@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 #define CHROME_BROWSER_METRICS_VARIATIONS_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
 
-#include "base/observer_list.h"
 #include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
@@ -16,9 +15,10 @@
 // This class informs an interested observer when resource requests over the
 // network are permitted.
 //
-// Currently, the criteria for allowing resource requests include:
-//  1. The network is currently available.
-//  2. The EULA was accepted by the user (ChromeOS only).
+// Currently, the criteria for allowing resource requests are:
+//  1. The network is currently available,
+//  2. The EULA was accepted by the user (ChromeOS only), and
+//  3. The --disable-background-networking command line switch is not set.
 //
 // Interested services should add themselves as an observer of
 // ResourceRequestAllowedNotifier and check ResourceRequestsAllowed() to see if

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_CHROMEOS)
@@ -49,6 +51,11 @@ void ResourceRequestAllowedNotifier::Init(Observer* observer) {
 }
 
 bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundNetworking)) {
+    return false;
+  }
+
   // The observer requested permission. Return the current criteria state and
   // set a flag to remind this class to notify the observer once the criteria
   // is met.
