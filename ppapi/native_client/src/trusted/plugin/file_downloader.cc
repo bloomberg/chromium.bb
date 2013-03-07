@@ -72,7 +72,12 @@ bool FileDownloader::Open(
   pp::URLRequestInfo url_request(instance_);
 
   // Allow CORS.
-  url_request.SetAllowCrossOriginRequests(true);
+  // Note that "SetAllowCrossOriginRequests" (currently) has the side effect of
+  // preventing credentials from being sent on same-origin requests.  We
+  // therefore avoid setting this flag unless we know for sure it is a
+  // cross-origin request, resulting in behavior similar to XMLHttpRequest.
+  if (!instance_->DocumentCanRequest(url))
+    url_request.SetAllowCrossOriginRequests(true);
 
   do {
     // Reset the url loader and file reader.

@@ -259,6 +259,11 @@ class Plugin : public pp::InstancePrivate {
   // interface which this class has as a member.
   UrlSchemeType GetUrlScheme(const std::string& url);
 
+  // A helper function that indicates if |url| can be requested by the document
+  // under the same-origin policy. Strictly speaking, it may be possible for the
+  // document to request the URL using CORS even if this function returns false.
+  bool DocumentCanRequest(const std::string& url);
+
   // Get the text description of the last error reported by the plugin.
   const nacl::string& last_error_string() const { return last_error_string_; }
   void set_last_error_string(const nacl::string& error) {

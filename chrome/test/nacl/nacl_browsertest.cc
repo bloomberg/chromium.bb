@@ -16,6 +16,8 @@ namespace {
 #define MAYBE_ProgressEvents DISABLED_ProgressEvents
 #define MAYBE_CrossOriginCORS DISABLED_CrossOriginCORS
 #define MAYBE_CrossOriginFail DISABLED_CrossOriginFail
+#define MAYBE_SameOriginCookie DISABLED_SameOriginCookie
+#define MAYBE_CORSNoCookie DISABLED_CORSNoCookie
 #else
 #define MAYBE_SimpleLoad SimpleLoad
 #define MAYBE_ExitStatus0 ExitStatus0
@@ -25,6 +27,8 @@ namespace {
 #define MAYBE_ProgressEvents ProgressEvents
 #define MAYBE_CrossOriginCORS CrossOriginCORS
 #define MAYBE_CrossOriginFail CrossOriginFail
+#define MAYBE_SameOriginCookie SameOriginCookie
+#define MAYBE_CORSNoCookie CORSNoCookie
 #endif
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SimpleLoad, {
@@ -60,6 +64,14 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginCORS) {
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginFail) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/fail.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_SameOriginCookie) {
+  RunLoadTest(FILE_PATH_LITERAL("cross_origin/same_origin_cookie.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CORSNoCookie) {
+  RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors_no_cookie.html"));
 }
 
 }  // namespace anonymous

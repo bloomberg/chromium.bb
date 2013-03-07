@@ -1608,6 +1608,11 @@ UrlSchemeType Plugin::GetUrlScheme(const std::string& url) {
   return SCHEME_OTHER;
 }
 
+bool Plugin::DocumentCanRequest(const std::string& url) {
+  CHECK(url_util_ != NULL);
+  return url_util_->DocumentCanRequest(this, pp::Var(url));
+}
+
 void Plugin::AddToConsole(const nacl::string& text) {
   pp::Module* module = pp::Module::Get();
   const PPB_Var* var_interface =
