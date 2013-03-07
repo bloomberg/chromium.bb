@@ -279,7 +279,14 @@
             'SK_GAMMA_CONTRAST=0.2',
           ],
         }],
-        ['OS == "android" or OS == "win"', {
+        ['OS == "android"', {
+          'defines': [
+            'SK_GAMMA_APPLY_TO_A8',
+            'SK_GAMMA_EXPONENT=1.4',
+            'SK_GAMMA_CONTRAST=0.0',
+          ],
+        }],
+        ['OS == "win"', {
           'defines': [
             'SK_GAMMA_SRGB',
             'SK_GAMMA_CONTRAST=0.5',
