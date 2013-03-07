@@ -92,26 +92,25 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
       AccessibilityNotificationFocusChanged :
       AccessibilityNotificationLayoutComplete;
 
-  // This means that the new tree we send supercedes any previous tree,
-  // not just a previous node.
-  notification.includes_children = true;
-
   // Set the id that the notification applies to: the root node if nothing
   // has focus, otherwise the focused node.
   notification.id = node_has_focus ? next_id_ : 1;
 
   // Always include the root of the tree, the document. It always has id 1.
-  notification.acc_tree.id = 1;
-  notification.acc_tree.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-  notification.acc_tree.state =
+  notification.nodes.push_back(AccessibilityNodeData());
+  AccessibilityNodeData& root = notification.nodes[0];
+  root.id = 1;
+  root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  root.state =
       (1 << AccessibilityNodeData::STATE_READONLY) |
       (1 << AccessibilityNodeData::STATE_FOCUSABLE);
   if (!node_has_focus)
-    notification.acc_tree.state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
-  notification.acc_tree.location = gfx::Rect(render_view_->size());
+    root.state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
+  root.location = gfx::Rect(render_view_->size());
+  root.child_ids.push_back(next_id_);
 
-  notification.acc_tree.children.push_back(AccessibilityNodeData());
-  AccessibilityNodeData& child = notification.acc_tree.children[0];
+  notification.nodes.push_back(AccessibilityNodeData());
+  AccessibilityNodeData& child = notification.nodes[1];
   child.id = next_id_;
   child.role = AccessibilityNodeData::ROLE_GROUP;
 
@@ -119,7 +118,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
     child.location = gfx::Rect(
         const_cast<WebNode&>(node).to<WebElement>().boundsInViewportSpace());
   } else if (render_view_->HasIMETextFocus()) {
-    child.location = notification.acc_tree.location;
+    child.location = root.location;
   } else {
     child.location = gfx::Rect();
   }
@@ -138,7 +137,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
         << "routing id=" << routing_id()
         << " notification="
         << AccessibilityNotificationToString(notification.notification_type)
-        << "\n" << notification.acc_tree.DebugString(true);
+        << "\n" << notification.nodes[0].DebugString(true);
   }
 #endif
 

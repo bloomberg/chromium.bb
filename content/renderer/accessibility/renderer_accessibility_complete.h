@@ -31,7 +31,8 @@ class RenderViewImpl;
 // a serialized representation of that tree whenever it changes. It also
 // handles requests from the browser to perform accessibility actions on
 // nodes in the tree (e.g., change focus, or click on a button).
-class RendererAccessibilityComplete : public RendererAccessibility {
+class CONTENT_EXPORT RendererAccessibilityComplete
+    : public RendererAccessibility {
  public:
   explicit RendererAccessibilityComplete(RenderViewImpl* render_view);
   virtual ~RendererAccessibilityComplete();
@@ -46,28 +47,33 @@ class RendererAccessibilityComplete : public RendererAccessibility {
       const WebKit::WebAccessibilityObject& obj,
       WebKit::WebAccessibilityNotification notification) OVERRIDE;
 
+  // In order to keep track of what nodes the browser knows about, we keep a
+  // representation of the browser tree - just IDs and parent/child
+  // relationships.
+  struct CONTENT_EXPORT BrowserTreeNode {
+    BrowserTreeNode();
+    virtual ~BrowserTreeNode();
+    int32 id;
+    std::vector<BrowserTreeNode*> children;
+  };
+
+  virtual BrowserTreeNode* CreateBrowserTreeNode();
+
+ protected:
+  // Send queued notifications from the renderer to the browser.
+  void SendPendingAccessibilityNotifications();
+
  private:
   // Handle an accessibility notification to be sent to the browser process.
   void HandleAccessibilityNotification(
       const WebKit::WebAccessibilityObject& obj,
       AccessibilityNotification notification);
 
-  // In order to keep track of what nodes the browser knows about, we keep a
-  // representation of the browser tree - just IDs and parent/child
-  // relationships.
-  struct BrowserTreeNode {
-    BrowserTreeNode();
-    ~BrowserTreeNode();
-    int32 id;
-    std::vector<BrowserTreeNode*> children;
-  };
-
-  // Send queued notifications from the renderer to the browser.
-  void SendPendingAccessibilityNotifications();
-
-  // Update our representation of what nodes the browser has, given a
-  // tree of nodes.
-  void UpdateBrowserTree(const AccessibilityNodeData& renderer_node);
+  // Serialize the given accessibility object |obj| and append it to
+  // |dst|, and then recursively also serialize any *new* children of
+  // |obj|, based on what object ids we know the browser already has.
+  void SerializeChangedNodes(const WebKit::WebAccessibilityObject& obj,
+                             std::vector<AccessibilityNodeData>* dst);
 
   // Clear the given node and recursively delete all of its descendants
   // from the browser tree. (Does not delete |browser_node|).
@@ -80,8 +86,8 @@ class RendererAccessibilityComplete : public RendererAccessibility {
   void OnScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus);
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
   void OnSetFocus(int acc_obj_id);
-
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
+  void OnFatalError();
 
   // Whether or not this notification typically needs to send
   // updates to its children, too.

@@ -12,8 +12,11 @@ namespace content {
 
 void SerializeAccessibilityNode(
     const WebKit::WebAccessibilityObject& src,
-    AccessibilityNodeData* dst,
-    bool include_children);
+    AccessibilityNodeData* dst);
+
+bool ShouldIncludeChildNode(
+    const WebKit::WebAccessibilityObject& parent,
+    const WebKit::WebAccessibilityObject& child);
 
 }  // namespace content
 

@@ -61,9 +61,13 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
     : parent_view_(parent_view),
       delegate_(delegate),
       factory_(factory),
+      root_(NULL),
       focus_(NULL),
       osk_state_(OSK_ALLOWED) {
-  root_ = CreateAccessibilityTree(NULL, src, 0, false);
+  std::vector<AccessibilityNodeData> nodes;
+  nodes.push_back(src);
+  if (!UpdateNodes(nodes))
+    return;
   if (!focus_)
     SetFocus(root_, false);
 }
@@ -82,12 +86,8 @@ int32 BrowserAccessibilityManager::GetNextChildID() {
 }
 
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
-  // Clients could still hold references to some nodes of the tree, so
-  // calling InternalReleaseReference will make sure that as many nodes
-  // as possible are released now, and remaining nodes are marked as
-  // inactive so that calls to any methods on them will fail gracefully.
-  focus_->InternalReleaseReference(false);
-  root_->InternalReleaseReference(true);
+  if (root_)
+    root_->Destroy();
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
@@ -143,10 +143,12 @@ bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
   return bounds.Contains(touch_point);
 }
 
-void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
+void BrowserAccessibilityManager::Remove(BrowserAccessibility* node) {
+  if (node == focus_)
+    SetFocus(root_, false);
+  int child_id = node->child_id();
+  int renderer_id = node->renderer_id();
   child_id_map_.erase(child_id);
-
-  // TODO(ctguil): Investigate if hit. We should never have a newer entry.
   DCHECK(renderer_id_to_child_id_map_[renderer_id] == child_id);
   // Make sure we don't overwrite a newer entry (see UpdateNode for a possible
   // corner case).
@@ -159,22 +161,15 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
   for (uint32 index = 0; index < params.size(); index++) {
     const AccessibilityHostMsg_NotificationParams& param = params[index];
 
-    // Update the tree.
-    UpdateNode(param.acc_tree, param.includes_children);
+    // Update nodes that changed.
+    if (!UpdateNodes(param.nodes))
+      return;
 
     // Find the node corresponding to the id that's the target of the
     // notification (which may not be the root of the update tree).
-    base::hash_map<int32, int32>::iterator iter =
-        renderer_id_to_child_id_map_.find(param.id);
-    if (iter == renderer_id_to_child_id_map_.end()) {
+    BrowserAccessibility* node = GetFromRendererID(param.id);
+    if (!node)
       continue;
-    }
-    int32 child_id = iter->second;
-    BrowserAccessibility* node = GetFromChildID(child_id);
-    if (!node) {
-      NOTREACHED();
-      continue;
-    }
 
     int notification_type = param.notification_type;
     if (notification_type == AccessibilityNotificationFocusChanged ||
@@ -218,13 +213,8 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
 
 void BrowserAccessibilityManager::SetFocus(
     BrowserAccessibility* node, bool notify) {
-  if (focus_ != node) {
-    if (focus_)
-      focus_->InternalReleaseReference(false);
+  if (focus_ != node)
     focus_ = node;
-    if (focus_)
-      focus_->InternalAddReference();
-  }
 
   if (notify && node && delegate_)
     delegate_->SetAccessibilityFocus(node->renderer_id());
@@ -264,142 +254,159 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   return gfx::Rect();
 }
 
-void BrowserAccessibilityManager::UpdateNode(
-    const AccessibilityNodeData& src,
-    bool include_children) {
-  BrowserAccessibility* current = NULL;
+void BrowserAccessibilityManager::UpdateNodesForTesting(
+    const AccessibilityNodeData& node1,
+    const AccessibilityNodeData& node2 /* = AccessibilityNodeData() */,
+    const AccessibilityNodeData& node3 /* = AccessibilityNodeData() */,
+    const AccessibilityNodeData& node4 /* = AccessibilityNodeData() */,
+    const AccessibilityNodeData& node5 /* = AccessibilityNodeData() */,
+    const AccessibilityNodeData& node6 /* = AccessibilityNodeData() */,
+    const AccessibilityNodeData& node7 /* = AccessibilityNodeData() */) {
+  std::vector<AccessibilityNodeData> nodes;
+  nodes.push_back(node1);
+  if (node2.id != AccessibilityNodeData().id)
+    nodes.push_back(node2);
+  if (node3.id != AccessibilityNodeData().id)
+    nodes.push_back(node3);
+  if (node4.id != AccessibilityNodeData().id)
+    nodes.push_back(node4);
+  if (node5.id != AccessibilityNodeData().id)
+    nodes.push_back(node5);
+  if (node6.id != AccessibilityNodeData().id)
+    nodes.push_back(node6);
+  if (node7.id != AccessibilityNodeData().id)
+    nodes.push_back(node7);
+  UpdateNodes(nodes);
+}
 
-  // Look for the node to replace. Either we're replacing the whole tree
-  // (role is ROOT_WEB_AREA) or we look it up based on its renderer ID.
-  if (src.role == AccessibilityNodeData::ROLE_ROOT_WEB_AREA) {
-    current = root_;
-  } else {
-    base::hash_map<int32, int32>::iterator iter =
-        renderer_id_to_child_id_map_.find(src.id);
-    if (iter != renderer_id_to_child_id_map_.end()) {
-      int32 child_id = iter->second;
-      current = GetFromChildID(child_id);
+bool BrowserAccessibilityManager::UpdateNodes(
+    const std::vector<AccessibilityNodeData>& nodes) {
+  bool success = true;
+
+  // First, update all of the nodes in the tree.
+  for (size_t i = 0; i < nodes.size() && success; i++) {
+    if (!UpdateNode(nodes[i]))
+      success = false;
+  }
+
+  // In a second pass, call PostInitialize on each one - this must
+  // be called after all of each node's children are initialized too.
+  for (size_t i = 0; i < nodes.size() && success; i++) {
+    BrowserAccessibility* instance = GetFromRendererID(nodes[i].id);
+    if (instance) {
+      instance->PostInitialize();
+    } else {
+      success = false;
     }
   }
 
-  // If we can't find the node to replace, we're out of sync with the
-  // renderer (this would be a bug).
-  DCHECK(current);
-  if (!current)
-    return;
-
-  // If this update is just for a single node (|include_children| is false),
-  // modify |current| directly and return - no tree changes are needed.
-  if (!include_children) {
-    DCHECK_EQ(0U, src.children.size());
-    current->PreInitialize(
-        this,
-        current->parent(),
-        current->child_id(),
-        current->index_in_parent(),
-        src);
-    current->PostInitialize();
-    return;
+  if (!success) {
+    // A bad accessibility tree could lead to memory corruption.
+    // Ask the delegate to crash the renderer, or if not available,
+    // crash the browser.
+    if (delegate_)
+      delegate_->FatalAccessibilityTreeError();
+    else
+      CHECK(false);
   }
 
-  BrowserAccessibility* current_parent = current->parent();
-  int current_index_in_parent = current->index_in_parent();
-
-  // Detach all of the nodes in the old tree and get a single flat vector
-  // of all node pointers.
-  std::vector<BrowserAccessibility*> old_tree_nodes;
-  current->DetachTree(&old_tree_nodes);
-
-  // Build a new tree, reusing old nodes if possible. Each node that's
-  // reused will have its reference count incremented by one.
-  CreateAccessibilityTree(current_parent, src, current_index_in_parent, true);
-
-  // Decrement the reference count of all nodes in the old tree, which will
-  // delete any nodes no longer needed.
-  for (int i = 0; i < static_cast<int>(old_tree_nodes.size()); i++)
-    old_tree_nodes[i]->InternalReleaseReference(false);
-
-  // If the only reference to the focused node is focus_ itself, then the
-  // focused node is no longer in the tree, so set the focus to the root.
-  if (focus_ && focus_->ref_count() == 1) {
-    SetFocus(root_, false);
-
-    if (delegate_ && delegate_->HasFocus())
-      NotifyAccessibilityEvent(AccessibilityNotificationBlur, focus_);
-  }
+  return success;
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
+BrowserAccessibility* BrowserAccessibilityManager::CreateNode(
     BrowserAccessibility* parent,
-    const AccessibilityNodeData& src,
-    int index_in_parent,
-    bool send_show_events) {
-  BrowserAccessibility* instance = NULL;
-  int32 child_id = 0;
-  bool children_can_send_show_events = send_show_events;
-  base::hash_map<int32, int32>::iterator iter =
-      renderer_id_to_child_id_map_.find(src.id);
-
-  // If a BrowserAccessibility instance for this ID already exists, add a
-  // new reference to it and retrieve its children vector.
-  if (iter != renderer_id_to_child_id_map_.end()) {
-    child_id = iter->second;
-    instance = GetFromChildID(child_id);
-  }
-
-  // If the node has changed roles, don't reuse a BrowserAccessibility
-  // object, that could confuse a screen reader.
-  // TODO(dtseng): Investigate when this gets hit; See crbug.com/93095.
-  DCHECK(!instance || instance->role() == src.role);
-
-  // If we're reusing a node, it should already be detached from a parent
-  // and any children. If not, that means we have a serious bug somewhere,
-  // like the same child is reachable from two places in the same tree.
-  if (instance && (instance->parent() != NULL || instance->child_count() > 0)) {
-    // TODO(dmazzoni): investigate this: http://crbug.com/161726
-    LOG(WARNING) << "Reusing node that wasn't detached from parent";
-    instance = NULL;
-  }
-
-  if (instance) {
-    // If we're reusing a node, update its parent and increment its
-    // reference count.
-    instance->UpdateParent(parent, index_in_parent);
-    instance->InternalAddReference();
-    send_show_events = false;
-  } else {
-    // Otherwise, create a new instance.
-    instance = factory_->Create();
-    child_id = GetNextChildID();
-    children_can_send_show_events = false;
-  }
-
-  instance->PreInitialize(this, parent, child_id, index_in_parent, src);
+    int32 renderer_id,
+    int32 index_in_parent) {
+  BrowserAccessibility* instance = factory_->Create();
+  int32 child_id = GetNextChildID();
+  instance->InitializeTreeStructure(
+      this, parent, child_id, renderer_id, index_in_parent);
   child_id_map_[child_id] = instance;
-  renderer_id_to_child_id_map_[src.id] = child_id;
+  renderer_id_to_child_id_map_[renderer_id] = child_id;
+  return instance;
+}
 
+bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
+  // This method updates one node in the tree based on serialized data
+  // received from the renderer. First, look up the node by id. If it's
+  // not found, then either the root of the tree is being swapped, or
+  // we're out of sync with the renderer and this is a serious error.
+  BrowserAccessibility* instance = GetFromRendererID(src.id);
+  if (!instance) {
+    if (src.role != AccessibilityNodeData::ROLE_ROOT_WEB_AREA)
+      return false;
+    instance = CreateNode(NULL, src.id, 0);
+  }
+
+  // Update all of the node-specific data, like its role, state, name, etc.
+  instance->InitializeData(src);
+
+  //
+  // Update the children in three steps:
+  //
+  // 1. Iterate over the old children and delete nodes that are no longer
+  //    in the tree.
+  // 2. Build up a vector of new children, reusing children that haven't
+  //    changed (but may have been reordered) and adding new empty
+  //    objects for new children.
+  // 3. Swap in the new children vector for the old one.
+
+  // Delete any previous children of this instance that are no longer
+  // children first. We make a deletion-only pass first to prevent a
+  // node that's being reparented from being the child of both its old
+  // parent and new parent, which could lead to a double-free.
+  // If a node is reparented, the renderer will always send us a fresh
+  // copy of the node.
+  std::set<int32> new_child_ids;
+  for (size_t i = 0; i < src.child_ids.size(); ++i) {
+    if (new_child_ids.find(src.child_ids[i]) != new_child_ids.end())
+      return false;
+    new_child_ids.insert(src.child_ids[i]);
+  }
+  const std::vector<BrowserAccessibility*>& old_children = instance->children();
+  for (size_t i = 0; i < old_children.size(); ++i) {
+    int old_id = old_children[i]->renderer_id();
+    if (new_child_ids.find(old_id) == new_child_ids.end())
+      old_children[i]->Destroy();
+  }
+
+  // Now build a vector of new children, reusing objects that were already
+  // children of this node before.
+  std::vector<BrowserAccessibility*> new_children;
+  for (size_t i = 0; i < src.child_ids.size(); i++) {
+    int32 child_renderer_id = src.child_ids[i];
+    int32 index_in_parent = static_cast<int32>(i);
+    BrowserAccessibility* child = GetFromRendererID(child_renderer_id);
+    if (child) {
+      if (child->parent() != instance) {
+        instance->SwapChildren(new_children);
+        return false;
+      }
+      child->UpdateParent(instance, index_in_parent);
+    } else {
+      child = CreateNode(instance, child_renderer_id, index_in_parent);
+    }
+    new_children.push_back(child);
+  }
+
+  // Finally, swap in the new children vector for the old.
+  instance->SwapChildren(new_children);
+
+  // Handle the case where this node is the new root of the tree.
+  if (src.role == AccessibilityNodeData::ROLE_ROOT_WEB_AREA &&
+      (!root_ || root_->renderer_id() != src.id)) {
+    if (root_)
+      root_->Destroy();
+    if (focus_ == root_)
+      focus_ = instance;
+    root_ = instance;
+  }
+
+  // Keep track of what node is focused.
   if ((src.state >> AccessibilityNodeData::STATE_FOCUSED) & 1)
     SetFocus(instance, false);
 
-  for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
-    BrowserAccessibility* child = CreateAccessibilityTree(
-        instance, src.children[i], i, children_can_send_show_events);
-    instance->AddChild(child);
-  }
-
-  if (src.role == AccessibilityNodeData::ROLE_ROOT_WEB_AREA)
-    root_ = instance;
-
-  // Note: the purpose of send_show_events and children_can_send_show_events
-  // is so that we send a single ObjectShow event for the root of a subtree
-  // that just appeared for the first time, but not on any descendant of
-  // that subtree.
-  if (send_show_events)
-    NotifyAccessibilityEvent(AccessibilityNotificationObjectShow, instance);
-
-  instance->PostInitialize();
-
-  return instance;
+  return true;
 }
 
 }  // namespace content

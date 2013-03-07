@@ -2246,6 +2246,10 @@ void RenderWidgetHostImpl::AccessibilitySetTextSelection(
       GetRoutingID(), object_id, start_offset, end_offset));
 }
 
+void RenderWidgetHostImpl::FatalAccessibilityTreeError() {
+  Send(new AccessibilityMsg_FatalError(GetRoutingID()));
+}
+
 void RenderWidgetHostImpl::ExecuteEditCommand(const std::string& command,
                                               const std::string& value) {
   Send(new ViewMsg_ExecuteEditCommand(GetRoutingID(), command, value));

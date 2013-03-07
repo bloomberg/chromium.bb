@@ -1571,6 +1571,15 @@ gfx::Point RenderWidgetHostViewGtk::GetLastTouchEventLocation() const {
   return gfx::Point();
 }
 
+void RenderWidgetHostViewGtk::FatalAccessibilityTreeError() {
+  if (host_) {
+    host_->FatalAccessibilityTreeError();
+    SetBrowserAccessibilityManager(NULL);
+  } else {
+    CHECK(FALSE);
+  }
+}
+
 void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (!browser_accessibility_manager_.get()) {

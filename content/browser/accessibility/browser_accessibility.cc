@@ -34,7 +34,6 @@ BrowserAccessibility::BrowserAccessibility()
       child_id_(0),
       index_in_parent_(0),
       renderer_id_(0),
-      ref_count_(1),
       role_(0),
       state_(0),
       instance_active_(false) {
@@ -52,23 +51,25 @@ void BrowserAccessibility::DetachTree(
   parent_ = NULL;
 }
 
-void BrowserAccessibility::PreInitialize(
+void BrowserAccessibility::InitializeTreeStructure(
     BrowserAccessibilityManager* manager,
     BrowserAccessibility* parent,
     int32 child_id,
-    int32 index_in_parent,
-    const AccessibilityNodeData& src) {
+    int32 renderer_id,
+    int32 index_in_parent) {
   manager_ = manager;
   parent_ = parent;
   child_id_ = child_id;
+  renderer_id_ = renderer_id;
   index_in_parent_ = index_in_parent;
+}
 
-  // Update all of the rest of the attributes.
+void BrowserAccessibility::InitializeData(const AccessibilityNodeData& src) {
+  DCHECK_EQ(renderer_id_, src.id);
   name_ = src.name;
   value_ = src.value;
   role_ = src.role;
   state_ = src.state;
-  renderer_id_ = src.id;
   string_attributes_ = src.string_attributes;
   int_attributes_ = src.int_attributes;
   float_attributes_ = src.float_attributes;
@@ -79,6 +80,7 @@ void BrowserAccessibility::PreInitialize(
   line_breaks_ = src.line_breaks;
   cell_ids_ = src.cell_ids;
   unique_cell_ids_ = src.unique_cell_ids;
+  instance_active_ = true;
 
   PreInitialize();
 }
@@ -89,6 +91,11 @@ bool BrowserAccessibility::IsNative() const {
 
 void BrowserAccessibility::AddChild(BrowserAccessibility* child) {
   children_.push_back(child);
+}
+
+void BrowserAccessibility::SwapChildren(
+    std::vector<BrowserAccessibility*>& children) {
+  children.swap(children_);
 }
 
 void BrowserAccessibility::UpdateParent(BrowserAccessibility* parent,
@@ -183,41 +190,25 @@ BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
   return this;
 }
 
-void BrowserAccessibility::InternalAddReference() {
-  ref_count_++;
-}
-
-void BrowserAccessibility::InternalReleaseReference(bool recursive) {
-  DCHECK_GT(ref_count_, 0);
-  // It is a bug for ref_count_ to be gt 1 when |recursive| is true.
-  DCHECK(!recursive || ref_count_ == 1);
-
-  if (recursive || ref_count_ == 1) {
-    for (std::vector<BrowserAccessibility*>::iterator iter = children_.begin();
-         iter != children_.end();
-         ++iter) {
-      (*iter)->InternalReleaseReference(true);
-    }
-    children_.clear();
-    // Force this to be the last ref. As the DCHECK above indicates, this
-    // should always be the case. Make it so defensively.
-    ref_count_ = 1;
+void BrowserAccessibility::Destroy() {
+  for (std::vector<BrowserAccessibility*>::iterator iter = children_.begin();
+       iter != children_.end();
+       ++iter) {
+    (*iter)->Destroy();
   }
+  children_.clear();
 
-  ref_count_--;
-  if (ref_count_ == 0) {
-    // Allow the object to fire a TextRemoved notification.
-    name_.clear();
-    value_.clear();
-    PostInitialize();
+  // Allow the object to fire a TextRemoved notification.
+  name_.clear();
+  value_.clear();
+  PostInitialize();
 
-    manager_->NotifyAccessibilityEvent(
-        AccessibilityNotificationObjectHide, this);
+  manager_->NotifyAccessibilityEvent(
+      AccessibilityNotificationObjectHide, this);
 
-    instance_active_ = false;
-    manager_->Remove(child_id_, renderer_id_);
-    NativeReleaseReference();
-  }
+  instance_active_ = false;
+  manager_->Remove(this);
+  NativeReleaseReference();
 }
 
 void BrowserAccessibility::NativeReleaseReference() {
@@ -330,10 +321,6 @@ string16 BrowserAccessibility::GetTextRecursive() const {
   for (size_t i = 0; i < children_.size(); ++i)
     result += children_[i]->GetTextRecursive();
   return result;
-}
-
-void BrowserAccessibility::PreInitialize() {
-  instance_active_ = true;
 }
 
 }  // namespace content

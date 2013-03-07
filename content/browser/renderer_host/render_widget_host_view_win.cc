@@ -2592,6 +2592,11 @@ gfx::Point RenderWidgetHostViewWin::GetLastTouchEventLocation() const {
   return last_touch_location_;
 }
 
+void RenderWidgetHostViewWin::FatalAccessibilityTreeError() {
+  render_widget_host_->FatalAccessibilityTreeError();
+  SetBrowserAccessibilityManager(NULL);
+}
+
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnGetObject");

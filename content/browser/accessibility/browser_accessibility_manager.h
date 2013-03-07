@@ -37,6 +37,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual bool HasFocus() const = 0;
   virtual gfx::Rect GetViewBounds() const = 0;
   virtual gfx::Point GetLastTouchEventLocation() const = 0;
+  virtual void FatalAccessibilityTreeError() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -82,8 +83,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
 
-  // Removes the BrowserAccessibility child_id and renderer_id from the manager.
-  void Remove(int32 child_id, int32 renderer_id);
+  // Removes a node from the manager.
+  void Remove(BrowserAccessibility* node);
 
   // Return a pointer to the object corresponding to the given child_id,
   // does not make a new reference.
@@ -154,6 +155,19 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // focus event on a text box?
   bool IsOSKAllowed(const gfx::Rect& bounds);
 
+  // For testing only: update the given nodes as if they were
+  // received from the renderer process in OnAccessibilityNotifications.
+  // Takes up to 7 nodes at once so tests don't need to create a vector
+  // each time.
+  void UpdateNodesForTesting(
+      const AccessibilityNodeData& node,
+      const AccessibilityNodeData& node2 = AccessibilityNodeData(),
+      const AccessibilityNodeData& node3 = AccessibilityNodeData(),
+      const AccessibilityNodeData& node4 = AccessibilityNodeData(),
+      const AccessibilityNodeData& node5 = AccessibilityNodeData(),
+      const AccessibilityNodeData& node6 = AccessibilityNodeData(),
+      const AccessibilityNodeData& node7 = AccessibilityNodeData());
+
  protected:
   BrowserAccessibilityManager(
       gfx::NativeView parent_view,
@@ -184,19 +198,18 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
     OSK_ALLOWED
   };
 
-  // Update an accessibility node with an updated AccessibilityNodeData node
-  // received from the renderer process. When |include_children| is true
-  // the node's children will also be updated, otherwise only the node
-  // itself is updated.
-  void UpdateNode(const AccessibilityNodeData& src, bool include_children);
+  // Update a set of nodes using data received from the renderer
+  // process.
+  bool UpdateNodes(const std::vector<AccessibilityNodeData>& nodes);
 
-  // Recursively build a tree of BrowserAccessibility objects from
-  // the AccessibilityNodeData tree received from the renderer process.
-  BrowserAccessibility* CreateAccessibilityTree(
+  // Update one node from the tree using data received from the renderer
+  // process. Returns true on success, false on fatal error.
+  bool UpdateNode(const AccessibilityNodeData& src);
+
+  BrowserAccessibility* CreateNode(
       BrowserAccessibility* parent,
-      const AccessibilityNodeData& src,
-      int index_in_parent,
-      bool send_show_events);
+      int32 renderer_id,
+      int32 index_in_parent);
 
  protected:
   // The next unique id for a BrowserAccessibility instance.
@@ -211,7 +224,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Factory to create BrowserAccessibility objects (for dependency injection).
   scoped_ptr<BrowserAccessibilityFactory> factory_;
 
-  // The root of the tree of IAccessible objects and the element that
+  // The root of the tree of accessible objects and the element that
   // currently has focus, if any.
   BrowserAccessibility* root_;
   BrowserAccessibility* focus_;

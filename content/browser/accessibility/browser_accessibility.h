@@ -56,7 +56,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // including this node, onto the end of |nodes|.
   virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes);
 
-  // Perform platform specific initialization. This can be called multiple times
+  // Perform platform-specific initialization. This can be called multiple times
   // during the lifetime of this instance after the members of this base object
   // have been reset with new values from the renderer process.
   // Child dependent initialization can be done here.
@@ -66,16 +66,21 @@ class CONTENT_EXPORT BrowserAccessibility {
   // cross-platform generic object.
   virtual bool IsNative() const;
 
-  // Initialize this object, reading attributes from |src|. Does not
-  // recurse into children of |src| and build the whole subtree.
-  void PreInitialize(BrowserAccessibilityManager* manager,
+  // Initialize the tree structure of this object.
+  void InitializeTreeStructure(
+      BrowserAccessibilityManager* manager,
       BrowserAccessibility* parent,
       int32 child_id,
-      int32 index_in_parent,
-      const AccessibilityNodeData& src);
+      int32 renderer_id,
+      int32 index_in_parent);
+
+  // Initialize this object's data.
+  void InitializeData(const AccessibilityNodeData& src);
 
   // Add a child of this object.
   void AddChild(BrowserAccessibility* child);
+
+  void SwapChildren(std::vector<BrowserAccessibility*>& children);
 
   // Update the parent and index in parent if this node has been moved.
   void UpdateParent(BrowserAccessibility* parent, int index_in_parent);
@@ -111,32 +116,16 @@ class CONTENT_EXPORT BrowserAccessibility {
   // (in global screen coordinates).
   BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);
 
+  // Marks this object for deletion, releases our reference to it, and
+  // recursively calls Destroy() on its children.  May not delete
+  // immediately due to reference counting.
   //
-  // Reference counting
-  //
-  // Each object has an internal reference count and many platform
-  // implementations may also use native reference counting.
-  //
-  // The internal reference counting is used because sometimes
-  // multiple references to the same object exist temporarily during
-  // an update. When the internal reference count reaches zero,
-  // NativeReleaseReference is called.
-  //
-  // Native reference counting is used on some platforms because the
+  // Reference counting is used on some platforms because the
   // operating system may hold onto a reference to a BrowserAccessibility
-  // object even after we're through with it. On these platforms, when
-  // the internal reference count reaches zero, instance_active is set
-  // to zero, and all queries on this object should return failure.
-  // The object isn't actually deleted until the operating system releases
-  // all of its references.
-  //
-
-  // Increment this node's internal reference count.
-  virtual void InternalAddReference();
-
-  // Decrement this node's internal reference count. If the reference count
-  // reaches zero, call NativeReleaseReference().
-  virtual void InternalReleaseReference(bool recursive);
+  // object even after we're through with it. When a BrowserAccessibility
+  // has had Destroy() called but its reference count is not yet zero,
+  // queries on this object return failure
+  virtual void Destroy();
 
   // Subclasses should override this to support platform reference counting.
   virtual void NativeAddReference() { }
@@ -193,7 +182,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   int32 state() const { return state_; }
   const string16& value() const { return value_; }
   bool instance_active() const { return instance_active_; }
-  int32 ref_count() const { return ref_count_; }
 
 #if defined(OS_MACOSX) && __OBJC__
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
@@ -257,7 +245,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // during the lifetime of this instance after the members of this base object
   // have been reset with new values from the renderer process.
   // Perform child independent initialization in this method.
-  virtual void PreInitialize();
+  virtual void PreInitialize() {}
 
   BrowserAccessibility();
 
@@ -279,9 +267,6 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // The children of this object.
   std::vector<BrowserAccessibility*> children_;
-
-  // The number of internal references to this object.
-  int32 ref_count_;
 
   // Accessibility metadata from the renderer
   string16 name_;

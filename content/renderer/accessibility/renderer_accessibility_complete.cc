@@ -85,6 +85,9 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
     case WebKit::WebAccessibilityNotificationSelectedTextChanged:
       *type = AccessibilityNotificationSelectedTextChanged;
       break;
+    case WebKit::WebAccessibilityNotificationTextChanged:
+      *type = AccessibilityNotificationTextChanged;
+      break;
     case WebKit::WebAccessibilityNotificationValueChanged:
       *type = AccessibilityNotificationValueChanged;
       break;
@@ -134,6 +137,7 @@ bool RendererAccessibilityComplete::OnMessageReceived(
                         OnScrollToPoint)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection,
                         OnSetTextSelection)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -261,11 +265,6 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
     AccessibilityHostMsg_NotificationParams& notification =
         src_notifications[i];
 
-    // TODO(dtseng): Come up with a cleaner way of deciding to include children.
-    WebAccessibilityObject rootObject = document.accessibilityObject();
-    int root_id = rootObject.axID();
-    bool includes_children = ShouldIncludeChildren(notification) ||
-        root_id == notification.id;
     WebAccessibilityObject obj = document.accessibilityObjectFromID(
         notification.id);
     if (!obj.updateBackingStoreAndCheckValidity())
@@ -276,11 +275,12 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
     // notification on a node before the page has loaded. Work our way
     // up the parent chain until we find a node the browser has, or until
     // we reach the root.
+    WebAccessibilityObject root_object = document.accessibilityObject();
+    int root_id = root_object.axID();
     while (browser_id_map_.find(obj.axID()) == browser_id_map_.end() &&
            !obj.isDetached() &&
            obj.axID() != root_id) {
       obj = obj.parentObject();
-      includes_children = true;
       if (notification.notification_type ==
           AccessibilityNotificationChildrenChanged) {
         notification.id = obj.axID();
@@ -323,39 +323,28 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
       if (!is_child_of_parent) {
         obj = parent;
         notification.id = obj.axID();
-        includes_children = true;
       }
     }
 
     // Allow WebKit to cache intermediate results since we're doing a bunch
     // of read-only queries at once.
-    rootObject.startCachingComputedObjectAttributesUntilTreeMutates();
+    root_object.startCachingComputedObjectAttributesUntilTreeMutates();
 
     AccessibilityHostMsg_NotificationParams notification_msg;
     notification_msg.notification_type = notification.notification_type;
     notification_msg.id = notification.id;
-    notification_msg.includes_children = includes_children;
-    SerializeAccessibilityNode(obj,
-                               &notification_msg.acc_tree,
-                               includes_children);
-    if (obj.axID() == root_id) {
-      DCHECK_EQ(notification_msg.acc_tree.role,
-                AccessibilityNodeData::ROLE_WEB_AREA);
-      notification_msg.acc_tree.role =
-          AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-    }
+    SerializeChangedNodes(obj, &notification_msg.nodes);
     notification_msgs.push_back(notification_msg);
-
-    if (includes_children)
-      UpdateBrowserTree(notification_msg.acc_tree);
 
 #ifndef NDEBUG
     if (logging_) {
+      AccessibilityNodeDataTreeNode tree;
+      MakeAccessibilityNodeDataTree(notification_msg.nodes, &tree);
       LOG(INFO) << "Accessibility update: \n"
           << "routing id=" << routing_id()
           << " notification="
           << AccessibilityNotificationToString(notification.notification_type)
-          << "\n" << notification_msg.acc_tree.DebugString(true);
+          << "\n" << tree.DebugString(true);
     }
 #endif
   }
@@ -363,34 +352,118 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
   Send(new AccessibilityHostMsg_Notifications(routing_id(), notification_msgs));
 }
 
-void RendererAccessibilityComplete::UpdateBrowserTree(
-    const AccessibilityNodeData& renderer_node) {
+RendererAccessibilityComplete::BrowserTreeNode*
+RendererAccessibilityComplete::CreateBrowserTreeNode() {
+  return new RendererAccessibilityComplete::BrowserTreeNode();
+}
+
+void RendererAccessibilityComplete::SerializeChangedNodes(
+    const WebKit::WebAccessibilityObject& obj,
+    std::vector<AccessibilityNodeData>* dst) {
+  // This method has three responsibilities:
+  // 1. Serialize |obj| into an AccessibilityNodeData, and append it to
+  //    the end of the |dst| vector to be send to the browser process.
+  // 2. Determine if |obj| has any new children that the browser doesn't
+  //    know about yet, and call SerializeChangedNodes recursively on those.
+  // 3. Update our internal data structure that keeps track of what nodes
+  //    the browser knows about.
+
+  // First, find the BrowserTreeNode for this id in our data structure where
+  // we keep track of what accessibility objects the browser already knows
+  // about. If we don't find it, then this must be the new root of the
+  // accessibility tree.
   BrowserTreeNode* browser_node = NULL;
   base::hash_map<int32, BrowserTreeNode*>::iterator iter =
-      browser_id_map_.find(renderer_node.id);
+    browser_id_map_.find(obj.axID());
   if (iter != browser_id_map_.end()) {
     browser_node = iter->second;
-    ClearBrowserTreeNode(browser_node);
   } else {
-    DCHECK_EQ(renderer_node.role, AccessibilityNodeData::ROLE_ROOT_WEB_AREA);
     if (browser_root_) {
       ClearBrowserTreeNode(browser_root_);
       browser_id_map_.erase(browser_root_->id);
       delete browser_root_;
     }
-    browser_root_ = new BrowserTreeNode;
+    browser_root_ = CreateBrowserTreeNode();
     browser_node = browser_root_;
-    browser_node->id = renderer_node.id;
+    browser_node->id = obj.axID();
     browser_id_map_[browser_node->id] = browser_node;
   }
-  browser_node->children.reserve(renderer_node.children.size());
-  for (size_t i = 0; i < renderer_node.children.size(); ++i) {
-    BrowserTreeNode* browser_child_node = new BrowserTreeNode;
-    browser_child_node->id = renderer_node.children[i].id;
-    browser_id_map_[browser_child_node->id] = browser_child_node;
-    browser_node->children.push_back(browser_child_node);
-    UpdateBrowserTree(renderer_node.children[i]);
+
+  // Serialize this node. This fills in all of the fields in
+  // AccessibilityNodeData except child_ids, which we handle below.
+  dst->push_back(AccessibilityNodeData());
+  AccessibilityNodeData* serialized_node = &dst->back();
+  SerializeAccessibilityNode(obj, serialized_node);
+  if (serialized_node->id == browser_root_->id)
+    serialized_node->role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+
+  // Create set of the ids of the children of |obj| so we can quickly look
+  // up which children are new and which ones were there before.
+  base::hash_set<int32> new_child_ids;
+  for (unsigned i = 0; i < obj.childCount(); i++) {
+    WebAccessibilityObject child = obj.childAt(i);
+    if (ShouldIncludeChildNode(obj, child)) {
+      new_child_ids.insert(child.axID());
+    }
   }
+
+  // Go through the old children and delete subtrees for child
+  // ids that are no longer present, and create a map from
+  // id to BrowserTreeNode for the rest. It's important to delete
+  // first in a separate pass so that nodes that are reparented
+  // don't end up children of two different parents in the middle
+  // of an update, which can lead to a double-free.
+  base::hash_map<int32, BrowserTreeNode*> browser_child_id_map;
+  std::vector<BrowserTreeNode*> old_children;
+  old_children.swap(browser_node->children);
+  for (size_t i = 0; i < old_children.size(); i++) {
+    BrowserTreeNode* old_child = old_children[i];
+    int old_child_id = old_child->id;
+    if (new_child_ids.find(old_child_id) == new_child_ids.end()) {
+      browser_id_map_.erase(old_child_id);
+      ClearBrowserTreeNode(old_child);
+      delete old_child;
+    } else {
+      browser_child_id_map[old_child_id] = old_child;
+    }
+  }
+
+  // Iterate over the children, make note of the ones that are new
+  // and need to be serialized, and update the BrowserTreeNode
+  // data structure to reflect the new tree.
+  std::vector<WebAccessibilityObject> children_to_serialize;
+  int child_count = obj.childCount();
+  browser_node->children.reserve(child_count);
+  for (int i = 0; i < child_count; i++) {
+    WebAccessibilityObject child = obj.childAt(i);
+    int child_id = child.axID();
+
+    // Checks to make sure the child is valid, attached to this node,
+    // and one we want to include in the tree.
+    if (!ShouldIncludeChildNode(obj, child))
+      continue;
+
+    // No need to do anything more with children that aren't new;
+    // the browser will reuse its existing object.
+    if (new_child_ids.find(child_id) == new_child_ids.end())
+      continue;
+
+    new_child_ids.erase(child_id);
+    serialized_node->child_ids.push_back(child_id);
+    if (browser_child_id_map.find(child_id) != browser_child_id_map.end()) {
+      browser_node->children.push_back(browser_child_id_map[child_id]);
+    } else {
+      BrowserTreeNode* new_child = CreateBrowserTreeNode();
+      new_child->id = child_id;
+      browser_node->children.push_back(new_child);
+      browser_id_map_[child_id] = new_child;
+      children_to_serialize.push_back(child);
+    }
+  }
+
+  // Serialize all of the new children, recursively.
+  for (size_t i = 0; i < children_to_serialize.size(); ++i)
+    SerializeChangedNodes(children_to_serialize[i], dst);
 }
 
 void RendererAccessibilityComplete::ClearBrowserTreeNode(
@@ -538,6 +611,10 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
     render_view()->GetWebView()->clearFocusedNode();
   else
     obj.setFocused(true);
+}
+
+void RendererAccessibilityComplete::OnFatalError() {
+  CHECK(false);
 }
 
 bool RendererAccessibilityComplete::ShouldIncludeChildren(

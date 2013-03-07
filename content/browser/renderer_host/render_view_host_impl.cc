@@ -1902,7 +1902,7 @@ void RenderViewHostImpl::OnAccessibilityNotifications(
     if ((src_type == AccessibilityNotificationLayoutComplete ||
          src_type == AccessibilityNotificationLoadComplete) &&
         save_accessibility_tree_for_testing_) {
-      accessibility_tree_ = param.acc_tree;
+      MakeAccessibilityNodeDataTree(param.nodes, &accessibility_tree_);
     }
 
     if (src_type == AccessibilityNotificationLayoutComplete) {

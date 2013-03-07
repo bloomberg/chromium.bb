@@ -250,6 +250,7 @@ class RenderWidgetHostViewWin
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
   virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
+  virtual void FatalAccessibilityTreeError() OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;

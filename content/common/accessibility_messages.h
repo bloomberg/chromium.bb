@@ -128,7 +128,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::AccessibilityNodeData)
   IPC_STRUCT_TRAITS_MEMBER(int_attributes)
   IPC_STRUCT_TRAITS_MEMBER(float_attributes)
   IPC_STRUCT_TRAITS_MEMBER(bool_attributes)
-  IPC_STRUCT_TRAITS_MEMBER(children)
+  IPC_STRUCT_TRAITS_MEMBER(child_ids)
   IPC_STRUCT_TRAITS_MEMBER(indirect_child_ids)
   IPC_STRUCT_TRAITS_MEMBER(html_attributes)
   IPC_STRUCT_TRAITS_MEMBER(line_breaks)
@@ -137,18 +137,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::AccessibilityNodeData)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_NotificationParams)
+  // Vector of nodes in the tree that need to be updated before
+  // sending the notification.
+  IPC_STRUCT_MEMBER(std::vector<content::AccessibilityNodeData>, nodes)
+
   // Type of notification.
   IPC_STRUCT_MEMBER(AccessibilityNotification, notification_type)
 
   // ID of the node that the notification applies to.
   IPC_STRUCT_MEMBER(int, id)
-
-  // The accessibility node tree.
-  IPC_STRUCT_MEMBER(content::AccessibilityNodeData, acc_tree)
-
-  // Whether children are included in this tree, otherwise it's just an
-  // update to this one node and existing children are left in place.
-  IPC_STRUCT_MEMBER(bool, includes_children)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
@@ -188,6 +185,10 @@ IPC_MESSAGE_ROUTED3(AccessibilityMsg_SetTextSelection,
 // Tells the render view that a AccessibilityHostMsg_Notifications
 // message was processed and it can send addition notifications.
 IPC_MESSAGE_ROUTED0(AccessibilityMsg_Notifications_ACK)
+
+
+// Kill the renderer because we got a fatal error in the accessibility tree.
+IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)
 
 // Messages sent from the renderer to the browser.
 

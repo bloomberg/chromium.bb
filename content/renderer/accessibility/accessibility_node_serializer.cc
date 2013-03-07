@@ -350,8 +350,7 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
 
 void SerializeAccessibilityNode(
     const WebAccessibilityObject& src,
-    AccessibilityNodeData* dst,
-    bool include_children) {
+    AccessibilityNodeData* dst) {
   dst->name = src.title();
   dst->role = ConvertRole(src.roleValue());
   dst->state = ConvertState(src);
@@ -404,9 +403,6 @@ void SerializeAccessibilityNode(
     dst->int_attributes[dst->ATTR_HIERARCHICAL_LEVEL] = src.hierarchicalLevel();
   }
 
-  if (dst->role == dst->ROLE_SLIDER)
-    include_children = false;
-
   // Treat the active list box item as focused.
   if (dst->role == dst->ROLE_LISTBOX_OPTION && src.isSelectedOptionActive())
     dst->state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
@@ -440,9 +436,6 @@ void SerializeAccessibilityNode(
     if (dst->role == dst->ROLE_EDITABLE_TEXT ||
         dst->role == dst->ROLE_TEXTAREA ||
         dst->role == dst->ROLE_TEXT_FIELD) {
-      // Jaws gets confused by children of text fields, so we ignore them.
-      include_children = false;
-
       dst->int_attributes[dst->ATTR_TEXT_SEL_START] = src.selectionStart();
       dst->int_attributes[dst->ATTR_TEXT_SEL_END] = src.selectionEnd();
 
@@ -590,46 +583,49 @@ void SerializeAccessibilityNode(
     dst->int_attributes[dst->ATTR_TABLE_CELL_ROW_SPAN] = src.cellRowSpan();
   }
 
-  if (include_children) {
-    // Recursively create children.
-    int child_count = src.childCount();
-    std::set<int32> child_ids;
-    for (int i = 0; i < child_count; ++i) {
-      WebAccessibilityObject child = src.childAt(i);
-      int32 child_id = child.axID();
-
-      // The child may be invalid due to issues in webkit accessibility code.
-      // Don't add children that are invalid thus preventing a crash.
-      // https://bugs.webkit.org/show_bug.cgi?id=44149
-      // TODO(ctguil): We may want to remove this check as webkit stabilizes.
-      if (child.isDetached())
-        continue;
-
-      // Children may duplicated in the webkit accessibility tree. Only add a
-      // child once for the web accessibility tree.
-      // https://bugs.webkit.org/show_bug.cgi?id=58930
-      if (child_ids.find(child_id) != child_ids.end())
-        continue;
-      child_ids.insert(child_id);
-
-      // Some nodes appear in the tree in more than one place: for example,
-      // a cell in a table appears as a child of both a row and a column.
-      // Only recursively add child nodes that have this node as its
-      // unignored parent. For child nodes that are actually parented to
-      // somethinng else, store only the ID.
-      //
-      // As an exception, also add children of an iframe element.
-      // https://bugs.webkit.org/show_bug.cgi?id=57066
-      if (is_iframe || IsParentUnignoredOf(src, child)) {
-        dst->children.push_back(AccessibilityNodeData());
-        SerializeAccessibilityNode(child,
-                                   &dst->children.back(),
-                                   include_children);
-      } else {
-        dst->indirect_child_ids.push_back(child_id);
-      }
-    }
+  // Add the ids of *indirect* children - those who are children of this node,
+  // but whose parent is *not* this node. One example is a table
+  // cell, which is a child of both a row and a column. Because the cell's
+  // parent is the row, the row adds it as a child, and the column adds it
+  // as an indirect child.
+  int child_count = src.childCount();
+  for (int i = 0; i < child_count; ++i) {
+    WebAccessibilityObject child = src.childAt(i);
+    if (!is_iframe && !child.isDetached() && !IsParentUnignoredOf(src, child))
+      dst->indirect_child_ids.push_back(child.axID());
   }
+}
+
+bool ShouldIncludeChildNode(
+    const WebAccessibilityObject& parent,
+    const WebAccessibilityObject& child) {
+  switch(parent.roleValue()) {
+  case WebKit::WebAccessibilityRoleSlider:
+  case WebKit::WebAccessibilityRoleEditableText:
+  case WebKit::WebAccessibilityRoleTextArea:
+  case WebKit::WebAccessibilityRoleTextField:
+    return false;
+  default:
+    break;
+  }
+
+  // The child may be invalid due to issues in webkit accessibility code.
+  // Don't add children that are invalid thus preventing a crash.
+  // https://bugs.webkit.org/show_bug.cgi?id=44149
+  // TODO(ctguil): We may want to remove this check as webkit stabilizes.
+  if (child.isDetached())
+    return false;
+
+  // Skip children whose parent isn't this - see indirect_child_ids, above.
+  // As an exception, include children of an iframe element.
+  bool is_iframe = false;
+  WebNode node = parent.node();
+  if (!node.isNull() && node.isElementNode()) {
+    WebElement element = node.to<WebElement>();
+    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+  }
+
+  return (is_iframe || IsParentUnignoredOf(parent, child));
 }
 
 }  // namespace content

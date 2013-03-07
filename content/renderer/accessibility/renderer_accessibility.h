@@ -49,7 +49,7 @@ class RenderViewImpl;
 //
 // What both subclasses have in common is that they are responsible for
 //
-class RendererAccessibility : public RenderViewObserver {
+class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
  public:
   explicit RendererAccessibility(RenderViewImpl* render_view);
   virtual ~RendererAccessibility();

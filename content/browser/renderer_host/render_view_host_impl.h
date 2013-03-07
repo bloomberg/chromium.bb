@@ -418,7 +418,7 @@ class CONTENT_EXPORT RenderViewHostImpl
     save_accessibility_tree_for_testing_ = save;
   }
 
-  const AccessibilityNodeData& accessibility_tree_for_testing() {
+  const AccessibilityNodeDataTreeNode& accessibility_tree_for_testing() {
     return accessibility_tree_;
   }
 
@@ -675,7 +675,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   std::string frame_tree_;
 
   // The most recently received accessibility tree - for unit testing only.
-  AccessibilityNodeData accessibility_tree_;
+  AccessibilityNodeDataTreeNode accessibility_tree_;
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;

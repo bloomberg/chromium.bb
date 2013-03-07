@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/hash_tables.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -40,13 +41,70 @@ AccessibilityNodeData::AccessibilityNodeData()
 AccessibilityNodeData::~AccessibilityNodeData() {
 }
 
+AccessibilityNodeDataTreeNode::AccessibilityNodeDataTreeNode()
+  : AccessibilityNodeData() {
+}
+
+AccessibilityNodeDataTreeNode::~AccessibilityNodeDataTreeNode() {
+}
+
+AccessibilityNodeDataTreeNode& AccessibilityNodeDataTreeNode::operator=(
+    const AccessibilityNodeData& src) {
+  AccessibilityNodeData::operator=(src);
+  return *this;
+}
+
+void MakeAccessibilityNodeDataTree(
+    const std::vector<AccessibilityNodeData>& src_vector,
+    AccessibilityNodeDataTreeNode* dst_root) {
+  // This method assumes |src_vector| contains all of the nodes of
+  // an accessibility tree, and that each parent comes before its
+  // children. Each node has an id, and the ids of its children.
+  // The output is a tree where each node contains its children.
+
+  // Initialize a hash map with all of the ids in |src_vector|.
+  base::hash_map<int32, AccessibilityNodeDataTreeNode*> id_map;
+  for (size_t i = 0; i < src_vector.size(); ++i)
+    id_map[src_vector[i].id] = NULL;
+
+  // Copy the nodes to the output tree one at a time.
+  for (size_t i = 0; i < src_vector.size(); ++i) {
+    const AccessibilityNodeData& src_node = src_vector[i];
+    AccessibilityNodeDataTreeNode* dst_node;
+
+    // If it's the first element in the vector, assume it's
+    // the root.  For any other element, look for it in our
+    // hash map, and skip it if not there (meaning there was
+    // an extranous node, or the nodes were sent in the wrong
+    // order).
+    if (i == 0) {
+      dst_node = dst_root;
+    } else {
+      dst_node = id_map[src_node.id];
+      if (!dst_node)
+        continue;
+    }
+
+    // Copy the node data.
+    *dst_node = src_node;
+
+    // Add placeholders for all of the node's children in the tree,
+    // and add them to the hash map so we can find them when we
+    // encounter them in |src_vector|.
+    dst_node->children.reserve(src_node.child_ids.size());
+    for (size_t j = 0; j < src_node.child_ids.size(); ++j) {
+      int child_id = src_node.child_ids[j];
+      if (id_map.find(child_id) != id_map.end()) {
+        dst_node->children.push_back(AccessibilityNodeDataTreeNode());
+        id_map[child_id] = &dst_node->children.back();
+      }
+    }
+  }
+}
+
 #ifndef NDEBUG
 std::string AccessibilityNodeData::DebugString(bool recursive) const {
   std::string result;
-  static int indent = 0;
-  result += "\n";
-  for (int i = 0; i < indent; ++i)
-    result += "  ";
 
   result += "id=" + IntToString(id);
 
@@ -407,8 +465,8 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     }
   }
 
-  if (!children.empty())
-    result += " children=" + IntToString(children.size());
+  if (!child_ids.empty())
+    result += " child_ids=" + IntVectorToString(child_ids);
 
   if (!indirect_child_ids.empty())
     result += " indirect_child_ids=" + IntVectorToString(indirect_child_ids);
@@ -418,6 +476,19 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
 
   if (!cell_ids.empty())
     result += " cell_ids=" + IntVectorToString(cell_ids);
+
+  return result;
+}
+
+std::string AccessibilityNodeDataTreeNode::DebugString(bool recursive) const {
+  std::string result;
+
+  static int indent = 0;
+  result += "\n";
+  for (int i = 0; i < indent; ++i)
+    result += "  ";
+
+  result += AccessibilityNodeData::DebugString(recursive);
 
   if (recursive) {
     result += "\n";
@@ -429,6 +500,7 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
 
   return result;
 }
+
 #endif  // ifndef NDEBUG
 
 }  // namespace content
