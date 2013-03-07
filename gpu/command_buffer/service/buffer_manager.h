@@ -19,6 +19,8 @@ namespace gpu {
 namespace gles2 {
 
 class BufferManager;
+class FeatureInfo;
+class GLES2Decoder;
 
 // Info about Buffers currently in the system.
 class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
@@ -29,6 +31,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     return service_id_;
   }
 
+  GLenum target() const {
+    return target_;
+  }
+
   GLsizeiptr size() const {
     return size_;
   }
@@ -36,11 +42,6 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   GLenum usage() const {
     return usage_;
   }
-
-  // Sets a range of data for this buffer. Returns false if the offset or size
-  // is out of range.
-  bool SetRange(
-    GLintptr offset, GLsizeiptr size, const GLvoid * data);
 
   // Gets the maximum value in the buffer for the given range interpreted as
   // the given type. Returns false if offset and count are out of range.
@@ -58,6 +59,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   bool IsValid() const {
     return target() && !IsDeleted();
+  }
+
+  bool IsClientSideArray() const {
+    return is_client_side_array_;
   }
 
  private:
@@ -95,10 +100,6 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   ~Buffer();
 
-  GLenum target() const {
-    return target_;
-  }
-
   void set_target(GLenum target) {
     DCHECK_EQ(target_, 0u);  // you can only set this once.
     target_ = target;
@@ -112,7 +113,16 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     deleted_ = true;
   }
 
-  void SetInfo(GLsizeiptr size, GLenum usage, bool shadow);
+  // Sets the size, usage and initial data of a buffer.
+  // If shadow is true then if data is NULL buffer will be initialized to 0.
+  void SetInfo(
+      GLsizeiptr size, GLenum usage, bool shadow, const GLvoid* data,
+      bool is_client_side_array);
+
+  // Sets a range of data for this buffer. Returns false if the offset or size
+  // is out of range.
+  bool SetRange(
+    GLintptr offset, GLsizeiptr size, const GLvoid * data);
 
   // Clears any cache of index ranges.
   void ClearCache();
@@ -143,6 +153,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Whether or not the data is shadowed.
   bool shadowed_;
 
+  // Whether or not this Buffer is not uploaded to the GPU but just
+  // sitting in local memory.
+  bool is_client_side_array_;
+
   // A copy of the data in the buffer. This data is only kept if the target
   // is backed_ = true.
   scoped_array<int8> shadow_;
@@ -159,7 +173,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 // shared by multiple GLES2Decoders.
 class GPU_EXPORT BufferManager {
  public:
-  BufferManager(MemoryTracker* memory_tracker);
+  BufferManager(MemoryTracker* memory_tracker, FeatureInfo* feature_info);
   ~BufferManager();
 
   // Must call before destruction.
@@ -177,8 +191,22 @@ class GPU_EXPORT BufferManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
-  // Sets the size and usage of a buffer.
-  void SetInfo(Buffer* info, GLsizeiptr size, GLenum usage);
+  // Does a glBufferData and updates the approprate accounting. Currently
+  // assume the values have already been validated.
+  void DoBufferData(
+      GLES2Decoder* decoder,
+      Buffer* buffer,
+      GLsizeiptr size,
+      GLenum usage,
+      const GLvoid* data);
+
+  // Does a glBufferSubData and updates the approrate accounting.
+  void DoBufferSubData(
+      GLES2Decoder* decoder,
+      Buffer* buffer,
+      GLintptr offset,
+      GLsizeiptr size,
+      const GLvoid* data);
 
   // Sets the target of a buffer. Returns false if the target can not be set.
   bool SetTarget(Buffer* info, GLenum target);
@@ -191,12 +219,20 @@ class GPU_EXPORT BufferManager {
     return memory_tracker_->GetMemRepresented();
   }
 
+  // Tell's for a given usage if this would be a client side array.
+  bool IsUsageClientSideArray(GLenum usage);
+
  private:
   friend class Buffer;
   void StartTracking(Buffer* info);
   void StopTracking(Buffer* info);
 
+  // Sets the size, usage and initial data of a buffer.
+  // If data is NULL buffer will be initialized to 0 if shadowed.
+  void SetInfo(Buffer* info, GLsizeiptr size, GLenum usage, const GLvoid* data);
+
   scoped_ptr<MemoryTypeTracker> memory_tracker_;
+  scoped_refptr<FeatureInfo> feature_info_;
 
   // Info for each buffer in the system.
   typedef base::hash_map<GLuint, scoped_refptr<Buffer> > BufferInfoMap;
@@ -210,6 +246,7 @@ class GPU_EXPORT BufferManager {
   unsigned int buffer_info_count_;
 
   bool have_context_;
+  bool use_client_side_arrays_for_stream_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);
 };

@@ -98,7 +98,7 @@ class QueryManagerTest : public testing::Test {
     virtual ~MockCommandBufferEngine() {
     }
 
-    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
+    virtual gpu::Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
       return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
     }
 
@@ -129,8 +129,8 @@ class QueryManagerTest : public testing::Test {
 
    private:
     scoped_array<int8> data_;
-    Buffer valid_buffer_;
-    Buffer invalid_buffer_;
+    gpu::Buffer valid_buffer_;
+    gpu::Buffer invalid_buffer_;
   };
 
   scoped_ptr<MockCommandBufferEngine> engine_;

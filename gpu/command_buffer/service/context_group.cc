@@ -100,7 +100,8 @@ bool ContextGroup::Initialize(
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
 
-  buffer_manager_.reset(new BufferManager(memory_tracker_));
+  buffer_manager_.reset(new BufferManager(
+      memory_tracker_, feature_info_.get()));
   framebuffer_manager_.reset(new FramebufferManager());
   renderbuffer_manager_.reset(new RenderbufferManager(memory_tracker_,
                                                       max_renderbuffer_size,

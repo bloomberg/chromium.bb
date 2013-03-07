@@ -95,6 +95,7 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->workarounds().clear_alpha_in_readpixels);
   EXPECT_EQ(0, info_->workarounds().max_texture_size);
   EXPECT_EQ(0, info_->workarounds().max_cube_map_texture_size);
+  EXPECT_FALSE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
 
   // Test good types.
   {
@@ -797,6 +798,36 @@ TEST_F(FeatureInfoTest, InitializeOES_element_index_uint) {
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_OES_element_index_uint"));
   EXPECT_TRUE(info_->validators()->index_type.IsValid(GL_UNSIGNED_INT));
+}
+
+TEST_F(FeatureInfoTest, InitializeARM) {
+  SetupInitExpectationsWithVendor("", "ARM", "MAli-T604");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
+}
+
+TEST_F(FeatureInfoTest, InitializeImagination) {
+  SetupInitExpectationsWithVendor(
+      "", "Imagination Techologies", "PowerVR SGX 540");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
+  EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
+}
+
+TEST_F(FeatureInfoTest, InitializeARMVAOs) {
+  SetupInitExpectationsWithVendor(
+      "GL_OES_vertex_array_object", "ARM", "MAli-T604");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
+  EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
+}
+
+TEST_F(FeatureInfoTest, InitializeImaginationVAOs) {
+  SetupInitExpectationsWithVendor(
+      "GL_OES_vertex_array_object",
+      "Imagination Techologies", "PowerVR SGX 540");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
 }
 
 }  // namespace gles2

@@ -9,13 +9,17 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 
 namespace gpu {
@@ -31,6 +35,7 @@ VertexAttrib::VertexAttrib()
       gl_stride_(0),
       real_stride_(16),
       divisor_(0),
+      is_client_side_array_(false),
       list_(NULL) {
 }
 
@@ -152,6 +157,115 @@ void VertexAttribManager::Unbind(Buffer* buffer) {
   for (uint32 vv = 0; vv < vertex_attrib_infos_.size(); ++vv) {
     vertex_attrib_infos_[vv].Unbind(buffer);
   }
+}
+
+bool VertexAttribManager::ValidateBindings(
+    const char* function_name,
+    GLES2Decoder* decoder,
+    FeatureInfo* feature_info,
+    Program* current_program,
+    GLuint max_vertex_accessed,
+    GLsizei primcount) {
+  // true if any enabled, used divisor is zero
+  bool divisor0 = false;
+  const GLuint kInitialBufferId = 0xFFFFFFFFU;
+  GLuint current_buffer_id = kInitialBufferId;
+  bool use_client_side_arrays_for_stream_buffers = feature_info->workarounds(
+      ).use_client_side_arrays_for_stream_buffers;
+  // Validate all attribs currently enabled. If they are used by the current
+  // program then check that they have enough elements to handle the draw call.
+  // If they are not used by the current program check that they have a buffer
+  // assigned.
+  for (VertexAttribInfoList::iterator it = enabled_vertex_attribs_.begin();
+       it != enabled_vertex_attribs_.end(); ++it) {
+    VertexAttrib* attrib = *it;
+    const Program::VertexAttrib* attrib_info =
+        current_program->GetAttribInfoByLocation(attrib->index());
+    if (attrib_info) {
+      divisor0 |= (attrib->divisor() == 0);
+      GLuint count = attrib->MaxVertexAccessed(primcount, max_vertex_accessed);
+      // This attrib is used in the current program.
+      if (!attrib->CanAccess(count)) {
+        decoder->SetGLError(
+            GL_INVALID_OPERATION, function_name,
+            (std::string(
+                 "attempt to access out of range vertices in attribute ") +
+             base::IntToString(attrib->index())).c_str());
+        return false;
+      }
+      if (use_client_side_arrays_for_stream_buffers) {
+        Buffer* buffer = attrib->buffer();
+        glEnableVertexAttribArray(attrib->index());
+        if (buffer->IsClientSideArray()) {
+          if (current_buffer_id != 0) {
+            current_buffer_id = 0;
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+          }
+          attrib->set_is_client_side_array(true);
+          const void* ptr = buffer->GetRange(attrib->offset(), 0);
+          DCHECK(ptr);
+          glVertexAttribPointer(
+              attrib->index(),
+              attrib->size(),
+              attrib->type(),
+              attrib->normalized(),
+              attrib->gl_stride(),
+              ptr);
+        } else if (attrib->is_client_side_array()) {
+          attrib->set_is_client_side_array(false);
+          GLuint new_buffer_id = buffer->service_id();
+          if (new_buffer_id != current_buffer_id) {
+            current_buffer_id = new_buffer_id;
+            glBindBuffer(GL_ARRAY_BUFFER, current_buffer_id);
+          }
+          const void* ptr = reinterpret_cast<const void*>(attrib->offset());
+          glVertexAttribPointer(
+              attrib->index(),
+              attrib->size(),
+              attrib->type(),
+              attrib->normalized(),
+              attrib->gl_stride(),
+              ptr);
+        }
+      }
+    } else {
+      // This attrib is not used in the current program.
+      if (!attrib->buffer()) {
+        decoder->SetGLError(
+            GL_INVALID_OPERATION, function_name,
+            (std::string(
+                 "attempt to render with no buffer attached to "
+                 "enabled attribute ") +
+                 base::IntToString(attrib->index())).c_str());
+        return false;
+      } else if (use_client_side_arrays_for_stream_buffers) {
+        Buffer* buffer = attrib->buffer();
+        // Disable client side arrays for unused attributes else we'll
+        // read bad memory
+        if (buffer->IsClientSideArray()) {
+          // Don't disable attrib 0 since it's special.
+          if (attrib->index() > 0) {
+            glDisableVertexAttribArray(attrib->index());
+          }
+        }
+      }
+    }
+  }
+
+  if (primcount && !divisor0) {
+    decoder->SetGLError(
+        GL_INVALID_OPERATION, function_name,
+        "attempt instanced render with all attributes having "
+        "non-zero divisors");
+    return false;
+  }
+
+  if (current_buffer_id != kInitialBufferId) {
+    // Restore the buffer binding.
+    decoder->RestoreBufferBindings();
+  }
+
+  return true;
 }
 
 }  // namespace gles2

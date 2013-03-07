@@ -149,6 +149,12 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::FramebufferTexture2D, 0>(
 
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::GetBufferParameteriv, 0>(bool /* valid */) {
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<
     cmds::GetFramebufferAttachmentParameteriv, 0>(bool /* valid */) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);

@@ -17,6 +17,9 @@
 namespace gpu {
 namespace gles2 {
 
+class FeatureInfo;
+class GLES2Decoder;
+class Program;
 class VertexArrayManager;
 
 // Info about a Vertex Attribute. This is used to track what the user currently
@@ -73,6 +76,14 @@ class GPU_EXPORT VertexAttrib {
                            GLuint max_vertex_accessed) const {
     return (primcount && divisor_) ? ((primcount - 1) / divisor_) :
                                      max_vertex_accessed;
+  }
+
+  bool is_client_side_array() const {
+    return is_client_side_array_;
+  }
+
+  void set_is_client_side_array(bool value) {
+    is_client_side_array_ = value;
   }
 
  private:
@@ -138,6 +149,9 @@ class GPU_EXPORT VertexAttrib {
   GLsizei real_stride_;
 
   GLsizei divisor_;
+
+  // Will be true if this was assigned to a client side array.
+  bool is_client_side_array_;
 
   // The buffer bound to this attribute.
   scoped_refptr<Buffer> buffer_;
@@ -230,6 +244,14 @@ class GPU_EXPORT VertexAttribManager :
   size_t num_attribs() const {
     return vertex_attrib_infos_.size();
   }
+
+  bool ValidateBindings(
+      const char* function_name,
+      GLES2Decoder* decoder,
+      FeatureInfo* feature_info,
+      Program* current_program,
+      GLuint max_vertex_accessed,
+      GLsizei primcount);
 
  private:
   friend class VertexArrayManager;

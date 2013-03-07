@@ -1172,16 +1172,9 @@ TEST_F(GLES2DecoderTest1, GetBooleanvInvalidArgs1_1) {
 }
 
 TEST_F(GLES2DecoderTest1, GetBufferParameterivValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
   SpecializedSetup<cmds::GetBufferParameteriv, 0>(true);
   typedef cmds::GetBufferParameteriv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(
-      *gl_, GetBufferParameteriv(
-          GL_ARRAY_BUFFER, GL_BUFFER_SIZE, result->GetData()));
   result->size = 0;
   cmds::GetBufferParameteriv cmd;
   cmd.Init(
