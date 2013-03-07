@@ -335,6 +335,7 @@ ImmersiveModeController::ImmersiveModeController(BrowserView* browser_view)
     : browser_view_(browser_view),
       enabled_(false),
       revealed_(false),
+      reveal_locked_(false),
       hide_tab_indicators_(false),
       native_window_(NULL) {
 }
@@ -421,6 +422,16 @@ void ImmersiveModeController::MaybeStartReveal() {
 
 void ImmersiveModeController::CancelReveal() {
   EndReveal(ANIMATE_NO, LAYOUT_YES);
+}
+
+void ImmersiveModeController::RevealAndLock(bool reveal) {
+  if (!enabled_)
+    return;
+  reveal_locked_ = reveal;
+  if (reveal_locked_ && !revealed_)
+    StartReveal(ANIMATE_FAST);
+  else if (!reveal_locked_ && revealed_)
+    EndReveal(ANIMATE_FAST, LAYOUT_YES);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -541,13 +552,13 @@ void ImmersiveModeController::OnRevealViewLostMouse() {
   // TODO(jamescook): Consider stopping the reveal after a delay. This code
   // isn't using a MouseWatcher because it needs to know if the mouse re-enters
   // the RevealView before focus is lost.
-  if (!reveal_view_->ContainsFocusedView())
+  if (!reveal_view_->ContainsFocusedView() && !reveal_locked_)
     EndReveal(ANIMATE_FAST, LAYOUT_YES);
 }
 
 void ImmersiveModeController::OnRevealViewLostFocus() {
   // Stop the reveal if the mouse is outside the reveal view.
-  if (!reveal_view_->hovered())
+  if (!reveal_view_->hovered() && !reveal_locked_)
     EndReveal(ANIMATE_FAST, LAYOUT_YES);
 }
 

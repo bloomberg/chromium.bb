@@ -66,6 +66,10 @@ class ImmersiveModeController : public ui::EventHandler,
   // Immediately hides the reveal view, without animating.
   void CancelReveal();
 
+  // If |reveal| performs a reveal and holds the view open until called again
+  // with |reveal| false. Immersive mode must be enabled.
+  void RevealAndLock(bool reveal);
+
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
@@ -132,6 +136,10 @@ class ImmersiveModeController : public ui::EventHandler,
   // Represents the target state, not the current animation state, so may be
   // false while the view is still animating out.
   bool revealed_;
+
+  // If true, reveal will not be canceled when the mouse moves outside the
+  // top view.
+  bool reveal_locked_;
 
   // True if the miniature "tab indicators" should be hidden in the main browser
   // view when immersive mode is enabled.

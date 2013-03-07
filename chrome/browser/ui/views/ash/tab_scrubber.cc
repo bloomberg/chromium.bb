@@ -131,7 +131,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
         browser_view->immersive_mode_controller();
     if (immersive_controller->enabled() &&
         !immersive_controller->IsRevealed()) {
-      immersive_controller->MaybeStartReveal();
+      immersive_controller->RevealAndLock(true);
       should_cancel_immersive_reveal_ = true;
     }
     tab_strip->AddObserver(this);
@@ -291,7 +291,7 @@ void TabScrubber::CancelImmersiveReveal() {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForNativeWindow(
             browser_->window()->GetNativeWindow());
-    browser_view->immersive_mode_controller()->CancelReveal();
+    browser_view->immersive_mode_controller()->RevealAndLock(false);
   }
   should_cancel_immersive_reveal_ = false;
 }
