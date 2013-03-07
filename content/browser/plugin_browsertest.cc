@@ -21,6 +21,13 @@
 #include "base/win/registry.h"
 #endif
 
+// TODO(jschuh): Finish plugins on Win64. crbug.com/180861
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
 namespace content {
 namespace {
 
@@ -277,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, VerifyPluginWindowRect) {
 
 // Tests that creating a new instance of a plugin while another one is handling
 // a paint message doesn't cause deadlock.
-IN_PROC_BROWSER_TEST_F(PluginTest, CreateInstanceInPaint) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(CreateInstanceInPaint)) {
   LoadAndWait(GetURL("create_instance_in_paint.html"));
 }
 
@@ -298,11 +305,12 @@ IN_PROC_BROWSER_TEST_F(PluginTest, NewFails) {
   LoadAndWait(GetURL("new_fails.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInNPNEvaluate) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInNPNEvaluate)) {
   LoadAndWait(GetURL("execute_script_delete_in_npn_evaluate.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeleteCreatePluginInNPNEvaluate) {
+IN_PROC_BROWSER_TEST_F(PluginTest,
+                       MAYBE(SelfDeleteCreatePluginInNPNEvaluate)) {
   LoadAndWait(GetURL("npn_plugin_delete_create_in_evaluate.html"));
 }
 
@@ -414,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_FlashSecurity) {
 // TODO(port) Port the following tests to platforms that have the required
 // plugins.
 // Flaky: http://crbug.com/55915
-IN_PROC_BROWSER_TEST_F(PluginTest, Quicktime) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Quicktime)) {
   TestPlugin("quicktime.html");
 }
 
