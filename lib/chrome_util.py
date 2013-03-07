@@ -125,7 +125,7 @@ class Copier(object):
     self.strip_bin = strip_bin
     self.exe_opts = exe_opts
 
-  def Copy(self, src, dest, exe):
+  def Copy(self, src, dest, exe, strip):
     """Perform the copy.
 
     Arguments:
@@ -134,6 +134,7 @@ class Copier(object):
       exe: If |src| is a file, whether the file is an executable.  If |src| is a
            directory, whether to treat the contents of the directory as
            executables.
+      strip: If |exe| is set, whether to strip the executable.
     """
     def Log(directory):
       sep = ' [d] -> ' if directory else ' -> '
@@ -147,21 +148,22 @@ class Copier(object):
       if os.path.isdir(dest):
         dest = os.path.join(dest, os.path.basename(src))
       shutil.copytree(src, dest)
-    elif exe and os.path.getsize(src) > 0:
-      if self.strip_bin:
-        cros_build_lib.DebugRunCommand([self.strip_bin, '--strip-unneeded',
-                                        '-o', dest, src])
-        shutil.copystat(src, dest)
-      if self.exe_opts is not None:
-        os.chmod(dest, self.exe_opts)
+    elif exe and self.strip_bin and strip and os.path.getsize(src) > 0:
+      cros_build_lib.DebugRunCommand([self.strip_bin, '--strip-unneeded',
+                                      '-o', dest, src])
+      shutil.copystat(src, dest)
     else:
       shutil.copy2(src, dest)
+
+    if exe and self.exe_opts is not None:
+      os.chmod(dest, self.exe_opts)
 
 
 class Path(object):
   """Represents an artifact to be copied from build dir to staging dir."""
 
-  def __init__(self, src, exe=False, cond=None, dest=None, optional=False):
+  def __init__(self, src, exe=False, cond=None, dest=None, optional=False,
+               strip=True):
     """Initializes the object.
 
     Arguments:
@@ -180,12 +182,14 @@ class Path(object):
             same name as the source.
       optional: Whether to enforce the existence of the artifact.  If unset, the
                 script errors out if the artifact does not exist.
+      strip: If |exe| is set, whether to strip the executable.
     """
     self.src = src
     self.exe = exe
     self.cond = cond
-    self.optional = optional or cond
     self.dest = dest
+    self.optional = optional or cond
+    self.strip = strip
 
   def ShouldProcess(self, gyp_defines, staging_flags):
     """Tests whether this artifact should be copied."""
@@ -233,7 +237,7 @@ class Path(object):
         dest = os.path.join(
             dest_base,
             os.path.relpath(p, src_base) if self.dest is None else self.dest)
-        copier.Copy(p, dest, self.exe)
+        copier.Copy(p, dest, self.exe, self.strip)
 
     return paths
 
@@ -284,16 +288,21 @@ _COPY_PATHS = (
        exe=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('libosmesa.so',
-       exe=True, optional=True),
-  # TODO(rcui): This needs to be done for ARM only.  Comment out for now, until
-  # a full solution is implemented.  Uncomment this for ARM systems.
-  # Path('libwidevinecdmadapter.so',
-  #      exe=True,
-  #      cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
-  # Path('libwidevinecdm.so',
-  #      exe=True,
-  #      cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
+       exe=True,
+       optional=True),
+  # Widevine binaries are already pre-stripped.  In addition, they don't
+  # play well with the binutils stripping tools, so skip stripping.
+  Path('libwidevinecdmadapter.so',
+       exe=True,
+       strip=False,
+       cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
+  Path('libwidevinecdm.so',
+       exe=True,
+       strip=False,
+       cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
   Path('locales/'),
+  # Do not strip the nacl_helper_bootstrap binary because the binutils
+  # objcopy/strip mangles the ELF program headers.
   Path('nacl_helper_bootstrap',
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('nacl_irt_*.nexe',
