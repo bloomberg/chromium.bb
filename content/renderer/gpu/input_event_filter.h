@@ -45,7 +45,7 @@ class CONTENT_EXPORT InputEventFilter
   // leaving that responsibility up to the eventual handler on the main thread.
   //
   InputEventFilter(IPC::Listener* main_listener,
-                   base::MessageLoopProxy* target_loop,
+                   const scoped_refptr<base::MessageLoopProxy>& target_loop,
                    const Handler& handler);
 
   // Define the message routes to be filtered.

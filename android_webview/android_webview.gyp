@@ -156,6 +156,8 @@
         'common/aw_hit_test_data.cc',
         'common/aw_hit_test_data.h',
         'common/aw_resource.h',
+        'common/aw_switches.cc',
+        'common/aw_switches.h',
         'common/render_view_messages.cc',
         'common/render_view_messages.h',
         'common/renderer_picture_map.cc',

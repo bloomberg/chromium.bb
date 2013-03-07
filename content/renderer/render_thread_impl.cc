@@ -53,9 +53,9 @@
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
-#include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
+#include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -410,9 +410,9 @@ RenderThreadImpl::~RenderThreadImpl() {
     compositor_output_surface_filter_ = NULL;
   }
 
-  if (compositor_thread_.get()) {
-    RemoveFilter(compositor_thread_->GetMessageFilter());
-    compositor_thread_.reset();
+  if (input_handler_manager_.get()) {
+    RemoveFilter(input_handler_manager_->GetMessageFilter());
+    input_handler_manager_.reset();
   }
 
   if (webkit_platform_support_.get())
@@ -600,13 +600,25 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   bool enable = command_line.HasSwitch(switches::kEnableThreadedCompositing);
   if (enable) {
-    compositor_thread_.reset(new CompositorThread(this));
-    AddFilter(compositor_thread_->GetMessageFilter());
+    MessageLoop* override_loop =
+        GetContentClient()->renderer()->OverrideCompositorMessageLoop();
+    if (override_loop) {
+      compositor_message_loop_proxy_ = override_loop->message_loop_proxy();
+    } else {
+      compositor_thread_.reset(new base::Thread("Compositor"));
+      compositor_thread_->Start();
+      compositor_message_loop_proxy_ =
+          compositor_thread_->message_loop_proxy();
+    }
+
+    input_handler_manager_.reset(
+        new InputHandlerManager(this, compositor_message_loop_proxy_));
+    AddFilter(input_handler_manager_->GetMessageFilter());
   }
 
-  base::MessageLoopProxy* output_surface_loop;
+  scoped_refptr<base::MessageLoopProxy> output_surface_loop;
   if (enable)
-    output_surface_loop = compositor_thread_->message_loop_proxy();
+    output_surface_loop = compositor_message_loop_proxy_;
   else
     output_surface_loop = base::MessageLoopProxy::current();
 
@@ -877,8 +889,8 @@ void RenderThreadImpl::OnGpuVDAContextLoss() {
   DCHECK(self);
   if (!self->gpu_vda_context3d_.get())
     return;
-  if (self->compositor_thread()) {
-    self->compositor_thread()->message_loop_proxy()->DeleteSoon(
+  if (self->compositor_message_loop_proxy()) {
+    self->compositor_message_loop_proxy()->DeleteSoon(
         FROM_HERE, self->gpu_vda_context3d_.release());
   } else {
     self->gpu_vda_context3d_.reset();

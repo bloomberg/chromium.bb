@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/input_handler_manager.h"
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "content/renderer/gpu/input_event_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebActiveWheelFlingParameters.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorInputHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorInputHandler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorInputHandlerClient.h"
 
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
@@ -24,16 +23,16 @@ namespace content {
 
 //------------------------------------------------------------------------------
 
-class CompositorThread::InputHandlerWrapper
+class InputHandlerManager::InputHandlerWrapper
     : public WebKit::WebCompositorInputHandlerClient,
       public base::RefCountedThreadSafe<InputHandlerWrapper> {
  public:
-  InputHandlerWrapper(CompositorThread* compositor_thread,
+  InputHandlerWrapper(InputHandlerManager* input_handler_manager,
                       int routing_id,
                       WebKit::WebCompositorInputHandler* input_handler,
-                      scoped_refptr<base::MessageLoopProxy> main_loop,
+                      const scoped_refptr<base::MessageLoopProxy>& main_loop,
                       const base::WeakPtr<RenderViewImpl>& render_view_impl)
-      : compositor_thread_(compositor_thread),
+      : input_handler_manager_(input_handler_manager),
         routing_id_(routing_id),
         input_handler_(input_handler),
         main_loop_(main_loop),
@@ -57,15 +56,15 @@ class CompositorThread::InputHandlerWrapper
   // WebCompositorInputHandlerClient methods:
 
   virtual void willShutdown() {
-    compositor_thread_->RemoveInputHandler(routing_id_);
+    input_handler_manager_->RemoveInputHandler(routing_id_);
   }
 
   virtual void didHandleInputEvent() {
-    compositor_thread_->filter_->DidHandleInputEvent();
+    input_handler_manager_->filter_->DidHandleInputEvent();
   }
 
   virtual void didNotHandleInputEvent(bool send_to_widget) {
-    compositor_thread_->filter_->DidNotHandleInputEvent(send_to_widget);
+    input_handler_manager_->filter_->DidNotHandleInputEvent(send_to_widget);
   }
 
  private:
@@ -75,7 +74,7 @@ class CompositorThread::InputHandlerWrapper
     input_handler_->setClient(NULL);
   }
 
-  CompositorThread* compositor_thread_;
+  InputHandlerManager* input_handler_manager_;
   int routing_id_;
   WebKit::WebCompositorInputHandler* input_handler_;
   scoped_refptr<base::MessageLoopProxy> main_loop_;
@@ -98,36 +97,37 @@ void SetHighThreadPriority() {
 }
 #endif
 
-CompositorThread::CompositorThread(IPC::Listener* main_listener)
-    : thread_("Compositor") {
-  thread_.Start();
+InputHandlerManager::InputHandlerManager(
+    IPC::Listener* main_listener,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy)
+    : message_loop_proxy_(message_loop_proxy) {
   filter_ =
       new InputEventFilter(main_listener,
-                           thread_.message_loop()->message_loop_proxy(),
-                           base::Bind(&CompositorThread::HandleInputEvent,
+                           message_loop_proxy,
+                           base::Bind(&InputHandlerManager::HandleInputEvent,
                                       base::Unretained(this)));
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
-  thread_.message_loop()->PostTask(FROM_HERE,
-                                   base::Bind(&SetHighThreadPriority));
+  message_loop_proxy->PostTask(FROM_HERE, base::Bind(&SetHighThreadPriority));
 #endif
 }
 
-CompositorThread::~CompositorThread() {
+InputHandlerManager::~InputHandlerManager() {
 }
 
-IPC::ChannelProxy::MessageFilter* CompositorThread::GetMessageFilter() const {
+IPC::ChannelProxy::MessageFilter*
+InputHandlerManager::GetMessageFilter() const {
   return filter_;
 }
 
-void CompositorThread::AddInputHandler(
+void InputHandlerManager::AddInputHandler(
     int routing_id, int input_handler_id,
     const base::WeakPtr<RenderViewImpl>& render_view_impl) {
-  DCHECK_NE(thread_.message_loop(), MessageLoop::current());
+  DCHECK(!message_loop_proxy_->BelongsToCurrentThread());
 
-  thread_.message_loop()->PostTask(
+  message_loop_proxy_->PostTask(
       FROM_HERE,
-      base::Bind(&CompositorThread::AddInputHandlerOnCompositorThread,
+      base::Bind(&InputHandlerManager::AddInputHandlerOnCompositorThread,
                  base::Unretained(this),
                  routing_id,
                  input_handler_id,
@@ -135,12 +135,11 @@ void CompositorThread::AddInputHandler(
                  render_view_impl));
 }
 
-void CompositorThread::AddInputHandlerOnCompositorThread(
+void InputHandlerManager::AddInputHandlerOnCompositorThread(
     int routing_id, int input_handler_id,
-    scoped_refptr<base::MessageLoopProxy> main_loop,
+    const scoped_refptr<base::MessageLoopProxy>& main_loop,
     const base::WeakPtr<RenderViewImpl>& render_view_impl) {
-
-  DCHECK_EQ(thread_.message_loop(), MessageLoop::current());
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   WebCompositorInputHandler* input_handler =
       WebCompositorInputHandler::fromIdentifier(input_handler_id);
@@ -155,35 +154,31 @@ void CompositorThread::AddInputHandlerOnCompositorThread(
     return;
   }
 
-  TRACE_EVENT0("CompositorThread::AddInputHandler", "AddingRoute");
+  TRACE_EVENT0("InputHandlerManager::AddInputHandler", "AddingRoute");
   filter_->AddRoute(routing_id);
   input_handlers_[routing_id] =
       make_scoped_refptr(new InputHandlerWrapper(this,
           routing_id, input_handler, main_loop, render_view_impl));
 }
 
+void InputHandlerManager::RemoveInputHandler(int routing_id) {
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-base::MessageLoopProxy* CompositorThread::message_loop_proxy() const {
-  return thread_.message_loop()->message_loop_proxy();
-}
-
-void CompositorThread::RemoveInputHandler(int routing_id) {
-  DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
-
-  TRACE_EVENT0("CompositorThread::RemoveInputHandler", "RemovingRoute");
+  TRACE_EVENT0("InputHandlerManager::RemoveInputHandler", "RemovingRoute");
 
   filter_->RemoveRoute(routing_id);
   input_handlers_.erase(routing_id);
 }
 
-void CompositorThread::HandleInputEvent(
+void InputHandlerManager::HandleInputEvent(
     int routing_id,
     const WebInputEvent* input_event) {
-  DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   InputHandlerMap::iterator it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {
-    TRACE_EVENT0("CompositorThread::HandleInputEvent", "NoInputHandlerFound");
+    TRACE_EVENT0("InputHandlerManager::HandleInputEvent",
+                 "NoInputHandlerFound");
     // Oops, we no longer have an interested input handler..
     filter_->DidNotHandleInputEvent(true);
     return;

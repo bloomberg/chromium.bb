@@ -18,6 +18,7 @@
 #include "v8/include/v8.h"
 
 class GURL;
+class MessageLoop;
 class SkBitmap;
 
 namespace base {
@@ -221,6 +222,11 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns whether BrowserPlugin should be allowed within the |container|.
   virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const;
+
+  // Allow the embedder to specify a different renderer compositor MessageLoop.
+  // If not NULL, the returned MessageLoop must be valid for the lifetime of
+  // RenderThreadImpl. If NULL, then a new thread will be created.
+  virtual MessageLoop* OverrideCompositorMessageLoop() const;
 };
 
 }  // namespace content

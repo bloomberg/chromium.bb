@@ -620,7 +620,7 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
 }
 
 bool RendererWebKitPlatformSupportImpl::isThreadedCompositingEnabled() {
-  return !!RenderThreadImpl::current()->compositor_thread();
+  return !!RenderThreadImpl::current()->compositor_message_loop_proxy();
 }
 
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {

@@ -71,13 +71,13 @@ class AppCacheDispatcher;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
-class CompositorThread;
 class ContextProviderCommandBuffer;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class GpuChannelHost;
 class IndexedDBDispatcher;
+class InputHandlerManager;
 class MediaStreamCenter;
 class MediaStreamDependencyFactory;
 class P2PSocketDispatcher;
@@ -207,9 +207,13 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return compositor_output_surface_filter_.get();
   }
 
+  InputHandlerManager* input_handler_manager() const {
+    return input_handler_manager_.get();
+  }
+
   // Will be NULL if threaded compositing has not been enabled.
-  CompositorThread* compositor_thread() const {
-    return compositor_thread_.get();
+  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy() const {
+    return compositor_message_loop_proxy_;
   }
 
   AppCacheDispatcher* appcache_dispatcher() const {
@@ -422,7 +426,14 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;
 
-  scoped_ptr<CompositorThread> compositor_thread_;
+  // May be null if overridden by ContentRendererClient.
+  scoped_ptr<base::Thread> compositor_thread_;
+
+  // Will point to appropriate MessageLoopProxy after initialization,
+  // regardless of whether |compositor_thread_| is overriden.
+  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy_;
+
+  scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 
   class RendererContextProviderCommandBuffer;

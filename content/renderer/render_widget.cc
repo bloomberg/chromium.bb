@@ -20,7 +20,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1388,7 +1388,7 @@ void RenderWidget::suppressCompositorScheduling(bool enable) {
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
-  DCHECK(RenderThreadImpl::current()->compositor_thread());
+  DCHECK(RenderThreadImpl::current()->compositor_message_loop_proxy());
 
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
@@ -1447,7 +1447,7 @@ void RenderWidget::didCompleteSwapBuffers() {
 
 void RenderWidget::scheduleComposite() {
   TRACE_EVENT0("gpu", "RenderWidget::scheduleComposite");
-  if (RenderThreadImpl::current()->compositor_thread() &&
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy() &&
       compositor_) {
     compositor_->setNeedsRedraw();
   } else {

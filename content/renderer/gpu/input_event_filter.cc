@@ -13,9 +13,10 @@ using WebKit::WebInputEvent;
 
 namespace content {
 
-InputEventFilter::InputEventFilter(IPC::Listener* main_listener,
-                                   base::MessageLoopProxy* target_loop,
-                                   const Handler& handler)
+InputEventFilter::InputEventFilter(
+    IPC::Listener* main_listener,
+    const scoped_refptr<base::MessageLoopProxy>& target_loop,
+    const Handler& handler)
     : main_loop_(base::MessageLoopProxy::current()),
       main_listener_(main_listener),
       sender_(NULL),

@@ -18,7 +18,7 @@
 #include "cc/thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gl/gl_switches.h"
@@ -286,12 +286,13 @@ void RenderWidgetCompositor::EnableHidingTopControls(bool enable) {
 
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_ptr<cc::Thread> impl_thread;
-  CompositorThread* compositor_thread =
-      RenderThreadImpl::current()->compositor_thread();
-  threaded_ = !!compositor_thread;
-  if (compositor_thread)
+  scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
+      RenderThreadImpl::current()->compositor_message_loop_proxy();
+  threaded_ = !!compositor_message_loop_proxy;
+  if (threaded_) {
     impl_thread = cc::ThreadImpl::createForDifferentThread(
-        compositor_thread->message_loop_proxy());
+        compositor_message_loop_proxy);
+  }
   layer_tree_host_ = cc::LayerTreeHost::create(this,
                                                settings,
                                                impl_thread.Pass());

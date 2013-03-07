@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_COMPOSITOR_THREAD_H_
-#define CONTENT_RENDERER_GPU_COMPOSITOR_THREAD_H_
+#ifndef CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
+#define CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_proxy.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace WebKit {
 class WebInputEvent;
@@ -21,15 +23,18 @@ namespace content {
 
 class InputEventFilter;
 
-// The CompositorThread class manages the background thread for the compositor.
-// The CompositorThread instance can be assumed to outlive the background
-// thread it manages.
-class CompositorThread {
+// InputHandlerManager class manages WebCompositorInputHandler instances for
+// the WebViews in this renderer.
+class InputHandlerManager {
  public:
   // |main_listener| refers to the central IPC message listener that lives on
   // the main thread, where all incoming IPC messages are first handled.
-  explicit CompositorThread(IPC::Listener* main_listener);
-  ~CompositorThread();
+  // |message_loop_proxy| is the MessageLoopProxy of the compositor thread.
+  // The underlying MessageLoop must outlive this object.
+  InputHandlerManager(
+      IPC::Listener* main_listener,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy);
+  ~InputHandlerManager();
 
   // This MessageFilter should be added to allow input events to be redirected
   // to the compositor's thread.
@@ -40,7 +45,6 @@ class CompositorThread {
                        int input_handler_id,
                        const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
-  base::MessageLoopProxy* message_loop_proxy() const;
 
  private:
   // Callback only from the compositor's thread.
@@ -54,7 +58,7 @@ class CompositorThread {
   void AddInputHandlerOnCompositorThread(
       int routing_id,
       int input_handler_id,
-      scoped_refptr<base::MessageLoopProxy> main_loop,
+      const scoped_refptr<base::MessageLoopProxy>& main_loop,
       const base::WeakPtr<RenderViewImpl>& render_view_impl);
 
   class InputHandlerWrapper;
@@ -64,10 +68,10 @@ class CompositorThread {
                    scoped_refptr<InputHandlerWrapper> > InputHandlerMap;
   InputHandlerMap input_handlers_;
 
-  base::Thread thread_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_refptr<InputEventFilter> filter_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_COMPOSITOR_THREAD_H_
+#endif  // CONTENT_RENDERER_GPU_INPUT_HANDLER_MANAGER_H_

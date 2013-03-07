@@ -8,6 +8,7 @@
 #include "android_webview/common/url_constants.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/view_renderer.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
@@ -20,7 +21,9 @@
 
 namespace android_webview {
 
-AwContentRendererClient::AwContentRendererClient() {
+AwContentRendererClient::AwContentRendererClient(
+    MessageLoop* compositor_message_loop)
+    : compositor_message_loop_(compositor_message_loop) {
 }
 
 AwContentRendererClient::~AwContentRendererClient() {
@@ -91,6 +94,10 @@ void AwContentRendererClient::PrefetchHostName(const char* hostname,
                                                size_t length) {
   // TODO(boliu): Implement hostname prefetch for Android WebView.
   // Perhaps componentize chrome implementation or move to content/?
+}
+
+MessageLoop* AwContentRendererClient::OverrideCompositorMessageLoop() const {
+  return compositor_message_loop_;
 }
 
 }  // namespace android_webview

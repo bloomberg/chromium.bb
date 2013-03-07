@@ -5,6 +5,7 @@
 #include "android_webview/lib/main/aw_main_delegate.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
@@ -13,8 +14,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/switches.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
 namespace android_webview {
@@ -76,7 +77,17 @@ content::ContentBrowserClient*
 
 content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
-  content_renderer_client_.reset(new AwContentRendererClient());
+  MessageLoop* renderer_compositor_loop = NULL;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kMergeUIAndRendererCompositorThreads)) {
+    renderer_compositor_loop =
+        content::BrowserThread::UnsafeGetMessageLoopForThread(
+            content::BrowserThread::UI);
+  }
+
+  content_renderer_client_.reset(
+      new AwContentRendererClient(renderer_compositor_loop));
   return content_renderer_client_.get();
 }
 

@@ -82,7 +82,7 @@
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/compositor_software_output_device_gl_adapter.h"
-#include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/idle_user_detector.h"
@@ -139,8 +139,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSocketStreamHandle.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
@@ -2629,10 +2629,10 @@ bool RenderViewImpl::isPointerLocked() {
 void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 #if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
 #if !defined(OS_WIN)  // http://crbug.com/160122
-  CompositorThread* compositor_thread =
-      RenderThreadImpl::current()->compositor_thread();
-  if (compositor_thread)
-    compositor_thread->AddInputHandler(
+  InputHandlerManager* input_handler_manager =
+      RenderThreadImpl::current()->input_handler_manager();
+  if (input_handler_manager)
+    input_handler_manager->AddInputHandler(
         routing_id_, input_handler_identifier, AsWeakPtr());
 #endif
 #endif
@@ -2787,12 +2787,9 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     context3d = RenderThreadImpl::current()->GetGpuVDAContext3D();
   if (context3d) {
-    scoped_refptr<base::MessageLoopProxy> factories_loop;
-    CompositorThread* compositor_thread =
-        RenderThreadImpl::current()->compositor_thread();
-    if (compositor_thread)
-      factories_loop = compositor_thread->message_loop_proxy();
-    else
+    scoped_refptr<base::MessageLoopProxy> factories_loop =
+        RenderThreadImpl::current()->compositor_message_loop_proxy();
+    if (!factories_loop)
       factories_loop = base::MessageLoopProxy::current();
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
@@ -6028,7 +6025,7 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
 bool RenderViewImpl::SupportsAsynchronousSwapBuffers() {
   // Contexts using the command buffer support asynchronous swapbuffers.
   // See RenderViewImpl::CreateOutputSurface().
-  if (RenderThreadImpl::current()->compositor_thread() ||
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy() ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL))
     return false;
 
