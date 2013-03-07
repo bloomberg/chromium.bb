@@ -94,6 +94,7 @@ class CONTENT_EXPORT BrowserPlugin :
   int guest_route_id() const { return guest_route_id_; }
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
+  bool HasGuest() const;
 
   // Query whether the guest can navigate back to the previous entry.
   bool CanGoBack() const;
@@ -358,8 +359,6 @@ class CONTENT_EXPORT BrowserPlugin :
   SkBitmap* sad_guest_;
   bool guest_crashed_;
   scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> pending_resize_params_;
-  // True if we have ever sent a NavigateGuest message to the embedder.
-  bool navigate_src_sent_;
   bool auto_size_ack_pending_;
   int guest_process_id_;
   int guest_route_id_;

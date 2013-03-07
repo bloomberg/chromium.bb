@@ -97,7 +97,6 @@ BrowserPlugin::BrowserPlugin(
       resize_ack_received_(true),
       sad_guest_(NULL),
       guest_crashed_(false),
-      navigate_src_sent_(false),
       auto_size_ack_pending_(false),
       guest_process_id_(-1),
       guest_route_id_(-1),
@@ -120,7 +119,7 @@ BrowserPlugin::~BrowserPlugin() {
   // If the BrowserPlugin has never navigated then the browser process and
   // BrowserPluginManager don't know about it and so there is nothing to do
   // here.
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->RemoveBrowserPlugin(instance_id_);
   browser_plugin_manager()->Send(
@@ -270,7 +269,7 @@ std::string BrowserPlugin::GetPartitionAttribute() const {
 }
 
 void BrowserPlugin::ParseNameAttribute() {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_SetName(render_view_routing_id_,
@@ -290,7 +289,7 @@ bool BrowserPlugin::ParseSrcAttribute(std::string* error_message) {
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
   // actually need it.
-  if (!navigate_src_sent_) {
+  if (!HasGuest()) {
     // On initial navigation, we request an instance ID from the browser
     // process. We essentially ignore all subsequent calls to SetSrcAttribute
     // until we receive an instance ID. |allocate_instance_id_sent_|
@@ -334,7 +333,7 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
   // If we haven't yet heard back from the guest about the last resize request,
   // then we don't issue another request until we do in
   // BrowserPlugin::UpdateRect.
-  if (!navigate_src_sent_ || !resize_ack_received_)
+  if (!HasGuest() || !resize_ack_received_)
     return;
   BrowserPluginHostMsg_AutoSize_Params auto_size_params;
   BrowserPluginHostMsg_ResizeGuest_Params resize_guest_params;
@@ -397,11 +396,6 @@ void BrowserPlugin::SetInstanceID(int instance_id) {
       new BrowserPluginHostMsg_CreateGuest(render_view_routing_id_,
                                            instance_id_,
                                            create_guest_params));
-
-  // Record that we sent a navigation request to the browser process.
-  // Once this instance has navigated, the storage partition cannot be changed,
-  // so this value is used for enforcing this.
-  navigate_src_sent_ = true;
 }
 
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
@@ -764,6 +758,10 @@ NPObject* BrowserPlugin::GetContentWindow() const {
   return guest_frame->windowObject();
 }
 
+bool BrowserPlugin::HasGuest() const {
+  return instance_id_ != browser_plugin::kInstanceIDNone;
+}
+
 bool BrowserPlugin::CanGoBack() const {
   return nav_entry_count_ > 1 && current_nav_entry_index_ > 0;
 }
@@ -806,9 +804,9 @@ bool BrowserPlugin::ParsePartitionAttribute(std::string* error_message) {
 }
 
 bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
-  if (navigate_src_sent_)
+  if (HasGuest())
     *error_message = browser_plugin::kErrorCannotRemovePartition;
-  return !navigate_src_sent_;
+  return !HasGuest();
 }
 
 void BrowserPlugin::ParseAttributes() {
@@ -925,7 +923,7 @@ void BrowserPlugin::WeakCallbackForPersistObject(
 }
 
 void BrowserPlugin::Back() {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
@@ -933,7 +931,7 @@ void BrowserPlugin::Back() {
 }
 
 void BrowserPlugin::Forward() {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
@@ -941,7 +939,7 @@ void BrowserPlugin::Forward() {
 }
 
 void BrowserPlugin::Go(int relative_index) {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Go(render_view_routing_id_,
@@ -950,7 +948,7 @@ void BrowserPlugin::Go(int relative_index) {
 }
 
 void BrowserPlugin::TerminateGuest() {
-  if (!navigate_src_sent_ || guest_crashed_)
+  if (!HasGuest() || guest_crashed_)
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,
@@ -958,7 +956,7 @@ void BrowserPlugin::TerminateGuest() {
 }
 
 void BrowserPlugin::Stop() {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Stop(render_view_routing_id_,
@@ -966,7 +964,7 @@ void BrowserPlugin::Stop() {
 }
 
 void BrowserPlugin::Reload() {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Reload(render_view_routing_id_,
@@ -974,7 +972,7 @@ void BrowserPlugin::Reload() {
 }
 
 void BrowserPlugin::UpdateGuestFocusState() {
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
   bool should_be_focused = ShouldGuestBeFocused();
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetFocus(
@@ -1124,7 +1122,7 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   canvas->drawRect(image_data_rect, paint);
   // Stay a solid color if we have never set a non-empty src, or we don't have a
   // backing store.
-  if (!backing_store_.get() || !navigate_src_sent_)
+  if (!backing_store_.get() || !HasGuest())
     return;
   float inverse_scale_factor =  1.0f / backing_store_->GetScaleFactor();
   canvas->scale(inverse_scale_factor, inverse_scale_factor);
@@ -1195,7 +1193,7 @@ void BrowserPlugin::updateGeometry(
   // until the previous one is ACK'ed.
   // TODO(mthiesse): Assess the performance of calling GetAutoSizeAttribute() on
   // resize.
-  if (!navigate_src_sent_ ||
+  if (!HasGuest() ||
       !resize_ack_received_ ||
       (old_width == window_rect.width && old_height == window_rect.height) ||
       GetAutoSizeAttribute()) {
@@ -1314,7 +1312,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
     return;
 
   visible_ = visible;
-  if (!navigate_src_sent_)
+  if (!HasGuest())
     return;
 
   if (compositing_helper_)
@@ -1332,7 +1330,7 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || !navigate_src_sent_ ||
+  if (guest_crashed_ || !HasGuest() ||
       event.type == WebKit::WebInputEvent::ContextMenu)
     return false;
   browser_plugin_manager()->Send(
@@ -1349,7 +1347,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
                                            WebKit::WebDragOperationsMask mask,
                                            const WebKit::WebPoint& position,
                                            const WebKit::WebPoint& screen) {
-  if (guest_crashed_ || !navigate_src_sent_)
+  if (guest_crashed_ || !HasGuest())
     return false;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
