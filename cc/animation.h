@@ -107,6 +107,9 @@ public:
 
     void pushPropertiesTo(Animation*) const;
 
+    void setIsImplOnly(bool isImplOnly) { m_isImplOnly = isImplOnly; }
+    bool isImplOnly() { return  m_isImplOnly; }
+
 private:
     Animation(scoped_ptr<AnimationCurve>, int animationId, int groupId, TargetProperty);
 
@@ -154,6 +157,8 @@ private:
     // that ultimately controls the values of the animating layer and so we will refer
     // to it as the 'controlling instance'.
     bool m_isControllingInstance;
+
+    bool m_isImplOnly;
 
     DISALLOW_COPY_AND_ASSIGN(Animation);
 };

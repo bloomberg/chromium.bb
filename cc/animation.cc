@@ -59,6 +59,7 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve, int animationId, int grou
     , m_pauseTime(0)
     , m_totalPausedTime(0)
     , m_isControllingInstance(false)
+    , m_isImplOnly(false)
 {
 }
 

@@ -125,6 +125,35 @@ void LayerAnimationController::animate(double monotonicTime)
     m_lastTickTime = monotonicTime;
 }
 
+void LayerAnimationController::accumulatePropertyUpdates(double monotonicTime,
+    AnimationEventsVector* events)
+{
+    if (!events)
+        return;
+
+    for (size_t i = 0; i < m_activeAnimations.size(); ++i) {
+        Animation* animation = m_activeAnimations[i];
+        if (!animation->isImplOnly())
+            continue;
+
+        if (animation->targetProperty() == Animation::Opacity) {
+            AnimationEvent event(AnimationEvent::PropertyUpdate,
+                                 m_id, animation->group(),
+                                 Animation::Opacity, monotonicTime);
+            event.opacity = animation->curve()->toFloatAnimationCurve()->getValue(monotonicTime);
+
+            events->push_back(event);
+        }
+        else if (animation->targetProperty() == Animation::Transform) {
+            AnimationEvent event(AnimationEvent::PropertyUpdate,
+                                 m_id, animation->group(),
+                                 Animation::Transform, monotonicTime);
+            event.transform = animation->curve()->toTransformAnimationCurve()->getValue(monotonicTime);
+            events->push_back(event);
+        }
+    }
+}
+
 void LayerAnimationController::updateState(AnimationEventsVector* events)
 {
     if (!hasActiveObserver())
@@ -135,6 +164,8 @@ void LayerAnimationController::updateState(AnimationEventsVector* events)
     markAnimationsForDeletion(m_lastTickTime, events);
     startAnimationsWaitingForTargetAvailability(m_lastTickTime);
     promoteStartedAnimations(m_lastTickTime, events);
+
+    accumulatePropertyUpdates(m_lastTickTime, events);
 
     updateActivation();
 }
@@ -245,7 +276,10 @@ void LayerAnimationController::pushNewAnimationsToImplThread(LayerAnimationContr
 
 struct IsCompleted {
     IsCompleted(const LayerAnimationController& mainThreadController) : m_mainThreadController(mainThreadController) { }
-    bool operator()(Animation* animation) const { return !m_mainThreadController.getAnimation(animation->group(), animation->targetProperty()); }
+    bool operator()(Animation* animation) const {
+        if (animation->isImplOnly())
+            return false;
+        return !m_mainThreadController.getAnimation(animation->group(), animation->targetProperty()); }
 private:
     const LayerAnimationController& m_mainThreadController;
 };

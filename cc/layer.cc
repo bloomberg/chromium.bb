@@ -874,6 +874,14 @@ void Layer::notifyAnimationFinished(double wallClockTime)
         m_layerAnimationDelegate->notifyAnimationFinished(wallClockTime);
 }
 
+void Layer::notifyAnimationPropertyUpdate(const AnimationEvent& event)
+{
+    if (event.targetProperty == Animation::Opacity)
+        setOpacity(event.opacity);
+    else
+        setTransform(event.transform);
+}
+
 void Layer::addLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver)
 {
     if (!m_layerAnimationObservers.HasObserver(animationObserver))

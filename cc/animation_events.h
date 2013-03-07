@@ -8,11 +8,12 @@
 #include <vector>
 
 #include "cc/animation.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 
 struct AnimationEvent {
-    enum Type { Started, Finished };
+    enum Type { Started, Finished, PropertyUpdate };
 
     AnimationEvent(Type type, int layerId, int groupId, Animation::TargetProperty targetProperty, double monotonicTime)
         : type(type)
@@ -20,6 +21,7 @@ struct AnimationEvent {
         , groupId(groupId)
         , targetProperty(targetProperty)
         , monotonicTime(monotonicTime)
+        , opacity(0)
     {
     }
 
@@ -28,6 +30,8 @@ struct AnimationEvent {
     int groupId;
     Animation::TargetProperty targetProperty;
     double monotonicTime;
+    float opacity;
+    gfx::Transform transform;
 };
 
 typedef std::vector<AnimationEvent> AnimationEventsVector;

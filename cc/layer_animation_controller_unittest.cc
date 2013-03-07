@@ -6,7 +6,9 @@
 
 #include "cc/animation.h"
 #include "cc/animation_curve.h"
+#include "cc/keyframed_animation_curve.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/transform_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
@@ -156,6 +158,17 @@ TEST(LayerAnimationControllerTest, doNotSyncFinishedAnimation)
 }
 
 // Tests that transitioning opacity from 0 to 1 works as expected.
+
+static const AnimationEvent* getMostRecentPropertyUpdateEvent(const AnimationEventsVector* events)
+{
+    const AnimationEvent* event = 0;
+    for (size_t i = 0; i < events->size(); ++i)
+        if ((*events)[i].type == AnimationEvent::PropertyUpdate)
+            event = &(*events)[i];
+
+    return event;
+}
+
 TEST(LayerAnimationControllerTest, TrivialTransition)
 {
     scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
@@ -170,10 +183,89 @@ TEST(LayerAnimationControllerTest, TrivialTransition)
     controller->updateState(events.get());
     EXPECT_TRUE(controller->hasActiveAnimation());
     EXPECT_EQ(0, dummy.opacity());
+    // A non-implOnly animation should not generate property updates.
+    const AnimationEvent* event = getMostRecentPropertyUpdateEvent(events.get());
+    EXPECT_FALSE(event);
     controller->animate(1);
     controller->updateState(events.get());
     EXPECT_EQ(1, dummy.opacity());
     EXPECT_FALSE(controller->hasActiveAnimation());
+    event = getMostRecentPropertyUpdateEvent(events.get());
+    EXPECT_FALSE(event);
+}
+
+TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl)
+{
+    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
+    FakeLayerAnimationValueObserver dummyImpl;
+    scoped_refptr<LayerAnimationController> controllerImpl(LayerAnimationController::create(0));
+    controllerImpl->addObserver(&dummyImpl);
+
+    scoped_ptr<Animation> toAdd(createAnimation(make_scoped_ptr(new FakeFloatTransition(1, 0, 1)).PassAs<AnimationCurve>(), 1, Animation::Opacity));
+    toAdd->setIsImplOnly(true);
+
+    controllerImpl->addAnimation(toAdd.Pass());
+    controllerImpl->animate(0);
+    controllerImpl->updateState(events.get());
+    EXPECT_TRUE(controllerImpl->hasActiveAnimation());
+    EXPECT_EQ(0, dummyImpl.opacity());
+    EXPECT_EQ(2, events->size());
+    const AnimationEvent* startOpacityEvent = getMostRecentPropertyUpdateEvent(events.get());
+    EXPECT_EQ(0, startOpacityEvent->opacity);
+
+    controllerImpl->animate(1);
+    controllerImpl->updateState(events.get());
+    EXPECT_EQ(1, dummyImpl.opacity());
+    EXPECT_FALSE(controllerImpl->hasActiveAnimation());
+    EXPECT_EQ(4, events->size());
+    const AnimationEvent* endOpacityEvent = getMostRecentPropertyUpdateEvent(events.get());
+    EXPECT_EQ(1, endOpacityEvent->opacity);
+}
+
+TEST(LayerAnimationControllerTest, TrivialTransformOnImpl)
+{
+    scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
+    FakeLayerAnimationValueObserver dummyImpl;
+    scoped_refptr<LayerAnimationController> controllerImpl(LayerAnimationController::create(0));
+    controllerImpl->addObserver(&dummyImpl);
+
+    // Choose different values for x and y to avoid coincidental values in the
+    // observed transforms.
+    const float deltaX = 3;
+    const float deltaY = 4;
+
+    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+
+    // Create simple Transform animation.
+    TransformOperations operations;
+    curve->addKeyframe(TransformKeyframe::create(0, operations, scoped_ptr<cc::TimingFunction>()));
+    operations.AppendTranslate(deltaX, deltaY, 0);
+    curve->addKeyframe(TransformKeyframe::create(1, operations, scoped_ptr<cc::TimingFunction>()));
+
+    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), 1, 0, Animation::Transform));
+    animation->setIsImplOnly(true);
+    controllerImpl->addAnimation(animation.Pass());
+
+    // Run animation.
+    controllerImpl->animate(0);
+    controllerImpl->updateState(events.get());
+    EXPECT_TRUE(controllerImpl->hasActiveAnimation());
+    EXPECT_EQ(gfx::Transform(), dummyImpl.transform());
+    EXPECT_EQ(2, events->size());
+    const AnimationEvent* startTransformEvent = getMostRecentPropertyUpdateEvent(events.get());
+    ASSERT_TRUE(startTransformEvent);
+    EXPECT_EQ(gfx::Transform(), startTransformEvent->transform);
+
+    gfx::Transform expectedTransform;
+    expectedTransform.Translate(deltaX, deltaY);
+
+    controllerImpl->animate(1);
+    controllerImpl->updateState(events.get());
+    EXPECT_EQ(expectedTransform, dummyImpl.transform());
+    EXPECT_FALSE(controllerImpl->hasActiveAnimation());
+    EXPECT_EQ(4, events->size());
+    const AnimationEvent* endTransformEvent = getMostRecentPropertyUpdateEvent(events.get());
+    EXPECT_EQ(expectedTransform, endTransformEvent->transform);
 }
 
 // Tests animations that are waiting for a synchronized start time do not finish.

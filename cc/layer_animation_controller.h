@@ -49,6 +49,7 @@ public:
     virtual void pushAnimationUpdatesTo(LayerAnimationController*);
 
     void animate(double monotonicTime);
+    void accumulatePropertyUpdates(double monotonicTime, AnimationEventsVector*);
     void updateState(AnimationEventsVector*);
 
     // Returns the active animation in the given group, animating the given property, if such an

@@ -271,6 +271,7 @@ public:
 
     virtual void notifyAnimationStarted(const AnimationEvent&, double wallClockTime);
     virtual void notifyAnimationFinished(double wallClockTime);
+    virtual void notifyAnimationPropertyUpdate(const AnimationEvent& event);
 
     void addLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver);
     void removeLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver);

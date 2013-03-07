@@ -887,10 +887,22 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
 
     for (size_t eventIndex = 0; eventIndex < events.size(); ++eventIndex) {
         if (layer->id() == events[eventIndex].layerId) {
-            if (events[eventIndex].type == AnimationEvent::Started)
+            switch (events[eventIndex].type) {
+            case AnimationEvent::Started:
                 layer->notifyAnimationStarted(events[eventIndex], wallClockTime.ToDoubleT());
-            else
+                break;
+
+            case AnimationEvent::Finished:
                 layer->notifyAnimationFinished(wallClockTime.ToDoubleT());
+                break;
+
+            case AnimationEvent::PropertyUpdate:
+                layer->notifyAnimationPropertyUpdate(events[eventIndex]);
+                break;
+
+            default:
+                NOTREACHED();
+            }
         }
     }
 
