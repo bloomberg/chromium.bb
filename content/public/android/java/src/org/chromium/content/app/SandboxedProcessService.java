@@ -239,6 +239,22 @@ public class SandboxedProcessService extends Service {
         }
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private Surface getViewSurface(int surfaceId) {
+        if (mCallback == null) {
+            Log.e(TAG, "No callback interface has been provided.");
+            return null;
+        }
+
+        try {
+            return mCallback.getViewSurface(surfaceId);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Unable to call establishSurfaceTexturePeer: " + e);
+            return null;
+        }
+    }
+
     /**
      * The main entry point for a sandboxed process. This should be called from a new thread since
      * it will not return until the sandboxed process exits. See sandboxed_process_service.{h,cc}

@@ -8,14 +8,58 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/android/media_player_manager_android.h"
+#include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/android/scoped_java_surface.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "jni/SandboxedProcessLauncher_jni.h"
+#include "media/base/android/media_player_bridge.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ToJavaArrayOfStrings;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using content::StartSandboxedProcessCallback;
 
 namespace content {
+
+namespace {
+
+// Pass a java surface object to the MediaPlayerBridge object
+// identified by render process handle, render view ID and player ID.
+static void SetSurfacePeer(
+    const base::android::JavaRef<jobject>& surface,
+    base::ProcessHandle render_process_handle,
+    int render_view_id,
+    int player_id) {
+  int renderer_id = 0;
+  RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+  while (!it.IsAtEnd()) {
+    if (it.GetCurrentValue()->GetHandle() == render_process_handle) {
+      renderer_id = it.GetCurrentValue()->GetID();
+      break;
+    }
+    it.Advance();
+  }
+
+  if (renderer_id) {
+    RenderViewHostImpl* host = RenderViewHostImpl::FromID(
+        renderer_id, render_view_id);
+    if (host) {
+      media::MediaPlayerBridge* player =
+          host->media_player_manager()->GetPlayer(player_id);
+      if (player &&
+          player != host->media_player_manager()->GetFullscreenPlayer()) {
+        ScopedJavaSurface scoped_surface(surface);
+        player->SetVideoSurface(scoped_surface.j_surface().obj());
+      }
+    }
+  }
+}
+
+}  // anonymous namespace
 
 // Called from SandboxedProcessLauncher.java when the SandboxedProcess was
 // started.
@@ -84,6 +128,27 @@ void StopSandboxedProcess(base::ProcessHandle handle) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   Java_SandboxedProcessLauncher_stop(env, static_cast<jint>(handle));
+}
+
+void EstablishSurfacePeer(
+    JNIEnv* env, jclass clazz,
+    jint pid, jobject surface, jint primary_id, jint secondary_id) {
+  ScopedJavaGlobalRef<jobject> jsurface;
+  jsurface.Reset(env, surface);
+  if (jsurface.is_null())
+    return;
+
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &SetSurfacePeer, jsurface, pid, primary_id, secondary_id));
+}
+
+jobject GetViewSurface(JNIEnv* env, jclass clazz, jint surface_id) {
+  // This is a synchronous call from the GPU process and is expected to be
+  // handled on a binder thread. Handling this on the UI thread will lead
+  // to deadlocks.
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return CompositorImpl::GetSurface(surface_id);
 }
 
 bool RegisterSandboxedProcessLauncher(JNIEnv* env) {

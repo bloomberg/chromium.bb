@@ -6,9 +6,11 @@ package org.chromium.content.common;
 
 import android.view.Surface;
 
-oneway interface ISandboxedProcessCallback {
+interface ISandboxedProcessCallback {
 
   // Conduit to pass a Surface from the sandboxed renderer to the plugin.
   void establishSurfacePeer(
       int pid, in Surface surface, int primaryID, int secondaryID);
+
+  Surface getViewSurface(int surfaceId);
 }

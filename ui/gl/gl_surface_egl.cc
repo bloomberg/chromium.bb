@@ -4,6 +4,10 @@
 
 #include "ui/gl/gl_surface_egl.h"
 
+#if defined(OS_ANDROID)
+#include <android/native_window_jni.h>
+#endif
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -219,6 +223,10 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
       supports_post_sub_buffer_(false),
       config_(NULL) {
   software_ = software;
+#if defined(OS_ANDROID)
+  if (window)
+    ANativeWindow_acquire(window);
+#endif
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
@@ -433,6 +441,10 @@ VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
 
 NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
   Destroy();
+#if defined(OS_ANDROID)
+  if (window_)
+    ANativeWindow_release(window_);
+#endif
 }
 
 void NativeViewGLSurfaceEGL::SetHandle(EGLSurface surface) {

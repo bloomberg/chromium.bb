@@ -6,11 +6,15 @@
 
 #include <android/bitmap.h>
 #include <android/native_window_jni.h>
+#include <map>
 
+#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "cc/context_provider.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
@@ -57,6 +61,12 @@ static bool g_use_direct_gl = false;
 
 namespace content {
 
+typedef std::map<int, base::android::ScopedJavaGlobalRef<jobject> >
+    SurfaceMap;
+static base::LazyInstance<SurfaceMap>
+    g_surface_map = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::Lock> g_surface_map_lock;
+
 // static
 Compositor* Compositor::Create(Client* client) {
   return client ? new CompositorImpl(client) : NULL;
@@ -91,6 +101,17 @@ bool CompositorImpl::IsThreadingEnabled() {
 // static
 bool CompositorImpl::UsesDirectGL() {
   return g_use_direct_gl;
+}
+
+// static
+jobject CompositorImpl::GetSurface(int surface_id) {
+  base::AutoLock lock(g_surface_map_lock.Get());
+  SurfaceMap* surfaces = g_surface_map.Pointer();
+  SurfaceMap::iterator it = surfaces->find(surface_id);
+  jobject jsurface = it == surfaces->end() ? NULL : it->second.obj();
+
+  LOG_IF(WARNING, !jsurface) << "No surface for surface id " << surface_id;
+  return jsurface;
 }
 
 CompositorImpl::CompositorImpl(Compositor::Client* client)
@@ -135,6 +156,26 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
         surface_id_,
         gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_DIRECT));
     SetVisible(true);
+  }
+}
+
+void CompositorImpl::SetSurface(jobject surface) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
+  if (surface) {
+    ANativeWindow* window = ANativeWindow_fromSurface(env, surface);
+    SetWindowSurface(window);
+    ANativeWindow_release(window);
+    {
+      base::AutoLock lock(g_surface_map_lock.Get());
+      g_surface_map.Get().insert(std::make_pair(surface_id_, j_surface));
+    }
+  } else {
+    {
+      base::AutoLock lock(g_surface_map_lock.Get());
+      g_surface_map.Get().erase(surface_id_);
+    }
+    SetWindowSurface(NULL);
   }
 }
 

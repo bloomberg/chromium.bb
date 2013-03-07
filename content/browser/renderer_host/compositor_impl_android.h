@@ -42,9 +42,13 @@ class CONTENT_EXPORT CompositorImpl
   // Returns true if initialized with DIRECT_CONTEXT_ON_DRAW_THREAD.
   static bool UsesDirectGL();
 
+  // Returns the Java Surface object for a given view surface id.
+  static jobject GetSurface(int surface_id);
+
   // Compositor implementation.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
+  virtual void SetSurface(jobject surface) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void setDeviceScaleFactor(float factor) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
