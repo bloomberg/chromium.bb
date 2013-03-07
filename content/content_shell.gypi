@@ -10,10 +10,7 @@
     # standard Chrome.
     'content_shell_version': '19.77.34.5',
     'conditions': [
-      # TODO(glider): enable the custom freetype under ASan once we figure out
-      # how to use it with non-instrumented Python.
-      # See http://crbug.com/179814.
-      ['OS=="linux" and asan==0', {
+      ['OS=="linux"', {
        'use_custom_freetype%': 1,
       }, {
        'use_custom_freetype%': 0,
