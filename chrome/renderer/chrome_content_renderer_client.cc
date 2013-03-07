@@ -701,19 +701,26 @@ bool ChromeContentRendererClient::IsNaClAllowed(
           top_url.host() == "plus.sandbox.google.com") &&
       top_url.path().find("/games") == 0;
 
-  // Allow Chrome Web Store extensions, built-in extensions, extensions
-  // under development, invocations from whitelisted URLs, and all invocations
+  bool is_invoked_by_extension = top_url.SchemeIs("chrome-extension");
+
+  // NaCl PDF viewer can be loaded from all URLs.
+  bool is_nacl_pdf_viewer =
+      (is_extension_from_webstore &&
+       manifest_url.SchemeIs("chrome-extension") &&
+       manifest_url.host() == "acadkphlmlegjaadjagenfimbpphcgnh");
+
+  // Allow Chrome Web Store extensions, built-in extensions and extensions
+  // under development if the invocation comes from a URL with an extension
+  // scheme. Also allow invocations if they are from whitelisted URLs or
   // if --enable-nacl is set.
-  bool is_nacl_allowed = is_extension_from_webstore ||
+  bool is_nacl_allowed = is_nacl_unrestricted ||
                          is_whitelisted_url ||
-                         is_extension_unrestricted ||
-                         is_nacl_unrestricted;
+                         is_nacl_pdf_viewer ||
+                         (is_invoked_by_extension &&
+                             (is_extension_from_webstore ||
+                                 is_extension_unrestricted));
   if (is_nacl_allowed) {
-    bool app_can_use_dev_interfaces =
-        // NaCl PDF viewer extension
-        (is_extension_from_webstore &&
-        manifest_url.SchemeIs("chrome-extension") &&
-        manifest_url.host() == "acadkphlmlegjaadjagenfimbpphcgnh");
+    bool app_can_use_dev_interfaces = is_nacl_pdf_viewer;
     // Make sure that PPAPI 'dev' interfaces aren't available for production
     // apps unless they're whitelisted.
     WebString dev_attribute = WebString::fromUTF8("@dev");

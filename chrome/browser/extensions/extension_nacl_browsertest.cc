@@ -93,9 +93,8 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     return false;
   }
 
-  void CheckPluginsCreated(const Extension* extension, bool should_create) {
-    ui_test_utils::NavigateToURL(browser(),
-                                 extension->GetResourceURL("test.html"));
+  void CheckPluginsCreated(const GURL& url, bool should_create) {
+    ui_test_utils::NavigateToURL(browser(), url);
     // Don't run tests if the NaCl plugin isn't loaded.
     if (!IsNaClPluginLoaded())
       return;
@@ -116,6 +115,11 @@ class NaClExtensionTest : public ExtensionBrowserTest {
     EXPECT_EQ(should_create, embedded_plugin_created);
     EXPECT_EQ(should_create, content_handler_plugin_created);
   }
+
+  void CheckPluginsCreated(const Extension* extension, bool should_create) {
+    CheckPluginsCreated(extension->GetResourceURL("test.html"), should_create);
+  }
+
 };
 
 // Test that the NaCl plugin isn't blocked for Webstore extensions.
@@ -154,6 +158,16 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
   ASSERT_TRUE(extension);
   ASSERT_EQ(extension->location(), Manifest::UNPACKED);
   CheckPluginsCreated(extension, true);
+}
+
+// Test that the NaCl plugin is blocked for non chrome-extension urls.
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonExtensionScheme) {
+  ASSERT_TRUE(test_server()->Start());
+
+  const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
+  ASSERT_TRUE(extension);
+  CheckPluginsCreated(
+      test_server()->GetURL("files/extensions/native_client/test.html"), false);
 }
 
 }  // namespace

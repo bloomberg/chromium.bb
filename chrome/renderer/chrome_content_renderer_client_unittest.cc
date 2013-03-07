@@ -30,6 +30,7 @@ const bool kExtensionNotFromWebStore = false;
 const bool kExtensionFromWebStore = true;
 
 const char kNaClMimeType[] = "application/x-nacl";
+const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
 bool AllowsDevInterfaces(const WebPluginParams& params) {
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
@@ -87,20 +88,21 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     EXPECT_TRUE(AllowsDevInterfaces(params));
   }
   // Unrestricted extensions are allowed without --enable-nacl, with 'dev'
-  // interfaces.
+  // interfaces if called from an extension url.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(), kNaClRestricted, kExtensionUnrestricted,
+        GURL(), GURL(kExtensionUrl), kNaClRestricted,
+        kExtensionUnrestricted,
         kExtensionNotFromWebStore, &params));
     EXPECT_TRUE(AllowsDevInterfaces(params));
   }
   // CWS extensions are allowed without --enable-nacl, without 'dev'
-  // interfaces.
+  // interfaces if called from an extension url.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(), kNaClRestricted, kExtensionRestricted,
+        GURL(), GURL(kExtensionUrl), kNaClRestricted, kExtensionRestricted,
         kExtensionFromWebStore, &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -108,7 +110,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(), kNaClUnrestricted, kExtensionRestricted,
+        GURL(), GURL(kExtensionUrl), kNaClUnrestricted, kExtensionRestricted,
         kExtensionFromWebStore, &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -118,12 +120,12 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     AddFakeDevAttribute(&params);
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(), kNaClRestricted, kExtensionRestricted,
+        GURL(), GURL(kExtensionUrl), kNaClRestricted, kExtensionRestricted,
         kExtensionFromWebStore, &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
   // The NaCl PDF extension is allowed without --enable-nacl, with 'dev'
-  // interfaces.
+  // interfaces, from all URLs.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
@@ -191,8 +193,20 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/games"),
+        GURL(), GURL("https://plus.google.com.evil.com/games1"),
         kNaClRestricted, kExtensionRestricted, kExtensionNotFromWebStore,
+        &params));
+    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(), GURL("https://plus.google.com.evil.com/games2"),
+        kNaClRestricted, kExtensionRestricted, kExtensionFromWebStore,
+        &params));
+    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(), GURL("https://plus.google.com.evil.com/games3"),
+        kNaClRestricted, kExtensionUnrestricted, kExtensionNotFromWebStore,
+        &params));
+    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL(), GURL("https://plus.google.com.evil.com/games4"),
+        kNaClRestricted, kExtensionUnrestricted, kExtensionFromWebStore,
         &params));
   }
 }
