@@ -587,6 +587,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GetAsyncPixelTransferDelegate() OVERRIDE;
   virtual void SetAsyncPixelTransferDelegate(
       gfx::AsyncPixelTransferDelegate* delegate) OVERRIDE;
+  void ProcessFinishedAsyncTransfers();
 
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id) OVERRIDE;
@@ -2761,6 +2762,14 @@ bool GLES2DecoderImpl::MakeCurrent() {
     return false;
   }
 
+  ProcessFinishedAsyncTransfers();
+  if (workarounds().flush_on_context_switch)
+    glFlush();
+
+  return true;
+}
+
+void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   if (engine() && query_manager_.get())
     query_manager_->ProcessPendingTransferQueries();
 
@@ -2781,11 +2790,6 @@ bool GLES2DecoderImpl::MakeCurrent() {
     // we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
   }
-
-  if (workarounds().flush_on_context_switch)
-    glFlush();
-
-  return true;
 }
 
 void GLES2DecoderImpl::ReleaseCurrent() {
@@ -10169,6 +10173,7 @@ error::Error GLES2DecoderImpl::HandleWaitAsyncTexImage2DCHROMIUM(
   }
   async_pixel_transfer_delegate_->WaitForTransferCompletion(
       info->GetAsyncTransferState());
+  ProcessFinishedAsyncTransfers();
   return error::kNoError;
 }
 

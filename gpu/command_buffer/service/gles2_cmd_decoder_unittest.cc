@@ -8091,10 +8091,41 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_TRUE(info->SafeToRenderFrom());
   }
 
-  // WaitAsyncTexSubImage2D
+  // WaitAsyncTexImage2D
   {
-    // Command succeeds.
+    // Get a fresh texture since the existing texture cannot be respecified
+    // asynchronously and AsyncTexSubImage2D does not involved binding.
+    EXPECT_CALL(*gl_, GenTextures(1, _))
+        .WillOnce(SetArgumentPointee<1>(kServiceTextureId));
+    info->SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState>());
+    DoDeleteTexture(client_texture_id_, kServiceTextureId);
+    DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+    info = GetTexture(client_texture_id_);
+    info->SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState>());
+    info->SetImmutable(false);
+    // Create transfer state since it doesn't exist.
+    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId))
+        .WillOnce(Return(
+            state = new StrictMock<gfx::MockAsyncPixelTransferState>))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*delegate, AsyncTexImage2D(state, _, _))
+        .RetiresOnSaturation();
+    // Start async transfer.
+    EXPECT_EQ(error::kNoError, ExecuteCmd(teximage_cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_TRUE(info->GetAsyncTransferState());
+    EXPECT_TRUE(info->IsImmutable());
+    // Wait for completion.
     EXPECT_CALL(*delegate, WaitForTransferCompletion(state));
+    EXPECT_CALL(*state, TransferIsInProgress())
+        .WillOnce(Return(false))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*state, BindTransfer(_))
+        .WillOnce(SetArgPointee<0>(teximage_params))
+        .RetiresOnSaturation();
+    // State restoration after binding.
+    EXPECT_CALL(*gl_, ActiveTexture(_));
+    EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, _));
     EXPECT_EQ(error::kNoError, ExecuteCmd(wait_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
