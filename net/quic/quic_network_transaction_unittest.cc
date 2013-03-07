@@ -218,6 +218,9 @@ class QuicNetworkTransactionTest : public PlatformTest {
   }
 
   void CreateSession() {
+    params_.enable_quic = true;
+    params_.quic_clock = clock_;
+    params_.quic_random = &random_generator_;
     params_.client_socket_factory = &socket_factory_;
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
@@ -243,12 +246,117 @@ class QuicNetworkTransactionTest : public PlatformTest {
   HttpNetworkSession::Params params_;
 };
 
+TEST_F(QuicNetworkTransactionTest, ForceQuic) {
+  params_.origin_port_to_force_quic_on = 80;
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  scoped_ptr<QuicEncryptedPacket> chlo(ConstructChlo());
+  scoped_ptr<QuicEncryptedPacket> data(
+      ConstructDataPacket(2, true, 0, GetRequestString("GET", "/")));
+  scoped_ptr<QuicEncryptedPacket> ack(ConstructAckPacket(2, 1));
+
+  MockWrite quic_writes[] = {
+    MockWrite(SYNCHRONOUS, chlo->data(), chlo->length()),
+    MockWrite(SYNCHRONOUS, data->data(), data->length()),
+    MockWrite(SYNCHRONOUS, ack->data(), ack->length()),
+  };
+
+  scoped_ptr<QuicEncryptedPacket> shlo(ConstructShlo());
+  scoped_ptr<QuicEncryptedPacket> resp(
+      ConstructDataPacket(2, true, 0, GetResponseString("200 OK", "hello!")));
+  MockRead quic_reads[] = {
+    MockRead(SYNCHRONOUS, shlo->data(), shlo->length()),
+    MockRead(SYNCHRONOUS, resp->data(), resp->length()),
+    MockRead(ASYNC, OK),  // EOF
+  };
+
+  DelayedSocketData quic_data(
+      1,  // wait for one write to finish before reading.
+      quic_reads, arraysize(quic_reads),
+      quic_writes, arraysize(quic_writes));
+
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that the
+  // alternate-protocol job will "win".
+  MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
+  StaticSocketDataProvider hanging_non_alternate_protocol_socket(
+      NULL, 0, NULL, 0);
+  hanging_non_alternate_protocol_socket.set_connect_data(
+      never_finishing_connect);
+  socket_factory_.AddSocketDataProvider(
+      &hanging_non_alternate_protocol_socket);
+
+  TestCompletionCallback callback;
+
+  CreateSession();
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(session_));
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello!", response_data);
+}
+
+TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
+  // Attempt to "force" quic on 443, which will not be honored.
+  params_.origin_port_to_force_quic_on = 443;
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.google.com/");
+  request.load_flags = 0;
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+    MockRead(ASYNC, OK)
+  };
+
+  StaticSocketDataProvider data(
+      data_reads, arraysize(data_reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+
+  CreateSession();
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(session_));
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello world", response_data);
+}
+
 TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(QuicNextProtos());
-  params_.enable_quic = true;
-  params_.quic_clock = clock_;
-  params_.quic_random = &random_generator_;
 
   HttpRequestInfo request;
   request.method = "GET";

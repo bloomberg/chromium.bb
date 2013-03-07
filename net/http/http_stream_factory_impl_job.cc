@@ -655,7 +655,7 @@ bool HttpStreamFactoryImpl::Job::ShouldForceSpdyWithoutSSL() const {
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
-  return session_->params().enable_quic &&
+  return session_->params().enable_quic && request_info_.url.SchemeIs("http") &&
       session_->params().origin_port_to_force_quic_on == origin_.port() &&
       proxy_info_.is_direct();
 }
