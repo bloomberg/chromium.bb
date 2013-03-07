@@ -793,11 +793,14 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
 
 void GpuChannel::HandleMessage() {
   handle_messages_scheduled_ = false;
+  if (deferred_messages_.empty())
+    return;
 
-  if (!deferred_messages_.empty()) {
-    IPC::Message* m = deferred_messages_.front();
-    GpuCommandBufferStub* stub = stubs_.Lookup(m->routing_id());
+  bool should_fast_track_ack = false;
+  IPC::Message* m = deferred_messages_.front();
+  GpuCommandBufferStub* stub = stubs_.Lookup(m->routing_id());
 
+  do {
     if (stub) {
       if (!stub->IsScheduled())
         return;
@@ -843,7 +846,18 @@ void GpuChannel::HandleMessage() {
     }
     if (message_processed)
       MessageProcessed();
-  }
+
+    // We want the EchoACK following the SwapBuffers to be sent as close as
+    // possible, avoiding scheduling other channels in the meantime.
+    should_fast_track_ack = false;
+    if (!deferred_messages_.empty()) {
+      m = deferred_messages_.front();
+      stub = stubs_.Lookup(m->routing_id());
+      should_fast_track_ack =
+          (m->type() == GpuCommandBufferMsg_Echo::ID) &&
+          stub && stub->IsScheduled();
+    }
+  } while (should_fast_track_ack);
 
   if (!deferred_messages_.empty()) {
     OnScheduled();
