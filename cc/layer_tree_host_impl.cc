@@ -396,7 +396,7 @@ static void appendQuadsToFillScreen(RenderPass* targetRenderPass, LayerImpl* roo
     if (!rootLayer || !SkColorGetA(screenBackgroundColor))
         return;
 
-    Region fillRegion = occlusionTracker.computeVisibleRegionInScreen();
+    Region fillRegion = occlusionTracker.ComputeVisibleRegionInScreen();
     if (fillRegion.IsEmpty())
         return;
 
@@ -458,12 +458,12 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
     bool recordMetricsForFrame = m_settings.showOverdrawInTracing && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
     OcclusionTrackerImpl occlusionTracker(rootLayer()->renderSurface()->contentRect(), recordMetricsForFrame);
-    occlusionTracker.setMinimumTrackingSize(m_settings.minimumOcclusionTrackingSize);
+    occlusionTracker.set_minimum_tracking_size(m_settings.minimumOcclusionTrackingSize);
 
     if (m_debugState.showOccludingRects)
-        occlusionTracker.setOccludingScreenSpaceRectsContainer(&frame.occludingScreenSpaceRects);
+        occlusionTracker.set_occluding_screen_space_rects_container(&frame.occludingScreenSpaceRects);
     if (m_debugState.showNonOccludingRects)
-        occlusionTracker.setNonOccludingScreenSpaceRectsContainer(&frame.nonOccludingScreenSpaceRects);
+        occlusionTracker.set_non_occluding_screen_space_rects_container(&frame.nonOccludingScreenSpaceRects);
 
     // Add quads to the Render passes in FrontToBack order to allow for testing occlusion and performing culling during the tree walk.
     typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIteratorType;
@@ -478,7 +478,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         RenderPass::Id targetRenderPassId = it.targetRenderSurfaceLayer()->renderSurface()->renderPassId();
         RenderPass* targetRenderPass = frame.renderPassesById[targetRenderPassId];
 
-        occlusionTracker.enterLayer(it);
+        occlusionTracker.EnterLayer(it);
 
         AppendQuadsData appendQuadsData(targetRenderPass->id);
 
@@ -489,7 +489,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         } else if (it.representsItself() && !it->visibleContentRect().IsEmpty()) {
             bool hasOcclusionFromOutsideTargetSurface;
             bool implDrawTransformIsUnknown = false;
-            if (occlusionTracker.occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->isClipped(), it->clipRect(), &hasOcclusionFromOutsideTargetSurface))
+            if (occlusionTracker.Occluded(it->renderTarget(), it->visibleContentRect(), it->drawTransform(), implDrawTransformIsUnknown, it->isClipped(), it->clipRect(), &hasOcclusionFromOutsideTargetSurface))
                 appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
             else {
                 DCHECK_EQ(activeTree(), it->layerTreeImpl());
@@ -527,7 +527,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         if (appendQuadsData.hadIncompleteTile) 
             frame.containsIncompleteTile = true;
 
-        occlusionTracker.leaveLayer(it);
+        occlusionTracker.LeaveLayer(it);
     }
 
 #ifndef NDEBUG
@@ -546,7 +546,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     }
 
     if (drawFrame)
-        occlusionTracker.overdrawMetrics().recordMetrics(this);
+        occlusionTracker.OverdrawMetrics().recordMetrics(this);
 
     removeRenderPasses(CullRenderPassesWithNoQuads(), frame);
     m_renderer->decideRenderPassAllocationsForFrame(frame.renderPasses);

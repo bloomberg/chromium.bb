@@ -732,15 +732,15 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
     bool needMoreUpdates = false;
     bool recordMetricsForFrame = m_settings.showOverdrawInTracing && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
     OcclusionTracker occlusionTracker(m_rootLayer->renderSurface()->contentRect(), recordMetricsForFrame);
-    occlusionTracker.setMinimumTrackingSize(m_settings.minimumOcclusionTrackingSize);
+    occlusionTracker.set_minimum_tracking_size(m_settings.minimumOcclusionTrackingSize);
 
-    prioritizeTextures(renderSurfaceLayerList, occlusionTracker.overdrawMetrics());
+    prioritizeTextures(renderSurfaceLayerList, occlusionTracker.OverdrawMetrics());
 
     RenderingStats* stats = m_debugState.recordRenderingStats() ? &m_renderingStats : NULL;
 
     LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
     for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
-        occlusionTracker.enterLayer(it);
+        occlusionTracker.EnterLayer(it);
 
         if (it.representsTargetRenderSurface()) {
             DCHECK(it->renderSurface()->drawOpacity() || it->renderSurface()->drawOpacityIsAnimating());
@@ -751,10 +751,10 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
             needMoreUpdates |= it->needMoreUpdates();
         }
 
-        occlusionTracker.leaveLayer(it);
+        occlusionTracker.LeaveLayer(it);
     }
 
-    occlusionTracker.overdrawMetrics().recordMetrics(this);
+    occlusionTracker.OverdrawMetrics().recordMetrics(this);
 
     return needMoreUpdates;
 }

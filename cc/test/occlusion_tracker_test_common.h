@@ -20,11 +20,11 @@ public:
     {
     }
 
-    cc::Region occlusionFromInsideTarget() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionFromInsideTarget; }
-    cc::Region occlusionFromOutsideTarget() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionFromOutsideTarget; }
+    cc::Region occlusion_from_inside_target() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::stack_.back().occlusion_from_inside_target; }
+    cc::Region occlusion_from_outside_target() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::stack_.back().occlusion_from_outside_target; }
 
-    void setOcclusionFromOutsideTarget(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionFromOutsideTarget = region; }
-    void setOcclusionFromInsideTarget(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.back().occlusionFromInsideTarget = region; }
+    void setOcclusionFromOutsideTarget(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::stack_.back().occlusion_from_outside_target = region; }
+    void setOcclusionFromInsideTarget(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::stack_.back().occlusion_from_inside_target = region; }
 };
 
 typedef TestOcclusionTrackerBase<cc::Layer, cc::RenderSurface> TestOcclusionTracker;

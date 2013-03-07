@@ -28,8 +28,8 @@ class TestLayer : public Layer {
     const TestOcclusionTracker* test_occlusion =
         static_cast<const TestOcclusionTracker*>(occlusion);
     occlusion_ = UnionRegions(
-        test_occlusion->occlusionFromInsideTarget(),
-        test_occlusion->occlusionFromOutsideTarget());
+        test_occlusion->occlusion_from_inside_target(),
+        test_occlusion->occlusion_from_outside_target());
   }
 
   const Region& occlusion() const { return occlusion_; }

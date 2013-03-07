@@ -41,9 +41,9 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
     if (keepQuad)
         drawQuad->visible_rect = culledRect;
 
-    occlusionTracker.overdrawMetrics().didCullForDrawing(drawQuad->quadTransform(), drawQuad->rect, culledRect);
+    occlusionTracker.OverdrawMetrics().didCullForDrawing(drawQuad->quadTransform(), drawQuad->rect, culledRect);
     gfx::Rect opaqueDrawRect = drawQuad->opacity() == 1.0f ? drawQuad->opaque_rect : gfx::Rect();
-    occlusionTracker.overdrawMetrics().didDraw(drawQuad->quadTransform(), culledRect, opaqueDrawRect);
+    occlusionTracker.OverdrawMetrics().didDraw(drawQuad->quadTransform(), culledRect, opaqueDrawRect);
 
     if (keepQuad) {
         if (createDebugBorderQuads && !drawQuad->IsDebugQuad() && drawQuad->visible_rect != drawQuad->rect) {
@@ -71,9 +71,9 @@ bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQu
     bool implDrawTransformIsUnknown = false;
 
     if (m_forSurface)
-        culledRect = m_occlusionTracker.unoccludedContributingSurfaceContentRect(m_layer, false, drawQuad->rect, &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker.UnoccludedContributingSurfaceContentRect(m_layer, false, drawQuad->rect, &hasOcclusionFromOutsideTargetSurface);
     else
-        culledRect = m_occlusionTracker.unoccludedContentRect(m_layer->renderTarget(), drawQuad->rect, drawQuad->quadTransform(), implDrawTransformIsUnknown, drawQuad->isClipped(), drawQuad->clipRect(), &hasOcclusionFromOutsideTargetSurface);
+        culledRect = m_occlusionTracker.UnoccludedContentRect(m_layer->renderTarget(), drawQuad->rect, drawQuad->quadTransform(), implDrawTransformIsUnknown, drawQuad->isClipped(), drawQuad->clipRect(), &hasOcclusionFromOutsideTargetSurface);
 
     appendQuadsData.hadOcclusionFromOutsideTargetSurface |= hasOcclusionFromOutsideTargetSurface;
 

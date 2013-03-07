@@ -29,17 +29,17 @@ public:
     TestOcclusionTracker()
         : OcclusionTracker(gfx::Rect(0, 0, 1000, 1000), true)
     {
-        m_stack.push_back(StackObject());
+        stack_.push_back(StackObject());
     }
 
     void setRenderTarget(Layer* renderTarget)
     {
-        m_stack.back().target = renderTarget;
+        stack_.back().target = renderTarget;
     }
 
     void setOcclusion(const Region& occlusion)
     {
-        m_stack.back().occlusionFromInsideTarget = occlusion;
+        stack_.back().occlusion_from_inside_target = occlusion;
     }
 };
 
@@ -230,9 +230,9 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     calcDrawProps(layer);
     updateAndPush(layer, layerImpl);
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // We should have both tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -245,9 +245,9 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     calcDrawProps(layer);
     updateAndPush(layer, layerImpl);
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000 + 2500, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000 + 2500, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // We should still have both tiles, as part of the top tile is still unoccluded.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -467,7 +467,7 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
 
     // We should have the prepainted tile on the impl side, but culled it during paint.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_EQ(1, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_EQ(1, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, pushTilesMarkedDirtyDuringPaint)
@@ -1030,9 +1030,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36-3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
-    EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
+    EXPECT_EQ(3, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
     layer->setTexturePriorities(m_priorityCalculator);
@@ -1043,9 +1043,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36-2, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000 + 340000, 1);
-    EXPECT_EQ(3 + 2, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 330000 + 340000, 1);
+    EXPECT_EQ(3 + 2, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
     layer->setTexturePriorities(m_priorityCalculator);
@@ -1056,9 +1056,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000 + 340000 + 360000, 1);
-    EXPECT_EQ(3 + 2, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 330000 + 340000 + 360000, 1);
+    EXPECT_EQ(3 + 2, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
@@ -1084,9 +1084,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(24-3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 210000, 1);
-    EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 210000, 1);
+    EXPECT_EQ(3, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1100,9 +1100,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(24-6, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 210000 + 180000, 1);
-    EXPECT_EQ(3 + 6, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 210000 + 180000, 1);
+    EXPECT_EQ(3 + 6, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1116,9 +1116,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(24-6, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 210000 + 180000 + 180000, 1);
-    EXPECT_EQ(3 + 6 + 6, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 210000 + 180000 + 180000, 1);
+    EXPECT_EQ(3 + 6 + 6, occluded.OverdrawMetrics().tilesCulledForUpload());
 
 }
 
@@ -1146,9 +1146,9 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
         updateTextures();
     }
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
-    EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
+    EXPECT_EQ(3, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
     layer->setTexturePriorities(m_priorityCalculator);
@@ -1158,9 +1158,9 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
-    EXPECT_EQ(6, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
+    EXPECT_EQ(6, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
@@ -1190,9 +1190,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36-3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
-    EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 330000, 1);
+    EXPECT_EQ(3, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
@@ -1229,9 +1229,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     // number of tiles 3x3.
     EXPECT_EQ(9, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 90000, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 90000, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1247,9 +1247,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(9-1, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 90000 + 80000, 1);
-    EXPECT_EQ(1, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 90000 + 80000, 1);
+    EXPECT_EQ(1, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1270,9 +1270,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->update(*m_queue.get(), &occluded, NULL);
     EXPECT_EQ(9-1, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 90000 + 80000 + 80000, 1);
-    EXPECT_EQ(1 + 1, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 90000 + 80000 + 80000, 1);
+    EXPECT_EQ(1 + 1, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
@@ -1304,10 +1304,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.IsEmpty());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 20000, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // visibleContentOpaqueRegion should match the visible part of what is painted opaque.
     opaquePaintRect = gfx::Rect(10, 10, 90, 190);
@@ -1320,10 +1320,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 20000 * 2, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // If we paint again without invalidating, the same stuff should be opaque.
     layer->fakeLayerUpdater()->setOpaquePaintRect(gfx::Rect());
@@ -1334,10 +1334,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 20000 * 2, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // If we repaint a non-opaque part of the tile, then it shouldn't lose its opaque-ness. And other tiles should
     // not be affected.
@@ -1350,10 +1350,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2 + 1, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100 + 1, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 20000 * 2 + 1, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100 + 1, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // If we repaint an opaque part of the tile, then it should lose its opaque-ness. But other tiles should still
     // not be affected.
@@ -1366,10 +1366,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(gfx::Rect(10, 100, 90, 100), visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 20000 * 2 + 1  + 1, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100 + 1 + 1, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 20000 * 2 + 1  + 1, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 17100, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 20000 + 20000 - 17100 + 1 + 1, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, pixelsPaintedMetrics)
@@ -1398,10 +1398,10 @@ TEST_F(TiledLayerTest, pixelsPaintedMetrics)
     opaqueContents = layer->visibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.IsEmpty());
 
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 30000, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 30000, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 30000, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 30000, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 
     // Invalidates an area on the top and bottom tile, which will cause us to paint the tile in the middle,
     // even though it is not dirty and will not be uploaded.
@@ -1416,11 +1416,11 @@ TEST_F(TiledLayerTest, pixelsPaintedMetrics)
     EXPECT_TRUE(opaqueContents.IsEmpty());
 
     // The middle tile was painted even though not invalidated.
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsPainted(), 30000 + 60 * 210, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsPainted(), 30000 + 60 * 210, 1);
     // The pixels uploaded will not include the non-invalidated tile in the middle.
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedOpaque(), 0, 1);
-    EXPECT_NEAR(occluded.overdrawMetrics().pixelsUploadedTranslucent(), 30000 + 1 + 100, 1);
-    EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedOpaque(), 0, 1);
+    EXPECT_NEAR(occluded.OverdrawMetrics().pixelsUploadedTranslucent(), 30000 + 1 + 100, 1);
+    EXPECT_EQ(0, occluded.OverdrawMetrics().tilesCulledForUpload());
 }
 
 TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)

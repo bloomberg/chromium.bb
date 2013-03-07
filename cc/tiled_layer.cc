@@ -323,7 +323,7 @@ bool TiledLayer::updateTiles(int left, int top, int right, int bottom, ResourceU
     gfx::Rect paintRect = markTilesForUpdate(left, top, right, bottom, ignoreOcclusions);
 
     if (occlusion)
-        occlusion->overdrawMetrics().didPaint(paintRect);
+        occlusion->OverdrawMetrics().didPaint(paintRect);
 
     if (paintRect.IsEmpty())
         return true;
@@ -352,7 +352,7 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
                 continue;
             DCHECK(!tile->occluded); // Did resetUpdateState get skipped? Are we doing more than one occlusion pass?
             gfx::Rect visibleTileRect = gfx::IntersectRects(m_tiler->tileBounds(i, j), visibleContentRect());
-            if (occlusion && occlusion->occluded(renderTarget(), visibleTileRect, drawTransform(), drawTransformIsAnimating(), isClipped(), clipRect())) {
+            if (occlusion && occlusion->Occluded(renderTarget(), visibleTileRect, drawTransform(), drawTransformIsAnimating(), isClipped(), clipRect(), NULL)) {
                 tile->occluded = true;
                 occludedTileCount++;
             } else {
@@ -364,7 +364,7 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
     if (!succeeded)
         return;
     if (occlusion)
-        occlusion->overdrawMetrics().didCullTilesForUpload(occludedTileCount);
+        occlusion->OverdrawMetrics().didCullTilesForUpload(occludedTileCount);
 }
 
 bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions)
@@ -498,7 +498,7 @@ void TiledLayer::updateTileTextures(const gfx::Rect& paintRect, int left, int to
 
             tile->updaterResource()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)
-                occlusion->overdrawMetrics().didUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
+                occlusion->OverdrawMetrics().didUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
 
         }
     }
