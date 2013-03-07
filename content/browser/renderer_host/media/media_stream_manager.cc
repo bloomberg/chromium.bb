@@ -25,7 +25,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "googleurl/src/gurl.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_util.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 
 #if defined(OS_WIN)
@@ -852,7 +852,9 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
       // mirroring, we don't go through EnumerateDevices where these are usually
       // initialized.
       if (device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
-        int sample_rate = media::GetAudioHardwareSampleRate();
+        const media::AudioParameters parameters =
+            audio_manager_->GetDefaultOutputStreamParameters();
+        int sample_rate = parameters.sample_rate();
         // If we weren't able to get the native sampling rate, it most likely
         // means the system did not have an output device, but for mirroring we
         // still want to startup the audio engine, so set reasonable defaults.

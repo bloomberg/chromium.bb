@@ -83,20 +83,15 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) = 0;
 
-  // Returns the preferred hardware audio output parameters for opening output
-  // streams in the |AUDIO_PCM_LOW_LATENCY| format.
-  // TODO(dalecurtis): Retrieve the |channel_layout| value from hardware instead
-  // of accepting the value.
-  // TODO(dalecurtis): Each AudioManager should implement their own version, see
-  // http://crbug.com/137326
-  virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
-      const AudioParameters& input_params);
-
   // Listeners will be notified on the AudioManager::GetMessageLoop() loop.
   virtual void AddOutputDeviceChangeListener(
       AudioDeviceListener* listener) OVERRIDE;
   virtual void RemoveOutputDeviceChangeListener(
       AudioDeviceListener* listener) OVERRIDE;
+
+  virtual AudioParameters GetDefaultOutputStreamParameters() OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
  protected:
   AudioManagerBase();
@@ -120,6 +115,14 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // listeners that a state change has occurred.  Must be called from the audio
   // thread.
   void NotifyAllOutputDeviceChangeListeners();
+
+  // Returns the preferred hardware audio output parameters for opening output
+  // streams. If the users inject a valid |input_params|, each AudioManager
+  // will decide if they should return the values from |input_params| or the
+  // default hardware values. If the |input_params| is invalid, it will return
+  // the default hardware audio parameters.
+  virtual AudioParameters GetPreferredOutputStreamParameters(
+      const AudioParameters& input_params) = 0;
 
   // Map of cached AudioOutputDispatcher instances.  Must only be touched
   // from the audio thread (no locking).

@@ -27,6 +27,8 @@ class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
   virtual void ShowAudioInputSettings() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
   // Implementation of AudioManagerBase.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -37,11 +39,12 @@ class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
-  virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
-      const AudioParameters& input_params) OVERRIDE;
 
  protected:
   virtual ~AudioManagerLinux();
+
+  virtual AudioParameters GetPreferredOutputStreamParameters(
+      const AudioParameters& input_params) OVERRIDE;
 
  private:
   enum StreamType {

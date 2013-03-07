@@ -13,11 +13,15 @@
 #include "media/audio/audio_util.h"
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_output.h"
+#include "media/base/channel_layout.h"
 
 namespace media {
 
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
+
+// Default sample rate for input and output streams.
+static const int kDefaultSampleRate = 48000;
 
 static const char kCrasAutomaticDeviceName[] = "Automatic";
 static const char kCrasAutomaticDeviceId[] = "automatic";
@@ -47,6 +51,15 @@ void AudioManagerCras::GetAudioInputDeviceNames(
   DCHECK(device_names->empty());
   GetCrasAudioInputDevices(device_names);
   return;
+}
+
+AudioParameters AudioManagerCras::GetInputStreamParameters(
+    const std::string& device_id) {
+  static const int kDefaultInputBufferSize = 1024;
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+      kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
 void AudioManagerCras::GetCrasAudioInputDevices(
@@ -80,6 +93,32 @@ AudioInputStream* AudioManagerCras::MakeLowLatencyInputStream(
   return MakeInputStream(params, device_id);
 }
 
+AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
+    const AudioParameters& input_params) {
+  static const int kDefaultOutputBufferSize = 512;
+
+  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
+  int sample_rate = kDefaultSampleRate;
+  int buffer_size = kDefaultOutputBufferSize;
+  int bits_per_sample = 16;
+  int input_channels = 0;
+  if (input_params.IsValid()) {
+    sample_rate = input_params.sample_rate();
+    bits_per_sample = input_params.bits_per_sample();
+    channel_layout = input_params.channel_layout();
+    input_channels = input_params.input_channels();
+    buffer_size = input_params.frames_per_buffer();
+  }
+
+  int user_buffer_size = GetUserBufferSize();
+  if (user_buffer_size)
+    buffer_size = user_buffer_size;
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      sample_rate, bits_per_sample, buffer_size);
+}
+
 AudioOutputStream* AudioManagerCras::MakeOutputStream(
     const AudioParameters& params) {
   return new CrasOutputStream(params, this);
@@ -88,15 +127,6 @@ AudioOutputStream* AudioManagerCras::MakeOutputStream(
 AudioInputStream* AudioManagerCras::MakeInputStream(
     const AudioParameters& params, const std::string& device_id) {
   return new CrasInputStream(params, this);
-}
-
-AudioParameters AudioManagerCras::GetPreferredLowLatencyOutputStreamParameters(
-    const AudioParameters& input_params) {
-  // TODO(dalecurtis): This should include bits per channel and channel layout
-  // eventually.
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, input_params.channel_layout(),
-      input_params.sample_rate(), 16, input_params.frames_per_buffer());
 }
 
 }  // namespace media

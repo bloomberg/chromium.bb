@@ -27,6 +27,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   virtual void ShowAudioInputSettings() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) OVERRIDE;
 
   // Implementation of AudioManagerBase.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -37,10 +39,10 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
-  virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
-      const AudioParameters& input_params) OVERRIDE;
 
-  int GetNativeSampleRate();
+ protected:
+  virtual AudioParameters GetPreferredOutputStreamParameters(
+      const AudioParameters& input_params) OVERRIDE;
 
  private:
   bool Init();
@@ -63,6 +65,9 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   // Called by MakeLinearInputStream and MakeLowLatencyInputStream.
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
+
+  // Gets the native sample rate of Pulse.
+  int GetNativeSampleRate();
 
   pa_threaded_mainloop* input_mainloop_;
   pa_context* input_context_;

@@ -182,7 +182,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   // as our input parameters.
   AudioParameters output_params = params;
   if (use_audio_output_resampler) {
-    output_params = GetPreferredLowLatencyOutputStreamParameters(params);
+    output_params = GetPreferredOutputStreamParameters(params);
 
     // Ensure we only pass on valid output parameters.
     if (!output_params.IsValid()) {
@@ -317,22 +317,6 @@ void AudioManagerBase::ShutdownOnAudioThread() {
 #endif  // defined(OS_IOS)
 }
 
-AudioParameters AudioManagerBase::GetPreferredLowLatencyOutputStreamParameters(
-    const AudioParameters& input_params) {
-#if defined(OS_IOS)
-  // IOS implements audio input only.
-  NOTIMPLEMENTED();
-  return AudioParameters();
-#else
-  // TODO(dalecurtis): This should include bits per channel and channel layout
-  // eventually.
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      input_params.channel_layout(), input_params.input_channels(),
-      GetAudioHardwareSampleRate(), 16, GetAudioHardwareBufferSize());
-#endif  // defined(OS_IOS)
-}
-
 void AudioManagerBase::AddOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
   DCHECK(message_loop_->BelongsToCurrentThread());
@@ -349,6 +333,16 @@ void AudioManagerBase::NotifyAllOutputDeviceChangeListeners() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DVLOG(1) << "Firing OnDeviceChange() notifications.";
   FOR_EACH_OBSERVER(AudioDeviceListener, output_listeners_, OnDeviceChange());
+}
+
+AudioParameters AudioManagerBase::GetDefaultOutputStreamParameters() {
+  return GetPreferredOutputStreamParameters(AudioParameters());
+}
+
+AudioParameters AudioManagerBase::GetInputStreamParameters(
+    const std::string& device_id) {
+  NOTREACHED();
+  return AudioParameters();
 }
 
 }  // namespace media

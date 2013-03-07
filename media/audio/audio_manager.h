@@ -120,6 +120,18 @@ class MEDIA_EXPORT AudioManager {
   virtual void RemoveOutputDeviceChangeListener(
       AudioDeviceListener* listener) = 0;
 
+  // Returns the default output hardware audio parameters for opening output
+  // streams. It is a convenience interface to
+  // AudioManagerBase::GetPreferredOutputStreamParameters and each AudioManager
+  // does not need their own implementation to this interface.
+  virtual AudioParameters GetDefaultOutputStreamParameters() = 0;
+
+  // Returns the input hardware audio parameters of the specific device
+  // for opening input streams. Each AudioManager needs to implement their own
+  // version of this interface.
+  virtual AudioParameters GetInputStreamParameters(
+      const std::string& device_id) = 0;
+
  protected:
   AudioManager();
 
