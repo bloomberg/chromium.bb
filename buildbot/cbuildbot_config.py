@@ -1002,6 +1002,7 @@ internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
   quick_unit=False,
+  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('parrot-paladin',
