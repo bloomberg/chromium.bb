@@ -13,14 +13,12 @@
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/support/gc_extension.h"
 
 using WebKit::WebFrame;
-using WebKit::WebRuntimeFeatures;
 using WebTestRunner::WebTestDelegate;
 using WebTestRunner::WebTestInterfaces;
 
@@ -43,12 +41,6 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   RenderThread::Get()->AddObserver(this);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  WebRuntimeFeatures::enableInputTypeDateTime(true);
-  WebRuntimeFeatures::enableInputTypeDateTimeLocal(true);
-  WebRuntimeFeatures::enableInputTypeMonth(true);
-  WebRuntimeFeatures::enableInputTypeTime(true);
-  WebRuntimeFeatures::enableInputTypeWeek(true);
-  WebRuntimeFeatures::enableCanvasPath(true);
   DisableAppCacheLogging();
   EnableDevToolsFrontendTesting();
   EnableShortCircuitSizeUpdates();
