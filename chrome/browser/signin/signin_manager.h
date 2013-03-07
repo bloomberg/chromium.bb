@@ -85,6 +85,17 @@ class SigninManager : public GaiaAuthConsumer,
   static bool IsAllowedUsername(const std::string& username,
                                 const std::string& policy);
 
+  // Returns true if |url| is a web signin URL and should be hosted in an
+  // isolated, privileged signin process.
+  static bool IsWebBasedSigninFlowURL(const GURL& url);
+
+  // This is used to distinguish URLs belonging to the special web signin flow
+  // running in the special signin process from other URLs on the same domain.
+  // We do not grant WebUI privilieges / bindings to this process or to URLs of
+  // this scheme; enforcement of privileges is handled separately by
+  // OneClickSigninHelper.
+  static const char* kChromeSigninEffectiveSite;
+
   SigninManager();
   virtual ~SigninManager();
 
@@ -204,6 +215,15 @@ class SigninManager : public GaiaAuthConsumer,
   // If true, signout is prohibited for this profile (calls to SignOut() are
   // ignored).
   bool IsSignoutProhibited() const;
+
+  // Allows the SigninManager to track the privileged signin process
+  // identified by |process_id| so that we can later ask (via IsSigninProcess)
+  // if it is safe to sign the user in from the current context (see
+  // OneClickSigninHelper).  All of this tracking state is reset once the
+  // renderer process terminates.
+  void SetSigninProcess(int process_id);
+  bool IsSigninProcess(int process_id) const;
+  bool HasSigninProcess() const;
 
  protected:
   // Weak pointer to parent profile (protected so FakeSigninManager can access
@@ -346,6 +366,9 @@ class SigninManager : public GaiaAuthConsumer,
 
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
 
+  // See SetSigninProcess.  Tracks the currently active signin process
+  // by ID, if there is one.
+  int signin_process_id_;
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
   // CloudPolicyClient reference we keep while determining whether to create

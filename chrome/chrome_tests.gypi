@@ -1337,6 +1337,7 @@
         'browser/sessions/persistent_tab_restore_service_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/tab_restore_browsertest.cc',
+        'browser/signin/signin_browsertest.cc',
         'browser/speech/extension_api/tts_extension_apitest.cc',
         'browser/speech/speech_input_extension_apitest.cc',
         'browser/speech/speech_recognition_bubble_browsertest.cc',

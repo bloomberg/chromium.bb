@@ -55,6 +55,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -609,6 +610,14 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
   if (!email.empty()) {
     if (!manager)
       return false;
+
+    if (!manager->IsSigninProcess(
+            web_contents->GetRenderProcessHost()->GetID())) {
+      // We only allow the dedicated signin process to sign the user into
+      // Chrome without intervention, because it doesn't load any untrusted
+      // pages.
+      return false;
+    }
 
     // If the signin manager already has an authenticated name, then this is a
     // re-auth scenario.  Make sure the email just signed in corresponds to the

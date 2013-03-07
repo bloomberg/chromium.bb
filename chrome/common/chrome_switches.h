@@ -328,6 +328,7 @@ extern const char kShowAutofillTypePredictions[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kShowIcons[];
 extern const char kShowLauncherAlignmentMenu[];
+extern const char kSigninProcess[];
 extern const char kSilentDumpOnDCHECK[];
 extern const char kSimulateUpgrade[];
 extern const char kSimulateCriticalUpdate[];

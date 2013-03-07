@@ -233,6 +233,10 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
   // the given account.
   void CreateSigninManager(bool use_incognito, const std::string& username);
 
+  // Set the ID of the signin process that the test will assume to be the
+  // only process allowed to sign the user in to Chrome.
+  void SetTrustedSigninProcessID(int id);
+
   void AddEmailToOneClickRejectedList(const std::string& email);
   void EnableOneClick(bool enable);
   void AllowSigninCookies(bool enable);
@@ -247,12 +251,18 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
   // Members to fake that we are on the UI thread.
   content::TestBrowserThread ui_thread_;
 
+  // The ID of the signin process the test will assume to be trusted.
+  // By default, set to the test RenderProcessHost's process ID, but
+  // overridden by SetTrustedSigninProcessID.
+  int trusted_signin_process_id_;
+
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelperTest);
 };
 
 OneClickSigninHelperTest::OneClickSigninHelperTest()
     : profile_(NULL),
-      ui_thread_(content::BrowserThread::UI, &message_loop_) {
+      ui_thread_(content::BrowserThread::UI, &message_loop_),
+      trusted_signin_process_id_(-1) {
 }
 
 void OneClickSigninHelperTest::SetUp() {
@@ -260,11 +270,16 @@ void OneClickSigninHelperTest::SetUp() {
   profile_ = new TestingProfile();
   browser_context_.reset(profile_);
   content::RenderViewHostTestHarness::SetUp();
+  SetTrustedSigninProcessID(process()->GetID());
 }
 
 void OneClickSigninHelperTest::TearDown() {
   SyncPromoUI::ForceWebBasedSigninFlowForTesting(false);
   content::RenderViewHostTestHarness::TearDown();
+}
+
+void OneClickSigninHelperTest::SetTrustedSigninProcessID(int id) {
+  trusted_signin_process_id_ = id;
 }
 
 void OneClickSigninHelperTest::CreateSigninManager(
@@ -274,8 +289,10 @@ void OneClickSigninHelperTest::CreateSigninManager(
   signin_manager_ = static_cast<SigninManagerMock*>(
       SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_, BuildSigninManagerMock));
-
+  if (signin_manager_)
+    signin_manager_->SetSigninProcess(trusted_signin_process_id_);
   if (!username.empty()) {
+    ASSERT_TRUE(signin_manager_);
     signin_manager_->StartSignIn(username, std::string(), std::string(),
                                 std::string());
   }
@@ -571,6 +588,22 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
       "", &error_message));
   EXPECT_EQ("", error_message);
+}
+
+TEST_F(OneClickSigninHelperTest, CanOfferUntrustedProcess) {
+  content::MockRenderProcessHost trusted(browser_context_.get());
+  ASSERT_NE(trusted.GetID(), process()->GetID());
+  // Make sure the RenderProcessHost used by the test is untrusted.
+  SetTrustedSigninProcessID(trusted.GetID());
+  CreateSigninManager(false, "");
+
+  EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
+        WillRepeatedly(Return(true));
+
+  EnableOneClick(true);
+  EXPECT_FALSE(OneClickSigninHelper::CanOffer(
+      web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+      "user@gmail.com", NULL));
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {

@@ -38,6 +38,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -62,6 +63,8 @@ const char kGetInfoDisplayEmailKey[] = "displayEmail";
 const char kGetInfoEmailKey[] = "email";
 
 const char kGoogleAccountsUrl[] = "https://accounts.google.com";
+
+const int kInvalidProcessId = -1;
 
 }  // namespace
 
@@ -148,6 +151,26 @@ void SigninManagerCookieHelper::NotifyOnUIThread(
   base::ResetAndReturn(&completion_callback_).Run(cookies);
 }
 
+// Under the covers, we use a dummy chrome-extension ID to serve the purposes
+// outlined in the .h file comment for this string.
+const char* SigninManager::kChromeSigninEffectiveSite =
+    "chrome-extension://acfccoigjajmmgbhpfbjnpckhjjegnih";
+
+// static
+bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
+  GURL effective(kChromeSigninEffectiveSite);
+  if (url.SchemeIs(effective.scheme().c_str()) &&
+      url.host() == effective.host()) {
+    return true;
+  }
+
+  GURL service_login(GaiaUrls::GetInstance()->service_login_url());
+  if (url.GetOrigin() != service_login.GetOrigin())
+    return false;
+
+  return url.path() == service_login.path();
+}
+
 // static
 bool SigninManager::AreSigninCookiesAllowed(Profile* profile) {
   CookieSettings* cookie_settings =
@@ -200,7 +223,30 @@ SigninManager::SigninManager()
       prohibit_signout_(false),
       had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
-      weak_pointer_factory_(this) {
+      weak_pointer_factory_(this),
+      signin_process_id_(kInvalidProcessId) {
+}
+
+void SigninManager::SetSigninProcess(int process_id) {
+  if (process_id == signin_process_id_)
+    return;
+  DLOG_IF(WARNING, signin_process_id_ != kInvalidProcessId) <<
+      "Replacing in-use signin process.";
+  signin_process_id_ = process_id;
+  const content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(process_id);
+  DCHECK(process);
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::Source<content::RenderProcessHost>(process));
+}
+
+bool SigninManager::IsSigninProcess(int process_id) const {
+  return process_id == signin_process_id_;
+}
+
+bool SigninManager::HasSigninProcess() const {
+  return signin_process_id_ != kInvalidProcessId;
 }
 
 SigninManager::~SigninManager() {
@@ -896,6 +942,20 @@ void SigninManager::Observe(int type,
 
         // We only want to do this once per sign-in.
         CleanupNotificationRegistration();
+      }
+      break;
+    }
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
+      // It's possible we're listening to a "stale" renderer because it was
+      // replaced with a new process by process-per-site. In either case,
+      // stop listening to it, but only reset signin_process_id_ tracking
+      // if this was from the current signin process.
+      registrar_.Remove(this,
+                        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                        source);
+      if (signin_process_id_ ==
+          content::Source<content::RenderProcessHost>(source)->GetID()) {
+        signin_process_id_ = kInvalidProcessId;
       }
       break;
     }
