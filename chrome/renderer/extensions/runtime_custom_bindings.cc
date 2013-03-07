@@ -21,14 +21,11 @@ namespace extensions {
 
 RuntimeCustomBindings::RuntimeCustomBindings(Dispatcher* dispatcher,
                                              ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      context_(context) {
+    : ChromeV8Extension(dispatcher), context_(context) {
   RouteFunction("GetManifest",
                 base::Bind(&RuntimeCustomBindings::GetManifest,
                            base::Unretained(this)));
-  RouteFunction("OpenChannelToExtension",
-                base::Bind(&RuntimeCustomBindings::OpenChannelToExtension,
-                           base::Unretained(this)));
+  RouteStaticFunction("OpenChannelToExtension", &OpenChannelToExtension);
   RouteFunction("OpenChannelToNativeApp",
                 base::Bind(&RuntimeCustomBindings::OpenChannelToNativeApp,
                            base::Unretained(this)));
@@ -36,11 +33,12 @@ RuntimeCustomBindings::RuntimeCustomBindings(Dispatcher* dispatcher,
 
 RuntimeCustomBindings::~RuntimeCustomBindings() {}
 
+// static
 v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToExtension(
     const v8::Arguments& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = GetRenderView();
+  content::RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return v8::Undefined();
 
@@ -66,14 +64,14 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToExtension(
 v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::Arguments& args) {
   // Verify that the extension has permission to use native messaging.
-  if (!dispatcher()->CheckContextAccessToExtensionAPI(
-          "nativeMessaging", context_)) {
+  if (!dispatcher()->CheckCurrentContextAccessToExtensionAPI(
+          "nativeMessaging")) {
     return v8::Undefined();
   }
 
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
-  content::RenderView* renderview = GetRenderView();
+  content::RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return v8::Undefined();
 

@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the app_window API.
+// Custom bindings for the app_window API.
 
-var Binding = require('binding').Binding;
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var chrome = requireNative('chrome').GetChrome();
 var sendRequest = require('sendRequest').sendRequest;
 var appWindowNatives = requireNative('app_window');
 var forEach = require('utils').forEach;
 var GetView = appWindowNatives.GetView;
 var OnContextReady = appWindowNatives.OnContextReady;
 
-var appWindow = Binding.create('app.window');
-appWindow.registerCustomHook(function(bindingsAPI) {
+chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-
   apiFunctions.setCustomCallback('create',
                                  function(name, request, windowParams) {
     var view = null;
@@ -85,12 +81,10 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   // This is an internal function, but needs to be bound with setHandleRequest
   // because it is called from a different JS context.
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
-    var currentWindowInternal =
-        Binding.create('app.currentWindowInternal').generate();
     var AppWindow = function() {};
-    forEach(currentWindowInternal, function(fn) {
+    forEach(chromeHidden.internalAPIs.app.currentWindowInternal, function(fn) {
       AppWindow.prototype[fn] =
-          currentWindowInternal[fn];
+          chromeHidden.internalAPIs.app.currentWindowInternal[fn];
     });
     AppWindow.prototype.moveTo = window.moveTo.bind(window);
     AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
@@ -154,5 +148,3 @@ chromeHidden.updateAppWindowProperties = function(update) {
       (oldData.maximized && !update.maximized))
     currentWindow["onRestored"].dispatch();
 };
-
-exports.binding = appWindow.generate();

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the webRequestInternal API.
+// Custom bindings for the webRequestInternal API.
 
-var binding = require('binding').Binding.create('webRequestInternal');
-
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 
-binding.registerCustomHook(function(api) {
+chromeHidden.registerCustomHook('webRequestInternal', function(api) {
   var apiFunctions = api.apiFunctions;
 
   apiFunctions.setHandleRequest('addEventListener', function() {
@@ -23,5 +22,3 @@ binding.registerCustomHook(function(api) {
                 {forIOThread: true});
   });
 });
-
-exports.binding = binding.generate();

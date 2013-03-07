@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the types API.
+// Custom bindings for the types API.
 
-var binding = require('binding').Binding.create('types');
-
-var chrome = requireNative('chrome').GetChrome();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
 
-binding.registerCustomType('types.ChromeSetting', function() {
+chromeHidden.registerCustomType('types.ChromeSetting', function() {
 
   function extendSchema(schema) {
     var extendedSchema = schema.slice();
@@ -47,5 +45,3 @@ binding.registerCustomType('types.ChromeSetting', function() {
 
   return ChromeSetting;
 });
-
-exports.binding = binding.generate();

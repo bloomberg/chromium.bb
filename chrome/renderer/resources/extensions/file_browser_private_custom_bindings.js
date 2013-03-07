@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the fileBrowserPrivate API.
-
-var binding = require('binding').Binding.create('fileBrowserPrivate');
+// Custom bindings for the fileBrowserPrivate API.
 
 var fileBrowserPrivateNatives = requireNative('file_browser_private');
 var GetLocalFileSystem = fileBrowserPrivateNatives.GetLocalFileSystem;
@@ -12,7 +10,9 @@ var GetLocalFileSystem = fileBrowserPrivateNatives.GetLocalFileSystem;
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
 
-binding.registerCustomHook(function(bindingsAPI) {
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+
+chromeHidden.registerCustomHook('fileBrowserPrivate', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('requestLocalFileSystem',
@@ -61,5 +61,3 @@ binding.registerCustomHook(function(bindingsAPI) {
     request.callback = null;
   });
 });
-
-exports.binding = binding.generate();

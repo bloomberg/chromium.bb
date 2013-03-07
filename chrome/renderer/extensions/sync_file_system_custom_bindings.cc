@@ -13,9 +13,8 @@
 
 namespace extensions {
 
-SyncFileSystemCustomBindings::SyncFileSystemCustomBindings(
-    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
-    : ChromeV8Extension(dispatcher, v8_context) {
+SyncFileSystemCustomBindings::SyncFileSystemCustomBindings()
+    : ChromeV8Extension(NULL) {
   RouteFunction(
       "GetSyncFileSystemObject",
       base::Bind(&SyncFileSystemCustomBindings::GetSyncFileSystemObject,
@@ -48,8 +47,7 @@ v8::Handle<v8::Value> SyncFileSystemCustomBindings::GetSyncFileSystemObject(
     return v8::Undefined();
   }
 
-  WebKit::WebFrame* webframe =
-      WebKit::WebFrame::frameForContext(v8_context());
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   return webframe->createFileSystem(WebKit::WebFileSystem::TypeExternal,
                                     WebKit::WebString::fromUTF8(name),
                                     WebKit::WebString::fromUTF8(root_url));

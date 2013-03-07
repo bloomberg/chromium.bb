@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the pageCapture API.
-
-var binding = require('binding').Binding.create('pageCapture');
+// Custom bindings for the pageCapture API.
 
 var pageCaptureNatives = requireNative('page_capture');
 var CreateBlob = pageCaptureNatives.CreateBlob;
 var SendResponseAck = pageCaptureNatives.SendResponseAck;
 
-binding.registerCustomHook(function(bindingsAPI) {
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+
+chromeHidden.registerCustomHook('pageCapture', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('saveAsMHTML',
@@ -27,5 +27,3 @@ binding.registerCustomHook(function(bindingsAPI) {
     SendResponseAck(request.id);
   });
 });
-
-exports.binding = binding.generate();

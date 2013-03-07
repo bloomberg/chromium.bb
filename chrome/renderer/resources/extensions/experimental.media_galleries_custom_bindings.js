@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the Media Gallery API.
-
-var binding = require('binding').Binding.create('experimental.mediaGalleries');
+// Custom bindings for the Media Gallery API.
 
 var mediaGalleriesNatives = requireNative('mediaGalleries');
 
-binding.registerCustomHook(function(bindingsAPI, extensionId) {
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+
+chromeHidden.registerCustomHook('experimental.mediaGalleries',
+                                function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // extractEmbeddedThumbnails uses a renderer side handler so that it can
@@ -19,5 +20,3 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     return mediaGalleriesNatives.ExtractEmbeddedThumbnails(fileEntry);
   });
 });
-
-exports.binding = binding.generate();

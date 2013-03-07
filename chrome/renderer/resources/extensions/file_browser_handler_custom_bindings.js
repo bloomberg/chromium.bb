@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the fileBrowserHandler API.
-
-var binding = require('binding').Binding.create('fileBrowserHandler');
+// Custom bindings for the fileBrowserHandler API.
 
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var fileBrowserHandlerInternal = require('binding').Binding.create(
-    'fileBrowserHandlerInternal').generate();
 
 chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
     function(args, dispatch) {
@@ -32,7 +28,7 @@ chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
   dispatch(args);
 });
 
-binding.registerCustomHook(function(bindingsAPI) {
+chromeHidden.registerCustomHook('fileBrowserHandler', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('selectFile',
@@ -50,9 +46,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       externalCallback(result);
     }
 
-    return fileBrowserHandlerInternal.selectFile(
+    return chromeHidden.internalAPIs.fileBrowserHandlerInternal.selectFile(
         selectionParams, internalCallback.bind(null, callback));
   });
 });
-
-exports.binding = binding.generate();

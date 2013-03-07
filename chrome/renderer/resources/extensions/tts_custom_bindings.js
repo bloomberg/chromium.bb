@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the tts API.
-
-var binding = require('binding').Binding.create('tts');
+// Custom bindings for the tts API.
 
 var ttsNatives = requireNative('tts');
 var GetNextTTSEventId = ttsNatives.GetNextTTSEventId;
@@ -13,9 +11,8 @@ var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var lazyBG = requireNative('lazy_background_page');
 
-binding.registerCustomHook(function(api) {
+chromeHidden.registerCustomHook('tts', function(api) {
   var apiFunctions = api.apiFunctions;
-  var tts = api.compiledApi;
 
   chromeHidden.tts = {
     handlers: {}
@@ -42,7 +39,7 @@ binding.registerCustomHook(function(api) {
   // add a listener to chrome.tts.onEvent will fail.
   // See http://crbug.com/122474.
   try {
-    tts.onEvent.addListener(ttsEventListener);
+    chrome.tts.onEvent.addListener(ttsEventListener);
   } catch (e) {}
 
   apiFunctions.setHandleRequest('speak', function() {
@@ -59,5 +56,3 @@ binding.registerCustomHook(function(api) {
     return id;
   });
 });
-
-exports.binding = binding.generate();

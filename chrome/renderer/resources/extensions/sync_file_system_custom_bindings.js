@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the syncFileSystem API.
-
-var binding = require('binding').Binding.create('syncFileSystem');
+// Custom bindings for the syncFileSystem API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var fileSystemNatives = requireNative('file_system_natives');
 var syncFileSystemNatives = requireNative('sync_file_system');
 
-binding.registerCustomHook(function(bindingsAPI) {
+chromeHidden.registerCustomHook('syncFileSystem', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // Functions which take in an [instanceOf=FileEntry].
@@ -69,5 +67,3 @@ chromeHidden.Event.registerArgumentMassager(
   }
   dispatch([fileInfo]);
 });
-
-exports.binding = binding.generate();

@@ -6,15 +6,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/extensions/module_system.h"
 
-// TODO(cduvall/kalman): Put this file in extensions namespace.
 using extensions::ModuleSystem;
 using extensions::NativeHandler;
-using extensions::ObjectBackedNativeHandler;
 
-class CounterNatives : public ObjectBackedNativeHandler {
+class CounterNatives : public NativeHandler {
  public:
-  explicit CounterNatives(v8::Handle<v8::Context> context)
-      : ObjectBackedNativeHandler(context), counter_(0) {
+  explicit CounterNatives(v8::Isolate* isolate)
+      : NativeHandler(isolate), counter_(0) {
     RouteFunction("Get", base::Bind(&CounterNatives::Get,
         base::Unretained(this)));
     RouteFunction("Increment", base::Bind(&CounterNatives::Increment,
@@ -175,7 +173,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   module_system_->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(v8::Context::GetCurrent())));
+      scoped_ptr<NativeHandler>(new CounterNatives(v8::Isolate::GetCurrent())));
   RegisterModule("lazy",
       "requireNative('counter').Increment();"
       "exports.x = 5;");
@@ -229,7 +227,7 @@ TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
   module_system_->RegisterNativeHandler(
       "counter",
-      scoped_ptr<NativeHandler>(new CounterNatives(v8::Context::GetCurrent())));
+      scoped_ptr<NativeHandler>(new CounterNatives(v8::Isolate::GetCurrent())));
 
   RegisterModule("incrementsWhenEvaled",
       "requireNative('counter').Increment();");

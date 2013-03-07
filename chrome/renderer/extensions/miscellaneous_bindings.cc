@@ -65,9 +65,8 @@ const char kPortClosedError[] = "Attempting to use a disconnected port object";
 
 class ExtensionImpl : public extensions::ChromeV8Extension {
  public:
-  explicit ExtensionImpl(extensions::Dispatcher* dispatcher,
-                         v8::Handle<v8::Context> context)
-      : extensions::ChromeV8Extension(dispatcher, context) {
+  explicit ExtensionImpl(extensions::Dispatcher* dispatcher)
+      : extensions::ChromeV8Extension(dispatcher) {
     RouteStaticFunction("CloseChannel", &CloseChannel);
     RouteStaticFunction("PortAddRef", &PortAddRef);
     RouteStaticFunction("PortRelease", &PortRelease);
@@ -79,8 +78,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
   // Sends a message along the given channel.
   static v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
-    ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    content::RenderView* renderview = self->GetRenderView();
+    content::RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -180,10 +178,8 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
 namespace extensions {
 
-ChromeV8Extension* MiscellaneousBindings::Get(
-    Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context) {
-  return new ExtensionImpl(dispatcher, context);
+ChromeV8Extension* MiscellaneousBindings::Get(Dispatcher* dispatcher) {
+  return new ExtensionImpl(dispatcher);
 }
 
 // static

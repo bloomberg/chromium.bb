@@ -64,10 +64,6 @@ class ExtensionHelper
   int browser_window_id() const { return browser_window_id_; }
   chrome::ViewType view_type() const { return view_type_; }
 
-  // Helper to add a logging message to the root frame's console.
-  void AddMessageToRootConsole(content::ConsoleMessageLevel level,
-                               const std::string& message);
-
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -115,7 +111,7 @@ class ExtensionHelper
   void DidDownloadApplicationIcon(webkit_glue::ImageResourceFetcher* fetcher,
                                   const SkBitmap& image);
 
-  // Helper to add a logging message to the root frame's console.
+  // Helper to add an logging message to the root frame's console.
   void AddMessageToRootConsole(content::ConsoleMessageLevel level,
                                const string16& message);
 

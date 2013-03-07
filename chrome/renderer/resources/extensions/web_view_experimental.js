@@ -11,7 +11,7 @@
 // permission API would only be available for channels CHANNEL_DEV and
 // CHANNEL_CANARY.
 
-var WebView = require('webView').WebView;
+var WebView = require('webview').WebView;
 
 /** @type {Array.<string>} */
 var PERMISSION_TYPES = ['media'];

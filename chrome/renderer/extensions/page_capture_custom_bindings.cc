@@ -13,10 +13,8 @@
 
 namespace extensions {
 
-PageCaptureCustomBindings::PageCaptureCustomBindings(
-    Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context)
-    : ChromeV8Extension(dispatcher, context) {
+PageCaptureCustomBindings::PageCaptureCustomBindings()
+    : ChromeV8Extension(NULL) {
   RouteStaticFunction("CreateBlob", &CreateBlob);
   RouteStaticFunction("SendResponseAck", &SendResponseAck);
 }
@@ -39,9 +37,7 @@ v8::Handle<v8::Value> PageCaptureCustomBindings::SendResponseAck(
   CHECK(args.Length() == 1);
   CHECK(args[0]->IsInt32());
 
-  PageCaptureCustomBindings* self =
-      GetFromArguments<PageCaptureCustomBindings>(args);
-  content::RenderView* render_view = self->GetRenderView();
+  content::RenderView* render_view = GetCurrentRenderView();
   if (render_view) {
     render_view->Send(new ExtensionHostMsg_ResponseAck(
         render_view->GetRoutingID(), args[0]->Int32Value()));

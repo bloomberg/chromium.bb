@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the input ime API. Only injected into the
+// Custom bindings for the input ime API. Only injected into the
 // v8 contexts for extensions which have permission for the API.
 
-var binding = require('binding').Binding.create('input.ime');
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-binding.registerCustomHook(function(api) {
-  var input_ime = api.compiledApi;
-
-  input_ime.onKeyEvent.dispatchToListener = function(callback, args) {
+chromeHidden.registerCustomHook('input.ime', function() {
+  chrome.input.ime.onKeyEvent.dispatchToListener = function(callback, args) {
     var engineID = args[0];
     var keyData = args[1];
 
@@ -20,21 +18,19 @@ binding.registerCustomHook(function(api) {
     } catch (e) {
       console.error('Error in event handler for onKeyEvent: ' + e.stack);
     }
-    if (!input_ime.onKeyEvent.async)
-      input_ime.keyEventHandled(keyData.requestId, result);
+    if (!chrome.input.ime.onKeyEvent.async)
+      chrome.input.ime.keyEventHandled(keyData.requestId, result);
   };
 
-  input_ime.onKeyEvent.addListener = function(cb, opt_extraInfo) {
-    input_ime.onKeyEvent.async = false;
+  chrome.input.ime.onKeyEvent.addListener = function(cb, opt_extraInfo) {
+    chrome.input.ime.onKeyEvent.async = false;
     if (opt_extraInfo instanceof Array) {
       for (var i = 0; i < opt_extraInfo.length; ++i) {
         if (opt_extraInfo[i] == "async") {
-          input_ime.onKeyEvent.async = true;
+          chrome.input.ime.onKeyEvent.async = true;
         }
       }
     }
     chrome.Event.prototype.addListener.call(this, cb, null);
   };
 });
-
-exports.binding = binding.generate();

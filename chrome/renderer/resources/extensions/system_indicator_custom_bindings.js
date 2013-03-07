@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the systemIndicator API.
-// TODO(dewittj) Refactor custom binding to reduce redundancy between the
+// Custom bindings for the systemIndicator API.
+// TODO(dewittj) Refactor custom bindings to reduce redundancy between the
 // extension action APIs.
-
-var binding = require('binding').Binding.create('systemIndicator');
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var setIcon = require('setIcon').setIcon;
 
-binding.registerCustomHook(function(bindingsAPI) {
+chromeHidden.registerCustomHook('systemIndicator', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
@@ -20,4 +18,3 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-exports.binding = binding.generate();

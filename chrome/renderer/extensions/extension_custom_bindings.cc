@@ -26,10 +26,8 @@ namespace {
 
 }  // namespace
 
-ExtensionCustomBindings::ExtensionCustomBindings(
-    Dispatcher* dispatcher,
-    v8::Handle<v8::Context> context)
-    : ChromeV8Extension(dispatcher, context) {
+ExtensionCustomBindings::ExtensionCustomBindings(Dispatcher* dispatcher)
+    : ChromeV8Extension(dispatcher) {
   RouteStaticFunction("GetExtensionViews", &GetExtensionViews);
 }
 
@@ -74,7 +72,7 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
   ExtensionCustomBindings* v8_extension =
       GetFromArguments<ExtensionCustomBindings>(args);
   const Extension* extension =
-      v8_extension->GetExtensionForRenderView();
+      v8_extension->GetExtensionForCurrentRenderView();
   if (!extension)
     return v8::Undefined();
 

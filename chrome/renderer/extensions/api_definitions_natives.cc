@@ -12,10 +12,8 @@ const char kInvalidExtensionNamespace[] = "Invalid extension namespace";
 
 namespace extensions {
 
-ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
-                                             ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
-      context_(context) {
+ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher)
+    : ChromeV8Extension(dispatcher) {
   RouteFunction("GetExtensionAPIDefinition",
                 base::Bind(&ApiDefinitionsNatives::GetExtensionAPIDefinition,
                            base::Unretained(this)));
@@ -23,7 +21,10 @@ ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
 
 v8::Handle<v8::Value> ApiDefinitionsNatives::GetExtensionAPIDefinition(
     const v8::Arguments& args) {
-  std::set<std::string> available_apis(context_->GetAvailableExtensionAPIs());
+  ChromeV8Context* v8_context = dispatcher()->v8_context_set().GetCurrent();
+  CHECK(v8_context);
+
+  std::set<std::string> available_apis(v8_context->GetAvailableExtensionAPIs());
   if (args.Length() == 0)
     return dispatcher()->v8_schema_registry()->GetSchemas(available_apis);
 

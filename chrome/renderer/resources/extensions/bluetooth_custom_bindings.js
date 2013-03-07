@@ -2,27 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the Bluetooth API.
-
-var binding = require('binding').Binding.create('bluetooth');
+// Custom bindings for the Bluetooth API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var chrome = requireNative('chrome').GetChrome();
 var sendRequest = require('sendRequest').sendRequest;
 var lastError = require('lastError');
 
-// Use custom binding to create an undocumented event listener that will
+// Use custom bindings to create an undocumented event listener that will
 // receive events about device discovery and call the event listener that was
 // provided with the request to begin discovery.
-binding.registerCustomHook(function(api) {
+chromeHidden.registerCustomHook('bluetooth', function(api) {
   var apiFunctions = api.apiFunctions;
 
   chromeHidden.bluetooth = {};
 
-  function callCallbackIfPresent(args, error) {
-    var callback = args[args.length - 1];
-    if (typeof(callback) == "function")
-      lastError.run(error, callback);
+  function callCallbackIfPresent(args) {
+    if (typeof(args[args.length-1]) == "function") {
+      args[args.length-1]();
+    }
   }
 
   chromeHidden.bluetooth.deviceDiscoveredHandler = null;
@@ -38,7 +35,8 @@ binding.registerCustomHook(function(api) {
         var args = arguments;
         if (args.length > 0 && args[0] && args[0].deviceCallback) {
           if (chromeHidden.bluetooth.deviceDiscoveredHandler != null) {
-            callCallbackIfPresent(args, "Concurrent discovery is not allowed.");
+            lastError.set("Concurrent discovery is not allowed.");
+            callCallbackIfPresent(args);
             return;
           }
 
@@ -51,9 +49,8 @@ binding.registerCustomHook(function(api) {
                       this.definition.parameters,
                       {customCallback:this.customCallback});
         } else {
-          callCallbackIfPresent(
-              args, "deviceCallback is required in the options object");
-          return;
+          lastError.set("deviceCallback is required in the options object");
+          callCallbackIfPresent(args);
         }
       });
   apiFunctions.setCustomCallback('startDiscovery',
@@ -157,5 +154,3 @@ binding.registerCustomHook(function(api) {
         return args;
       });
 });
-
-exports.binding = binding.generate();

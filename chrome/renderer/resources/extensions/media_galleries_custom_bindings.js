@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the Media Gallery API.
-
-var binding = require('binding').Binding.create('mediaGalleries');
+// Custom bindings for the Media Gallery API.
 
 var mediaGalleriesNatives = requireNative('mediaGalleries');
 
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+
 var mediaGalleriesMetadata = {};
 
-binding.registerCustomHook(function(bindingsAPI, extensionId) {
+chromeHidden.registerCustomHook('mediaGalleries',
+                                function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // getMediaFileSystems uses a custom callback so that it can instantiate and
@@ -47,5 +48,3 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     return {};
   });
 });
-
-exports.binding = binding.generate();

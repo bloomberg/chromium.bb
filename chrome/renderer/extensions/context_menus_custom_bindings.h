@@ -12,8 +12,7 @@ namespace extensions {
 // Implements custom bindings for the contextMenus API.
 class ContextMenusCustomBindings : public ChromeV8Extension {
  public:
-  ContextMenusCustomBindings(Dispatcher* dispatcher,
-                             v8::Handle<v8::Context> v8_context);
+  ContextMenusCustomBindings();
 };
 
 }  // extensions

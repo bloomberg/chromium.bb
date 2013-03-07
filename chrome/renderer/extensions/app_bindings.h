@@ -24,7 +24,8 @@ class ChromeV8Context;
 class AppBindings : public ChromeV8Extension,
                     public ChromeV8ExtensionHandler {
  public:
-  AppBindings(Dispatcher* dispatcher, ChromeV8Context* context);
+  explicit AppBindings(Dispatcher* dispatcher,
+                       ChromeV8Context* context);
 
  private:
   // IPC::Listener

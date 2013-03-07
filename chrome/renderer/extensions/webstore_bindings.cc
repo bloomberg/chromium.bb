@@ -53,7 +53,7 @@ int g_next_install_id = 0;
 
 WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
                                    ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context->v8_context()),
+    : ChromeV8Extension(dispatcher),
       ChromeV8ExtensionHandler(context) {
   RouteFunction("Install",
                 base::Bind(&WebstoreBindings::Install, base::Unretained(this)));
@@ -61,7 +61,7 @@ WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
 
 v8::Handle<v8::Value> WebstoreBindings::Install(
     const v8::Arguments& args) {
-  WebFrame* frame = WebFrame::frameForContext(v8_context());
+  WebFrame* frame = WebFrame::frameForCurrentContext();
   if (!frame || !frame->view())
     return v8::Undefined();
 

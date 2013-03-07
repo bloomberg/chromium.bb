@@ -5,7 +5,6 @@
 // Routines used to validate and normalize arguments.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var chrome = requireNative('chrome').GetChrome();
 
 // TODO(benwells): unit test this file.
 // JSONSchemaValidator is not loaded in unit tests.
