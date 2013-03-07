@@ -6509,7 +6509,7 @@
    Memcheck:Leak
    ...
    fun:_ZN20OneClickSigninHelper14DidStopLoadingEPN7content14RenderViewHostE
-   fun:_ZN67OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test8TestBodyEv
+   fun:_ZN*OneClickSigninHelperTest*
 }
 {
    bug_175815
