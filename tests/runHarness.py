@@ -111,7 +111,7 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, tables, input, output, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
+    def __init__(self, harnessName, tables, input, output, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=[]):
         self.harnessName = harnessName
         self.tables = tables
         if outputUniBrl:
@@ -148,6 +148,7 @@ class BrailleTest():
         tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
         report = [
             "--- Braille Difference Failure: %s ---" % self.__str__(),
+            template % ("comment:", "".join(self.comment)),
             template % ("input:", self.input),
             template % ("expected brl:", self.expectedOutput),
             template % ("actual brl:", tBrl),
@@ -160,6 +161,7 @@ class BrailleTest():
         template = "%-25s '%s'"
         report = [
             "--- Backtranslate failure: %s ---" % self.__str__(),
+            template % ("comment:", "".join(self.comment)),
             template % ("input:", self.input),
             template % ("expected text:", self.expectedOutput),
             template % ("actual backtranslated text:", backtranslate_output),
@@ -173,6 +175,7 @@ class BrailleTest():
         etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
         report = [
             "--- Braille Cursor Difference Failure: %s ---" %self.__str__(),
+            template % ("comment:", "".join(self.comment)),
             template % ("input:", self.input),
             template % ("received brl:", tBrl),
             template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos), 
