@@ -218,6 +218,7 @@ bool WebKitTestController::PrepareForLayoutTest(
         initial_size);
     WebContentsObserver::Observe(main_window_->web_contents());
     prune_history_ = false;
+    send_configuration_to_next_host_ = true;
     current_pid_ = base::kNullProcessId;
   } else {
 #if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
@@ -254,6 +255,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
+  send_configuration_to_next_host_ = false;
   is_running_test_ = false;
   is_compositing_test_ = false;
   enable_pixel_dumping_ = false;
@@ -335,6 +337,9 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   // later when the RenderProcessHost was created.
   if (render_view_host->GetProcess()->GetHandle() != base::kNullProcessHandle)
     current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
+  if (!send_configuration_to_next_host_)
+    return;
+  send_configuration_to_next_host_ = false;
   SendTestConfiguration();
 }
 

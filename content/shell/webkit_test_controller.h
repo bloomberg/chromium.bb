@@ -143,18 +143,33 @@ class WebKitTestController : public base::NonThreadSafe,
 
   Shell* main_window_;
 
+  // The PID of the render process of the render view host of main_window_.
   int current_pid_;
+
+  // True if we should prune all but the active navigation entry of main_window_
+  // on the next commit of a main frame navigation.
   bool prune_history_;
+
+  // True if we should set the test configuration to the next RenderViewHost
+  // created.
+  bool send_configuration_to_next_host_;
+
+  // True if we are currently running a layout test, and false during the setup
+  // phase between two layout tests.
   bool is_running_test_;
 
+  // True if the currently running test is a compositing test.
   bool is_compositing_test_;
 
+  // Per test config.
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
   GURL test_url_;
 
-  webkit_glue::WebPreferences prefs_;
+  // True if the WebPreferences of newly created RenderViewHost should be
+  // overridden with prefs_.
   bool should_override_prefs_;
+  webkit_glue::WebPreferences prefs_;
 
   base::CancelableClosure watchdog_;
 
