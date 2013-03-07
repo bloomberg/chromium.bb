@@ -150,8 +150,7 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 // static
 bool PanelManager::IsPanelStackingEnabled() {
 #if defined(OS_WIN)
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePanelStacking);
+  return true;
 #else
   return false;
 #endif

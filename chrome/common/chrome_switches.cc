@@ -585,9 +585,6 @@ const char kEnableNpnHttpOnly[]             = "enable-npn-http";
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 
-// Enables panel stacking support.
-const char kEnablePanelStacking[]           = "enable-panel-stacking";
-
 // Enables password generation when we detect that the user is going through
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
