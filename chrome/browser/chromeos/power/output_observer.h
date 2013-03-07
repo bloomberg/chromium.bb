@@ -13,6 +13,8 @@ namespace chromeos {
 
 // This observer listens for when video outputs have been turned off so that the
 // corresponding CRTCs can be disabled to force the connected output off.
+// TODO(derat): Remove this class after powerd is calling the method
+// exported by DisplayPowerServiceProvider instead.
 class OutputObserver : public PowerManagerClient::Observer {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.

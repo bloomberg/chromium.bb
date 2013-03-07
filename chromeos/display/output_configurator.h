@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/timer.h"
 #include "chromeos/chromeos_export.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 // Forward declarations for Xlib and Xrandr.
 // This is so unused X definitions don't pollute the namespace.
@@ -86,7 +87,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with
   // the display(s) in question so that the low power state is engaged.
-  bool ScreenPowerSet(bool power_on, bool all_displays);
+  // If |force_probe| is true, the displays will be configured even if
+  // |power_state| matches |power_state_|.
+  bool SetDisplayPower(DisplayPowerState power_state, bool force_probe);
 
   // Force switching the display mode to |new_state|.  This method is used when
   // the user explicitly changes the display mode in the options UI.  Returns
@@ -106,10 +109,14 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Tells if the output specified by |name| is for internal display.
   static bool IsInternalOutputName(const std::string& name);
 
-  // Set all the displays into pre-suspend mode; usually this means configure
-  // them for their resume state. This allows faster resume on machines where
-  // display configuration is slow.
+  // Sets all the displays into pre-suspend mode; usually this means
+  // configure them for their resume state. This allows faster resume on
+  // machines where display configuration is slow.
   void SuspendDisplays();
+
+  // Reprobes displays to handle changes made while the system was
+  // suspended.
+  void ResumeDisplays();
 
  private:
   // Configure outputs.
@@ -156,15 +163,15 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
                        XRRScreenResources* screen,
                        std::vector<OutputSnapshot>& outputs);
 
-  // Configures X to the state specified in |new_state|.
-  // |display|, |screen| and |window| are used to change X configuration.
-  // |new_state| is the state to enter.
-  // |outputs| contains information on the currently configured state,
-  // as well as how to apply the new state.
+  // Configures X to the state specified in |output_state| and
+  // |power_state|.  |display|, |screen| and |window| are used to change X
+  // configuration.  |outputs| contains information on the currently
+  // configured state, as well as how to apply the new state.
   bool EnterState(Display* display,
                   XRRScreenResources* screen,
                   Window window,
-                  OutputState new_state,
+                  OutputState output_state,
+                  DisplayPowerState power_state,
                   const std::vector<OutputSnapshot>& outputs);
 
   // Outputs UMA metrics of previous state (the state that is being left).
@@ -198,6 +205,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // The display state as derived from the outputs observed in |output_cache_|.
   // This is used for rotating display modes.
   OutputState output_state_;
+
+  // The current power state as set via SetDisplayPower().
+  DisplayPowerState power_state_;
 
   ObserverList<Observer> observers_;
 

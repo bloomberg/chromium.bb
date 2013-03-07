@@ -538,6 +538,7 @@ OutputConfigurator::OutputConfigurator()
       connected_output_count_(0),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
+      power_state_(DISPLAY_POWER_ALL_ON),
       mirror_mode_will_preserve_aspect_(false),
       mirror_mode_preserved_aspect_(false),
       last_enter_state_time_() {
@@ -594,10 +595,7 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled,
                                             STATE_INVALID,
                                             outputs);
   if (output_state_ != starting_state &&
-      EnterState(display,
-                 screen,
-                 window,
-                 starting_state,
+      EnterState(display, screen, window, starting_state, power_state_,
                  outputs)) {
     output_state_ = starting_state;
   }
@@ -643,7 +641,7 @@ bool OutputConfigurator::CycleDisplayMode() {
   OutputState original = InferCurrentState(display, screen, outputs);
   OutputState next_state = GetNextState(display, screen, original, outputs);
   if (original != next_state &&
-      EnterState(display, screen, window, next_state, outputs)) {
+      EnterState(display, screen, window, next_state, power_state_, outputs)) {
     did_change = true;
   }
   // We have seen cases where the XRandR data can get out of sync with our own
@@ -663,77 +661,41 @@ bool OutputConfigurator::CycleDisplayMode() {
   return did_change;
 }
 
-bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
-  TRACE_EVENT0("chromeos", "OutputConfigurator::ScreenPowerSet");
-  VLOG(1) << "OutputConfigurator::SetScreensOn " << power_on
-          << " all displays " << all_displays;
+bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
+                                         bool force_probe) {
+  TRACE_EVENT0("chromeos", "OutputConfigurator::SetDisplayPower");
+  VLOG(1) << "OutputConfigurator::SetDisplayPower: power_state=" << power_state
+          << " force_probe=" << force_probe;
+
   if (!configure_display_)
     return false;
+  if (power_state == power_state_ && !force_probe)
+    return true;
 
-  bool success = false;
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
-  CHECK(display != NULL);
+  CHECK(display);
   XGrabServer(display);
   Window window = DefaultRootWindow(display);
   XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
-  CHECK(screen != NULL);
-
+  CHECK(screen);
   std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
   connected_output_count_ = outputs.size();
 
-  if (all_displays && power_on) {
-    // Resume all displays using the current state.
-    if (EnterState(display, screen, window, output_state_, outputs)) {
-      // Force the DPMS on since the driver doesn't always detect that it should
-      // turn on. This is needed when coming back from idle suspend.
+  if (EnterState(display, screen, window, output_state_, power_state,
+                 outputs)) {
+    power_state_ = power_state;
+    if (power_state != DISPLAY_POWER_ALL_OFF)  {
+      // Force the DPMS on since the driver doesn't always detect that it
+      // should turn on. This is needed when coming back from idle suspend.
       CHECK(DPMSEnable(display));
       CHECK(DPMSForceLevel(display, DPMSModeOn));
-
-      XRRFreeScreenResources(screen);
-      XUngrabServer(display);
-      return true;
     }
-  }
-
-  CrtcConfig config;
-  config.crtc = None;
-  // Set the CRTCs based on whether we want to turn the power on or off and
-  // select the outputs to operate on by name or all_displays.
-  for (int i = 0; i < connected_output_count_; ++i) {
-    if (all_displays || outputs[i].is_internal || power_on) {
-      config.x = 0;
-      config.y = outputs[i].y;
-      config.output = outputs[i].output;
-      config.mode = None;
-      if (power_on) {
-        config.mode = (output_state_ == STATE_DUAL_MIRROR) ?
-            outputs[i].mirror_mode : outputs[i].native_mode;
-      } else if (connected_output_count_ > 1 && !all_displays &&
-                 outputs[i].is_internal) {
-        // Workaround for crbug.com/148365: leave internal display in native
-        // mode so user can move cursor (and hence windows) onto internal
-        // display even when dimmed
-        config.mode = outputs[i].native_mode;
-      }
-      config.crtc = GetNextCrtcAfter(display, screen, config.output,
-                                     config.crtc);
-
-      ConfigureCrtc(display, screen, &config);
-      success = true;
-    }
-  }
-
-  // Force the DPMS on since the driver doesn't always detect that it should
-  // turn on. This is needed when coming back from idle suspend.
-  if (power_on) {
-    CHECK(DPMSEnable(display));
-    CHECK(DPMSForceLevel(display, DPMSModeOn));
   }
 
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
-  return success;
+  return true;
 }
 
 bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
@@ -755,7 +717,7 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 
   std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
   connected_output_count_ = outputs.size();
-  if (EnterState(display, screen, window, new_state, outputs))
+  if (EnterState(display, screen, window, new_state, power_state_, outputs))
     output_state_ = new_state;
 
   XRRFreeScreenResources(screen);
@@ -829,7 +791,8 @@ void OutputConfigurator::ConfigureOutputs() {
   // When a display was swapped, the state moves from
   // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED, so don't rely on
   // the state chagne to tell if it was successful.
-  bool success = EnterState(display, screen, window, new_state, outputs);
+  bool success =
+      EnterState(display, screen, window, new_state, power_state_, outputs);
   bool is_projecting = IsProjecting(outputs);
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
@@ -859,14 +822,21 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
 }
 
 void OutputConfigurator::SuspendDisplays() {
-  // Turn displays on before suspend. At this point, the backlight is off,
-  // so we turn on the internal display so that we can resume directly into
-  // "on" state. This greatly reduces resume times.
-  ScreenPowerSet(true, true);
+  // Turn internal displays on before suspend. At this point, the backlight
+  // is off, so we turn on the internal display so that we can resume
+  // directly into "on" state. This greatly reduces resume times.
+  SetDisplayPower(DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF, false);
+
   // We need to make sure that the monitor configuration we just did actually
   // completes before we return, because otherwise the X message could be
   // racing with the HandleSuspendReadiness message.
   XSync(base::MessagePumpAuraX11::GetDefaultXDisplay(), 0);
+}
+
+void OutputConfigurator::ResumeDisplays() {
+  // Force probing to ensure that we pick up any changes that were made
+  // while the system was suspended.
+  SetDisplayPower(DISPLAY_POWER_ALL_ON, true);
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
@@ -1192,7 +1162,8 @@ bool OutputConfigurator::EnterState(
     Display* display,
     XRRScreenResources* screen,
     Window window,
-    OutputState new_state,
+    OutputState output_state,
+    DisplayPowerState power_state,
     const std::vector<OutputSnapshot>& outputs) {
   TRACE_EVENT0("chromeos", "OutputConfigurator::EnterState");
   switch (outputs.size()) {
@@ -1207,16 +1178,20 @@ bool OutputConfigurator::EnterState(
         return false;
       }
 
+      bool power_on = power_state == DISPLAY_POWER_ALL_ON ||
+          (power_state == DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON &&
+           !outputs[0].is_internal) ||
+          (power_state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF &&
+           outputs[0].is_internal);
       CrtcConfig config(
           GetNextCrtcAfter(display, screen, outputs[0].output, None),
-          0, 0, outputs[0].native_mode, outputs[0].output);
+          0, 0, power_on ? outputs[0].native_mode : None, outputs[0].output);
 
-      int width = mode_info->width;
-      int height = mode_info->height;
-      CreateFrameBuffer(display, screen, window, width, height, &config, NULL);
+      CreateFrameBuffer(display, screen, window, mode_info->width,
+                        mode_info->height, &config, NULL);
 
-      // Re-attach native mode for the CRTC.
       ConfigureCrtc(display, screen, &config);
+
       // Restore identity transformation for single monitor in native mode.
       if (outputs[0].touch_device_id != None) {
         CoordinateTransformation ctm;  // Defaults to identity
@@ -1230,25 +1205,36 @@ bool OutputConfigurator::EnterState(
       RRCrtc secondary_crtc =
           GetNextCrtcAfter(display, screen, outputs[1].output, primary_crtc);
 
-      if (new_state == STATE_DUAL_MIRROR) {
+      // Workaround for crbug.com/148365: leave internal display on for
+      // internal-off, external-on so user can move cursor (and hence
+      // windows) onto internal display even when it's off.
+      bool primary_power_on = power_state == DISPLAY_POWER_ALL_ON ||
+          (power_state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF &&
+           outputs[0].is_internal);
+      bool secondary_power_on = power_state == DISPLAY_POWER_ALL_ON ||
+          (power_state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF &&
+           outputs[1].is_internal);
+
+      if (output_state == STATE_DUAL_MIRROR) {
         XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].mirror_mode);
         if (mode_info == NULL) {
           UMA_HISTOGRAM_COUNTS("Display.EnterState.mirror_failures", 1);
           return false;
         }
 
-        CrtcConfig config1(primary_crtc, 0, 0, outputs[0].mirror_mode,
+        CrtcConfig config1(primary_crtc, 0, 0,
+                           primary_power_on ? outputs[0].mirror_mode : None,
                            outputs[0].output);
-        CrtcConfig config2(secondary_crtc, 0, 0, outputs[1].mirror_mode,
+        CrtcConfig config2(secondary_crtc, 0, 0,
+                           secondary_power_on ? outputs[1].mirror_mode : None,
                            outputs[1].output);
 
-        int width = mode_info->width;
-        int height = mode_info->height;
-        CreateFrameBuffer(display, screen, window, width, height,
-                          &config1, &config2);
+        CreateFrameBuffer(display, screen, window, mode_info->width,
+                          mode_info->height, &config1, &config2);
 
         ConfigureCrtc(display, screen, &config1);
         ConfigureCrtc(display, screen, &config2);
+
         for (size_t i = 0; i < outputs.size(); i++) {
           if (outputs[i].touch_device_id == None)
             continue;
@@ -1274,19 +1260,20 @@ bool OutputConfigurator::EnterState(
 
         int primary_height = primary_mode_info->height;
         int secondary_height = secondary_mode_info->height;
-        CrtcConfig config1(primary_crtc, 0, 0, outputs[0].native_mode,
+        CrtcConfig config1(primary_crtc, 0, 0,
+                           primary_power_on ? outputs[0].native_mode : None,
                            outputs[0].output);
-        CrtcConfig config2(secondary_crtc, 0, 0, outputs[1].native_mode,
+        CrtcConfig config2(secondary_crtc, 0, 0,
+                           secondary_power_on ? outputs[1].native_mode : None,
                            outputs[1].output);
 
-        if (new_state == STATE_DUAL_EXTENDED)
+        if (output_state == STATE_DUAL_EXTENDED)
           config2.y = primary_height + kVerticalGap;
         else
           config1.y = secondary_height + kVerticalGap;
 
-
-        int width =
-            std::max<int>(primary_mode_info->width, secondary_mode_info->width);
+        int width = std::max<int>(
+            primary_mode_info->width, secondary_mode_info->width);
         int height = primary_height + secondary_height + kVerticalGap;
 
         CreateFrameBuffer(display, screen, window, width, height, &config1,
@@ -1305,7 +1292,8 @@ bool OutputConfigurator::EnterState(
         }
         if (outputs[1].touch_device_id != None) {
           CoordinateTransformation ctm;
-          ctm.x_scale = static_cast<float>(secondary_mode_info->width) / width;
+          ctm.x_scale = static_cast<float>(secondary_mode_info->width) /
+              width;
           ctm.x_offset = static_cast<float>(config2.x) / width;
           ctm.y_scale = static_cast<float>(secondary_height) / height;
           ctm.y_offset = static_cast<float>(config2.y) / height;

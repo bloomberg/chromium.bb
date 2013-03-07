@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/suspend_observer.h"
 
+#include "ash/shell.h"
+#include "ash/wm/user_activity_detector.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
@@ -42,6 +44,7 @@ void SuspendObserver::SuspendImminent() {
     session_client_->RequestLockScreen();
   }
 
+  ash::Shell::GetInstance()->user_activity_detector()->OnDisplayPowerChanging();
   ash::Shell::GetInstance()->output_configurator()->SuspendDisplays();
 }
 

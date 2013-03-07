@@ -69,6 +69,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
+    // TODO(derat): Stop listening for this.
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
         power_manager::kSetScreenPowerSignal,

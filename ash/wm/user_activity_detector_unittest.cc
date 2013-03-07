@@ -97,8 +97,8 @@ TEST_F(UserActivityDetectorTest, Basic) {
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
-  base::TimeDelta advance_delta =
-      base::TimeDelta::FromSeconds(UserActivityDetector::kNotifyIntervalMs);
+  base::TimeDelta advance_delta = base::TimeDelta::FromMilliseconds(
+      UserActivityDetector::kNotifyIntervalMs);
   AdvanceTime(advance_delta);
   ui::MouseEvent mouse_event(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE);
@@ -108,12 +108,27 @@ TEST_F(UserActivityDetectorTest, Basic) {
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
-  // Ignore one mouse event when all displays are turned off.
-  detector_->OnAllOutputsTurnedOff();
-  AdvanceTime(advance_delta);
+  // Temporarily ignore mouse events when displays are turned on or off.
+  detector_->OnDisplayPowerChanging();
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
+  observer_->reset_stats();
+
+  const base::TimeDelta kIgnoreMouseTime =
+      base::TimeDelta::FromMilliseconds(
+          UserActivityDetector::kDisplayPowerChangeIgnoreMouseMs);
+  AdvanceTime(kIgnoreMouseTime / 2);
+  detector_->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
+  EXPECT_EQ(0, observer_->num_invocations());
+  observer_->reset_stats();
+
+  // After enough time has passed, mouse events should be reported again.
+  AdvanceTime(std::max(kIgnoreMouseTime, advance_delta));
+  detector_->OnMouseEvent(&mouse_event);
+  EXPECT_FALSE(mouse_event.handled());
+  EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
   AdvanceTime(advance_delta);

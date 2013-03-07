@@ -61,6 +61,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // |power_on| The new state of the power setting.
     // |all_displays| True if this applies to all displays or false if it is
     // the internal display only.
+    // TODO(derat): Remove this.
     virtual void ScreenPowerSet(bool power_on, bool all_displays) {}
 
     // Called when power supply polling takes place.  |status| is a data

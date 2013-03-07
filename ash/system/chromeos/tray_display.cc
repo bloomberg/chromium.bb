@@ -183,10 +183,12 @@ void TrayDisplay::OnDisplayRemoved(const gfx::Display& old_display) {
     default_->Update();
 }
 
+#if defined(OS_CHROMEOS)
 void TrayDisplay::OnDisplayModeChanged() {
   if (default_)
     default_->Update();
 }
+#endif
 
 }  // namespace internal
 }  // namespace ash

@@ -9,7 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display_observer.h"
 
+#if defined(OS_CHROMEOS)
 #include "chromeos/display/output_configurator.h"
+#endif
 
 namespace views {
 class View;
@@ -20,7 +22,9 @@ namespace internal {
 class DisplayView;
 
 class TrayDisplay : public SystemTrayItem,
+#if defined(OS_CHROMEOS)
                     public chromeos::OutputConfigurator::Observer,
+#endif
                     public gfx::DisplayObserver {
  public:
   explicit TrayDisplay(SystemTray* system_tray);
@@ -36,8 +40,10 @@ class TrayDisplay : public SystemTrayItem,
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
 
+#if defined(OS_CHROMEOS)
   // Overridden from chromeos::OutputConfigurator::Observer
   virtual void OnDisplayModeChanged() OVERRIDE;
+#endif
 
   DisplayView* default_;
 

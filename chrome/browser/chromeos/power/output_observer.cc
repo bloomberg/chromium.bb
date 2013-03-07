@@ -20,16 +20,24 @@ OutputObserver::~OutputObserver() {
 }
 
 void OutputObserver::ScreenPowerSet(bool power_on, bool all_displays) {
-  if (!power_on && all_displays) {
-    // All displays are turned off when the device becomes idle, which
-    // may trigger a mouse move. Let the UserActivityDetector know so
-    // that it can ignore such events.
-    ash::Shell::GetInstance()->user_activity_detector()->
-        OnAllOutputsTurnedOff();
-  }
+  // Turning displays off when the device becomes idle or on just before we
+  // suspend may trigger a mouse move, which would then be incorrectly
+  // reported as user activity.  Let the UserActivityDetector know so that
+  // it can ignore such events.
+  ash::Shell::GetInstance()->user_activity_detector()->OnDisplayPowerChanging();
 
-  ash::Shell::GetInstance()->output_configurator()->
-      ScreenPowerSet(power_on, all_displays);
+  DisplayPowerState state = DISPLAY_POWER_ALL_ON;
+  if (power_on && all_displays)
+    state = DISPLAY_POWER_ALL_ON;
+  else if (power_on && !all_displays)
+    state = DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF;
+  else if (!power_on && all_displays)
+    state = DISPLAY_POWER_ALL_OFF;
+  else if (!power_on && !all_displays)
+    state = DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON;
+
+  ash::Shell::GetInstance()->output_configurator()->SetDisplayPower(
+      state, false);
 }
 
 }  // namespace chromeos

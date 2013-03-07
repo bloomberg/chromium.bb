@@ -20,7 +20,11 @@ class UserActivityObserver;
 class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
  public:
   // Minimum amount of time between notifications to observers.
-  static const double kNotifyIntervalMs;
+  static const int kNotifyIntervalMs;
+
+  // Amount of time that mouse events should be ignored after notification
+  // is received that displays' power states are being changed.
+  static const int kDisplayPowerChangeIgnoreMouseMs;
 
   UserActivityDetector();
   virtual ~UserActivityDetector();
@@ -31,8 +35,8 @@ class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
   void AddObserver(UserActivityObserver* observer);
   void RemoveObserver(UserActivityObserver* observer);
 
-  // Called when chrome has received a request to turn of all displays.
-  void OnAllOutputsTurnedOff();
+  // Called when displays are about to be turned on or off.
+  void OnDisplayPowerChanging();
 
   // ui::EventHandler implementation.
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -42,6 +46,9 @@ class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
+  // Returns |now_for_test_| if set or base::TimeTicks::Now() otherwise.
+  base::TimeTicks GetCurrentTime() const;
+
   // Notifies observers if enough time has passed since the last notification.
   void MaybeNotify();
 
@@ -54,10 +61,10 @@ class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
   // simulate the passage of time.
   base::TimeTicks now_for_test_;
 
-  // When this is true, the next mouse event is ignored. This is to
-  // avoid mis-detecting a mouse enter event that occurs when turning
-  // off display as a user activity.
-  bool ignore_next_mouse_event_;
+  // If set, mouse events will be ignored until this time is reached. This
+  // is to avoid reporting mouse events that occur when displays are turned
+  // on or off as user activity.
+  base::TimeTicks honor_mouse_events_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityDetector);
 };

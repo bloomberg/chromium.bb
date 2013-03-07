@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_SUSPEND_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_SUSPEND_OBSERVER_H_
 
-#include "ash/shell.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"

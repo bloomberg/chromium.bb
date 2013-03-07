@@ -193,6 +193,8 @@
         'browser/chromeos/display/primary_display_switch_observer.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',
         'browser/chromeos/dbus/cros_dbus_service.h',
+        'browser/chromeos/dbus/display_power_service_provider.cc',
+        'browser/chromeos/dbus/display_power_service_provider.h',
         'browser/chromeos/dbus/liveness_service_provider.cc',
         'browser/chromeos/dbus/liveness_service_provider.h',
         'browser/chromeos/dbus/printer_service_provider.cc',
