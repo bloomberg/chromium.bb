@@ -415,13 +415,6 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
                      MountType type,
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) OVERRIDE {
-    // Already mounted path.
-    if (mounted_paths_.count(source_path) != 0) {
-      FinishMount(MOUNT_ERROR_PATH_ALREADY_MOUNTED, source_path, type,
-                  std::string(), callback);
-      return;
-    }
-
     // This stub implementation only accepts archive mount requests.
     if (type != MOUNT_TYPE_ARCHIVE) {
       FinishMount(MOUNT_ERROR_INTERNAL, source_path, type, std::string(),
@@ -431,6 +424,13 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
     const base::FilePath mounted_path = GetArchiveMountPoint().Append(
         base::FilePath::FromUTF8Unsafe(mount_label));
+
+    // Already mounted path.
+    if (mounted_to_source_path_map_.count(mounted_path.value()) != 0) {
+      FinishMount(MOUNT_ERROR_PATH_ALREADY_MOUNTED, source_path, type,
+                  std::string(), callback);
+      return;
+    }
 
     // Perform fake mount.
     base::PostTaskAndReplyWithResult(
@@ -452,25 +452,22 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
                        const UnmountCallback& callback,
                        const UnmountCallback& error_callback) OVERRIDE {
     // Not mounted.
-    if (mounted_paths_.count(device_path) == 0) {
+    if (mounted_to_source_path_map_.count(device_path) == 0) {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE, base::Bind(error_callback, device_path));
       return;
     }
 
-    const base::FilePath mounted_path = mounted_paths_[device_path];
-    mounted_paths_.erase(device_path);
+    mounted_to_source_path_map_.erase(device_path);
 
     // Remove the directory created in Mount().
-    base::WorkerPool::PostTask(
+    base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&file_util::Delete),
-                   mounted_path,
+                   base::FilePath::FromUTF8Unsafe(device_path),
                    true /* recursive */),
+        base::Bind(callback, device_path),
         true /* task_is_slow */);
-
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, device_path));
   }
 
   virtual void EnumerateAutoMountableDevices(
@@ -543,7 +540,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
       FinishMount(mount_error, source_path, type, std::string(), callback);
       return;
     }
-    mounted_paths_[source_path] = mounted_path;
+    mounted_to_source_path_map_[mounted_path.value()] = source_path;
     FinishMount(MOUNT_ERROR_NONE, source_path, type,
                 mounted_path.AsUTF8Unsafe(), callback);
   }
@@ -564,8 +561,8 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
     }
   }
 
-  // Source path to mounted path map.
-  std::map<std::string, base::FilePath> mounted_paths_;
+  // Mounted path to source path map.
+  std::map<std::string, std::string> mounted_to_source_path_map_;
 
   MountEventHandler mount_event_handler_;
   MountCompletedHandler mount_completed_handler_;
