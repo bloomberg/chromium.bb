@@ -1702,12 +1702,11 @@
       ],  # end of 'targets'
     }],  # 'OS=="win"'
 
-    # The host installation is generated only if WiX is available and when
-    # building a non-component build. WiX does not provide a easy way to
-    # include all DLLs imported by the installed binaries, so supporting
-    # the component build becomes a burden.
-    ['OS == "win" and component != "shared_library" and wix_exists == "True" \
-        and sas_dll_exists == "True"', {
+    # The host installation is generated only if WiX is available. If
+    # component build is used the produced installation will not work due to
+    # missing DLLs. We build it anyway to make sure the GYP scripts are executed
+    # by the bots.
+    ['OS == "win" and wix_exists == "True" and sas_dll_exists == "True"', {
       'targets': [
         {
           'target_name': 'remoting_host_installation',
