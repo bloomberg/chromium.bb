@@ -12,13 +12,16 @@
 #include "chrome/browser/ui/cocoa/tab_contents/instant_overlay_controller_mac.h"
 #include "chrome/browser/ui/cocoa/tab_contents/overlay_drop_shadow_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #import "testing/gtest_mac.h"
 
-class OverlayableContentsControllerTest : public InProcessBrowserTest {
+class OverlayableContentsControllerTest : public InProcessBrowserTest,
+                                          public content::NotificationObserver {
  public:
-  OverlayableContentsControllerTest() : instant_overlay_model_(NULL) {
+  OverlayableContentsControllerTest() : instant_overlay_model_(NULL),
+                                        visibility_changed_count_(0) {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -61,10 +64,19 @@ class OverlayableContentsControllerTest : public InProcessBrowserTest {
     }
   }
 
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED)
+      ++visibility_changed_count_;
+  }
+
  protected:
   InstantOverlayModel instant_overlay_model_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_nsobject<OverlayableContentsController> controller_;
+  content::NotificationRegistrar registrar_;
+  int visibility_changed_count_;
 };
 
 // Verify that the view is correctly laid out when size is specified in percent.
@@ -141,4 +153,18 @@ IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HideShadow) {
 
   [controller_ onActivateTabWithContents:web_contents_.get()];
   EXPECT_FALSE([controller_ dropShadowView]);
+}
+
+// Verify that the web contents is not hidden when just the height changes.
+IN_PROC_BROWSER_TEST_F(OverlayableContentsControllerTest, HeightChangeNoHide) {
+  chrome::search::Mode mode;
+  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  instant_overlay_model_.SetOverlayState(mode, 10, INSTANT_SIZE_PERCENT);
+
+  registrar_.Add(this,
+                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+                 content::Source<content::WebContents>(web_contents_.get()));
+  EXPECT_EQ(0, visibility_changed_count_);
+  instant_overlay_model_.SetOverlayState(mode, 11, INSTANT_SIZE_PERCENT);
+  EXPECT_EQ(1, visibility_changed_count_);
 }
