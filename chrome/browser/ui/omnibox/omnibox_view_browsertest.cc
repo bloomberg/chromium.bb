@@ -1709,7 +1709,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, IncognitoCopyURLToClipboard) {
+// Disabled due to flakiness.  http://crbug.com/171974
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyURLToClipboard) {
   EXPECT_FALSE(browser()->profile()->IsOffTheRecord());
   Browser* browser_incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser_incognito,
@@ -1767,7 +1768,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, IncognitoCopyURLToClipboard) {
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, IncognitoCopyTextToClipboard) {
+// Disabled due to flakiness.  http://crbug.com/171974
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyTextToClipboard) {
   EXPECT_FALSE(browser()->profile()->IsOffTheRecord());
   Browser* browser_incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser_incognito,
