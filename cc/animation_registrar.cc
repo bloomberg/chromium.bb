@@ -9,7 +9,12 @@
 namespace cc {
 
 AnimationRegistrar::AnimationRegistrar() { }
-AnimationRegistrar::~AnimationRegistrar() { }
+AnimationRegistrar::~AnimationRegistrar()
+{
+    AnimationControllerMap copy = all_animation_controllers_;
+    for (AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
+        (*iter).second->setAnimationRegistrar(NULL);
+}
 
 scoped_refptr<LayerAnimationController>
 AnimationRegistrar::GetAnimationControllerForId(int id)
