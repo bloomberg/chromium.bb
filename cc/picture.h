@@ -16,6 +16,10 @@
 #include "third_party/skia/include/core/SkTileGridPicture.h"
 #include "ui/gfx/rect.h"
 
+namespace skia {
+class AnalysisCanvas;
+}
+
 namespace cc {
 
 class ContentLayerClient;
@@ -47,10 +51,9 @@ class CC_EXPORT Picture
   // Apply this contents scale and raster the content rect into the canvas.
   void Raster(SkCanvas* canvas, gfx::Rect content_rect, float contents_scale);
 
-  // Estimate the cost of rasterizing. To predict the cost of a particular
-  // call to Raster(), pass this the bounds of the canvas that will
-  // be rastered into.
-  bool IsCheapInRect(const gfx::Rect& layer_rect) const;
+  void AnalyzeInRect(skia::AnalysisCanvas* canvas,
+                     const gfx::Rect& content_rect,
+                     float contents_scale);
 
   void GatherPixelRefs(
       const gfx::Rect& layer_rect,

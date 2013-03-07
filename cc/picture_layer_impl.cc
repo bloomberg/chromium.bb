@@ -114,8 +114,11 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
          ++iter) {
       SkColor color;
       float width;
-      if (*iter && iter->GetResourceId()) {
-        if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
+      if (*iter && iter->IsReadyToDraw()) {
+        if (iter->is_solid_color() || iter->is_transparent()) {
+          color = DebugColors::SolidColorTileBorderColor();
+          width = DebugColors::SolidColorTileBorderWidth(layerTreeImpl());
+        } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
           color = DebugColors::HighResTileBorderColor();
           width = DebugColors::HighResTileBorderWidth(layerTreeImpl());
         } else if (iter->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION) {
@@ -152,12 +155,23 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                                             layerDeviceAlignment);
        iter;
        ++iter) {
-    ResourceProvider::ResourceId resource = 0;
-    if (*iter)
-      resource = iter->GetResourceId();
 
     gfx::Rect geometry_rect = iter.geometry_rect();
+    ResourceProvider::ResourceId resource = 0;
+    if (*iter) {
+      if (iter->is_solid_color()) {
+        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+        quad->SetNew(sharedQuadState, geometry_rect, iter->solid_color());
+        quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
+        if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
+          seen_tilings.push_back(iter.CurrentTiling());
+        continue;
+      } else if (iter->is_transparent()) {
+        continue;
+      }
+      resource = iter->GetResourceId();
+    } 
     if (!resource) {
       if (drawCheckerboardForMissingTiles()) {
         // TODO(enne): Figure out how to show debug "invalidated checker" color
@@ -509,7 +523,7 @@ bool PictureLayerImpl::areVisibleResourcesReady() const {
          iter;
          ++iter) {
       // A null tile (i.e. no recording) is considered "ready".
-      if (!*iter || iter->GetResourceId())
+      if (!*iter || iter->IsReadyToDraw())
         missing_region.Subtract(iter.geometry_rect());
     }
   }

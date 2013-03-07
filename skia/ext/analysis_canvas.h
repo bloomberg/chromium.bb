@@ -26,6 +26,8 @@ class SK_API AnalysisCanvas : public SkCanvas {
   // Returns true if the estimated cost of drawing is below an
   // arbitrary threshold.
   bool isCheap() const;
+  bool getColorIfSolid(SkColor* color) const;
+  bool isTransparent() const;
 
   // Returns the estimated cost of drawing, in arbitrary units.
   int getEstimatedCost() const;
@@ -42,8 +44,17 @@ class SK_API AnalysisCanvas : public SkCanvas {
 
   virtual int saveLayer(const SkRect* bounds, const SkPaint*,
                               SkCanvas::SaveFlags flags) OVERRIDE;
+  virtual int save(SaveFlags flags = kMatrixClip_SaveFlag) OVERRIDE;
+
+  virtual void restore() OVERRIDE;
+
  private:
   typedef SkCanvas INHERITED;
+  static const int kNoLayer;
+
+  int savedStackSize_;
+  int forceNotSolidStackLevel_;
+  int forceNotTransparentStackLevel_;
 };
 
 class SK_API AnalysisDevice : public SkDevice {
@@ -52,6 +63,11 @@ class SK_API AnalysisDevice : public SkDevice {
   virtual ~AnalysisDevice();
 
   int getEstimatedCost() const;
+  bool getColorIfSolid(SkColor* color) const;
+  bool isTransparent() const;
+
+  void setForceNotSolid(bool flag);
+  void setForceNotTransparent(bool flag);
 
  protected:
   virtual void clear(SkColor color) OVERRIDE;
@@ -105,6 +121,12 @@ class SK_API AnalysisDevice : public SkDevice {
 
  private:
   typedef SkDevice INHERITED;
+
+  bool isForcedNotSolid_;
+  bool isForcedNotTransparent_;
+  bool isSolidColor_;
+  SkColor color_;
+  bool isTransparent_;
 };
 
 }  // namespace skia

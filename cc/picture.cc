@@ -130,17 +130,15 @@ void Picture::Raster(
   canvas->restore();
 }
 
-bool Picture::IsCheapInRect(const gfx::Rect& layer_rect) const {
-  TRACE_EVENT0("cc", "Picture::IsCheapInRect");
-
-  SkBitmap emptyBitmap;
-  emptyBitmap.setConfig(SkBitmap::kNo_Config, layer_rect.width(),
-                        layer_rect.height());
-  skia::AnalysisDevice device(emptyBitmap);
-  skia::AnalysisCanvas canvas(&device);
-
-  canvas.drawPicture(*picture_);
-  return canvas.isCheap();
+void Picture::AnalyzeInRect(skia::AnalysisCanvas* canvas,
+                            const gfx::Rect& content_rect,
+                            float contents_scale) {
+  canvas->save();
+  canvas->clipRect(gfx::RectToSkRect(content_rect));
+  canvas->scale(contents_scale, contents_scale);
+  canvas->translate(layer_rect_.x(), layer_rect_.y());
+  canvas->drawPicture(*picture_);
+  canvas->restore();
 }
 
 void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,

@@ -1077,7 +1077,12 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
         return false;
 
     if (m_settings.implSidePainting) {
-        m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads, m_settings.useCheapnessEstimator));
+        m_tileManager.reset(new TileManager(this,
+                                            resourceProvider.get(),
+                                            m_settings.numRasterThreads,
+                                            m_settings.useCheapnessEstimator,
+                                            m_settings.useColorEstimator,
+                                            m_settings.predictionBenchmarking));
         m_tileManager->SetRecordRenderingStats(m_debugState.recordRenderingStats());
     }
 

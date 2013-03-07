@@ -21,7 +21,7 @@ class FakeInfinitePicturePileImpl : public PicturePileImpl
 };
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : tile_manager_(&tile_manager_client_, NULL, 1, false),
+    : tile_manager_(&tile_manager_client_, NULL, 1, false, false, false),
       pile_(new FakeInfinitePicturePileImpl()) {
 }
 

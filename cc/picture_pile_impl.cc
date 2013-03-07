@@ -7,6 +7,7 @@
 #include "cc/picture_pile_impl.h"
 #include "cc/region.h"
 #include "cc/rendering_stats.h"
+#include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/rect_conversions.h"
@@ -212,28 +213,66 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   return picture;
 }
 
-bool PicturePileImpl::IsCheapInRect(
-    gfx::Rect content_rect, float contents_scale) const {
+void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
+                                    float contents_scale,
+                                    PicturePileImpl::Analysis* analysis) {
+  DCHECK(analysis);
+
+  TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
+
   gfx::Rect layer_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(content_rect, 1.f / contents_scale));
 
+  SkBitmap emptyBitmap;
+  emptyBitmap.setConfig(SkBitmap::kNo_Config, content_rect.width(),
+                        content_rect.height());
+  skia::AnalysisDevice device(emptyBitmap);
+  skia::AnalysisCanvas canvas(&device);
+
+  canvas.translate(-content_rect.x(), -content_rect.y());
+  canvas.clipRect(gfx::RectToSkRect(content_rect));
+
+  // The loop here is similar to the raster loop.
+  Region unclipped(content_rect);
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
        tile_iter; ++tile_iter) {
-    PictureListMap::const_iterator map_iter =
+    PictureListMap::iterator map_iter =
         picture_list_map_.find(tile_iter.index());
     if (map_iter == picture_list_map_.end())
       continue;
+    PictureList& pic_list = map_iter->second;
+    if (pic_list.empty())
+      continue;
 
-    const PictureList& pic_list = map_iter->second;
-    for (PictureList::const_iterator i = pic_list.begin();
-         i != pic_list.end(); ++i) {
-      if (!(*i)->LayerRect().Intersects(layer_rect) || !(*i)->HasRecording())
+    for (PictureList::reverse_iterator i = pic_list.rbegin();
+         i != pic_list.rend(); ++i) {
+      gfx::Rect content_clip = gfx::ToEnclosedRect(
+          gfx::ScaleRect((*i)->LayerRect(), contents_scale));
+      DCHECK(!content_clip.IsEmpty());
+      if (!unclipped.Intersects(content_clip))
         continue;
-      if (!(*i)->IsCheapInRect(layer_rect))
-        return false;
+
+      (*i)->AnalyzeInRect(&canvas,
+                          content_rect,
+                          contents_scale);
+
+      canvas.clipRect(
+          gfx::RectToSkRect(content_clip),
+          SkRegion::kDifference_Op);
+      unclipped.Subtract(content_clip);
+
     }
   }
-  return true;
+
+  analysis->is_transparent = canvas.isTransparent();
+  analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
+  analysis->is_cheap_to_raster = canvas.isCheap();
+}
+
+PicturePileImpl::Analysis::Analysis() :
+    is_solid_color(false),
+    is_transparent(false),
+    is_cheap_to_raster(false) {
 }
 
 }  // namespace cc

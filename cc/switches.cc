@@ -36,6 +36,9 @@ const char kEnableRightAlignedScheduling[] = "enable-right-aligned-scheduling";
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 
+// Enable solid tile color, transparent tile, and cheapness prediction metrics.
+const char kEnablePredictionBenchmarking[] = "enable-prediction-benchmarking";
+
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
 
@@ -85,6 +88,9 @@ const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
 // Schedule rasterization jobs according to their estimated processing cost.
 const char kUseCheapnessEstimator[] = "use-cheapness-estimator";
+
+// Predict whether the tile will be either solid color or transparent.
+const char kUseColorEstimator[] = "use-color-estimator";
 
 // The scale factor for low resolution tile contents.
 const char kLowResolutionContentsScaleFactor[] =

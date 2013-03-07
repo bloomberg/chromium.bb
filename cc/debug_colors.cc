@@ -68,6 +68,10 @@ int DebugColors::MissingTileBorderWidth(const LayerTreeImpl* tree_impl) { return
 SkColor DebugColors::CulledTileBorderColor() { return SkColorSetARGB(120, 160, 100, 0); }
 int DebugColors::CulledTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(1, tree_impl); }
 
+// Solid color tile borders are grey.
+SkColor DebugColors::SolidColorTileBorderColor() { return SkColorSetARGB(128, 128, 128, 128); }
+int DebugColors::SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(1, tree_impl); }
+
 // ======= Checkerboard colors =======
 
 // Non-debug checkerboards are grey.

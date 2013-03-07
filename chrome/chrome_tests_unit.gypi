@@ -1674,6 +1674,7 @@
         '../google_apis/gaia/oauth2_mint_token_fetcher_unittest.cc',
         '../google_apis/gaia/oauth2_mint_token_flow_unittest.cc',
         '../google_apis/gaia/oauth2_revocation_fetcher_unittest.cc',
+        '../skia/ext/analysis_canvas_unittest.cc',
         '../skia/ext/bitmap_platform_device_mac_unittest.cc',
         '../skia/ext/convolver_unittest.cc',
         '../skia/ext/image_operations_unittest.cc',

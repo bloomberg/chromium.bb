@@ -860,6 +860,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
     cc::switches::kEnablePerTilePainting,
+    cc::switches::kEnablePredictionBenchmarking,
     cc::switches::kEnableRightAlignedScheduling,
     cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kLowResolutionContentsScaleFactor,
@@ -877,6 +878,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTraceAllRenderedFrames,
     cc::switches::kTraceOverdraw,
     cc::switches::kUseCheapnessEstimator,
+    cc::switches::kUseColorEstimator,
     cc::switches::kCompositeToMailbox,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,

@@ -61,6 +61,21 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     return managed_state_.resource->id();
   }
 
+  bool IsReadyToDraw() const;
+
+  bool is_solid_color() const {
+    return managed_state_.picture_pile_analysis.is_solid_color;
+  }
+
+  bool is_transparent() const {
+    return managed_state_.picture_pile_analysis.is_transparent;
+  }
+
+  SkColor solid_color() const {
+    DCHECK(managed_state_.picture_pile_analysis.is_solid_color);
+    return managed_state_.picture_pile_analysis.solid_color;
+  }
+
   const gfx::Rect& opaque_rect() const { return opaque_rect_; }
 
   bool contents_swizzled() const { return managed_state_.contents_swizzled; }

@@ -22,6 +22,7 @@ CC_EXPORT extern const char kDisableImplSidePainting[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnablePartialSwap[];
 CC_EXPORT extern const char kEnablePerTilePainting[];
+CC_EXPORT extern const char kEnablePredictionBenchmarking[];
 CC_EXPORT extern const char kEnableRightAlignedScheduling[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
@@ -39,6 +40,7 @@ CC_EXPORT extern const char kTopControlsShowThreshold[];
 CC_EXPORT extern const char kTraceAllRenderedFrames[];
 CC_EXPORT extern const char kSlowDownRasterScaleFactor[];
 CC_EXPORT extern const char kUseCheapnessEstimator[];
+CC_EXPORT extern const char kUseColorEstimator[];
 CC_EXPORT extern const char kLowResolutionContentsScaleFactor[];
 CC_EXPORT extern const char kCompositeToMailbox[];
 

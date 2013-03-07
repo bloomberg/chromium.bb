@@ -48,7 +48,18 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     slow_down_raster_scale_factor_for_debug_ = factor;
   }
 
-  bool IsCheapInRect(gfx::Rect content_rect, float contents_scale) const;
+  struct Analysis {
+    Analysis();
+
+    bool is_solid_color;
+    bool is_transparent;
+    bool is_cheap_to_raster;
+    SkColor solid_color;
+  };
+
+  void AnalyzeInRect(const gfx::Rect& content_rect,
+                     float contents_scale,
+                     Analysis* analysis);
 
  protected:
   friend class PicturePile;

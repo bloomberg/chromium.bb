@@ -45,4 +45,10 @@ scoped_ptr<base::Value> Tile::AsValue() const {
   return res.PassAs<base::Value>();
 }
 
+bool Tile::IsReadyToDraw() const {
+  return GetResourceId() != 0 ||
+         is_solid_color() ||
+         is_transparent();
+}
+
 }  // namespace cc
