@@ -8,6 +8,8 @@
 namespace apps {
 namespace switches {
 
+// Alphabetical list of switches specific to Apps component.
+// Keep alphabetized and document each one in the source file.
 extern const char kShowAppListShortcut[];
 
 }  // namespace switches

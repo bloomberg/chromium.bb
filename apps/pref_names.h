@@ -6,13 +6,13 @@
 #define APPS_PREF_NAMES_H_
 
 namespace apps {
-
 namespace prefs {
 
+// Alphabetical list of preference names specific to Apps component.
+// Keep alphabetized and document each one in the source file.
 extern const char kAppLauncherIsEnabled[];
 
 }  // namespace prefs
-
 }  // namespace apps
 
 #endif  // APPS_PREF_NAMES_H_
