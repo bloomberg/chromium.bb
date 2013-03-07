@@ -415,8 +415,10 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
+#if defined(OFFICIAL_BUILD)
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+#endif  // defined(OFFICIAL_BUILD)
 
     base::FilePath echo_extension_path(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/echo"));
@@ -436,7 +438,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
         base::FilePath(extension_misc::kChromeVoxExtensionPath);
     Add(IDR_CHROMEVOX_MANIFEST, path);
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_GOOGLE_NOW)
   if (CommandLine::ForCurrentProcess()->HasSwitch(

@@ -10,8 +10,5 @@
     "networkingPrivate",
     "chrome://resources/*"
   ],
-  "web_accessible_resources": [
-    "config.html"
-  ],
   "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources ; style-src 'self' chrome://resources;"
 }
