@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"

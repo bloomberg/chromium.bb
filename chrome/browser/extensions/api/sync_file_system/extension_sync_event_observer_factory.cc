@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 
 namespace extensions {
 

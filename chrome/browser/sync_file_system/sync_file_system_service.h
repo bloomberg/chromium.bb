@@ -11,12 +11,10 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -158,32 +156,6 @@ class SyncFileSystemService
   ObserverList<SyncEventObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);
-};
-
-class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
- public:
-  static SyncFileSystemService* GetForProfile(Profile* profile);
-  static SyncFileSystemService* FindForProfile(Profile* profile);
-  static SyncFileSystemServiceFactory* GetInstance();
-
-  // This overrides the remote service for testing.
-  // For testing this must be called before GetForProfile is called.
-  // Otherwise a new DriveFileSyncService is created for the new service.
-  // Since we use scoped_ptr it's one-off and the instance is passed
-  // to the newly created SyncFileSystemService.
-  void set_mock_remote_file_service(
-      scoped_ptr<RemoteFileSyncService> mock_remote_service);
-
- private:
-  friend struct DefaultSingletonTraits<SyncFileSystemServiceFactory>;
-  SyncFileSystemServiceFactory();
-  virtual ~SyncFileSystemServiceFactory();
-
-  // ProfileKeyedServiceFactory overrides.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
-
-  mutable scoped_ptr<RemoteFileSyncService> mock_remote_file_service_;
 };
 
 }  // namespace sync_file_system

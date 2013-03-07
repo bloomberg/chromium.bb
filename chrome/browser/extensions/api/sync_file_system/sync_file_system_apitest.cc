@@ -13,6 +13,7 @@
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "testing/gmock/include/gmock/gmock.h"

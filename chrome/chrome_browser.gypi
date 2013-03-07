@@ -2112,6 +2112,8 @@
         'browser/sync_file_system/sync_event_observer.h',
         'browser/sync_file_system/sync_file_system_service.cc',
         'browser/sync_file_system/sync_file_system_service.h',
+        'browser/sync_file_system/sync_file_system_service_factory.cc',
+        'browser/sync_file_system/sync_file_system_service_factory.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
         'browser/tab_contents/language_state.cc',
