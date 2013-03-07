@@ -955,6 +955,30 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
                     favicon_bounds_.x(),
                     favicon_bounds_.y() + favicon_hiding_offset_);
       cairo_paint(cr);
+    } else if (data_.capture_state == RECORDING) {
+      // Add mask around the recording overlay image (red dot).
+      gfx::CairoCachedSurface* tab_bg;
+      if (IsActive()) {
+        tab_bg = theme_service_->GetImageNamed(IDR_THEME_TOOLBAR).ToCairo();
+      } else {
+        int theme_id = data_.incognito ?
+          IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
+        tab_bg = theme_service_->GetImageNamed(theme_id).ToCairo();
+      }
+      tab_bg->SetSource(cr, widget, -background_offset_x_, 0);
+      cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+
+      gfx::CairoCachedSurface* recording_mask =
+          theme_service_->GetImageNamed(IDR_TAB_RECORDING_MASK).ToCairo();
+      int offset_from_right = data_.cairo_overlay.Width() +
+          (recording_mask->Width() - data_.cairo_overlay.Width()) / 2;
+      int favicon_x = favicon_bounds_.x() + favicon_bounds_.width() -
+          offset_from_right;
+      int offset_from_bottom = data_.cairo_overlay.Height() +
+          (recording_mask->Height() - data_.cairo_overlay.Height()) / 2;
+      int favicon_y = favicon_bounds_.y() + favicon_hiding_offset_ +
+          favicon_bounds_.height() - offset_from_bottom;
+      recording_mask->MaskSource(cr, widget, favicon_x, favicon_y);
     }
 
     int favicon_x = favicon_bounds_.x();
