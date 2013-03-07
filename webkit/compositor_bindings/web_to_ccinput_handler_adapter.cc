@@ -47,8 +47,8 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
             point, static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
   }
 
-  virtual bool scrollByIfPossible(WebPoint point, WebSize offset) {
-    return client_->scrollBy(point, offset);
+  virtual bool scrollByIfPossible(WebPoint point, WebFloatSize delta) {
+    return client_->scrollBy(point, delta);
   }
 
   virtual void scrollEnd() { client_->scrollEnd(); }

@@ -13,6 +13,7 @@ namespace gfx {
 class Point;
 class PointF;
 class Vector2d;
+class Vector2dF;
 }
 
 namespace cc {
@@ -46,7 +47,7 @@ public:
     // direction at all, then false is returned. If any layer is moved, then
     // true is returned.
     // Should only be called if scrollBegin() returned ScrollStarted.
-    virtual bool scrollBy(const gfx::Point&, const gfx::Vector2d&) = 0;
+    virtual bool scrollBy(const gfx::Point&, const gfx::Vector2dF&) = 0;
 
     // Stop scrolling the selected layer. Should only be called if scrollBegin()
     // returned ScrollStarted.

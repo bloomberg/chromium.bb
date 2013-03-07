@@ -76,7 +76,7 @@ public:
 
     // InputHandlerClient implementation
     virtual InputHandlerClient::ScrollStatus scrollBegin(gfx::Point, InputHandlerClient::ScrollInputType) OVERRIDE;
-    virtual bool scrollBy(const gfx::Point&, const gfx::Vector2d&) OVERRIDE;
+    virtual bool scrollBy(const gfx::Point&, const gfx::Vector2dF&) OVERRIDE;
     virtual void scrollEnd() OVERRIDE;
     virtual void pinchGestureBegin() OVERRIDE;
     virtual void pinchGestureUpdate(float, gfx::Point) OVERRIDE;

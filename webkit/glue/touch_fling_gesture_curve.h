@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webkit/glue/webkit_glue_export.h"
@@ -40,7 +41,7 @@ class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
   virtual ~TouchFlingGestureCurve();
 
   WebKit::WebFloatPoint displacement_ratio_;
-  WebKit::WebSize cumulative_scroll_;
+  WebKit::WebFloatSize cumulative_scroll_;
   float coefficients_[3];
   float time_offset_;
   float curve_duration_;

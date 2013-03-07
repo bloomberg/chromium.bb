@@ -1298,7 +1298,7 @@ static gfx::Vector2dF scrollLayerWithLocalDelta(LayerImpl& layerImpl, gfx::Vecto
 }
 
 bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
-                                 const gfx::Vector2d& scrollDelta)
+                                 const gfx::Vector2dF& scrollDelta)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::scrollBy");
     if (!currentlyScrollingLayer())

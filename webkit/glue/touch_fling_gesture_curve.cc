@@ -9,16 +9,16 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 
+using WebKit::WebFloatPoint;
+using WebKit::WebFloatSize;
 using WebKit::WebGestureCurve;
 using WebKit::WebGestureCurveTarget;
-using WebKit::WebPoint;
 using WebKit::WebSize;
-using WebKit::WebFloatPoint;
 
 namespace {
 
@@ -82,7 +82,8 @@ TouchFlingGestureCurve::TouchFlingGestureCurve(
     float beta,
     float gamma,
     const WebSize& cumulative_scroll)
-    : cumulative_scroll_(cumulative_scroll) {
+    : cumulative_scroll_(WebFloatSize(cumulative_scroll.width,
+                                      cumulative_scroll.height)) {
   DCHECK(initial_velocity != WebFloatPoint());
 
   coefficients_[0] = alpha;
@@ -134,13 +135,14 @@ bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
     displacement = position(curve_duration_, coefficients_) - position_offset_;
 
   // Keep track of integer portion of scroll thus far, and prepare increment.
-  WebPoint scroll(displacement * displacement_ratio_.x,
-                  displacement * displacement_ratio_.y);
-  WebPoint scroll_increment(scroll.x - cumulative_scroll_.width,
-                            scroll.y - cumulative_scroll_.height);
-  cumulative_scroll_ = WebSize(scroll.x, scroll.y);
+  WebFloatSize scroll(displacement * displacement_ratio_.x,
+                      displacement * displacement_ratio_.y);
+  WebFloatSize scroll_increment(scroll.width - cumulative_scroll_.width,
+                                scroll.height - cumulative_scroll_.height);
+  cumulative_scroll_ = scroll;
 
-  if (time + time_offset_ < curve_duration_ || scroll_increment != WebPoint()) {
+  if (time + time_offset_ < curve_duration_ ||
+      scroll_increment != WebFloatSize()) {
     // scrollBy() could delete this curve if the animation is over, so don't
     // touch any member variables after making that call.
     target->scrollBy(scroll_increment);

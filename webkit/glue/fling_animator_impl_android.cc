@@ -7,8 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 
@@ -111,7 +111,8 @@ bool FlingAnimatorImpl::apply(double time,
   last_position_ = current_position;
   float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
       .device_scale_factor();
-  WebKit::WebPoint scroll_amount(diff.x() / dpi_scale, diff.y() / dpi_scale);
+  WebKit::WebFloatSize scroll_amount(diff.x() / dpi_scale,
+                                     diff.y() / dpi_scale);
   // scrollBy() could delete this curve if the animation is over, so don't touch
   // any member variables after making that call.
   target->scrollBy(scroll_amount);
