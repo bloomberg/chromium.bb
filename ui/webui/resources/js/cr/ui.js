@@ -176,7 +176,7 @@ cr.define('cr.ui', function() {
    */
   function swallowDoubleClick(e) {
     var doc = e.target.ownerDocument;
-    var counter = e.type == 'click' ? e.detail : 0;
+    var counter = Math.min(1, e.detail);
     function swallow(e) {
       e.stopPropagation();
       e.preventDefault();
@@ -192,8 +192,13 @@ cr.define('cr.ui', function() {
         doc.removeEventListener('click', onclick, true);
       }
     }
-    doc.addEventListener('click', onclick, true);
-    doc.addEventListener('dblclick', swallow, true);
+    // The following 'click' event (if e.type == 'mouseup') mustn't be taken
+    // into account (it mustn't stop tracking clicks). Start event listening
+    // after zero timeout.
+    setTimeout(function() {
+      doc.addEventListener('click', onclick, true);
+      doc.addEventListener('dblclick', swallow, true);
+    }, 0);
   }
 
   return {
