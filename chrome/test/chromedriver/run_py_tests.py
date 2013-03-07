@@ -356,16 +356,21 @@ class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
   Makes sure the switches are passed to Chrome.
   """
 
+  def setUp(self):
+    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
+                                             chrome_binary=_CHROME_BINARY,
+                                             chrome_switches=['dom-automation'])
+
+  def tearDown(self):
+    self._driver.Quit()
+
   def testSwitchWithoutArgument(self):
     """Tests that switch --dom-automation can be passed to Chrome.
 
     Unless --dom-automation is specified, window.domAutomationController
     is undefined.
     """
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
-                                       chrome_binary=_CHROME_BINARY,
-                                       chrome_switches=['dom-automation'])
-    result = driver.ExecuteScript('return window.domAutomationController')
+    result = self._driver.ExecuteScript('return window.domAutomationController')
     self.assertNotEqual(None, result)
 
 
@@ -382,6 +387,7 @@ class ChromeExtensionsCapabilityTest(unittest.TestCase):
     driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
                                        chrome_binary=_CHROME_BINARY,
                                        chrome_extensions=extensions)
+    driver.Quit()
 
 
 if __name__ == '__main__':
