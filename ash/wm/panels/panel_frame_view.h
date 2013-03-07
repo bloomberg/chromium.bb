@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_PANEL_FRAME_VIEW_H_
-#define ASH_WM_PANEL_FRAME_VIEW_H_
+#ifndef ASH_WM_PANELS_PANEL_FRAME_VIEW_H_
+#define ASH_WM_PANELS_PANEL_FRAME_VIEW_H_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/font.h"
-#include "ui/views/window/non_client_view.h"
 #include "ui/views/controls/button/button.h"  // ButtonListener
+#include "ui/views/window/non_client_view.h"
 
 namespace views {
 class ImageButton;
@@ -68,4 +68,4 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
 
 }
 
-#endif // ASH_WM_PANEL_FRAME_VIEW_H_
+#endif // ASH_WM_PANELS_PANEL_FRAME_VIEW_H_

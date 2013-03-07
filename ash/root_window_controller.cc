@@ -21,7 +21,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/boot_splash_screen.h"
-#include "ash/wm/panel_layout_manager.h"
+#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"

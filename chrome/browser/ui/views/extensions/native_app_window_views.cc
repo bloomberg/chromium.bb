@@ -31,7 +31,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
-#include "ash/wm/panel_frame_view.h"
+#include "ash/wm/panels/panel_frame_view.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/root_window.h"
 #endif

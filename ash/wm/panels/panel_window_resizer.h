@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_PANEL_WINDOW_RESIZER_H_
-#define ASH_WM_PANEL_WINDOW_RESIZER_H_
+#ifndef ASH_WM_PANELS_PANEL_WINDOW_RESIZER_H_
+#define ASH_WM_PANELS_PANEL_WINDOW_RESIZER_H_
 
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
@@ -85,4 +85,4 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
 
 }  // namespace aura
 
-#endif  // ASH_WM_PANEL_WINDOW_RESIZER_H_
+#endif  // ASH_WM_PANELS_PANEL_WINDOW_RESIZER_H_

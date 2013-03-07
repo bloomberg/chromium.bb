@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/panel_frame_view.h"
+#include "ash/wm/panels/panel_frame_view.h"
 
 #include "ash/wm/frame_painter.h"
 #include "grit/ash_resources.h"

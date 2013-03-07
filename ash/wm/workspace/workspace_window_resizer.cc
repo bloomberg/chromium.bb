@@ -16,7 +16,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/panel_window_resizer.h"
+#include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"

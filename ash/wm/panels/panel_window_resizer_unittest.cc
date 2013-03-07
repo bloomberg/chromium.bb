@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/panel_window_resizer.h"
+#include "ash/wm/panels/panel_window_resizer.h"
 
 #include "ash/launcher/launcher.h"
 #include "ash/shelf_types.h"
@@ -11,7 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
-#include "ash/wm/panel_layout_manager.h"
+#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
