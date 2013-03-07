@@ -156,8 +156,9 @@ FileTransferController.prototype = {
 
     // For drive search, sourceDir will be set to null, so we should double
     // check that we are not on drive.
+    // TODO(haruki): Investigate if this still is the case.
     if (dataTransfer.getData('fs/isOnDrive') == 'true')
-      return '/' + DirectoryModel.DRIVE_DIRECTORY;
+      return RootDirectory.DRIVE;
 
     // |dataTransfer| in protected mode.
     if (window[DRAG_AND_DROP_GLOBAL_DATA])

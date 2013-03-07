@@ -174,7 +174,6 @@ BreadcrumbsController.prototype.truncate = function() {
  * @param {string} path Path to directory.
  */
 BreadcrumbsController.prototype.show = function(rootPath, path) {
-  console.log('show', rootPath, path);
   this.bc_.style.display = '-webkit-box';
   this.update(rootPath, path);
 };
@@ -231,4 +230,3 @@ BreadcrumbsController.prototype.getTargetPath = function(event) {
 BreadcrumbsController.prototype.getContainer = function() {
   return this.bc_;
 };
-

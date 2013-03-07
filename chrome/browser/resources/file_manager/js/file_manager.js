@@ -1776,7 +1776,6 @@ DialogType.isModal = function(type) {
           console.assert(true, 'unknown connection type.');
       }
       self.authFailedWarning_.hidden = hideDriveNotReachedMessage;
-      console.log(hideDriveNotReachedMessage);
     });
   };
 
