@@ -9,14 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 
-namespace crypto {
-class RSAPrivateKey;
-}  // namespace crypto
-
 namespace remoting {
+
+class RsaKeyPair;
+
 namespace protocol {
 
 // It2MeHostAuthenticatorFactory implements AuthenticatorFactory and
@@ -25,7 +25,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   It2MeHostAuthenticatorFactory(
       const std::string& local_cert,
-      const crypto::RSAPrivateKey& local_private_key,
+      scoped_refptr<RsaKeyPair> key_pair,
       const std::string& shared_secret);
   virtual ~It2MeHostAuthenticatorFactory();
 
@@ -37,7 +37,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
 
  private:
   std::string local_cert_;
-  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   std::string shared_secret_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostAuthenticatorFactory);

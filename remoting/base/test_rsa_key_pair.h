@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 namespace remoting {
+
 // An RSA keypair used in unittests.
-const char kTestHostKeyPair[] =
+const char kTestRsaKeyPair[] =
 "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDeeT/wgtzQkGoeA5LRQI4iXibQZ"
 "R3YUiJn/oVz0P+KLJSCWL4Uhjl3CytKg0nzuxgaJ9UOHxrl91k1XnLnwJytqkjl8kgWle+JJbiDx3"
 "+3WBxmSjPWmmaPNuBebpyTD1N3TJEPRwe7vfYiOz56jzBPSm3gqIeRvJGIC+Ou+Q0OV+ISTu2Jjtj"
@@ -27,4 +28,5 @@ const char kTestHostKeyPair[] =
 "Et5ho7YqrrBWTwnvMLw4G7qftiMco15JcMAXhfGhmlDI8OUq7MlXVCUWwdZtRYcAyWJcqhWQ3yrXv"
 "8cWi9hxwNGPuof5PchDDuR+cwe8gZvpzwfFDFTgJHIBe64CkFd9Oeb5CvEffbrP04mpWvjVeMcjjz"
 "ZA6a+IB";
+
 }  // namespace remoting

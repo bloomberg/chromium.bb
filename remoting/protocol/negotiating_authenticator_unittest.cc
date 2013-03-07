@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "net/base/net_errors.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator_test_base.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/connection_tester.h"
@@ -48,7 +49,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
     std::string host_secret_hash = AuthenticationMethod::ApplyHashFunction(
         hash_function, kTestHostId, host_secret);
     host_ = NegotiatingAuthenticator::CreateForHost(
-        host_cert_, *private_key_, host_secret_hash, hash_function);
+        host_cert_, key_pair_, host_secret_hash, hash_function);
 
     std::vector<AuthenticationMethod> methods;
     methods.push_back(AuthenticationMethod::Spake2(

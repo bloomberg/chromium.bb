@@ -14,11 +14,10 @@
 #include "crypto/p224_spake.h"
 #include "remoting/protocol/authenticator.h"
 
-namespace crypto {
-class RSAPrivateKey;
-}  // namespace crypto
-
 namespace remoting {
+
+class RsaKeyPair;
+
 namespace protocol {
 
 class V2Authenticator : public Authenticator {
@@ -31,7 +30,7 @@ class V2Authenticator : public Authenticator {
 
   static scoped_ptr<Authenticator> CreateForHost(
       const std::string& local_cert,
-      const crypto::RSAPrivateKey& local_private_key,
+      scoped_refptr<RsaKeyPair> key_pair,
       const std::string& shared_secret,
       State initial_state);
 
@@ -59,7 +58,7 @@ class V2Authenticator : public Authenticator {
 
   // Used only for host authenticators.
   std::string local_cert_;
-  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
+  scoped_refptr<RsaKeyPair> local_key_pair_;
   bool certificate_sent_;
 
   // Used only for client authenticators.

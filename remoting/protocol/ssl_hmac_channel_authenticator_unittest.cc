@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/ssl_hmac_channel_authenticator.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -14,6 +15,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,12 +63,10 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     base::FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
     std::string key_string;
     ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
-    std::vector<uint8> key_vector(
-        reinterpret_cast<const uint8*>(key_string.data()),
-        reinterpret_cast<const uint8*>(key_string.data() +
-                                       key_string.length()));
-    private_key_.reset(
-        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+    std::string key_base64;
+    base::Base64Encode(key_string, &key_base64);
+    key_pair_ = RsaKeyPair::FromString(key_base64);
+    ASSERT_TRUE(key_pair_);
   }
 
   void RunChannelAuth(bool expected_fail) {
@@ -122,7 +122,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
   MessageLoop message_loop_;
 
-  scoped_ptr<crypto::RSAPrivateKey> private_key_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_cert_;
   scoped_ptr<FakeSocket> client_fake_socket_;
   scoped_ptr<FakeSocket> host_fake_socket_;
@@ -141,7 +141,7 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
   client_auth_ = SslHmacChannelAuthenticator::CreateForClient(
       host_cert_, kTestSharedSecret);
   host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
-      host_cert_, private_key_.get(), kTestSharedSecret);
+      host_cert_, key_pair_, kTestSharedSecret);
 
   RunChannelAuth(false);
 
@@ -161,7 +161,7 @@ TEST_F(SslHmacChannelAuthenticatorTest, InvalidChannelSecret) {
   client_auth_ = SslHmacChannelAuthenticator::CreateForClient(
       host_cert_, kTestSharedSecretBad);
   host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
-      host_cert_, private_key_.get(), kTestSharedSecret);
+      host_cert_, key_pair_, kTestSharedSecret);
 
   RunChannelAuth(true);
 

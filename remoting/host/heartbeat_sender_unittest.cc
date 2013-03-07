@@ -11,8 +11,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/host_key_pair.h"
-#include "remoting/host/test_key_pair.h"
+#include "remoting/base/rsa_key_pair.h"
+#include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,7 +58,8 @@ class HeartbeatSenderTest
   }
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(key_pair_.LoadFromString(kTestHostKeyPair));
+    key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
+    ASSERT_TRUE(key_pair_);
 
     EXPECT_CALL(signal_strategy_, GetState())
         .WillOnce(Return(SignalStrategy::DISCONNECTED));
@@ -70,7 +71,7 @@ class HeartbeatSenderTest
         .WillRepeatedly(Return(kTestJid));
 
     heartbeat_sender_.reset(new HeartbeatSender(
-        this, kHostId, &signal_strategy_, &key_pair_, kTestBotJid));
+        this, kHostId, &signal_strategy_, key_pair_, kTestBotJid));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -84,7 +85,7 @@ class HeartbeatSenderTest
   MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
-  HostKeyPair key_pair_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
 };
 
@@ -236,10 +237,10 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
   ASSERT_TRUE(signature != NULL);
   EXPECT_TRUE(heartbeat_stanza->NextNamed(signature_tag) == NULL);
 
-  HostKeyPair key_pair;
-  key_pair.LoadFromString(kTestHostKeyPair);
+  scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
+  ASSERT_TRUE(key_pair);
   std::string expected_signature =
-      key_pair.GetSignature(std::string(kTestJid) + ' ' + expectedSequenceId);
+      key_pair->SignMessage(std::string(kTestJid) + ' ' + expectedSequenceId);
   EXPECT_EQ(expected_signature, signature->BodyText());
 }
 

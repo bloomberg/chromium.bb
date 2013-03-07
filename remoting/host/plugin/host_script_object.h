@@ -21,7 +21,6 @@
 #include "base/time.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/host_key_pair.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/setup/daemon_controller.h"

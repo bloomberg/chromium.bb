@@ -7,20 +7,20 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace crypto {
-class RSAPrivateKey;
-}  // namespace crypto
 
 namespace net {
 class StreamSocket;
 }  // namespace net
 
 namespace remoting {
+
+class RsaKeyPair;
+
 namespace protocol {
 
 class Authenticator;
@@ -53,7 +53,7 @@ class AuthenticatorTestBase : public testing::Test {
 
   MessageLoop message_loop_;
 
-  scoped_ptr<crypto::RSAPrivateKey> private_key_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_cert_;
   scoped_ptr<Authenticator> host_;
   scoped_ptr<Authenticator> client_;

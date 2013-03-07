@@ -15,7 +15,6 @@
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/host/client_session.h"
-#include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/mouse_move_observer.h"

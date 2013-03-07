@@ -106,9 +106,9 @@ void HostStarter::OnGetUserInfoResponse(const std::string& user_email) {
   user_email_ = user_email;
   // Register the host.
   host_id_ = base::GenerateGUID();
-  key_pair_.Generate();
+  key_pair_ = RsaKeyPair::Generate();
   service_client_->RegisterHost(
-      host_id_, host_name_, key_pair_.GetPublicKey(), access_token_, this);
+      host_id_, host_name_, key_pair_->GetPublicKey(), access_token_, this);
 }
 
 void HostStarter::OnHostRegistered() {
@@ -124,7 +124,7 @@ void HostStarter::OnHostRegistered() {
   config->SetString("oauth_refresh_token", refresh_token_);
   config->SetString("host_id", host_id_);
   config->SetString("host_name", host_name_);
-  config->SetString("private_key", key_pair_.GetAsString());
+  config->SetString("private_key", key_pair_->ToString());
   config->SetString("host_secret_hash", host_secret_hash);
   daemon_controller_->SetConfigAndStart(
       config.Pass(), consent_to_data_collection_,

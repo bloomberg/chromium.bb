@@ -9,15 +9,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/authentication_method.h"
 
-namespace crypto {
-class RSAPrivateKey;
-}  // namespace crypto
-
 namespace remoting {
+
+class RsaKeyPair;
+
 namespace protocol {
 
 class NegotiatingAuthenticator : public Authenticator {
@@ -26,14 +26,16 @@ class NegotiatingAuthenticator : public Authenticator {
 
   static bool IsNegotiableMessage(const buzz::XmlElement* message);
 
+  // Creates a client authenticator for the given methods.
   static scoped_ptr<Authenticator> CreateForClient(
       const std::string& authentication_tag,
       const std::string& shared_secret,
       const std::vector<AuthenticationMethod>& methods);
 
+  // Creates a host authenticator, using a fixed shared secret/PIN hash.
   static scoped_ptr<Authenticator> CreateForHost(
       const std::string& local_cert,
-      const crypto::RSAPrivateKey& local_private_key,
+      scoped_refptr<RsaKeyPair> key_pair,
       const std::string& shared_secret_hash,
       AuthenticationMethod::HashFunction hash_function);
 
@@ -57,12 +59,10 @@ class NegotiatingAuthenticator : public Authenticator {
 
   // Used only for host authenticators.
   std::string local_cert_;
-  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
-  bool certificate_sent_;
+  scoped_refptr<RsaKeyPair> local_key_pair_;
   std::string shared_secret_hash_;
 
   // Used only for client authenticators.
-  std::string remote_cert_;
   std::string authentication_tag_;
   std::string shared_secret_;
 

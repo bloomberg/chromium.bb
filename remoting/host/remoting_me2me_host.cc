@@ -285,7 +285,7 @@ class HostProcess
 
   std::string host_id_;
   protocol::SharedSecretHash host_secret_hash_;
-  HostKeyPair key_pair_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   std::string oauth_refresh_token_;
   std::string serialized_config_;
   std::string xmpp_login_;
@@ -511,7 +511,7 @@ void HostProcess::CreateAuthenticatorFactory() {
   if (state_ != HOST_STARTED)
     return;
 
-  std::string local_certificate = key_pair_.GenerateCertificate();
+  std::string local_certificate = key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
     LOG(ERROR) << "Failed to generate host certificate.";
     ShutdownHost(kInitializationFailed);
@@ -520,7 +520,7 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::Me2MeHostAuthenticatorFactory(
-          local_certificate, *key_pair_.private_key(), host_secret_hash_));
+          local_certificate, key_pair_, host_secret_hash_));
 #if defined(OS_POSIX)
   // On Linux and Mac, perform a PAM authorization step after authentication.
   factory.reset(new PamAuthorizationFactory(factory.Pass()));
@@ -688,7 +688,15 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     return false;
   }
 
-  if (!key_pair_.Load(*config)) {
+  std::string key_base64;
+  if (!config->GetString(kPrivateKeyConfigPath, &key_base64)) {
+    LOG(ERROR) << "Private key couldn't be read from the config file.";
+    return false;
+  }
+
+  key_pair_ = RsaKeyPair::FromString(key_base64);
+  if (!key_pair_) {
+    LOG(ERROR) << "Invalid private key in the config file.";
     return false;
   }
 
@@ -942,7 +950,8 @@ void HostProcess::StartHost() {
 #endif
 
   heartbeat_sender_.reset(new HeartbeatSender(
-      this, host_id_, signal_strategy_.get(), &key_pair_, directory_bot_jid_));
+      this, host_id_, signal_strategy_.get(), key_pair_,
+      directory_bot_jid_));
 
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));

@@ -51,7 +51,7 @@ HeartbeatSender::HeartbeatSender(
     Listener* listener,
     const std::string& host_id,
     SignalStrategy* signal_strategy,
-    HostKeyPair* key_pair,
+    scoped_refptr<RsaKeyPair> key_pair,
     const std::string& directory_bot_jid)
     : listener_(listener),
       host_id_(host_id),
@@ -264,7 +264,7 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateSignature() {
 
   std::string message = signal_strategy_->GetLocalJid() + ' ' +
       base::IntToString(sequence_id_);
-  std::string signature(key_pair_->GetSignature(message));
+  std::string signature(key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 
   return signature_tag.Pass();

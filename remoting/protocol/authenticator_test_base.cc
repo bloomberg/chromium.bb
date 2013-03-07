@@ -4,13 +4,14 @@
 
 #include "remoting/protocol/authenticator_test_base.h"
 
+#include "base/base64.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer.h"
-#include "crypto/rsa_private_key.h"
 #include "net/base/test_data_directory.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/fake_session.h"
@@ -51,12 +52,10 @@ void AuthenticatorTestBase::SetUp() {
   base::FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
   std::string key_string;
   ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
-  std::vector<uint8> key_vector(
-      reinterpret_cast<const uint8*>(key_string.data()),
-      reinterpret_cast<const uint8*>(key_string.data() +
-                                     key_string.length()));
-  private_key_.reset(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+  std::string key_base64;
+  ASSERT_TRUE(base::Base64Encode(key_string, &key_base64));
+  key_pair_ = RsaKeyPair::FromString(key_base64);
+  ASSERT_TRUE(key_pair_);
 }
 
 void AuthenticatorTestBase::RunAuthExchange() {

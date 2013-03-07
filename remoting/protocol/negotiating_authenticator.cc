@@ -8,9 +8,10 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "crypto/rsa_private_key.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -56,13 +57,13 @@ scoped_ptr<Authenticator> NegotiatingAuthenticator::CreateForClient(
 // static
 scoped_ptr<Authenticator> NegotiatingAuthenticator::CreateForHost(
     const std::string& local_cert,
-    const crypto::RSAPrivateKey& local_private_key,
+    scoped_refptr<RsaKeyPair> key_pair,
     const std::string& shared_secret_hash,
     AuthenticationMethod::HashFunction hash_function) {
   scoped_ptr<NegotiatingAuthenticator> result(
       new NegotiatingAuthenticator(WAITING_MESSAGE));
   result->local_cert_ = local_cert;
-  result->local_private_key_.reset(local_private_key.Copy());
+  result->local_key_pair_ = key_pair;
   result->shared_secret_hash_ = shared_secret_hash;
 
   result->AddMethod(AuthenticationMethod::Spake2(hash_function));
@@ -70,11 +71,9 @@ scoped_ptr<Authenticator> NegotiatingAuthenticator::CreateForHost(
   return scoped_ptr<Authenticator>(result.Pass());
 }
 
-
 NegotiatingAuthenticator::NegotiatingAuthenticator(
     Authenticator::State initial_state)
-    : certificate_sent_(false),
-      current_method_(AuthenticationMethod::Invalid()),
+    : current_method_(AuthenticationMethod::Invalid()),
       state_(initial_state),
       rejection_reason_(INVALID_CREDENTIALS) {
 }
@@ -226,20 +225,18 @@ NegotiatingAuthenticator::CreateChannelAuthenticator() const {
 }
 
 bool NegotiatingAuthenticator::is_host_side() const {
-  return local_private_key_.get() != NULL;
+  return local_key_pair_.get() != NULL;
 }
 
 void NegotiatingAuthenticator::CreateAuthenticator(State initial_state) {
   if (is_host_side()) {
     current_authenticator_ = V2Authenticator::CreateForHost(
-        local_cert_, *local_private_key_.get(),
-        shared_secret_hash_, initial_state);
+        local_cert_, local_key_pair_, shared_secret_hash_, initial_state);
   } else {
     current_authenticator_ = V2Authenticator::CreateForClient(
         AuthenticationMethod::ApplyHashFunction(
             current_method_.hash_function(),
-            authentication_tag_, shared_secret_),
-        initial_state);
+            authentication_tag_, shared_secret_), initial_state);
   }
 }
 

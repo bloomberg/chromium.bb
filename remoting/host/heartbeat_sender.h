@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "remoting/host/host_key_pair.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 
 namespace base {
@@ -25,7 +25,7 @@ class XmlElement;
 
 namespace remoting {
 
-class HostKeyPair;
+class RsaKeyPair;
 class IqRequest;
 class IqSender;
 
@@ -86,13 +86,13 @@ class HeartbeatSender : public SignalStrategy::Listener {
     virtual void OnUnknownHostIdError() = 0;
   };
 
-  // |signal_strategy|, |key_pair| and |delegate| must outlive this
+  // |signal_strategy| and |delegate| must outlive this
   // object. Heartbeats will start when the supplied SignalStrategy
   // enters the CONNECTED state.
   HeartbeatSender(Listener* listener,
                   const std::string& host_id,
                   SignalStrategy* signal_strategy,
-                  HostKeyPair* key_pair,
+                  scoped_refptr<RsaKeyPair> key_pair,
                   const std::string& directory_bot_jid);
   virtual ~HeartbeatSender();
 
@@ -125,7 +125,7 @@ class HeartbeatSender : public SignalStrategy::Listener {
   Listener* listener_;
   std::string host_id_;
   SignalStrategy* signal_strategy_;
-  HostKeyPair* key_pair_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   std::string directory_bot_jid_;
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;

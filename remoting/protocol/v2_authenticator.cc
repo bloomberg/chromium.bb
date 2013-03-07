@@ -6,8 +6,8 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "crypto/rsa_private_key.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/ssl_hmac_channel_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -45,13 +45,13 @@ scoped_ptr<Authenticator> V2Authenticator::CreateForClient(
 // static
 scoped_ptr<Authenticator> V2Authenticator::CreateForHost(
     const std::string& local_cert,
-    const crypto::RSAPrivateKey& local_private_key,
+    scoped_refptr<RsaKeyPair> key_pair,
     const std::string& shared_secret,
     Authenticator::State initial_state) {
   scoped_ptr<V2Authenticator> result(new V2Authenticator(
       P224EncryptedKeyExchange::kPeerTypeServer, shared_secret, initial_state));
   result->local_cert_ = local_cert;
-  result->local_private_key_.reset(local_private_key.Copy());
+  result->local_key_pair_ = key_pair;
   return scoped_ptr<Authenticator>(result.Pass());
 }
 
@@ -193,7 +193,7 @@ V2Authenticator::CreateChannelAuthenticator() const {
   if (is_host_side()) {
     return scoped_ptr<ChannelAuthenticator>(
         SslHmacChannelAuthenticator::CreateForHost(
-            local_cert_, local_private_key_.get(), auth_key_).Pass());
+            local_cert_, local_key_pair_, auth_key_).Pass());
   } else {
     return scoped_ptr<ChannelAuthenticator>(
         SslHmacChannelAuthenticator::CreateForClient(
@@ -202,7 +202,7 @@ V2Authenticator::CreateChannelAuthenticator() const {
 }
 
 bool V2Authenticator::is_host_side() const {
-  return local_private_key_.get() != NULL;
+  return local_key_pair_.get() != NULL;
 }
 
 }  // namespace protocol

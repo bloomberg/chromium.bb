@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/jingle_glue/signal_strategy.h"
-#include "remoting/host/host_key_pair.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class MessageLoop;
@@ -49,7 +49,7 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   // TODO(sergeyu): This class should have timeout for the bot
   // response.
   RegisterSupportHostRequest(SignalStrategy* signal_strategy,
-                             HostKeyPair* key_pair,
+                             scoped_refptr<RsaKeyPair> key_pair,
                              const std::string& directory_bot_jid,
                              const RegisterCallback& callback);
   virtual ~RegisterSupportHostRequest();
@@ -75,7 +75,7 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
       bool success, const std::string& support_id, base::TimeDelta lifetime);
 
   SignalStrategy* signal_strategy_;
-  HostKeyPair* key_pair_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   std::string directory_bot_jid_;
   RegisterCallback callback_;
 

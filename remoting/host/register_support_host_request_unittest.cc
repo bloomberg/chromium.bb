@@ -10,9 +10,9 @@
 #include "base/observer_list.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/host_key_pair.h"
+#include "remoting/base/rsa_key_pair.h"
+#include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
-#include "remoting/host/test_key_pair.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,7 +58,8 @@ class RegisterSupportHostRequestTest : public testing::Test {
  public:
  protected:
   virtual void SetUp() {
-    ASSERT_TRUE(key_pair_.LoadFromString(kTestHostKeyPair));
+    key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
+    ASSERT_TRUE(key_pair_);
 
     EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
         .WillRepeatedly(AddListener(&signal_strategy_listeners_));
@@ -71,7 +72,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
   MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
-  HostKeyPair key_pair_;
+  scoped_refptr<RsaKeyPair> key_pair_;
   MockCallback callback_;
 };
 
@@ -80,7 +81,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
   scoped_ptr<RegisterSupportHostRequest> request(
-      new RegisterSupportHostRequest(&signal_strategy_, &key_pair_,
+      new RegisterSupportHostRequest(&signal_strategy_, key_pair_,
                                      kTestBotJid,
                                      base::Bind(&MockCallback::OnResponse,
                                                 base::Unretained(&callback_))));
@@ -118,10 +119,11 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   EXPECT_LE(start_time, time);
   EXPECT_GE(now, time);
 
-  HostKeyPair key_pair;
-  key_pair.LoadFromString(kTestHostKeyPair);
+  scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
+  ASSERT_TRUE(key_pair);
+
   std::string expected_signature =
-      key_pair.GetSignature(std::string(kTestJid) + ' ' + time_str);
+      key_pair->SignMessage(std::string(kTestJid) + ' ' + time_str);
   EXPECT_EQ(expected_signature, signature->BodyText());
 
   // Generate response and verify that callback is called.

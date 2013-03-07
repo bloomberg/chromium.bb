@@ -36,7 +36,7 @@ const char kSupportIdLifetimeTag[] = "support-id-lifetime";
 
 RegisterSupportHostRequest::RegisterSupportHostRequest(
     SignalStrategy* signal_strategy,
-    HostKeyPair* key_pair,
+    scoped_refptr<RsaKeyPair> key_pair,
     const std::string& directory_bot_jid,
     const RegisterCallback& callback)
     : signal_strategy_(signal_strategy),
@@ -98,7 +98,7 @@ scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
   std::string message = jid + ' ' + time_str;
-  std::string signature(key_pair_->GetSignature(message));
+  std::string signature(key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 
   return signature_tag.Pass();

@@ -16,6 +16,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
+#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/auth_util.h"
 
 namespace remoting {
@@ -35,19 +36,18 @@ SslHmacChannelAuthenticator::CreateForClient(
 scoped_ptr<SslHmacChannelAuthenticator>
 SslHmacChannelAuthenticator::CreateForHost(
     const std::string& local_cert,
-    crypto::RSAPrivateKey* local_private_key,
+    scoped_refptr<RsaKeyPair> key_pair,
     const std::string& auth_key) {
   scoped_ptr<SslHmacChannelAuthenticator> result(
       new SslHmacChannelAuthenticator(auth_key));
   result->local_cert_ = local_cert;
-  result->local_private_key_ = local_private_key;
+  result->local_key_pair_ = key_pair;
   return result.Pass();
 }
 
 SslHmacChannelAuthenticator::SslHmacChannelAuthenticator(
     const std::string& auth_key)
-    : auth_key_(auth_key),
-      local_private_key_(NULL) {
+    : auth_key_(auth_key) {
 }
 
 SslHmacChannelAuthenticator::~SslHmacChannelAuthenticator() {
@@ -73,7 +73,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
     net::SSLConfig ssl_config;
     net::SSLServerSocket* server_socket = net::CreateSSLServerSocket(
-        socket.release(), cert, local_private_key_, ssl_config);
+        socket.release(), cert, local_key_pair_->private_key(), ssl_config);
     socket_.reset(server_socket);
 
     result = server_socket->Handshake(base::Bind(
@@ -113,7 +113,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 }
 
 bool SslHmacChannelAuthenticator::is_ssl_server() {
-  return local_private_key_ != NULL;
+  return local_key_pair_.get() != NULL;
 }
 
 void SslHmacChannelAuthenticator::OnConnected(int result) {
