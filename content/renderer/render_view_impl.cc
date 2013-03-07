@@ -3039,9 +3039,9 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       !url.SchemeIs(chrome::kAboutScheme)) {
     bool send_referrer = false;
 
-    // All navigations to WebUI URLs or within WebUI-enabled RenderProcesses
-    // must be handled by the browser process so that the correct bindings and
-    // data sources can be registered.
+    // All navigations to or from WebUI URLs or within WebUI-enabled
+    // RenderProcesses must be handled by the browser process so that the
+    // correct bindings and data sources can be registered.
     // Similarly, navigations to view-source URLs or within ViewSource mode
     // must be handled by the browser process (except for reloads - those are
     // safe to leave within the renderer).
@@ -3050,7 +3050,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     // blessed with file permissions.
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool is_initial_navigation = page_id_ == -1;
-    bool should_fork = HasWebUIScheme(url) ||
+    bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
         (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
         (frame->isViewSourceModeEnabled() &&

@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/child_process_data.h"
@@ -502,6 +503,25 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
 // Tests that console messages are not duplicated on navigation back.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
+}
+
+
+// Tests that external navigation from inspector page is always handled by
+// DevToolsWindow and results in inspected page navigation.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
+  OpenDevToolsWindow(kDebuggerTestPage);
+  GURL url = test_server()->GetURL(kNavigateBackTestPage);
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(content::ExecuteScript(
+      window_->web_contents(),
+      std::string("window.location = \"") + url.spec() + "\""));
+  observer.Wait();
+
+  ASSERT_TRUE(window_->web_contents()->GetURL().
+                  SchemeIs(chrome::kChromeDevToolsScheme));
+  ASSERT_EQ(GetInspectedTab()->GetURL(), url);
 }
 
 // Tests that inspector will reattach to inspected page when it is reloaded
