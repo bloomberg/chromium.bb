@@ -416,7 +416,7 @@ void WebKitTestController::DiscardMainWindow() {
 void WebKitTestController::SendTestConfiguration() {
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
-  ShellViewMsg_SetTestConfiguration_Params params;
+  ShellTestConfiguration params;
   params.current_working_directory = current_working_directory_;
   params.temp_path = temp_path_;
   params.test_url = test_url_;

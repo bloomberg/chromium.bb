@@ -122,6 +122,8 @@
         'shell/shell_resource_dispatcher_host_delegate.h',
         'shell/shell_switches.cc',
         'shell/shell_switches.h',
+        'shell/shell_test_configuration.cc',
+        'shell/shell_test_configuration.h',
         'shell/shell_url_request_context_getter.cc',
         'shell/shell_url_request_context_getter.h',
         'shell/shell_web_contents_view_delegate_android.cc',

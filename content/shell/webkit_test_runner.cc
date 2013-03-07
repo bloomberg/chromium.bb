@@ -81,8 +81,6 @@ namespace content {
 
 namespace {
 
-int kDefaultLayoutTestTimeoutMs = 30 * 1000;
-
 void InvokeTaskHelper(void* context) {
   WebTask* task = reinterpret_cast<WebTask*>(context);
   task->run();
@@ -162,9 +160,6 @@ WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
       RenderViewObserverTracker<WebKitTestRunner>(render_view),
       proxy_(NULL),
       focused_view_(NULL),
-      enable_pixel_dumping_(true),
-      layout_test_timeout_(kDefaultLayoutTestTimeoutMs),
-      allow_external_pages_(false),
       is_main_window_(false) {
 }
 
@@ -431,7 +426,7 @@ bool WebKitTestRunner::isBeingDebugged() {
 }
 
 int WebKitTestRunner::layoutTestTimeout() {
-  return layout_test_timeout_;
+  return test_config_.layout_test_timeout;
 }
 
 void WebKitTestRunner::closeRemainingWindows() {
@@ -457,7 +452,7 @@ void WebKitTestRunner::loadURLForFrame(const WebURL& url,
 }
 
 bool WebKitTestRunner::allowExternalPages() {
-  return allow_external_pages_;
+  return test_config_.allow_external_pages;
 }
 
 void WebKitTestRunner::captureHistoryForWindow(
@@ -514,10 +509,6 @@ void WebKitTestRunner::Reset() {
   // The proxy_ is always non-NULL, it is set right after construction.
   proxy_->reset();
   prefs_.reset();
-  enable_pixel_dumping_ = true;
-  layout_test_timeout_ = kDefaultLayoutTestTimeoutMs;
-  allow_external_pages_ = false;
-  expected_pixel_hash_ = std::string();
   routing_ids_.clear();
   session_histories_.clear();
   current_entry_indexes_.clear();
@@ -544,7 +535,7 @@ void WebKitTestRunner::CaptureDump() {
   Send(
       new ShellViewHostMsg_TextDump(routing_id(), proxy()->captureTree(false)));
 
-  if (enable_pixel_dumping_ &&
+  if (test_config_.enable_pixel_dumping &&
       interfaces->testRunner()->shouldGeneratePixelResults()) {
     SkBitmap snapshot;
     CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
@@ -570,7 +561,7 @@ void WebKitTestRunner::CaptureDump() {
 #endif
     std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
 
-    if (actual_pixel_hash == expected_pixel_hash_) {
+    if (actual_pixel_hash == test_config_.expected_pixel_hash) {
       SkBitmap empty_image;
       Send(new ShellViewHostMsg_ImageDump(
           routing_id(), actual_pixel_hash, empty_image));
@@ -584,13 +575,8 @@ void WebKitTestRunner::CaptureDump() {
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(
-    const ShellViewMsg_SetTestConfiguration_Params& params) {
-  current_working_directory_ = params.current_working_directory;
-  temp_path_ = params.temp_path;
-  enable_pixel_dumping_ = params.enable_pixel_dumping;
-  layout_test_timeout_ = params.layout_test_timeout;
-  allow_external_pages_ = params.allow_external_pages;
-  expected_pixel_hash_ = params.expected_pixel_hash;
+    const ShellTestConfiguration& params) {
+  test_config_ = params;
   is_main_window_ = true;
 
   setFocus(proxy_, true);
@@ -598,7 +584,8 @@ void WebKitTestRunner::OnSetTestConfiguration(
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(true);
-  interfaces->configureForTestWithURL(params.test_url, enable_pixel_dumping_);
+  interfaces->configureForTestWithURL(params.test_url,
+                                      params.enable_pixel_dumping);
 }
 
 void WebKitTestRunner::OnSessionHistory(
