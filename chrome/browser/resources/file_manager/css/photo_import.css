@@ -182,27 +182,33 @@ button.import {
 
 /* Importing dialog styles */
 .importing-dialog .cr-dialog-frame {
-  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  padding: 10px 10px;
+  padding: 14px;
 }
 
 .importing-dialog .cr-dialog-frame .progress-container {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  padding: 0 0 32px 10px;
-}
-
-.importing-dialog .cr-dialog-text {
-  margin: 15px 0;
 }
 
 .importing-dialog .img-container {
+  display: -webkit-box;
   height: 120px;
   overflow: hidden;
   width: 120px;
+}
+
+.importing-dialog .content {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  -webkit-margin-before: 14px;
+  -webkit-margin-start: 15px;
+  display: -webkit-box;
+}
+
+.importing-dialog .cr-dialog-title {
+  display: none;
 }
 
 .importing-dialog .img-container[state=success]::after {
@@ -228,17 +234,4 @@ button.import {
   position: absolute;
   top: 0;
   width: 120px;
-}
-
-.importing-dialog button {
-  bottom: 10px;
-  font-size: 90%;
-  min-height: 26px;
-  min-width: 87px;
-  position: absolute;
-  right: 10px;
-}
-
-.importing-dialog .progress-bar {
-  -webkit-box-flex: 1;
 }

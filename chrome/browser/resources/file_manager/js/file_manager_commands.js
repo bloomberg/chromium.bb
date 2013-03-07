@@ -174,11 +174,15 @@ Commands.formatCommand = {
 Commands.importCommand = {
   execute: function(event, rootsList) {
     var root = CommandUtil.getCommandRoot(event, rootsList);
+    if (!root)
+      return;
 
-    if (root) {
-      chrome.windows.create({url: chrome.extension.getURL('photo_import.html') +
-          '#' + PathUtil.getRootPath(root.fullPath), type: 'popup'});
-    }
+    chrome.windows.getCurrent(undefined, function(window) {
+      chrome.windows.create(
+          { url: chrome.extension.getURL('photo_import.html') +
+                 '?' + window.id + '#' + PathUtil.getRootPath(root.fullPath),
+            type: 'popup' });
+    }.bind(this));
   },
   canExecute: function(event, rootsList) {
     event.canExecute =

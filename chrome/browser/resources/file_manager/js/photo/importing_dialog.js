@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * ImportingDialog manages the import process (which is really a copying).
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
  * @param {FileCopyManager} copyManager Copy manager isntance.
  * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {number=} opt_parentWindowId Id of the parent window.
  * @constructor
  */
-function ImportingDialog(parentNode, copyManager, metadataCache) {
+function ImportingDialog(
+    parentNode, copyManager, metadataCache, opt_parentWindowId) {
   cr.ui.dialogs.BaseDialog.call(this, parentNode);
+  this.parentWindowId_ = opt_parentWindowId;
   this.copyManager_ = copyManager;
   this.metadataCache_ = metadataCache;
   this.onCopyProgressBound_ = this.onCopyProgress_.bind(this);
@@ -29,39 +31,53 @@ ImportingDialog.prototype.initDom_ = function() {
   cr.ui.dialogs.BaseDialog.prototype.initDom_.call(this);
 
   this.container_.classList.add('importing-dialog');
-  this.frame_.textContent = '';
+
+  this.content_ = util.createChild(this.frame_, 'content');
+  this.frame_.insertBefore(this.content_, this.frame_.firstChild);
+  this.content_.appendChild(this.text_);
 
   this.imageBox_ = util.createChild(this.frame_, 'img-container');
   this.imageBox_.setAttribute('state', 'progress');
+  this.frame_.insertBefore(this.imageBox_, this.frame_.firstChild);
 
-  var progressContainer = util.createChild(this.frame_, 'progress-container');
-  progressContainer.appendChild(this.text_);
-
+  var progressContainer = util.createChild(this.content_, 'progress-container');
   this.progress_ = util.createChild(progressContainer, 'progress-bar');
   util.createChild(this.progress_, 'progress-track smoothed');
 
+  this.buttons_ = this.frame_.querySelector('.cr-dialog-buttons');
+  this.content_.appendChild(this.buttons_);
+
+  this.viewButton_ = util.createChild(
+      this.buttons_, 'cr-dialog-view', 'button');
+  this.viewButton_.addEventListener('click',
+                                    this.onViewClick_.bind(this));
+  this.buttons_.insertBefore(this.viewButton_, this.buttons_.firstChild);
+
+  this.viewButton_.textContent =
+      loadTimeData.getString('VIEW_LABEL');
+  this.viewButton_.hidden = true;
   this.cancelButton_.textContent =
       loadTimeData.getString('PHOTO_IMPORT_CANCEL_BUTTON');
-  this.frame_.appendChild(this.cancelButton_);
-
   this.okButton_.textContent =
       loadTimeData.getString('OK_LABEL');
+  this.okButton_.hidden = true;
 };
 
 /**
  * Shows dialog.
  * @param {Array.<FileEntry>} entries Entries to import.
- * @param {DirectoryEntry} dir Directory to import to.
+ * @param {DirectoryEntry} destination Directory to import to.
  * @param {boolean} move Whether to move files instead of copying them.
  */
-ImportingDialog.prototype.show = function(entries, dir, move) {
+ImportingDialog.prototype.show = function(entries, destination, move) {
   var message = loadTimeData.getString('PHOTO_IMPORT_IMPORTING');
   cr.ui.dialogs.BaseDialog.prototype.show.call(this, message, null, null, null);
 
   this.error_ = false;
   this.entries_ = entries;
-  this.progress_.querySelector('.progress-track').style.width = '0';
+  this.destination_ = destination;
 
+  this.progress_.querySelector('.progress-track').style.width = '0';
   this.copyManager_.addEventListener('copy-progress',
       this.onCopyProgressBound_);
 
@@ -70,12 +86,13 @@ ImportingDialog.prototype.show = function(entries, dir, move) {
   var files = entries.map(function(e) { return e.fullPath }).join('\n');
   var operationInfo = {
     isCut: move ? 'true' : 'false',
-    isOnGData: PathUtil.getRootType(entries[0].fullPath) == RootType.GDATA,
+    isOnDrive: PathUtil.getRootType(entries[0].fullPath) == RootType.DRIVE,
     sourceDir: null,
     directories: '',
     files: files
   };
-  this.copyManager_.paste(operationInfo, dir.fullPath, true);
+  this.copyManager_.paste(operationInfo, destination.fullPath, true);
+
 };
 
 /**
@@ -124,6 +141,23 @@ ImportingDialog.prototype.onOkClick_ = function() {
 };
 
 /**
+ * View button click event handler. Invokes the mosaic view.
+ * @private
+ */
+ImportingDialog.prototype.onViewClick_ = function() {
+  var url = util.platform.getURL('main.html') +
+      '?{%22gallery%22:%22mosaic%22}#' + this.destination_.fullPath;
+  if (!this.parentWindowId_ ||
+      !util.redirectMainWindow(this.parentWindowId_, url)) {
+    // The parent window hasn't been found. Launch the url as a new window.
+    // TODO(mtomasz): Change it to chrome.fileBrowserPrivate.openNewWindow.
+    util.platform.createWindow(url);
+  }
+  this.hide();
+  window.close();
+};
+
+/**
  * Event handler for keydown event.
  * @param {Event} event The event.
  * @private
@@ -157,8 +191,9 @@ ImportingDialog.prototype.onCopyProgress_ = function(event) {
       this.text_.textContent =
           loadTimeData.getString('PHOTO_IMPORT_IMPORT_COMPLETE');
       this.imageBox_.setAttribute('state', 'success');
-      this.frame_.removeChild(this.cancelButton_);
-      this.frame_.appendChild(this.okButton_);
+      this.cancelButton_.hidden = true;
+      this.viewButton_.hidden = false;
+      this.okButton_.hidden = false;
       break;
 
     case 'CANCELLED':
@@ -170,8 +205,9 @@ ImportingDialog.prototype.onCopyProgress_ = function(event) {
       this.text_.textContent =
           loadTimeData.getString('PHOTO_IMPORT_IMPORTING_ERROR');
       this.imageBox_.setAttribute('state', 'error');
-      this.frame_.removeChild(this.cancelButton_);
-      this.frame_.appendChild(this.okButton_);
+      this.cancelButton_.hidden = true;
+      this.viewButton_.hidden = true;
+      this.okButton_.hidden = false;
       break;
 
     default:

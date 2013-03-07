@@ -23,6 +23,7 @@ function PhotoImport(dom, filesystem, params) {
   this.mediaFilesList_ = null;
   this.destination_ = null;
   this.myPhotosDirectory_ = null;
+  this.parentWindowId_ = params.parentWindowId;
 
   this.initDom_();
   this.initMyPhotos_();
@@ -51,8 +52,10 @@ PhotoImport.load = function(opt_filesystem, opt_params) {
   ImageUtil.metrics = metrics;
 
   var hash = location.hash ? location.hash.substr(1) : '';
+  var query = location.search ? location.search.substr(1) : '';
   var params = opt_params || {};
   if (!params.source) params.source = hash;
+  if (!params.parentWindowId && query) params.parentWindowId = query;
   if (!params.metadataCache) params.metadataCache = MetadataCache.createFull();
 
   function onFilesystem(filesystem) {
@@ -111,7 +114,7 @@ PhotoImport.prototype.initDom_ = function() {
   this.onSelectionChanged_();
 
   this.importingDialog_ = new ImportingDialog(this.dom_, this.copyManager_,
-      this.metadataCache_);
+      this.metadataCache_, this.parentWindowId_);
 
   var dialogs = cr.ui.dialogs;
   dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
