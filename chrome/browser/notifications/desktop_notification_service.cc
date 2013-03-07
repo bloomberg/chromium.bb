@@ -283,7 +283,7 @@ std::string DesktopNotificationService::AddIconNotification(
     const GURL& origin_url,
     const string16& title,
     const string16& message,
-    const gfx::ImageSkia& icon,
+    const gfx::Image& icon,
     const string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
@@ -296,8 +296,8 @@ std::string DesktopNotificationService::AddIconNotification(
   return notification.notification_id();
 #else
   GURL icon_url;
-  if (!icon.isNull())
-    icon_url = GURL(webui::GetBitmapDataUrl(*icon.bitmap()));
+  if (!icon.IsEmpty())
+    icon_url = GURL(webui::GetBitmapDataUrl(*icon.ToSkBitmap()));
   return AddNotification(
       origin_url, title, message, icon_url, replace_id, delegate, profile);
 #endif

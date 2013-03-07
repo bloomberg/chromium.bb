@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
@@ -108,16 +108,16 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   // Returns true if the notification exists and was updated.
   bool SetNotificationIcon(const std::string& notification_id,
-                           const gfx::ImageSkia& image);
+                           const gfx::Image& image);
 
   // Returns true if the notification exists and was updated.
   bool SetNotificationImage(const std::string& notification_id,
-                            const gfx::ImageSkia& image);
+                            const gfx::Image& image);
 
   // Returns true if the notification and button exist and were updated.
   bool SetNotificationButtonIcon(const std::string& notification_id,
                                  int button_index,
-                                 const gfx::ImageSkia& image);
+                                 const gfx::Image& image);
 
   bool HasNotification(const std::string& id);
 

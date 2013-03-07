@@ -348,7 +348,7 @@ views::View* NotificationView::MakeContentView(
   views::ImageView* icon = new views::ImageView();
   icon->SetImageSize(gfx::Size(message_center::kNotificationIconSize,
                                message_center::kNotificationIconSize));
-  icon->SetImage(notification.primary_icon());
+  icon->SetImage(notification.primary_icon().AsImageSkia());
   icon->SetHorizontalAlignment(views::ImageView::LEADING);
   icon->SetVerticalAlignment(views::ImageView::LEADING);
   icon->set_border(MakePadding(0, 0, 0, kIconToTextPadding));
@@ -377,11 +377,11 @@ views::View* NotificationView::MakeContentView(
   }
 
   // Add an image row if appropriate.
-  if (!notification.image().isNull()) {
+  if (!notification.image().IsEmpty()) {
     layout->StartRow(0, 0);
     views::ImageView* image = new ProportionalImageView();
-    image->SetImageSize(notification.image().size());
-    image->SetImage(notification.image());
+    image->SetImageSize(notification.image().ToImageSkia()->size());
+    image->SetImage(notification.image().ToImageSkia());
     image->SetHorizontalAlignment(views::ImageView::CENTER);
     image->SetVerticalAlignment(views::ImageView::LEADING);
     layout->AddView(image, 2, 1);
@@ -397,7 +397,7 @@ views::View* NotificationView::MakeContentView(
     NotificationButton* button = new NotificationButton(this);
     ButtonInfo button_info = notification.buttons()[i];
     button->SetTitle(button_info.title);
-    button->SetIcon(button_info.icon);
+    button->SetIcon(button_info.icon.AsImageSkia());
     action_buttons_.push_back(button);
     layout->StartRow(0, 0);
     layout->AddView(button, 2, 1,

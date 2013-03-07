@@ -11,7 +11,7 @@
 #include "chrome/browser/notifications/balloon.h"
 
 namespace gfx {
-class ImageSkia;
+class Image;
 }
 
 // On Ash, a "BalloonView" is just a wrapper for ash notification entries.
@@ -29,12 +29,12 @@ class BalloonViewAsh : public BalloonView {
   virtual BalloonHost* GetHost() const OVERRIDE;
 
   void SetNotificationIcon(const std::string& notification_id,
-                           const gfx::ImageSkia& image);
+                           const gfx::Image& image);
   void SetNotificationImage(const std::string& notification_id,
-                            const gfx::ImageSkia& image);
+                            const gfx::Image& image);
   void SetNotificationButtonIcon(const std::string& notification_id,
                                  int button_index,
-                                 const gfx::ImageSkia& image);
+                                 const gfx::Image& image);
 
  private:
   class ImageDownload;

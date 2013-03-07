@@ -153,7 +153,7 @@ void NotificationList::SendRemoveNotificationsByExtension(
 }
 
 bool NotificationList::SetNotificationIcon(const std::string& notification_id,
-                                           const gfx::ImageSkia& image) {
+                                           const gfx::Image& image) {
   Notifications::iterator iter = GetNotification(notification_id);
   if (iter == notifications_.end())
     return false;
@@ -162,7 +162,7 @@ bool NotificationList::SetNotificationIcon(const std::string& notification_id,
 }
 
 bool NotificationList::SetNotificationImage(const std::string& notification_id,
-                                            const gfx::ImageSkia& image) {
+                                            const gfx::Image& image) {
   Notifications::iterator iter = GetNotification(notification_id);
   if (iter == notifications_.end())
     return false;
@@ -172,7 +172,7 @@ bool NotificationList::SetNotificationImage(const std::string& notification_id,
 
 bool NotificationList::SetNotificationButtonIcon(
     const std::string& notification_id, int button_index,
-    const gfx::ImageSkia& image) {
+    const gfx::Image& image) {
   Notifications::iterator iter = GetNotification(notification_id);
   if (iter == notifications_.end())
     return false;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/history/history_types.h"
 #include "ui/message_center/notifier_settings_view_delegate.h"

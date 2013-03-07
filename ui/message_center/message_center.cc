@@ -106,20 +106,20 @@ void MessageCenter::RemoveNotification(const std::string& id) {
 }
 
 void MessageCenter::SetNotificationIcon(const std::string& notification_id,
-                                        const gfx::ImageSkia& image) {
+                                        const gfx::Image& image) {
   if (notification_list_->SetNotificationIcon(notification_id, image))
     NotifyMessageCenterChanged(true);
 }
 
 void MessageCenter::SetNotificationImage(const std::string& notification_id,
-                                         const gfx::ImageSkia& image) {
+                                         const gfx::Image& image) {
   if (notification_list_->SetNotificationImage(notification_id, image))
     NotifyMessageCenterChanged(true);
 }
 
 void MessageCenter::SetNotificationButtonIcon(
     const std::string& notification_id, int button_index,
-    const gfx::ImageSkia& image) {
+    const gfx::Image& image) {
   if (notification_list_->SetNotificationButtonIcon(notification_id,
                                                     button_index, image))
     NotifyMessageCenterChanged(true);

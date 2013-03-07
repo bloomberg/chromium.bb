@@ -279,12 +279,12 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
 
 void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
     const Notification& notification,
-    const gfx::ImageSkia* image,
+    const gfx::Image* image,
     const GURL& url,
     int size,
     const SetImageCallback& callback) {
   // Set the image directly if we have it.
-  if (image && !image->isNull()) {
+  if (image && !image->IsEmpty()) {
     callback.Run(*image);
     return;
   }
@@ -336,7 +336,7 @@ void MessageCenterNotificationManager::ImageDownloads::DownloadComplete(
     const std::vector<SkBitmap>& bitmaps) {
   if (bitmaps.empty())
     return;
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmaps[0]);
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmaps[0]);
   callback.Run(image);
 }
 

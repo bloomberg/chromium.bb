@@ -71,7 +71,7 @@ Notification::Notification(message_center::NotificationType type,
 }
 
 Notification::Notification(const GURL& origin_url,
-                           const gfx::ImageSkia& icon,
+                           const gfx::Image& icon,
                            const string16& title,
                            const string16& body,
                            WebKit::WebTextDirection dir,

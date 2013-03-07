@@ -175,8 +175,8 @@ class FileBrowserNotifications::NotificationMessage {
                       const std::string& notification_id,
                       const string16& message)
       : message_(message) {
-    const gfx::ImageSkia& icon =
-        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+    const gfx::Image& icon =
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             GetIconId(type));
     // TODO(mukai): refactor here to invoke NotificationUIManager directly.
     const string16 replace_id = UTF8ToUTF16(notification_id);

@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification_types.h"
 
@@ -26,7 +26,7 @@ struct MESSAGE_CENTER_EXPORT NotificationItem {
 
 struct MESSAGE_CENTER_EXPORT ButtonInfo {
   string16 title;
-  gfx::ImageSkia icon;
+  gfx::Image icon;
 
   ButtonInfo(const string16& title);
 };
@@ -57,15 +57,15 @@ class MESSAGE_CENTER_EXPORT Notification {
   // End unpacked values.
 
   // Images fetched asynchronously.
-  const gfx::ImageSkia& primary_icon() const { return primary_icon_; }
-  void set_primary_icon(const gfx::ImageSkia& icon) { primary_icon_ = icon; }
+  const gfx::Image& primary_icon() const { return primary_icon_; }
+  void set_primary_icon(const gfx::Image& icon) { primary_icon_ = icon; }
 
-  const gfx::ImageSkia& image() const { return image_; }
-  void set_image(const gfx::ImageSkia& image) { image_ = image; }
+  const gfx::Image& image() const { return image_; }
+  void set_image(const gfx::Image& image) { image_ = image; }
 
   // Buttons, with icons fetched asynchronously.
   const std::vector<ButtonInfo>& buttons() const { return buttons_; }
-  bool SetButtonIcon(size_t index, const gfx::ImageSkia& icon);
+  bool SetButtonIcon(size_t index, const gfx::Image& icon);
 
   // Status in MessageCenter.
   bool is_read() const { return is_read_; }
@@ -96,8 +96,8 @@ class MESSAGE_CENTER_EXPORT Notification {
   unsigned serial_number_;
   string16 expanded_message_;
   std::vector<NotificationItem> items_;
-  gfx::ImageSkia primary_icon_;
-  gfx::ImageSkia image_;
+  gfx::Image primary_icon_;
+  gfx::Image image_;
   std::vector<ButtonInfo> buttons_;
   bool is_read_;  // True if this has been seen in the message center.
   bool shown_as_popup_;  // True if this has been shown as a popup notification.

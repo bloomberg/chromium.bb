@@ -154,7 +154,7 @@ void MessageCenterSettingsController::OnFaviconLoaded(
     const history::FaviconImageResult& favicon_result) {
   if (!settings_view_)
     return;
-  settings_view_->UpdateFavicon(url, favicon_result.image.AsImageSkia());
+  settings_view_->UpdateFavicon(url, favicon_result.image);
 }
 
 

@@ -35,7 +35,7 @@ struct ShowDesktopNotificationHostMsgParams;
 }
 
 namespace gfx {
-class ImageSkia;
+class Image;
 }
 
 // The DesktopNotificationService is an object, owned by the Profile,
@@ -115,11 +115,11 @@ class DesktopNotificationService : public content::NotificationObserver,
                                      NotificationDelegate* delegate,
                                      Profile* profile);
 
-  // Same as above, but takes a gfx::ImageSkia for the icon instead.
+  // Same as above, but takes a gfx::Image for the icon instead.
   static std::string AddIconNotification(const GURL& origin_url,
                                          const string16& title,
                                          const string16& message,
-                                         const gfx::ImageSkia& icon,
+                                         const gfx::Image& icon,
                                          const string16& replace_id,
                                          NotificationDelegate* delegate,
                                          Profile* profile);

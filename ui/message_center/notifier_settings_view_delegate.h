@@ -9,7 +9,7 @@
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
@@ -47,7 +47,7 @@ struct MESSAGE_CENTER_EXPORT Notifier {
   NotifierType type;
 
   // The icon image of the notifier. The extension icon or favicon.
-  gfx::ImageSkia icon;
+  gfx::Image icon;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Notifier);

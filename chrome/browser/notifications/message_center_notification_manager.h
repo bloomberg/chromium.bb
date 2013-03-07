@@ -55,7 +55,7 @@ class MessageCenterNotificationManager
                                int button_index) OVERRIDE;
 
  private:
-  typedef base::Callback<void(const gfx::ImageSkia&)> SetImageCallback;
+  typedef base::Callback<void(const gfx::Image&)> SetImageCallback;
   class ImageDownloads
       : public base::SupportsWeakPtr<ImageDownloads> {
    public:
@@ -64,7 +64,7 @@ class MessageCenterNotificationManager
 
     void StartDownloads(const Notification& notification);
     void StartDownloadWithImage(const Notification& notification,
-                                const gfx::ImageSkia* image,
+                                const gfx::Image* image,
                                 const GURL& url,
                                 int size,
                                 const SetImageCallback& callback);

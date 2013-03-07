@@ -7,6 +7,7 @@
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notifier_settings_view_delegate.h"
@@ -51,9 +52,9 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     AddChildView(new views::Label(notifier_->name));
   }
 
-  void UpdateIconImage(const gfx::ImageSkia& icon) {
+  void UpdateIconImage(const gfx::Image& icon) {
     notifier_->icon = icon;
-    if (icon.isNull()) {
+    if (icon.IsEmpty()) {
       delete icon_view_;
       icon_view_ = NULL;
     } else {
@@ -61,7 +62,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
         icon_view_ = new views::ImageView();
         AddChildViewAt(icon_view_, 1);
       }
-      icon_view_->SetImage(icon);
+      icon_view_->SetImage(icon.ToImageSkia());
       icon_view_->SetImageSize(gfx::Size(kSettingsIconSize, kSettingsIconSize));
     }
     Layout();
@@ -120,14 +121,14 @@ void NotifierSettingsView::UpdateIconImage(const std::string& id,
   for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
        iter != buttons_.end(); ++iter) {
     if ((*iter)->notifier().id == id) {
-      (*iter)->UpdateIconImage(icon);
+      (*iter)->UpdateIconImage(gfx::Image(icon));
       return;
     }
   }
 }
 
 void NotifierSettingsView::UpdateFavicon(const GURL& url,
-                                         const gfx::ImageSkia& icon) {
+                                         const gfx::Image& icon) {
   for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
        iter != buttons_.end(); ++iter) {
     if ((*iter)->notifier().url == url) {

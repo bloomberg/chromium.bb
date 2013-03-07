@@ -133,14 +133,14 @@ class MESSAGE_CENTER_EXPORT MessageCenter : public NotificationList::Delegate {
   void RemoveNotification(const std::string& id);
 
   void SetNotificationIcon(const std::string& notification_id,
-                           const gfx::ImageSkia& image);
+                           const gfx::Image& image);
 
   void SetNotificationImage(const std::string& notification_id,
-                            const gfx::ImageSkia& image);
+                            const gfx::Image& image);
 
   void SetNotificationButtonIcon(const std::string& notification_id,
                                  int button_index,
-                                 const gfx::ImageSkia& image);
+                                 const gfx::Image& image);
 
   NotificationList* notification_list() { return notification_list_.get(); }
   bool quiet_mode() const { return notification_list_->quiet_mode(); }

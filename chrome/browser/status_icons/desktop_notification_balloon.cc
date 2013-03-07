@@ -82,6 +82,6 @@ void DesktopNotificationBalloon::DisplayBalloon(const gfx::ImageSkia& icon,
     profile = ProfileManager::GetLastUsedProfile();
   }
   notification_id_ = DesktopNotificationService::AddIconNotification(
-      GURL(), title, contents, icon, string16(),
+      GURL(), title, contents, gfx::Image(icon), string16(),
       new DummyNotificationDelegate(base::IntToString(id_count_++)), profile);
 }

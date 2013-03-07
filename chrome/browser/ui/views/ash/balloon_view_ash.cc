@@ -20,7 +20,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/gfx/image/image_skia.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification_types.h"
@@ -28,7 +29,7 @@
 
 namespace {
 
-typedef base::Callback<void(const gfx::ImageSkia&)> SetImageCallback;
+typedef base::Callback<void(const gfx::Image&)> SetImageCallback;
 
 const int kPrimaryIconImageSize = 64;
 const int kSecondaryIconImageSize = 15;
@@ -103,7 +104,7 @@ void BalloonViewAsh::ImageDownload::Downloaded(
     const std::vector<SkBitmap>& bitmaps) {
   if (bitmaps.empty())
     return;
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmaps[0]);
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmaps[0]);
   callback_.Run(image);
 }
 
@@ -161,19 +162,19 @@ BalloonHost* BalloonViewAsh::GetHost() const {
 }
 
 void BalloonViewAsh::SetNotificationIcon(const std::string& notification_id,
-                                         const gfx::ImageSkia& image) {
+                                         const gfx::Image& image) {
   GetMessageCenter()->SetNotificationIcon(notification_id, image);
 }
 
 void BalloonViewAsh::SetNotificationImage(const std::string& notification_id,
-                                          const gfx::ImageSkia& image) {
+                                          const gfx::Image& image) {
   GetMessageCenter()->SetNotificationImage(notification_id, image);
 }
 
 void BalloonViewAsh::SetNotificationButtonIcon(
     const std::string& notification_id,
     int button_index,
-    const gfx::ImageSkia& image) {
+    const gfx::Image& image) {
   GetMessageCenter()->SetNotificationButtonIcon(notification_id, button_index,
                                                 image);
 }
@@ -183,7 +184,7 @@ void BalloonViewAsh::DownloadImages(const Notification& notification) {
   downloads_.clear();
 
   // Set the notification's primary icon, or start a download for it.
-  if (!notification.icon().isNull()) {
+  if (!notification.icon().IsEmpty()) {
     SetNotificationIcon(notification_id_, notification.icon());
   } else if (!notification.icon_url().is_empty()) {
       downloads_.push_back(linked_ptr<ImageDownload>(new ImageDownload(

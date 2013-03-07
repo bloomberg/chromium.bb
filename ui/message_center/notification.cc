@@ -48,7 +48,7 @@ Notification::Notification(NotificationType type,
 Notification::~Notification() {
 }
 
-bool Notification::SetButtonIcon(size_t index, const gfx::ImageSkia& icon) {
+bool Notification::SetButtonIcon(size_t index, const gfx::Image& icon) {
   if (index >= buttons_.size())
     return false;
   buttons_[index].icon = icon;

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center_export.h"
@@ -32,7 +33,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
                                       gfx::NativeView context);
 
   void UpdateIconImage(const std::string& id, const gfx::ImageSkia& icon);
-  void UpdateFavicon(const GURL& url, const gfx::ImageSkia& icon);
+  void UpdateFavicon(const GURL& url, const gfx::Image& icon);
 
   void set_delegate(NotifierSettingsViewDelegate* new_delegate) {
     delegate_ = new_delegate;
