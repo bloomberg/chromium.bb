@@ -23,9 +23,20 @@ cr.define('options', function() {
   cr.addSingletonGetter(ManagedUserSetPassphraseOverlay);
 
   /** Closes the page and resets the passphrase fields */
-  var closePage = function() {
-    $('managed-user-passphrase').value = '';
-    $('passphrase-confirm').value = '';
+  var closePage = function(container) {
+    // Reseting the fields directly would lead to a flicker, so listen to
+    // webkitTransitionEnd to clear them after that. Similar to how it is done
+    // in setOverlayVisible_ in options_page.js.
+    container.addEventListener('webkitTransitionEnd', function f(e) {
+      if (e.target != e.currentTarget || e.propertyName != 'opacity')
+        return;
+      container.removeEventListener('webkitTransitionEnd', f);
+
+      // Reset the fields.
+      $('managed-user-passphrase').value = '';
+      $('passphrase-confirm').value = '';
+      $('passphrase-mismatch').hidden = true;
+    });
     OptionsPage.closeOverlay();
   };
 
@@ -38,7 +49,7 @@ cr.define('options', function() {
       $('managed-user-passphrase').oninput = this.updateDisplay_;
       $('passphrase-confirm').oninput = this.updateDisplay_;
 
-      $('save-passphrase').onclick = this.setPassphrase_;
+      $('save-passphrase').onclick = this.setPassphrase_.bind(this);
 
       $('managed-user-passphrase').onkeypress = function(event) {
         // Check if the user pressed enter and advance to the
@@ -59,7 +70,9 @@ cr.define('options', function() {
           self.setPassphrase_(event);
       };
 
-      $('cancel-passphrase').onclick = closePage;
+      $('cancel-passphrase').onclick = function(event) {
+        closePage(self.container);
+      };
     },
 
     /** Updates the display according to the validity of the user input. */
@@ -79,7 +92,7 @@ cr.define('options', function() {
      */
     setPassphrase_: function(event) {
       chrome.send('setPassphrase', [$('managed-user-passphrase').value]);
-      closePage();
+      closePage(this.container);
     },
 
     /** @override */
@@ -91,6 +104,13 @@ cr.define('options', function() {
     /** @override */
     didShowPage: function() {
       $('managed-user-passphrase').focus();
+    },
+
+    /**
+     * Make sure that we reset the fields on cancel.
+     */
+    handleCancel: function() {
+      closePage(this.container);
     }
   };
 
