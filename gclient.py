@@ -1476,6 +1476,10 @@ def CMDsync(parser, args):
                          'has multiple solutions configured and will work even '
                          'if the src@ part is skipped. Note that specifying '
                          '--revision means your safesync_url gets ignored.')
+  parser.add_option('--with_branch_heads', action='store_true',
+                    help='Clone git "branch_heads" refspecs in addition to '
+                         'the default refspecs. This adds about 1/2GB to a '
+                         'full checkout. (git only)')
   parser.add_option('-t', '--transitive', action='store_true',
                     help='When a revision is specified (in the DEPS file or '
                           'with the command-line flag), transitively update '
