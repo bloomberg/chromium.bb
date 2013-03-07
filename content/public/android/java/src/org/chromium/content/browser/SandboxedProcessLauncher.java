@@ -218,7 +218,8 @@ public class SandboxedProcessLauncher {
         } else if (commandLineList.contains("--type=gpu-process")) {
             callbackType = CALLBACK_FOR_GPU_PROCESS;
         }
-        assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
+        // TODO(sievers): Revisit this as it doesn't correctly handle the utility process
+        // assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
 
         connection.setupConnection(
                 commandLine, filesToBeMapped, createCallback(callbackType), onConnect);
