@@ -216,6 +216,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/common/android/device_telephony_info.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/android/address_detector.h"
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
@@ -2719,14 +2720,19 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
 #endif
 
 #if defined(OS_ANDROID)
-  WebGraphicsContext3D* resource_context =
-      GetWebView()->sharedGraphicsContext3D();
-
   GpuChannelHost* gpu_channel_host =
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
   if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel for media player";
+    return NULL;
+  }
+
+  scoped_refptr<cc::ContextProvider> context_provider =
+      RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
+  if (!context_provider->InitializeOnMainThread() ||
+      !context_provider->BindToCurrentThread()) {
+    LOG(ERROR) << "Failed to get context3d for media player";
     return NULL;
   }
 
@@ -2742,7 +2748,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         media_player_manager_.get(),
         media_bridge_manager_.get(),
         new StreamTextureFactoryImpl(
-            resource_context, gpu_channel_host, routing_id_),
+            context_provider->Context3d(), gpu_channel_host, routing_id_),
         cmd_line->HasSwitch(switches::kDisableMediaHistoryLogging));
   }
   if (!media_player_proxy_) {
@@ -2755,7 +2761,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       media_player_manager_.get(),
       media_player_proxy_,
       new StreamTextureFactoryImpl(
-          resource_context, gpu_channel_host, routing_id_));
+          context_provider->Context3d(), gpu_channel_host, routing_id_));
 #endif
 
   scoped_refptr<media::AudioRendererSink> sink;

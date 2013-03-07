@@ -72,6 +72,7 @@ class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
 class CompositorThread;
+class ContextProviderCommandBuffer;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
@@ -273,8 +274,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Handle loss of the shared GpuVDAContext3D context above.
   static void OnGpuVDAContextLoss();
 
-  scoped_refptr<cc::ContextProvider> OffscreenContextProviderForMainThread();
-  scoped_refptr<cc::ContextProvider>
+  scoped_refptr<ContextProviderCommandBuffer>
+      OffscreenContextProviderForMainThread();
+  scoped_refptr<ContextProviderCommandBuffer>
       OffscreenContextProviderForCompositorThread();
 
   // AudioRendererMixerManager instance which manages renderer side mixer

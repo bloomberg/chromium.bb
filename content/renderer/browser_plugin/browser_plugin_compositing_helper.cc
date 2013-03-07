@@ -8,6 +8,7 @@
 #include "cc/solid_color_layer.h"
 #include "cc/texture_layer.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/khronos/GLES2/gl2.h"

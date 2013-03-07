@@ -53,6 +53,7 @@ struct WebCompositionUnderline;
 }
 
 namespace content {
+class ContextProviderCommandBuffer;
 class GamepadSharedMemoryReader;
 class PepperBrokerImpl;
 class PepperDeviceEnumerationEventHandler;
@@ -430,6 +431,8 @@ class PepperPluginDelegateImpl
 
   scoped_ptr<PepperDeviceEnumerationEventHandler>
       device_enumeration_event_handler_;
+
+  scoped_refptr<ContextProviderCommandBuffer> offscreen_context3d_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

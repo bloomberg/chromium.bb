@@ -924,7 +924,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
 }
 
 class RenderThreadImpl::RendererContextProviderCommandBuffer
-    : public content::ContextProviderCommandBuffer {
+    : public ContextProviderCommandBuffer {
  protected:
   virtual ~RendererContextProviderCommandBuffer() {}
 
@@ -936,7 +936,7 @@ class RenderThreadImpl::RendererContextProviderCommandBuffer
   }
 };
 
-scoped_refptr<cc::ContextProvider>
+scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForMainThread() {
   if (!shared_contexts_main_thread_ ||
       shared_contexts_main_thread_->DestroyedOnMainThread())
@@ -944,7 +944,7 @@ RenderThreadImpl::OffscreenContextProviderForMainThread() {
   return shared_contexts_main_thread_;
 }
 
-scoped_refptr<cc::ContextProvider>
+scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
   if (!shared_contexts_compositor_thread_ ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {

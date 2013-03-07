@@ -23,6 +23,7 @@
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/file_system_messages.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -1574,15 +1575,17 @@ int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
 
 WebGraphicsContext3DCommandBufferImpl*
 PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
-  WebGraphicsContext3DCommandBufferImpl* context =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          render_view_->webview()->sharedGraphicsContext3D());
-  if (!context)
-    return NULL;
-  if (!context->makeContextCurrent() || context->isContextLost())
-    return NULL;
+  if (!offscreen_context3d_ || offscreen_context3d_->DestroyedOnMainThread()) {
+    offscreen_context3d_ =
+        RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
 
-  return context;
+    if (!offscreen_context3d_->InitializeOnMainThread() ||
+        !offscreen_context3d_->BindToCurrentThread()) {
+      offscreen_context3d_ = NULL;
+      return NULL;
+    }
+  }
+  return offscreen_context3d_->Context3d();
 }
 
 MouseLockDispatcher::LockTarget*
