@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -46,9 +45,8 @@
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
-#include "media/audio/audio_parameters.h"
+#include "media/audio/audio_util.h"
 #include "media/base/media_log_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
@@ -778,22 +776,17 @@ void RenderMessageFilter::OnGetCPUUsage(int* cpu_usage) {
   *cpu_usage = cpu_usage_;
 }
 
-// TODO(xians): refactor the API to return input and output AudioParameters.
 void RenderMessageFilter::OnGetAudioHardwareConfig(
     int* output_buffer_size, int* output_sample_rate, int* input_sample_rate,
     media::ChannelLayout* input_channel_layout) {
-  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
-  const media::AudioParameters output_parameters =
-      audio_manager->GetDefaultOutputStreamParameters();
-  *output_buffer_size = output_parameters.frames_per_buffer();
-  *output_sample_rate = output_parameters.sample_rate();
+  *output_buffer_size = media::GetAudioHardwareBufferSize();
+  *output_sample_rate = media::GetAudioHardwareSampleRate();
 
   // TODO(henrika): add support for all available input devices.
-  const media::AudioParameters input_parameters =
-      audio_manager->GetInputStreamParameters(
-          media::AudioManagerBase::kDefaultDeviceId);
-  *input_sample_rate = input_parameters.sample_rate();
-  *input_channel_layout = input_parameters.channel_layout();
+  *input_sample_rate = media::GetAudioInputHardwareSampleRate(
+      media::AudioManagerBase::kDefaultDeviceId);
+  *input_channel_layout = media::GetAudioInputHardwareChannelLayout(
+      media::AudioManagerBase::kDefaultDeviceId);
 }
 
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {

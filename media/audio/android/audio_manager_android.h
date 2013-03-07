@@ -19,8 +19,6 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;
-  virtual AudioParameters GetInputStreamParameters(
-      const std::string& device_id) OVERRIDE;
 
   // Implementation of AudioManagerBase.
   virtual AudioOutputStream* MakeLinearOutputStream(
@@ -31,12 +29,11 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
+  virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
+      const AudioParameters& input_params) OVERRIDE;
 
  protected:
   virtual ~AudioManagerAndroid();
-
-  virtual AudioParameters GetPreferredOutputStreamParameters(
-      const AudioParameters& input_params) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioManagerAndroid);

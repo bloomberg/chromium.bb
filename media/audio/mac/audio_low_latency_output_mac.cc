@@ -81,10 +81,7 @@ AUAudioOutputStream::AUAudioOutputStream(
   // Calculate the number of sample frames per callback.
   number_of_frames_ = params.GetBytesPerBuffer() / format_.mBytesPerPacket;
   DVLOG(1) << "Number of frames per callback: " << number_of_frames_;
-  const AudioParameters parameters =
-      manager_->GetDefaultOutputStreamParameters();
-  CHECK_EQ(number_of_frames_,
-           static_cast<size_t>(parameters.frames_per_buffer()));
+  CHECK_EQ(number_of_frames_, GetAudioHardwareBufferSize());
 }
 
 AUAudioOutputStream::~AUAudioOutputStream() {
@@ -170,8 +167,7 @@ bool AUAudioOutputStream::Configure() {
   // Set the buffer frame size.
   // WARNING: Setting this value changes the frame size for all audio units in
   // the current process.  It's imperative that the input and output frame sizes
-  // be the same as the frames_per_buffer() returned by
-  // GetDefaultOutputStreamParameters.
+  // be the same as audio_util::GetAudioHardwareBufferSize().
   // See http://crbug.com/154352 for details.
   UInt32 buffer_size = number_of_frames_;
   result = AudioUnitSetProperty(

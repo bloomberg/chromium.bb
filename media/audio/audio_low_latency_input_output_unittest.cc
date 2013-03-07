@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/audio_util.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -285,10 +286,14 @@ class AudioInputStreamTraits {
  public:
   typedef AudioInputStream StreamType;
 
-  static AudioParameters GetDefaultAudioStreamParameters(
-      AudioManager* audio_manager) {
-    return audio_manager->GetInputStreamParameters(
-        AudioManagerBase::kDefaultDeviceId);
+  static int HardwareSampleRate() {
+    return static_cast<int>(media::GetAudioInputHardwareSampleRate(
+        AudioManagerBase::kDefaultDeviceId));
+  }
+
+  // TODO(henrika): add support for GetAudioInputHardwareBufferSize in media.
+  static int HardwareBufferSize() {
+    return static_cast<int>(media::GetAudioHardwareBufferSize());
   }
 
   static StreamType* CreateStream(AudioManager* audio_manager,
@@ -302,9 +307,12 @@ class AudioOutputStreamTraits {
  public:
   typedef AudioOutputStream StreamType;
 
-  static AudioParameters GetDefaultAudioStreamParameters(
-      AudioManager* audio_manager) {
-    return audio_manager->GetDefaultOutputStreamParameters();
+  static int HardwareSampleRate() {
+    return static_cast<int>(media::GetAudioHardwareSampleRate());
+  }
+
+  static int HardwareBufferSize() {
+    return static_cast<int>(media::GetAudioHardwareBufferSize());
   }
 
   static StreamType* CreateStream(AudioManager* audio_manager,
@@ -331,13 +339,11 @@ class StreamWrapper {
 #endif
         bits_per_sample_(16) {
     // Use the preferred sample rate.
-    const AudioParameters& params =
-        StreamTraits::GetDefaultAudioStreamParameters(audio_manager_);
-    sample_rate_ = params.sample_rate();
+    sample_rate_ = StreamTraits::HardwareSampleRate();
 
     // Use the preferred buffer size. Note that the input side uses the same
     // size as the output side in this implementation.
-    samples_per_packet_ = params.frames_per_buffer();
+    samples_per_packet_ = StreamTraits::HardwareBufferSize();
   }
 
   virtual ~StreamWrapper() {}
