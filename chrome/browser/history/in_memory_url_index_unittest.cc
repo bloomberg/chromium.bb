@@ -495,9 +495,6 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
 }
 
 TEST_F(InMemoryURLIndexTest, CursorPositionRetrieval) {
-  base::AutoReset<bool> use_cursor_position(
-      &GetPrivateData()->use_cursor_position_, true);
-
   // See if a very specific term with no cursor gives an empty result.
   ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudReport"), string16::npos);

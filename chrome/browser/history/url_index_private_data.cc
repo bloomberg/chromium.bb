@@ -70,11 +70,7 @@ bool LengthGreater(const string16& string_a, const string16& string_b) {
 // Public Functions ------------------------------------------------------------
 
 URLIndexPrivateData::URLIndexPrivateData()
-    : use_cursor_position_(
-          AutocompleteFieldTrial::InHQPUseCursorPositionFieldTrial() &&
-          AutocompleteFieldTrial::
-              InHQPUseCursorPositionFieldTrialExperimentGroup()),
-      restored_cache_version_(0),
+    : restored_cache_version_(0),
       saved_cache_version_(kCurrentCacheFileVersion),
       pre_filter_item_count_(0),
       post_filter_item_count_(0),
@@ -86,12 +82,10 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     const std::string& languages,
     BookmarkService* bookmark_service) {
-  // If we're allowed to use the cursor position, then if cursor
-  // position is set and useful (not at either end of the string),
-  // allow the search string to be broken at cursor position.  We do
-  // this by pretending there's a space where the cursor is.
-  // TODO(figure out highlighting).
-  if (use_cursor_position_ && (cursor_position != string16::npos) &&
+  // If cursor position is set and useful (not at either end of the
+  // string), allow the search string to be broken at cursor position.
+  // We do this by pretending there's a space where the cursor is.
+  if ((cursor_position != string16::npos) &&
       (cursor_position < search_string.length()) &&
       (cursor_position > 0)) {
     search_string.insert(cursor_position, ASCIIToUTF16(" "));

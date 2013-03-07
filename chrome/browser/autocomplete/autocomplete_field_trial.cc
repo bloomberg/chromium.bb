@@ -31,8 +31,6 @@ static const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 static const char kHQPReplaceHUPScoringFieldTrialName[] =
     "OmniboxHQPReplaceHUPHostFix";
-static const char kHQPUseCursorPositionFieldTrialName[] =
-    "OmniboxHQPUseCursorPosition";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -87,13 +85,6 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability
     kHQPReplaceHUPScoringFieldTrialExperimentFraction = 25;
 
-// For the field trial that allows HistoryQuick provider to use the
-// cursor position, put 25% ( = 25/100 ) of the users in the experiment group.
-const base::FieldTrial::Probability
-    kHQPUseCursorPositionFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kHQPUseCursorPositionFieldTrialExperimentFraction = 25;
-
 
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
@@ -121,9 +112,6 @@ int hup_dont_create_shorter_match_experiment_group = 0;
 // experiment group.
 int hqp_replace_hup_scoring_experiment_group = 0;
 
-// Field trial ID for the HistoryQuick provider use cursor position
-// experiment group.
-int hqp_use_cursor_position_experiment_group = 0;
 
 // Concatenates the autocomplete dynamic field trial prefix with a field trial
 // ID to form a complete autocomplete field trial name.
@@ -227,17 +215,6 @@ void AutocompleteFieldTrial::ActivateStaticTrials() {
   trial->UseOneTimeRandomization();
   hqp_replace_hup_scoring_experiment_group = trial->AppendGroup("HQPReplaceHUP",
       kHQPReplaceHUPScoringFieldTrialExperimentFraction);
-
-  // Create the field trial that allows HistoryQuick provider to break
-  // omnibox inputs at the cursor position.  Make it expire on August 23, 2013.
-  trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kHQPUseCursorPositionFieldTrialName,
-      kHQPUseCursorPositionFieldTrialDivisor,
-      "Standard", 2013, 8, 23, NULL);
-  trial->UseOneTimeRandomization();
-  hqp_use_cursor_position_experiment_group =
-      trial->AppendGroup("HQPUseCursorPosition",
-          kHQPUseCursorPositionFieldTrialExperimentFraction);
 
   static_field_trials_initialized = true;
 }
@@ -356,19 +333,4 @@ bool AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kHQPReplaceHUPScoringFieldTrialName);
   return group == hqp_replace_hup_scoring_experiment_group;
-}
-
-bool AutocompleteFieldTrial::InHQPUseCursorPositionFieldTrial() {
-  return base::FieldTrialList::TrialExists(kHQPUseCursorPositionFieldTrialName);
-}
-
-bool AutocompleteFieldTrial::
-    InHQPUseCursorPositionFieldTrialExperimentGroup() {
-  if (!InHQPUseCursorPositionFieldTrial())
-    return false;
-
-  // Return true if we're in the experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kHQPUseCursorPositionFieldTrialName);
-  return group == hqp_use_cursor_position_experiment_group;
 }

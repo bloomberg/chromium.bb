@@ -107,17 +107,6 @@ class AutocompleteFieldTrial {
   // is larger.
   static bool InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 
-  // ---------------------------------------------------------
-  // For the HistoryQuick provider use cursor position field trial.
-
-  // Returns whether the user is in any group for this field trial.
-  // (Should always be true unless initialization went wrong.)
-  static bool InHQPUseCursorPositionFieldTrial();
-
-  // Returns whether HistoryQuick provider should allow breaking the
-  // omnibox input string at cursor position.
-  static bool InHQPUseCursorPositionFieldTrialExperimentGroup();
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);
 };

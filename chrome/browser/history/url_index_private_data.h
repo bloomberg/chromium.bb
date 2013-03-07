@@ -128,7 +128,6 @@ class URLIndexPrivateData
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CursorPositionRetrieval);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
@@ -301,11 +300,6 @@ class URLIndexPrivateData
 
   // Cache of search terms.
   SearchTermCacheMap search_term_cache_;
-
-  // Whether to allow breaking the input at the cursor position.  Set based
-  // on whether the user is in the OmniboxHQPUseCursorPosition field trial
-  // experiment group.
-  bool use_cursor_position_;
 
   // Start of data members that are cached -------------------------------------
 
