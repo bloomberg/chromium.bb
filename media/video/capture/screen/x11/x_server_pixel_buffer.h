@@ -4,8 +4,8 @@
 
 // Don't include this file in any .h files because it pulls in some X headers.
 
-#ifndef MEDIA_VIDEO_CAPTURE_SCREEN_LINUX_X_SERVER_PIXEL_BUFFER_H_
-#define MEDIA_VIDEO_CAPTURE_SCREEN_LINUX_X_SERVER_PIXEL_BUFFER_H_
+#ifndef MEDIA_VIDEO_CAPTURE_SCREEN_X11_X_SERVER_PIXEL_BUFFER_H_
+#define MEDIA_VIDEO_CAPTURE_SCREEN_X11_X_SERVER_PIXEL_BUFFER_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -75,4 +75,4 @@ class XServerPixelBuffer {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_SCREEN_LINUX_X_SERVER_PIXEL_BUFFER_H_
+#endif  // MEDIA_VIDEO_CAPTURE_SCREEN_X11_X_SERVER_PIXEL_BUFFER_H_

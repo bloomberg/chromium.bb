@@ -346,8 +346,8 @@
         'video/capture/screen/differ.h',
         'video/capture/screen/differ_block.cc',
         'video/capture/screen/differ_block.h',
-        'video/capture/screen/linux/x_server_pixel_buffer.cc',
-        'video/capture/screen/linux/x_server_pixel_buffer.h',
+        'video/capture/screen/x11/x_server_pixel_buffer.cc',
+        'video/capture/screen/x11/x_server_pixel_buffer.h',
         'video/capture/screen/mac/desktop_configuration.mm',
         'video/capture/screen/mac/desktop_configuration.h',
         'video/capture/screen/mac/scoped_pixel_buffer_object.cc',
@@ -367,8 +367,9 @@
         'video/capture/screen/screen_capturer_fake.h',
         'video/capture/screen/screen_capturer_helper.cc',
         'video/capture/screen/screen_capturer_helper.h',
-        'video/capture/screen/screen_capturer_linux.cc',
+        'video/capture/screen/screen_capturer_x11.cc',
         'video/capture/screen/screen_capturer_mac.mm',
+        'video/capture/screen/screen_capturer_null.cc',
         'video/capture/screen/screen_capturer_win.cc',
         'video/capture/screen/shared_buffer.cc',
         'video/capture/screen/shared_buffer.h',
@@ -428,6 +429,11 @@
           'defines': [
             'USE_NEON'
           ],
+        }],
+        ['OS != "linux" or use_x11 == 1', {
+          'sources!': [
+            'video/capture/screen/screen_capturer_null.cc',
+          ]
         }],
         ['OS != "ios"', {
           'dependencies': [

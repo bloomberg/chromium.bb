@@ -198,12 +198,22 @@
         'power/power_state_override.cc',
         'power/power_state_override.h',
       ],
-      'link_settings': {
-        'libraries': [
-          '-lXext',
-          '-lXrandr',
-        ],
-      },
+      'conditions': [
+        ['use_x11 == 1', {
+          'link_settings': {
+            'libraries': [
+              '-lXext',
+              '-lXrandr',
+            ],
+          },
+        }, {
+          # use_x11 == 0
+          'sources!': [
+            'display/output_configurator.cc',
+            'display/output_configurator.h',
+          ],
+        }],
+      ],
     },
     {
       # This target contains mocks that can be used to write unit tests.

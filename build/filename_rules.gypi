@@ -67,6 +67,7 @@
       'sources/': [
         ['exclude', '_(x|x11)(_unittest)?\\.(h|cc)$'],
         ['exclude', '(^|/)x11_[^/]*\\.(h|cc)$'],
+        ['exclude', '(^|/)x11/'],
       ],
     }],
     ['<(toolkit_uses_gtk)!=1 or >(nacl_untrusted_build)==1', {

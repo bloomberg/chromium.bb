@@ -4,10 +4,10 @@
 
 #include "media/video/capture/screen/screen_capturer.h"
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 #include <X11/extensions/Xdamage.h>
 #include <X11/extensions/Xfixes.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include <set>
 
@@ -17,12 +17,12 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "media/video/capture/screen/differ.h"
-#include "media/video/capture/screen/linux/x_server_pixel_buffer.h"
 #include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "media/video/capture/screen/screen_capture_data.h"
 #include "media/video/capture/screen/screen_capture_frame.h"
 #include "media/video/capture/screen/screen_capture_frame_queue.h"
 #include "media/video/capture/screen/screen_capturer_helper.h"
+#include "media/video/capture/screen/x11/x_server_pixel_buffer.h"
 
 namespace media {
 
