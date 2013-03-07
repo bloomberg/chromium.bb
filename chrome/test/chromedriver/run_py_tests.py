@@ -26,7 +26,18 @@ from common import chrome_paths
 from common import unittest_util
 
 
-class ChromeDriverTest(unittest.TestCase):
+class ChromeDriverBaseTest(unittest.TestCase):
+  """Base class for testing chromedriver functionalities."""
+
+  def setUp(self):
+    self._driver = None
+
+  def tearDown(self):
+    if self._driver:
+      self._driver.Quit()
+
+
+class ChromeDriverTest(ChromeDriverBaseTest):
   """End to end tests for ChromeDriver."""
 
   @staticmethod
@@ -47,9 +58,6 @@ class ChromeDriverTest(unittest.TestCase):
         _CHROMEDRIVER_LIB,
         chrome_binary=_CHROME_BINARY,
         android_package=_ANDROID_PACKAGE)
-
-  def tearDown(self):
-    self._driver.Quit()
 
   def testStartStop(self):
     pass
@@ -350,19 +358,11 @@ class ChromeDriverTest(unittest.TestCase):
                       self._driver.ExecuteScript('return window.confirmed'))
 
 
-class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
+class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.
 
   Makes sure the switches are passed to Chrome.
   """
-
-  def setUp(self):
-    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
-                                             chrome_binary=_CHROME_BINARY,
-                                             chrome_switches=['dom-automation'])
-
-  def tearDown(self):
-    self._driver.Quit()
 
   def testSwitchWithoutArgument(self):
     """Tests that switch --dom-automation can be passed to Chrome.
@@ -370,11 +370,14 @@ class ChromeSwitchesCapabilitiesTest(unittest.TestCase):
     Unless --dom-automation is specified, window.domAutomationController
     is undefined.
     """
+    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
+                                             chrome_binary=_CHROME_BINARY,
+                                             chrome_switches=['dom-automation'])
     result = self._driver.ExecuteScript('return window.domAutomationController')
     self.assertNotEqual(None, result)
 
 
-class ChromeExtensionsCapabilityTest(unittest.TestCase):
+class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.extensions."""
 
   def testExtensionsInstall(self):
@@ -384,10 +387,9 @@ class ChromeExtensionsCapabilityTest(unittest.TestCase):
     crx_1_encoded = base64.b64encode(open(crx_1).read())
     crx_2_encoded = base64.b64encode(open(crx_2).read())
     extensions = [crx_1_encoded, crx_2_encoded]
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
-                                       chrome_binary=_CHROME_BINARY,
-                                       chrome_extensions=extensions)
-    driver.Quit()
+    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
+                                             chrome_binary=_CHROME_BINARY,
+                                             chrome_extensions=extensions)
 
 
 if __name__ == '__main__':
