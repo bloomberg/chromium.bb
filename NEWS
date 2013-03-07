@@ -14,7 +14,6 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
       Poretsky.
 
 ** Braille Table Improvements
-
    - Most tables: removed the default collapse whitespace statements, if you need to compress 
      whitespace, consider adding compress.ctb to the list of tables when processing.
    - Corrections to Unified English Braille Code (Grade 2), thanks to
@@ -25,8 +24,11 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      in the Norwegian Grade 0 Braille Table. Thanks to Knut Arne
      Bjørndal.
    - Corrections to the Italian table thanks to Igor B. Poretsky.
+   - Further reorganization of the tables to remove
+     duplication. Move litdigit opcode common parts and include where needed.
 
 ** Bug Fixes
+   - Fixed nocross opcode processing.
 
 * Noteworthy changes in release 2.5.2 (2012-12-18)
 
