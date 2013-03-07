@@ -55,6 +55,7 @@ ShellRenderProcessObserver::ShellRenderProcessObserver()
   DisableAppCacheLogging();
   EnableDevToolsFrontendTesting();
   EnableShortCircuitSizeUpdates();
+  DoNotSendFocusEvents();
 }
 
 ShellRenderProcessObserver::~ShellRenderProcessObserver() {
