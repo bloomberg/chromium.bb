@@ -79,7 +79,7 @@ HostContentSettingsMap::HostContentSettingsMap(
     PrefService* prefs,
     bool incognito) :
 #ifndef NDEBUG
-      used_content_settings_providers_(false),
+      used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
       is_off_the_record_(incognito) {
@@ -108,10 +108,6 @@ HostContentSettingsMap::HostContentSettingsMap(
 void HostContentSettingsMap::RegisterExtensionService(
     ExtensionService* extension_service) {
   DCHECK(extension_service);
-  // http://crbug.com/176315
-  // #ifndef NDEBUG
-  //   DCHECK(!used_content_settings_providers_);
-  // #endif
   DCHECK(!content_settings_providers_[INTERNAL_EXTENSION_PROVIDER]);
   DCHECK(!content_settings_providers_[CUSTOM_EXTENSION_PROVIDER]);
 
@@ -128,6 +124,11 @@ void HostContentSettingsMap::RegisterExtensionService(
   custom_extension_provider->AddObserver(this);
   content_settings_providers_[CUSTOM_EXTENSION_PROVIDER] =
       custom_extension_provider;
+
+#ifndef NDEBUG
+  DCHECK(used_from_thread_id_ != base::kInvalidThreadId)
+      << "Used from multiple threads before initialization complete.";
+#endif
 
   OnContentSettingChanged(ContentSettingsPattern(),
                           ContentSettingsPattern(),
@@ -512,7 +513,11 @@ void HostContentSettingsMap::AddSettingsForOneType(
 
 void HostContentSettingsMap::UsedContentSettingsProviders() const {
 #ifndef NDEBUG
-  used_content_settings_providers_ = true;
+  if (used_from_thread_id_ == base::kInvalidThreadId)
+    return;
+
+  if (base::PlatformThread::CurrentId() != used_from_thread_id_)
+    used_from_thread_id_ = base::kInvalidThreadId;
 #endif
 }
 

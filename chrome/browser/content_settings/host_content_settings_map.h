@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
+#include "base/threading/platform_thread.h"
 #include "base/tuple.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/common/content_settings.h"
@@ -236,7 +237,13 @@ class HostContentSettingsMap
   void UsedContentSettingsProviders() const;
 
 #ifndef NDEBUG
-  mutable bool used_content_settings_providers_;
+  // This starts as the thread ID of the thread that constructs this
+  // object, and remains until used by a different thread, at which
+  // point it is set to base::kInvalidThreadId. This allows us to
+  // DCHECK on unsafe usage of content_settings_providers_ (they
+  // should be set up on a single thread, after which they are
+  // immutable).
+  mutable base::PlatformThreadId used_from_thread_id_;
 #endif
 
   // Weak; owned by the Profile.
