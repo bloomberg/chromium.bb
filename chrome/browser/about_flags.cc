@@ -714,11 +714,7 @@ const Experiment kExperiments[] = {
     "per-tile-painting",
     IDS_FLAGS_PER_TILE_PAINTING_NAME,
     IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION,
-#if defined(USE_SKIA)
     kOsMac | kOsLinux | kOsCrOS,
-#else
-    0,
-#endif
     SINGLE_VALUE_TYPE(cc::switches::kEnablePerTilePainting)
   },
   {
@@ -1169,11 +1165,7 @@ const Experiment kExperiments[] = {
     "enable-deferred-image-decoding",
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,
-#if defined(USE_SKIA)
     kOsMac | kOsLinux | kOsCrOS,
-#else
-    0,
-#endif
     SINGLE_VALUE_TYPE(switches::kEnableDeferredImageDecoding)
   },
   {
