@@ -106,6 +106,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   typedef std::map<int64, GURL> TransactionIDToURLMap;
   typedef std::map<int64, uint64> TransactionIDToSizeMap;
+  typedef std::map<int64, int64> TransactionIDToDatabaseIDMap;
 
   class DatabaseDispatcherHost {
    public:
@@ -161,6 +162,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     WebIDBObjectIDToURLMap database_url_map_;
     TransactionIDToSizeMap transaction_size_map_;
     TransactionIDToURLMap transaction_url_map_;
+    TransactionIDToDatabaseIDMap transaction_database_map_;
   };
 
   class CursorDispatcherHost {

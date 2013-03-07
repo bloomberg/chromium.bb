@@ -57,6 +57,11 @@ function unexpectedBlockedCallback()
   fail('unexpectedBlockedCallback');
 }
 
+function unexpectedUpgradeNeededCallback()
+{
+  fail('unexpectedUpgradeNeededCallback');
+}
+
 function deleteAllObjectStores(db)
 {
   objectStoreNames = db.objectStoreNames;
@@ -124,7 +129,7 @@ function shouldBeEqualToString(a, b)
 
 function indexedDBTest(upgradeCallback, optionalOpenCallback) {
   dbname = self.location.pathname.substring(
-      1 + self.location.pathname.lastIndexOf("/"));
+    1 + self.location.pathname.lastIndexOf("/"));
   var deleteRequest = indexedDB.deleteDatabase(dbname);
   deleteRequest.onerror = unexpectedErrorCallback;
   deleteRequest.onblocked = unexpectedBlockedCallback;
