@@ -491,6 +491,9 @@ void InstantController::HandleAutocompleteResults(
   std::vector<InstantAutocompleteResult> results;
   for (ACProviders::const_iterator provider = providers.begin();
        provider != providers.end(); ++provider) {
+    // Skip SearchProvider, since it only echoes suggestions.
+    if ((*provider)->type() == AutocompleteProvider::TYPE_SEARCH)
+      continue;
     for (ACMatches::const_iterator match = (*provider)->matches().begin();
          match != (*provider)->matches().end(); ++match) {
       InstantAutocompleteResult result;

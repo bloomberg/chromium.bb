@@ -165,8 +165,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   // Typing in the omnibox should show the overlay.
-  SetOmniboxTextAndWaitForOverlayToShow("santa");
-  EXPECT_TRUE(instant()->IsOverlayingSearchResults());
+  SetOmniboxTextAndWaitForOverlayToShow("http://www.example.com/");
 
   // Create an event listener that opens the top suggestion in a new tab.
   EXPECT_TRUE(ExecuteScript(
@@ -189,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   // Check that the new tab URL is as expected.
   content::WebContents* new_tab_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_EQ(new_tab_contents->GetURL().spec(), instant_url_.spec()+"q=santa");
+  EXPECT_EQ("http://www.example.com/", new_tab_contents->GetURL().spec());
 
   // Check that there are now two tabs.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
