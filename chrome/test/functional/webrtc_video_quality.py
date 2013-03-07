@@ -117,7 +117,9 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     done_capturing = self.WaitUntil(
         function=lambda: self.ExecuteJavascript('doneFrameCapturing()',
                                                 tab_index=1),
-        expect_retval='done-capturing', retry_sleep=1.0)
+        expect_retval='done-capturing', retry_sleep=1.0,
+        # TODO(phoglund): Temporary fix; remove after 2013-04-01
+        timeout=90)
 
     self.assertTrue(done_capturing,
                     msg='Timed out while waiting frames to be captured.')
