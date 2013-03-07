@@ -427,9 +427,17 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
   if (buffers.size() != gsc_output_buffer_map_.size()) {
-    DLOG(ERROR) << "AssignPictureBuffers(): invalid buffer_count";
+    DLOG(ERROR) << "AssignPictureBuffers(): invalid buffer count";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
+  }
+
+  for (size_t i = 0; i < buffers.size(); ++i) {
+    if (buffers[i].size() != frame_buffer_size_) {
+      DLOG(ERROR) << "AssignPictureBuffers(): invalid buffer size";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
   }
 
   if (!make_context_current_.Run()) {

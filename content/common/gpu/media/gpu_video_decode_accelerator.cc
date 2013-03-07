@@ -260,12 +260,22 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
-    GLsizei width, height;
-    info->GetLevelSize(texture_target_, 0, &width, &height);
-    if (width != sizes[i].width() || height != sizes[i].height()) {
-      DLOG(FATAL) << "Size mismatch for texture id " << texture_ids[i];
+    if (info->target() != texture_target_) {
+      DLOG(FATAL) << "Texture target mismatch for texture id "
+                  << texture_ids[i];
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
+    }
+    // GL_TEXTURE_EXTERNAL_OES textures have their dimensions defined by the
+    // underlying EGLImage.
+    if (texture_target_ != GL_TEXTURE_EXTERNAL_OES) {
+      GLsizei width = 0, height = 0;
+      info->GetLevelSize(texture_target_, 0, &width, &height);
+      if (width != sizes[i].width() || height != sizes[i].height()) {
+        DLOG(FATAL) << "Size mismatch for texture id " << texture_ids[i];
+        NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+        return;
+      }
     }
     if (!texture_manager->ClearRenderableLevels(command_decoder, info)) {
       DLOG(FATAL) << "Failed to Clear texture id " << texture_ids[i];
