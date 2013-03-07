@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 ################################################################################
-# This file describes instructions from AMD64 Architecture Programmer’s Manual
+# This file describes instructions from AMD64 Architecture Programmer's Manual
 #                               Volume 3: General-Purpose and System Instruction
 #                               Chapter 3: General-Purpose Instruction Reference
 ################################################################################
 # File format: see def_format.py
 ######## ADC ###################################################################
-# “adc” is not marked as nacl-amd64-zero-extends since borrows/carries should
+# "adc" is not marked as nacl-amd64-zero-extends since borrows/carries should
 # not be need when calculating an address.
 adc I a, 0x14
 adc I E, 0x80 /2, lock
@@ -33,64 +33,64 @@ andn Ey By Gy, 0xc4 RXB.02 W.src1.0.00 0xf2, CPUFeature_BMI1
 bextr By Ey Gy, 0xc4 RXB.02 W.cntl.0.00 0xf7, CPUFeature_BMI1
 bextr Id Ey Gy, 0x8f RXB.0A W.1111.0.00 0x10, CPUFeature_BMI1
 ######## BLCFILL ###############################################################
-# “blcfill” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blcfill" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blcfill Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /1, CPUFeature_TBM
 ######## BLCI ##################################################################
-# “blci” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blci" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blci Ey By, 0x8f RXB.09 W.dest.0.00 0x02 /6, CPUFeature_TBM
 ######## BLCIC #################################################################
-# “blcic” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blcic" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blcic Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /5, CPUFeature_TBM
 ######## BLCMSK ################################################################
-# “blcmsk” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blcmsk" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blcmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x02 /1, CPUFeature_TBM
 ######## BLCS ##################################################################
-# “blcs” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blcs" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blcs Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /3, CPUFeature_TBM
 ######## BLSFILL ###############################################################
-# “blsfill” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blsfill" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blsfill Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /2, CPUFeature_TBM
 ######## BLSI ##################################################################
-# “blsi” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blsi" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blsi Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /3, CPUFeature_BMI1
 ######## BLSIC #################################################################
-# “blsic” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blsic" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blsic Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /6, CPUFeature_TBM
 ######## BLSMSK ################################################################
-# “blsmsk” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "blsmsk" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blsmsk Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /2, CPUFeature_BMI1
-######## BLSSR #################################################################
-# “blsr” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+######## BLSR ##################################################################
+# "blsr" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 blsr Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /1, CPUFeature_BMI1
 ######## BSF ###################################################################
-# Textbook definition of “bsf” as per AMD/Intel manuals looks like this:
+# Textbook definition of "bsf" as per AMD/Intel manuals looks like this:
 #  bsf Ev Gv, 0x0f 0xbc
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “bsf” in ia32 mode.
-# Note that the former 32- and 64-bit validators treat “bsf” inconsistently:
+#  version of "bsf" in ia32 mode.
+# Note that the former 32- and 64-bit validators treat "bsf" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2972
 #
-# “bsf” is not marked as nacl-amd64-zero-extends because it does not always
+# "bsf" is not marked as nacl-amd64-zero-extends because it does not always
 # writes to it's second operand:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2010
 bsf Ew Gw, data16 0x0f 0xbc, norexw nacl-ia32-forbidden
@@ -98,14 +98,14 @@ bsf Ed Gd, 0x0f 0xbc, norexw
 bsf Eq Gq, rexw 0x0f 0xbc, amd64
 bsf Eq Gq, data16 rexw 0x0f 0xbc, amd64 nacl-forbidden
 ######## BSR ###################################################################
-# Textbook definition of “bsr” as per AMD/Intel manuals looks like this:
+# Textbook definition of "bsr" as per AMD/Intel manuals looks like this:
 #  bsr Ev Gv, 0x0f 0xbd
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “bsr” in ia32 mode.
-# Note that the former 32- and 64-bit validators treat “bsr” inconsistently:
+#  version of "bsr" in ia32 mode.
+# Note that the former 32- and 64-bit validators treat "bsr" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2973
 #
-# “bsr” is not marked as nacl-amd64-zero-extends because it does not always
+# "bsr" is not marked as nacl-amd64-zero-extends because it does not always
 # writes to it's second operand:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2010
 bsr Ew Gw, data16 0x0f 0xbd, norexw nacl-ia32-forbidden
@@ -113,30 +113,30 @@ bsr Ed Gd, 0x0f 0xbd, norexw
 bsr Eq Gq, rexw 0x0f 0xbd, amd64
 bsr Eq Gq, data16 rexw 0x0f 0xbd, amd64 nacl-forbidden
 ######## BSWAP #################################################################
-# “bswap” is not marked as nacl-amd64-zero-extends because we don't really think
+# "bswap" is not marked as nacl-amd64-zero-extends because we don't really think
 # that swapping the bottom bytes is a good thing to do to mask a memory
 # reference.
 bswap ry, 0x0f 0xc8
 ######## BT ####################################################################
-# “bt” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "bt" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 bt Gv =Ev, 0x0f 0xa3, nacl-forbidden
 bt Ib =Ev, 0x0f 0xba /4, nacl-ia32-forbidden
 ######## BTC ###################################################################
-# “btc” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "btc" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 btc Gv Ev, 0x0f 0xbb, lock nacl-forbidden
 btc Ib Ev, 0x0f 0xba /7, lock nacl-ia32-forbidden
 ######## BTR ###################################################################
-# “btr” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "btr" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 btr Gv Ev, 0x0f 0xb3, lock nacl-forbidden
 btr Ib Ev, 0x0f 0xba /6, lock nacl-ia32-forbidden
 ######## BTS ###################################################################
-# “bts” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "bts" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 bts Gv Ev, 0x0f 0xab, lock nacl-forbidden
@@ -146,7 +146,7 @@ call Jw, data16 0xe8, att-show-name-suffix-w nacl-forbidden
 call Jd, 0xe8, ia32
 call Jd, 0xe8, amd64 att-show-name-suffix-q nacl-amd64-modifiable
 call Jd, data16 rexw 0xe8, amd64 att-show-name-suffix-q nacl-forbidden
-# “call” does not require rex prefix and always uses 64bit addresses in x86-64
+# "call" does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
@@ -155,7 +155,7 @@ call Ed, 0xff /2, ia32 nacl-forbidden
 call Eq, 0xff /2, amd64 att-show-name-suffix-q nacl-forbidden
 call Eq, data16 rexw 0xff /2, amd64 att-show-name-suffix-q nacl-forbidden
 ######## CALL (Far) ############################################################
-# “lcall” does not require rex prefix and always uses 64bit addresses in x86-64
+# "lcall" does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
@@ -182,7 +182,7 @@ clflush Mb, 0x0f 0xae /7, CPUFeature_CLFLUSH
 ######## CMC ###################################################################
 cmc, 0xf5
 ######## CMOVCC ################################################################
-# “cmovcc” instructions are not marked as nacl-amd64-zero-extends out of caution.
+# "cmovcc" instructions are not marked as nacl-amd64-zero-extends out of caution.
 # AMD/Intel manual state that these instrucitons always zero extends 32 bit
 # register results to 64 bits, and that this occurs even if the condition is
 # false. However, we decided to be safe and omit these instructions anyway.
@@ -211,18 +211,18 @@ cmp E =G, 0x3a
 ######## CMPS/CMPSB/CMPSW/CMPSD/CMPSQ ##########################################
 cmps Y X, 0xa6, condrep nacl-amd64-forbidden
 ######## CMPXCHG ###############################################################
-# Textbook definition of “cmpxchg” as per AMD/Intel manuals looks like this:
+# Textbook definition of "cmpxchg" as per AMD/Intel manuals looks like this:
 #  cmpxchg G E, 0x0f 0xb0, lock
 # For consistency with the production validators:
-#  • treat both explicit arguments as read-write
-#  • drop support for the 16-bit version
-# Note1: “cmpxchg” indeed writes to two arguments, but these areguments are
+#  * treat both explicit arguments as read-write
+#  * drop support for the 16-bit version
+# Note1: "cmpxchg" indeed writes to two arguments, but these areguments are
 #  implicit %al/%ax/%eax/%rax and second explicit argument.  First explicit
 #  argument is read-only.
-# Note2: the former 32- and 64-bit validators treat “cmpxchg” inconsistently:
+# Note2: the former 32- and 64-bit validators treat "cmpxchg" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2974
 #
-# “cmpxchg” is not marked as nacl-amd64-zero-extends because it conditionally
+# "cmpxchg" is not marked as nacl-amd64-zero-extends because it conditionally
 # writes to different destinations.
 cmpxchg &Gb Eb, 0x0f 0xb0, lock
 cmpxchg &Gw Ew, data16 0x0f 0xb1, norexw lock nacl-ia32-forbidden
@@ -233,7 +233,7 @@ cmpxchg &Gq Eq, data16 rexw 0x0f 0xb1, amd64 lock nacl-forbidden
 cmpxchg8b Mq, 0x0f 0xc7 /1, norexw lock CPUFeature_CX8
 cmpxchg16b Mo, rexw 0x0f 0xc7 /1, amd64 lock CPUFeature_CX16
 ######## CPUID #################################################################
-# “cpuid” is not marked as nacl-amd64-zero-extends just because it shouldn't be.
+# "cpuid" is not marked as nacl-amd64-zero-extends just because it shouldn't be.
 cpuid, 0x0f 0xa2
 ######## CRC32 #################################################################
 crc32 E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
@@ -241,19 +241,19 @@ crc32 E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
 dec E, 0xfe /1, lock nacl-amd64-zero-extends
 dec rz, 0x48, ia32
 ######## DIV ###################################################################
-# “div” is not marked as nacl-amd64-zero-extends because we never allowed it.
+# "div" is not marked as nacl-amd64-zero-extends because we never allowed it.
 div =E, 0xf6 /6
 ######## ENTER #################################################################
 # Enter is safe in amd64 mode, but it's safety relies on minute details of
 # implementation which can be changed in the future thus we prefer to disable
 # it.  It's uncoditionally safe in ia32 mode as per the textbook definition in
 # AMD/Intel manual but it does complex manipulations and is very rarely used
-# (GCC, in particular, never use it).  As a rule we don't allow complex and
-# rarely used instructions such as “aaa” or “bound”.  Disable it for now.
+# (GCC, in particular, never uses it).  As a rule we don't allow complex and
+# rarely used instructions such as "aaa" or "bound".  Disable it for now.
 enter Iw =ib, 0xc8, ia32 nacl-forbidden
 enter Iw =ib, 0xc8, amd64 att-show-name-suffix-q nacl-forbidden
 ######## IDIV ##################################################################
-# “idiv” is not marked as nacl-amd64-zero-extends because we never allowed it.
+# "idiv" is not marked as nacl-amd64-zero-extends because we never allowed it.
 idiv =E, 0xf6 /7
 ######## IMUL ##################################################################
 imul =E, 0xf6 /5
@@ -261,7 +261,7 @@ imul Ev Gv, 0x0f 0xaf, nacl-amd64-zero-extends
 imul Ib Ev Gv, 0x6b, nacl-amd64-zero-extends
 imul Iz Ev Gv, 0x69, nacl-amd64-zero-extends
 ######## IN ####################################################################
-# “in” is not marked as nacl-amd64-zero-extends just because it shouldn't be.
+# "in" is not marked as nacl-amd64-zero-extends just because it shouldn't be.
 in Ib ab, 0xe4, nacl-forbidden
 in Ib az, 0xe5, nacl-forbidden
 in ob ab, 0xec, nacl-forbidden
@@ -335,7 +335,7 @@ jmp Jw, data16 0xe9, norexw att-show-name-suffix-w nacl-forbidden
 jmp Jd, 0xe9, ia32
 jmp Jd, 0xe9, amd64 att-show-name-suffix-q
 jmp Jd, data16 rexw 0xe9, amd64 att-show-name-suffix-q nacl-forbidden
-# “jmp” does not require rex prefix and always uses 64bit addresses in x86-64
+# "jmp" does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
@@ -344,7 +344,7 @@ jmp Ed, 0xff /4, ia32 nacl-forbidden
 jmp Eq, 0xff /4, amd64 att-show-name-suffix-q nacl-forbidden
 jmp Eq, data16 rexw 0xff /4, amd64 att-show-name-suffix-q nacl-forbidden
 ######## JMP (Far) #############################################################
-# “ljmp” does not require rex prefix and always uses 64bit addresses in x86-64
+# "ljmp" does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
@@ -357,20 +357,20 @@ ljmp Mp, data16 rexw 0xff /5, amd64 att-show-name-suffix-q nacl-forbidden
 lahf, 0x9f, ia32
 lahf, 0x9f, amd64 CPUFeature_LAHF nacl-forbidden
 ######## LDS/LES/LFS/LGS/LSS (AMD version) #####################################
-# AMD manual says “executing LFS, LGS, or LSS with a 64-bit operand size only
-# loads a 32-bit general purpose register and the specified segment register”.
+# AMD manual says "executing LFS, LGS, or LSS with a 64-bit operand size only
+# loads a 32-bit general purpose register and the specified segment register".
 # lds Mp Gz, 0xc5, ia32 nacl-forbidden
 # les Mp Gz, 0xc4, ia32 nacl-forbidden
 # lfs Mp Gz, 0x0f 0xb4, nacl-forbidden
 # lgs Mp Gz, 0x0f 0xb5, nacl-forbidden
 # lss Mp Gz, 0x0f 0xb2, nacl-forbidden
 ######## LDS/LES/LFS/LGS/LSS (Intel version) ###################################
-# Intel manual says: “Using a REX prefix in the form of REX.W promotes operation
+# Intel manual says: "Using a REX prefix in the form of REX.W promotes operation
 # to specify a source operand referencing an 80-bit pointer (16-bit selector,
-# 64-bit offset) in memory”.
+# 64-bit offset) in memory".
 lds Mp Gv, 0xc5 /m, ia32 nacl-forbidden
 les Mp Gv, 0xc4 /m, ia32 nacl-forbidden
-# “lfs”, “lgs”, and “lss” are not marked as nacl-amd64-zero-extends because
+# "lfs", "lgs", and "lss" are not marked as nacl-amd64-zero-extends because
 # segment addresses shouldn't be used.
 lfs Mp Gv, 0x0f 0xb4, nacl-forbidden
 lgs Mp Gv, 0x0f 0xb5, nacl-forbidden
@@ -385,26 +385,26 @@ lfence, 0x0f 0xae 0xe8, CPUFeature_SSE2
 ######## LLWPCB ################################################################
 llwpcb =Ry, 0x8f RXB.09 W.1111.0.00 0x12 /0, CPUFeature_LWP
 ######## LODS/LODSB/LODSW/LODSD/LODSQ ##########################################
-# Textbook definition of “lods[bwdq]” as per AMD/Intel manuals looks like this:
+# Textbook definition of "lods[bwdq]" as per AMD/Intel manuals looks like this:
 #  lods X a, 0xac, rep nacl-amd64-forbidden
-# For consistency with the production validators, drop support for the “lods” in
+# For consistency with the production validators, drop support for the "lods" in
 #  ia32 mode.
-# Note that the former 32- and 64-bit validators treat “lods” inconsistently:
+# Note that the former 32- and 64-bit validators treat "lods" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2975
-# It's “special” instruction in amd64 mode (and is accepted with “special”
+# It's "special" instruction in amd64 mode (and is accepted with "special"
 #  sandboxing), but forbidden instruction in ia32 mode.
 lods X a, 0xac, rep nacl-forbidden
 ######## LOOP/LOOPE/LOOPNE/LOOPNZ/LOOPZ ########################################
 # Manual is quite vague WRT usability of branch prediction prefixes combined
-# with “loop/loope/loopne” instructions. Old optimization manual (from P4) says
-# about them the following: “These hints take the form of prefixes to any type
+# with "loop/loope/loopne" instructions. Old optimization manual (from P4) says
+# about them the following: "These hints take the form of prefixes to any type
 # of branch instruction.  Branch hints are not guaranteed to have any effect,
 # and their function may vary across implementations. On the Pentium 4
-# processor, branch hints are active only for relative conditional branches.”
+# processor, branch hints are active only for relative conditional branches."
 # And today's manual says:
-#   — Branch hints:
-#     • 2EH—Branch not taken (used only with Jcc instructions)
-#     • 3EH—Branch taken (used only with Jcc instructions)
+#   - Branch hints:
+#     * 2EH - Branch not taken (used only with Jcc instructions)
+#     * 3EH - Branch taken (used only with Jcc instructions)
 # Since they never had any effect on the code execution their usability is
 # quite limited.  We disable them for now.
 loop Jb, 0xe2, nacl-ia32-forbidden
@@ -418,9 +418,9 @@ lwpins Id Ed =By, 0x8f RXB.0A W.src1.0.00 0x12 /0, CPUFeature_LWP
 ######## LWPVAL ################################################################
 lwpval Id Ed =By, 0x8f RXB.0A W.src1.0.00 0x12 /1, CPUFeature_LWP
 ######## LZCNT #################################################################
-# Textbook definition of “lzcnt” as per AMD/Intel manuals looks like this:
+# Textbook definition of "lzcnt" as per AMD/Intel manuals looks like this:
 #   lzcnt Ev Gv, 0xf3 0x0f 0xbd, CPUFeature_LZCNT nacl-amd64-zero-extends
-# “lzcnt” is not marked as nacl-amd64-zero-extends because it is unlikely to be
+# "lzcnt" is not marked as nacl-amd64-zero-extends because it is unlikely to be
 # useful for computing an address based on the number of leading zeros of a
 # value.
 # Also, since f3 opcode extension is counted as rep prefix, it is not allowed
@@ -446,12 +446,12 @@ mov a !O, 0xa2, ia32
 movabs O !a, 0xa0, amd64 nacl-forbidden
 movabs a !O, 0xa2, amd64 nacl-forbidden
 ######## MOVBE #################################################################
-# Textbook definition of “movbe” as per AMD/Intel manuals looks like this:
+# Textbook definition of "movbe" as per AMD/Intel manuals looks like this:
 #  movbe Mv Gv, 0x0f 0x38 0xf0, CPUFeature_MOVBE
 #  movbe Gv Mv, 0x0f 0x38 0xf1, CPUFeature_MOVBE
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “movbe” in ia32 mode.
-# Note that the former 32- and 64-bit validators treat “movbe” inconsistently:
+#  version of "movbe" in ia32 mode.
+# Note that the former 32- and 64-bit validators treat "movbe" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2976
 movbe Mw Gw, data16 0x0f 0x38 0xf0, norexw CPUFeature_MOVBE nacl-ia32-forbidden
 movbe Gw Mw, data16 0x0f 0x38 0xf1, norexw CPUFeature_MOVBE nacl-ia32-forbidden
@@ -462,12 +462,12 @@ movbe Gq Mq, rexw 0x0f 0x38 0xf1, amd64 CPUFeature_MOVBE
 movbe Mq Gq, data16 rexw 0x0f 0x38 0xf0, amd64 CPUFeature_MOVBE nacl-forbidden
 movbe Gq Mq, data16 rexw 0x0f 0x38 0xf1, amd64 CPUFeature_MOVBE nacl-forbidden
 ######## MOVD ##################################################################
-# Textbook definition of “movd” as per AMD/Intel manuals looks like this:
+# Textbook definition of "movd" as per AMD/Intel manuals looks like this:
 #  movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
 #  movd Vy Ey, 0x66 0x0f 0x7e, CPUFeature_SSE2
 #  movd Ey Py, 0x0f 0x6e, CPUFeature_MMX
 #  movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
-# Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
+# Objdump names 64bit version not "movd" but movq".  We describe 32bit version
 #  and 64bit version separately.
 movd Ed Vq, 0x66 0x0f 0x6e, norexw CPUFeature_SSE2
 movd Vq Ed, 0x66 0x0f 0x7e, norexw CPUFeature_SSE2 nacl-amd64-zero-extends
@@ -478,31 +478,31 @@ movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 CPUFeature_SSE2
 movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
 movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVMSKPD ##############################################################
-# Textbook definition of “movmskpd” as per AMD/Intel manuals looks like this:
+# Textbook definition of "movmskpd" as per AMD/Intel manuals looks like this:
 #  movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
-# GNU as accepts this description, but objdump decodes last operand as “Gy”.
-# Technically it makes no difference: “movmskpd” clears everything except least
+# GNU as accepts this description, but objdump decodes last operand as "Gy".
+# Technically it makes no difference: "movmskpd" clears everything except least
 # significant two bits and this operation produces precisely idential output for
-# “Gy” and “Gd” operands.  We use objdump's description.
+# "Gy" and "Gd" operands.  We use objdump's description.
 movmskpd Upd Gy, 0x66 0x0f 0x50, CPUFeature_SSE2
 ######## MOVMSKPS ##############################################################
-# Textbook definition of “movmskps” as per AMD/Intel manuals looks like this:
+# Textbook definition of "movmskps" as per AMD/Intel manuals looks like this:
 #  movmskps Ups Gd, 0x0f 0x50, CPUFeature_SSE2
-# GNU as accepts this description, but objdump decodes last operand as “Gy”.
-# Technically it makes no difference: “movmskps” clears everything except least
+# GNU as accepts this description, but objdump decodes last operand as "Gy".
+# Technically it makes no difference: "movmskps" clears everything except least
 # significant four bits and this operation produces precisely idential output
-# for “Gy” and “Gd” operands.  We use objdump's description.
+# for "Gy" and "Gd" operands.  We use objdump's description.
 movmskps Ups Gy, 0x0f 0x50, CPUFeature_SSE
 ######## MOVNTI ################################################################
 movnti Gy My, 0x0f 0xc3, CPUFeature_SSE2
 ######## MOVS/MOVSB/MOVSW/MOVSD/MOVSQ ##########################################
 movs X Y, 0xa4, rep nacl-amd64-forbidden
 ######## MOVSX #################################################################
-# Textbook definition of “movsx” as per AMD/Intel manuals looks like this:
+# Textbook definition of "movsx" as per AMD/Intel manuals looks like this:
 #  movsx Eb Gv, 0x0f 0xbe
 #  movsx Ew Gy, 0x0f 0xbf
-# Objdump has different names for this instrustion: “movsbw”, “movsbl”, “movsbq”,
-# “movswl”, “movswq” depending on operand size.  We describe 32bit versions and
+# Objdump has different names for this instrustion: "movsbw", "movsbl", "movsbq",
+# "movswl", "movswq" depending on operand size.  We describe 32bit versions and
 # 64bit version separately.
 movsbl Eb Gd, 0x0f 0xbe, norexw nacl-amd64-zero-extends
 movsbq Eb Gq, rexw 0x0f 0xbe, amd64
@@ -513,11 +513,11 @@ movsww Ew Gw, data16 0x0f 0xbf, norexw
 ######## MOVSXD ################################################################
 movslq Ed Gv, 0x63, amd64 nacl-amd64-zero-extends
 ######## MOVZX #################################################################
-# Textbook definition of “movzx” as per AMD/Intel manuals looks like this:
+# Textbook definition of "movzx" as per AMD/Intel manuals looks like this:
 #  movzx Eb Gv, 0x0f 0xb6
 #  movzx Ew Gy, 0x0f 0xb7
-# Objdump has different names for this instrustion: “movzbw”, “movzbl”, “movzbq”,
-# “movzwl”, “movzwq” depending on operand size.  We describe 32bit versions and
+# Objdump has different names for this instrustion: "movzbw", "movzbl", "movzbq",
+# "movzwl", "movzwq" depending on operand size.  We describe 32bit versions and
 # 64bit version separately.
 movzbl Eb Gd, 0x0f 0xb6, norexw nacl-amd64-zero-extends
 movzbq Eb Gq, rexw 0x0f 0xb6, amd64
@@ -526,7 +526,7 @@ movzwl Ew Gd, 0x0f 0xb7, norexw nacl-amd64-zero-extends
 movzwq Ew Gq, rexw 0x0f 0xb7, amd64
 movzww Ew Gw, data16 0x0f 0xb7, norexw
 ######## MUL ###################################################################
-# “mul” is not marked as nacl-amd64-zero-extends because we never allowed it.
+# "mul" is not marked as nacl-amd64-zero-extends because we never allowed it.
 mul =E, 0xf6 /4
 ######## NEG ###################################################################
 neg E, 0xf6 /3, lock nacl-amd64-zero-extends
@@ -534,10 +534,10 @@ neg E, 0xf6 /3, lock nacl-amd64-zero-extends
 nop, 0x90, norex
 nop, 0x40 0x90, amd64 norex
 "rex.W nop", 0x48 0x90, amd64 norex
-# Textbook definition of “nop” as per AMD/Intel manuals looks like this:
+# Textbook definition of "nop" as per AMD/Intel manuals looks like this:
 #  nop 'Ev, 0x0f 0x1f /0, no_memory_access
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “nop”.
+#  version of "nop".
 nop 'Rw, data16 0x0f 0x1f /0,
   no_memory_access nacl-forbidden
 nop 'Mw, data16 0x0f 0x1f /0,
@@ -576,7 +576,7 @@ outs Xd =od, data16 rexw 0x6f, amd64 rep att-show-name-suffix-l nacl-forbidden
 ######## PAUSE #################################################################
 pause, 0xf3 0x90, norex
 ######## POP ###################################################################
-# “pop” does not require rex prefix and always uses 64bit addresses in x86-64
+# "pop" does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
@@ -596,9 +596,9 @@ pop rr, 0x58
 "popq %fs", 0x0f 0xa1, amd64 nacl-forbidden
 "popq %gs", 0x0f 0xa9, amd64 nacl-forbidden
 ######## POPCNT ################################################################
-# Textbook definition of “popcnt” as per AMD/Intel manuals looks like this:
+# Textbook definition of "popcnt" as per AMD/Intel manuals looks like this:
 #   popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT nacl-amd64-zero-extends
-# “popcnt” is not marked as nacl-amd64-zero-extends because it is unlikely to be
+# "popcnt" is not marked as nacl-amd64-zero-extends because it is unlikely to be
 # useful for computing an address based on the number of ones in a value.
 # Also, since f3 opcode extension is counted as rep prefix, it is not allowed
 # together with data16 prefix.
@@ -616,13 +616,13 @@ popf, data16 rexw 0x9d, amd64 att-show-name-suffix-q nacl-forbidden
 prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
 prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
 prefetch Mb, 0x0f 0x0d /2, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
-# AMD manual desribes this opcode as “reserved” in one place (and clarifies that
-# it's aliased to prefetch for the compatibility) and as “invalid” in another
+# AMD manual desribes this opcode as "reserved" in one place (and clarifies that
+# it's aliased to prefetch for the compatibility) and as "invalid" in another
 # place.  It's textbook definition as per AMD manual looks like this:
 #  prefetch Mb, 0x0f 0x0d /3, CPUFeature_3DPRFTCH no_memory_access
 # For consistency with the production validators, drop support for this form of
-# “prefetch” in ia32 mode but support in in amd64 mode.
-# Note that the former 32- and 64-bit validators treat “prefetch” inconsistently:
+# "prefetch" in ia32 mode but support in in amd64 mode.
+# Note that the former 32- and 64-bit validators treat "prefetch" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2977
 prefetch Mb, 0x0f 0x0d /3, CPUFeature_3DPRFTCH no_memory_access nacl-ia32-forbidden
 prefetch Mb, 0x0f 0x0d /4, CPUFeature_3DPRFTCH no_memory_access nacl-forbidden
@@ -634,14 +634,14 @@ prefetchnta Mb, 0x0f 0x18 /0, CPUFeature_SSE no_memory_access
 prefetcht0 Mb, 0x0f 0x18 /1, CPUFeature_SSE no_memory_access
 prefetcht1 Mb, 0x0f 0x18 /2, CPUFeature_SSE no_memory_access
 prefetcht2 Mb, 0x0f 0x18 /3, CPUFeature_SSE no_memory_access
-# AMD manual claims this opcode is “nop”.  Intel manual says it's “reserved”.
+# AMD manual claims this opcode is "nop".  Intel manual says it's "reserved".
 # Real silicon accepts it and seemingly doing nothing.
 "nop/reserved" Mb, 0x0f 0x18 /4, CPUFeature_SSE no_memory_access nacl-forbidden
 "nop/reserved" Mb, 0x0f 0x18 /5, CPUFeature_SSE no_memory_access nacl-forbidden
 "nop/reserved" Mb, 0x0f 0x18 /6, CPUFeature_SSE no_memory_access nacl-forbidden
 "nop/reserved" Mb, 0x0f 0x18 /7, CPUFeature_SSE no_memory_access nacl-forbidden
 ######## PUSH ##################################################################
-# “push” does not require rex prefix and always uses 64bit addresses in x86-64
+# "push" does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
@@ -673,14 +673,14 @@ pushf, 0x9c, ia32 nacl-forbidden
 pushf, 0x9c, norexw amd64 att-show-name-suffix-q nacl-forbidden
 pushf, data16 rexw 0x9c, amd64 att-show-name-suffix-q nacl-forbidden
 ######## RCL ###################################################################
-# “rcl” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "rcl" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 rcl E, 0xd0 /2
 rcl cb E, 0xd2 /2
 rcl Ib E, 0xc0 /2
 ######## RCR ###################################################################
-# “rcr” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "rcr" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 rcr E, 0xd0 /3
@@ -697,14 +697,14 @@ lret =Iw, 0xca, norexw nacl-forbidden
 lretq, rexw 0xcb, amd64 nacl-forbidden
 lretq =Iw, rexw 0xca, amd64 nacl-forbidden
 ######## ROL ###################################################################
-# “rol” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "rol" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 rol E, 0xd0 /0
 rol cb E, 0xd2 /0
 rol Ib E, 0xc0 /0
 ######## ROR ###################################################################
-# “ror” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "ror" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 ror Ib E, 0xc0 /1
@@ -721,21 +721,21 @@ sahf, 0x9e, amd64 CPUFeature_LAHF nacl-forbidden
 # sal cb E, 0xd2 /6
 # sal Ib E, 0xc0 /6
 ######## SAL/SHL ###############################################################
-# “sal”/“shl” is not marked as nacl-amd64-zero-extends out of caution.  We
+# "sal"/"shl" is not marked as nacl-amd64-zero-extends out of caution.  We
 # assume that this instruction is used for bit manipulation rather than
 # computing viable addresses.
 shl E, 0xd0 /4
 shl cb E, 0xd2 /4
 shl Ib E, 0xc0 /4
 ######## SAR ###################################################################
-# “sar” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "sar" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 sar Ib E, 0xc0 /7
 sar E, 0xd0 /7
 sar cb E, 0xd2 /7
 ######## SBB ###################################################################
-# “sbb” is not marked as nacl-amd64-zero-extends since borrows/carries should
+# "sbb" is not marked as nacl-amd64-zero-extends since borrows/carries should
 # not be need when calculating an address.
 sbb I a, 0x1c
 sbb I E, 0x80 /3, lock
@@ -764,15 +764,15 @@ sets Eb, 0x0f 0x98, CPUFeature_CMOV
 ######## SFENCE ################################################################
 sfence, 0x0f 0xae 0xf8, CPUFeature_EMMXSSE
 ######## SHLD ##################################################################
-# Textbook definition of “shrd” as per AMD/Intel manuals looks like this:
+# Textbook definition of "shrd" as per AMD/Intel manuals looks like this:
 #  shld Ib Gv Ev, 0x0f 0xa4
 #  shld cb Gv Ev, 0x0f 0xa5
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “shld” in ia32 mode.
-# Note that the former 32- and 64-bit validators treat “shld” inconsistently:
+#  version of "shld" in ia32 mode.
+# Note that the former 32- and 64-bit validators treat "shld" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2978
 #
-# “shld” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "shld" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 shld Ib Gw Ew, data16 0x0f 0xa4, norexw nacl-ia32-forbidden
@@ -784,22 +784,22 @@ shld cb Gq Eq, rexw 0x0f 0xa5, amd64
 shld Ib Gq Eq, data16 rexw 0x0f 0xa4, amd64 nacl-forbidden
 shld cb Gq Eq, data16 rexw 0x0f 0xa5, amd64 nacl-forbidden
 ######## SHR ###################################################################
-# “shr” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
+# "shr" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
 shr E, 0xd0 /5
 shr cb E, 0xd2 /5
 shr Ib E, 0xc0 /5
 ######## SHRD ##################################################################
-# Textbook definition of “shrd” as per AMD/Intel manuals looks like this:
+# Textbook definition of "shrd" as per AMD/Intel manuals looks like this:
 #  shld Ib Gv Ev, 0x0f 0xa4
 #  shld cb Gv Ev, 0x0f 0xa5
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “shrd” in ia32 mode.
-# Note that the former 32- and 64-bit validators treat “shrd” inconsistently:
+#  version of "shrd" in ia32 mode.
+# Note that the former 32- and 64-bit validators treat "shrd" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2980
 #
-# “shrd” is not marked as nacl-amd64-zero-extends out of caution.  We assume
+# "shrd" is not marked as nacl-amd64-zero-extends out of caution.  We assume
 # that this instruction is used for bit manipulation rather than computing
 # viable addresses.
 shrd Ib Gw Ew, data16 0x0f 0xac, norexw nacl-ia32-forbidden
@@ -829,14 +829,14 @@ t1mskc Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /7, CPUFeature_TBM
 ######## TEST ##################################################################
 test I =a, 0xa8
 test I =E, 0xf6 /0
-# AMD manual claims this opcode works identically to “/0”.  Intel manual
+# AMD manual claims this opcode works identically to "/0".  Intel manual
 # says it's reserved.  Objdump does not like it.
 # test I =E, 0xf6 /1
 test G =E, 0x84
 ######## TZCNT #################################################################
-# Textbook definition of “tzcnt” as per AMD/Intel manuals looks like this:
+# Textbook definition of "tzcnt" as per AMD/Intel manuals looks like this:
 #   tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_TZCNT nacl-amd64-zero-extends
-# “tzcnt” is not marked as nacl-amd64-zero-extends because it is unlikely to be
+# "tzcnt" is not marked as nacl-amd64-zero-extends because it is unlikely to be
 # useful for computing an address based on the number of trailing zeros of a
 # value.
 # We mark tzcnt specially to allow it independently from CPUID
@@ -851,13 +851,13 @@ tzcnt Eq Gq, data16 rexw 0xf3 0x0f 0xbc, amd64 CPUFeature_TZCNT nacl-forbidden
 ######## TZMSK #################################################################
 tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 ######## XADD ##################################################################
-# Textbook definition of “xadd” as per AMD/Intel manuals looks like this:
+# Textbook definition of "xadd" as per AMD/Intel manuals looks like this:
 #  xadd &G E, 0x0f 0xc0, lock nacl-amd64-zero-extends
 # For consistency with the production validators, drop support for the 16-bit
-#  version of “xadd” in ia32 mode.
+#  version of "xadd" in ia32 mode.
 # Also, don't consider xadd with memory zero-extending.
 #  See http://code.google.com/p/nativeclient/issues/detail?id=3077
-# Note that the former 32- and 64-bit validators treat “xadd” inconsistently:
+# Note that the former 32- and 64-bit validators treat "xadd" inconsistently:
 #  http://code.google.com/p/nativeclient/issues/detail?id=2981
 xadd &Gb Eb, 0x0f 0xc0, lock
 xadd &Gw Ew, data16 0x0f 0xc1, norexw lock nacl-ia32-forbidden

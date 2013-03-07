@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 ################################################################################
-# This file describes instructions from AMD64 Architecture Programmer’s Manual
+# This file describes instructions from AMD64 Architecture Programmer's Manual
 #                               Volume 3: General-Purpose and System Instruction
 #                                        Chapter 4: System Instruction Reference
 ################################################################################
@@ -16,9 +16,9 @@ clts, 0x0f 0x06, nacl-forbidden
 ######## HLT ###################################################################
 hlt, 0xf4
 ######## ICEBP #################################################################
-# Note: this instruction is documented in AMD64 Architecture Programmer’s Manual
-# Volume 2: System Programming.  It's called “int1” there but objdump uses name
-# “icebp”.
+# Note: this instruction is documented in AMD64 Architecture Programmer's Manual
+# Volume 2: System Programming.  It's called "int1" there but objdump uses name
+# "icebp".
 icebp, 0xf1, nacl-forbidden
 ######## INT 3 #################################################################
 int3, 0xcc, nacl-forbidden
@@ -33,7 +33,7 @@ invlpga, 0x0f 0x01 0xdf, CPUFeature_SVM nacl-forbidden
 iret, 0xcf, norexw nacl-forbidden
 iretq, rexw 0xcf, amd64 nacl-forbidden
 ######## LAR ###################################################################
-# “lar” is not marked as nacl-amd64-zero-extends because they shouldn't be.
+# "lar" is not marked as nacl-amd64-zero-extends because they shouldn't be.
 lar Ew Gv, 0x0f 0x02, nacl-forbidden
 ######## LGDT ##################################################################
 lgdtl Ms, 0x0f 0x01 /2, ia32 nacl-forbidden
@@ -46,7 +46,7 @@ lldt Ew, 0x0f 0x00 /2, nacl-forbidden
 ######## LMSW ##################################################################
 lmsw Ew, 0x0f 0x01 /6, nacl-forbidden
 ######## LSL ###################################################################
-# “lsl” is not marked as nacl-amd64-zero-extends because segment addresses
+# "lsl" is not marked as nacl-amd64-zero-extends because segment addresses
 # shouldn't be used.
 lsl Ew Gv, 0x0f 0x03, nacl-forbidden
 ######## LTR ###################################################################
@@ -67,19 +67,19 @@ mov Cr Rr, 0xf0 0x0f 0x20, CPUFeature_ALTMOVCR8 nacl-forbidden
 ######## MWAIT #################################################################
 mwait ar cr, 0x0f 0x01 0xc9, CPUFeature_MON
 ######## RDMSR #################################################################
-# “rdmsr” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# "rdmsr" is not marked as nacl-amd64-zero-extends because you shouldn't be
 # reading model specific registers.
 rdmsr, 0x0f 0x32, CPUFeature_MSR nacl-forbidden
 ######## RDPMC #################################################################
-# “rdpmc” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# "rdpmc" is not marked as nacl-amd64-zero-extends because you shouldn't be
 # basing addresses on the performance-monitor counter.
 rdpmc, 0x0f 0x33, nacl-forbidden
 ######## RDTSC #################################################################
-# “rdtsc” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# "rdtsc" is not marked as nacl-amd64-zero-extends because you shouldn't be
 # basing addresses on the time-stamp counter.
 rdtsc, 0x0f 0x31, CPUFeature_TSC
 ######## RDTSCP ################################################################
-# “rdtsc” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# "rdtsc" is not marked as nacl-amd64-zero-extends because you shouldn't be
 # basing addresses on the time-stamp counter or the processor id.
 rdtscp, 0x0f 0x01 0xf9, CPUFeature_TSCP nacl-forbidden
 ######## RSM ###################################################################
@@ -96,7 +96,7 @@ skinit, 0x0f 0x01 0xde, CPUFeature_SKINIT nacl-forbidden
 sldt Mw, 0x0f 0x00 /0, nacl-forbidden
 sldt Rv, 0x0f 0x00 /0, nacl-forbidden
 ######## SMSW ##################################################################
-# “smsw” is not marked as nacl-amd64-zero-extends since you shouldn't be basing
+# "smsw" is not marked as nacl-amd64-zero-extends since you shouldn't be basing
 # addresses on the machine status word.
 smsw Mw, 0x0f 0x01 /4, nacl-forbidden
 smsw Rv, 0x0f 0x01 /4, nacl-forbidden

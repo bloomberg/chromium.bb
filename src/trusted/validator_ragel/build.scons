@@ -15,12 +15,12 @@ gen_dir = '$MAIN_DIR/src/trusted/validator_ragel/gen'
 ragel_binary = '$MAIN_DIR/../third_party/ragel/ragel.linux'
 
 INSTRUCTION_DEFINITIONS = map(env.File, [
-    'unreviewed/instruction_definitions/general_purpose_instructions.def',
-    'unreviewed/instruction_definitions/system_instructions.def',
-    'unreviewed/instruction_definitions/x87_instructions.def',
-    'unreviewed/instruction_definitions/mmx_instructions.def',
-    'unreviewed/instruction_definitions/xmm_instructions.def',
-    'unreviewed/instruction_definitions/nops.def'
+    'instruction_definitions/general_purpose_instructions.def',
+    'instruction_definitions/system_instructions.def',
+    'instruction_definitions/x87_instructions.def',
+    'instruction_definitions/mmx_instructions.def',
+    'instruction_definitions/xmm_instructions.def',
+    'instruction_definitions/nops.def'
 ])
 
 # These objects are included in both dfa_validate_x86_xx and rdfa_validator
@@ -155,6 +155,10 @@ if ragel_involved:
   env_gen_dfa = env.Clone()
   env_gen_dfa.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
+  gen_dfa = env_gen_dfa.ComponentProgram(
+      'gen_dfa',
+      ['unreviewed/gen_dfa.cc'])
+
   # Generate byte_machines.rl from byte_machines.py
   (byte_machines,) = env.AutoDepsCommand(
       'byte_machines.rl',
@@ -167,14 +171,13 @@ if ragel_involved:
   # Now we are back to conditionally defining the large automata generated
   # by gen_dfa.
 
-  def MakeAutomaton(bits, automaton, ragel_flags):
+  def MakeAutomaton(bits, automaton, dfa_gen_actions, ragel_flags):
     (rl_instruction_file,) = env.AutoDepsCommand(
         '%s_x86_%s_instruction.rl' % (automaton, bits),
-        ['${PYTHON}',
-         env.File('gen_dfa.py'),
-         '--bitness', bits,
-         '--mode', automaton,
-         '>${TARGET}',
+        [gen_dfa,
+         '-o', '${TARGET}',
+         '-m', {'32': 'ia32', '64': 'amd64'}[bits],
+         '-d', dfa_gen_actions
          ] + INSTRUCTION_DEFINITIONS)
 
     include_dir = rl_instruction_file.dir.get_abspath()
@@ -239,15 +242,23 @@ if ragel_involved:
 
   (decoder32, decoder32_xml) = MakeAutomaton(
       '32', 'decoder',
+      'check_access,opcode,parse_operands_states',
       '-T0')
   (validator32, validator32_xml) = MakeAutomaton(
       '32', 'validator',
+      ('check_access,opcode,parse_operands,parse_operands_states,'
+       'instruction_name,nacl-forbidden'),
       '-G2')
   (decoder64, decoder64_xml) = MakeAutomaton(
       '64', 'decoder',
+      'check_access,opcode,parse_operands_states',
       '-T0')
   (validator64, validator64_xml) = MakeAutomaton(
       '64', 'validator',
+      ('opcode,instruction_name,nacl-forbidden,parse_nonwrite_registers,'
+       'parse_x87_operands,parse_mmx_operands,parse_xmm_operands,'
+       'parse_ymm_operands,parse_relative_operands,parse_immediate_operands,'
+       'parse_operands_states,parse_operand_positions'),
       '-GT2')
 
   automata = [decoder32, validator32, decoder64, validator64]

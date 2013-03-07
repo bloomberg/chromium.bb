@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 ################################################################################
-# This file describes instructions from AMD64 Architecture Programmer’s Manual
+# This file describes instructions from AMD64 Architecture Programmer's Manual
 #                     Volume 5: 64-Bit Media and x87 Floating-Point Instructions
 #                            Chapter 2: x87 Floating-Point Instruction Reference
 ################################################################################
@@ -58,7 +58,7 @@ fcos, 0xd9 0xff, CPUFeature_x87
 ######## FDECSTP ###############################################################
 fdecstp, 0xd9 0xf6, CPUFeature_x87
 ######## FDIV/FDIVP/FIDIV ######################################################
-# “fdiv” and “fdivr” are swapped for some operands in objdump.  This is known
+# "fdiv" and "fdivr" are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
 fdiv r7 t7, 0xd8 0xf0, CPUFeature_x87
@@ -69,7 +69,7 @@ fdivrp t7 r7, 0xde 0xf8, CPUFeature_x87
 fidiv Msw, 0xde /6, CPUFeature_x87
 fidiv Msi, 0xda /6, CPUFeature_x87 att-show-name-suffix-l
 ######## FDIVR/FDIVRP/FIDIVR ###################################################
-# “fdivr” and “fdiv” are swapped for some operands in objdump.  This is known
+# "fdivr" and "fdiv" are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
 fdivr r7 t7, 0xd8 0xf8, CPUFeature_x87
@@ -183,7 +183,7 @@ fnstenvs Mse, data16 rexw 0xd9 /6, amd64 CPUFeature_x87 nacl-forbidden
 fnstsw Mw, 0xdd /7, CPUFeature_x87
 fnstsw aw, 0xdf 0xe0, CPUFeature_x87
 ######## FSUB/FSUBP/FISUB ######################################################
-# “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
+# "fsub" and "fsubr" are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
 fsub r7 t7, 0xd8 0xe0, CPUFeature_x87
@@ -194,7 +194,7 @@ fsubrp t7 r7, 0xde 0xe8, CPUFeature_x87
 fisub Msw, 0xde /4, CPUFeature_x87
 fisub Msi, 0xda /4, CPUFeature_x87 att-show-name-suffix-l
 ######## FSUBR/FSUBRP/FISUBR ###################################################
-# “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
+# "fsub" and "fsubr" are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
 fsubr r7 t7, 0xd8 0xe8, CPUFeature_x87
