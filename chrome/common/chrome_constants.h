@@ -67,6 +67,7 @@ extern const base::FilePath::CharType kFirstRunSentinel[];
 extern const base::FilePath::CharType kHistoryFilename[];
 extern const base::FilePath::CharType kJumpListIconDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];
+extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kLoginDataFileName[];
 extern const base::FilePath::CharType kManagedModePolicyFilename[];
 extern const base::FilePath::CharType kMediaCacheDirname[];

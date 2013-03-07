@@ -837,11 +837,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       !ProfileManager::IsImportProcess(parsed_command_line());
 #endif
 
-  base::FilePath local_state_path;
-  CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(local_state_path,
-                                          BrowserThread::GetBlockingPool());
+      JsonPrefStore::GetTaskRunnerForFile(
+          base::FilePath(chrome::kLocalStorePoolName),
+          BrowserThread::GetBlockingPool());
   browser_process_.reset(new BrowserProcessImpl(local_state_task_runner,
                                                 parsed_command_line()));
 

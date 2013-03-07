@@ -22,6 +22,7 @@
 #include "cc/switches.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -237,11 +238,10 @@ void ChromeRestartRequest::Start() {
   // Post a task to local state task runner thus it occurs last on the task
   // queue, so it would be executed after committing pending write on that
   // thread.
-  base::FilePath local_state_path;
-  CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(local_state_path,
-                                          BrowserThread::GetBlockingPool());
+      JsonPrefStore::GetTaskRunnerForFile(
+          base::FilePath(chrome::kLocalStorePoolName),
+          BrowserThread::GetBlockingPool());
   local_state_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&EnsureLocalStateIsWritten),
