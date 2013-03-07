@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/string16.h"
-#include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
@@ -682,10 +681,6 @@ class ExtensionService
   }
 #endif
 
-  extensions::AppShortcutManager* app_shortcut_manager() {
-    return &app_shortcut_manager_;
-  }
-
   // Specialization of syncer::SyncableService::AsWeakPtr.
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
 
@@ -994,8 +989,6 @@ class ExtensionService
   extensions::ExtensionSyncBundle extension_sync_bundle_;
 
   extensions::ProcessMap process_map_;
-
-  extensions::AppShortcutManager app_shortcut_manager_;
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
   // Sequenced task runner for extension related file operations.

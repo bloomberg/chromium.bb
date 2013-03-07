@@ -357,8 +357,7 @@ ExtensionService::ExtensionService(Profile* profile,
       wipeout_is_active_(false),
       wipeout_count_(0u),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      app_shortcut_manager_(profile) {
+      extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
