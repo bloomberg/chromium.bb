@@ -1177,13 +1177,9 @@ class CONTENT_EXPORT RenderViewImpl
   // saved in OnNavigate().
   NavigationState* CreateNavigationStateFromPending();
 
-  // Processes the command-line flags --enable-viewport and
-  // --enable-fixed-layout[=w,h].
+  // Processes the command-line flags --enable-viewport,
+  // --enable-fixed-layout[=w,h] and --enable-pinch.
   void ProcessViewLayoutFlags(const CommandLine& command_line);
-
-  // Processes the command-line flags --enable-pinch and
-  // --enable-pinch-in-compositor
-  void ProcessAcceleratedPinchZoomFlags(const CommandLine& command_line);
 
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.

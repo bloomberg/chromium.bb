@@ -2637,8 +2637,6 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 #endif
 
   RenderWidget::didActivateCompositor(input_handler_identifier);
-
-  ProcessAcceleratedPinchZoomFlags(*CommandLine::ForCurrentProcess());
 }
 
 void RenderViewImpl::didHandleGestureEvent(
@@ -3374,7 +3372,12 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
   webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
 
-  if (!enable_viewport && enable_fixed_layout) {
+  // If viewport tag is enabled, then the WebKit side will take care
+  // of setting the fixed layout size and page scale limits.
+  if (enable_viewport)
+    return;
+
+  if (enable_fixed_layout) {
     std::string str =
         command_line.GetSwitchValueASCII(switches::kEnableFixedLayout);
     std::vector<std::string> tokens;
@@ -3386,17 +3389,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
         webview()->setFixedLayoutSize(WebSize(width, height));
     }
   }
-
-  ProcessAcceleratedPinchZoomFlags(command_line);
-}
-
-void RenderViewImpl::ProcessAcceleratedPinchZoomFlags(
-    const CommandLine& command_line) {
-  if (!webview()->isAcceleratedCompositingActive())
-    return;
-
-  if (command_line.HasSwitch(switches::kEnableViewport))
-    return;
 
   if (command_line.HasSwitch(switches::kEnablePinch))
     webview()->setPageScaleFactorLimits(1, 4);
