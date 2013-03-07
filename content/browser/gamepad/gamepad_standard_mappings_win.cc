@@ -78,6 +78,24 @@ void MapperLogitechPrecision(
   mapped->axesLength = 0;
 }
 
+void Mapper2Axes8Keys(
+    const WebKit::WebGamepad& input,
+    WebKit::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonLeftTrigger] = 0;  // Not present
+  mapped->buttons[kButtonRightTrigger] = 0;  // Not present
+  mapped->buttons[8] = input.buttons[6];
+  mapped->buttons[9] = input.buttons[7];
+  mapped->buttons[kButtonLeftThumbstick] = 0;  // Not present
+  mapped->buttons[kButtonRightThumbstick] = 0;  // Not present
+  mapped->buttons[12] = AxisNegativeAsButton(input.axes[1]);
+  mapped->buttons[13] = AxisPositiveAsButton(input.axes[1]);
+  mapped->buttons[14] = AxisNegativeAsButton(input.axes[0]);
+  mapped->buttons[15] = AxisPositiveAsButton(input.axes[0]);
+  mapped->buttonsLength = 16;
+  mapped->axesLength = 0;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -87,6 +105,7 @@ struct MappingData {
   { "0079", "0006", MapperDragonRiseGeneric },  // DragonRise Generic USB
   { "046d", "c216", MapperLogitechDualAction },  // Logitech DualAction
   { "046d", "c21a", MapperLogitechPrecision },  // Logitech Precision
+  { "12bd", "d012", Mapper2Axes8Keys },  // 2Axes 8Keys Game Pad
 };
 
 }  // namespace
