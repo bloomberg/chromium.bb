@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -96,10 +95,6 @@ static const int kStackedPadding = 6;
 // See UpdateLayoutTypeFromMouseEvent() for a description of these.
 const int kMouseMoveTimeMS = 200;
 const int kMouseMoveCountBeforeConsiderReal = 3;
-
-// Constants for the new tab button field trial.
-const char kNewTabButtonFieldTrialName[] = "NewTabButton";
-const char kNewTabButtonFieldTrialPlusGroupName[] = "Plus";
 
 // Amount of time we delay before resizing after a close from a touch.
 const int kTouchResizeLayoutTimeMS = 2000;
@@ -470,17 +465,8 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
 gfx::ImageSkia NewTabButton::GetImageForState(
     views::CustomButton::ButtonState state,
     ui::ScaleFactor scale_factor) const {
-  int overlay_id = 0;
-  // The new tab button field trial will get created in variations_service.cc
-  // through the variations server.
-  if (base::FieldTrialList::FindFullName(kNewTabButtonFieldTrialName) ==
-          kNewTabButtonFieldTrialPlusGroupName) {
-    overlay_id = state == views::CustomButton::STATE_PRESSED ?
-        IDR_NEWTAB_BUTTON_P_PLUS : IDR_NEWTAB_BUTTON_PLUS;
-  } else {
-    overlay_id = state == views::CustomButton::STATE_PRESSED ?
+  const int overlay_id = state == views::CustomButton::STATE_PRESSED ?
         IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
-  }
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
   gfx::Canvas canvas(

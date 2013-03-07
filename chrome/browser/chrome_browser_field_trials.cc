@@ -32,7 +32,6 @@
 
 #if defined(OS_WIN)
 #include "net/socket/tcp_client_socket_win.h"
-#include "ui/base/win/dpi.h"  // For DisableNewTabFieldTrialIfNecesssary.
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -72,7 +71,6 @@ void ChromeBrowserFieldTrials::SetupDesktopFieldTrials() {
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
   AutocompleteFieldTrial::ActivateStaticTrials();
-  DisableNewTabFieldTrialIfNecesssary();
   SetUpInfiniteCacheFieldTrial();
   SetUpCacheSensitivityAnalysisFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
@@ -162,22 +160,6 @@ void ChromeBrowserFieldTrials::AutoLaunchChromeFieldTrial() {
   } else if (auto_launch_trial::IsInControlGroup(brand)) {
     base::FieldTrialList::CreateFieldTrial(kAutoLaunchTrialName,
                                            kAutoLaunchTrialControlGroup);
-  }
-}
-
-void ChromeBrowserFieldTrials::DisableNewTabFieldTrialIfNecesssary() {
-  // The new tab button field trial will get created in variations_service.cc
-  // through the variations server. However, since there are no HiDPI assets
-  // for it, disable it for non-desktop layouts.
-  base::FieldTrial* trial = base::FieldTrialList::Find("NewTabButton");
-  if (trial) {
-    bool using_hidpi_assets = false;
-#if defined(ENABLE_HIDPI) && defined(OS_WIN)
-    // Mirrors logic in resource_bundle_win.cc.
-    using_hidpi_assets = ui::GetDPIScale() > 1.5;
-#endif
-    if (ui::GetDisplayLayout() != ui::LAYOUT_DESKTOP || using_hidpi_assets)
-      trial->Disable();
   }
 }
 

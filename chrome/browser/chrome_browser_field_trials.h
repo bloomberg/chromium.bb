@@ -51,9 +51,6 @@ class ChromeBrowserFieldTrials {
   // bucketing and reporting systems.
   void SetupUniformityFieldTrials(const base::Time& install_date);
 
-  // Disables the new tab field trial if not running in desktop mode.
-  void DisableNewTabFieldTrialIfNecesssary();
-
   // Sets up the InfiniteCache field trial.
   void SetUpInfiniteCacheFieldTrial();
 
