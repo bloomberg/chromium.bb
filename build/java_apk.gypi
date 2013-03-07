@@ -85,19 +85,21 @@
       'rule_name': 'copy_and_strip_native_libraries',
       'extension': 'so',
       'variables': {
-        'stripped_library_path': '<(PRODUCT_DIR)/<(_target_name)/libs/<(android_app_abi)/<(RULE_INPUT_ROOT).so',
+        'apk_libraries_dir': '<(PRODUCT_DIR)/<(_target_name)/libs/<(android_app_abi)',
+        'stripped_library_path': '<(apk_libraries_dir)/<(RULE_INPUT_ROOT).so',
       },
+      'inputs': [
+        '<(DEPTH)/build/android/strip_library_for_apk.py',
+      ],
       'outputs': [
         '<(stripped_library_path)',
       ],
-      # There is no way to do 2 actions for each source library in gyp. So to
-      # both strip the library and create the link in <(link_dir) a separate
-      # script is required.
       'action': [
-        '<(DEPTH)/build/android/prepare_library_for_apk',
-        '<(android_strip)',
+        'python', '<(DEPTH)/build/android/strip_library_for_apk.py',
+        '--android-strip=<(android_strip)',
+        '--android-strip-arg=--strip-unneeded',
+        '--stripped-libraries-dir=<(apk_libraries_dir)',
         '<(RULE_INPUT_PATH)',
-        '<(stripped_library_path)',
       ],
     },
   ],
