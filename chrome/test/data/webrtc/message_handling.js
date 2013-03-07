@@ -162,6 +162,22 @@ function addLocalStream() {
 }
 
 /**
+ * Loads a file with WebAudio and plays it through the peer connection.
+ *
+ * @param url URL pointing to the file to play. You can assume that you can
+ *     serve files from the repository's file system. For instance, to serve a
+ *     file from chrome/test/data/pyauto_private/webrtc/file.wav, pass in a path
+ *     relative to this directory (e.g. ../pyauto_private/webrtc/file.wav).
+ */
+function addAudioFile(url) {
+  if (gPeerConnection == null)
+    throw failTest('adding audio file, but we have no peer connection.');
+
+  loadAudioAndAddToPeerConnection(url, gPeerConnection);
+  returnToTest('ok-added');
+}
+
+/**
  * Removes the local stream from the peer connection. You will have to
  * re-negotiate the call for this to take effect in the call.
  */

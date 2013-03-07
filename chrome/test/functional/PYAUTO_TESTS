@@ -498,7 +498,8 @@
   },
 
   # WebRTC MediaStream tests. Requires webcam and audio device to be present on
-  # the test machine.
+  # the test machine. The webrtc_audio_call test requires additional
+  # configuration as described in the test's class comments.
   'WEBRTC': {
     'all': [
       'media_stream_infobar',
@@ -507,6 +508,9 @@
     ],
     'linux': [
       'webrtc_audio_call',
+    ],
+    'win': [
+      'webrtc_audio_call.testWebrtcAudioCallAndMeasureQuality',
     ],
   },
 
