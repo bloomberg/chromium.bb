@@ -39,8 +39,7 @@ void PrefRegistry::SetDefaultPrefValue(const char* pref_name,
         << "Wrong type for new default: " << pref_name;
   }
 
-  defaults_->RemoveDefaultValue(pref_name);
-  defaults_->SetDefaultValue(pref_name, value);
+  defaults_->ReplaceDefaultValue(pref_name, make_scoped_ptr(value));
 }
 
 void PrefRegistry::SetRegistrationCallback(
@@ -57,7 +56,7 @@ void PrefRegistry::RegisterPreference(const char* path,
   DCHECK(!defaults_->GetValue(path, NULL)) <<
       "Trying to register a previously registered pref: " << path;
 
-  defaults_->SetDefaultValue(path, default_value);
+  defaults_->SetDefaultValue(path, make_scoped_ptr(default_value));
 
   if (!registration_callback_.is_null())
     registration_callback_.Run(path, default_value);

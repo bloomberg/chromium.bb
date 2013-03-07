@@ -9,20 +9,37 @@ using base::Value;
 
 DefaultPrefStore::DefaultPrefStore() {}
 
-bool DefaultPrefStore::GetValue(
-    const std::string& key,
-    const base::Value** result) const {
+bool DefaultPrefStore::GetValue(const std::string& key,
+                                const Value** result) const {
   return prefs_.GetValue(key, result);
 }
 
-void DefaultPrefStore::SetDefaultValue(const std::string& key, Value* value) {
-  DCHECK(!GetValue(key, NULL));
-  prefs_.SetValue(key, value);
+void DefaultPrefStore::AddObserver(PrefStore::Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void DefaultPrefStore::RemoveDefaultValue(const std::string& key) {
-  DCHECK(GetValue(key, NULL));
-  prefs_.RemoveValue(key);
+void DefaultPrefStore::RemoveObserver(PrefStore::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+size_t DefaultPrefStore::NumberOfObservers() const {
+  return observers_.size();
+}
+
+void DefaultPrefStore::SetDefaultValue(const std::string& key,
+                                       scoped_ptr<Value> value) {
+  DCHECK(!GetValue(key, NULL));
+  prefs_.SetValue(key, value.release());
+}
+
+void DefaultPrefStore::ReplaceDefaultValue(const std::string& key,
+                                           scoped_ptr<Value> value) {
+  const Value* old_value = NULL;
+  GetValue(key, &old_value);
+  bool notify = !old_value->Equals(value.get());
+  prefs_.SetValue(key, value.release());
+  if (notify)
+    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }
 
 DefaultPrefStore::const_iterator DefaultPrefStore::begin() const {

@@ -521,6 +521,7 @@
         'posix/file_descriptor_shuffle_unittest.cc',
         'posix/unix_domain_socket_linux_unittest.cc',
         'pr_time_unittest.cc',
+        'prefs/default_pref_store_unittest.cc',
         'prefs/json_pref_store_unittest.cc',
         'prefs/mock_pref_change_callback.h',
         'prefs/overlay_user_pref_store_unittest.cc',
