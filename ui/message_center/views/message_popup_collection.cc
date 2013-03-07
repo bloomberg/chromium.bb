@@ -24,7 +24,6 @@ namespace message_center {
 class ToastContentsView : public views::WidgetDelegateView {
  public:
   ToastContentsView(const Notification* notification,
-                    MessageView* view,
                     MessagePopupCollection* collection)
       : collection_(collection) {
     DCHECK(collection_);
@@ -35,7 +34,6 @@ class ToastContentsView : public views::WidgetDelegateView {
     // the whole toast seems to slide although the actual bound of the widget
     // remains. This is hacky but easier to keep the consistency.
     set_background(views::Background::CreateSolidBackground(0, 0, 0, 0));
-    AddChildView(view);
 
     int seconds = kAutocloseDefaultDelaySeconds;
     if (notification->priority() > DEFAULT_PRIORITY)
@@ -57,6 +55,12 @@ class ToastContentsView : public views::WidgetDelegateView {
     views::Widget* widget = new views::Widget();
     widget->Init(params);
     return widget;
+  }
+
+  void SetContents(MessageView* view) {
+    RemoveAllChildViews(true);
+    AddChildView(view);
+    Layout();
   }
 
   void SuspendTimer() {
@@ -149,12 +153,16 @@ void MessagePopupCollection::UpdatePopups() {
            popups.begin(); iter != popups.end(); ++iter) {
     ToastContainer::iterator toast_iter = toasts_.find((*iter)->id());
     views::Widget* widget = NULL;
+    MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
     if (toast_iter != toasts_.end()) {
       widget = toast_iter->second->GetWidget();
       old_toast_ids.erase((*iter)->id());
+      // Need to replace the contents because |view| can be updated, like
+      // image loads.
+      toast_iter->second->SetContents(view);
     } else {
-      MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
-      ToastContentsView* toast = new ToastContentsView(*iter, view, this);
+      ToastContentsView* toast = new ToastContentsView(*iter, this);
+      toast->SetContents(view);
       widget = toast->CreateWidget(context_);
       widget->AddObserver(this);
       toast->StartTimer();
