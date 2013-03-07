@@ -69,8 +69,13 @@ class StreamReaderDelegate :
 
   virtual scoped_ptr<InputStream> OpenInputStream(
       JNIEnv* env,
-      net::URLRequest* request) {
+      const GURL& url) {
     return make_scoped_ptr<InputStream>(new NotImplInputStream());
+  }
+
+  virtual void OnInputStreamOpenFailed(net::URLRequest* request,
+                                       bool* restart) {
+    *restart = false;
   }
 
   virtual bool GetMimeType(

@@ -6,23 +6,25 @@
 #define ANDROID_WEBVIEW_BROWSER_NET_INIT_NATIVE_CALLBACK_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 class CookieMonster;
-class URLRequestJobFactory;
 }  // namespace net
 
 namespace android_webview {
-class AwURLRequestJobFactory;
 
 // This is called on the IO thread when the CookieMonster has been created.
 // Note that the UI thread is blocked during this call.
 void DidCreateCookieMonster(net::CookieMonster* cookie_monster);
 
-// Called lazily when the job factory is being constructed; allows android
-// webview specific request factories to be added to the chain.
-scoped_ptr<net::URLRequestJobFactory> CreateAndroidJobFactory(
-    scoped_ptr<AwURLRequestJobFactory> job_factory);
+// Called lazily when the job factory is being constructed.
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+    CreateAndroidAssetFileProtocolHandler();
+
+// Called lazily when the job factory is being constructed.
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+    CreateAndroidContentProtocolHandler();
 
 }  // namespace android_webview
 

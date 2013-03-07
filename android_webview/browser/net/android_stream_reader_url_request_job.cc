@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
@@ -81,19 +82,57 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
 AndroidStreamReaderURLRequestJob::~AndroidStreamReaderURLRequestJob() {
 }
 
+namespace {
+
+typedef base::Callback<
+    void(scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>,
+         scoped_ptr<InputStream>)> OnInputStreamOpenedCallback;
+
+// static
+void OpenInputStreamOnWorkerThread(
+    scoped_refptr<base::MessageLoopProxy> job_thread_proxy,
+    scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate> delegate,
+    const GURL& url,
+    OnInputStreamOpenedCallback callback) {
+
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+
+  scoped_ptr<InputStream> input_stream = delegate->OpenInputStream(env, url);
+  job_thread_proxy->PostTask(FROM_HERE,
+                             base::Bind(callback,
+                                        base::Passed(delegate.Pass()),
+                                        base::Passed(input_stream.Pass())));
+}
+
+} // namespace
+
 void AndroidStreamReaderURLRequestJob::Start() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING,
                                   net::ERR_IO_PENDING));
-  MessageLoop::current()->PostTask(
+
+  // This could be done in the InputStreamReader but would force more
+  // complex synchronization in the delegate.
+  GetWorkerThreadRunner()->PostTask(
       FROM_HERE,
       base::Bind(
-          &AndroidStreamReaderURLRequestJob::StartAsync,
-          weak_factory_.GetWeakPtr()));
+          &OpenInputStreamOnWorkerThread,
+          MessageLoop::current()->message_loop_proxy(),
+          // This is intentional - the job could be deleted while the callback
+          // is executing on the background thread.
+          // The delegate will be "returned" to the job once the InputStream
+          // open attempt is completed.
+          base::Passed(&delegate_),
+          request()->url(),
+          base::Bind(&AndroidStreamReaderURLRequestJob::OnInputStreamOpened,
+                     weak_factory_.GetWeakPtr())));
 }
 
 void AndroidStreamReaderURLRequestJob::Kill() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   weak_factory_.InvalidateWeakPtrs();
   URLRequestJob::Kill();
 }
@@ -103,28 +142,32 @@ AndroidStreamReaderURLRequestJob::CreateStreamReader(InputStream* stream) {
   return make_scoped_ptr(new InputStreamReader(stream));
 }
 
-void AndroidStreamReaderURLRequestJob::StartAsync() {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
+void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
+      scoped_ptr<Delegate> returned_delegate,
+      scoped_ptr<android_webview::InputStream> input_stream) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(returned_delegate);
+  delegate_ = returned_delegate.Pass();
 
-  // This could be done in the InputStreamReader but would force more
-  // complex synchronization in the delegate.
-  scoped_ptr<android_webview::InputStream> stream(
-      delegate_->OpenInputStream(env, request()));
-
-  if (!stream) {
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                     net::ERR_FAILED));
+  if (!input_stream) {
+    bool restart_required = false;
+    delegate_->OnInputStreamOpenFailed(request(), &restart_required);
+    if (restart_required) {
+      NotifyRestartRequired();
+    } else {
+      NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                       net::ERR_FAILED));
+    }
     return;
   }
 
   scoped_ptr<InputStreamReader> input_stream_reader(
-      CreateStreamReader(stream.get()));
+      CreateStreamReader(input_stream.get()));
   DCHECK(input_stream_reader);
 
   DCHECK(!input_stream_reader_wrapper_);
-  input_stream_reader_wrapper_ =
-      new InputStreamReaderWrapper(stream.Pass(), input_stream_reader.Pass());
+  input_stream_reader_wrapper_ = new InputStreamReaderWrapper(
+      input_stream.Pass(), input_stream_reader.Pass());
 
   PostTaskAndReplyWithResult(
       GetWorkerThreadRunner(),
@@ -137,6 +180,7 @@ void AndroidStreamReaderURLRequestJob::StartAsync() {
 }
 
 void AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted(int result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Clear the IO_PENDING status set in Start().
   SetStatus(net::URLRequestStatus());
   if (result >= 0) {
@@ -148,6 +192,7 @@ void AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted(int result) {
 }
 
 void AndroidStreamReaderURLRequestJob::OnReaderReadCompleted(int result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // The URLRequest API contract requires that:
   // * NotifyDone be called once, to set the status code, indicate the job is
   //   finished (there will be no further IO),
@@ -174,6 +219,7 @@ base::TaskRunner* AndroidStreamReaderURLRequestJob::GetWorkerThreadRunner() {
 bool AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
                                                    int dest_size,
                                                    int* bytes_read) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(input_stream_reader_wrapper_);
 
   PostTaskAndReplyWithResult(
@@ -193,6 +239,7 @@ bool AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
 
 bool AndroidStreamReaderURLRequestJob::GetMimeType(
     std::string* mime_type) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
 
@@ -208,6 +255,7 @@ bool AndroidStreamReaderURLRequestJob::GetMimeType(
 }
 
 bool AndroidStreamReaderURLRequestJob::GetCharset(std::string* charset) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
 

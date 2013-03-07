@@ -7,9 +7,10 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
@@ -37,9 +38,18 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
    */
   class Delegate {
    public:
+    // This method is called from a worker thread, not from the IO thread.
     virtual scoped_ptr<android_webview::InputStream> OpenInputStream(
         JNIEnv* env,
-        net::URLRequest* request) = 0;
+        const GURL& url) = 0;
+
+    // This method is called on the Job's thread if the result of calling
+    // OpenInputStream was null.
+    // Setting the |restart| parameter to true will cause the request to be
+    // restarted with a new job.
+    virtual void OnInputStreamOpenFailed(
+        net::URLRequest* request,
+        bool* restart) = 0;
 
     virtual bool GetMimeType(
         JNIEnv* env,
@@ -85,8 +95,9 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
       CreateStreamReader(android_webview::InputStream* stream);
 
  private:
-  void StartAsync();
-
+  void OnInputStreamOpened(
+      scoped_ptr<Delegate> delegate,
+      scoped_ptr<android_webview::InputStream> input_stream);
   void OnReaderSeekCompleted(int content_size);
   void OnReaderReadCompleted(int bytes_read);
 
@@ -94,6 +105,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
   scoped_ptr<Delegate> delegate_;
   scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;
   base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLRequestJob);
 };

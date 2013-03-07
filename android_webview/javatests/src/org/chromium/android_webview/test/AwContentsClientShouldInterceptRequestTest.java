@@ -8,11 +8,13 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
@@ -118,10 +120,20 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
     }
 
     private TestWebServer mWebServer;
+    private TestAwContentsClient mContentsClient;
+    private AwTestContainerView mTestContainerView;
+    private AwContents mAwContents;
+    private TestAwContentsClient.ShouldInterceptRequestHelper mShouldInterceptRequestHelper;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        mContentsClient = new TestAwContentsClient();
+        mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
+        mAwContents = mTestContainerView.getAwContents();
+        mShouldInterceptRequestHelper = mContentsClient.getShouldInterceptRequestHelper();
+
         mWebServer = new TestWebServer(false);
     }
 
@@ -134,44 +146,32 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCalledWithCorrectUrl() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
-        int callCount = shouldInterceptRequestHelper.getCallCount();
-        int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        int onPageFinishedCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
 
-        loadUrlAsync(awContents, aboutPageUrl);
+        loadUrlAsync(mAwContents, aboutPageUrl);
 
-        shouldInterceptRequestHelper.waitForCallback(callCount);
-        assertEquals(1, shouldInterceptRequestHelper.getUrls().size());
+        mShouldInterceptRequestHelper.waitForCallback(callCount);
+        assertEquals(1, mShouldInterceptRequestHelper.getUrls().size());
         assertEquals(aboutPageUrl,
-                shouldInterceptRequestHelper.getUrls().get(0));
+                mShouldInterceptRequestHelper.getUrls().get(0));
 
-        contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
-        assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(awContents));
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+        assertEquals(CommonResources.ABOUT_TITLE, getTitleOnUiThread(mAwContents));
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnLoadResourceCalledWithCorrectUrl() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.OnLoadResourceHelper onLoadResourceHelper =
-            contentsClient.getOnLoadResourceHelper();
-
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        final TestAwContentsClient.OnLoadResourceHelper onLoadResourceHelper =
+            mContentsClient.getOnLoadResourceHelper();
 
         int callCount = onLoadResourceHelper.getCallCount();
 
-        loadUrlAsync(awContents, aboutPageUrl);
+        loadUrlAsync(mAwContents, aboutPageUrl);
 
         onLoadResourceHelper.waitForCallback(callCount);
         assertEquals(aboutPageUrl, onLoadResourceHelper.getUrl());
@@ -180,32 +180,25 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDoesNotCrashOnInvalidData() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
-        shouldInterceptRequestHelper.setReturnValue(
+        mShouldInterceptRequestHelper.setReturnValue(
                 new InterceptedRequestData("text/html", "UTF-8", null));
-        int callCount = shouldInterceptRequestHelper.getCallCount();
-        loadUrlAsync(awContents, aboutPageUrl);
-        shouldInterceptRequestHelper.waitForCallback(callCount);
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(mAwContents, aboutPageUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount);
 
-        shouldInterceptRequestHelper.setReturnValue(
+        mShouldInterceptRequestHelper.setReturnValue(
                 new InterceptedRequestData(null, null, new ByteArrayInputStream(new byte[0])));
-        callCount = shouldInterceptRequestHelper.getCallCount();
-        loadUrlAsync(awContents, aboutPageUrl);
-        shouldInterceptRequestHelper.waitForCallback(callCount);
+        callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(mAwContents, aboutPageUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount);
 
-        shouldInterceptRequestHelper.setReturnValue(
+        mShouldInterceptRequestHelper.setReturnValue(
                 new InterceptedRequestData(null, null, null));
-        callCount = shouldInterceptRequestHelper.getCallCount();
-        loadUrlAsync(awContents, aboutPageUrl);
-        shouldInterceptRequestHelper.waitForCallback(callCount);
+        callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(mAwContents, aboutPageUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount);
     }
 
     private static class EmptyInputStream extends InputStream {
@@ -240,24 +233,17 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDoesNotCrashOnEmptyStream() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
-        shouldInterceptRequestHelper.setReturnValue(
+        mShouldInterceptRequestHelper.setReturnValue(
                 new InterceptedRequestData("text/html", "UTF-8", new EmptyInputStream()));
-        int shouldInterceptRequestCallCount = shouldInterceptRequestHelper.getCallCount();
-        int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
+        int shouldInterceptRequestCallCount = mShouldInterceptRequestHelper.getCallCount();
+        int onPageFinishedCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
 
-        loadUrlAsync(awContents, aboutPageUrl);
+        loadUrlAsync(mAwContents, aboutPageUrl);
 
-        shouldInterceptRequestHelper.waitForCallback(shouldInterceptRequestCallCount);
-        contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+        mShouldInterceptRequestHelper.waitForCallback(shouldInterceptRequestCallCount);
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
     }
 
 
@@ -269,59 +255,38 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCanInterceptMainFrame() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
         final String expectedTitle = "testShouldInterceptRequestCanInterceptMainFrame";
         final String expectedPage = makePageWithTitle(expectedTitle);
 
-        shouldInterceptRequestHelper.setReturnValue(
+        mShouldInterceptRequestHelper.setReturnValue(
                 stringToInterceptedRequestData(expectedPage));
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
-        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), aboutPageUrl);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), aboutPageUrl);
 
-        assertEquals(expectedTitle, getTitleOnUiThread(awContents));
+        assertEquals(expectedTitle, getTitleOnUiThread(mAwContents));
         assertEquals(0, mWebServer.getRequestCount("/" + CommonResources.ABOUT_FILENAME));
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDoesNotChangeReportedUrl() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
-        shouldInterceptRequestHelper.setReturnValue(
+        mShouldInterceptRequestHelper.setReturnValue(
                 stringToInterceptedRequestData(makePageWithTitle("some title")));
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
-        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), aboutPageUrl);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), aboutPageUrl);
 
-        assertEquals(aboutPageUrl, contentsClient.getOnPageFinishedHelper().getUrl());
-        assertEquals(aboutPageUrl, contentsClient.getOnPageStartedHelper().getUrl());
+        assertEquals(aboutPageUrl, mContentsClient.getOnPageFinishedHelper().getUrl());
+        assertEquals(aboutPageUrl, mContentsClient.getOnPageStartedHelper().getUrl());
     }
 
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCalledForImage() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
         final String imagePath = "/" + CommonResources.FAVICON_FILENAME;
         mWebServer.setResponseBase64(imagePath,
                 CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
@@ -329,52 +294,160 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
             addPageToTestServer(mWebServer, "/page_with_image.html",
                     CommonResources.getOnImageLoadedHtml(CommonResources.FAVICON_FILENAME));
 
-        int callCount = shouldInterceptRequestHelper.getCallCount();
-        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithImage);
-        shouldInterceptRequestHelper.waitForCallback(callCount, 2);
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithImage);
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
 
-        assertEquals(2, shouldInterceptRequestHelper.getUrls().size());
-        assertTrue(shouldInterceptRequestHelper.getUrls().get(1).endsWith(
+        assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        assertTrue(mShouldInterceptRequestHelper.getUrls().get(1).endsWith(
                 CommonResources.FAVICON_FILENAME));
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCalledForIframe() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
-
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         final String pageWithIframe = addPageToTestServer(mWebServer, "/page_with_iframe.html",
                 CommonResources.makeHtmlPageFrom("",
                     "<iframe src=\"" + aboutPageUrl + "\"/>"));
 
-        int callCount = shouldInterceptRequestHelper.getCallCount();
-        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframe);
-        shouldInterceptRequestHelper.waitForCallback(callCount, 2);
-        assertEquals(2, shouldInterceptRequestHelper.getUrls().size());
-        assertEquals(aboutPageUrl, shouldInterceptRequestHelper.getUrls().get(1));
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithIframe);
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
+        assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        assertEquals(aboutPageUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+    }
+
+    private void calledForUrlTemplate(final String url) throws Exception {
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        int onPageStartedCallCount = mContentsClient.getOnPageStartedHelper().getCallCount();
+        loadUrlAsync(mAwContents, url);
+        mShouldInterceptRequestHelper.waitForCallback(callCount);
+        assertEquals(url, mShouldInterceptRequestHelper.getUrls().get(0));
+
+        mContentsClient.getOnPageStartedHelper().waitForCallback(onPageStartedCallCount);
+        assertEquals(onPageStartedCallCount + 1,
+                mContentsClient.getOnPageStartedHelper().getCallCount());
+    }
+
+    private void notCalledForUrlTemplate(final String url) throws Exception {
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+        // The intercepting must happen before onPageFinished. Since the IPC messages from the
+        // renderer should be delivered in order waiting for onPageFinished is sufficient to
+        // 'flush' any pending interception messages.
+        assertEquals(callCount, mShouldInterceptRequestHelper.getCallCount());
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCalledForUnsupportedSchemes() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-            createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
-            contentsClient.getShouldInterceptRequestHelper();
+        calledForUrlTemplate("foobar://resource/1");
+    }
 
-        final String unhandledSchemeUrl = "foobar://resource/1";
-        int callCount = shouldInterceptRequestHelper.getCallCount();
-        loadUrlAsync(awContents, unhandledSchemeUrl);
-        shouldInterceptRequestHelper.waitForCallback(callCount);
-        assertEquals(unhandledSchemeUrl,
-                shouldInterceptRequestHelper.getUrls().get(0));
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCalledForNonexistentFiles() throws Throwable {
+        calledForUrlTemplate("file:///somewhere/something");
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCalledForExistingFiles() throws Throwable {
+        final String tmpDir = getInstrumentation().getTargetContext().getCacheDir().getPath();
+        final String fileName = tmpDir + "/testfile.html";
+        final String title = "existing file title";
+        TestFileUtil.deleteFile(fileName);  // Remove leftover file if any.
+        TestFileUtil.createNewHtmlFile(fileName, title, "");
+        final String existingFileUrl = "file://" + fileName;
+
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        int onPageFinishedCallCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+        loadUrlAsync(mAwContents, existingFileUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount);
+        assertEquals(existingFileUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+        assertEquals(title, getTitleOnUiThread(mAwContents));
+        assertEquals(onPageFinishedCallCount + 1,
+                mContentsClient.getOnPageFinishedHelper().getCallCount());
+    }
+
+    /**
+     * Configure the browser to load resources from the test harness instead of the browser
+     * application.
+     */
+    private void useTestResourceContext() {
+        AndroidProtocolHandler.setResourceContextForTesting(getInstrumentation().getContext());
+    }
+
+    /**
+     * Configure the browser to load resources from the browser application.
+     */
+    private void resetResourceContext() {
+        AndroidProtocolHandler.setResourceContextForTesting(null);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNotCalledForExistingResource() throws Throwable {
+        try {
+            useTestResourceContext();
+            notCalledForUrlTemplate("file:///android_res/raw/resource_file.html");
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCalledForNonexistentResource() throws Throwable {
+        try {
+            useTestResourceContext();
+            calledForUrlTemplate("file:///android_res/raw/no_file.html");
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNotCalledForExistingAsset() throws Throwable {
+        try {
+            useTestResourceContext();
+            notCalledForUrlTemplate("file:///android_asset/asset_file.html");
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCalledForNonexistentAsset() throws Throwable {
+        try {
+            useTestResourceContext();
+            calledForUrlTemplate("file:///android_res/raw/no_file.html");
+        } finally {
+            resetResourceContext();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNotCalledForExistingContentUrl() throws Throwable {
+        final String contentResourceName = "target";
+        final String existingContentUrl = TestContentProvider.createContentUrl(contentResourceName);
+
+        notCalledForUrlTemplate(existingContentUrl);
+
+        int contentRequestCount = TestContentProvider.getResourceRequestCount(
+                getInstrumentation().getTargetContext(), contentResourceName);
+        assertEquals(1, contentRequestCount);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCalledForNonexistentContentUrl() throws Throwable {
+        calledForUrlTemplate("content://org.chromium.webview.NoSuchProvider/foo");
     }
 }

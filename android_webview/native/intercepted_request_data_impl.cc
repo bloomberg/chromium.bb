@@ -29,8 +29,13 @@ class StreamReaderJobDelegateImpl :
 
     virtual scoped_ptr<InputStream> OpenInputStream(
         JNIEnv* env,
-        net::URLRequest* request) OVERRIDE {
+        const GURL& url) OVERRIDE {
       return intercepted_request_data_impl_->GetInputStream(env).Pass();
+    }
+
+    virtual void OnInputStreamOpenFailed(net::URLRequest* request,
+                                         bool* restart) OVERRIDE {
+      *restart = false;
     }
 
     virtual bool GetMimeType(JNIEnv* env,
