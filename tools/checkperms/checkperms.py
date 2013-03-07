@@ -149,6 +149,7 @@ IGNORED_PATHS = (
   'out/',
   # TODO(maruel): Fix these.
   'third_party/android_testrunner/',
+  'third_party/bintrees/',
   'third_party/closure_linter/',
   'third_party/devscripts/licensecheck.pl.vanilla',
   'third_party/hyphen/',
