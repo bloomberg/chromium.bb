@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the tabs API.
+// Custom binding for the tabs API.
+
+var binding = require('binding').Binding.create('tabs');
 
 var tabsNatives = requireNative('tabs');
 var OpenChannelToTab = tabsNatives.OpenChannelToTab;
@@ -10,8 +12,9 @@ var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
+binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
+  var tabs = bindingsAPI.compiledApi;
 
   apiFunctions.setHandleRequest('connect', function(tabId, connectInfo) {
     var name = '';
@@ -26,13 +29,15 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
                                 function(tabId, request, responseCallback) {
     if (sendRequestIsDisabled)
       throw new Error(sendRequestIsDisabled);
-    var port = chrome.tabs.connect(tabId, {name: chromeHidden.kRequestChannel});
+    var port = tabs.connect(tabId, {name: chromeHidden.kRequestChannel});
     chromeHidden.Port.sendMessageImpl(port, request, responseCallback);
   });
 
   apiFunctions.setHandleRequest('sendMessage',
                                 function(tabId, message, responseCallback) {
-    var port = chrome.tabs.connect(tabId, {name: chromeHidden.kMessageChannel});
+    var port = tabs.connect(tabId, {name: chromeHidden.kMessageChannel});
     chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
   });
 });
+
+exports.binding = binding.generate();

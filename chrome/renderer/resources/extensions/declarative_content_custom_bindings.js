@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the declarativeContent API.
+// Custom binding for the declarativeContent API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var binding = require('binding').Binding.create('declarativeContent');
+
 var utils = require('utils');
 var validate = require('schemaUtils').validate;
 
-chromeHidden.registerCustomHook('declarativeContent', function(api) {
+binding.registerCustomHook( function(api) {
+  var declarativeContent = api.compiledApi;
+
   // Returns the schema definition of type |typeId| defined in |namespace|.
-  function getSchema(namespace, typeId) {
-    var apiSchema = utils.lookup(api.apiDefinitions, 'namespace', namespace);
-    var resultSchema = utils.lookup(
-        apiSchema.types, 'id', namespace + '.' + typeId);
-    return resultSchema;
+  function getSchema(typeId) {
+    return utils.lookup(api.schema.types,
+                        'id',
+                        'declarativeContent.' + typeId);
   }
 
   // Helper function for the constructor of concrete datatypes of the
@@ -29,15 +31,17 @@ chromeHidden.registerCustomHook('declarativeContent', function(api) {
       }
     }
     instance.instanceType = 'declarativeContent.' + typeId;
-    var schema = getSchema('declarativeContent', typeId);
+    var schema = getSchema(typeId);
     validate([instance], [schema]);
   }
 
   // Setup all data types for the declarative content API.
-  chrome.declarativeContent.PageStateMatcher = function(parameters) {
+  declarativeContent.PageStateMatcher = function(parameters) {
     setupInstance(this, parameters, 'PageStateMatcher');
   };
-  chrome.declarativeContent.ShowPageAction = function(parameters) {
+  declarativeContent.ShowPageAction = function(parameters) {
     setupInstance(this, parameters, 'ShowPageAction');
   };
 });
+
+exports.binding = binding.generate();

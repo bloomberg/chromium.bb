@@ -3,25 +3,41 @@
 // found in the LICENSE file.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var DCHECK = requireNative('logging').DCHECK;
 var json = require('json');
 var lastError = require('lastError');
 var natives = requireNative('sendRequest');
 var validate = require('schemaUtils').validate;
 
+// All outstanding requests from sendRequest().
+var requests = {};
+
 // Callback handling.
-var requests = [];
 chromeHidden.handleResponse = function(requestId, name,
                                        success, responseList, error) {
+  // The chrome objects we will set lastError on. Really we should only be
+  // setting this on the callback's chrome object, but set on ours too since
+  // it's conceivable that something relies on that.
+  var chromesForLastError = [chrome];
+
   try {
     var request = requests[requestId];
-    if (success) {
-      lastError.clear();
-    } else {
-      if (!error) {
+    DCHECK(request != null);
+
+    // lastError needs to be set on the caller's chrome object no matter what,
+    // though chances are it's the same as ours (it will be different when
+    // calling API methods on other contexts).
+    if (request.callback) {
+      var chromeForCallback = natives.GetGlobal(request.callback).chrome;
+      if (chromeForCallback != chrome)
+        chromesForLastError.push(chromeForCallback);
+    }
+
+    chromesForLastError.forEach(function(c) {lastError.clear(c)});
+    if (!success) {
+      if (!error)
         error = "Unknown error.";
-      }
-      console.error("Error during " + name + ": " + error);
-      lastError.set(error);
+      chromesForLastError.forEach(function(c) {lastError.set(error, c)});
     }
 
     if (request.customCallback) {
@@ -32,7 +48,7 @@ chromeHidden.handleResponse = function(requestId, name,
     if (request.callback) {
       // Validate callback in debug only -- and only when the
       // caller has provided a callback. Implementations of api
-      // calls my not return data if they observe the caller
+      // calls may not return data if they observe the caller
       // has not provided a callback.
       if (chromeHidden.validateCallbacks && !error) {
         try {
@@ -51,10 +67,8 @@ chromeHidden.handleResponse = function(requestId, name,
     }
   } finally {
     delete requests[requestId];
-    lastError.clear();
+    chromesForLastError.forEach(function(c) {lastError.clear(c)});
   }
-
-  return undefined;
 };
 
 function prepareRequest(args, argSchemas) {
@@ -109,6 +123,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   var requestId = natives.GetNextRequestId();
   request.id = requestId;
   requests[requestId] = request;
+
   var hasCallback = request.callback || optArgs.customCallback;
   return nativeFunction(functionName,
                         requestArgs,

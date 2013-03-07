@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the chrome.app.runtime API.
+// Custom binding for the chrome.app.runtime API.
+
+var binding = require('binding').Binding.create('app.runtime');
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var chrome = requireNative('chrome').GetChrome();
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
 var appNatives = requireNative('app_runtime');
@@ -49,3 +52,5 @@ chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
     dispatch([]);
   }
 });
+
+exports.binding = binding.generate();

@@ -343,7 +343,7 @@ void AutocompleteMatch::AddLastClassificationIfNecessary(
 // static
 string16 AutocompleteMatch::SanitizeString(const string16& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
-  // schema_generated_bindings.js.
+  // omnibox_custom_bindings.js.
   string16 result;
   TrimWhitespace(text, TRIM_LEADING, &result);
   RemoveChars(result, kInvalidChars, &result);

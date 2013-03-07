@@ -16,8 +16,9 @@
 
 namespace extensions {
 
-MediaGalleriesCustomBindings::MediaGalleriesCustomBindings()
-    : ChromeV8Extension(NULL) {
+MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
+    Dispatcher* dispatcher, v8::Handle<v8::Context> v8_context)
+    : ChromeV8Extension(dispatcher, v8_context) {
   RouteFunction(
       "GetMediaFileSystemObject",
       base::Bind(&MediaGalleriesCustomBindings::GetMediaFileSystemObject,

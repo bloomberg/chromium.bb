@@ -11,21 +11,30 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+class ChromeV8Context;
 class RequestSender;
 
 // Native functions exposed to extensions via JS for calling API functions in
 // the browser.
 class SendRequestNatives : public ChromeV8Extension {
  public:
-  SendRequestNatives(Dispatcher* dispatcher, RequestSender* request_sender);
+  SendRequestNatives(Dispatcher* dispatcher,
+                     RequestSender* request_sender,
+                     ChromeV8Context* context);
 
  private:
   v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args);
+
   // Starts an API request to the browser, with an optional callback.  The
   // callback will be dispatched to EventBindings::HandleResponse.
   v8::Handle<v8::Value> StartRequest(const v8::Arguments& args);
 
+  // Gets a reference to an object's global object.
+  v8::Handle<v8::Value> GetGlobal(const v8::Arguments& args);
+
   RequestSender* request_sender_;
+
+  ChromeV8Context* context_;
 
   DISALLOW_COPY_AND_ASSIGN(SendRequestNatives);
 };

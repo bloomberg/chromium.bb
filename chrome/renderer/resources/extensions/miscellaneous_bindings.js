@@ -8,10 +8,10 @@
 // content scripts only.
 
   require('json_schema');
-  require('event_bindings');
   var json = require('json');
   var lastError = require('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
+  var chrome = requireNative('chrome').GetChrome();
   var CloseChannel = miscNatives.CloseChannel;
   var PortAddRef = miscNatives.PortAddRef;
   var PortRelease = miscNatives.PortRelease;
@@ -121,7 +121,7 @@
     if (sourceExtensionId != targetExtensionId)
       errorMsg += " for extension " + targetExtensionId;
     errorMsg += ").";
-    lastError.set(errorMsg);
+    lastError.set(errorMsg, chrome);
     console.error("Could not send response: " + errorMsg);
   }
 
@@ -233,14 +233,14 @@
       if (connectionInvalid) {
         var errorMsg =
             "Could not establish connection. Receiving end does not exist.";
-        lastError.set(errorMsg);
+        lastError.set(errorMsg, chrome);
         console.error("Port error: " + errorMsg);
       }
       try {
         port.onDisconnect.dispatch(port);
       } finally {
         port.destroy_();
-        lastError.clear();
+        lastError.clear(chrome);
       }
     }
   };

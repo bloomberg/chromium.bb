@@ -12,7 +12,8 @@ namespace extensions {
 // Implements custom bindings for the media galleries API.
 class MediaGalleriesCustomBindings : public ChromeV8Extension {
  public:
-  MediaGalleriesCustomBindings();
+  MediaGalleriesCustomBindings(Dispatcher* dispatcher,
+                               v8::Handle<v8::Context> context);
 
  private:
   // FileSystemObject GetMediaFileSystem(string file_system_url): construct

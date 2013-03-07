@@ -12,7 +12,8 @@ namespace extensions {
 // The native component of custom bindings for the chrome.app.runtime API.
 class AppRuntimeCustomBindings : public ChromeV8Extension {
  public:
-  AppRuntimeCustomBindings();
+  AppRuntimeCustomBindings(Dispatcher* dispatcher,
+                           v8::Handle<v8::Context> context);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppRuntimeCustomBindings);
