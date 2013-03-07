@@ -8,6 +8,7 @@
 #include <string>
 #include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 
 namespace chromeos {
 class IBusInputContextHandlerInterface;
@@ -62,11 +63,26 @@ class IBusBridge {
 
   // Returns current PropertyHandler. This function returns NULL if panel window
   // is not ready to use.
-  virtual IBusPanelPropertyHandlerInterface* GetPanelHandler() const = 0;
+  virtual IBusPanelPropertyHandlerInterface* GetPropertyHandler() const = 0;
 
   // Updates current PropertyHandler. If there is no active property service,
   // pass NULL for |handler|. Caller must release |handler|.
-  virtual void SetPanelHandler(IBusPanelPropertyHandlerInterface* handler) = 0;
+  virtual void SetPropertyHandler(
+      IBusPanelPropertyHandlerInterface* handler) = 0;
+
+  // Sets create engine handler for |engine_id|. |engine_id| must not be empty
+  // and |handler| must not be null.
+  virtual void SetCreateEngineHandler(
+      const std::string& engine_id,
+      const IBusEngineFactoryService::CreateEngineHandler& handler) = 0;
+
+  // Unsets create engine handler for |engine_id|. |engine_id| must not be
+  // empty.
+  virtual void UnsetCreateEngineHandler(const std::string& engine_id) = 0;
+
+  // Creates engine. Do not call this function before SetCreateEngineHandler
+  // call with |engine_id|.
+  virtual void CreateEngine(const std::string& engine_id) = 0;
 
  protected:
   IBusBridge();

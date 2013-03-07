@@ -4,10 +4,15 @@
 
 #include "chromeos/ime/ibus_bridge.h"
 
+#include <map>
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 
 namespace chromeos {
+
+namespace {
+void NoOpCreateEngineReply(const dbus::ObjectPath& unused_path) {}
+}  // namespace
 
 static IBusBridge* g_ibus_bridge = NULL;
 
@@ -59,14 +64,36 @@ class IBusBridgeImpl : public IBusBridge {
   }
 
   // IBusBridge override.
-  virtual IBusPanelPropertyHandlerInterface* GetPanelHandler() const OVERRIDE {
+  virtual IBusPanelPropertyHandlerInterface*
+      GetPropertyHandler() const OVERRIDE {
     return panel_handler_;
   }
 
   // IBusBridge override.
-  virtual void SetPanelHandler(
+  virtual void SetPropertyHandler(
       IBusPanelPropertyHandlerInterface* handler) OVERRIDE {
     panel_handler_ = handler;
+  }
+
+  virtual void SetCreateEngineHandler(
+      const std::string& engine_id,
+      const IBusEngineFactoryService::CreateEngineHandler& handler) OVERRIDE {
+    create_engine_handler_map_[engine_id] = handler;
+  }
+
+  // IBusBridge override.
+  virtual void UnsetCreateEngineHandler(const std::string& engine_id) OVERRIDE {
+    create_engine_handler_map_.erase(engine_id);
+  }
+
+  // IBusBridge override.
+  virtual void CreateEngine(const std::string& engine_id) OVERRIDE {
+    // TODO(nona): Change following condition to DCHECK once all legacy IME is
+    // migrated to extension IME.
+    if (create_engine_handler_map_[engine_id].is_null())
+      return;
+    create_engine_handler_map_[engine_id].Run(
+        base::Bind(&NoOpCreateEngineReply));
   }
 
  private:
@@ -74,6 +101,8 @@ class IBusBridgeImpl : public IBusBridge {
   IBusEngineHandlerInterface* engine_handler_;
   IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
   IBusPanelPropertyHandlerInterface* panel_handler_;
+  std::map<std::string, IBusEngineFactoryService::CreateEngineHandler>
+      create_engine_handler_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusBridgeImpl);
 };
