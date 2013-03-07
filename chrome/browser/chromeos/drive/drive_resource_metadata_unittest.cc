@@ -224,7 +224,7 @@ TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
   DCHECK_EQ(in_changestamp, out_changestamp);
 }
 
-TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
+TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId_RootDirectory) {
   DriveResourceMetadata resource_metadata(kTestRootResourceId);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -1001,6 +1001,77 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entries.get());
   EXPECT_TRUE(entries->empty());
+}
+
+TEST_F(DriveResourceMetadataTest, PerDirectoryChangestamp) {
+  const int kChangestamp = 123;
+  const char kSubDirectoryResourceId[] = "sub-directory-id";
+
+  DriveRootDirectoryProto proto;
+  proto.set_version(kProtoVersion);
+  proto.set_largest_changestamp(kChangestamp);
+
+  // Set up the root directory.
+  DriveDirectoryProto* root = proto.mutable_drive_directory();
+  DriveEntryProto* root_entry = root->mutable_drive_entry();
+  root_entry->mutable_file_info()->set_is_directory(true);
+  root_entry->set_resource_id(kTestRootResourceId);
+  root_entry->set_title("drive");
+  // Add a sub directory.
+  DriveDirectoryProto* directory = root->add_child_directories();
+  DriveEntryProto* directory_entry = directory->mutable_drive_entry();
+  directory_entry->mutable_file_info()->set_is_directory(true);
+  directory_entry->set_resource_id(kSubDirectoryResourceId);
+  directory_entry->set_title("directory");
+  // At this point, both the root and the sub directory do not contain the
+  // per-directory changestamp.
+
+  DriveResourceMetadata resource_metadata(kTestRootResourceId);
+
+  // Load the proto. This should propagate the largest changestamp to every
+  // directory.
+  std::string serialized_proto;
+  ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
+  ASSERT_TRUE(resource_metadata.ParseFromString(serialized_proto));
+
+  // Confirm that the root directory contains the changestamp.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry_proto;
+  resource_metadata.GetEntryInfoByPath(
+      base::FilePath::FromUTF8Unsafe("drive"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(kChangestamp, entry_proto->directory_specific_info().changestamp());
+
+  // Confirm that the sub directory contains the changestamp.
+  resource_metadata.GetEntryInfoByPath(
+      base::FilePath::FromUTF8Unsafe("drive/directory"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(kChangestamp, entry_proto->directory_specific_info().changestamp());
+
+  // Save the current metadata to a string as serialized proto.
+  std::string new_serialized_proto;
+  resource_metadata.SerializeToString(&new_serialized_proto);
+  // Read the proto to see if per-directory changestamps were properly saved.
+  DriveRootDirectoryProto new_proto;
+  ASSERT_TRUE(new_proto.ParseFromString(new_serialized_proto));
+
+  // Confirm that the root directory contains the changestamp.
+  const DriveDirectoryProto& root_proto = new_proto.drive_directory();
+  EXPECT_EQ(kChangestamp,
+            root_proto.drive_entry().directory_specific_info().changestamp());
+
+  // Confirm that the sub directory contains the changestamp.
+  ASSERT_EQ(1, new_proto.drive_directory().child_directories_size());
+  const DriveDirectoryProto& dir_proto = root_proto.child_directories(0);
+  EXPECT_EQ(kChangestamp,
+            dir_proto.drive_entry().directory_specific_info().changestamp());
+
 }
 
 }  // namespace drive

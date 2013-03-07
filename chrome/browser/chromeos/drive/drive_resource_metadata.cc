@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 
 #include <leveldb/db.h>
+#include <stack>
 #include <utility>
 
 #include "base/message_loop_proxy.h"
@@ -45,6 +46,20 @@ void PostGetEntryInfoWithFilePathCallbackError(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, error, base::FilePath(), base::Passed(&proto)));
+}
+
+// Adds per-directory changestamps to |root| and all sub directories.
+void AddPerDirectoryChangestamps(DriveDirectoryProto* root, int64 changestamp) {
+  std::stack<DriveDirectoryProto*> stack;
+  stack.push(root);
+  while (!stack.empty()) {
+    DriveDirectoryProto* directory = stack.top();
+    stack.pop();
+    directory->mutable_drive_entry()->mutable_directory_specific_info()
+        ->set_changestamp(changestamp);
+    for (int i = 0; i < directory->child_directories_size(); ++i)
+      stack.push(directory->mutable_child_directories(i));
+  }
 }
 
 }  // namespace
@@ -857,6 +872,14 @@ bool DriveResourceMetadata::ParseFromString(
     LOG(ERROR) << "Incompatible proto detected (incompatible version): "
                << proto.version();
     return false;
+  }
+
+  // An old proto file might not have per-directory changestamps. Add them if
+  // needed.
+  const DriveDirectoryProto& root = proto.drive_directory();
+  if (!root.drive_entry().directory_specific_info().has_changestamp()) {
+    AddPerDirectoryChangestamps(proto.mutable_drive_directory(),
+                                proto.largest_changestamp());
   }
 
   root_->FromProto(proto.drive_directory());

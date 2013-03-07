@@ -48,6 +48,14 @@ message DriveFileSpecificInfo {
   optional string share_url = 7;
 }
 
+message DriveDirectorySpecificInfo {
+  // The changestamp of this directory. This value can be larger than the
+  // changestamp of DriveResourceMetadata, if this directory was
+  // "fast-fetched". See crbug.com/178348 for details about the "fast-fetch"
+  // feature.
+  optional int64 changestamp = 1;
+}
+
 // Represents DriveEntry, DriveFile, and DriveDirectory without children.
 message DriveEntryProto {
   optional PlatformFileInfoProto file_info = 1;
@@ -74,6 +82,9 @@ message DriveEntryProto {
 
   // File specific information, such as MD5.
   optional DriveFileSpecificInfo file_specific_info = 9;
+
+  // Directory specific information, such as changestamp.
+  optional DriveDirectorySpecificInfo directory_specific_info = 13;
 }
 
 // Represents DriveDirectory. This message type is defined to keep children

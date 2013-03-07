@@ -90,7 +90,8 @@ void DriveFile::SetBaseNameFromTitle() {
 // DriveDirectory class implementation.
 
 DriveDirectory::DriveDirectory(DriveResourceMetadata* resource_metadata)
-    : DriveEntry(resource_metadata) {
+    : DriveEntry(resource_metadata),
+      changestamp_(0) {
   file_info_.is_directory = true;
 }
 
@@ -290,9 +291,9 @@ void DriveEntry::ToProtoFull(DriveEntryProto* proto) const {
   if (AsDriveFileConst()) {
     AsDriveFileConst()->ToProto(proto);
   } else if (AsDriveDirectoryConst()) {
-    // Unlike files, directories don't have directory specific info, so just
-    // calling DriveEntry::ToProto().
-    ToProto(proto);
+    // Don't use DriveDirectory::ToProto() as we are only interested in the
+    // directory itself (i.e. no children).
+    AsDriveDirectoryConst()->ToProtoSelf(proto);
   } else {
     NOTREACHED();
   }
@@ -343,14 +344,15 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
     AddEntry(dir.release());
   }
 
+  changestamp_ = proto.drive_entry().directory_specific_info().changestamp();
+
   // The states of the directory should be updated after children are
   // handled successfully, so that incomplete states are not left.
   DriveEntry::FromProto(proto.drive_entry());
 }
 
 void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
-  DriveEntry::ToProto(proto->mutable_drive_entry());
-  DCHECK(proto->drive_entry().file_info().is_directory());
+  ToProtoSelf(proto->mutable_drive_entry());
 
   for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
@@ -366,6 +368,13 @@ void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
     DCHECK(dir);
     dir->ToProto(proto->add_child_directories());
   }
+}
+
+void DriveDirectory::ToProtoSelf(DriveEntryProto* proto) const {
+  DriveEntry::ToProto(proto);
+  DCHECK(proto->file_info().is_directory());
+
+  proto->mutable_directory_specific_info()->set_changestamp(changestamp_);
 }
 
 scoped_ptr<DriveEntryProtoVector> DriveDirectory::ToProtoVector() const {

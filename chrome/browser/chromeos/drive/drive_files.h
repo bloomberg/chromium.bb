@@ -200,8 +200,15 @@ class DriveDirectory : public DriveEntry {
   void FromProto(const DriveDirectoryProto& proto);
   void ToProto(DriveDirectoryProto* proto) const;
 
+  // Similar to ToProto() but processes the directory itself (i.e. no children).
+  void ToProtoSelf(DriveEntryProto* proto) const;
+
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> ToProtoVector() const;
+
+  // Returns the changestamp of this directory. See drive.proto for details.
+  int64 changestamp() const { return changestamp_; }
+  void set_changestamp(int64 changestamp) { changestamp_ = changestamp; }
 
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
@@ -252,6 +259,7 @@ class DriveDirectory : public DriveEntry {
   // Collection of children.
   ChildMap child_files_;
   ChildMap child_directories_;
+  int64 changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };
