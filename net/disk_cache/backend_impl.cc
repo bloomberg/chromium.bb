@@ -272,12 +272,16 @@ int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
   DCHECK(thread);
 
 #if defined(USE_SIMPLE_CACHE_BACKEND)
-  return SimpleBackendImpl::CreateBackend(path, force, max_bytes, type, kNone,
-                                          thread, net_log, backend, callback);
-#else
-  return BackendImpl::CreateBackend(path, force, max_bytes, type, kNone, thread,
-                                    net_log, backend, callback);
+  // TODO(gavinp,pasko): While simple backend development proceeds, we're only
+  // testing it against net::DISK_CACHE. Turn it on for more cache types as
+  // appropriate.
+  if (type == net::DISK_CACHE) {
+    return SimpleBackendImpl::CreateBackend(path, force, max_bytes, type, kNone,
+                                            thread, net_log, backend, callback);
+  }
 #endif
+  return BackendImpl::CreateBackend(path, force, max_bytes, type, kNone,
+                                    thread, net_log, backend, callback);
 }
 
 // Returns the preferred maximum number of bytes for the cache given the
