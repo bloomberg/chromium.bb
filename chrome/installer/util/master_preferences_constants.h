@@ -57,12 +57,18 @@ extern const char kDistroImportSearchPref[];
 extern const char kDistroPingDelay[];
 // Boolean. Do not show first run bubble, even if it would otherwise be shown.
 extern const char kDistroSuppressFirstRunBubble[];
+// Boolean. Prevent creation of all shortcuts to chrome, including the
+// desktop, quick launch, taskbar and the start menu shortcuts.
+extern const char kDoNotCreateAnyShortcuts[];
 // Boolean. Prevent creation of the Desktop shortcut on install (and later on
 // Active Setup for each user on a system-level install).
 extern const char kDoNotCreateDesktopShortcut[];
 // Boolean. Prevent creation of the Quick Launch shortcut on install (and later
 // on Active Setup for each user on a system-level install).
 extern const char kDoNotCreateQuickLaunchShortcut[];
+// Boolean. Prevent creation of the Taskbar (since Windows 7) shortcut on
+// install (and later on Active Setup for each user on a system-level install).
+extern const char kDoNotCreateTaskbarShortcut[];
 // Boolean. Do not launch Chrome after first install. Cmd line override present.
 extern const char kDoNotLaunchChrome[];
 // Boolean. Do not register with Google Update to have Chrome launched after

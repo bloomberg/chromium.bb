@@ -360,14 +360,23 @@ void CreateOrUpdateShortcuts(
     const MasterPreferences& prefs,
     InstallShortcutLevel install_level,
     InstallShortcutOperation install_operation) {
+  bool do_not_create_any_shortcuts = false;
+  prefs.GetBool(master_preferences::kDoNotCreateAnyShortcuts,
+                &do_not_create_any_shortcuts);
+  if (do_not_create_any_shortcuts)
+    return;
+
   // Extract shortcut preferences from |prefs|.
   bool do_not_create_desktop_shortcut = false;
   bool do_not_create_quick_launch_shortcut = false;
+  bool do_not_create_taskbar_shortcut = false;
   bool alternate_desktop_shortcut = false;
   prefs.GetBool(master_preferences::kDoNotCreateDesktopShortcut,
                 &do_not_create_desktop_shortcut);
   prefs.GetBool(master_preferences::kDoNotCreateQuickLaunchShortcut,
                 &do_not_create_quick_launch_shortcut);
+  prefs.GetBool(master_preferences::kDoNotCreateTaskbarShortcut,
+                &do_not_create_taskbar_shortcut);
   prefs.GetBool(master_preferences::kAltShortcutText,
                 &alternate_desktop_shortcut);
 
@@ -435,9 +444,10 @@ void CreateOrUpdateShortcuts(
   // shortcut in the Start menu (Start screen on Win8+) should be made dual
   // mode.
   start_menu_properties.set_dual_mode(true);
-  if (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
-      shortcut_operation ==
-          ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) {
+  if (!do_not_create_taskbar_shortcut &&
+      (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
+       shortcut_operation ==
+           ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL)) {
     start_menu_properties.set_pin_to_taskbar(true);
   }
   ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_START_MENU,

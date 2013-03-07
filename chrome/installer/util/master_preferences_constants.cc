@@ -26,9 +26,11 @@ namespace master_preferences {
   const char kDistroImportSearchPref[] = "import_search_engine";
   const char kDistroPingDelay[] = "ping_delay";
   const char kDistroSuppressFirstRunBubble[] = "suppress_first_run_bubble";
+  const char kDoNotCreateAnyShortcuts[] = "do_not_create_any_shortcuts";
   const char kDoNotCreateDesktopShortcut[] = "do_not_create_desktop_shortcut";
   const char kDoNotCreateQuickLaunchShortcut[] =
       "do_not_create_quick_launch_shortcut";
+  const char kDoNotCreateTaskbarShortcut[] = "do_not_create_taskbar_shortcut";
   const char kDoNotLaunchChrome[] = "do_not_launch_chrome";
   const char kDoNotRegisterForUpdateLaunch[] =
       "do_not_register_for_update_launch";
