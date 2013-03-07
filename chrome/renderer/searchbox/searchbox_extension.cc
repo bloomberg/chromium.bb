@@ -39,6 +39,9 @@ const char kCSSBackgroundRepeatX[] = "repeat-x";
 const char kCSSBackgroundRepeatY[] = "repeat-y";
 const char kCSSBackgroundRepeat[] = "repeat";
 
+const char kLTRHtmlTextDirection[] = "ltr";
+const char kRTLHtmlTextDirection[] = "rtl";
+
 // Converts a V8 value to a string16.
 string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
   v8::String::Value s(v);
@@ -883,6 +886,27 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
     int restrict_id =
         SearchBox::Get(render_view)->UrlToRestrictedId(url);
 
+    // We set the "dir" attribute of the title, so that in RTL locales, a LTR
+    // title is rendered left-to-right and truncated from the right. For
+    // example, the title of http://msdn.microsoft.com/en-us/default.aspx is
+    // "MSDN: Microsoft developer network". In RTL locales, in the New Tab
+    // page, if the "dir" of this title is not specified, it takes Chrome UI's
+    // directionality. So the title will be truncated as "soft developer
+    // network". Setting the "dir" attribute as "ltr" renders the truncated
+    // title as "MSDN: Microsoft D...". As another example, the title of
+    // http://yahoo.com is "Yahoo!". In RTL locales, in the New Tab page, the
+    // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
+    // "ltr".
+    std::string direction;
+    if (base::i18n::StringContainsStrongRTLChars(items[i].title))
+      direction = kRTLHtmlTextDirection;
+    else
+      direction = kLTRHtmlTextDirection;
+
+    string16 title = items[i].title;
+    if (title.empty())
+      title = url;
+
     v8::Handle<v8::Object> item = v8::Object::New();
     item->Set(v8::String::New("rid"),
               v8::Int32::New(restrict_id));
@@ -893,8 +917,10 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
               UTF16ToV8String(SearchBox::Get(render_view)->
                               GenerateFaviconUrl(restrict_id)));
     item->Set(v8::String::New("title"),
-              UTF16ToV8String(items[i].title));
+              UTF16ToV8String(title));
     item->Set(v8::String::New("domain"), UTF16ToV8String(host));
+    item->Set(v8::String::New("direction"),
+              UTF8ToV8String(direction));
 
     items_array->Set(i, item);
   }

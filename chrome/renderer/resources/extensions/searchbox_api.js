@@ -30,7 +30,8 @@ if (!chrome.embeddedSearch) {
     var safeObjects = {};
 
     // Returns the |restrictedText| wrapped in a ShadowDOM.
-    function SafeWrap(restrictedText, width, height, opt_fontSize) {
+    function SafeWrap(restrictedText, width, height, opt_fontSize,
+        opt_direction) {
       var node = document.createElement('div');
       var nodeShadow = safeObjects.createShadowRoot.apply(node);
       nodeShadow.applyAuthorStyles = true;
@@ -43,7 +44,9 @@ if (!chrome.embeddedSearch) {
                   'font-size: ' + opt_fontSize + 'px !important;' : '') +
               'overflow: hidden !important;' +
               'text-overflow: ellipsis !important;' +
-              'white-space: nowrap !important">' +
+              'white-space: nowrap !important"' +
+              (opt_direction ? ' dir="' + opt_direction + '"' : '') +
+              '>' +
             restrictedText +
           '</div>';
       safeObjects.defineProperty(node, 'webkitShadowRoot', { value: null });
@@ -296,8 +299,8 @@ if (!chrome.embeddedSearch) {
       native function UndoAllMostVisitedDeletions();
       native function UndoMostVisitedDeletion();
 
-      function SafeWrapMostVisited(restrictedText, width) {
-        return SafeWrap(restrictedText, width, 18, 11);
+      function SafeWrapMostVisited(restrictedText, width, opt_direction) {
+        return SafeWrap(restrictedText, width, 18, 11, opt_direction);
       }
 
       function GetMostVisitedItemsWrapper() {
@@ -305,10 +308,11 @@ if (!chrome.embeddedSearch) {
         for (var i = 0, item; item = mostVisitedItems[i]; ++i) {
           var title = escapeHTML(item.title);
           var domain = escapeHTML(item.domain);
-          item.titleElement = SafeWrapMostVisited(title, 108);
-          item.domainElement = SafeWrapMostVisited(domain, 95);
+          item.titleElement = SafeWrapMostVisited(title, 140, item.direction);
+          item.domainElement = SafeWrapMostVisited(domain, 123);
           delete item.title;
           delete item.domain;
+          delete item.direction;
         }
         return mostVisitedItems;
       }
