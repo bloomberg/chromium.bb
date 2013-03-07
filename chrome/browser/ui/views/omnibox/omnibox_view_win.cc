@@ -299,7 +299,6 @@ void OmniboxViewWin::EditDropTarget::ResetDropHighlights() {
     edit_->SetDropHighlightPosition(-1);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Helper classes
 
@@ -1522,7 +1521,6 @@ LRESULT OmniboxViewWin::OnImeComposition(UINT message,
   return result;
 }
 
-
 LRESULT OmniboxViewWin::OnImeEndComposition(UINT message, WPARAM wparam,
                                             LPARAM lparam) {
   // The edit control auto-clears the selection on WM_IME_ENDCOMPOSITION, which
@@ -1753,7 +1751,6 @@ void OmniboxViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
 
   if (!gaining_focus_.get() && !is_triple_click)
     OnPossibleDrag(point);
-
 
   // Modifying the selection counts as accepting any inline autocompletion, so
   // track "changes" made by clicking the mouse button.

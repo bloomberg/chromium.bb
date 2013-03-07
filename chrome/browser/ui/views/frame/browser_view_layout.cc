@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,7 +260,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::Layout(views::View* host) {
-  // Showing instant extended suggestions causes us to temporarily hide any
+  // Showing Instant extended suggestions causes us to temporarily hide any
   // visible bookmark bar and infobars.  In turn, this hiding would normally
   // cause the content below the suggestions to shift upwards, which looks
   // surprising (since from the user's perspective, we're "covering" rather than
