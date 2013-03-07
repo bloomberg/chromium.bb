@@ -4,9 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_impl.h"
-#include "chrome/browser/chromeos/input_method/mock_ibus_controller.h"
 
 namespace chromeos {
 namespace input_method {
@@ -16,10 +14,7 @@ IBusController::~IBusController() {
 
 // static
 IBusController* IBusController::Create() {
-  if (base::chromeos::IsRunningOnChromeOS())
-    return new IBusControllerImpl;
-  else
-    return new MockIBusController;
+  return new IBusControllerImpl;
 }
 
 }  // namespace input_method
