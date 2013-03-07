@@ -45,6 +45,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
@@ -70,6 +71,7 @@ using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
+using WebKit::WebTestingSupport;
 using WebKit::WebVector;
 using WebKit::WebView;
 using WebTestRunner::WebPreferences;
@@ -488,7 +490,8 @@ void WebKitTestRunner::captureHistoryForWindow(
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
-  ShellRenderProcessObserver::GetInstance()->BindTestRunnersToWindow(frame);
+  WebTestingSupport::injectInternalsObject(frame);
+  ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
 }
 
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
@@ -512,6 +515,11 @@ void WebKitTestRunner::Reset() {
   routing_ids_.clear();
   session_histories_.clear();
   current_entry_indexes_.clear();
+  // Resetting the internals object also overrides the WebPreferences, so we
+  // have to sync them to WebKit again.
+  WebTestingSupport::resetInternalsObject(
+      render_view()->GetWebView()->mainFrame());
+  render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
 }
 
 // Private methods  -----------------------------------------------------------
