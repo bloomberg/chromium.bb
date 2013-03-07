@@ -1462,17 +1462,21 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   for (BrowserList::const_iterator it = ash_browser_list->begin();
        it != ash_browser_list->end(); ++it) {
     Browser* browser = *it;
-    // Make sure that the browser was already shown and had a proper window.
+    // Make sure that the browser was already shown and it has a proper window.
     if (std::find(ash_browser_list->begin_last_active(),
                   ash_browser_list->end_last_active(),
                   browser) == ash_browser_list->end_last_active() ||
-        !browser->window())
+        !browser->window() ||
+        (browser->window()->GetNativeWindow() &&
+         !browser->window()->GetNativeWindow()->IsVisible()))
       continue;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
     else if (!IsBrowserRepresentedInBrowserList(browser))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
+    if (tab_strip->active_index() == -1)
+      continue;
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             ash::switches::kAshEnableFullBrowserListInLauncher)) {
       WebContents* web_contents =
