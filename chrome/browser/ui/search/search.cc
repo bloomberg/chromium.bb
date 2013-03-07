@@ -46,7 +46,11 @@ enum InstantExtendedDefault {
 // space-delimited list of key:value pairs which correspond to these flags:
 const char kEmbeddedPageVersionFlagName[] = "espv";
 const uint64 kEmbeddedPageVersionDisabled = 0;
+#if defined(OS_IOS) || defined(OS_ANDROID)
+const uint64 kEmbeddedPageVersionDefault = 1;
+#else
 const uint64 kEmbeddedPageVersionDefault = 2;
+#endif
 
 const char kInstantExtendedActivationName[] = "instant";
 const InstantExtendedDefault kInstantExtendedActivationDefault =
@@ -217,7 +221,13 @@ const char kLocalOmniboxPopupURL[] =
     "chrome://local-omnibox-popup/local-omnibox-popup.html";
 
 bool IsInstantExtendedAPIEnabled() {
-  return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  return false;
+#else
+  // On desktop, query extraction is part of Instant extended, so if one is
+  // enabled, the other is too.
+  return IsQueryExtractionEnabled();
+#endif  // defined(OS_IOS) || defined(OS_ANDROID)
 }
 
 // Determine what embedded search page version to request from the user's
@@ -246,19 +256,11 @@ uint64 EmbeddedSearchPageVersion() {
                                             kEmbeddedPageVersionDefault,
                                             flags);
   }
-
   return kEmbeddedPageVersionDisabled;
 }
 
 bool IsQueryExtractionEnabled() {
-#if defined(OS_IOS)
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
-  return cl->HasSwitch(switches::kEnableQueryExtraction);
-#else
-  // On desktop, query extraction is controlled by the instant-extended-api
-  // flag.
-  return IsInstantExtendedAPIEnabled();
-#endif
+  return EmbeddedSearchPageVersion() != kEmbeddedPageVersionDisabled;
 }
 
 string16 GetSearchTermsFromNavigationEntry(
@@ -425,15 +427,6 @@ bool IsInstantEnabled(Profile* profile) {
 void EnableInstantExtendedAPIForTesting() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableInstantExtendedAPI);
-}
-
-void EnableQueryExtractionForTesting() {
-#if defined(OS_IOS)
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  cl->AppendSwitch(switches::kEnableQueryExtraction);
-#else
-  EnableInstantExtendedAPIForTesting();
-#endif
 }
 
 bool GetFieldTrialInfo(const std::string& group_name,

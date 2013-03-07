@@ -512,7 +512,8 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Enables Google Now integration.
 const char kEnableGoogleNowIntegration[] = "enable-google-now-integration";
 
-// Enable Instant extended API.
+// Enable Instant extended API. On mobile, this merely enables query extraction,
+// not the rest of the instant-extended functionality.
 const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";
 
 // Enables IPv6 support, even if probes suggest that it may not be fully
@@ -598,9 +599,6 @@ const char kEnablePnacl[]                   = "enable-pnacl";
 // Some tracking will still take place at startup, but it will be turned off
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
-
-// Enables query extraction in the omnibox.
-const char kEnableQueryExtraction[]         = "enable-query-extraction";
 
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";

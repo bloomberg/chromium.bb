@@ -111,9 +111,6 @@ bool IsInstantEnabled(Profile* profile);
 // Forces the Instant Extended API to be enabled for tests.
 void EnableInstantExtendedAPIForTesting();
 
-// Forces query extraction to be enabled for tests.
-void EnableQueryExtractionForTesting();
-
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 

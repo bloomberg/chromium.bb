@@ -170,7 +170,6 @@ extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
-extern const char kEnableQueryExtraction[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
 extern const char kEnableSpdy3[];
