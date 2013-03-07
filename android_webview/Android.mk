@@ -47,6 +47,7 @@ LOCAL_SRC_FILES += \
 # android_webview/all_webview.gyp
 LOCAL_GENERATED_SOURCES := \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/PageTransitionTypes.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyResultAndroid.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/NetError.java \
