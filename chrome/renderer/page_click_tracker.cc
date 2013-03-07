@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/page_click_tracker.h"
 
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view.h"

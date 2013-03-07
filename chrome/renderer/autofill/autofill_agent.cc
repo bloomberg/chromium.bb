@@ -10,7 +10,6 @@
 #include "base/strings/string_split.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "components/autofill/common/autocheckout_status.h"
