@@ -36,15 +36,13 @@ void InstantOverlayControllerViews::OverlayStateChanged(
     bool draw_drop_shadow = !model.mode().is_ntp() &&
         !(contents_->IsOverlayFullHeight(model.height(), model.height_units()));
     content::WebContents* web_contents = model.GetOverlayContents();
-    contents_->SetOverlay(overlay_.get(), web_contents, model.mode(),
-                          model.height(), model.height_units(),
-                          draw_drop_shadow);
+    contents_->SetOverlay(overlay_.get(), web_contents, model.height(),
+                          model.height_units(), draw_drop_shadow);
     overlay_->SetWebContents(web_contents);
   } else if (overlay_) {
     // Hide the overlay. SetWebContents() must happen before SetOverlay().
     overlay_->SetWebContents(NULL);
-    contents_->SetOverlay(NULL, NULL, model.mode(), 100, INSTANT_SIZE_PERCENT,
-                          false);
+    contents_->SetOverlay(NULL, NULL, 100, INSTANT_SIZE_PERCENT, false);
     overlay_.reset();
   }
 

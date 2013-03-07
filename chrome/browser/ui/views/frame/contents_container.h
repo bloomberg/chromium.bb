@@ -10,7 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/search_types.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 
@@ -25,7 +26,8 @@ class Rect;
 // ContentsContainer is responsible for managing the WebContents views.
 // ContentsContainer has up to two children: one for the currently active
 // WebContents and one for Instant's WebContents.
-class ContentsContainer : public views::View {
+class ContentsContainer : public views::View,
+                          public content::NotificationObserver {
  public:
   // Internal class name
   static const char kViewClassName[];
@@ -40,7 +42,6 @@ class ContentsContainer : public views::View {
   // Sets the overlay view. This does not delete the old.
   void SetOverlay(views::WebView* overlay,
                   content::WebContents* overlay_web_contents,
-                  const chrome::search::Mode& search_mode,
                   int height,
                   InstantSizeUnits units,
                   bool draw_drop_shadow);
@@ -70,21 +71,19 @@ class ContentsContainer : public views::View {
                            InstantSizeUnits overlay_height_units) const;
 
  private:
-  // Returns true if |shadow_view_| was a child of |ContentsContainer| and
-  // successfully removed from view hierarchy.
-  // If |delete_view| is true, |shadow_view_| is deleted regardless if it is a
-  // child of |ContentsContainer|.
-  bool RemoveShadowView(bool delete_view);
-
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   views::WebView* active_;
   views::WebView* overlay_;
   scoped_ptr<views::View> shadow_view_;
   content::WebContents* overlay_web_contents_;
-  chrome::search::Mode search_mode_;
   bool draw_drop_shadow_;
 
   // The margin between the top and the active view. This is used to make the
@@ -94,6 +93,8 @@ class ContentsContainer : public views::View {
   // The desired height of the overlay and units.
   int overlay_height_;
   InstantSizeUnits overlay_height_units_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsContainer);
 };
