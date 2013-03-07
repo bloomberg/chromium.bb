@@ -110,6 +110,10 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   std::string GetKeystoreEncryptionBootstrapToken() const;
   void SetKeystoreEncryptionBootstrapToken(const std::string& token);
 
+  // Use this for the unique machine tag used for session sync.
+  std::string GetSyncSessionsGUID() const;
+  void SetSyncSessionsGUID(const std::string& guid);
+
   // Maps |data_type| to its corresponding preference name.
   static const char* GetPrefNameForDataType(syncer::ModelType data_type);
 

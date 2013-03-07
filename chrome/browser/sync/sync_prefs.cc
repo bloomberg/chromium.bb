@@ -94,6 +94,10 @@ void SyncPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 
+  registry->RegisterStringPref(prefs::kSyncSessionsGUID,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   // We will start prompting people about new data types after the launch of
   // SESSIONS - all previously launched data types are treated as if they are
   // already acknowledged.
@@ -279,6 +283,18 @@ std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
 void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
   DCHECK(CalledOnValidThread());
   pref_service_->SetString(prefs::kSyncKeystoreEncryptionBootstrapToken, token);
+}
+
+std::string SyncPrefs::GetSyncSessionsGUID() const {
+  DCHECK(CalledOnValidThread());
+  return
+      pref_service_ ?
+      pref_service_->GetString(prefs::kSyncSessionsGUID) : "";
+}
+
+void SyncPrefs::SetSyncSessionsGUID(const std::string& guid) {
+  DCHECK(CalledOnValidThread());
+  pref_service_->SetString(prefs::kSyncSessionsGUID, guid);
 }
 
 // static

@@ -96,18 +96,10 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
-      pref_service_(PrefServiceSyncable::FromProfile(profile_)),
       error_handler_(error_handler) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
-  if (pref_service_->FindPreference(kSyncSessionsGUID) == NULL) {
-    static_cast<PrefRegistrySyncable*>(
-        pref_service_->DeprecatedGetPrefRegistry())->RegisterStringPref(
-            kSyncSessionsGUID,
-            std::string(),
-            PrefRegistrySyncable::UNSYNCABLE_PREF);
-  }
 }
 
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
@@ -120,7 +112,6 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
-      pref_service_(NULL),
       error_handler_(NULL) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
@@ -724,8 +715,8 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
   DCHECK(CalledOnValidThread());
   DCHECK(current_machine_tag_.empty());
   std::string persisted_guid;
-  if (pref_service_)
-    persisted_guid = pref_service_->GetString(kSyncSessionsGUID);
+  browser_sync::SyncPrefs prefs(profile_->GetPrefs());
+  persisted_guid = prefs.GetSyncSessionsGUID();
   if (!persisted_guid.empty()) {
     current_machine_tag_ = persisted_guid;
     DVLOG(1) << "Restoring persisted session sync guid: "
@@ -733,8 +724,7 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
   } else {
     current_machine_tag_ = GetMachineTagFromTransaction(trans);
     DVLOG(1) << "Creating session sync guid: " << current_machine_tag_;
-    if (pref_service_)
-      pref_service_->SetString(kSyncSessionsGUID, current_machine_tag_);
+    prefs.SetSyncSessionsGUID(current_machine_tag_);
   }
 
   tab_pool_.set_machine_tag(current_machine_tag_);

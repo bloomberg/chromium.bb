@@ -32,6 +32,38 @@
       <message desc="Dialog box title for viewing security certificates. [CHAR-LIMIT=32]" name="IDS_CERTTITLE">
         Certificate Viewer
       </message>
+
+      <!-- Sync error strings -->
+      <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">
+        Sync error
+      </message>
+      <message desc="Sync error string for when the needs to update the sign in details [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GA">
+        Please update your sign in details.
+      </message>
+      <message desc="Sync error string for when the needs to update the sync passphrase. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_PASSPHRASE">
+        Please update your sync passphrase.
+      </message>
+      <message desc="Sync error string for network connection. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_CONNECTION">
+        Could not connect to the sync server.
+      </message>
+      <message desc="Sync error string for domain not supported. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_DOMAIN">
+        Sync is not available for your domain.
+      </message>
+      <message desc="Sync error string for when the user enters an incorrect password. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_PASSWORD_INCORRECT">
+        The password you entered is incorrect.
+      </message>
+      <message desc="Sync error string for when user entered an application specific password instead of a Google Account password. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_ASP_ERROR">
+        Enter your Google Account password first, not an application specific password.
+      </message>
+      <message desc="Sync error string for service unavailable. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE">
+        The service is not available; try again later.
+      </message>
+      <message desc="Sync error string for service unavailable, but Chrome will try again later. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE_AUTO_RETRY">
+        The service is not available; waiting to retry.
+      </message>
+      <message desc="Sync error string for service unavailable. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE_NO_RETRY">
+         The service is not available.
+      </message>
     </messages>
   </release>
   <translations>

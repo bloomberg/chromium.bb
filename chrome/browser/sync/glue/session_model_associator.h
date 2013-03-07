@@ -414,9 +414,6 @@ class SessionModelAssociator
   // Profile being synced. Weak pointer.
   Profile* const profile_;
 
-  // Pref service. Used to persist the session sync guid. Weak pointer.
-  PrefServiceSyncable* const pref_service_;
-
   DataTypeErrorHandler* error_handler_;
 
   // Used for loading favicons.

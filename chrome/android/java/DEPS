@@ -1,4 +1,7 @@
 include_rules = [
   "+components/web_contents_delegate_android",
   "+content/public/android/java",
+  "+sync/android/java/src/org/chromium/sync/internal_api/pub",
+  "+sync/android/java/src/org/chromium/sync/notifier",
+  "+sync/android/java/src/org/chromium/sync/signin",
 ]

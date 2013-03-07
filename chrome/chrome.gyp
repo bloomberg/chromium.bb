@@ -1080,6 +1080,7 @@
           'target_name': 'chrome_java',
           'type': 'none',
           'dependencies': [
+            'profile_sync_service_model_type_selection_java',
             'toolbar_model_security_levels_java',
             '../base/base.gyp:base',
             '../components/components.gyp:navigation_interception_java',
