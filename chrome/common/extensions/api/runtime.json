@@ -252,7 +252,7 @@
       {
         "name": "onStartup",
         "type": "function",
-        "description": "Fired when the browser first starts up."
+        "description": "Fired when a profile that has this extension installed first starts up. This event is not fired when an incognito profile is started, even if this extension is operating in 'split' incognito mode."
       },
       {
         "name": "onInstalled",

@@ -49,6 +49,10 @@ static void DispatchOnStartupEventImpl(
   if (!host && !first_call)
     return;
 
+  // Don't send onStartup events to incognito profiles.
+  if (profile->IsOffTheRecord())
+    return;
+
   if (g_browser_process->IsShuttingDown() ||
       !g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
