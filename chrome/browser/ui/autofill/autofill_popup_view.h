@@ -46,7 +46,9 @@ class AutofillPopupView {
   virtual void Show() = 0;
 
   // Hides the popup from view. This will cause the popup to be deleted.
-  virtual void Hide() = 0;
+  // TODO(csharp): Make Hide a pure virtual function again, once hide_call_ is
+  // removed.
+  virtual void Hide();
 
   // Invalidates the given row and redraw it.
   virtual void InvalidateRow(size_t row) = 0;
@@ -58,7 +60,14 @@ class AutofillPopupView {
   static AutofillPopupView* Create(AutofillPopupController* controller);
 
  protected:
-  virtual ~AutofillPopupView() {}
+  AutofillPopupView();
+  virtual ~AutofillPopupView();
+
+ private:
+  // Used to check that the hide function was called, to check that the class
+  // is only destroyed through the Hide function. Remove after Dev channel
+  // release.
+  bool hide_called_;
 };
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_VIEW_H_

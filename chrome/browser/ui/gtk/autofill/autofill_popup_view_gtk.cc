@@ -65,12 +65,13 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
 }
 
 AutofillPopupViewGtk::~AutofillPopupViewGtk() {
-  controller_->ViewDestroyed();
   g_object_unref(layout_);
   gtk_widget_destroy(window_);
 }
 
 void AutofillPopupViewGtk::Hide() {
+  AutofillPopupView::Hide();
+
   delete this;
 }
 
@@ -106,7 +107,7 @@ void AutofillPopupViewGtk::UpdateBoundsAndRedrawPopup() {
 
 gboolean AutofillPopupViewGtk::HandleConfigure(GtkWidget* widget,
                                                GdkEventConfigure* event) {
-  Hide();
+  controller_->Hide();
   return FALSE;
 }
 

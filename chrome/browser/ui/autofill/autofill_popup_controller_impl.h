@@ -47,8 +47,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
             const std::vector<int>& identifiers);
 
   // Hides the popup and destroys the controller. This also invalidates
-  // |delegate_|. Virtual for testing.
-  virtual void Hide();
+  // |delegate_|.
+  virtual void Hide() OVERRIDE;
 
   // KeyboardListener implementation.
   virtual bool HandleKeyPressEvent(
@@ -64,7 +64,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual ~AutofillPopupControllerImpl();
 
   // AutofillPopupController implementation.
-  virtual void ViewDestroyed() OVERRIDE;
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
   virtual void MouseHovered(int x, int y) OVERRIDE;
   virtual void MouseClicked(int x, int y) OVERRIDE;
@@ -194,9 +193,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
   int selected_line_;
-
-  // True if |HideInternal| has already been called.
-  bool is_hiding_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };
