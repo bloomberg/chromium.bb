@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/instant/instant_io_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/web_ui_util.h"
@@ -120,6 +122,12 @@ bool ThemeSource::ShouldReplaceExistingSource() const {
   // We currently get the css_bytes_ in the ThemeSource constructor, so we need
   // to recreate the source itself when a theme changes.
   return true;
+}
+
+bool ThemeSource::ShouldServiceRequest(const net::URLRequest* request) const {
+  if (request->url().SchemeIs(chrome::kChromeSearchScheme))
+    return InstantIOContext::ShouldServiceRequest(request);
+  return URLDataSource::ShouldServiceRequest(request);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

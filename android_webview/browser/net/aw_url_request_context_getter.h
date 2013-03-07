@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread_delegate.h"
+#include "content/public/browser/content_browser_client.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -52,17 +53,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
   // AwBrowserContext::CreateRequestContext() call SetProtocolHandlers().
   // SetProtocolHandlers() is necessary because the ProtocolHandlers are created
   // on the UI thread while |job_factory_| must be created on the IO thread.
-  void SetProtocolHandlers(
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-          blob_protocol_handler,
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-          file_system_protocol_handler,
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-          developer_protocol_handler,
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-          chrome_protocol_handler,
-      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-          chrome_devtools_protocol_handler);
+  void SetProtocolHandlers(content::ProtocolHandlerMap* protocol_handlers);
 
   void PopulateNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
@@ -74,15 +65,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
 
   // ProtocolHandlers are stored here between SetProtocolHandlers() and the
   // first GetURLRequestContext() call.
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> blob_protocol_handler_;
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-      file_system_protocol_handler_;
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-      developer_protocol_handler_;
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-      chrome_protocol_handler_;
-  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
-      chrome_devtools_protocol_handler_;
+  content::ProtocolHandlerMap protocol_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestContextGetter);
 };
