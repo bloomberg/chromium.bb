@@ -366,26 +366,6 @@ HistoryModel.prototype.setView = function(view) {
 };
 
 /**
- * Start a new search - this will clear out our model.
- * @param {string} searchText The text to search for
- * @param {number} opt_page The page to view - this is mostly used when setting
- *     up an initial view, use #requestPage otherwise.
- */
-HistoryModel.prototype.setSearchText = function(searchText, opt_page) {
-  this.clearModel_();
-  this.searchText_ = searchText;
-  this.requestedPage_ = opt_page ? opt_page : 0;
-  this.queryHistory_();
-};
-
-/**
- * Clear the search text.
- */
-HistoryModel.prototype.clearSearchText = function() {
-  this.searchText_ = '';
-};
-
-/**
  * Reload our model with the current parameters.
  */
 HistoryModel.prototype.reload = function() {
@@ -749,11 +729,9 @@ function HistoryView(model) {
  *     setting up initial views, as this triggers a search.
  */
 HistoryView.prototype.setSearch = function(term, opt_page) {
-  this.pageIndex_ = parseInt(opt_page || 0, 10);
   window.scrollTo(0, 0);
-  this.model_.setSearchText(term, this.pageIndex_);
-  pageState.setUIState(term, this.pageIndex_, this.model_.getGroupByDomain(),
-                       this.getRangeInDays(), this.getOffset());
+  this.setPageState(term, opt_page, this.model_.getGroupByDomain(),
+                    this.getRangeInDays(), this.getOffset());
 };
 
 /**
@@ -763,14 +741,8 @@ HistoryView.prototype.setSearch = function(term, opt_page) {
 HistoryView.prototype.setGroupByDomain = function(groupedByDomain) {
   // Group by domain is not currently supported for search results, so reset
   // the search term if there was one.
-  this.model_.clearSearchText();
-  this.model_.setGroupByDomain(groupedByDomain);
-  this.model_.reload();
-  pageState.setUIState(this.model_.getSearchText(),
-                       this.pageIndex_,
-                       this.model_.getGroupByDomain(),
-                       this.getRangeInDays(),
-                       this.getOffset());
+  this.setPageState('', this.pageIndex_, groupedByDomain, this.getRangeInDays(),
+                    this.getOffset());
 };
 
 /**
@@ -779,6 +751,33 @@ HistoryView.prototype.setGroupByDomain = function(groupedByDomain) {
 HistoryView.prototype.reload = function() {
   this.model_.reload();
   this.updateSelectionEditButtons();
+  this.updateRangeButtons_();
+};
+
+/**
+ * Sets all the parameters for the history page and then reloads the view to
+ * update the results.
+ * @param {string} searchText The search string to set.
+ * @param {number} page The page to be viewed.
+ * @param {boolean} groupByDomain Whether the results are grouped or not.
+ * @param {HistoryModel.Range} range The range to view or search over.
+ * @param {number} offset Set the begining of the query to the specific offset.
+ */
+HistoryView.prototype.setPageState = function(searchText, page, groupByDomain,
+    range, offset) {
+  this.clear_();
+  this.model_.searchText_ = searchText;
+  this.pageIndex_ = page;
+  this.model_.requestedPage_ = page;
+  this.model_.groupByDomain_ = groupByDomain;
+  this.model_.rangeInDays_ = range;
+  this.model_.offset_ = offset;
+  this.reload();
+  pageState.setUIState(this.model_.getSearchText(),
+                       this.pageIndex_,
+                       this.model_.getGroupByDomain(),
+                       this.getRangeInDays(),
+                       this.getOffset());
 };
 
 /**
@@ -786,6 +785,8 @@ HistoryView.prototype.reload = function() {
  * @param {number} page The page we wish to view.
  */
 HistoryView.prototype.setPage = function(page) {
+  // TODO(sergiu): Move this function to setPageState as well and see why one
+  // of the tests fails when using setPageState.
   this.clear_();
   this.pageIndex_ = parseInt(page, 10);
   window.scrollTo(0, 0);
@@ -809,15 +810,9 @@ HistoryView.prototype.getPage = function() {
  * @param {string} range The number of days to which the range should be set.
  */
 HistoryView.prototype.setRangeInDays = function(range) {
-  // Set the range, offset and reset the page
-  this.model_.rangeInDays = range;
-  this.model_.offset = 0;
-  this.pageIndex_ = 0;
-  if (range == HistoryModel.Range.ALL_TIME)
-    this.model_.requestedPage = 0;
-  this.model_.reload();
-  pageState.setUIState(this.model_.getSearchText(), this.pageIndex_,
-      this.model_.getGroupByDomain(), range, this.getOffset());
+  // Set the range, offset and reset the page.
+  this.setPageState(this.model_.getSearchText(), 0,
+                    this.model_.getGroupByDomain(), range, 0);
 };
 
 /**
@@ -836,13 +831,11 @@ HistoryView.prototype.setOffset = function(offset) {
   // If there is another query already in flight wait for that to complete.
   if (this.model_.inFlight_)
     return;
-  this.model_.offset = offset;
-  this.model_.reload();
-  pageState.setUIState(this.model_.getSearchText(),
-                       this.pageIndex_,
-                       this.model_.getGroupByDomain(),
-                       this.getRangeInDays(),
-                       this.getOffset());
+  this.setPageState(this.model_.getSearchText(),
+                    this.pageIndex_,
+                    this.model_.getGroupByDomain(),
+                    this.getRangeInDays(),
+                    offset);
 };
 
 /**
@@ -1026,6 +1019,9 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
  * @private
  */
 HistoryView.prototype.updateRangeButtons_ = function() {
+  // Update the range button to the current value.
+  $('timeframe-filter').value = this.getRangeInDays();
+
   // The enabled state for the previous, today and next buttons.
   var previousState = false;
   var todayState = false;
@@ -1183,7 +1179,8 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
   } else {
     var resultsFragment = document.createDocumentFragment();
 
-    if (this.getRangeInDays() != HistoryModel.Range.ALL_TIME) {
+    if (this.getRangeInDays() == HistoryModel.Range.WEEK ||
+        this.getRangeInDays() == HistoryModel.Range.MONTH) {
       // If this is a time range result add some text that shows what is the
       // time range for the results the user is viewing.
       var timeFrame = resultsFragment.appendChild(
@@ -1270,17 +1267,17 @@ function PageState(model, view) {
   //     public model and view.
   this.checker_ = setInterval((function(state_obj) {
     var hashData = state_obj.getHashData();
-    var isGroupedByDomain = (hashData.g == 'true');
-    if (hashData.q != state_obj.model.getSearchText()) {
-      state_obj.view.setSearch(hashData.q, parseInt(hashData.p, 10));
-    } else if (parseInt(hashData.p, 10) != state_obj.view.getPage()) {
-      state_obj.view.setPage(hashData.p);
-    } else if (isGroupedByDomain != state_obj.view.model_.getGroupByDomain()) {
-      state_obj.view.setGroupByDomain(isGroupedByDomain);
-    } else if (parseInt(hashData.r, 10) != state_obj.model.rangeInDays) {
-      state_obj.view.setRangeInDays(parseInt(hashData.r, 10));
-    } else if (parseInt(hashData.o, 10) != state_obj.model.offset) {
-      state_obj.view.setOffset(parseInt(hashData.o, 10));
+    var isGroupedByDomain = (hashData.grouped == 'true');
+    var page = parseInt(hashData.page, 10);
+    var range = parseInt(hashData.range, 10);
+    var offset = parseInt(hashData.offset, 10);
+    if (hashData.q != state_obj.model.getSearchText() ||
+        page != state_obj.view.getPage() ||
+        isGroupedByDomain != state_obj.view.model_.getGroupByDomain() ||
+        range != state_obj.model.rangeInDays ||
+        offset != state_obj.model.offset) {
+      state_obj.view.setPageState(hashData.q, page, isGroupedByDomain,
+                                  range, offset);
     }
   }), 50, this);
 }
@@ -1295,12 +1292,11 @@ PageState.instance = null;
  */
 PageState.prototype.getHashData = function() {
   var result = {
-    e: 0,
     q: '',
-    p: 0,
-    g: false,
-    r: 0,
-    o: 0
+    page: 0,
+    grouped: false,
+    range: 0,
+    offset: 0
   };
 
   if (!window.location.hash)
@@ -1332,8 +1328,8 @@ PageState.prototype.setUIState = function(term, page, grouped, range, offset) {
   $('search-field').value = term;
   $('display-filter-sites').checked = grouped;
   var hash = this.getHashData();
-  if (hash.q != term || hash.p != page || hash.g != grouped ||
-      hash.r != range || hash.o != offset) {
+  if (hash.q != term || hash.page != page || hash.grouped != grouped ||
+      hash.range != range || hash.offset != offset) {
     window.location.hash = PageState.getHashString(
         term, page, grouped, range, offset);
   }
@@ -1356,16 +1352,16 @@ PageState.getHashString = function(term, page, grouped, range, offset) {
     newHash.push('q=' + encodeURIComponent(term));
 
   if (page)
-    newHash.push('p=' + page);
+    newHash.push('page=' + page);
 
   if (grouped)
-    newHash.push('g=' + grouped);
+    newHash.push('grouped=' + grouped);
 
   if (range)
-    newHash.push('r=' + range);
+    newHash.push('range=' + range);
 
   if (offset)
-    newHash.push('o=' + offset);
+    newHash.push('offset=' + offset);
 
   return newHash.join('&');
 };
@@ -1387,10 +1383,14 @@ function load() {
 
   // Create default view.
   var hashData = pageState.getHashData();
-  historyView.setSearch(hashData.q, hashData.p);
+  var grouped = (hashData.grouped == 'true') || historyModel.getGroupByDomain();
+  var page = parseInt(hashData.page, 10) || historyView.getPage();
+  var range = parseInt(hashData.range, 10) || historyView.getRangeInDays();
+  var offset = parseInt(hashData.offset, 10) || historyView.getOffset();
+  historyView.setPageState(hashData.q, page, grouped, range, offset);
 
   $('search-form').onsubmit = function() {
-    setSearch(searchField.value);
+    historyView.setSearch(searchField.value);
     return false;
   };
 
@@ -1429,29 +1429,6 @@ function load() {
       searchField.focus();
   });
 }
-
-/**
- * TODO(glen): Get rid of this function.
- * Set the history view to a specified page.
- * @param {string} term The string to search for
- */
-function setSearch(term) {
-  if (historyView) {
-    historyView.setSearch(term);
-  }
-}
-
-/**
- * TODO(glen): Get rid of this function.
- * Set the history view to a specified page.
- * @param {number} page The page to set the view to.
- */
-function setPage(page) {
-  if (historyView) {
-    historyView.setPage(page);
-  }
-}
-
 
 /**
  * Adds manual rules for allowing or blocking the the selected items.

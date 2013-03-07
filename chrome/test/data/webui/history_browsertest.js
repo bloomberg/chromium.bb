@@ -8,9 +8,10 @@
 /**
  * Create a fake history result with the given timestamp.
  * @param {Number} timestamp Timestamp of the entry, in ms since the epoch.
+ * @param {String} url The URL to set on this entry.
  * @return {Object} An object representing a history entry.
  */
-function createHistoryEntry(timestamp) {
+function createHistoryEntry(timestamp, url) {
   var d = new Date(timestamp);
   return {
     dateTimeOfDay: d.getHours() + ':' + d.getMinutes(),
@@ -19,7 +20,7 @@ function createHistoryEntry(timestamp) {
     starred: false,
     time: timestamp,
     title: d.toString(),  // Use the stringified date as the title.
-    url: 'http://google.com/' + timestamp
+    url: url
   };
 }
 
@@ -62,6 +63,53 @@ function callFrontendAsync(functionName) {
 function checkInterval(checked, start, end) {
   for (var i = start; i <= end; i++)
     expectEquals('checkbox-' + i, checked[i - start].id);
+}
+
+/**
+ * Returns a period of 7 days, |offset| weeks back from |today|. The behavior
+ * of this function should be identical to
+ * BrowsingHistoryHandler::SetQueryTimeInWeeks.
+ * @param {Number} offset Number of weeks to go back.
+ * @param {Date} today Which date to consider as "today" (since we're not using
+ *     the actual current date in this case).
+ * @return {Object} An object containing the begin date and the end date of the
+ *     computed period.
+ */
+function setQueryTimeInWeeks(offset, today) {
+  // Going back one day at a time starting from midnight will make sure that
+  // the other values get updated properly.
+  var endTime = new Date(today);
+  endTime.setHours(24, 0, 0, 0);
+  for (var i = 0; i < 7 * offset; i++)
+    endTime.setDate(endTime.getDate() - 1);
+  var beginTime = new Date(endTime);
+  for (var i = 0; i < 7; i++)
+    beginTime.setDate(beginTime.getDate() - 1);
+  return {'endTime': endTime, 'beginTime': beginTime};
+}
+
+/**
+ * Returns the period of a month, |offset| months back from |today|. The
+ * behavior of this function should be identical to
+ * BrowsingHistoryHandler::SetQueryTimeInMonths.
+ * @param {Number} offset Number of months to go back.
+ * @param {Date} today Which date to consider as "today" (since we're not using
+ *     the actual current date in this case).
+ * @return {Object} An object containing the begin date and the end date of the
+ *     computed period.
+ */
+function setQueryTimeInMonths(offset, today) {
+  var endTime = new Date(today);
+  var beginTime = new Date(today);
+  // Last day of this month.
+  endTime.setMonth(endTime.getMonth() + 1, 0);
+  // First day of the current month.
+  beginTime.setMonth(beginTime.getMonth(), 1);
+  for (var i = 0; i < offset; i++) {
+    beginTime.setMonth(beginTime.getMonth() - 1);
+    endTime.setMonth(endTime.getMonth() - 1);
+  }
+  return {'endTime': endTime, 'beginTime': beginTime};
 }
 
 /**
@@ -116,8 +164,55 @@ BaseHistoryWebUITest.prototype = {
   queryHistoryStub_: function(args) {
     callFrontendAsync(
         'historyResult', { term: args[0], finished: true }, []);
-  },
+  }
 };
+
+function queryHistoryImpl(args, beginTime, history) {
+  var searchText = args[0];
+  var offset = args[1];
+  var range = args[2];
+  var endTime = args[3] || Number.MAX_VALUE;
+  var maxCount = args[4];
+
+  // Advance past all entries newer than the specified end time.
+  var i = 0;
+  while (i < history.length && history[i].time >= endTime)
+    ++i;
+
+  var results = new Array();
+  if (beginTime) {
+    var j = i;
+    while (j < history.length && history[j].time >= beginTime)
+      ++j;
+
+    results = history.slice(i, j);
+  } else {
+    results = history.slice(i);
+  }
+
+  if (maxCount)
+    results = results.slice(0, maxCount);
+
+  var queryStartTime = '';
+  var queryEndTime = '';
+  if (results.length) {
+    queryStartTime = results[results.length - 1].dateRelativeDay;
+    queryEndTime = results[0].dateRelativeDay;
+  } else if (beginTime) {
+    queryStartTime = Date(beginTime);
+    queryEndTime = Date(endTime);
+  }
+
+  callFrontendAsync(
+      'historyResult',
+      {
+        term: searchText,
+        finished: (history.length <= i + results.length),
+        queryStartTime: queryStartTime,
+        queryEndTime: queryEndTime
+      },
+      results);
+}
 
 /**
  * Fixture for History WebUI testing which returns some fake history results
@@ -142,7 +237,8 @@ HistoryWebUITest.prototype = {
     this.fakeHistory_ = [];
 
     for (var i = 0; i < TOTAL_RESULT_COUNT; i++) {
-      this.fakeHistory_.push(createHistoryEntry(timestamp));
+      this.fakeHistory_.push(
+          createHistoryEntry(timestamp, 'http://google.com/' + timestamp));
       timestamp -= 2 * 60 * 1000;  // Next visit is two minutes earlier.
     }
   },
@@ -159,23 +255,17 @@ HistoryWebUITest.prototype = {
     var range = args[2];
     var endTime = args[3] || Number.MAX_VALUE;
     var maxCount = args[4];
+    if (range == HistoryModel.Range.ALL_TIME) {
+      queryHistoryImpl(args, null, this.fakeHistory_);
+      return;
+    }
+    if (range == HistoryModel.Range.WEEK)
+      var interval = setQueryTimeInWeeks(offset, this.today);
+    else
+      var interval = setQueryTimeInMonths(offset, this.today);
 
-    // Advance past all entries newer than the specified end time.
-    var i = 0;
-    while (this.fakeHistory_[i] && this.fakeHistory_[i].time >= endTime)
-      ++i;
-
-    var results = this.fakeHistory_.slice(i);
-    if (maxCount)
-      results = results.slice(0, maxCount);
-
-    callFrontendAsync(
-        'historyResult',
-        {
-          term: searchText,
-          finished: (this.fakeHistory_.length <= i + results.length)
-        },
-        results);
+    args[3] = interval.endTime.getTime();
+    queryHistoryImpl(args, interval.beginTime.getTime(), this.fakeHistory_);
   },
 
   /**
@@ -262,7 +352,7 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 
   // Check that there are 3 page navigation links and that only the "Older"
   // link is visible.
-  expectEquals(3, document.querySelectorAll('.link-button').length)
+  expectEquals(3, document.querySelectorAll('.link-button').length);
   expectTrue($('newest-button').hidden);
   expectTrue($('newer-button').hidden);
   expectFalse($('older-button').hidden);
@@ -285,7 +375,7 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
 
     // Check that the "Newest" and "Newer" links are now visible, but the
     // "Older" link is hidden.
-    expectEquals(3, document.querySelectorAll('.link-button').length)
+    expectEquals(3, document.querySelectorAll('.link-button').length);
     expectFalse($('newest-button').hidden);
     expectFalse($('newer-button').hidden);
     expectTrue($('older-button').hidden);
@@ -355,10 +445,10 @@ TEST_F('HistoryWebUITest', 'multipleSelect', function() {
   var checkboxes = document.querySelectorAll(
       '#results-display input[type=checkbox]');
 
-  var getAllChecked = function () {
+  var getAllChecked = function() {
     return Array.prototype.slice.call(document.querySelectorAll(
         '#results-display input[type=checkbox]:checked'));
-  }
+  };
 
   // Make sure that nothing is checked.
   expectEquals(0, getAllChecked().length);
@@ -409,4 +499,174 @@ TEST_F('HistoryWebUITest', 'multipleSelect', function() {
   expectEquals('checkbox-19', checked[11].id);
 
   testDone();
+});
+
+function setPageState(searchText, page, groupByDomain, range, offset) {
+  window.location = '#' + PageState.getHashString(
+      searchText, page, groupByDomain, range, offset);
+}
+
+function RangeHistoryWebUITest() {}
+
+RangeHistoryWebUITest.prototype = {
+  __proto__: HistoryWebUITest.prototype,
+
+  /** @override */
+  preLoad: function() {
+    BaseHistoryWebUITest.prototype.preLoad.call(this);
+    // Repeat the domain visits every 4 days. The nested lists contain the
+    // domain suffixes for the visits in a day.
+    var domainSuffixByDay = [
+      [1, 2, 3, 4],
+      [1, 2, 2, 3],
+      [1, 2, 1, 2],
+      [1, 1, 1, 1]
+    ];
+
+    var buildDomainUrl = function(timestamp) {
+      var d = new Date(timestamp);
+      // Repeat the same setup of domains every 4 days.
+      var day = d.getDate() % 4;
+      // Assign an entry for every 6 hours so that we get 4 entries per day
+      // maximum.
+      var visitInDay = Math.floor(d.getHours() / 6);
+      return 'http://google' + domainSuffixByDay[day][visitInDay] + '.com/' +
+          timestamp;
+    };
+
+    // Prepare a list of fake history results. Start the results on
+    // 11:00 PM on May 2, 2012 and add 4 results every day (one result every 6
+    // hours).
+    var timestamp = new Date(2012, 4, 2, 23, 0).getTime();
+    this.today = new Date(2012, 4, 2);
+    this.fakeHistory_ = [];
+
+    // Put in 2 days for May and 30 days for April so the results span over
+    // the month limit.
+    for (var i = 0; i < 4 * 32; i++) {
+      this.fakeHistory_.push(
+          createHistoryEntry(timestamp, buildDomainUrl(timestamp)));
+      timestamp -= 6 * 60 * 60 * 1000;
+    }
+
+    // Leave March empty.
+    timestamp -= 31 * 24 * 3600 * 1000;
+
+    // Put results in February.
+    for (var i = 0; i < 29 * 4; i++) {
+      this.fakeHistory_.push(
+          createHistoryEntry(timestamp, buildDomainUrl(timestamp)));
+      timestamp -= 6 * 60 * 60 * 1000;
+    }
+  },
+
+  setUp: function() {
+    // Show the filter controls as if the command line switch was active.
+    $('filter-controls').hidden = false;
+    expectFalse($('filter-controls').hidden);
+  },
+};
+
+TEST_F('RangeHistoryWebUITest', 'allView', function() {
+  // Check that we start off in the all time view.
+  expectEquals(parseInt($('timeframe-filter').value, 10),
+               HistoryModel.Range.ALL_TIME);
+  // See if the correct number of days is shown.
+  var dayHeaders = document.querySelectorAll('.day');
+  assertEquals(Math.ceil(RESULTS_PER_PAGE / 4), dayHeaders.length);
+  testDone();
+});
+
+/**
+ * Checks whether the domains in a day are ordered decreasingly.
+ * @param {Element} element Ordered list containing the grouped domains for a
+ *     day.
+ */
+function checkGroupedVisits(element) {
+  // The history page contains the number of visits next to a domain in
+  // parentheses (e.g. 'google.com (5)'). This function extracts that number
+  // and returns it.
+  var getNumberVisits = function(element) {
+    return parseInt(element.textContent.replace(/\D/g, ''), 10);
+  };
+
+  // Read the number of visits from each domain and make sure that it is lower
+  // than or equal to the number of visits from the previous domain.
+  var domainEntries = element.querySelectorAll('.number-visits');
+  var currentNumberOfVisits = getNumberVisits(domainEntries[0]);
+  for (var j = 1; j < domainEntries.length; j++) {
+    var numberOfVisits = getNumberVisits(domainEntries[j]);
+    assertTrue(currentNumberOfVisits >= numberOfVisits);
+    currentNumberOfVisits = numberOfVisits;
+  }
+}
+
+TEST_F('RangeHistoryWebUITest', 'weekView', function() {
+  // Change to weekly view.
+  $('timeframe-filter').value = HistoryModel.Range.WEEK;
+  historyView.setRangeInDays(HistoryModel.Range.WEEK);
+  waitForCallback('historyResult', function() {
+    // See if the correct number of days is shown.
+    var dayHeaders = document.querySelectorAll('.day');
+    assertEquals(7, dayHeaders.length);
+    expectFalse(document.querySelector('h2.timeframe').hidden);
+
+    testDone();
+  });
+});
+
+TEST_F('RangeHistoryWebUITest', 'weekViewGrouped', function() {
+  // Change to weekly view.
+  setPageState('', 0, true, HistoryModel.Range.WEEK, 0);
+  waitForCallback('historyResult', function() {
+    // See if the correct number of days is still shown.
+    var dayResults = document.querySelectorAll('.day-results');
+    assertEquals(7, dayResults.length);
+
+    // Check whether the results are ordered by visits.
+    for (var i = 0; i < dayResults.length; i++)
+      checkGroupedVisits(dayResults[i]);
+
+    testDone();
+  });
+});
+
+TEST_F('RangeHistoryWebUITest', 'monthView', function() {
+  // Change to monthly view.
+  setPageState('', 0, false, HistoryModel.Range.MONTH, 0);
+  waitForCallback('historyResult', function() {
+    // See if the correct number of days is shown.
+    var dayHeaders = document.querySelectorAll('.day');
+    assertEquals(2, dayHeaders.length);
+    expectFalse(document.querySelector('h2.timeframe').hidden);
+    testDone();
+  });
+});
+
+TEST_F('RangeHistoryWebUITest', 'monthViewGrouped', function() {
+  // Change to monthly view.
+  setPageState('', 0, true, HistoryModel.Range.MONTH, 0);
+  waitForCallback('historyResult', function() {
+    // See if the correct number of days is shown.
+    var monthResults = document.querySelectorAll('.month-results');
+    assertEquals(1, monthResults.length);
+
+    checkGroupedVisits(monthResults[0]);
+
+    testDone();
+  });
+});
+
+TEST_F('RangeHistoryWebUITest', 'monthViewEmptyMonth', function() {
+  // Change to monthly view.
+  setPageState('', 0, true, HistoryModel.Range.MONTH, 2);
+
+  waitForCallback('historyResult', function() {
+    // See if the correct number of days is shown.
+    var resultsDisplay = $('results-display');
+    assertEquals(0, resultsDisplay.querySelectorAll('.months-results').length);
+    assertEquals(1, resultsDisplay.querySelectorAll('div').length);
+
+    testDone();
+  });
 });
