@@ -20,10 +20,9 @@ _MEDIA_PATH = os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(),
 _REFERENCE_FILE = os.path.join(_MEDIA_PATH, 'human-voice.wav')
 _JAVASCRIPT_PATH = os.path.abspath(os.path.join(pyauto.PyUITest.DataDir(),
                                                 'webrtc'))
-_SIZE_OF_EMPTY_WAV_FILE_BYTES = 44
 
 
-class WebrtcAudioCallTest(webrtc_test_base.WebrtcTestBase):
+class WebrtcAudioQualityTest(webrtc_test_base.WebrtcTestBase):
   """Test we can set up a WebRTC call and play audio through it.
 
   This test will only work on machines that have been configured to record their
@@ -64,33 +63,6 @@ class WebrtcAudioCallTest(webrtc_test_base.WebrtcTestBase):
     pyauto.PyUITest.tearDown(self)
     self.assertEquals('', self.CheckErrorsAndCrashes())
 
-  def testWebrtcAudioCallAndVerifyAudioIsPlaying(self):
-    """Test that WebRTC is capable of transmitting at least some audio.
-
-    This test has some nontrivial prerequisites:
-    The target system must have an active microphone, it must be selected
-    as default input for the user that runs the test, and it must record a
-    certain minimum level of ambient noise (for instance server fans).
-    Verify that you are getting ambient noise in the microphone by either
-    recording it directly or checking your OS' microphone settings. Amplify
-    the microphone if the background noise is too low. The microphone should
-    capture noise consistently above 5% of its total range.
-    """
-    self.assertTrue(self.IsLinux(), msg='Only supported on Linux.')
-
-    def CallWithMic():
-      self._AudioCallWithGetUserMedia(duration_seconds=5)
-
-    def EnsureNotAllSilent(output_no_silence):
-      self.assertTrue(os.path.getsize(output_no_silence) >
-                      _SIZE_OF_EMPTY_WAV_FILE_BYTES,
-                      msg=('The test recorded only silence. Ensure your '
-                           'machine is correctly configured for this test.'))
-
-    self._RecordAndVerify(record_duration_seconds=10,
-                          sound_producing_function=CallWithMic,
-                          verification_function=EnsureNotAllSilent)
-
   def testWebrtcAudioCallAndMeasureQuality(self):
     """Measures how much WebRTC distorts speech.
 
@@ -127,22 +99,6 @@ class WebrtcAudioCallTest(webrtc_test_base.WebrtcTestBase):
     self._RecordAndVerify(record_duration_seconds=20,
                           sound_producing_function=CallWithWebAudio,
                           verification_function=MeasureQuality)
-
-  def _AudioCallWithGetUserMedia(self, duration_seconds):
-    self.LoadTestPageInTwoTabs()
-
-    # This sets up a audio-only call.
-    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0,
-                                                         request_video=False))
-    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=1,
-                                                         request_video=False))
-    self.Connect('user_1', tab_index=0)
-    self.Connect('user_2', tab_index=1)
-
-    self.CreatePeerConnection(tab_index=0)
-    self.AddUserMediaLocalStream(tab_index=0)
-
-    self._CallAndRunFor(duration_seconds)
 
   def _AudioCallWithWebAudio(self, duration_seconds, input_relative_path):
     self.LoadTestPageInTwoTabs(test_page='webrtc_audio_quality_test.html');

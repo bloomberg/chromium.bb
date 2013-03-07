@@ -498,19 +498,12 @@
   },
 
   # WebRTC MediaStream tests. Requires webcam and audio device to be present on
-  # the test machine. The webrtc_audio_call test requires additional
-  # configuration as described in the test's class comments.
+  # the test machine.
   'WEBRTC': {
     'all': [
       'media_stream_infobar',
       'webrtc_brutality_test',
       'webrtc_call',
-    ],
-    'linux': [
-      'webrtc_audio_call',
-    ],
-    'win': [
-      'webrtc_audio_call.testWebrtcAudioCallAndMeasureQuality',
     ],
   },
 
@@ -521,11 +514,17 @@
     ],
   },
 
-  # WebRTC quality tests. Requires webcam, an audio device and a special setup
-  # where the webcam is playing a barcode-encoded video.
+  # WebRTC quality tests. The video quality test requires a webcam, an audio
+  # device and a special setup where the webcam plays a barcode-encoded video.
+  # The webrtc_audio_quality test requires additional configuration as described
+  # in the test's class comments.
   'WEBRTC_QUALITY': {
     'all': [
       'webrtc_video_quality',
+      'webrtc_audio_quality',
+    ],
+    'mac': [
+      '-webrtc_audio_quality',  # Not implemented.
     ],
   },
 
