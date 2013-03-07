@@ -35,6 +35,7 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
 
   void SetTestDelegate(WebTestRunner::WebTestDelegate* delegate);
   void SetMainWindow(RenderView* view);
+  void BindTestRunnersToWindow(WebKit::WebFrame* frame);
 
   // RenderProcessObserver implementation.
   virtual void WebKitInitialized() OVERRIDE;
@@ -46,13 +47,17 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   WebTestRunner::WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
+  WebKitTestRunner* main_test_runner() const { return main_test_runner_; }
   const base::FilePath& webkit_source_dir() const { return webkit_source_dir_; }
 
  private:
   // Message handlers.
+  void OnResetAll();
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
   void OnLoadHyphenDictionary(const IPC::PlatformFileForTransit& dict_file);
 
+  RenderView* main_render_view_;
+  WebKitTestRunner* main_test_runner_;
   WebTestRunner::WebTestDelegate* test_delegate_;
   scoped_ptr<WebTestRunner::WebTestInterfaces> test_interfaces_;
 

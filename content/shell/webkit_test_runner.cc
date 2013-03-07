@@ -45,7 +45,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
@@ -69,7 +68,6 @@ using WebKit::WebHistoryItem;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
-using WebKit::WebTestingSupport;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebVector;
@@ -82,6 +80,8 @@ using WebTestRunner::WebTestProxyBase;
 namespace content {
 
 namespace {
+
+int kDefaultLayoutTestTimeoutMs = 30 * 1000;
 
 void InvokeTaskHelper(void* context) {
   WebTask* task = reinterpret_cast<WebTask*>(context);
@@ -162,9 +162,10 @@ WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
       RenderViewObserverTracker<WebKitTestRunner>(render_view),
       proxy_(NULL),
       focused_view_(NULL),
-      is_main_window_(false),
-      reset_on_next_navigation_(false),
-      test_is_running_(false) {
+      enable_pixel_dumping_(true),
+      layout_test_timeout_(kDefaultLayoutTestTimeoutMs),
+      allow_external_pages_(false),
+      is_main_window_(false) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
@@ -402,12 +403,11 @@ void WebKitTestRunner::setLocale(const std::string& locale) {
 }
 
 void WebKitTestRunner::testFinished() {
-  if (!is_main_window_ || !test_is_running_)
+  if (!is_main_window_)
     return;
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(false);
-  test_is_running_ = false;
   if (interfaces->testRunner()->shouldDumpBackForwardList()) {
     SyncNavigationStateVisitor visitor;
     RenderView::ForEach(&visitor);
@@ -418,12 +418,11 @@ void WebKitTestRunner::testFinished() {
 }
 
 void WebKitTestRunner::testTimedOut() {
-  if (!is_main_window_ || !test_is_running_)
+  if (!is_main_window_)
     return;
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(false);
-  test_is_running_ = false;
   Send(new ShellViewHostMsg_TestFinished(routing_id(), true));
 }
 
@@ -432,7 +431,7 @@ bool WebKitTestRunner::isBeingDebugged() {
 }
 
 int WebKitTestRunner::layoutTestTimeout() {
-  return test_config_.layout_test_timeout;
+  return layout_test_timeout_;
 }
 
 void WebKitTestRunner::closeRemainingWindows() {
@@ -458,7 +457,7 @@ void WebKitTestRunner::loadURLForFrame(const WebURL& url,
 }
 
 bool WebKitTestRunner::allowExternalPages() {
-  return test_config_.allow_external_pages;
+  return allow_external_pages_;
 }
 
 void WebKitTestRunner::captureHistoryForWindow(
@@ -494,8 +493,7 @@ void WebKitTestRunner::captureHistoryForWindow(
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
-  WebTestingSupport::injectInternalsObject(frame);
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
+  ShellRenderProcessObserver::GetInstance()->BindTestRunnersToWindow(frame);
 }
 
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
@@ -510,36 +508,19 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void WebKitTestRunner::Navigate(const GURL& url) {
-  if (!reset_on_next_navigation_)
-    return;
-
-  reset_on_next_navigation_ = false;
-  Reset();
-
-  WebTestInterfaces* interfaces =
-      ShellRenderProcessObserver::GetInstance()->test_interfaces();
-  interfaces->configureForTestWithURL(test_config_.test_url,
-                                      test_config_.enable_pixel_dumping);
-  interfaces->setTestIsRunning(true);
-  test_is_running_ = true;
-}
-
 // Public methods - -----------------------------------------------------------
 
 void WebKitTestRunner::Reset() {
-  ShellRenderProcessObserver::GetInstance()->test_interfaces()->resetAll();
   // The proxy_ is always non-NULL, it is set right after construction.
   proxy_->reset();
   prefs_.reset();
+  enable_pixel_dumping_ = true;
+  layout_test_timeout_ = kDefaultLayoutTestTimeoutMs;
+  allow_external_pages_ = false;
+  expected_pixel_hash_ = std::string();
   routing_ids_.clear();
   session_histories_.clear();
   current_entry_indexes_.clear();
-  // This overrides the WebPreferences, so we have to reset them again.
-  WebTestingSupport::resetInternalsObject(
-      render_view()->GetWebView()->mainFrame());
-  render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
-  setFocus(proxy_, true);
 }
 
 // Private methods  -----------------------------------------------------------
@@ -563,7 +544,7 @@ void WebKitTestRunner::CaptureDump() {
   Send(
       new ShellViewHostMsg_TextDump(routing_id(), proxy()->captureTree(false)));
 
-  if (test_config_.enable_pixel_dumping &&
+  if (enable_pixel_dumping_ &&
       interfaces->testRunner()->shouldGeneratePixelResults()) {
     SkBitmap snapshot;
     CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
@@ -589,7 +570,7 @@ void WebKitTestRunner::CaptureDump() {
 #endif
     std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
 
-    if (actual_pixel_hash == test_config_.expected_pixel_hash) {
+    if (actual_pixel_hash == expected_pixel_hash_) {
       SkBitmap empty_image;
       Send(new ShellViewHostMsg_ImageDump(
           routing_id(), actual_pixel_hash, empty_image));
@@ -603,10 +584,21 @@ void WebKitTestRunner::CaptureDump() {
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(
-    const ShellTestConfiguration& params) {
-  test_config_ = params;
-  reset_on_next_navigation_ = true;
+    const ShellViewMsg_SetTestConfiguration_Params& params) {
+  current_working_directory_ = params.current_working_directory;
+  temp_path_ = params.temp_path;
+  enable_pixel_dumping_ = params.enable_pixel_dumping;
+  layout_test_timeout_ = params.layout_test_timeout;
+  allow_external_pages_ = params.allow_external_pages;
+  expected_pixel_hash_ = params.expected_pixel_hash;
   is_main_window_ = true;
+
+  setFocus(proxy_, true);
+
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  interfaces->setTestIsRunning(true);
+  interfaces->configureForTestWithURL(params.test_url, enable_pixel_dumping_);
 }
 
 void WebKitTestRunner::OnSessionHistory(

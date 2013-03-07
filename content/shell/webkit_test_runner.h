@@ -11,12 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "content/shell/shell_test_configuration.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 #include "v8/include/v8.h"
 
 class SkCanvas;
+struct ShellViewMsg_SetTestConfiguration_Params;
 
 namespace WebKit {
 struct WebRect;
@@ -39,7 +39,6 @@ class WebKitTestRunner : public RenderViewObserver,
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void Navigate(const GURL& url) OVERRIDE;
 
   // WebTestDelegate implementation.
   virtual void clearEditCommand();
@@ -95,7 +94,8 @@ class WebKitTestRunner : public RenderViewObserver,
 
  private:
   // Message handlers.
-  void OnSetTestConfiguration(const ShellTestConfiguration& params);
+  void OnSetTestConfiguration(
+      const ShellViewMsg_SetTestConfiguration_Params& params);
   void OnSessionHistory(
       const std::vector<int>& routing_ids,
       const std::vector<std::vector<std::string> >& session_histories,
@@ -114,17 +114,16 @@ class WebKitTestRunner : public RenderViewObserver,
 
   ::WebTestRunner::WebPreferences prefs_;
 
-  ShellTestConfiguration test_config_;
+  bool enable_pixel_dumping_;
+  int layout_test_timeout_;
+  bool allow_external_pages_;
+  std::string expected_pixel_hash_;
 
   std::vector<int> routing_ids_;
   std::vector<std::vector<std::string> > session_histories_;
   std::vector<unsigned> current_entry_indexes_;
 
   bool is_main_window_;
-
-  bool reset_on_next_navigation_;
-
-  bool test_is_running_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
