@@ -99,10 +99,17 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
   GetNativeWindow()->SetName("BrowserFrameAura");
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
 #if defined(USE_ASH)
-  // Tabbed browsers and apps (some apps are TYPE_POPUP) get their own
-  // workspace.
-  if (browser_view->browser()->type() != Browser::TYPE_POPUP ||
-      browser_view->browser()->is_app()) {
+  bool gets_own_workspace = false;
+  if (browser_view->browser()->type() != Browser::TYPE_POPUP) {
+    gets_own_workspace = true;
+  } else if (browser_view->browser()->is_app() &&
+             browser_view->browser()->app_type() == Browser::APP_TYPE_HOST) {
+    // All app windows are of type Browser::TYPE_POPUP. App windows created
+    // from the launcher get their own workspace.
+    gets_own_workspace = true;
+  }
+
+  if (gets_own_workspace) {
     ash::SetPersistsAcrossAllWorkspaces(
         GetNativeWindow(),
         ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);

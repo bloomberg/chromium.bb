@@ -119,9 +119,6 @@ class Browser : public TabStripModelObserver,
   // Distinguishes between browsers that host an app (opened from
   // ApplicationLauncher::OpenApplication), and child browsers created by an app
   // from Browser::CreateForApp (e.g. by windows.open or the extension API).
-  // TODO(stevenjb): This is currently only needed by the ash Launcher for
-  // identifying child panels. Remove this once panels are no longer
-  // implemented as Browsers, crbug.com/112198.
   enum AppType {
     APP_TYPE_HOST = 1,
     APP_TYPE_CHILD = 2
