@@ -35,7 +35,8 @@ ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
 ShellIntegration::ShortcutLocations::ShortcutLocations()
     : on_desktop(false),
       in_applications_menu(false),
-      in_quick_launch_bar(false) {
+      in_quick_launch_bar(false),
+      hidden(false) {
 }
 
 static const struct ShellIntegration::AppModeInfo* gAppModeInfo = NULL;

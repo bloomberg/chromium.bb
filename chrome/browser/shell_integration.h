@@ -117,6 +117,12 @@ class ShellIntegration {
     // Mac dock or the gnome/kde application launcher. However, those are not
     // implemented yet.
     bool in_quick_launch_bar;
+
+    // For Linux, this refers to a shortcut which the system knows about (for
+    // the purpose of identifying windows and giving them the correct
+    // title/icon), but which does not show up in menus or search results.
+    // Ignored if in_applications_menu == true.
+    bool hidden;
   };
 
   // Data that needs to be passed between the app launcher stub and Chrome.

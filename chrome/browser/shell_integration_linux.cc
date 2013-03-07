@@ -394,6 +394,37 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
 #endif
 }
 
+// Get the value of NoDisplay from the [Desktop Entry] section of a .desktop
+// file, given in |shortcut_contents|. If the key is not found, returns false.
+bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents) {
+  // An empty file causes a crash with glib <= 2.32, so special case here.
+  if (shortcut_contents.empty())
+    return false;
+
+  GKeyFile* key_file = g_key_file_new();
+  GError* err = NULL;
+  if (!g_key_file_load_from_data(key_file, shortcut_contents.c_str(),
+                                 shortcut_contents.size(), G_KEY_FILE_NONE,
+                                 &err)) {
+    LOG(WARNING) << "Unable to read desktop file template: " << err->message;
+    g_error_free(err);
+    g_key_file_free(key_file);
+    return false;
+  }
+
+  bool nodisplay = false;
+  char* nodisplay_c_string = g_key_file_get_string(key_file, kDesktopEntry,
+                                                   "NoDisplay", &err);
+  if (nodisplay_c_string) {
+    if (!g_strcmp0(nodisplay_c_string, "true"))
+      nodisplay = true;
+    g_free(nodisplay_c_string);
+  }
+
+  g_key_file_free(key_file);
+  return nodisplay;
+}
+
 } // namespace
 
 // static
@@ -457,8 +488,52 @@ std::string GetDesktopName(base::Environment* env) {
 #endif
 }
 
-bool GetDesktopShortcutTemplate(base::Environment* env,
-                                std::string* output) {
+ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+    base::Environment* env,
+    const base::FilePath& profile_path,
+    const std::string& extension_id) {
+  base::FilePath desktop_path;
+  // If Get returns false, just leave desktop_path empty.
+  PathService::Get(base::DIR_USER_DESKTOP, &desktop_path);
+  return GetExistingShortcutLocations(env, profile_path, extension_id,
+                                             desktop_path);
+}
+
+ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+    base::Environment* env,
+    const base::FilePath& profile_path,
+    const std::string& extension_id,
+    const base::FilePath& desktop_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  base::FilePath shortcut_filename = GetExtensionShortcutFilename(
+      profile_path, extension_id);
+  DCHECK(!shortcut_filename.empty());
+  ShellIntegration::ShortcutLocations locations;
+
+  // Determine whether there is a shortcut on desktop.
+  if (!desktop_path.empty()) {
+    locations.on_desktop =
+        file_util::PathExists(desktop_path.Append(shortcut_filename));
+  }
+
+  // Determine whether there is a shortcut in the applications directory.
+  std::string shortcut_contents;
+  if (GetExistingShortcutContents(env, shortcut_filename, &shortcut_contents)) {
+    // Whether this counts as "hidden" or "in_applications_menu" depends on
+    // whether it contains NoDisplay=true.
+    if (GetNoDisplayFromDesktopFile(shortcut_contents))
+      locations.hidden = true;
+    else
+      locations.in_applications_menu = true;
+  }
+
+  return locations;
+}
+
+bool GetExistingShortcutContents(base::Environment* env,
+                                 const base::FilePath& desktop_filename,
+                                 std::string* output) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<base::FilePath> search_paths;
@@ -488,19 +563,29 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
     search_paths.push_back(base::FilePath("/usr/share"));
   }
 
-  std::string template_filename(GetDesktopName(env));
   for (std::vector<base::FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
-    base::FilePath path = i->Append("applications").Append(template_filename);
-    VLOG(1) << "Looking for desktop file template in " << path.value();
+    base::FilePath path = i->Append("applications").Append(desktop_filename);
+    VLOG(1) << "Looking for desktop file in " << path.value();
     if (file_util::PathExists(path)) {
-      VLOG(1) << "Found desktop file template at " << path.value();
+      VLOG(1) << "Found desktop file at " << path.value();
       return file_util::ReadFileToString(path, output);
     }
   }
 
-  LOG(ERROR) << "Could not find desktop file template.";
   return false;
+}
+
+bool GetDesktopShortcutTemplate(base::Environment* env,
+                                std::string* output) {
+  base::FilePath template_filename(GetDesktopName(env));
+  if (GetExistingShortcutContents(env, template_filename, output)) {
+    return true;
+  } else {
+    LOG(ERROR) << "Could not find desktop file " << template_filename.value()
+               << ".";
+    return false;
+  }
 }
 
 base::FilePath GetWebShortcutFilename(const GURL& url) {
@@ -549,7 +634,8 @@ std::string GetDesktopFileContents(
     const base::FilePath& extension_path,
     const string16& title,
     const std::string& icon_name,
-    const base::FilePath& profile_path) {
+    const base::FilePath& profile_path,
+    bool no_display) {
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
@@ -650,6 +736,10 @@ std::string GetDesktopFileContents(
   if (!icon_name.empty())
     g_key_file_set_string(key_file, kDesktopEntry, "Icon", icon_name.c_str());
 
+  // Set the "NoDisplay" key.
+  if (no_display)
+    g_key_file_set_string(key_file, kDesktopEntry, "NoDisplay", "true");
+
 #if defined(TOOLKIT_GTK)
   std::string wmclass = web_app::GetWMClassFromAppName(app_name);
   g_key_file_set_string(key_file, kDesktopEntry, "StartupWMClass",
@@ -688,7 +778,7 @@ bool CreateDesktopShortcut(
     // already exist and replace them.
     if (creation_locations.on_desktop)
       DeleteShortcutOnDesktop(shortcut_filename);
-    if (creation_locations.in_applications_menu)
+    if (creation_locations.in_applications_menu || creation_locations.hidden)
       DeleteShortcutInApplicationsMenu(shortcut_filename);
   } else {
     shortcut_filename = GetWebShortcutFilename(shortcut_info.url);
@@ -700,24 +790,41 @@ bool CreateDesktopShortcut(
 
   std::string app_name =
       web_app::GenerateApplicationNameFromInfo(shortcut_info);
-  std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
-      shortcut_template,
-      app_name,
-      shortcut_info.url,
-      shortcut_info.extension_id,
-      shortcut_info.extension_path,
-      shortcut_info.title,
-      icon_name,
-      shortcut_info.profile_path);
 
   bool success = true;
 
-  if (creation_locations.on_desktop)
+  if (creation_locations.on_desktop) {
+    std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
+        shortcut_template,
+        app_name,
+        shortcut_info.url,
+        shortcut_info.extension_id,
+        shortcut_info.extension_path,
+        shortcut_info.title,
+        icon_name,
+        shortcut_info.profile_path,
+        false);
     success = CreateShortcutOnDesktop(shortcut_filename, contents);
+  }
 
-  if (creation_locations.in_applications_menu)
+  // The 'in_applications_menu' and 'hidden' locations are actually the same
+  // place ('applications').
+  if (creation_locations.in_applications_menu || creation_locations.hidden) {
+    // Set NoDisplay=true if hidden but not in_applications_menu. This will hide
+    // the application from user-facing menus.
+    std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
+        shortcut_template,
+        app_name,
+        shortcut_info.url,
+        shortcut_info.extension_id,
+        shortcut_info.extension_path,
+        shortcut_info.title,
+        icon_name,
+        shortcut_info.profile_path,
+        !creation_locations.in_applications_menu);
     success = CreateShortcutInApplicationsMenu(shortcut_filename, contents) &&
               success;
+  }
 
   return success;
 }

@@ -21,6 +21,35 @@ namespace ShellIntegrationLinux {
 // Returns filename of the desktop shortcut used to launch the browser.
 std::string GetDesktopName(base::Environment* env);
 
+// Returns the set of locations in which shortcuts are installed for the
+// extension with |extension_id| in |profile_path|.
+// This searches the file system for .desktop files in appropriate locations. A
+// shortcut with NoDisplay=true causes hidden to become true, instead of
+// in_applications_menu.
+ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+    base::Environment* env,
+    const base::FilePath& profile_path,
+    const std::string& extension_id);
+
+// Version of GetExistingShortcutLocations which takes an explicit path
+// to the user's desktop directory. Useful for testing.
+// If |desktop_path| is empty, the desktop is not searched.
+ShellIntegration::ShortcutLocations GetExistingShortcutLocations(
+    base::Environment* env,
+    const base::FilePath& profile_path,
+    const std::string& extension_id,
+    const base::FilePath& desktop_path);
+
+// Returns the contents of an existing .desktop file installed in the system.
+// Searches the "applications" subdirectory of each XDG data directory for a
+// file named |desktop_filename|. If the file is found, populates |output| with
+// its contents and returns true. Else, returns false.
+bool GetExistingShortcutContents(base::Environment* env,
+                                 const base::FilePath& desktop_filename,
+                                 std::string* output);
+
+// Returns the contents of the .desktop file for Google Chrome or Chromium. If
+// such a file exists, populates |output| and returns true. Else, returns false.
 bool GetDesktopShortcutTemplate(base::Environment* env,
                                 std::string* output);
 
@@ -34,7 +63,8 @@ base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
 
 // Returns contents for .desktop file based on |template_contents|, |url|
 // and |title|. The |template_contents| should be contents of .desktop file
-// used to launch Chrome.
+// used to launch Chrome. If |no_display| is true, the shortcut will not be
+// visible to the user in menus.
 std::string GetDesktopFileContents(const std::string& template_contents,
                                    const std::string& app_name,
                                    const GURL& url,
@@ -42,7 +72,8 @@ std::string GetDesktopFileContents(const std::string& template_contents,
                                    const base::FilePath& extension_path,
                                    const string16& title,
                                    const std::string& icon_name,
-                                   const base::FilePath& profile_path);
+                                   const base::FilePath& profile_path,
+                                   bool no_display);
 
 
 // Create shortcuts on the desktop or in the application menu (as specified by

@@ -106,13 +106,124 @@ class ScopedEnvironment {
 
 }  // namespace
 
-TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
-#if defined(GOOGLE_CHROME_BUILD)
-  const char kTemplateFilename[] = "google-chrome.desktop";
-#else  // CHROMIUM_BUILD
-  const char kTemplateFilename[] = "chromium-browser.desktop";
-#endif
+TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
+  base::FilePath kProfilePath("Default");
+  const char kExtensionId[] = "test_extension";
+  const char kTemplateFilename[] = "chrome-test_extension-Default.desktop";
+  base::FilePath kTemplateFilepath(kTemplateFilename);
+  const char kNoDisplayDesktopFile[] = "[Desktop Entry]\nNoDisplay=true";
 
+  MessageLoop message_loop;
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+  // No existing shortcuts.
+  {
+    MockEnvironment env;
+    ShellIntegration::ShortcutLocations result =
+        ShellIntegrationLinux::GetExistingShortcutLocations(
+            &env, kProfilePath, kExtensionId);
+    EXPECT_FALSE(result.on_desktop);
+    EXPECT_FALSE(result.in_applications_menu);
+    EXPECT_FALSE(result.in_quick_launch_bar);
+    EXPECT_FALSE(result.hidden);
+  }
+
+  // Shortcut on desktop.
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath desktop_path = temp_dir.path();
+
+    MockEnvironment env;
+    ASSERT_TRUE(file_util::CreateDirectory(desktop_path));
+    ASSERT_FALSE(file_util::WriteFile(
+        desktop_path.AppendASCII(kTemplateFilename),
+        "", 0));
+    ShellIntegration::ShortcutLocations result =
+        ShellIntegrationLinux::GetExistingShortcutLocations(
+            &env, kProfilePath, kExtensionId, desktop_path);
+    EXPECT_TRUE(result.on_desktop);
+    EXPECT_FALSE(result.in_applications_menu);
+    EXPECT_FALSE(result.in_quick_launch_bar);
+    EXPECT_FALSE(result.hidden);
+  }
+
+  // Shortcut in applications directory.
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath apps_path = temp_dir.path().AppendASCII("applications");
+
+    MockEnvironment env;
+    env.Set("XDG_DATA_HOME", temp_dir.path().value());
+    ASSERT_TRUE(file_util::CreateDirectory(apps_path));
+    ASSERT_FALSE(file_util::WriteFile(
+        apps_path.AppendASCII(kTemplateFilename),
+        "", 0));
+    ShellIntegration::ShortcutLocations result =
+        ShellIntegrationLinux::GetExistingShortcutLocations(
+            &env, kProfilePath, kExtensionId);
+    EXPECT_FALSE(result.on_desktop);
+    EXPECT_TRUE(result.in_applications_menu);
+    EXPECT_FALSE(result.in_quick_launch_bar);
+    EXPECT_FALSE(result.hidden);
+  }
+
+  // Shortcut in applications directory with NoDisplay=true.
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath apps_path = temp_dir.path().AppendASCII("applications");
+
+    MockEnvironment env;
+    env.Set("XDG_DATA_HOME", temp_dir.path().value());
+    ASSERT_TRUE(file_util::CreateDirectory(apps_path));
+    ASSERT_TRUE(file_util::WriteFile(
+        apps_path.AppendASCII(kTemplateFilename),
+        kNoDisplayDesktopFile, strlen(kNoDisplayDesktopFile)));
+    ShellIntegration::ShortcutLocations result =
+        ShellIntegrationLinux::GetExistingShortcutLocations(
+            &env, kProfilePath, kExtensionId);
+    // Doesn't count as being in applications menu.
+    EXPECT_FALSE(result.on_desktop);
+    EXPECT_FALSE(result.in_applications_menu);
+    EXPECT_FALSE(result.in_quick_launch_bar);
+    EXPECT_TRUE(result.hidden);
+  }
+
+  // Shortcut on desktop and in applications directory.
+  {
+    base::ScopedTempDir temp_dir1;
+    ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
+    base::FilePath desktop_path = temp_dir1.path();
+
+    base::ScopedTempDir temp_dir2;
+    ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
+    base::FilePath apps_path = temp_dir2.path().AppendASCII("applications");
+
+    MockEnvironment env;
+    ASSERT_TRUE(file_util::CreateDirectory(desktop_path));
+    ASSERT_FALSE(file_util::WriteFile(
+        desktop_path.AppendASCII(kTemplateFilename),
+        "", 0));
+    env.Set("XDG_DATA_HOME", temp_dir2.path().value());
+    ASSERT_TRUE(file_util::CreateDirectory(apps_path));
+    ASSERT_FALSE(file_util::WriteFile(
+        apps_path.AppendASCII(kTemplateFilename),
+        "", 0));
+    ShellIntegration::ShortcutLocations result =
+        ShellIntegrationLinux::GetExistingShortcutLocations(
+            &env, kProfilePath, kExtensionId, desktop_path);
+    EXPECT_TRUE(result.on_desktop);
+    EXPECT_TRUE(result.in_applications_menu);
+    EXPECT_FALSE(result.in_quick_launch_bar);
+    EXPECT_FALSE(result.hidden);
+  }
+}
+
+TEST(ShellIntegrationTest, GetExistingShortcutContents) {
+  const char kTemplateFilename[] = "shortcut-test.desktop";
+  base::FilePath kTemplateFilepath(kTemplateFilename);
   const char kTestData1[] = "a magical testing string";
   const char kTestData2[] = "a different testing string";
 
@@ -137,8 +248,9 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
-                                                                  &contents));
+    ASSERT_TRUE(
+        ShellIntegrationLinux::GetExistingShortcutContents(
+            &env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData1, contents);
   }
 
@@ -156,8 +268,9 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
-                                                                  &contents));
+    ASSERT_TRUE(
+        ShellIntegrationLinux::GetExistingShortcutContents(
+            &env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData1, contents);
   }
 
@@ -175,8 +288,9 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
-                                                                  &contents));
+    ASSERT_TRUE(
+        ShellIntegrationLinux::GetExistingShortcutContents(
+            &env, kTemplateFilepath, &contents));
     EXPECT_EQ(kTestData2, contents);
   }
 
@@ -202,9 +316,43 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
+    ASSERT_TRUE(
+        ShellIntegrationLinux::GetExistingShortcutContents(
+            &env, kTemplateFilepath, &contents));
+    EXPECT_EQ(kTestData2, contents);
+  }
+}
+
+TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
+#if defined(GOOGLE_CHROME_BUILD)
+  const char kTemplateFilename[] = "google-chrome.desktop";
+#else  // CHROMIUM_BUILD
+  const char kTemplateFilename[] = "chromium-browser.desktop";
+#endif
+
+  const char kTestData[] = "a magical testing string";
+
+  MessageLoop message_loop;
+  content::TestBrowserThread file_thread(BrowserThread::FILE, &message_loop);
+
+  // Just do a simple test. The details are covered by
+  // GetExistingShortcutContents test.
+  {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    MockEnvironment env;
+    env.Set("XDG_DATA_HOME", temp_dir.path().value());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir.path().AppendASCII("applications")));
+    ASSERT_TRUE(file_util::WriteFile(
+        temp_dir.path().AppendASCII("applications")
+            .AppendASCII(kTemplateFilename),
+        kTestData, strlen(kTestData)));
+    std::string contents;
     ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
                                                                   &contents));
-    EXPECT_EQ(kTestData2, contents);
+    EXPECT_EQ(kTestData, contents);
   }
 }
 
@@ -236,16 +384,18 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     const char* url;
     const char* title;
     const char* icon_name;
+    bool nodisplay;
     const char* template_contents;
     const char* expected_output;
   } test_cases[] = {
     // Dumb case.
-    { "ignored", "ignored", "ignored", "", "#!/usr/bin/env xdg-open\n" },
+    { "ignored", "ignored", "ignored", false, "", "#!/usr/bin/env xdg-open\n" },
 
     // Real-world case.
     { "http://gmail.com",
       "GMail",
       "chrome-http__gmail.com",
+      false,
 
       "[Desktop Entry]\n"
       "Version=1.0\n"
@@ -287,6 +437,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     { "http://gmail.com",
       "GMail",
       "chrome-http__gmail.com",
+      false,
 
       "#!/some/shebang\n"
       "[Desktop Entry]\n"
@@ -309,6 +460,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     { "http://gmail.com",
       "GMail",
       "chrome-http__gmail.com",
+      false,
 
       "[Desktop Entry]\n"
       "Name=Google Chrome\n"
@@ -337,6 +489,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     { "http://gmail.com",
       "GMail",
       "",
+      false,
 
       "[Desktop Entry]\n"
       "Name=Google Chrome\n"
@@ -356,10 +509,34 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
 #endif
     },
 
+    // Test adding NoDisplay=true.
+    { "http://gmail.com",
+      "GMail",
+      "chrome-http__gmail.com",
+      true,
+
+      "[Desktop Entry]\n"
+      "Name=Google Chrome\n"
+      "Exec=/opt/google/chrome/google-chrome %U\n",
+
+      "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
+      "Name=GMail\n"
+      "Exec=/opt/google/chrome/google-chrome --app=http://gmail.com/\n"
+      "Icon=chrome-http__gmail.com\n"
+      "NoDisplay=true\n"
+#if !defined(USE_AURA)
+      // Aura Chrome does not (yet) set WMClass, so we only expect
+      // StartupWMClass on non-Aura builds.
+      "StartupWMClass=gmail.com\n"
+#endif
+    },
+
     // Now we're starting to be more evil...
     { "http://evil.com/evil --join-the-b0tnet",
       "Ownz0red\nExec=rm -rf /",
       "chrome-http__evil.com_evil",
+      false,
 
       "[Desktop Entry]\n"
       "Name=Google Chrome\n"
@@ -380,6 +557,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
       "chrome-http__evil.com_evil",
+      false,
 
       "[Desktop Entry]\n"
       "Name=Google Chrome\n"
@@ -405,6 +583,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     { "http://evil.com/evil | cat `echo ownz0red` >/dev/null",
       "Innocent Title",
       "chrome-http__evil.com_evil",
+      false,
 
       "[Desktop Entry]\n"
       "Name=Google Chrome\n"
@@ -444,7 +623,9 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             base::FilePath(),
             ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,
-            base::FilePath()));
+            base::FilePath(),
+            test_cases[i].nodisplay));
   }
 }
+
 #endif
