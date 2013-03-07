@@ -65,7 +65,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
 
   ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
     const ResourceProvider::ResourceIdMap& resource_map =
-        resource_provider->getChildToParentMap(child_id_);
+        resource_provider->GetChildToParentMap(child_id_);
 
   if (frame_data) {
     // A frame with an empty root render pass is invalid.
@@ -83,7 +83,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
       setUpdateRect(gfx::UnionRects(updateRect(), damage_in_layer));
     }
 
-    resource_provider->receiveFromChild(child_id_, frame_data->resource_list);
+    resource_provider->ReceiveFromChild(child_id_, frame_data->resource_list);
 
     bool invalid_frame = false;
     ResourceProvider::ResourceIdSet used_resources;
@@ -114,11 +114,11 @@ void DelegatedRendererLayerImpl::SetFrameData(
        it != resource_map.end();
        ++it) {
     bool resource_is_in_current_frame = resources_.count(it->second);
-    bool resource_is_in_use = resource_provider->inUseByConsumer(it->second);
+    bool resource_is_in_use = resource_provider->InUseByConsumer(it->second);
     if (!resource_is_in_current_frame && !resource_is_in_use)
       unused_resources.push_back(it->second);
   }
-  resource_provider->prepareSendToChild(
+  resource_provider->PrepareSendToChild(
       child_id_, unused_resources, resources_for_ack);
 }
 
@@ -334,7 +334,7 @@ void DelegatedRendererLayerImpl::CreateChildIdIfNeeded() {
     return;
 
   ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
-  child_id_ = resource_provider->createChild();
+  child_id_ = resource_provider->CreateChild();
 }
 
 void DelegatedRendererLayerImpl::ClearChildId() {
@@ -342,7 +342,7 @@ void DelegatedRendererLayerImpl::ClearChildId() {
     return;
 
   ResourceProvider* resource_provider = layerTreeImpl()->resource_provider();
-  resource_provider->destroyChild(child_id_);
+  resource_provider->DestroyChild(child_id_);
   child_id_ = 0;
 }
 

@@ -61,7 +61,7 @@ namespace {
 class SimpleSwapFence : public ResourceProvider::Fence {
 public:
     SimpleSwapFence() : m_hasPassed(false) {}
-    virtual bool hasPassed() OVERRIDE { return m_hasPassed; }
+    virtual bool HasPassed() OVERRIDE { return m_hasPassed; }
     void setHasPassed() { m_hasPassed = true; }
 private:
     virtual ~SimpleSwapFence() {}
@@ -145,8 +145,8 @@ bool GLRenderer::initialize()
 
     m_capabilities.usingEglImage = extensions.count("GL_OES_EGL_image_external");
 
-    m_capabilities.maxTextureSize = m_resourceProvider->maxTextureSize();
-    m_capabilities.bestTextureFormat = m_resourceProvider->bestTextureFormat();
+    m_capabilities.maxTextureSize = m_resourceProvider->max_texture_size();
+    m_capabilities.bestTextureFormat = m_resourceProvider->best_texture_format();
 
     // The updater can access textures while the GLRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
@@ -382,7 +382,7 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     if (filters.isEmpty())
         return SkBitmap();
 
-    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreenContextProvider();
+    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreen_context_provider();
     if (!offscreenContexts || !offscreenContexts->Context3d() || !offscreenContexts->GrContext())
         return SkBitmap();
 
@@ -391,12 +391,12 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     // Flush the compositor context to ensure that textures there are available
     // in the shared context.  Do this after locking/creating the compositor
     // texture.
-    renderer->resourceProvider()->flush();
+    renderer->resourceProvider()->Flush();
 
     // Make sure skia uses the correct GL context.
     offscreenContexts->Context3d()->makeContextCurrent();
 
-    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), sourceTextureResource->size(), offscreenContexts->GrContext());
+    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.texture_id(), sourceTextureResource->size(), offscreenContexts->GrContext());
 
     // Flush skia context so that all the rendered stuff appears on the
     // texture.
@@ -407,7 +407,7 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     offscreenContexts->Context3d()->flush();
 
     // Use the compositor's GL context again.
-    renderer->resourceProvider()->graphicsContext3D()->makeContextCurrent();
+    renderer->resourceProvider()->GraphicsContext3D()->makeContextCurrent();
     return source;
 }
 
@@ -416,7 +416,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     if (!filter)
         return SkBitmap();
 
-    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreenContextProvider();
+    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreen_context_provider();
     if (!offscreenContexts || !offscreenContexts->Context3d() || !offscreenContexts->GrContext())
         return SkBitmap();
 
@@ -425,7 +425,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     // Flush the compositor context to ensure that textures there are available
     // in the shared context.  Do this after locking/creating the compositor
     // texture.
-    renderer->resourceProvider()->flush();
+    renderer->resourceProvider()->Flush();
 
     // Make sure skia uses the correct GL context.
     offscreenContexts->Context3d()->makeContextCurrent();
@@ -435,7 +435,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     backendTextureDescription.fWidth = sourceTextureResource->size().width();
     backendTextureDescription.fHeight = sourceTextureResource->size().height();
     backendTextureDescription.fConfig = kSkia8888_GrPixelConfig;
-    backendTextureDescription.fTextureHandle = lock.textureId();
+    backendTextureDescription.fTextureHandle = lock.texture_id();
     backendTextureDescription.fOrigin = kTopLeft_GrSurfaceOrigin;
     skia::RefPtr<GrTexture> texture = skia::AdoptRef(offscreenContexts->GrContext()->wrapBackendTexture(backendTextureDescription));
 
@@ -475,7 +475,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     offscreenContexts->Context3d()->flush();
 
     // Use the compositor's GL context again.
-    renderer->resourceProvider()->graphicsContext3D()->makeContextCurrent();
+    renderer->resourceProvider()->GraphicsContext3D()->makeContextCurrent();
 
     return device.accessBitmap(false);
 }
@@ -588,7 +588,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     if (backgroundTexture) {
         DCHECK(backgroundTexture->size() == quad->rect.size());
         ResourceProvider::ScopedReadLockGL lock(m_resourceProvider, backgroundTexture->id());
-        copyTextureToFramebuffer(frame, lock.textureId(), quad->rect, quad->quadTransform());
+        copyTextureToFramebuffer(frame, lock.texture_id(), quad->rect, quad->quadTransform());
     }
 
     bool clipped = false;
@@ -608,7 +608,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     unsigned maskTextureId = 0;
     if (quad->mask_resource_id) {
         maskResourceLock.reset(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->mask_resource_id));
-        maskTextureId = maskResourceLock->textureId();
+        maskTextureId = maskResourceLock->texture_id();
     }
 
     // FIXME: use the backgroundTexture and blend the background in with this draw instead of having a separate copy of the background texture.
@@ -700,7 +700,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
                                             quad->mask_uv_rect.x(), quad->mask_uv_rect.y()));
         GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation,
                                             quad->mask_uv_rect.width() / tex_scale_x, quad->mask_uv_rect.height() / tex_scale_y));
-        m_resourceProvider->bindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
+        m_resourceProvider->BindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
         GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }
 
@@ -1078,7 +1078,7 @@ void GLRenderer::flushTextureQuadCache()
 
     // Assume the current active textures is 0.
     ResourceProvider::ScopedReadLockGL lockedQuad(m_resourceProvider, m_drawCache.resource_id);
-    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, lockedQuad.textureId()));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, lockedQuad.texture_id()));
 
     // set up premultiplied alpha.
     if (!m_drawCache.use_premultiplied_alpha) {
@@ -1373,8 +1373,8 @@ bool GLRenderer::swapBuffers()
     // written to after one full frame has past since it was last read.
     if (m_lastSwapFence)
         static_cast<SimpleSwapFence*>(m_lastSwapFence.get())->setHasPassed();
-    m_lastSwapFence = m_resourceProvider->getReadLockFence();
-    m_resourceProvider->setReadLockFence(new SimpleSwapFence());
+    m_lastSwapFence = m_resourceProvider->GetReadLockFence();
+    m_resourceProvider->SetReadLockFence(new SimpleSwapFence());
 
     return true;
 }
@@ -1437,7 +1437,7 @@ void GLRenderer::enforceMemoryPolicy()
         releaseRenderPassTextures();
         if (m_discardBackbufferWhenNotVisible)
             discardBackbuffer();
-        m_resourceProvider->releaseCachedData();
+        m_resourceProvider->ReleaseCachedData();
         GLC(m_context, m_context->flush());
     }
 }
@@ -1546,7 +1546,7 @@ bool GLRenderer::getFramebufferTexture(ScopedResource* texture, const gfx::Rect&
         return false;
 
     ResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());
-    GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, lock.textureId()));
+    GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
     GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, texture->format(),
                                              deviceRect.x(), deviceRect.y(), deviceRect.width(), deviceRect.height(), 0));
     return true;
@@ -1573,7 +1573,7 @@ bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResou
 
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_offscreenFramebufferId));
     m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
-    unsigned textureId = m_currentFramebufferLock->textureId();
+    unsigned textureId = m_currentFramebufferLock->texture_id();
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0));
 
     DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE || isContextLost());

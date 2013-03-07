@@ -71,10 +71,10 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
     , m_outputDevice(outputSurface->software_device())
     , m_skCurrentCanvas(0)
 {
-    m_resourceProvider->setDefaultResourceType(ResourceProvider::Bitmap);
+    m_resourceProvider->set_default_resource_type(ResourceProvider::Bitmap);
 
-    m_capabilities.maxTextureSize = m_resourceProvider->maxTextureSize();
-    m_capabilities.bestTextureFormat = m_resourceProvider->bestTextureFormat();
+    m_capabilities.maxTextureSize = m_resourceProvider->max_texture_size();
+    m_capabilities.bestTextureFormat = m_resourceProvider->best_texture_format();
     m_capabilities.usingSetVisibility = true;
     // The updater can access bitmaps while the SoftwareRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
@@ -170,7 +170,7 @@ void SoftwareRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
 bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& framebufferRect)
 {
     m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
-    m_skCurrentCanvas = m_currentFramebufferLock->skCanvas();
+    m_skCurrentCanvas = m_currentFramebufferLock->sk_canvas();
     initializeMatrices(frame, framebufferRect, false);
     setDrawViewportSize(framebufferRect.size());
 
@@ -221,7 +221,7 @@ void SoftwareRenderer::setDrawViewportSize(const gfx::Size& viewportSize)
 
 bool SoftwareRenderer::isSoftwareResource(ResourceProvider::ResourceId id) const
 {
-    switch (m_resourceProvider->resourceType(id)) {
+  switch (m_resourceProvider->GetResourceType(id)) {
     case ResourceProvider::GLTexture:
         return false;
     case ResourceProvider::Bitmap:
@@ -312,7 +312,7 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
 
     // FIXME: Add support for non-premultiplied alpha.
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resource_id);
-    const SkBitmap* bitmap = lock.skBitmap();
+    const SkBitmap* bitmap = lock.sk_bitmap();
     gfx::RectF uvRect = gfx::ScaleRect(gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
                                        bitmap->width(),
                                        bitmap->height());
@@ -331,7 +331,7 @@ void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQua
 
     SkRect uvRect = gfx::RectFToSkRect(quad->tex_coord_rect);
     m_skCurrentPaint.setFilterBitmap(true);
-    m_skCurrentCanvas->drawBitmapRectToRect(*lock.skBitmap(), &uvRect,
+    m_skCurrentCanvas->drawBitmapRectToRect(*lock.sk_bitmap(), &uvRect,
                                             gfx::RectFToSkRect(quadVertexRect()),
                                             &m_skCurrentPaint);
 }
@@ -351,7 +351,7 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     SkMatrix contentMat;
     contentMat.setRectToRect(contentRect, destRect, SkMatrix::kFill_ScaleToFit);
 
-    const SkBitmap* content = lock.skBitmap();
+    const SkBitmap* content = lock.sk_bitmap();
     skia::RefPtr<SkShader> shader = skia::AdoptRef(
         SkShader::CreateBitmapShader(*content,
                                      SkShader::kClamp_TileMode,
@@ -366,7 +366,7 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     if (quad->mask_resource_id) {
         ResourceProvider::ScopedReadLockSoftware maskLock(m_resourceProvider, quad->mask_resource_id);
 
-        const SkBitmap* mask = maskLock.skBitmap();
+        const SkBitmap* mask = maskLock.sk_bitmap();
 
         SkRect maskRect = SkRect::MakeXYWH(
             quad->mask_uv_rect.x() * mask->width(),

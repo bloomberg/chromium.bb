@@ -842,7 +842,7 @@ void LayerTreeHostImpl::didDrawAllLayers(const FrameData& frame)
 
     // Once all layers have been drawn, pending texture uploads should no
     // longer block future uploads.
-    m_resourceProvider->markPendingUploadsAsNonBlocking();
+    m_resourceProvider->MarkPendingUploadsAsNonBlocking();
 }
 
 void LayerTreeHostImpl::finishAllRendering()
@@ -1072,7 +1072,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (!outputSurface->BindToClient(this))
         return false;
 
-    scoped_ptr<ResourceProvider> resourceProvider = ResourceProvider::create(outputSurface.get());
+    scoped_ptr<ResourceProvider> resourceProvider = ResourceProvider::Create(outputSurface.get());
     if (!resourceProvider)
         return false;
 

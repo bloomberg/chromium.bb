@@ -317,7 +317,7 @@ void ThreadProxy::checkOutputSurfaceStatusOnImplThread()
     TRACE_EVENT0("cc", "ThreadProxy::checkOutputSurfaceStatusOnImplThread");
     if (!m_layerTreeHostImpl->isContextLost())
         return;
-    if (cc::ContextProvider* offscreenContexts = m_layerTreeHostImpl->resourceProvider()->offscreenContextProvider())
+    if (cc::ContextProvider* offscreenContexts = m_layerTreeHostImpl->resourceProvider()->offscreen_context_provider())
         offscreenContexts->VerifyContexts();
     m_schedulerOnImplThread->didLoseOutputSurface();
 }
@@ -721,7 +721,7 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
         return;
     }
 
-    m_layerTreeHostImpl->resourceProvider()->setOffscreenContextProvider(offscreenContextProvider);
+    m_layerTreeHostImpl->resourceProvider()->SetOffscreenContextProvider(offscreenContextProvider);
 
     if (m_layerTreeHost->contentsTextureManager()->linkedEvictedBackingsExist()) {
         // Clear any uploads we were making to textures linked to evicted
@@ -1080,7 +1080,7 @@ void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion,
     *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
-        m_layerTreeHostImpl->resourceProvider()->setOffscreenContextProvider(offscreenContextProvider);
+        m_layerTreeHostImpl->resourceProvider()->SetOffscreenContextProvider(offscreenContextProvider);
         m_schedulerOnImplThread->didRecreateOutputSurface();
     } else if (offscreenContextProvider) {
         offscreenContextProvider->VerifyContexts();

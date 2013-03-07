@@ -34,43 +34,43 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   gfx::Rect opaque_rect(10, 10, 80, 80);
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
   cc::ResourceProvider::ResourceId texture_resource =
-      resourceProvider->createResource(
+      resourceProvider->CreateResource(
           gfx::Size(20, 12),
-          resourceProvider->bestTextureFormat(),
+          resourceProvider->best_texture_format(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(texture_resource);
+  resourceProvider->AllocateForTesting(texture_resource);
   unsigned texture_id = ResourceProvider::ScopedReadLockGL(
-      resourceProvider, texture_resource).textureId();
+      resourceProvider, texture_resource).texture_id();
   cc::ResourceProvider::ResourceId resource1 =
-      resourceProvider->createResource(
+      resourceProvider->CreateResource(
           gfx::Size(45, 5),
-          resourceProvider->bestTextureFormat(),
+          resourceProvider->best_texture_format(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(resource1);
+  resourceProvider->AllocateForTesting(resource1);
   cc::ResourceProvider::ResourceId resource2 =
-      resourceProvider->createResource(
+      resourceProvider->CreateResource(
           gfx::Size(346, 61),
-          resourceProvider->bestTextureFormat(),
+          resourceProvider->best_texture_format(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(resource2);
+  resourceProvider->AllocateForTesting(resource2);
   cc::ResourceProvider::ResourceId resource3 =
-      resourceProvider->createResource(
+      resourceProvider->CreateResource(
           gfx::Size(12, 134),
-          resourceProvider->bestTextureFormat(),
+          resourceProvider->best_texture_format(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(resource3);
+  resourceProvider->AllocateForTesting(resource3);
   cc::ResourceProvider::ResourceId resource4 =
-      resourceProvider->createResource(
+      resourceProvider->CreateResource(
           gfx::Size(56, 12),
-          resourceProvider->bestTextureFormat(),
+          resourceProvider->best_texture_format(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(resource4);
+  resourceProvider->AllocateForTesting(resource4);
   cc::ResourceProvider::ResourceId resource5 =
-      resourceProvider->createResource(
+      resourceProvider->CreateResource(
           gfx::Size(73, 26),
-          resourceProvider->bestTextureFormat(),
+          resourceProvider->best_texture_format(),
           ResourceProvider::TextureUsageAny);
-  resourceProvider->allocateForTesting(resource5);
+  resourceProvider->AllocateForTesting(resource5);
 
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
   shared_state->SetAll(gfx::Transform(),
@@ -204,11 +204,11 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   cc::VideoLayerImpl::FramePlane planes[3];
   for (int i = 0; i < 3; ++i) {
     planes[i].resourceId =
-        resourceProvider->createResource(
+        resourceProvider->CreateResource(
             gfx::Size(20, 12),
-            resourceProvider->bestTextureFormat(),
+            resourceProvider->best_texture_format(),
             ResourceProvider::TextureUsageAny);
-    resourceProvider->allocateForTesting(planes[i].resourceId);
+    resourceProvider->AllocateForTesting(planes[i].resourceId);
     planes[i].size = gfx::Size(100, 100);
     planes[i].format = GL_LUMINANCE;
   }

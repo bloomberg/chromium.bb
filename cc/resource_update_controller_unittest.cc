@@ -133,7 +133,7 @@ protected:
         }
         m_resourceManager->prioritizeTextures();
 
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
+        m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
     }
 
 

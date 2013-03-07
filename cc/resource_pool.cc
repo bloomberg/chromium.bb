@@ -11,7 +11,7 @@ namespace cc {
 ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
                                  const gfx::Size& size,
                                  GLenum format)
-    : cc::Resource(resource_provider->createManagedResource(
+    : cc::Resource(resource_provider->CreateManagedResource(
                        size,
                        format,
                        ResourceProvider::TextureUsageAny),
@@ -24,7 +24,7 @@ ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
 ResourcePool::Resource::~Resource() {
   DCHECK(id());
   DCHECK(resource_provider_);
-  resource_provider_->deleteResource(id());
+  resource_provider_->DeleteResource(id());
 }
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider)
@@ -46,7 +46,7 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
     // TODO(epenner): It would be nice to DCHECK that this
     // doesn't happen two frames in a row for any resource
     // in this pool.
-    if (!resource_provider_->canLockForWrite(resource->id()))
+    if (!resource_provider_->CanLockForWrite(resource->id()))
       continue;
 
     if (resource->size() != size)
@@ -65,7 +65,7 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
   // Extend all read locks on all resources until the resource is
   // finished being used, such that we know when resources are
   // truly safe to recycle.
-  resource_provider_->enableReadLockFences(resource->id(), true);
+  resource_provider_->EnableReadLockFences(resource->id(), true);
 
   memory_usage_bytes_ += resource->bytes();
   return make_scoped_ptr(resource);

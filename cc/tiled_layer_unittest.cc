@@ -63,7 +63,7 @@ public:
         m_layerTreeHost->setRootLayer(Layer::create());
 
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
+        m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
         m_hostImpl = make_scoped_ptr(new FakeLayerTreeHostImpl(m_proxy));
     }
 

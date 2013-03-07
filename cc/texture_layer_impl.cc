@@ -72,7 +72,7 @@ void TextureLayerImpl::willDraw(ResourceProvider* resourceProvider)
     if (m_usesMailbox || !m_textureId)
         return;
     DCHECK(!m_externalTextureResource);
-    m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_textureId);
+    m_externalTextureResource = resourceProvider->CreateResourceFromExternalTexture(m_textureId);
 }
 
 void TextureLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
@@ -102,8 +102,8 @@ void TextureLayerImpl::didDraw(ResourceProvider* resourceProvider)
     // FIXME: the following assert will not be true when sending resources to a
     // parent compositor. A synchronization scheme (double-buffering or
     // pipelining of updates) for the client will need to exist to solve this.
-    DCHECK(!resourceProvider->inUseByConsumer(m_externalTextureResource));
-    resourceProvider->deleteResource(m_externalTextureResource);
+    DCHECK(!resourceProvider->InUseByConsumer(m_externalTextureResource));
+    resourceProvider->DeleteResource(m_externalTextureResource);
     m_externalTextureResource = 0;
 }
 
@@ -144,7 +144,7 @@ void TextureLayerImpl::didBecomeActive()
     DCHECK(!m_externalTextureResource);
     ResourceProvider* resourceProvider = layerTreeImpl()->resource_provider();
     if (!m_textureMailbox.IsEmpty())
-        m_externalTextureResource = resourceProvider->createResourceFromTextureMailbox(m_textureMailbox);
+        m_externalTextureResource = resourceProvider->CreateResourceFromTextureMailbox(m_textureMailbox);
     m_ownMailbox = false;
 }
 
@@ -158,7 +158,7 @@ void TextureLayerImpl::freeTextureMailbox()
     } else if (m_externalTextureResource) {
         DCHECK(!m_ownMailbox);
         ResourceProvider* resourceProvider = layerTreeImpl()->resource_provider();
-        resourceProvider->deleteResource(m_externalTextureResource);
+        resourceProvider->DeleteResource(m_externalTextureResource);
         m_externalTextureResource = 0;
     }
 }

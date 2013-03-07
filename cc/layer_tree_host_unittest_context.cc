@@ -430,7 +430,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
     EXPECT_TRUE(content_impl->HaveResourceForTileAt(0, 0));
 
     cc::ContextProvider* contexts =
-        host_impl->resourceProvider()->offscreenContextProvider();
+        host_impl->resourceProvider()->offscreen_context_provider();
     if (use_surface_) {
       EXPECT_TRUE(contexts->Context3d());
       // TODO(danakj): Make a fake GrContext.
@@ -519,7 +519,7 @@ class LayerTreeHostContextTestOffscreenContextFails
 
   virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     cc::ContextProvider* contexts =
-        host_impl->resourceProvider()->offscreenContextProvider();
+        host_impl->resourceProvider()->offscreen_context_provider();
     EXPECT_FALSE(contexts);
     endTest();
   }
@@ -1017,14 +1017,14 @@ class LayerTreeHostContextTestDontUseLostResources :
       color_video_frame_ = VideoFrame::CreateColorFrame(
           gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
       hw_video_frame_ = VideoFrame::WrapNativeTexture(
-          resource_provider->graphicsContext3D()->createTexture(),
+          resource_provider->GraphicsContext3D()->createTexture(),
           GL_TEXTURE_2D,
           gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4),
           base::TimeDelta(),
           VideoFrame::ReadPixelsCB(),
           base::Closure());
       scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
-          resource_provider->graphicsContext3D()->createTexture(),
+          resource_provider->GraphicsContext3D()->createTexture(),
           GL_TEXTURE_2D,
           gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4),
           base::TimeDelta(),

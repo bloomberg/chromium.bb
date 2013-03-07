@@ -23,7 +23,7 @@ public:
         , m_outputSurface(createFakeOutputSurface())
     {
         DebugScopedSetImplThread implThread(&m_proxy);
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
+        m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
     }
 
     virtual ~PrioritizedResourceTest()

@@ -476,21 +476,21 @@ TEST_F(TextureLayerImplWithMailboxTest, testCallbackOnInUseResource)
 {
     ResourceProvider *provider = m_hostImpl.activeTree()->resource_provider();
     ResourceProvider::ResourceId id =
-        provider->createResourceFromTextureMailbox(m_testData.m_mailbox1);
-    provider->allocateForTesting(id);
+        provider->CreateResourceFromTextureMailbox(m_testData.m_mailbox1);
+    provider->AllocateForTesting(id);
 
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resourceIdsToTransfer;
     resourceIdsToTransfer.push_back(id);
     TransferableResourceArray list;
-    provider->prepareSendToParent(resourceIdsToTransfer, &list);
-    EXPECT_TRUE(provider->inUseByConsumer(id));
+    provider->PrepareSendToParent(resourceIdsToTransfer, &list);
+    EXPECT_TRUE(provider->InUseByConsumer(id));
     EXPECT_CALL(m_testData.m_mockCallback, Release(_, _)).Times(0);
-    provider->deleteResource(id);
+    provider->DeleteResource(id);
     Mock::VerifyAndClearExpectations(&m_testData.m_mockCallback);
     EXPECT_CALL(m_testData.m_mockCallback,
                 Release(m_testData.m_mailboxName1, _)).Times(1);
-    provider->receiveFromParent(list);
+    provider->ReceiveFromParent(list);
 }
 
 }  // namespace

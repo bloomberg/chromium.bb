@@ -219,7 +219,7 @@ void PrioritizedResourceManager::acquireBackingTextureIfNeeded(PrioritizedResour
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         if (!(*it)->canBeRecycled())
             break;
-        if (resourceProvider->inUseByConsumer((*it)->id()))
+        if (resourceProvider->InUseByConsumer((*it)->id()))
             continue;
         if ((*it)->size() == texture->size() && (*it)->format() == texture->format()) {
             backing = (*it);
@@ -413,7 +413,7 @@ PrioritizedResource::Backing* PrioritizedResourceManager::createBacking(gfx::Siz
 {
     DCHECK(m_proxy->isImplThread() && m_proxy->isMainThreadBlocked());
     DCHECK(resourceProvider);
-    ResourceProvider::ResourceId resourceId = resourceProvider->createManagedResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceId = resourceProvider->CreateManagedResource(size, format, ResourceProvider::TextureUsageAny);
     PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(resourceId, resourceProvider, size, format);
     m_memoryUseBytes += backing->bytes();
     return backing;

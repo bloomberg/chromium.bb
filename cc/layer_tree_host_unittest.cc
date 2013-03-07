@@ -1524,7 +1524,7 @@ public:
     virtual void appendQuads(QuadSink& quadSink, AppendQuadsData&) OVERRIDE
     {
         ASSERT_TRUE(m_hasTexture);
-        ASSERT_NE(0u, layerTreeImpl()->resource_provider()->numResources());
+        ASSERT_NE(0u, layerTreeImpl()->resource_provider()->num_resources());
     }
 
     void setHasTexture(bool hasTexture) { m_hasTexture = hasTexture; }

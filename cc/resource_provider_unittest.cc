@@ -310,9 +310,9 @@ public:
     ResourceProviderTest()
         : m_sharedData(ContextSharedData::create())
         , m_outputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
-        , m_resourceProvider(ResourceProvider::create(m_outputSurface.get()))
+        , m_resourceProvider(ResourceProvider::Create(m_outputSurface.get()))
     {
-        m_resourceProvider->setDefaultResourceType(GetParam());
+        m_resourceProvider->set_default_resource_type(GetParam());
     }
 
     ResourceProviderContext* context() { return static_cast<ResourceProviderContext*>(m_outputSurface->context3d()); }
@@ -321,12 +321,12 @@ public:
     {
         if (GetParam() == ResourceProvider::GLTexture) {
             ResourceProvider::ScopedReadLockGL lockGL(m_resourceProvider.get(), id);
-            ASSERT_NE(0U, lockGL.textureId());
-            context()->bindTexture(GL_TEXTURE_2D, lockGL.textureId());
+            ASSERT_NE(0U, lockGL.texture_id());
+            context()->bindTexture(GL_TEXTURE_2D, lockGL.texture_id());
             context()->getPixels(size, format, pixels);
         } else if (GetParam() == ResourceProvider::Bitmap) {
             ResourceProvider::ScopedReadLockSoftware lockSoftware(m_resourceProvider.get(), id);
-            memcpy(pixels, lockSoftware.skBitmap()->getPixels(), lockSoftware.skBitmap()->getSize());
+            memcpy(pixels, lockSoftware.sk_bitmap()->getPixels(), lockSoftware.sk_bitmap()->getSize());
         }
     }
 
@@ -339,15 +339,15 @@ public:
     {
         DCHECK_EQ(GetParam(), ResourceProvider::GLTexture);
         ResourceProvider::ScopedReadLockGL lockGL(resourceProvider, id);
-        EXPECT_NE(0u, lockGL.textureId());
-        ResourceProviderContext* context = static_cast<ResourceProviderContext*>(resourceProvider->graphicsContext3D());
-        context->bindTexture(GL_TEXTURE_2D, lockGL.textureId());
+        EXPECT_NE(0u, lockGL.texture_id());
+        ResourceProviderContext* context = static_cast<ResourceProviderContext*>(resourceProvider->GraphicsContext3D());
+        context->bindTexture(GL_TEXTURE_2D, lockGL.texture_id());
         return context->getTextureFilter();
     }
 
     void expectNumResources(int count)
     {
-        EXPECT_EQ(count, static_cast<int>(m_resourceProvider->numResources()));
+        EXPECT_EQ(count, static_cast<int>(m_resourceProvider->num_resources()));
         if (GetParam() == ResourceProvider::GLTexture)
             EXPECT_EQ(count, context()->textureCount());
     }
@@ -365,18 +365,18 @@ TEST_P(ResourceProviderTest, Basic)
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id = m_resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = m_resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
     expectNumResources(1);
 
     uint8_t data[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    m_resourceProvider->setPixels(id, data, rect, rect, gfx::Vector2d());
+    m_resourceProvider->SetPixels(id, data, rect, rect, gfx::Vector2d());
 
     uint8_t result[4] = {0};
     getResourcePixels(id, size, format, result);
     EXPECT_EQ(0, memcmp(data, result, pixelSize));
 
-    m_resourceProvider->deleteResource(id);
+    m_resourceProvider->DeleteResource(id);
     expectNumResources(0);
 }
 
@@ -387,11 +387,11 @@ TEST_P(ResourceProviderTest, Upload)
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(16U, pixelSize);
 
-    ResourceProvider::ResourceId id = m_resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = m_resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
 
     uint8_t image[16] = {0};
     gfx::Rect imageRect(gfx::Point(), size);
-    m_resourceProvider->setPixels(id, image, imageRect, imageRect, gfx::Vector2d());
+    m_resourceProvider->SetPixels(id, image, imageRect, imageRect, gfx::Vector2d());
 
     for (uint8_t i = 0 ; i < pixelSize; ++i)
         image[i] = i;
@@ -400,7 +400,7 @@ TEST_P(ResourceProviderTest, Upload)
     {
         gfx::Rect sourceRect(0, 0, 1, 1);
         gfx::Vector2d destOffset(0, 0);
-        m_resourceProvider->setPixels(id, image, imageRect, sourceRect, destOffset);
+        m_resourceProvider->SetPixels(id, image, imageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 0, 0, 0,
                                 0, 0, 0, 0,   0, 0, 0, 0};
@@ -410,7 +410,7 @@ TEST_P(ResourceProviderTest, Upload)
     {
         gfx::Rect sourceRect(0, 0, 1, 1);
         gfx::Vector2d destOffset(1, 1);
-        m_resourceProvider->setPixels(id, image, imageRect, sourceRect, destOffset);
+        m_resourceProvider->SetPixels(id, image, imageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 0, 0, 0,
                                 0, 0, 0, 0,   0, 1, 2, 3};
@@ -420,7 +420,7 @@ TEST_P(ResourceProviderTest, Upload)
     {
         gfx::Rect sourceRect(1, 0, 1, 1);
         gfx::Vector2d destOffset(0, 1);
-        m_resourceProvider->setPixels(id, image, imageRect, sourceRect, destOffset);
+        m_resourceProvider->SetPixels(id, image, imageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 0, 0, 0,
                                 4, 5, 6, 7,   0, 1, 2, 3};
@@ -431,7 +431,7 @@ TEST_P(ResourceProviderTest, Upload)
         gfx::Rect offsetImageRect(gfx::Point(100, 100), size);
         gfx::Rect sourceRect(100, 100, 1, 1);
         gfx::Vector2d destOffset(1, 0);
-        m_resourceProvider->setPixels(id, image, offsetImageRect, sourceRect, destOffset);
+        m_resourceProvider->SetPixels(id, image, offsetImageRect, sourceRect, destOffset);
 
         uint8_t expected[16] = {0, 1, 2, 3,   0, 1, 2, 3,
                                 4, 5, 6, 7,   0, 1, 2, 3};
@@ -440,7 +440,7 @@ TEST_P(ResourceProviderTest, Upload)
     }
 
 
-    m_resourceProvider->deleteResource(id);
+    m_resourceProvider->DeleteResource(id);
 }
 
 TEST_P(ResourceProviderTest, TransferResources)
@@ -450,23 +450,23 @@ TEST_P(ResourceProviderTest, TransferResources)
         return;
 
     scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
-    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childOutputSurface.get()));
+    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::Create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id1 = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id1 = childResourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data1[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    childResourceProvider->setPixels(id1, data1, rect, rect, gfx::Vector2d());
+    childResourceProvider->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
-    ResourceProvider::ResourceId id2 = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id2 = childResourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data2[4] = {5, 5, 5, 5};
-    childResourceProvider->setPixels(id2, data2, rect, rect, gfx::Vector2d());
+    childResourceProvider->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
-    int childId = m_resourceProvider->createChild();
+    int childId = m_resourceProvider->CreateChild();
 
     {
         // Transfer some resources to the parent.
@@ -474,23 +474,23 @@ TEST_P(ResourceProviderTest, TransferResources)
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
         TransferableResourceArray list;
-        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        childResourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         ASSERT_EQ(2u, list.size());
         EXPECT_NE(0u, list[0].sync_point);
         EXPECT_NE(0u, list[1].sync_point);
-        EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
-        EXPECT_TRUE(childResourceProvider->inUseByConsumer(id2));
-        m_resourceProvider->receiveFromChild(childId, list);
+        EXPECT_TRUE(childResourceProvider->InUseByConsumer(id1));
+        EXPECT_TRUE(childResourceProvider->InUseByConsumer(id2));
+        m_resourceProvider->ReceiveFromChild(childId, list);
     }
 
-    EXPECT_EQ(2u, m_resourceProvider->numResources());
-    ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
+    EXPECT_EQ(2u, m_resourceProvider->num_resources());
+    ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->GetChildToParentMap(childId);
     ResourceProvider::ResourceId mappedId1 = resourceMap[id1];
     ResourceProvider::ResourceId mappedId2 = resourceMap[id2];
     EXPECT_NE(0u, mappedId1);
     EXPECT_NE(0u, mappedId2);
-    EXPECT_FALSE(m_resourceProvider->inUseByConsumer(id1));
-    EXPECT_FALSE(m_resourceProvider->inUseByConsumer(id2));
+    EXPECT_FALSE(m_resourceProvider->InUseByConsumer(id1));
+    EXPECT_FALSE(m_resourceProvider->InUseByConsumer(id2));
 
     uint8_t result[4] = {0};
     getResourcePixels(mappedId1, size, format, result);
@@ -505,7 +505,7 @@ TEST_P(ResourceProviderTest, TransferResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         TransferableResourceArray list;
-        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        childResourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         EXPECT_EQ(0u, list.size());
     }
 
@@ -515,27 +515,27 @@ TEST_P(ResourceProviderTest, TransferResources)
         resourceIdsToTransfer.push_back(mappedId1);
         resourceIdsToTransfer.push_back(mappedId2);
         TransferableResourceArray list;
-        m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
+        m_resourceProvider->PrepareSendToChild(childId, resourceIdsToTransfer, &list);
         ASSERT_EQ(2u, list.size());
         EXPECT_NE(0u, list[0].sync_point);
         EXPECT_NE(0u, list[1].sync_point);
-        childResourceProvider->receiveFromParent(list);
+        childResourceProvider->ReceiveFromParent(list);
     }
-    EXPECT_FALSE(childResourceProvider->inUseByConsumer(id1));
-    EXPECT_FALSE(childResourceProvider->inUseByConsumer(id2));
+    EXPECT_FALSE(childResourceProvider->InUseByConsumer(id1));
+    EXPECT_FALSE(childResourceProvider->InUseByConsumer(id2));
 
     ResourceProviderContext* childContext3D = static_cast<ResourceProviderContext*>(childOutputSurface->context3d());
     {
         ResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id1);
-        ASSERT_NE(0U, lock.textureId());
-        childContext3D->bindTexture(GL_TEXTURE_2D, lock.textureId());
+        ASSERT_NE(0U, lock.texture_id());
+        childContext3D->bindTexture(GL_TEXTURE_2D, lock.texture_id());
         childContext3D->getPixels(size, format, result);
         EXPECT_EQ(0, memcmp(data1, result, pixelSize));
     }
     {
         ResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id2);
-        ASSERT_NE(0U, lock.textureId());
-        childContext3D->bindTexture(GL_TEXTURE_2D, lock.textureId());
+        ASSERT_NE(0U, lock.texture_id());
+        childContext3D->bindTexture(GL_TEXTURE_2D, lock.texture_id());
         childContext3D->getPixels(size, format, result);
         EXPECT_EQ(0, memcmp(data2, result, pixelSize));
     }
@@ -546,18 +546,18 @@ TEST_P(ResourceProviderTest, TransferResources)
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
         TransferableResourceArray list;
-        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        childResourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         ASSERT_EQ(2u, list.size());
         EXPECT_NE(0u, list[0].sync_point);
         EXPECT_NE(0u, list[1].sync_point);
-        EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
-        EXPECT_TRUE(childResourceProvider->inUseByConsumer(id2));
-        m_resourceProvider->receiveFromChild(childId, list);
+        EXPECT_TRUE(childResourceProvider->InUseByConsumer(id1));
+        EXPECT_TRUE(childResourceProvider->InUseByConsumer(id2));
+        m_resourceProvider->ReceiveFromChild(childId, list);
     }
 
-    EXPECT_EQ(2u, m_resourceProvider->numResources());
-    m_resourceProvider->destroyChild(childId);
-    EXPECT_EQ(0u, m_resourceProvider->numResources());
+    EXPECT_EQ(2u, m_resourceProvider->num_resources());
+    m_resourceProvider->DestroyChild(childId);
+    EXPECT_EQ(0u, m_resourceProvider->num_resources());
 }
 
 TEST_P(ResourceProviderTest, DeleteTransferredResources)
@@ -567,50 +567,50 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
         return;
 
     scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
-    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childOutputSurface.get()));
+    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::Create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = childResourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    childResourceProvider->setPixels(id, data, rect, rect, gfx::Vector2d());
+    childResourceProvider->SetPixels(id, data, rect, rect, gfx::Vector2d());
 
-    int childId = m_resourceProvider->createChild();
+    int childId = m_resourceProvider->CreateChild();
 
     {
         // Transfer some resource to the parent.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id);
         TransferableResourceArray list;
-        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        childResourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         ASSERT_EQ(1u, list.size());
         EXPECT_NE(0u, list[0].sync_point);
-        EXPECT_TRUE(childResourceProvider->inUseByConsumer(id));
-        m_resourceProvider->receiveFromChild(childId, list);
+        EXPECT_TRUE(childResourceProvider->InUseByConsumer(id));
+        m_resourceProvider->ReceiveFromChild(childId, list);
     }
 
     // Delete textures in the child, while they are transfered.
-    childResourceProvider->deleteResource(id);
-    EXPECT_EQ(1u, childResourceProvider->numResources());
+    childResourceProvider->DeleteResource(id);
+    EXPECT_EQ(1u, childResourceProvider->num_resources());
 
     {
         // Transfer resources back from the parent to the child.
-        ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
+        ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->GetChildToParentMap(childId);
         ResourceProvider::ResourceId mappedId = resourceMap[id];
         EXPECT_NE(0u, mappedId);
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId);
         TransferableResourceArray list;
-        m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
+        m_resourceProvider->PrepareSendToChild(childId, resourceIdsToTransfer, &list);
         ASSERT_EQ(1u, list.size());
         EXPECT_NE(0u, list[0].sync_point);
-        childResourceProvider->receiveFromParent(list);
+        childResourceProvider->ReceiveFromParent(list);
     }
-    EXPECT_EQ(0u, childResourceProvider->numResources());
+    EXPECT_EQ(0u, childResourceProvider->num_resources());
 }
 
 TEST_P(ResourceProviderTest, TextureFilters)
@@ -620,34 +620,34 @@ TEST_P(ResourceProviderTest, TextureFilters)
         return;
 
     scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
-    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childOutputSurface.get()));
+    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::Create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    ResourceProvider::ResourceId id = childResourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = childResourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
     uint8_t data[4] = {1, 2, 3, 4};
     gfx::Rect rect(gfx::Point(), size);
-    childResourceProvider->setPixels(id, data, rect, rect, gfx::Vector2d());
+    childResourceProvider->SetPixels(id, data, rect, rect, gfx::Vector2d());
     EXPECT_EQ(GL_LINEAR, getResourceFilter(childResourceProvider.get(), id));
     setResourceFilter(childResourceProvider.get(), id, GL_NEAREST);
     EXPECT_EQ(GL_NEAREST, getResourceFilter(childResourceProvider.get(), id));
 
-    int childId = m_resourceProvider->createChild();
+    int childId = m_resourceProvider->CreateChild();
 
     {
         // Transfer some resource to the parent.
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id);
         TransferableResourceArray list;
-        childResourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        childResourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         ASSERT_EQ(1u, list.size());
         EXPECT_EQ(GL_NEAREST, list[0].filter);
-        m_resourceProvider->receiveFromChild(childId, list);
+        m_resourceProvider->ReceiveFromChild(childId, list);
     }
-    ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
+    ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->GetChildToParentMap(childId);
     ResourceProvider::ResourceId mappedId = resourceMap[id];
     EXPECT_NE(0u, mappedId);
     EXPECT_EQ(GL_NEAREST, getResourceFilter(m_resourceProvider.get(), mappedId));
@@ -658,10 +658,10 @@ TEST_P(ResourceProviderTest, TextureFilters)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId);
         TransferableResourceArray list;
-        m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer, &list);
+        m_resourceProvider->PrepareSendToChild(childId, resourceIdsToTransfer, &list);
         ASSERT_EQ(1u, list.size());
         EXPECT_EQ(GL_LINEAR, list[0].filter);
-        childResourceProvider->receiveFromParent(list);
+        childResourceProvider->ReceiveFromParent(list);
     }
     EXPECT_EQ(GL_LINEAR, getResourceFilter(childResourceProvider.get(), id));
     setResourceFilter(childResourceProvider.get(), id, GL_NEAREST);
@@ -691,7 +691,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
 
     unsigned releaseSyncPoint = 0;
     TextureMailbox::ReleaseCallback callback = base::Bind(ReleaseTextureMailbox, &releaseSyncPoint);
-    ResourceProvider::ResourceId resource = m_resourceProvider->createResourceFromTextureMailbox(TextureMailbox(mailbox, callback, syncPoint));
+    ResourceProvider::ResourceId resource = m_resourceProvider->CreateResourceFromTextureMailbox(TextureMailbox(mailbox, callback, syncPoint));
     EXPECT_EQ(1u, context()->textureCount());
     EXPECT_EQ(0u, releaseSyncPoint);
 
@@ -700,7 +700,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(resource);
         TransferableResourceArray list;
-        m_resourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        m_resourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         ASSERT_EQ(1u, list.size());
         EXPECT_LE(syncPoint, list[0].sync_point);
         EXPECT_EQ(0u, memcmp(mailbox.name, list[0].mailbox.name, sizeof(mailbox.name)));
@@ -719,11 +719,11 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         EXPECT_LT(0u, list[0].sync_point);
 
         // Receive the resource, then delete it, expect the sync points to be consistent.
-        m_resourceProvider->receiveFromParent(list);
+        m_resourceProvider->ReceiveFromParent(list);
         EXPECT_EQ(1u, context()->textureCount());
         EXPECT_EQ(0u, releaseSyncPoint);
 
-        m_resourceProvider->deleteResource(resource);
+        m_resourceProvider->DeleteResource(resource);
         EXPECT_LE(list[0].sync_point, releaseSyncPoint);
     }
 
@@ -733,7 +733,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
     syncPoint = releaseSyncPoint;
     EXPECT_LT(0u, syncPoint);
     releaseSyncPoint = 0;
-    resource = m_resourceProvider->createResourceFromTextureMailbox(TextureMailbox(mailbox, callback, syncPoint));
+    resource = m_resourceProvider->CreateResourceFromTextureMailbox(TextureMailbox(mailbox, callback, syncPoint));
     EXPECT_EQ(1u, context()->textureCount());
     EXPECT_EQ(0u, releaseSyncPoint);
 
@@ -742,7 +742,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(resource);
         TransferableResourceArray list;
-        m_resourceProvider->prepareSendToParent(resourceIdsToTransfer, &list);
+        m_resourceProvider->PrepareSendToParent(resourceIdsToTransfer, &list);
         ASSERT_EQ(1u, list.size());
         EXPECT_LE(syncPoint, list[0].sync_point);
         EXPECT_EQ(0u, memcmp(mailbox.name, list[0].mailbox.name, sizeof(mailbox.name)));
@@ -761,12 +761,12 @@ TEST_P(ResourceProviderTest, TransferMailboxResources)
         EXPECT_LT(0u, list[0].sync_point);
 
         // Delete the resource, which shouldn't do anything.
-        m_resourceProvider->deleteResource(resource);
+        m_resourceProvider->DeleteResource(resource);
         EXPECT_EQ(1u, context()->textureCount());
         EXPECT_EQ(0u, releaseSyncPoint);
 
         // Then receive the resource which should release the mailbox, expect the sync points to be consistent.
-        m_resourceProvider->receiveFromParent(list);
+        m_resourceProvider->ReceiveFromParent(list);
         EXPECT_LE(list[0].sync_point, releaseSyncPoint);
     }
 
@@ -793,7 +793,7 @@ TEST_P(ResourceProviderTest, ScopedSampler)
 
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
     TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3d());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
@@ -807,8 +807,8 @@ TEST_P(ResourceProviderTest, ScopedSampler)
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
-    ResourceProvider::ResourceId id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->allocateForTesting(id);
+    ResourceProvider::ResourceId id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->AllocateForTesting(id);
 
     // Creating a sampler with the default filter should not change any texture
     // parameters.
@@ -844,7 +844,7 @@ TEST_P(ResourceProviderTest, ManagedResource)
 
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
     TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3d());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
 
     gfx::Size size(1, 1);
     WGC3Denum format = GL_RGBA;
@@ -857,7 +857,7 @@ TEST_P(ResourceProviderTest, ManagedResource)
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, GL_TEXTURE_POOL_MANAGED_CHROMIUM));
-    ResourceProvider::ResourceId id = resourceProvider->createManagedResource(size, format, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = resourceProvider->CreateManagedResource(size, format, ResourceProvider::TextureUsageAny);
 
     Mock::VerifyAndClearExpectations(context);
 }
@@ -899,7 +899,7 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     int textureId = 123;
 
     AllocationTrackingContext3D* context = static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
 
     // Lazy allocation. Don't allocate when creating the resource.
     EXPECT_CALL(*context, createTexture()).WillOnce(Return(textureId));
@@ -907,8 +907,8 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId)).Times(1);
     EXPECT_CALL(*context, texImage2D(_,_,_,_,_,_,_,_,_)).Times(0);
     EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_,_,_,_,_,_,_,_,_)).Times(0);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->deleteResource(id);
+    id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->DeleteResource(id);
     Mock::VerifyAndClearExpectations(context);
 
     // Do allocate when we set the pixels.
@@ -917,9 +917,9 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId)).Times(3);
     EXPECT_CALL(*context, texImage2D(_,_,_,2,2,_,_,_,_)).Times(1);
     EXPECT_CALL(*context, texSubImage2D(_,_,_,_,2,2,_,_,_)).Times(1);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->setPixels(id, pixels, rect, rect, offset);
-    resourceProvider->deleteResource(id);
+    id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->SetPixels(id, pixels, rect, rect, offset);
+    resourceProvider->DeleteResource(id);
     Mock::VerifyAndClearExpectations(context);
 
     // Same for setPixelsFromBuffer
@@ -928,11 +928,11 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId)).Times(3);
     EXPECT_CALL(*context, texImage2D(_,_,_,2,2,_,_,_,_)).Times(1);
     EXPECT_CALL(*context, texSubImage2D(_,_,_,_,2,2,_,_,_)).Times(1);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->acquirePixelBuffer(id);
-    resourceProvider->setPixelsFromBuffer(id);
-    resourceProvider->releasePixelBuffer(id);
-    resourceProvider->deleteResource(id);
+    id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->AcquirePixelBuffer(id);
+    resourceProvider->SetPixelsFromBuffer(id);
+    resourceProvider->ReleasePixelBuffer(id);
+    resourceProvider->DeleteResource(id);
     Mock::VerifyAndClearExpectations(context);
 
     // Same for async version.
@@ -940,11 +940,11 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     EXPECT_CALL(*context, deleteTexture(textureId)).Times(1);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId)).Times(2);
     EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_,_,_,2,2,_,_,_,_)).Times(1);
-    id = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
-    resourceProvider->acquirePixelBuffer(id);
-    resourceProvider->beginSetPixels(id);
-    resourceProvider->releasePixelBuffer(id);
-    resourceProvider->deleteResource(id);
+    id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->AcquirePixelBuffer(id);
+    resourceProvider->BeginSetPixels(id);
+    resourceProvider->ReleasePixelBuffer(id);
+    resourceProvider->DeleteResource(id);
     Mock::VerifyAndClearExpectations(context);
 }
 

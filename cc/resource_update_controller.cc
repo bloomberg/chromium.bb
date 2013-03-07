@@ -61,7 +61,7 @@ size_t ResourceUpdateController::maxPartialTextureUpdates()
 size_t ResourceUpdateController::maxFullUpdatesPerTick(
     ResourceProvider* resourceProvider)
 {
-    double texturesPerSecond = resourceProvider->estimatedUploadsPerSecond();
+    double texturesPerSecond = resourceProvider->EstimatedUploadsPerSecond();
     size_t texturesPerTick = floor(textureUpdateTickRate * texturesPerSecond);
     return texturesPerTick ? texturesPerTick : 1;
 }
@@ -125,10 +125,10 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         texture->acquireBackingTexture(m_resourceProvider);
         DCHECK(texture->haveBackingTexture());
 
-        DCHECK(m_resourceProvider->resourceType(texture->resourceId()) ==
+        DCHECK(m_resourceProvider->GetResourceType(texture->resourceId()) ==
                ResourceProvider::GLTexture);
 
-        cc::ContextProvider* offscreenContexts = m_resourceProvider->offscreenContextProvider();
+        cc::ContextProvider* offscreenContexts = m_resourceProvider->offscreen_context_provider();
 
         ResourceProvider::ScopedWriteLockGL lock(
             m_resourceProvider, texture->resourceId());
@@ -136,14 +136,14 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         // Flush the compositor context to ensure that textures there are available
         // in the shared context.  Do this after locking/creating the compositor
         // texture.
-        m_resourceProvider->flush();
+        m_resourceProvider->Flush();
 
         // Make sure skia uses the correct GL context.
         offscreenContexts->Context3d()->makeContextCurrent();
 
         // Create an accelerated canvas to draw on.
         skia::RefPtr<SkCanvas> canvas = createAcceleratedCanvas(
-            offscreenContexts->GrContext(), texture->size(), lock.textureId());
+            offscreenContexts->GrContext(), texture->size(), lock.texture_id());
 
         // The compositor expects the textures to be upside-down so it can flip
         // the final composited image. Ganesh renders the image upright so we
@@ -171,7 +171,7 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         offscreenContexts->Context3d()->flush();
 
         // Use the compositor's GL context again.
-        m_resourceProvider->graphicsContext3D()->makeContextCurrent();
+        m_resourceProvider->GraphicsContext3D()->makeContextCurrent();
     }
 
     if (update.bitmap) {
@@ -194,10 +194,10 @@ void ResourceUpdateController::finalize()
     while (m_queue->partialUploadSize())
         updateTexture(m_queue->takeFirstPartialUpload());
 
-    m_resourceProvider->flushUploads();
+    m_resourceProvider->FlushUploads();
 
     if (m_queue->copySize()) {
-        TextureCopier* copier = m_resourceProvider->textureCopier();
+        TextureCopier* copier = m_resourceProvider->texture_copier();
         while (m_queue->copySize())
             copier->copyTexture(m_queue->takeFirstCopy());
 
@@ -240,12 +240,12 @@ base::TimeDelta ResourceUpdateController::pendingUpdateTime() const
 {
     base::TimeDelta updateOneResourceTime =
         updateMoreTexturesTime() / updateMoreTexturesSize();
-    return updateOneResourceTime * m_resourceProvider->numBlockingUploads();
+    return updateOneResourceTime * m_resourceProvider->NumBlockingUploads();
 }
 
 bool ResourceUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 {
-    while (m_resourceProvider->numBlockingUploads() < maxBlockingUpdates()) {
+    while (m_resourceProvider->NumBlockingUploads() < maxBlockingUpdates()) {
         if (!m_queue->fullUploadSize())
             return false;
 
@@ -282,7 +282,7 @@ void ResourceUpdateController::updateMoreTexturesNow()
     while (m_queue->fullUploadSize() && uploads--)
         updateTexture(m_queue->takeFirstFullUpload());
 
-    m_resourceProvider->flushUploads();
+    m_resourceProvider->FlushUploads();
 }
 
 }  // namespace cc

@@ -21,7 +21,7 @@ bool ScopedResource::Allocate(const gfx::Size& size, GLenum format,
   DCHECK(!size.IsEmpty());
 
   set_dimensions(size, format);
-  set_id(resource_provider_->createResource(size, format, hint));
+  set_id(resource_provider_->CreateResource(size, format, hint));
 
 #ifndef NDEBUG
   allocate_thread_id_ = base::PlatformThread::CurrentId();
@@ -35,7 +35,7 @@ void ScopedResource::Free() {
 #ifndef NDEBUG
     DCHECK(allocate_thread_id_ == base::PlatformThread::CurrentId());
 #endif
-    resource_provider_->deleteResource(id());
+    resource_provider_->DeleteResource(id());
   }
   set_id(0);
 }

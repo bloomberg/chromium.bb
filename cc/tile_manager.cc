@@ -399,7 +399,7 @@ void TileManager::CheckForCompletedTileUploads() {
     DCHECK(tile->managed_state().resource);
 
     // Set pixel tasks complete in the order they are posted.
-    if (!resource_pool_->resource_provider()->didSetPixelsComplete(
+    if (!resource_pool_->resource_provider()->DidSetPixelsComplete(
           tile->managed_state().resource->id())) {
       break;
     }
@@ -409,7 +409,7 @@ void TileManager::CheckForCompletedTileUploads() {
       client_->DidUploadVisibleHighResolutionTile();
 
     // It's now safe to release the pixel buffer.
-    resource_pool_->resource_provider()->releasePixelBuffer(
+    resource_pool_->resource_provider()->ReleasePixelBuffer(
         tile->managed_state().resource->id());
 
     DidFinishTileInitialization(tile);
@@ -428,9 +428,9 @@ void TileManager::AbortPendingTileUploads() {
     ManagedTileState& managed_tile_state = tile->managed_state();
     DCHECK(managed_tile_state.resource);
 
-    resource_pool_->resource_provider()->abortSetPixels(
+    resource_pool_->resource_provider()->AbortSetPixels(
         managed_tile_state.resource->id());
-    resource_pool_->resource_provider()->releasePixelBuffer(
+    resource_pool_->resource_provider()->ReleasePixelBuffer(
         managed_tile_state.resource->id());
 
     managed_tile_state.resource_is_being_initialized = false;
@@ -549,7 +549,7 @@ bool TileManager::HasPendingWorkScheduled(WhichTree tree) const {
 void TileManager::DidFinishDispatchingWorkerPoolCompletionCallbacks() {
   // If a flush is needed, do it now before starting to dispatch more tasks.
   if (has_performed_uploads_since_last_flush_) {
-    resource_pool_->resource_provider()->shallowFlushIfSupported();
+    resource_pool_->resource_provider()->ShallowFlushIfSupported();
     has_performed_uploads_since_last_flush_ = false;
   }
 
@@ -778,7 +778,7 @@ scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
   DCHECK(managed_tile_state.can_use_gpu_memory);
   scoped_ptr<ResourcePool::Resource> resource =
       resource_pool_->AcquireResource(tile->tile_size_.size(), tile->format_);
-  resource_pool_->resource_provider()->acquirePixelBuffer(resource->id());
+  resource_pool_->resource_provider()->AcquirePixelBuffer(resource->id());
 
   managed_tile_state.resource_is_being_initialized = true;
   managed_tile_state.can_be_freed = false;
@@ -792,7 +792,7 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
   scoped_ptr<ResourcePool::Resource> resource = PrepareTileForRaster(tile);
   ResourceProvider::ResourceId resource_id = resource->id();
   uint8* buffer =
-      resource_pool_->resource_provider()->mapPixelBuffer(resource_id);
+      resource_pool_->resource_provider()->MapPixelBuffer(resource_id);
 
   bool is_cheap = use_cheapness_estimator_ && allow_cheap_tasks_ &&
       tile->picture_pile()->IsCheapInRect(tile->content_rect_,
@@ -832,7 +832,7 @@ void TileManager::OnRasterTaskCompleted(
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
 
   // Release raster resources.
-  resource_pool_->resource_provider()->unmapPixelBuffer(resource->id());
+  resource_pool_->resource_provider()->UnmapPixelBuffer(resource->id());
 
   ManagedTileState& managed_tile_state = tile->managed_state();
   managed_tile_state.can_be_freed = true;
@@ -857,7 +857,7 @@ void TileManager::OnRasterTaskCompleted(
     // Tile resources can't be freed until upload has completed.
     managed_tile_state.can_be_freed = false;
 
-    resource_pool_->resource_provider()->beginSetPixels(resource->id());
+    resource_pool_->resource_provider()->BeginSetPixels(resource->id());
     has_performed_uploads_since_last_flush_ = true;
 
     managed_tile_state.resource = resource.Pass();
@@ -866,7 +866,7 @@ void TileManager::OnRasterTaskCompleted(
     DidTileRasterStateChange(tile, UPLOAD_STATE);
     tiles_with_pending_upload_.push(tile);
   } else {
-    resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
+    resource_pool_->resource_provider()->ReleasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());
     managed_tile_state.resource_is_being_initialized = false;
     DidTileRasterStateChange(tile, IDLE_STATE);

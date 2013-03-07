@@ -95,7 +95,7 @@ void PrioritizedResource::setPixels(ResourceProvider* resourceProvider,
     if (m_isAbovePriorityCutoff)
         acquireBackingTexture(resourceProvider);
     DCHECK(m_backing);
-    resourceProvider->setPixels(resourceId(), image, imageRect, sourceRect, destOffset);
+    resourceProvider->SetPixels(resourceId(), image, imageRect, sourceRect, destOffset);
 
     // The component order may be bgra if we uploaded bgra pixels to rgba
     // texture. Mark contents as swizzled if image component order is
@@ -156,7 +156,7 @@ void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProv
     DCHECK(resourceProvider == m_resourceProvider);
 #endif
 
-    resourceProvider->deleteResource(id());
+    resourceProvider->DeleteResource(id());
     set_id(0);
     m_resourceHasBeenDeleted = true;
 }

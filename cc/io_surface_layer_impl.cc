@@ -55,7 +55,7 @@ void IOSurfaceLayerImpl::willDraw(ResourceProvider* resourceProvider)
     LayerImpl::willDraw(resourceProvider);
 
     if (m_ioSurfaceChanged) {
-        WebKit::WebGraphicsContext3D* context3d = resourceProvider->graphicsContext3D();
+        WebKit::WebGraphicsContext3D* context3d = resourceProvider->GraphicsContext3D();
         if (!context3d) {
             // FIXME: Implement this path for software compositing.
             return;

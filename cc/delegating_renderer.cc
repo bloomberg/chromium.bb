@@ -56,11 +56,11 @@ bool DelegatingRenderer::Initialize() {
   // but the parent compositor may pipeline for us.
   // TODO(danakj): Can we use this in single-thread mode?
   capabilities_.usingSwapCompleteCallback = true;
-  capabilities_.maxTextureSize = resource_provider_->maxTextureSize();
-  capabilities_.bestTextureFormat = resource_provider_->bestTextureFormat();
+  capabilities_.maxTextureSize = resource_provider_->max_texture_size();
+  capabilities_.bestTextureFormat = resource_provider_->best_texture_format();
   capabilities_.allowPartialTextureUpdates = false;
 
-  WebGraphicsContext3D* context3d = resource_provider_->graphicsContext3D();
+  WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
 
   if (!context3d) {
     // Software compositing.
@@ -122,7 +122,7 @@ bool DelegatingRenderer::Initialize() {
 }
 
 DelegatingRenderer::~DelegatingRenderer() {
-  WebGraphicsContext3D* context3d = resource_provider_->graphicsContext3D();
+  WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
   if (context3d)
     context3d->setContextLostCallback(NULL);
 }
@@ -160,7 +160,7 @@ void DelegatingRenderer::drawFrame(
   // Move the render passes and resources into the |out_frame|.
   DelegatedFrameData& out_data = *out_frame.delegated_frame_data;
   out_data.render_pass_list.swap(render_passes_in_draw_order);
-  resource_provider_->prepareSendToParent(resources, &out_data.resource_list);
+  resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 
   output_surface_->SendFrameToParentCompositor(&out_frame);
 }
@@ -176,14 +176,14 @@ void DelegatingRenderer::getFramebufferPixels(void *pixels,
 
 void DelegatingRenderer::receiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
-  resource_provider_->receiveFromParent(ack.resources);
+  resource_provider_->ReceiveFromParent(ack.resources);
   if (m_client->hasImplThread())
     m_client->onSwapBuffersComplete();
 }
 
 
 bool DelegatingRenderer::isContextLost() {
-  WebGraphicsContext3D* context3d = resource_provider_->graphicsContext3D();
+  WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
   if (!context3d)
     return false;
   return context3d->getGraphicsResetStatusARB() != GL_NO_ERROR;

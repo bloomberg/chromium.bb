@@ -33,7 +33,7 @@ public:
 
     void initializeRenderer() {
         m_outputSurface = FakeOutputSurface::CreateSoftware(make_scoped_ptr(new SoftwareOutputDevice));
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
+        m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
         m_renderer = SoftwareRenderer::create(this, m_outputSurface.get(), resourceProvider());
     }
 
@@ -117,8 +117,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
     setViewportSize(outerSize);
     initializeRenderer();
 
-    ResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(outerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
-    ResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(innerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceYellow = resourceProvider()->CreateResource(outerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId resourceCyan = resourceProvider()->CreateResource(innerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
 
     SkColor yellow = SK_ColorYELLOW;
     SkColor cyan = SK_ColorCYAN;
@@ -129,8 +129,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
     for (int i = 0; i < innerPixels; i++)
       cyanPixels[i] = cyan;
 
-    resourceProvider()->setPixels(resourceYellow, reinterpret_cast<uint8_t*>(yellowPixels.get()), gfx::Rect(outerSize), gfx::Rect(outerSize), gfx::Vector2d());
-    resourceProvider()->setPixels(resourceCyan, reinterpret_cast<uint8_t*>(cyanPixels.get()), gfx::Rect(innerSize), gfx::Rect(innerSize), gfx::Vector2d());
+    resourceProvider()->SetPixels(resourceYellow, reinterpret_cast<uint8_t*>(yellowPixels.get()), gfx::Rect(outerSize), gfx::Rect(outerSize), gfx::Vector2d());
+    resourceProvider()->SetPixels(resourceCyan, reinterpret_cast<uint8_t*>(cyanPixels.get()), gfx::Rect(innerSize), gfx::Rect(innerSize), gfx::Vector2d());
 
     gfx::Rect rootRect = gfx::Rect(deviceViewportSize());
 

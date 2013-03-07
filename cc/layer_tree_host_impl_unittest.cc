@@ -1032,8 +1032,8 @@ private:
         setTilingData(*tilingData.get());
         setSkipsDraw(skipsDraw);
         if (!tileMissing) {
-            ResourceProvider::ResourceId resource = resourceProvider->createResource(gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
-            resourceProvider->allocateForTesting(resource);
+            ResourceProvider::ResourceId resource = resourceProvider->CreateResource(gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
+            resourceProvider->AllocateForTesting(resource);
             pushTileProperties(0, 0, resource, gfx::Rect(), false);
         }
         if (animating)
@@ -1778,9 +1778,9 @@ private:
         , m_quadsAppended(false)
         , m_quadRect(5, 5, 5, 5)
         , m_quadVisibleRect(5, 5, 5, 5)
-        , m_resourceId(resourceProvider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny))
+        , m_resourceId(resourceProvider->CreateResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny))
     {
-        resourceProvider->allocateForTesting(m_resourceId);
+        resourceProvider->AllocateForTesting(m_resourceId);
         setAnchorPoint(gfx::PointF(0, 0));
         setBounds(gfx::Size(10, 10));
         setContentBounds(gfx::Size(10, 10));
@@ -2594,16 +2594,16 @@ private:
 
 static unsigned createResourceId(ResourceProvider* resourceProvider)
 {
-    return resourceProvider->createResource(
+    return resourceProvider->CreateResource(
         gfx::Size(20, 12),
-        resourceProvider->bestTextureFormat(),
+        resourceProvider->best_texture_format(),
         ResourceProvider::TextureUsageAny);
 }
 
 static unsigned createTextureId(ResourceProvider* resourceProvider)
 {
     return ResourceProvider::ScopedReadLockGL(
-        resourceProvider, createResourceId(resourceProvider)).textureId();
+        resourceProvider, createResourceId(resourceProvider)).texture_id();
 }
 
 TEST_F(LayerTreeHostImplTest, layersFreeTextures)
@@ -4027,7 +4027,7 @@ TEST_F(LayerTreeHostImplTest, testRemoveRenderPasses)
 {
     scoped_ptr<OutputSurface> outputSurface(createOutputSurface());
     ASSERT_TRUE(outputSurface->context3d());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
 
     scoped_ptr<TestRenderer> renderer(TestRenderer::create(resourceProvider.get(), outputSurface.get(), &m_proxy));
 

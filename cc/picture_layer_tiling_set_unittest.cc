@@ -62,7 +62,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     scoped_ptr<FakeOutputSurface> output_surface =
         FakeOutputSurface::Create3d();
     scoped_ptr<ResourceProvider> resource_provider =
-        ResourceProvider::create(output_surface.get());
+        ResourceProvider::Create(output_surface.get());
 
     FakePictureLayerTilingClient client;
     client.SetTileSize(gfx::Size(256, 256));
@@ -82,7 +82,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
             make_scoped_ptr(new ResourcePool::Resource(
                 resource_provider.get(),
                 gfx::Size(1, 1),
-                resource_provider->bestTextureFormat()));
+                resource_provider->best_texture_format()));
       }
     }
 

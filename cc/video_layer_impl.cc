@@ -169,7 +169,7 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
     // conversion here. That involves an extra copy of each frame to a bitmap.
     // Obviously, this is suboptimal and should be addressed once ubercompositor
     // starts shaping up.
-    m_convertYUV = resourceProvider->defaultResourceType() == ResourceProvider::Bitmap &&
+    m_convertYUV = resourceProvider->default_resource_type() == ResourceProvider::Bitmap &&
         (m_frame->format() == media::VideoFrame::YV12 ||
          m_frame->format() == media::VideoFrame::YV16);
 
@@ -189,7 +189,7 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
     }
 
     if (m_format == GL_TEXTURE_2D)
-        m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_frame->texture_id());
+        m_externalTextureResource = resourceProvider->CreateResourceFromExternalTexture(m_frame->texture_id());
 }
 
 void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
@@ -306,8 +306,8 @@ void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
         // FIXME: the following assert will not be true when sending resources to a
         // parent compositor. We will probably need to hold on to m_frame for
         // longer, and have several "current frames" in the pipeline.
-        DCHECK(!resourceProvider->inUseByConsumer(m_externalTextureResource));
-        resourceProvider->deleteResource(m_externalTextureResource);
+        DCHECK(!resourceProvider->InUseByConsumer(m_externalTextureResource));
+        resourceProvider->DeleteResource(m_externalTextureResource);
         m_externalTextureResource = 0;
     }
 
@@ -343,7 +343,7 @@ bool VideoLayerImpl::FramePlane::allocateData(
     if (resourceId)
         return true;
 
-    resourceId = resourceProvider->createResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceId = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
     return resourceId;
 }
 
@@ -352,13 +352,13 @@ void VideoLayerImpl::FramePlane::freeData(ResourceProvider* resourceProvider)
     if (!resourceId)
         return;
 
-    resourceProvider->deleteResource(resourceId);
+    resourceProvider->DeleteResource(resourceId);
     resourceId = 0;
 }
 
 bool VideoLayerImpl::allocatePlaneData(ResourceProvider* resourceProvider)
 {
-    const int maxTextureSize = resourceProvider->maxTextureSize();
+    const int maxTextureSize = resourceProvider->max_texture_size();
     const size_t planeCount = numPlanes();
     for (unsigned planeIdx = 0; planeIdx < planeCount; ++planeIdx) {
         VideoLayerImpl::FramePlane& plane = m_framePlanes[planeIdx];
@@ -394,7 +394,7 @@ bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
             m_videoRenderer.reset(new media::SkCanvasVideoRenderer);
         VideoLayerImpl::FramePlane& plane = m_framePlanes[media::VideoFrame::kRGBPlane];
         ResourceProvider::ScopedWriteLockSoftware lock(resourceProvider, plane.resourceId);
-        m_videoRenderer->Paint(m_frame, lock.skCanvas(), m_frame->visible_rect(), 0xFF);
+        m_videoRenderer->Paint(m_frame, lock.sk_canvas(), m_frame->visible_rect(), 0xFF);
         return true;
     }
 
@@ -405,7 +405,7 @@ bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
         const uint8_t* softwarePlanePixels = m_frame->data(planeIndex);
         gfx::Rect imageRect(0, 0, m_frame->stride(planeIndex), plane.size.height());
         gfx::Rect sourceRect(gfx::Point(), plane.size);
-        resourceProvider->setPixels(plane.resourceId, softwarePlanePixels, imageRect, sourceRect, gfx::Vector2d());
+        resourceProvider->SetPixels(plane.resourceId, softwarePlanePixels, imageRect, sourceRect, gfx::Vector2d());
     }
     return true;
 }

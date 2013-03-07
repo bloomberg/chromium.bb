@@ -95,16 +95,16 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
     // TODO(danakj): Scale the HUD by deviceScale to make it more friendly under high DPI.
 
     // TODO(danakj): The HUD could swap between two textures instead of creating a texture every frame in ubercompositor.
-    if (m_hudTexture->size() != bounds() || resourceProvider->inUseByConsumer(m_hudTexture->id()))
+    if (m_hudTexture->size() != bounds() || resourceProvider->InUseByConsumer(m_hudTexture->id()))
         m_hudTexture->Free();
 
     if (!m_hudTexture->id()) {
         m_hudTexture->Allocate(bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
-        // TODO(epenner): This texture was being used before setPixels was called,
+        // TODO(epenner): This texture was being used before SetPixels was called,
         // which is now not allowed (it's an uninitialized read). This should be fixed
         // and this allocateForTesting() removed.
         // http://crbug.com/166784
-        resourceProvider->allocateForTesting(m_hudTexture->id());
+        resourceProvider->AllocateForTesting(m_hudTexture->id());
     }
 }
 
@@ -151,7 +151,7 @@ void HeadsUpDisplayLayerImpl::updateHudTexture(ResourceProvider* resourceProvide
 
     gfx::Rect layerRect(gfx::Point(), bounds());
     DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
-    resourceProvider->setPixels(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, gfx::Vector2d());
+    resourceProvider->SetPixels(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, gfx::Vector2d());
 }
 
 void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)
@@ -164,7 +164,7 @@ void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)
     // FIXME: the following assert will not be true when sending resources to a
     // parent compositor. We will probably need to hold on to m_hudTexture for
     // longer, and have several HUD textures in the pipeline.
-    DCHECK(!resourceProvider->inUseByConsumer(m_hudTexture->id()));
+    DCHECK(!resourceProvider->InUseByConsumer(m_hudTexture->id()));
 }
 
 void HeadsUpDisplayLayerImpl::didLoseOutputSurface()
