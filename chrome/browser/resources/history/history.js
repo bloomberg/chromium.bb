@@ -302,7 +302,7 @@ Visit.prototype.addFaviconToElement_ = function(el) {
  * @private
  */
 Visit.prototype.showMoreFromSite_ = function() {
-  setSearch(this.getDomainFromURL_(this.url_));
+  historyView.setSearch(this.getDomainFromURL_(this.url_));
 };
 
 /**
