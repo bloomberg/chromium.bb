@@ -14,7 +14,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/slider.h"
 #include "ui/views/view.h"
 
@@ -32,36 +31,6 @@ namespace ash {
 namespace internal {
 
 class TrayItemView;
-
-// A custom scroll-view that has a specified dimension.
-class FixedSizedScrollView : public views::ScrollView {
- public:
-  FixedSizedScrollView();
-
-  virtual ~FixedSizedScrollView();
-
-  void SetContentsView(View* view);
-  // Change the fixed size of the view. Invalidates the layout (by calling
-  // PreferredSizeChanged()).
-  void SetFixedSize(const gfx::Size& size);
-
-  void set_fixed_size(const gfx::Size& size) { fixed_size_ = size; }
-
-  // views::View public method overrides.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-
- protected:
-  // views::View protected method overrides.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-
- private:
-  gfx::Size fixed_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
-};
 
 // A border for label buttons that paints a vertical separator in normal state
 // and a custom hover effect in hovered or pressed state.

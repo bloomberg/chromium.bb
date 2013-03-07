@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"

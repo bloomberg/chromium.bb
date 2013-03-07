@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -14,7 +15,6 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_notification_view.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"

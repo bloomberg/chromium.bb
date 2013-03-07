@@ -244,6 +244,8 @@
         'system/tray/actionable_view.h',
         'system/tray/fixed_sized_image_view.cc',
         'system/tray/fixed_sized_image_view.h',
+        'system/tray/fixed_sized_scroll_view.cc',
+        'system/tray/fixed_sized_scroll_view.h',
         'system/tray/hover_highlight_view.cc',
         'system/tray/hover_highlight_view.h',
         'system/tray/special_popup_row.cc',
