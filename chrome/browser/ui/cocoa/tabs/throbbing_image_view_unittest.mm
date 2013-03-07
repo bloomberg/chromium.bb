@@ -24,7 +24,8 @@ class ThrobbingImageViewTest : public CocoaTest {
           initWithFrame:NSMakeRect(0, 0, 16, 16)
         backgroundImage:image
              throbImage:image
-             durationMS:20]);
+             durationMS:20
+          throbPosition:kThrobPositionOverlay]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
   }

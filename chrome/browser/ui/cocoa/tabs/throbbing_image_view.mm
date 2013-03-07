@@ -21,7 +21,8 @@ class ThrobbingImageViewAnimationDelegate : public ui::AnimationDelegate {
 - (id)initWithFrame:(NSRect)rect
     backgroundImage:(NSImage*)backgroundImage
          throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS {
+         durationMS:(int)durationMS
+     throbPosition:(ThrobPosition)throbPosition {
   if ((self = [super initWithFrame:rect])) {
     backgroundImage_.reset([backgroundImage retain]);
     throbImage_.reset([throbImage retain]);
@@ -30,6 +31,8 @@ class ThrobbingImageViewAnimationDelegate : public ui::AnimationDelegate {
     throbAnimation_.reset(new ui::ThrobAnimation(delegate_.get()));
     throbAnimation_->SetThrobDuration(durationMS);
     throbAnimation_->StartThrobbing(-1);
+
+    throbPosition_ = throbPosition;
   }
   return self;
 }
@@ -48,7 +51,18 @@ class ThrobbingImageViewAnimationDelegate : public ui::AnimationDelegate {
                       fromRect:NSZeroRect
                      operation:NSCompositeSourceOver
                       fraction:1];
-  [throbImage_ drawInRect:[self bounds]
+
+  NSRect b = [self bounds];
+  NSRect throbImageBounds;
+  if (throbPosition_ == kThrobPositionBottomRight) {
+    NSSize throbImageSize = [throbImage_ size];
+    throbImageBounds.origin = b.origin;
+    throbImageBounds.origin.x += NSWidth(b) - throbImageSize.width;
+    throbImageBounds.size = throbImageSize;
+  } else {
+    throbImageBounds = b;
+  }
+  [throbImage_ drawInRect:throbImageBounds
                  fromRect:NSZeroRect
                 operation:NSCompositeSourceOver
                  fraction:throbAnimation_->GetCurrentValue()];

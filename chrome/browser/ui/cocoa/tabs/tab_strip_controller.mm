@@ -1600,11 +1600,12 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
           NSRect frame =
               NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
           ThrobbingImageView* recordingView =
-              [[[ThrobbingImageView alloc] initWithFrame:frame
-                                         backgroundImage:[imageView image]
-                                              throbImage:recording
-                                              durationMS:kRecordingDurationMs]
-                  autorelease];
+              [[[ThrobbingImageView alloc]
+                  initWithFrame:frame
+                backgroundImage:[imageView image]
+                     throbImage:recording
+                     durationMS:kRecordingDurationMs
+                  throbPosition:kThrobPositionBottomRight] autorelease];
 
           iconView = recordingView;
         } else if (theme && chrome::IsPlayingAudio(contents)) {
@@ -1617,7 +1618,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                   initWithFrame:frame
                 backgroundImage:[imageView image]
                      throbImage:audioImage
-                     durationMS:kAudioPlayingDurationMs] autorelease];
+                     durationMS:kAudioPlayingDurationMs
+                  throbPosition:kThrobPositionOverlay] autorelease];
           [equalizerFaviconView setTweenType:ui::Tween::LINEAR];
 
           iconView = equalizerFaviconView;

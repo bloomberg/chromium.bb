@@ -14,7 +14,8 @@
   if ((self = [super initWithFrame:rect
                    backgroundImage:backgroundImage
                         throbImage:throbImage
-                        durationMS:durationMS])) {
+                        durationMS:durationMS
+                     throbPosition:kThrobPositionOverlay])) {
     projectorImage_.reset([projectorImage retain]);
   }
   return self;

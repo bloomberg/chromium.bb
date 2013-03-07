@@ -13,6 +13,14 @@
 
 class ThrobbingImageViewAnimationDelegate;
 
+// Where to position the throb image. For the overlay position, the throb image
+// will be drawn with the same size as the background image. For the bottom
+// right position, it will have its original size.
+enum ThrobPosition {
+  kThrobPositionOverlay,
+  kThrobPositionBottomRight
+};
+
 @interface ThrobbingImageView : NSView {
  @protected
   scoped_nsobject<NSImage> backgroundImage_;
@@ -21,12 +29,14 @@ class ThrobbingImageViewAnimationDelegate;
 
  @private
   scoped_ptr<ThrobbingImageViewAnimationDelegate> delegate_;
+  ThrobPosition throbPosition_;
 }
 
 - (id)initWithFrame:(NSRect)rect
     backgroundImage:(NSImage*)backgroundImage
          throbImage:(NSImage*)throbImage
-         durationMS:(int)durationMS;
+         durationMS:(int)durationMS
+      throbPosition:(ThrobPosition)throbPosition;
 
 - (void)setTweenType:(ui::Tween::Type)type;
 
