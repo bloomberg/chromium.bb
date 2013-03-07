@@ -468,9 +468,31 @@ GpuProcessHost::~GpuProcessHost() {
   // URLs from accessing client 3D APIs without prompting.
   BlockLiveOffscreenContexts();
 
+  std::string message;
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      message = "The GPU process exited normally. Everything is okay.";
+      break;
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      message = base::StringPrintf(
+          "The GPU process exited with code %d.",
+          exit_code);
+      break;
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      message = "You killed the GPU process! Why?";
+      break;
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      message = "The GPU process crashed!";
+      break;
+    default:
+      break;
+  }
+
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
-                          base::Bind(&GpuProcessHostUIShim::Destroy, host_id_));
+                          base::Bind(&GpuProcessHostUIShim::Destroy,
+                                     host_id_,
+                                     message));
 }
 
 bool GpuProcessHost::Init() {

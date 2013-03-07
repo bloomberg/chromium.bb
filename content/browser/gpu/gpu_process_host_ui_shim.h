@@ -50,7 +50,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // Destroy the GpuProcessHostUIShim with the given host ID. This can only
   // be called on the UI thread. Only the GpuProcessHost should destroy the
   // UI shim.
-  static void Destroy(int host_id);
+  static void Destroy(int host_id, const std::string& message);
 
   // Destroy all remaining GpuProcessHostUIShims.
   CONTENT_EXPORT static void DestroyAll();

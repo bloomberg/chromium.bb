@@ -118,8 +118,13 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::Create(int host_id) {
 }
 
 // static
-void GpuProcessHostUIShim::Destroy(int host_id) {
+void GpuProcessHostUIShim::Destroy(int host_id, const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(
+      logging::LOG_ERROR, "GpuProcessHostUIShim",
+      message);
+
   delete FromID(host_id);
 }
 
@@ -180,10 +185,6 @@ void GpuProcessHostUIShim::SimulateHang() {
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Pointer()->Remove(host_id_);
-
-  GpuDataManagerImpl::GetInstance()->AddLogMessage(
-      logging::LOG_ERROR, "GpuProcessHostUIShim",
-      "GPU process crashed or exited.");
 }
 
 bool GpuProcessHostUIShim::OnControlMessageReceived(
