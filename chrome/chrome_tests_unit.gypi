@@ -1231,6 +1231,7 @@
         'browser/ui/ash/window_positioner_unittest.cc',
         'browser/ui/autofill/autocheckout_bubble_controller_unittest.cc',
         'browser/ui/autofill/autofill_popup_controller_unittest.cc',
+        'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',

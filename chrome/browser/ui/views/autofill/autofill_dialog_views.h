@@ -76,7 +76,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual bool UseBillingForShipping() OVERRIDE;
   virtual bool SaveDetailsInWallet() OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
-  virtual const content::NavigationController& ShowSignIn() OVERRIDE;
+  virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;

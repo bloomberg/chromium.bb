@@ -79,9 +79,9 @@ bool AutofillDialogViewAndroid::SaveDetailsLocally() {
   return true;
 }
 
-const content::NavigationController& AutofillDialogViewAndroid::ShowSignIn() {
+const content::NavigationController* AutofillDialogViewAndroid::ShowSignIn() {
   NOTIMPLEMENTED();
-  return controller_->web_contents()->GetController();
+  return NULL;
 }
 
 void AutofillDialogViewAndroid::HideSignIn() {

@@ -636,7 +636,7 @@ bool AutofillDialogViews::SaveDetailsLocally() {
   return save_in_chrome_checkbox_->checked();
 }
 
-const content::NavigationController& AutofillDialogViews::ShowSignIn() {
+const content::NavigationController* AutofillDialogViews::ShowSignIn() {
   // TODO(abodenha) Also hide Submit and Cancel buttons.
   // See http://crbug.com/165193
   // TODO(abodenha) We should be able to use the WebContents of the WebView
@@ -649,7 +649,7 @@ const content::NavigationController& AutofillDialogViews::ShowSignIn() {
   main_container_->SetVisible(false);
   sign_in_container_->SetVisible(true);
   contents_->Layout();
-  return sign_in_webview_->web_contents()->GetController();
+  return &sign_in_webview_->web_contents()->GetController();
 }
 
 void AutofillDialogViews::HideSignIn() {

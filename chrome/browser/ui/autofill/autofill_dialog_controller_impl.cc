@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,6 +171,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
       form_structure_(form, std::string()),
+      invoked_from_same_origin_(true),
       source_url_(source_url),
       ssl_status_(ssl_status),
       callback_(callback),
@@ -191,9 +192,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       autocheckout_is_running_(false),
       had_autocheckout_error_(false) {
   // TODO(estade): remove duplicates from |form|?
-  content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
-  const GURL& active_url = entry ? entry->GetURL() : web_contents()->GetURL();
-  invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 }
 
 AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
@@ -211,6 +209,10 @@ void AutofillDialogControllerImpl::RegisterUserPrefs(
 
 void AutofillDialogControllerImpl::Show() {
   dialog_shown_timestamp_ = base::Time::Now();
+
+  content::NavigationEntry* entry = contents_->GetController().GetActiveEntry();
+  const GURL& active_url = entry ? entry->GetURL() : contents_->GetURL();
+  invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 
   bool has_types = false;
   bool has_sections = false;
@@ -296,7 +298,7 @@ void AutofillDialogControllerImpl::Show() {
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
-  view_.reset(AutofillDialogView::Create(this));
+  view_.reset(CreateView());
   view_->Show();
   GetManager()->AddObserver(this);
 
@@ -854,7 +856,7 @@ std::vector<DialogNotification>
 void AutofillDialogControllerImpl::StartSignInFlow() {
   DCHECK(registrar_.IsEmpty());
 
-  content::Source<content::NavigationController> source(&view_->ShowSignIn());
+  content::Source<content::NavigationController> source(view_->ShowSignIn());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
 }
 
@@ -1124,6 +1126,10 @@ bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
   return source_url_.SchemeIs(chrome::kHttpsScheme) &&
          !net::IsCertStatusError(ssl_status_.cert_status) &&
          !net::IsCertStatusMinorError(ssl_status_.cert_status);
+}
+
+AutofillDialogView* AutofillDialogControllerImpl::CreateView() {
+  return AutofillDialogView::Create(this);
 }
 
 bool AutofillDialogControllerImpl::IsPayingWithWallet() const {

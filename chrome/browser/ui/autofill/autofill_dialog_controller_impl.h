@@ -189,6 +189,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
  protected:
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
+  virtual AutofillDialogView* CreateView();
 
  private:
   // Returns whether Wallet is the current data source.

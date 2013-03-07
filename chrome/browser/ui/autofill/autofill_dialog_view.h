@@ -57,7 +57,7 @@ class AutofillDialogView {
 
   // Triggers dialog to sign in to Google.
   // Returns a NotificationSource to be used to monitor for sign-in completion.
-  virtual const content::NavigationController& ShowSignIn() = 0;
+  virtual const content::NavigationController* ShowSignIn() = 0;
 
   // Closes out any signin UI and returns to normal operation.
   virtual void HideSignIn() = 0;
