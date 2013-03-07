@@ -62,7 +62,6 @@
           'dependencies': [
             'symbolize',
             '../build/linux/system.gyp:glib',
-            '../build/linux/system.gyp:x11',
             'xdg_mime',
           ],
           'defines': [
@@ -73,13 +72,20 @@
           ],
           'export_dependent_settings': [
             '../build/linux/system.gyp:glib',
-            '../build/linux/system.gyp:x11',
           ],
         }, {  # use_glib!=1
             'sources/': [
               ['exclude', '/xdg_user_dirs/'],
               ['exclude', '_nss\\.cc$'],
             ],
+        }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:x11',
+          ],
+          'export_dependent_settings': [
+            '../build/linux/system.gyp:x11',
+          ],
         }],
         ['OS == "android" and _toolset == "host"', {
           # Base for host support is the minimum required to run the

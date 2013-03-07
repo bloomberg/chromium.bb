@@ -748,7 +748,7 @@
             ],
           },
         }],
-        ['chromeos==1', {
+        ['use_x11==1', {
           'link_settings': {
             'libraries': [ '-lXtst' ]
           }

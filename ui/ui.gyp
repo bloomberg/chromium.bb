@@ -615,17 +615,7 @@
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:glib',
             '../build/linux/system.gyp:pangocairo',
-            '../build/linux/system.gyp:x11',
-            '../build/linux/system.gyp:xext',
-            '../build/linux/system.gyp:xfixes',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lXcursor',  # For XCursor* function calls in x11_util.cc.
-              '-lXrender',  # For XRender* function calls in x11_util.cc.
-              '-lXrandr',   # For XRR* function calls in x11_util.cc.
-            ],
-          },
           'conditions': [
             ['toolkit_views==0', {
               # Note: because of gyp predence rules this has to be defined as
@@ -769,9 +759,23 @@
                 '-lX11',
                 '-lXcursor',
                 '-lXrandr',  # For XRR* function calls in x11_util.cc.
+                '-lXrender',  # For XRender* function calls in x11_util.cc.
               ],
             },
           },
+          'link_settings': {
+            'libraries': [
+              '-lX11',
+              '-lXcursor',
+              '-lXrandr',  # For XRR* function calls in x11_util.cc.
+              '-lXrender',  # For XRender* function calls in x11_util.cc.
+            ],
+          },
+          'dependencies': [
+            '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xext',
+            '../build/linux/system.gyp:xfixes',
+          ],
         }, {  # use_x11==0
           'sources/': [
             ['exclude', 'base/keycodes/keyboard_code_conversion_x.*'],

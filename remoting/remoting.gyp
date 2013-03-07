@@ -55,8 +55,8 @@
     'host_plugin_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
 
     'conditions': [
-      # Remoting host is supported only on Windows, OSX and Linux.
-      ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0)', {
+      # Remoting host is supported only on Windows, OSX and Linux (with X11).
+      ['OS=="win" or OS=="mac" or (OS=="linux" and chromeos==0 and use_x11==1)', {
         'enable_remoting_host': 1,
       }, {
         'enable_remoting_host': 0,

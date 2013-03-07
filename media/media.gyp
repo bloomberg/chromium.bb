@@ -19,8 +19,8 @@
         'media_use_ffmpeg%': 1,
         'media_use_libvpx%': 1,
       }],
-      # Screen capturer works only on Windows, OSX and Linux.
-      ['OS=="win" or OS=="mac" or OS=="linux"', {
+      # Screen capturer works only on Windows, OSX and Linux (with X11).
+      ['OS=="win" or OS=="mac" or (OS=="linux" and use_x11==1)', {
         'screen_capture_supported%': 1,
       }, {
         'screen_capture_supported%': 0,
@@ -595,15 +595,17 @@
               }],
             ],
           },
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXdamage',
-              '-lXext',
-              '-lXfixes',
-            ],
-          },
           'conditions': [
+            ['use_x11 == 1', {
+              'link_settings': {
+                'libraries': [
+                  '-lX11',
+                  '-lXdamage',
+                  '-lXext',
+                  '-lXfixes',
+                ],
+              },
+            }],
             ['use_cras == 1', {
               'cflags': [
                 '<!@(<(pkg-config) --cflags libcras)',
@@ -1345,7 +1347,7 @@
         },
       ],
     }],
-    ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+    ['use_x11 == 1', {
       'targets': [
         {
           'target_name': 'player_x11',
