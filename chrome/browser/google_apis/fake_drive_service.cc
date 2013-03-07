@@ -245,9 +245,8 @@ void FakeDriveService::GetResourceList(
     // If |directory_resource_id| is set, exclude the entry if it's not in
     // the target directory.
     if (!directory_resource_id.empty()) {
-      // Get the parent resource ID of the entry. If the parent link does
-      // not exist, the entry must be in the root directory.
-      std::string parent_resource_id = "folder:root";
+      // Get the parent resource ID of the entry.
+      std::string parent_resource_id;
       const google_apis::Link* parent_link =
           entry->GetLinkByType(Link::LINK_PARENT);
       if (parent_link) {
@@ -684,14 +683,6 @@ void FakeDriveService::RemoveResourceFromDirectory(
           return;
         }
       }
-
-      // We are dealing with a no-"parent"-link file as in the root directory.
-      if (parent_resource_id == GetRootResourceId()) {
-        AddNewChangestamp(entry);
-        MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
-        return;
-      }
     }
   }
 
@@ -753,14 +744,14 @@ void FakeDriveService::AddNewDirectory(
 
   // Add "link" which sets the parent URL and the edit URL.
   base::ListValue* links = new base::ListValue;
-  if (parent_resource_id != GetRootResourceId()) {
-    base::DictionaryValue* parent_link = new base::DictionaryValue;
-    parent_link->SetString(
-        "href", GetFakeLinkUrl(parent_resource_id).spec());
-    parent_link->SetString("rel",
-                           "http://schemas.google.com/docs/2007#parent");
-    links->Append(parent_link);
-  }
+
+  base::DictionaryValue* parent_link = new base::DictionaryValue;
+  parent_link->SetString(
+      "href", GetFakeLinkUrl(parent_resource_id).spec());
+  parent_link->SetString("rel",
+                         "http://schemas.google.com/docs/2007#parent");
+  links->Append(parent_link);
+
   base::DictionaryValue* edit_link = new base::DictionaryValue;
   edit_link->SetString("href", "https://xxx/edit/" + new_resource_id);
   edit_link->SetString("rel", "edit");
@@ -854,13 +845,12 @@ void FakeDriveService::InitiateUploadNewFile(
 
   // Add "link" which sets the parent URL, the edit URL and the upload URL.
   base::ListValue* links = new base::ListValue;
-  if (parent_resource_id != GetRootResourceId()) {
-    base::DictionaryValue* parent_link = new base::DictionaryValue;
-    parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
-    parent_link->SetString("rel",
-                           "http://schemas.google.com/docs/2007#parent");
-    links->Append(parent_link);
-  }
+
+  base::DictionaryValue* parent_link = new base::DictionaryValue;
+  parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
+  parent_link->SetString("rel",
+                         "http://schemas.google.com/docs/2007#parent");
+  links->Append(parent_link);
 
   base::DictionaryValue* edit_link = new base::DictionaryValue;
   edit_link->SetString("href", "https://xxx/edit/" + resource_id);

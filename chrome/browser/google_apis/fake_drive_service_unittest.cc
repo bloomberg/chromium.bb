@@ -63,6 +63,21 @@ class FakeDriveServiceTest : public testing::Test {
     return error == HTTP_CREATED;
   }
 
+  // Returns true if the resource identified by |resource_id| has a parent
+  // identified by |parent_id|.
+  bool HasParent(const std::string& resource_id, const std::string& parent_id) {
+    const GURL parent_url = FakeDriveService::GetFakeLinkUrl(parent_id);
+    scoped_ptr<ResourceEntry> resource_entry = FindEntry(resource_id);
+    if (resource_entry.get()) {
+      for (size_t i = 0; i < resource_entry->links().size(); ++i) {
+        if (resource_entry->links()[i]->type() == Link::LINK_PARENT &&
+            resource_entry->links()[i]->href() == parent_url)
+          return true;
+      }
+    }
+    return false;
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   FakeDriveService fake_service_;
@@ -87,7 +102,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
   // Do some sanity check.
-  EXPECT_EQ(12U, resource_list->entries().size());
+  EXPECT_EQ(13U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -109,9 +124,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithStartIndex) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
-  // Because the start-offset was set to 2, the size should be 10 instead of
-  // 12 (the total number).
-  EXPECT_EQ(10U, resource_list->entries().size());
+  // Because the start-offset was set to 2, the size should be 11 instead of
+  // 13 (the total number).
+  EXPECT_EQ(11U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -186,7 +201,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
       0,  // start_changestamp
       "",  // search_query
       false, // shared_with_me
-      "folder:root",  // directory_resource_id
+      fake_service_.GetRootResourceId(),  // directory_resource_id
       base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
                  &error,
                  &resource_list));
@@ -217,9 +232,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
-  // Do some sanity check. There are 3 entries that contain "File" in their
+  // Do some sanity check. There are 4 entries that contain "File" in their
   // titles.
-  EXPECT_EQ(3U, resource_list->entries().size());
+  EXPECT_EQ(4U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -241,9 +256,9 @@ TEST_F(FakeDriveServiceTest, GetResourceList_SearchWithAttribute) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
-  // Do some sanity check. There are 3 entries that contain "1.txt" in their
+  // Do some sanity check. There are 4 entries that contain "1.txt" in their
   // titles.
-  EXPECT_EQ(3U, resource_list->entries().size());
+  EXPECT_EQ(4U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -793,14 +808,12 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
   const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kOldParentResourceId = fake_service_.GetRootResourceId();
   const std::string kNewParentResourceId = "folder:1_folder_resource_id";
 
-  scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
-  ASSERT_TRUE(resource_entry);
-  // The parent link should not exist as this file is in the root directory.
-  const google_apis::Link* parent_link =
-      resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_FALSE(parent_link);
+  // Here's the original parent link.
+  EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
+  EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
@@ -812,13 +825,9 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
-  resource_entry = FindEntry(kResourceId);
-  ASSERT_TRUE(resource_entry);
-  // The parent link should now exist as the parent directory is changed.
-  parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_TRUE(parent_link);
-  EXPECT_EQ(FakeDriveService::GetFakeLinkUrl(kNewParentResourceId),
-            parent_link->href());
+  // The parent link should now be changed.
+  EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
+  EXPECT_TRUE(HasParent(kResourceId, kNewParentResourceId));
   // Should be incremented as a file was moved.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
@@ -827,19 +836,12 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
   const std::string kResourceId = "file:subdirectory_file_1_id";
+  const std::string kOldParentResourceId = "folder:1_folder_resource_id";
   const std::string kNewParentResourceId = "folder:2_folder_resource_id";
 
-  scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
-  ASSERT_TRUE(resource_entry);
   // Here's the original parent link.
-  std::vector<GURL> original_parent_urls;
-  for (size_t i = 0; i < resource_entry->links().size(); ++i) {
-    if (resource_entry->links()[i]->type() == Link::LINK_PARENT)
-      original_parent_urls.push_back(resource_entry->links()[i]->href());
-  }
-  ASSERT_EQ(1U, original_parent_urls.size());
-  EXPECT_EQ(FakeDriveService::GetFakeLinkUrl("folder:1_folder_resource_id"),
-            original_parent_urls[0]);
+  EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
+  EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   fake_service_.AddResourceToDirectory(
@@ -851,18 +853,9 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
-  resource_entry = FindEntry(kResourceId);
-  ASSERT_TRUE(resource_entry);
   // The parent link should now be changed.
-  std::vector<GURL> new_parent_urls;
-  for (size_t i = 0; i < resource_entry->links().size(); ++i) {
-    if (resource_entry->links()[i]->type() == Link::LINK_PARENT)
-      new_parent_urls.push_back(resource_entry->links()[i]->href());
-  }
-  ASSERT_EQ(2U, new_parent_urls.size());
-  EXPECT_EQ(original_parent_urls[0], new_parent_urls[0]);
-  EXPECT_EQ(FakeDriveService::GetFakeLinkUrl(kNewParentResourceId),
-            new_parent_urls[1]);
+  EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
+  EXPECT_TRUE(HasParent(kResourceId, kNewParentResourceId));
   // Should be incremented as a file was moved.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
@@ -882,6 +875,33 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:1_orphanfile_resource_id";
+  const std::string kNewParentResourceId = "folder:1_folder_resource_id";
+
+  // The file does not belong to any directory, even to the root.
+  EXPECT_FALSE(HasParent(kResourceId, kNewParentResourceId));
+  EXPECT_FALSE(HasParent(kResourceId, fake_service_.GetRootResourceId()));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.AddResourceToDirectory(
+      kNewParentResourceId,
+      kResourceId,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  // The parent link should now be changed.
+  EXPECT_TRUE(HasParent(kResourceId, kNewParentResourceId));
+  EXPECT_FALSE(HasParent(kResourceId, fake_service_.GetRootResourceId()));
+  // Should be incremented as a file was moved.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
@@ -951,6 +971,23 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
 
+TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:1_orphanfile_resource_id";
+  const std::string kParentResourceId = fake_service_.GetRootResourceId();
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RemoveResourceFromDirectory(
+      kParentResourceId,
+      kResourceId,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
   fake_service_.set_offline(true);
@@ -986,11 +1023,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ("new directory", resource_entry->title());
-  // The parent link should not exist as the new directory was added in the
-  // root.
-  const google_apis::Link* parent_link =
-      resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_FALSE(parent_link);
+  EXPECT_TRUE(HasParent(resource_entry->resource_id(),
+                        fake_service_.GetRootResourceId()));
   // Should be incremented as a new directory was created.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
@@ -1012,11 +1046,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ("new directory", resource_entry->title());
-  // The parent link should not exist as the new directory was added in the
-  // root.
-  const google_apis::Link* parent_link =
-      resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_FALSE(parent_link);
+  EXPECT_TRUE(HasParent(resource_entry->resource_id(),
+                        fake_service_.GetRootResourceId()));
   // Should be incremented as a new directory was created.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
@@ -1040,11 +1071,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("resource_id_1", resource_entry->resource_id());
   EXPECT_EQ("new directory", resource_entry->title());
-  const google_apis::Link* parent_link =
-      resource_entry->GetLinkByType(Link::LINK_PARENT);
-  ASSERT_TRUE(parent_link);
-  EXPECT_EQ(FakeDriveService::GetFakeLinkUrl(kParentResourceId),
-            parent_link->href());
+  EXPECT_TRUE(HasParent(resource_entry->resource_id(), kParentResourceId));
   // Should be incremented as a new directory was created.
   EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
