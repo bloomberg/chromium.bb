@@ -25,7 +25,8 @@
 //     }
 //
 //     // Stop the task runner and make sure all tasks posted before
-//     // this is called are run.
+//     // this is called are run. Caveat: delayed tasks are not run,
+       // they're simply deleted.
 //     void StopTaskRunner() {
 //       ...
 //     }
@@ -58,6 +59,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
@@ -81,6 +83,9 @@ class TaskTracker : public RefCountedThreadSafe<TaskTracker> {
 
   std::map<int, int> GetTaskRunCounts() const;
 
+  // Returns after the tracker observes a total of |count| task completions.
+  void WaitForCompletedTasks(int count);
+
  private:
   friend class RefCountedThreadSafe<TaskTracker>;
 
@@ -88,8 +93,10 @@ class TaskTracker : public RefCountedThreadSafe<TaskTracker> {
 
   void RunTask(const Closure& task, int i);
 
-  mutable Lock task_run_counts_lock_;
+  mutable Lock lock_;
   std::map<int, int> task_run_counts_;
+  int task_runs_;
+  ConditionVariable task_runs_cv_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskTracker);
 };
@@ -140,6 +147,7 @@ TYPED_TEST_P(TaskRunnerTest, Delayed) {
   }
 
   std::map<int, int> expected_task_run_counts;
+  int expected_total_tasks = 0;
 
   this->delegate_.StartTaskRunner();
   scoped_refptr<TaskRunner> task_runner = this->delegate_.GetTaskRunner();
@@ -150,8 +158,10 @@ TYPED_TEST_P(TaskRunnerTest, Delayed) {
       task_runner->PostDelayedTask(
           FROM_HERE, ith_task, base::TimeDelta::FromMilliseconds(j));
       ++expected_task_run_counts[i];
+      ++expected_total_tasks;
     }
   }
+  this->task_tracker_->WaitForCompletedTasks(expected_total_tasks);
   this->delegate_.StopTaskRunner();
 
   EXPECT_EQ(expected_task_run_counts,

@@ -57,6 +57,10 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // Common initialization code for the constructors.
   void Initialize();
 
+  // For testing.
+  friend class ContentTestSuiteBaseListener;
+  static void FlushThreadPoolHelper();
+
   // The identifier of this thread.  Only one thread can exist with a given
   // identifier at a given time.
   ID identifier_;

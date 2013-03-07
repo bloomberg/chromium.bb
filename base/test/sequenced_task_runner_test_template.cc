@@ -16,7 +16,10 @@ TaskEvent::TaskEvent(int i, Type type)
   : i(i), type(type) {
 }
 
-SequencedTaskTracker::SequencedTaskTracker() : next_post_i_(0) {
+SequencedTaskTracker::SequencedTaskTracker()
+    : next_post_i_(0),
+      task_end_count_(0),
+      task_end_cv_(&lock_) {
 }
 
 void SequencedTaskTracker::PostWrappedNonNestableTask(
@@ -81,11 +84,19 @@ void SequencedTaskTracker::TaskStarted(int i) {
 void SequencedTaskTracker::TaskEnded(int i) {
   AutoLock lock(lock_);
   events_.push_back(TaskEvent(i, TaskEvent::END));
+  ++task_end_count_;
+  task_end_cv_.Signal();
 }
 
 const std::vector<TaskEvent>&
 SequencedTaskTracker::GetTaskEvents() const {
   return events_;
+}
+
+void SequencedTaskTracker::WaitForCompletedTasks(int count) {
+  AutoLock lock(lock_);
+  while (task_end_count_ < count)
+    task_end_cv_.Wait();
 }
 
 SequencedTaskTracker::~SequencedTaskTracker() {

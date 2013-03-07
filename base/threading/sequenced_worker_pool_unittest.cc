@@ -99,16 +99,18 @@ class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
     SignalWorkerDone(id);
   }
 
-  void PostAdditionalTasks(int id, SequencedWorkerPool* pool) {
+  void PostAdditionalTasks(
+        int id, SequencedWorkerPool* pool,
+        bool expected_return_value) {
     Closure fast_task = base::Bind(&TestTracker::FastTask, this, 100);
-    EXPECT_FALSE(
-        pool->PostWorkerTaskWithShutdownBehavior(
-            FROM_HERE, fast_task,
-            SequencedWorkerPool::CONTINUE_ON_SHUTDOWN));
-    EXPECT_FALSE(
-        pool->PostWorkerTaskWithShutdownBehavior(
-            FROM_HERE, fast_task,
-            SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+    EXPECT_EQ(expected_return_value,
+              pool->PostWorkerTaskWithShutdownBehavior(
+                  FROM_HERE, fast_task,
+                  SequencedWorkerPool::CONTINUE_ON_SHUTDOWN));
+    EXPECT_EQ(expected_return_value,
+              pool->PostWorkerTaskWithShutdownBehavior(
+                  FROM_HERE, fast_task,
+                  SequencedWorkerPool::SKIP_ON_SHUTDOWN));
     pool->PostWorkerTaskWithShutdownBehavior(
         FROM_HERE, fast_task,
         SequencedWorkerPool::BLOCK_SHUTDOWN);
@@ -137,6 +139,11 @@ class TestTracker : public base::RefCountedThreadSafe<TestTracker> {
     }
     cond_var_.Signal();
     return ret;
+  }
+
+  size_t GetTasksCompletedCount() {
+    base::AutoLock lock(lock_);
+    return complete_sequence_.size();
   }
 
   void ClearCompleteSequence() {
@@ -517,7 +524,8 @@ TEST_F(SequencedWorkerPoolTest, AllowsAfterShutdown) {
   for (int i = 0; i < kNumQueuedTasks; ++i) {
     EXPECT_TRUE(pool()->PostWorkerTaskWithShutdownBehavior(
         FROM_HERE,
-        base::Bind(&TestTracker::PostAdditionalTasks, tracker(), i, pool()),
+        base::Bind(&TestTracker::PostAdditionalTasks, tracker(), i, pool(),
+                   false),
         SequencedWorkerPool::BLOCK_SHUTDOWN));
   }
 
@@ -749,6 +757,47 @@ TEST_F(SequencedWorkerPoolTest, IsRunningOnCurrentThread) {
   unused_pool->Shutdown();
 }
 
+// Verify that FlushForTesting works as intended.
+TEST_F(SequencedWorkerPoolTest, FlushForTesting) {
+  // Should be fine to call on a new instance.
+  pool()->FlushForTesting();
+
+  // Queue up a bunch of work, including  a long delayed task and
+  // a task that produces additional tasks as an artifact.
+  pool()->PostDelayedWorkerTask(
+      FROM_HERE,
+      base::Bind(&TestTracker::FastTask, tracker(), 0),
+      TimeDelta::FromMinutes(5));
+  pool()->PostWorkerTask(FROM_HERE,
+                         base::Bind(&TestTracker::SlowTask, tracker(), 0));
+  const size_t kNumFastTasks = 20;
+  for (size_t i = 0; i < kNumFastTasks; i++) {
+    pool()->PostWorkerTask(FROM_HERE,
+                           base::Bind(&TestTracker::FastTask, tracker(), 0));
+  }
+  pool()->PostWorkerTask(
+      FROM_HERE,
+      base::Bind(&TestTracker::PostAdditionalTasks, tracker(), 0, pool(),
+                 true));
+
+  // We expect all except the delayed task to have been run. We verify all
+  // closures have been deleted deleted by looking at the refcount of the
+  // tracker.
+  EXPECT_FALSE(tracker()->HasOneRef());
+  pool()->FlushForTesting();
+  EXPECT_TRUE(tracker()->HasOneRef());
+  EXPECT_EQ(1 + kNumFastTasks + 1 + 3, tracker()->GetTasksCompletedCount());
+
+  // Should be fine to call on an idle instance with all threads created, and
+  // spamming the method shouldn't deadlock or confuse the class.
+  pool()->FlushForTesting();
+  pool()->FlushForTesting();
+
+  // Should be fine to call after shutdown too.
+  pool()->Shutdown();
+  pool()->FlushForTesting();
+}
+
 class SequencedWorkerPoolTaskRunnerTestDelegate {
  public:
   SequencedWorkerPoolTaskRunnerTestDelegate() {}
@@ -765,8 +814,8 @@ class SequencedWorkerPoolTaskRunnerTestDelegate {
   }
 
   void StopTaskRunner() {
-    // Make sure all tasks (including delayed ones) are run before shutting
-    // down.
+    // Make sure all tasks are run before shutting down. Delayed tasks are
+    // not run, they're simply deleted.
     pool_owner_->pool()->FlushForTesting();
     pool_owner_->pool()->Shutdown();
     // Don't reset |pool_owner_| here, as the test may still hold a
@@ -805,8 +854,8 @@ class SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate {
   }
 
   void StopTaskRunner() {
-    // Make sure all tasks (including delayed ones) are run before shutting
-    // down.
+    // Make sure all tasks are run before shutting down. Delayed tasks are
+    // not run, they're simply deleted.
     pool_owner_->pool()->FlushForTesting();
     pool_owner_->pool()->Shutdown();
     // Don't reset |pool_owner_| here, as the test may still hold a
@@ -846,8 +895,8 @@ class SequencedWorkerPoolSequencedTaskRunnerTestDelegate {
   }
 
   void StopTaskRunner() {
-    // Make sure all tasks (including delayed ones) are run before shutting
-    // down.
+    // Make sure all tasks are run before shutting down. Delayed tasks are
+    // not run, they're simply deleted.
     pool_owner_->pool()->FlushForTesting();
     pool_owner_->pool()->Shutdown();
     // Don't reset |pool_owner_| here, as the test may still hold a

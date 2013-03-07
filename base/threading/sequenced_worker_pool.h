@@ -288,6 +288,7 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
 
   // Blocks until all pending tasks are complete. This should only be called in
   // unit tests when you want to validate something that should have happened.
+  // This will not flush delayed tasks; delayed tasks get deleted.
   //
   // Note that calling this will not prevent other threads from posting work to
   // the queue while the calling thread is waiting on Flush(). In this case,

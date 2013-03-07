@@ -87,6 +87,14 @@ void BrowserThreadImpl::ShutdownThreadPool() {
   globals.blocking_pool->Shutdown(kMaxNewShutdownBlockingTasks);
 }
 
+// static
+void BrowserThreadImpl::FlushThreadPoolHelper() {
+  // We don't want to create a pool if none exists.
+  if (g_globals == NULL)
+    return;
+  g_globals.Get().blocking_pool->FlushForTesting();
+}
+
 void BrowserThreadImpl::Init() {
   BrowserThreadGlobals& globals = g_globals.Get();
 

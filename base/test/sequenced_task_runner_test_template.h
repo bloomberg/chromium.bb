@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,6 +62,9 @@ class SequencedTaskTracker : public RefCountedThreadSafe<SequencedTaskTracker> {
 
   const std::vector<TaskEvent>& GetTaskEvents() const;
 
+  // Returns after the tracker observes a total of |count| task completions.
+  void WaitForCompletedTasks(int count);
+
  private:
   friend class RefCountedThreadSafe<SequencedTaskTracker>;
 
@@ -79,7 +83,7 @@ class SequencedTaskTracker : public RefCountedThreadSafe<SequencedTaskTracker> {
   // Records a end event for task |i|.
   void TaskEnded(int i);
 
-  // Protects events_ and next_post_i_.
+  // Protects events_, next_post_i_, task_end_count_ and task_end_cv_.
   Lock lock_;
 
   // The events as they occurred for each task (protected by lock_).
@@ -88,6 +92,10 @@ class SequencedTaskTracker : public RefCountedThreadSafe<SequencedTaskTracker> {
   // The ordinal to be used for the next task-posting task (protected by
   // lock_).
   int next_post_i_;
+
+  // The number of task end events we've received.
+  int task_end_count_;
+  ConditionVariable task_end_cv_;
 
   DISALLOW_COPY_AND_ASSIGN(SequencedTaskTracker);
 };
@@ -112,7 +120,7 @@ template <typename TaskRunnerTestDelegate>
 class SequencedTaskRunnerTest : public testing::Test {
  protected:
   SequencedTaskRunnerTest()
-  : task_tracker_(new internal::SequencedTaskTracker()) {}
+      : task_tracker_(new internal::SequencedTaskTracker()) {}
 
   const scoped_refptr<internal::SequencedTaskTracker> task_tracker_;
   TaskRunnerTestDelegate delegate_;
@@ -191,6 +199,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, SequentialDelayedNonNestable) {
         TimeDelta::FromMilliseconds(kDelayIncrementMs * i));
   }
 
+  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
   EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
@@ -244,6 +253,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskBasic) {
   Time time_before_run = Time::Now();
   this->task_tracker_->PostWrappedDelayedNonNestableTask(
       task_runner, Closure(), kDelay);
+  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
   Time time_after_run = Time::Now();
 
@@ -278,6 +288,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTasksSameDelay) {
       task_runner, Closure(), kDelay);
   this->task_tracker_->PostWrappedDelayedNonNestableTask(
       task_runner, Closure(), kDelay);
+  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
   EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
@@ -306,6 +317,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterLongTask) {
                               TimeDelta::FromMilliseconds(50)));
   this->task_tracker_->PostWrappedDelayedNonNestableTask(
       task_runner, Closure(), TimeDelta::FromMilliseconds(10));
+  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
   EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
@@ -335,6 +347,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterManyLongTasks) {
   }
   this->task_tracker_->PostWrappedDelayedNonNestableTask(
       task_runner, Closure(), TimeDelta::FromMilliseconds(10));
+  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
   this->delegate_.StopTaskRunner();
 
   EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
