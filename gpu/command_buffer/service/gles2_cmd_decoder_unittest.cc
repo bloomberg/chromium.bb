@@ -1371,15 +1371,20 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
   typedef GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   result->success = 0;
-  // NOTE: GL will not be called. There is no equivalent Desktop OpenGL
-  // function.
+  // NOTE: GL might not be called. There is no Desktop OpenGL equivalent.
+  const GLint range[2] = { 62, 62 };
+  const GLint precision = 16;
+  EXPECT_CALL(*gl_,GetShaderPrecisionFormat(_, _, _, _))
+      .WillOnce(DoAll(SetArrayArgument<2>(range,range+2),
+                      SetArgumentPointee<3>(precision)))
+      .RetiresOnSaturation();
   cmd.Init(GL_VERTEX_SHADER, GL_HIGH_FLOAT,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_NE(0, result->success);
-  EXPECT_EQ(127, result->min_range);
-  EXPECT_EQ(127, result->max_range);
-  EXPECT_EQ(23, result->precision);
+  EXPECT_EQ(range[0], result->min_range);
+  EXPECT_EQ(range[1], result->max_range);
+  EXPECT_EQ(precision, result->precision);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -1388,8 +1393,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatResultNotInitFails) {
   typedef GetShaderPrecisionFormat::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   result->success = 1;
-  // NOTE: GL will not be called. There is no equivalent Desktop OpenGL
-  // function.
+  // NOTE: GL might not be called. There is no Desktop OpenGL equivalent
   cmd.Init(GL_VERTEX_SHADER, GL_HIGH_FLOAT,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));

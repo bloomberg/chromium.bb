@@ -57,6 +57,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -8522,27 +8523,44 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
   }
 
   result->success = 1;  // true
+
+  GLint range[2] = {0, 0};
+  GLint precision = 0;
+
   switch (precision_type) {
     case GL_LOW_INT:
     case GL_MEDIUM_INT:
     case GL_HIGH_INT:
       // These values are for a 32-bit twos-complement integer format.
-      result->min_range = 31;
-      result->max_range = 30;
-      result->precision = 0;
+      range[0] = 31;
+      range[1] = 30;
+      precision = 0;
       break;
     case GL_LOW_FLOAT:
     case GL_MEDIUM_FLOAT:
     case GL_HIGH_FLOAT:
       // These values are for an IEEE single-precision floating-point format.
-      result->min_range = 127;
-      result->max_range = 127;
-      result->precision = 23;
+      range[0] = 127;
+      range[1] = 127;
+      precision = 23;
       break;
     default:
       NOTREACHED();
       break;
   }
+
+  if (gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
+    // This function is sometimes defined even though it's really just
+    // a stub, so we need to set range and precision as if it weren't
+    // defined before calling it.
+    glGetShaderPrecisionFormat(shader_type, precision_type,
+                               range, &precision);
+  }
+
+  result->min_range = range[0];
+  result->max_range = range[1];
+  result->precision = precision;
+
   return error::kNoError;
 }
 
