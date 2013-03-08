@@ -592,7 +592,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
       has_composition_text_(false),
-      device_scale_factor_(1.0f),
       paint_canvas_(NULL),
       synthetic_move_sent_(false),
       accelerated_compositing_state_changed_(false),
@@ -1182,7 +1181,8 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
   }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  current_surface_ = factory->CreateTransportClient(device_scale_factor_);
+  current_surface_ =
+      factory->CreateTransportClient(current_device_scale_factor_);
   if (!current_surface_) {
     LOG(ERROR) << "Failed to create ImageTransport texture";
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
@@ -1839,14 +1839,13 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!host_)
     return;
 
-  device_scale_factor_ = device_scale_factor;
   BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
       host_->GetBackingStore(false));
   if (backing_store)  // NULL in hardware path.
     backing_store->ScaleFactorChanged(device_scale_factor);
 
   UpdateScreenInfo(window_);
-  host_->NotifyScreenInfoChanged();
+  DCHECK_EQ(current_device_scale_factor_, device_scale_factor);
   current_cursor_.SetDeviceScaleFactor(device_scale_factor);
 }
 
@@ -1900,7 +1899,7 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
 
   return scoped_refptr<ui::Texture>(
       factory->CreateOwnedTexture(
-          current_surface_->size(), device_scale_factor_, texture_id));
+          current_surface_->size(), current_device_scale_factor_, texture_id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

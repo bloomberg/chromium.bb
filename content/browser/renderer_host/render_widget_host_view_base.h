@@ -132,12 +132,15 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The current selection range relative to the start of the web page.
   ui::Range selection_range_;
 
+protected:
+  // The scale factor of the display the renderer is currently on.
+  float current_device_scale_factor_;
+
  private:
   // Manager of the tree representation of the WebKit render tree.
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   gfx::Rect current_display_area_;
-  float current_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };

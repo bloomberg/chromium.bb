@@ -440,9 +440,6 @@ class RenderWidgetHostViewAura
   // Current tooltip text.
   string16 tooltip_;
 
-  // The scale factor of the display the renderer is currently on.
-  float device_scale_factor_;
-
   std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
   // The current frontbuffer texture.

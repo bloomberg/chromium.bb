@@ -29,6 +29,8 @@ class TestScreen : public gfx::Screen,
 
   RootWindow* CreateRootWindowForPrimaryDisplay();
 
+  void SetDeviceScaleFactor(float device_scale_fator);
+
  protected:
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(Window* window,

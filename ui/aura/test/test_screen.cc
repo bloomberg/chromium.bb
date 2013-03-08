@@ -10,6 +10,7 @@
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
@@ -33,6 +34,14 @@ RootWindow* TestScreen::CreateRootWindowForPrimaryDisplay() {
   root_window_->AddObserver(this);
   root_window_->Init();
   return root_window_;
+}
+
+void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
+  gfx::Rect bounds = display_.bounds();
+  gfx::Rect bounds_in_pixel = gfx::ToNearestRect(
+      gfx::ScaleRect(bounds, display_.device_scale_factor()));
+  display_.SetScaleAndBounds(device_scale_factor, bounds_in_pixel);
+  root_window_->OnHostResized(bounds_in_pixel.size());
 }
 
 bool TestScreen::IsDIPEnabled() {

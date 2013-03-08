@@ -45,6 +45,8 @@ class AuraTestHelper {
 
   RootWindow* root_window() { return root_window_.get(); }
 
+  TestScreen* test_screen() { return test_screen_.get(); }
+
  private:
   MessageLoopForUI* message_loop_;
   bool setup_called_;

@@ -368,9 +368,9 @@ const SkBitmap& RenderWidgetHostViewBase::GetBackground() {
 }
 
 gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
+  gfx::NativeView view = GetNativeView();
   gfx::Display display =
-      gfx::Screen::GetNativeScreen()->GetDisplayNearestPoint(
-          GetViewBounds().origin());
+      gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
   return gfx::ToCeiledSize(gfx::ScaleSize(GetViewBounds().size(),
                                           display.device_scale_factor()));
 }
@@ -437,20 +437,19 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
     impl->SendScreenRects();
 
   gfx::Display display =
-      gfx::Screen::GetScreenFor(view)->GetDisplayNearestPoint(
-          GetViewBounds().origin());
+      gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
   if (current_display_area_ == display.work_area() &&
-      current_device_scale_factor_ == display.device_scale_factor())
+      current_device_scale_factor_ == display.device_scale_factor()) {
     return;
-
+  }
   bool device_scale_factor_changed =
       current_device_scale_factor_ != display.device_scale_factor();
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
   if (impl) {
-    if (device_scale_factor_changed)
-        impl->WasResized();
     impl->NotifyScreenInfoChanged();
+    if (device_scale_factor_changed)
+      impl->WasResized();
   }
 }
 

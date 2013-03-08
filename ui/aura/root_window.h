@@ -46,7 +46,7 @@ class ViewProp;
 }
 
 namespace aura {
-
+class TestScreen;
 class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
@@ -270,6 +270,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
  private:
   friend class Window;
+  friend class TestScreen;
 
   // The parameter for OnWindowHidden() to specify why window is hidden.
   enum WindowHiddenReason {

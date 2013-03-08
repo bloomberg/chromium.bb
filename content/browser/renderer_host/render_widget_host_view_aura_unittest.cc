@@ -12,10 +12,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -74,6 +76,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
 
+    sink_ = &process_host->sink();
+
     parent_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE);
     parent_view_ = static_cast<RenderWidgetHostViewAura*>(
@@ -84,11 +88,13 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, MSG_ROUTING_NONE);
+    widget_host_->Init();
     view_ = static_cast<RenderWidgetHostViewAura*>(
         RenderWidgetHostView::CreateViewForWidget(widget_host_));
   }
 
   virtual void TearDown() {
+    sink_ = NULL;
     if (view_)
       view_->Destroy();
     delete widget_host_;
@@ -118,6 +124,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   // destruction.
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewAura* view_;
+
+  IPC::TestSink* sink_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
@@ -308,6 +316,73 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
   EXPECT_TRUE(release.stopped_propagation());
   EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->touch_event_.type);
   EXPECT_EQ(0U, view_->touch_event_.touchesLength);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
+  view_->InitAsChild(NULL);
+  view_->GetNativeView()->SetDefaultParentByRootWindow(
+      parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
+  sink_->ClearMessages();
+  view_->SetSize(gfx::Size(100, 100));
+  EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
+  EXPECT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("100x100", params.a.ToString());  // dip size
+    EXPECT_EQ("100x100", params.b.ToString());  // backing size
+  }
+
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+
+  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  EXPECT_EQ("200x200", view_->GetPhysicalBackingSize().ToString());
+  // Extra ScreenInfoChanged message for |parent_view_|.
+  EXPECT_EQ(3u, sink_->message_count());
+  EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, sink_->GetMessageAt(0)->type());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(1);
+    EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, msg->type());
+    ViewMsg_ScreenInfoChanged::Param params;
+    ViewMsg_ScreenInfoChanged::Read(msg, &params);
+    EXPECT_EQ(2.0f, params.a.deviceScaleFactor);
+  }
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(2);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("100x100", params.a.ToString());  // dip size
+    EXPECT_EQ("200x200", params.b.ToString());  // backing size
+  }
+
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+
+  aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
+  // Extra ScreenInfoChanged message for |parent_view_|.
+  EXPECT_EQ(3u, sink_->message_count());
+  EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
+  EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, sink_->GetMessageAt(0)->type());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(1);
+    EXPECT_EQ(ViewMsg_ScreenInfoChanged::ID, msg->type());
+    ViewMsg_ScreenInfoChanged::Param params;
+    ViewMsg_ScreenInfoChanged::Read(msg, &params);
+    EXPECT_EQ(1.0f, params.a.deviceScaleFactor);
+  }
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(2);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("100x100", params.a.ToString());  // dip size
+    EXPECT_EQ("100x100", params.b.ToString());  // backing size
+  }
 }
 
 }  // namespace content
