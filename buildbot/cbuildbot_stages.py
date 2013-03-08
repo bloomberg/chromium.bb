@@ -1765,6 +1765,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
         'bot-config': config['name'],
         'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
         'boards': config['boards'],
+        'build-number': self._options.buildnumber,
+        'builder-name': os.environ.get('BUILDBOT_BUILDERNAME'),
         'cros-version': self.GetVersion(),
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
@@ -1865,8 +1867,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #    \- ArchiveArtifactsForHWTesting
     #       \- ArchiveAutotestTarballs
     #       \- ArchivePayloads
+    #       \- ArchiveMetadataJson
     #    \- ArchiveImageScripts
-    #    \- ArchiveMetadataJson
     #    \- ArchiveReleaseArtifacts
     #       \- ArchiveDebugSymbols
     #       \- ArchiveFirmwareImages
@@ -2051,7 +2053,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
       try:
         with bg_task_runner(UploadArtifact, queue=hw_test_upload_queue,
                             processes=num_upload_processes):
-          steps = [ArchiveAutotestTarballs, ArchivePayloads]
+
+          # The metadata.json file created in ArchiveMetadataJson holds build
+          # number and builder name, information needed by the HWTest stage to
+          # report test failures.
+          steps = [ArchiveAutotestTarballs, ArchivePayloads,
+                   self.ArchiveMetadataJson]
           parallel.RunParallelSteps(steps)
         success = True
       finally:
@@ -2095,8 +2102,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def BuildAndArchiveArtifacts(num_upload_processes=10):
       # Run archiving steps in parallel.
-      steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting,
-               self.ArchiveMetadataJson]
+      steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting]
       if config['images']:
         steps.extend(
             [self.ArchiveStrippedChrome, self.BuildAndArchiveChromeSysroot,
