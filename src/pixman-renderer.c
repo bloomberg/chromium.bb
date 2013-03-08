@@ -485,6 +485,8 @@ pixman_renderer_init(struct weston_compositor *ec)
 	if (renderer == NULL)
 		return -1;
 
+	renderer->repaint_debug = 0;
+	renderer->debug_color = NULL;
 	renderer->base.read_pixels = pixman_renderer_read_pixels;
 	renderer->base.repaint_output = pixman_renderer_repaint_output;
 	renderer->base.flush_damage = pixman_renderer_flush_damage;
