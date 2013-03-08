@@ -12,98 +12,105 @@
 
 namespace cc {
 
-scoped_refptr<NinePatchLayer> NinePatchLayer::create()
-{
-    return make_scoped_refptr(new NinePatchLayer());
+scoped_refptr<NinePatchLayer> NinePatchLayer::Create() {
+  return make_scoped_refptr(new NinePatchLayer());
 }
 
 NinePatchLayer::NinePatchLayer()
-    : m_bitmapDirty(false)
-{
+    : bitmap_dirty_(false) {}
+
+NinePatchLayer::~NinePatchLayer() {}
+
+scoped_ptr<LayerImpl> NinePatchLayer::createLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return NinePatchLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-NinePatchLayer::~NinePatchLayer()
-{
+void NinePatchLayer::setTexturePriorities(
+    const PriorityCalculator& priority_calc) {
+  if (resource_ && !resource_->texture()->resourceManager()) {
+    // Release the resource here, as it is no longer tied to a resource manager.
+    resource_.reset();
+    if (!bitmap_.isNull())
+      CreateResource();
+  } else if (m_needsDisplay && bitmap_dirty_ && drawsContent()) {
+    CreateResource();
+  }
+
+  if (resource_) {
+    resource_->texture()->setRequestPriority(
+        PriorityCalculator::uiPriority(true));
+    // FIXME: Need to support swizzle in the shader for
+    // !PlatformColor::sameComponentOrder(texture_format)
+    GLenum texture_format =
+        layerTreeHost()->rendererCapabilities().bestTextureFormat;
+    resource_->texture()->setDimensions(
+        gfx::Size(bitmap_.width(), bitmap_.height()), texture_format);
+  }
 }
 
-scoped_ptr<LayerImpl> NinePatchLayer::createLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return NinePatchLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+void NinePatchLayer::SetBitmap(const SkBitmap& bitmap, gfx::Rect aperture) {
+  bitmap_ = bitmap;
+  image_aperture_ = aperture;
+  bitmap_dirty_ = true;
+  setNeedsDisplay();
 }
 
-void NinePatchLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
-{
-    if (m_resource && !m_resource->texture()->resourceManager()) {
-        // Release the resource here, as it is no longer tied to a resource manager.
-        m_resource.reset();
-        if (!m_bitmap.isNull())
-            createResource();
-    } else if (m_needsDisplay && m_bitmapDirty && drawsContent()) {
-        createResource();
-    }
+void NinePatchLayer::update(ResourceUpdateQueue& queue,
+                            const OcclusionTracker* occlusion,
+                            RenderingStats* stats) {
+  CreateUpdaterIfNeeded();
 
-    if (m_resource) {
-        m_resource->texture()->setRequestPriority(PriorityCalculator::uiPriority(true));
-        // FIXME: Need to support swizzle in the shader for !PlatformColor::sameComponentOrder(textureFormat)
-        GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
-        m_resource->texture()->setDimensions(gfx::Size(m_bitmap.width(), m_bitmap.height()), textureFormat);
-    }
+  if (resource_ && (bitmap_dirty_ || resource_->texture()->resourceId() == 0)) {
+    gfx::Rect contentRect(gfx::Point(),
+                          gfx::Size(bitmap_.width(), bitmap_.height()));
+    ResourceUpdate upload = ResourceUpdate::Create(resource_->texture(),
+                                                   &bitmap_,
+                                                   contentRect,
+                                                   contentRect,
+                                                   gfx::Vector2d());
+    queue.appendFullUpload(upload);
+    bitmap_dirty_ = false;
+  }
 }
 
-void NinePatchLayer::setBitmap(const SkBitmap& bitmap, const gfx::Rect& aperture) {
-    m_bitmap = bitmap;
-    m_imageAperture = aperture;
-    m_bitmapDirty = true;
-    setNeedsDisplay();
+void NinePatchLayer::CreateUpdaterIfNeeded() {
+  if (updater_)
+    return;
+
+  updater_ = ImageLayerUpdater::create();
 }
 
-void NinePatchLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats)
-{
-    createUpdaterIfNeeded();
+void NinePatchLayer::CreateResource() {
+  DCHECK(!bitmap_.isNull());
+  CreateUpdaterIfNeeded();
+  updater_->setBitmap(bitmap_);
+  m_needsDisplay = false;
 
-    if (m_resource && (m_bitmapDirty || m_resource->texture()->resourceId() == 0)) {
-        gfx::Rect contentRect(gfx::Point(), gfx::Size(m_bitmap.width(), m_bitmap.height()));
-        ResourceUpdate upload = ResourceUpdate::Create(m_resource->texture(), &m_bitmap, contentRect, contentRect, gfx::Vector2d());
-        queue.appendFullUpload(upload);
-        m_bitmapDirty = false;
-    }
+  if (!resource_) {
+    resource_ = updater_->createResource(
+        layerTreeHost()->contentsTextureManager());
+  }
 }
 
-void NinePatchLayer::createUpdaterIfNeeded()
-{
-    if (m_updater)
-        return;
-
-    m_updater = ImageLayerUpdater::create();
+bool NinePatchLayer::drawsContent() const {
+  bool draws = !bitmap_.isNull() &&
+               Layer::drawsContent() &&
+               bitmap_.width() &&
+               bitmap_.height();
+  return draws;
 }
 
-void NinePatchLayer::createResource()
-{
-    DCHECK(!m_bitmap.isNull());
-    createUpdaterIfNeeded();
-    m_updater->setBitmap(m_bitmap);
-    m_needsDisplay = false;
+void NinePatchLayer::pushPropertiesTo(LayerImpl* layer) {
+  Layer::pushPropertiesTo(layer);
+  NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
-    if (!m_resource)
-        m_resource = m_updater->createResource(layerTreeHost()->contentsTextureManager());
-}
-
-bool NinePatchLayer::drawsContent() const
-{
-    bool draws = !m_bitmap.isNull() && Layer::drawsContent() && m_bitmap.width() && m_bitmap.height();
-    return draws;
-}
-
-void NinePatchLayer::pushPropertiesTo(LayerImpl* layer)
-{
-    Layer::pushPropertiesTo(layer);
-    NinePatchLayerImpl* layerImpl = static_cast<NinePatchLayerImpl*>(layer);
-
-    if (m_resource) {
-        DCHECK(!m_bitmap.isNull());
-        layerImpl->setResourceId(m_resource->texture()->resourceId());
-        layerImpl->setLayout(gfx::Size(m_bitmap.width(), m_bitmap.height()), m_imageAperture);
-    }
+  if (resource_) {
+    DCHECK(!bitmap_.isNull());
+    layer_impl->SetResourceId(resource_->texture()->resourceId());
+    layer_impl->SetLayout(
+        gfx::Size(bitmap_.width(), bitmap_.height()), image_aperture_);
+  }
 }
 
 }

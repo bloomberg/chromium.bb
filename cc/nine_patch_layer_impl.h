@@ -18,41 +18,44 @@ class DictionaryValue;
 namespace cc {
 
 class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
-public:
-    static scoped_ptr<NinePatchLayerImpl> create(LayerTreeImpl* treeImpl, int id)
-    {
-        return make_scoped_ptr(new NinePatchLayerImpl(treeImpl, id));
-    }
-    virtual ~NinePatchLayerImpl();
+ public:
+  static scoped_ptr<NinePatchLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                               int id) {
+    return make_scoped_ptr(new NinePatchLayerImpl(tree_impl, id));
+  }
+  virtual ~NinePatchLayerImpl();
 
-    void setResourceId(unsigned id) { m_resourceId = id; }
-    void setLayout(const gfx::Size& imageBounds, const gfx::Rect& aperture);
+  void SetResourceId(unsigned id) { resource_id_ = id; }
+  void SetLayout(gfx::Size image_bounds, gfx::Rect aperture);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
-    virtual void willDraw(ResourceProvider*) OVERRIDE;
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
-    virtual void didDraw(ResourceProvider*) OVERRIDE;
-    virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
-    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-    virtual void didLoseOutputSurface() OVERRIDE;
+  virtual void willDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual void appendQuads(QuadSink& quad_sink,
+                           AppendQuadsData& append_quads_data) OVERRIDE;
+  virtual void didDraw(ResourceProvider* FIXMENAME) OVERRIDE;
+  virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
+  virtual void dumpLayerProperties(std::string* str, int indent) const OVERRIDE;
+  virtual void didLoseOutputSurface() OVERRIDE;
 
-    virtual base::DictionaryValue* layerTreeAsJson() const OVERRIDE;
+  virtual base::DictionaryValue* layerTreeAsJson() const OVERRIDE;
 
-protected:
-    NinePatchLayerImpl(LayerTreeImpl* treeImpl, int id);
+ protected:
+  NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-private:
-    virtual const char* layerTypeAsString() const OVERRIDE;
+ private:
+  virtual const char* layerTypeAsString() const OVERRIDE;
 
-    // The size of the NinePatch bitmap in pixels.
-    gfx::Size m_imageBounds;
+  // The size of the NinePatch bitmap in pixels.
+  gfx::Size image_bounds_;
 
-    // The transparent center region that shows the parent layer's contents in image space.
-    gfx::Rect m_imageAperture;
+  // The transparent center region that shows the parent layer's contents in
+  // image space.
+  gfx::Rect image_aperture_;
 
-    ResourceProvider::ResourceId m_resourceId;
+  ResourceProvider::ResourceId resource_id_;
 };
 
 }  // namespace cc

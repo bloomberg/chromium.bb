@@ -41,14 +41,14 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.activeTree(), 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
     layer->drawProperties().render_target = layer.get();
-    layer->setLayout(bitmapSize, apertureRect);
-    layer->setResourceId(1);
+    layer->SetLayout(bitmapSize, apertureRect);
+    layer->SetResourceId(1);
 
     // This scale should not affect the generated quad geometry, but only
     // the shared draw transform.
@@ -102,14 +102,14 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.activeTree(), 1);
     layer->drawProperties().visible_content_rect = visibleContentRect;
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
     layer->drawProperties().render_target = layer.get();
-    layer->setLayout(bitmapSize, apertureRect);
-    layer->setResourceId(1);
+    layer->SetLayout(bitmapSize, apertureRect);
+    layer->SetResourceId(1);
 
     AppendQuadsData data;
     layer->appendQuads(quadCuller, data);

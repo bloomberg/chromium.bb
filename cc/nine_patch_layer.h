@@ -17,38 +17,43 @@ namespace cc {
 class ResourceUpdateQueue;
 
 class CC_EXPORT NinePatchLayer : public Layer {
-public:
-    static scoped_refptr<NinePatchLayer> create();
+ public:
+  static scoped_refptr<NinePatchLayer> Create();
 
-    virtual bool drawsContent() const OVERRIDE;
-    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+  virtual bool drawsContent() const OVERRIDE;
+  virtual void setTexturePriorities(const PriorityCalculator& priority_calc)
+      OVERRIDE;
+  virtual void update(ResourceUpdateQueue& queue,
+                      const OcclusionTracker* occlusion,
+                      RenderingStats* stats) OVERRIDE;
+  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
-    // aperture is in the pixel space of the bitmap resource and refers to
-    // the center patch of the ninepatch (which is unused in this
-    // implementation). We split off eight rects surrounding it and stick them
-    // on the edges of the layer. The corners are unscaled, the top and bottom
-    // rects are x-stretched to fit, and the left and right rects are
-    // y-stretched to fit.
-    void setBitmap(const SkBitmap& bitmap, const gfx::Rect& aperture);
+  // aperture is in the pixel space of the bitmap resource and refers to
+  // the center patch of the ninepatch (which is unused in this
+  // implementation). We split off eight rects surrounding it and stick them
+  // on the edges of the layer. The corners are unscaled, the top and bottom
+  // rects are x-stretched to fit, and the left and right rects are
+  // y-stretched to fit.
+  void SetBitmap(const SkBitmap& bitmap, gfx::Rect aperture);
 
-private:
-    NinePatchLayer();
-    virtual ~NinePatchLayer();
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+ private:
+  NinePatchLayer();
+  virtual ~NinePatchLayer();
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
 
-    void createUpdaterIfNeeded();
-    void createResource();
+  void CreateUpdaterIfNeeded();
+  void CreateResource();
 
-    scoped_refptr<ImageLayerUpdater> m_updater;
-    scoped_ptr<LayerUpdater::Resource> m_resource;
+  scoped_refptr<ImageLayerUpdater> updater_;
+  scoped_ptr<LayerUpdater::Resource> resource_;
 
-    SkBitmap m_bitmap;
-    bool m_bitmapDirty;
+  SkBitmap bitmap_;
+  bool bitmap_dirty_;
 
-    // The transparent center region that shows the parent layer's contents in image space.
-    gfx::Rect m_imageAperture;
+  // The transparent center region that shows the parent layer's contents in
+  // image space.
+  gfx::Rect image_aperture_;
 };
 
 }  // namespace cc

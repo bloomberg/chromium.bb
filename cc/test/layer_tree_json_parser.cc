@@ -53,12 +53,12 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     success &= list->GetInteger(0, &image_width);
     success &= list->GetInteger(1, &image_height);
 
-    scoped_refptr<NinePatchLayer> nine_patch_layer = NinePatchLayer::create();
+    scoped_refptr<NinePatchLayer> nine_patch_layer = NinePatchLayer::Create();
 
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, image_width, image_height);
     bitmap.allocPixels(NULL, NULL);
-    nine_patch_layer->setBitmap(bitmap,
+    nine_patch_layer->SetBitmap(bitmap,
         gfx::Rect(aperture_x, aperture_y, aperture_width, aperture_height));
 
     new_layer = nine_patch_layer;

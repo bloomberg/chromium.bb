@@ -65,7 +65,7 @@ protected:
 
 TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
 {
-    scoped_refptr<NinePatchLayer> testLayer = NinePatchLayer::create();
+    scoped_refptr<NinePatchLayer> testLayer = NinePatchLayer::Create();
     ASSERT_TRUE(testLayer);
     testLayer->setIsDrawable(true);
     testLayer->setBounds(gfx::Size(100, 100));
@@ -90,7 +90,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     bitmap.allocPixels();
-    testLayer->setBitmap(bitmap, gfx::Rect(5, 5, 1, 1));
+    testLayer->SetBitmap(bitmap, gfx::Rect(5, 5, 1, 1));
     testLayer->setTexturePriorities(calculator);
     testLayer->update(queue, &occlusionTracker, NULL);
     EXPECT_EQ(queue.fullUploadSize(), 1);
