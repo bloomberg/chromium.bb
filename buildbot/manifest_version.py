@@ -652,6 +652,8 @@ class BuildSpecsManager(object):
     data = cPickle.dumps(dict(status=status, message=message))
 
     if self.dry_run:
+      if gs.GSUTIL_BIN is None:
+        cmd[0] = 'gsutil'
       logging.info('Would have run: %s', ' '.join(cmd))
     else:
       # TODO(davidjames): Use chromite.lib.gs here.
