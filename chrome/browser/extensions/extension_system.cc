@@ -318,6 +318,10 @@ ExtensionSystemImpl::~ExtensionSystemImpl() {
 
 void ExtensionSystemImpl::Shutdown() {
   extension_process_manager_.reset();
+
+  if (profile_->IsOffTheRecord() && extension_service() &&
+      extension_service()->extensions_enabled())
+    extension_prefs()->ClearIncognitoSessionOnlyContentSettings();
 }
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {

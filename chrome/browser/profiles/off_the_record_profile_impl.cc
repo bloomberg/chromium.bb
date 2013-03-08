@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -139,13 +138,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     io_data_.GetResourceContextNoInit());
 #endif
-
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(this)->extension_service();
-  if (extension_service && extension_service->extensions_enabled()) {
-    extension_service->extension_prefs()->
-        ClearIncognitoSessionOnlyContentSettings();
-  }
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
