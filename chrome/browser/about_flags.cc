@@ -1263,6 +1263,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableGestureRequirementForMediaPlayback)
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "enable-experimental-bluetooth",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_BLUETOOTH_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_BLUETOOTH_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableExperimentalBluetooth)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

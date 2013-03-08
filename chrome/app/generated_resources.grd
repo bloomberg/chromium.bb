@@ -6904,6 +6904,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_FORCE_FULLSCREEN_APP_DESCRIPTION" desc="Description for the flag to force kiosk applications to run in full screen.">
           Force kiosk applications to run in full screen.
         </message>
+        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_BLUETOOTH_NAME" desc="Name for the flag to enable experimental Bluetooth features.">
+          Enable experimental Bluetooth features.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_BLUETOOTH_DESCRIPTION" desc="Description for the flag to enable experimental Bluetooth features.">
+          Enable experimental Bluetooth features.
+        </message>
       </if>
 
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to enable full history sync.">
