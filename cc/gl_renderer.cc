@@ -396,7 +396,7 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     // Make sure skia uses the correct GL context.
     offscreenContexts->Context3d()->makeContextCurrent();
 
-    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.texture_id(), sourceTextureResource->size(), offscreenContexts->GrContext());
+    SkBitmap source = RenderSurfaceFilters::Apply(filters, lock.texture_id(), sourceTextureResource->size(), offscreenContexts->GrContext());
 
     // Flush skia context so that all the rendered stuff appears on the
     // texture.

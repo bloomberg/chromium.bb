@@ -19,7 +19,7 @@ bool isCombined(const WebFilterOperation& op)
     WebFilterOperations filters;
     filters.append(op);
     filters.append(WebFilterOperation::createBrightnessFilter(0)); // brightness(0) is identity.
-    WebFilterOperations optimized = RenderSurfaceFilters::optimize(filters);
+    WebFilterOperations optimized = RenderSurfaceFilters::Optimize(filters);
     return optimized.size() == 1;
 }
 
@@ -114,31 +114,31 @@ TEST(RenderSurfaceFiltersTest, testOptimize)
     WebFilterOperation doesntCombine(WebFilterOperation::createBrightnessFilter(1.5));
 
     WebFilterOperations filters;
-    WebFilterOperations optimized = RenderSurfaceFilters::optimize(filters);
+    WebFilterOperations optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(0u, optimized.size());
 
     filters.append(combines);
-    optimized = RenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(1u, optimized.size());
 
     filters.append(combines);
-    optimized = RenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(1u, optimized.size());
 
     filters.append(doesntCombine);
-    optimized = RenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(1u, optimized.size());
 
     filters.append(combines);
-    optimized = RenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(2u, optimized.size());
 
     filters.append(doesntCombine);
-    optimized = RenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(2u, optimized.size());
 
     filters.append(doesntCombine);
-    optimized = RenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::Optimize(filters);
     EXPECT_EQ(3u, optimized.size());
 }
 

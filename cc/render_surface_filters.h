@@ -22,12 +22,16 @@ class WebFilterOperations;
 namespace cc {
 
 class CC_EXPORT RenderSurfaceFilters {
-public:
-    static SkBitmap apply(const WebKit::WebFilterOperations& filters, unsigned textureId, gfx::SizeF, GrContext*);
-    static WebKit::WebFilterOperations optimize(const WebKit::WebFilterOperations& filters);
+ public:
+  static SkBitmap Apply(const WebKit::WebFilterOperations& filters,
+                        unsigned texture_id,
+                        gfx::SizeF size,
+                        GrContext* gr_context);
+  static WebKit::WebFilterOperations Optimize(
+      const WebKit::WebFilterOperations& filters);
 
-private:
-    RenderSurfaceFilters();
+ private:
+  RenderSurfaceFilters();
 };
 
 }
