@@ -234,6 +234,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:mini_installer_test',
             # mini_installer_tests depends on mini_installer. This should be
