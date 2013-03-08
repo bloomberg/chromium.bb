@@ -1,0 +1,119 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
+
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest.h"
+#include "extensions/common/error_utils.h"
+
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
+namespace keys = extension_manifest_keys;
+
+namespace extensions {
+
+namespace {
+
+struct PluginManifestData : Extension::ManifestData {
+  // Optional list of NPAPI plugins and associated properties for an extension.
+  PluginInfo::PluginVector plugins;
+};
+
+}  // namespace
+
+PluginInfo::PluginInfo(const base::FilePath& plugin_path, bool plugin_is_public)
+    : path(plugin_path), is_public(plugin_is_public) {
+}
+
+PluginInfo::~PluginInfo() {
+}
+
+// static
+const PluginInfo::PluginVector* PluginInfo::GetPlugins(
+    const Extension* extension) {
+  PluginManifestData* data = static_cast<PluginManifestData*>(
+      extension->GetManifestData(keys::kPlugins));
+  return data ? &data->plugins : NULL;
+}
+
+// static
+bool PluginInfo::HasPlugins(const Extension* extension) {
+  PluginManifestData* data = static_cast<PluginManifestData*>(
+      extension->GetManifestData(keys::kPlugins));
+  return data && !data->plugins.empty() ? true : false;
+}
+
+PluginsHandler::PluginsHandler() {
+}
+
+PluginsHandler::~PluginsHandler() {
+}
+
+const std::vector<std::string> PluginsHandler::Keys() const {
+  return SingleKey(keys::kPlugins);
+}
+
+bool PluginsHandler::Parse(Extension* extension, string16* error) {
+  const ListValue* list_value = NULL;
+  if (!extension->manifest()->GetList(keys::kPlugins, &list_value)) {
+    *error = ASCIIToUTF16(extension_manifest_errors::kInvalidPlugins);
+    return false;
+  }
+
+  scoped_ptr<PluginManifestData> plugins_data(new PluginManifestData);
+
+  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    const DictionaryValue* plugin_value = NULL;
+    if (!list_value->GetDictionary(i, &plugin_value)) {
+      *error = ASCIIToUTF16(extension_manifest_errors::kInvalidPlugins);
+      return false;
+    }
+    // Get plugins[i].path.
+    std::string path_str;
+    if (!plugin_value->GetString(keys::kPluginsPath, &path_str)) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          extension_manifest_errors::kInvalidPluginsPath, base::IntToString(i));
+      return false;
+    }
+
+    // Get plugins[i].content (optional).
+    bool is_public = false;
+    if (plugin_value->HasKey(keys::kPluginsPublic)) {
+      if (!plugin_value->GetBoolean(keys::kPluginsPublic, &is_public)) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            extension_manifest_errors::kInvalidPluginsPublic,
+            base::IntToString(i));
+        return false;
+      }
+    }
+
+    // We don't allow extensions to load NPAPI plugins on Chrome OS, or under
+    // Windows 8 Metro mode, but still parse the entries to display consistent
+    // error messages. If the extension actually requires the plugins then
+    // LoadRequirements will prevent it loading.
+#if defined(OS_CHROMEOS)
+    continue;
+#elif defined(OS_WIN)
+    if (base::win::IsMetroProcess()) {
+      continue;
+    }
+#endif  // defined(OS_WIN).
+    plugins_data->plugins.push_back(PluginInfo(
+        extension->path().Append(base::FilePath::FromUTF8Unsafe(path_str)),
+        is_public));
+  }
+
+  if (!plugins_data->plugins.empty())
+    extension->SetManifestData(keys::kPlugins, plugins_data.release());
+
+  return true;
+}
+
+}  // namespace extensions

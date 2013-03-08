@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -331,14 +332,19 @@ bool ValidateExtension(const Extension* extension,
   }
 
   // Validate claimed plugin paths.
-  for (size_t i = 0; i < extension->plugins().size(); ++i) {
-    const Extension::PluginInfo& plugin = extension->plugins()[i];
-    if (!file_util::PathExists(plugin.path)) {
-      *error =
-          l10n_util::GetStringFUTF8(
-              IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
-              plugin.path.LossyDisplayName());
+  if (extensions::PluginInfo::HasPlugins(extension)) {
+    const extensions::PluginInfo::PluginVector* plugins =
+        extensions::PluginInfo::GetPlugins(extension);
+    CHECK(plugins);
+    for (std::vector<extensions::PluginInfo>::const_iterator plugin =
+             plugins->begin();
+         plugin != plugins->end(); ++plugin) {
+      if (!file_util::PathExists(plugin->path)) {
+        *error = l10n_util::GetStringFUTF8(
+            IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED,
+            plugin->path.LossyDisplayName());
       return false;
+      }
     }
   }
 

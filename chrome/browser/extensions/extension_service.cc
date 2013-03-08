@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,6 +76,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -1101,19 +1102,25 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 #if defined(ENABLE_PLUGINS)
   // TODO(mpcomplete): This ends up affecting all profiles. See crbug.com/80757.
   bool plugins_changed = false;
-  for (size_t i = 0; i < extension->plugins().size(); ++i) {
-    const Extension::PluginInfo& plugin = extension->plugins()[i];
-    PluginService::GetInstance()->RefreshPlugins();
-    PluginService::GetInstance()->AddExtraPluginPath(plugin.path);
+  if (extensions::PluginInfo::HasPlugins(extension)) {
+    const extensions::PluginInfo::PluginVector* plugins =
+      extensions::PluginInfo::GetPlugins(extension);
+    CHECK(plugins);
     plugins_changed = true;
-    ChromePluginServiceFilter* filter =
-        ChromePluginServiceFilter::GetInstance();
-    if (plugin.is_public) {
-      filter->RestrictPluginToProfileAndOrigin(
-          plugin.path, profile_, GURL());
-    } else {
-      filter->RestrictPluginToProfileAndOrigin(
-          plugin.path, profile_, extension->url());
+    for (extensions::PluginInfo::PluginVector::const_iterator plugin =
+             plugins->begin();
+         plugin != plugins->end(); ++plugin) {
+      PluginService::GetInstance()->RefreshPlugins();
+      PluginService::GetInstance()->AddExtraPluginPath(plugin->path);
+      ChromePluginServiceFilter* filter =
+          ChromePluginServiceFilter::GetInstance();
+      if (plugin->is_public) {
+        filter->RestrictPluginToProfileAndOrigin(
+            plugin->path, profile_, GURL());
+      } else {
+        filter->RestrictPluginToProfileAndOrigin(
+            plugin->path, profile_, extension->url());
+      }
     }
   }
 
@@ -1184,13 +1191,18 @@ void ExtensionService::NotifyExtensionUnloaded(
 
 #if defined(ENABLE_PLUGINS)
   bool plugins_changed = false;
-  for (size_t i = 0; i < extension->plugins().size(); ++i) {
-    const Extension::PluginInfo& plugin = extension->plugins()[i];
-    PluginService::GetInstance()->ForcePluginShutdown(plugin.path);
-    PluginService::GetInstance()->RefreshPlugins();
-    PluginService::GetInstance()->RemoveExtraPluginPath(plugin.path);
+  if (extensions::PluginInfo::HasPlugins(extension)) {
+    const extensions::PluginInfo::PluginVector* plugins =
+      extensions::PluginInfo::GetPlugins(extension);
     plugins_changed = true;
-    ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin.path);
+    for (extensions::PluginInfo::PluginVector::const_iterator plugin =
+             plugins->begin();
+         plugin != plugins->end(); ++plugin) {
+      PluginService::GetInstance()->ForcePluginShutdown(plugin->path);
+      PluginService::GetInstance()->RefreshPlugins();
+      PluginService::GetInstance()->RemoveExtraPluginPath(plugin->path);
+      ChromePluginServiceFilter::GetInstance()->UnrestrictPlugin(plugin->path);
+    }
   }
 
   bool nacl_modules_changed = false;

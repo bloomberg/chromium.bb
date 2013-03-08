@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/api/commands/commands_handler.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -103,8 +103,10 @@ static scoped_refptr<Extension> LoadManifestStrict(
 class ExtensionTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
+    testing::Test::SetUp();
     (new BackgroundManifestHandler)->Register();
     (new CommandsHandler)->Register();
+    (new PluginsHandler)->Register();
   }
 
   virtual void TearDown() OVERRIDE {

@@ -24,11 +24,12 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-// TODO(rdevlin.cronin): Remove this once PageAction, BrowserAction, and
-// SystemIndicator have been moved out of Extension.
+// TODO(rdevlin.cronin): Remove these once all references have been removed as
+// part of crbug.com/159265.
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
@@ -57,7 +58,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "grit/generated_resources.h"
 #endif
 
@@ -923,9 +923,8 @@ Extension::SyncType Extension::GetSyncType() const {
   //
   // TODO(akalin): Relax this restriction once we've put in UI to
   // approve synced extensions.
-  if (!plugins().empty()) {
+  if (PluginInfo::HasPlugins(this))
     return SYNC_TYPE_NONE;
-  }
 
   switch (GetType()) {
     case Manifest::TYPE_EXTENSION:
@@ -1718,7 +1717,6 @@ bool Extension::LoadLaunchURL(string16* error) {
 bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
       !ManifestHandler::ParseExtension(this, error) ||
-      !LoadPlugins(error) ||
       !LoadNaClModules(error) ||
       !LoadSandboxedPages(error) ||
       !LoadRequirements(error) ||
@@ -1760,59 +1758,6 @@ bool Extension::LoadManifestVersion(string16* error) {
     return false;
   }
 
-  return true;
-}
-
-bool Extension::LoadPlugins(string16* error) {
-  if (!manifest_->HasKey(keys::kPlugins))
-    return true;
-
-  const ListValue* list_value = NULL;
-  if (!manifest_->GetList(keys::kPlugins, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidPlugins);
-    return false;
-  }
-
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    const DictionaryValue* plugin_value = NULL;
-    if (!list_value->GetDictionary(i, &plugin_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidPlugins);
-      return false;
-    }
-    // Get plugins[i].path.
-    std::string path_str;
-    if (!plugin_value->GetString(keys::kPluginsPath, &path_str)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidPluginsPath, base::IntToString(i));
-      return false;
-    }
-
-    // Get plugins[i].content (optional).
-    bool is_public = false;
-    if (plugin_value->HasKey(keys::kPluginsPublic)) {
-      if (!plugin_value->GetBoolean(keys::kPluginsPublic, &is_public)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPluginsPublic, base::IntToString(i));
-        return false;
-      }
-    }
-
-    // We don't allow extensions to load NPAPI plugins on Chrome OS, or under
-    // Windows 8 Metro mode, but still parse the entries to display consistent
-    // error messages. If the extension actually requires the plugins then
-    // LoadRequirements will prevent it loading.
-#if defined(OS_CHROMEOS)
-    continue;
-#elif defined(OS_WIN)
-    if (base::win::IsMetroProcess()) {
-      continue;
-    }
-#endif  // defined(OS_WIN).
-    plugins_.push_back(PluginInfo());
-    plugins_.back().path = path().Append(
-        base::FilePath::FromUTF8Unsafe(path_str));
-    plugins_.back().is_public = is_public;
-  }
   return true;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,7 +29,7 @@ InternalExtensionProvider::InternalExtensionProvider(
   const ExtensionSet* extensions = extension_service->extensions();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if ((*it)->plugins().size() > 0)
+    if (extensions::PluginInfo::HasPlugins(*it))
       SetContentSettingForExtension(*it, CONTENT_SETTING_ALLOW);
   }
   Profile* profile = extension_service->profile();
@@ -77,14 +78,14 @@ void InternalExtensionProvider::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
-      if (extension->plugins().size() > 0)
+      if (extensions::PluginInfo::HasPlugins(extension))
         SetContentSettingForExtension(extension, CONTENT_SETTING_ALLOW);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const UnloadedExtensionInfo& info =
           *(content::Details<UnloadedExtensionInfo>(details).ptr());
-      if (info.extension->plugins().size() > 0)
+      if (extensions::PluginInfo::HasPlugins(info.extension))
         SetContentSettingForExtension(info.extension, CONTENT_SETTING_DEFAULT);
       break;
     }

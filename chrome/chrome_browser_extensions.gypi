@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -283,6 +283,8 @@
         'browser/extensions/api/permissions/permissions_api.h',
         'browser/extensions/api/permissions/permissions_api_helpers.cc',
         'browser/extensions/api/permissions/permissions_api_helpers.h',
+        'browser/extensions/api/plugins/plugins_api.cc',
+        'browser/extensions/api/plugins/plugins_api.h',
         'browser/extensions/api/preference/preference_api.cc',
         'browser/extensions/api/preference/preference_api.h',
         'browser/extensions/api/preference/preference_api_constants.cc',

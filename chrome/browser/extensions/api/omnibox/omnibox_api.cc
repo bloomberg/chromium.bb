@@ -149,8 +149,8 @@ OmniboxAPI::OmniboxAPI(Profile* profile)
 OmniboxAPI::~OmniboxAPI() {
 }
 
-base::LazyInstance<ProfileKeyedAPIFactory<OmniboxAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<ProfileKeyedAPIFactory<OmniboxAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 ProfileKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {

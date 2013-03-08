@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/icons/icons_handler.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -60,6 +61,7 @@ void RegisterExtensionManifestHandlers() {
   (new extensions::IconsHandler)->Register();
   (new extensions::PageActionHandler)->Register();
   (new extensions::ThemeHandler)->Register();
+  (new extensions::PluginsHandler)->Register();
 }
 
 }  // namespace

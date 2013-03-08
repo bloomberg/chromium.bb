@@ -116,12 +116,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool npapi;
   };
 
-  // An NPAPI plugin included in the extension.
-  struct PluginInfo {
-    base::FilePath path;  // Path to the plugin.
-    bool is_public;  // False if only this extension can load this plugin.
-  };
-
   // An NaCl module included in the extension.
   struct NaClModuleInfo {
     GURL url;
@@ -463,7 +457,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ActionInfo* system_indicator_info() const {
     return system_indicator_info_.get();
   }
-  const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const std::vector<NaClModuleInfo>& nacl_modules() const {
     return nacl_modules_;
   }
@@ -604,10 +597,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSharedFeatures(string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
-  bool LoadPlugins(string16* error);
   bool LoadNaClModules(string16* error);
   bool LoadSandboxedPages(string16* error);
-  // Must be called after LoadPlugins().
+  // Must be called after the "plugins" key has been parsed.
   bool LoadRequirements(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadExtensionFeatures(string16* error);
@@ -734,9 +726,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's system indicator, if any.
   scoped_ptr<ActionInfo> system_indicator_info_;
-
-  // Optional list of NPAPI plugins and associated properties.
-  std::vector<PluginInfo> plugins_;
 
   // Optional list of NaCl modules and associated properties.
   std::vector<NaClModuleInfo> nacl_modules_;

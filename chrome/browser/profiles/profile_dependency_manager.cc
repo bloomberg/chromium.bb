@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/page_launcher/page_launcher_api.h"
+#include "chrome/browser/extensions/api/plugins/plugins_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
@@ -299,6 +300,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   extensions::OmniboxAPI::GetFactoryInstance();
   extensions::PageLauncherAPI::GetFactoryInstance();
+  extensions::PluginsAPI::GetFactoryInstance();
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();

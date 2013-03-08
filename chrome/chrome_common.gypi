@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -176,6 +176,8 @@
         'common/extensions/api/omnibox/omnibox_handler.h',
         'common/extensions/api/page_launcher/page_launcher_handler.cc',
         'common/extensions/api/page_launcher/page_launcher_handler.h',
+        'common/extensions/api/plugins/plugins_handler.cc',
+        'common/extensions/api/plugins/plugins_handler.h',
         'common/extensions/api/speech/tts_engine_manifest_handler.cc',
         'common/extensions/api/speech/tts_engine_manifest_handler.h',
         'common/extensions/api/themes/theme_handler.cc',
@@ -502,6 +504,8 @@
             ['include', 'common/extensions/api/i18n/default_locale_handler.h'],
             ['include', 'common/extensions/api/identity/oauth2_manifest_handler.cc'],
             ['include', 'common/extensions/api/identity/oauth2_manifest_handler.h'],
+            ['include', 'common/extensions/api/plugins/plugins_handler.cc'],
+            ['include', 'common/extensions/api/plugins/plugins_handler.h'],
             ['include', 'common/extensions/api/themes/theme_handler.cc'],
             ['include', 'common/extensions/api/themes/theme_handler.h'],
           ],

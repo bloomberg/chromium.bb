@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -547,6 +548,7 @@ void ExtensionServiceTestBase::SetUp() {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
   (new extensions::BackgroundManifestHandler)->Register();
   (new extensions::DefaultLocaleHandler)->Register();
+  (new extensions::PluginsHandler)->Register();
 }
 
 void ExtensionServiceTestBase::TearDown() {
@@ -1168,7 +1170,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   expected_path = extension->path().AppendASCII("script2.js");
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
   EXPECT_TRUE(resource01.ComparePathWithDefault(expected_path));
-  EXPECT_TRUE(extension->plugins().empty());
+  EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(extension));
   EXPECT_EQ(1u, scripts[1].url_patterns().patterns().size());
   EXPECT_EQ("http://*.news.com/*",
             scripts[1].url_patterns().begin()->GetAsString());
@@ -1192,17 +1194,22 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
             extensions::BackgroundInfo::GetBackgroundURL(loaded_[1]));
   EXPECT_EQ(0u, loaded_[1]->content_scripts().size());
+
   // We don't parse the plugins section on Chrome OS.
 #if defined(OS_CHROMEOS)
-  EXPECT_EQ(0u, loaded_[1]->plugins().size());
+  EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(loaded_[1]));
 #else
-  ASSERT_EQ(2u, loaded_[1]->plugins().size());
+  ASSERT_TRUE(extensions::PluginInfo::HasPlugins(loaded_[1]));
+  const std::vector<extensions::PluginInfo>* plugins =
+      extensions::PluginInfo::GetPlugins(loaded_[1]);
+  ASSERT_TRUE(plugins);
+  ASSERT_EQ(2u, plugins->size());
   EXPECT_EQ(loaded_[1]->path().AppendASCII("content_plugin.dll").value(),
-            loaded_[1]->plugins()[0].path.value());
-  EXPECT_TRUE(loaded_[1]->plugins()[0].is_public);
+            plugins->at(0).path.value());
+  EXPECT_TRUE(plugins->at(0).is_public);
   EXPECT_EQ(loaded_[1]->path().AppendASCII("extension_plugin.dll").value(),
-            loaded_[1]->plugins()[1].path.value());
-  EXPECT_FALSE(loaded_[1]->plugins()[1].is_public);
+            plugins->at(1).path.value());
+  EXPECT_FALSE(plugins->at(1).is_public);
 #endif
 
   EXPECT_EQ(Manifest::INTERNAL, loaded_[1]->location());

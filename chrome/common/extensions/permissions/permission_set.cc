@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <iterator>
 #include <string>
 
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -527,8 +528,9 @@ void PermissionSet::InitImplicitPermissions() {
 void PermissionSet::InitImplicitExtensionPermissions(
     const extensions::Extension* extension) {
   // Add the implied permissions.
-  if (!extension->plugins().empty())
+  if (extensions::PluginInfo::HasPlugins(extension))
     apis_.insert(APIPermission::kPlugin);
+
   if (!ManifestURL::GetDevToolsPage(extension).is_empty())
     apis_.insert(APIPermission::kDevtools);
 

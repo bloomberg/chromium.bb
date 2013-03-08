@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/requirements_checker.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest.h"
@@ -256,7 +257,7 @@ void UnpackedInstaller::OnLoaded() {
       service_weak_->disabled_extensions();
   if (service_weak_->show_extensions_prompts() &&
       prompt_for_plugins_ &&
-      !extension_->plugins().empty() &&
+      PluginInfo::HasPlugins(extension_) &&
       !disabled_extensions->Contains(extension_->id())) {
     SimpleExtensionLoadPrompt* prompt = new SimpleExtensionLoadPrompt(
         service_weak_->profile(),
