@@ -36,7 +36,7 @@ TEST(LayerQuadTest, Inflate)
     gfx::QuadF quad(p1, p2, p3, p4);
     LayerQuad layerQuad(quad);
     quad.Scale(2, 2);
-    layerQuad.inflate(0.5);
+    layerQuad.Inflate(0.5);
     EXPECT_TRUE(layerQuad.ToQuadF() == quad);
 }
 

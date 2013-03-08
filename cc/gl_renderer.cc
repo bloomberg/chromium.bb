@@ -594,14 +594,14 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     bool clipped = false;
     gfx::QuadF deviceQuad = MathUtil::mapQuad(contentsDeviceTransform, sharedGeometryQuad(), clipped);
     DCHECK(!clipped);
-    LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceQuad.BoundingBox()));
-    LayerQuad deviceLayerEdges = LayerQuad(deviceQuad);
+    LayerQuad deviceLayerBounds(gfx::QuadF(deviceQuad.BoundingBox()));
+    LayerQuad deviceLayerEdges(deviceQuad);
 
     // Use anti-aliasing programs only when necessary.
     bool useAA = (!deviceQuad.IsRectilinear() || !deviceQuad.BoundingBox().IsExpressibleAsRect());
     if (useAA) {
-        deviceLayerBounds.inflateAntiAliasingDistance();
-        deviceLayerEdges.inflateAntiAliasingDistance();
+        deviceLayerBounds.InflateAntiAliasingDistance();
+        deviceLayerEdges.InflateAntiAliasingDistance();
     }
 
     scoped_ptr<ResourceProvider::ScopedReadLockGL> maskResourceLock;
@@ -706,8 +706,8 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     if (shaderEdgeLocation != -1) {
         float edge[24];
-        deviceLayerEdges.toFloatArray(edge);
-        deviceLayerBounds.toFloatArray(&edge[12]);
+        deviceLayerEdges.ToFloatArray(edge);
+        deviceLayerBounds.ToFloatArray(&edge[12]);
         GLC(context(), context()->uniform3fv(shaderEdgeLocation, 8, edge));
     }
 
@@ -859,15 +859,15 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     ResourceProvider::ScopedSamplerGL quadResourceLock(resource_provider_, quad->resource_id, GL_TEXTURE_2D, filter);
 
     if (useAA) {
-        LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
-        deviceLayerBounds.inflateAntiAliasingDistance();
+        LayerQuad deviceLayerBounds(gfx::QuadF(deviceLayerQuad.BoundingBox()));
+        deviceLayerBounds.InflateAntiAliasingDistance();
 
-        LayerQuad deviceLayerEdges = LayerQuad(deviceLayerQuad);
-        deviceLayerEdges.inflateAntiAliasingDistance();
+        LayerQuad deviceLayerEdges(deviceLayerQuad);
+        deviceLayerEdges.InflateAntiAliasingDistance();
 
         float edge[24];
-        deviceLayerEdges.toFloatArray(edge);
-        deviceLayerBounds.toFloatArray(&edge[12]);
+        deviceLayerEdges.ToFloatArray(edge);
+        deviceLayerBounds.ToFloatArray(&edge[12]);
         GLC(context(), context()->uniform3fv(uniforms.edgeLocation, 8, edge));
 
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));

@@ -6,6 +6,7 @@
 #ifndef CC_LAYER_QUAD_H_
 #define CC_LAYER_QUAD_H_
 
+#include "base/basictypes.h"
 #include "cc/cc_export.h"
 #include "ui/gfx/point_f.h"
 
@@ -18,87 +19,85 @@ static const float kAntiAliasingInflateDistance = 0.5f;
 namespace cc {
 
 class CC_EXPORT LayerQuad {
-public:
-    class Edge {
-    public:
-        Edge()
-            : m_x(0)
-            , m_y(0)
-            , m_z(0)
-        {
-        }
-        Edge(const gfx::PointF&, const gfx::PointF&);
+ public:
+  class Edge {
+   public:
+    Edge() : x_(0), y_(0), z_(0) {}
+    Edge(gfx::PointF p, gfx::PointF q);
 
-        float x() const { return m_x; }
-        float y() const { return m_y; }
-        float z() const { return m_z; }
+    float x() const { return x_; }
+    float y() const { return y_; }
+    float z() const { return z_; }
 
-        void setX(float x) { m_x = x; }
-        void setY(float y) { m_y = y; }
-        void setZ(float z) { m_z = z; }
-        void set(float x, float y, float z)
-        {
-            m_x = x;
-            m_y = y;
-            m_z = z;
-        }
+    void set_x(float x) { x_ = x; }
+    void set_y(float y) { y_ = y; }
+    void set_z(float z) { z_ = z; }
+    void set(float x, float y, float z) {
+      x_ = x;
+      y_ = y;
+      z_ = z;
+    }
 
-        void moveX(float dx) { m_x += dx; }
-        void moveY(float dy) { m_y += dy; }
-        void moveZ(float dz) { m_z += dz; }
-        void move(float dx, float dy, float dz)
-        {
-            m_x += dx;
-            m_y += dy;
-            m_z += dz;
-        }
+    void move_x(float dx) { x_ += dx; }
+    void move_y(float dy) { y_ += dy; }
+    void move_z(float dz) { z_ += dz; }
+    void move(float dx, float dy, float dz) {
+      x_ += dx;
+      y_ += dy;
+      z_ += dz;
+    }
 
-        void scaleX(float sx) { m_x *= sx; }
-        void scaleY(float sy) { m_y *= sy; }
-        void scaleZ(float sz) { m_z *= sz; }
-        void scale(float sx, float sy, float sz)
-        {
-            m_x *= sx;
-            m_y *= sy;
-            m_z *= sz;
-        }
-        void scale(float s) { scale(s, s, s); }
+    void scale_x(float sx) { x_ *= sx; }
+    void scale_y(float sy) { y_ *= sy; }
+    void scale_z(float sz) { z_ *= sz; }
+    void scale(float sx, float sy, float sz) {
+      x_ *= sx;
+      y_ *= sy;
+      z_ *= sz;
+    }
+    void scale(float s) { scale(s, s, s); }
 
-        gfx::PointF intersect(const Edge& e) const
-        {
-            return gfx::PointF(
-                (y() * e.z() - e.y() * z()) / (x() * e.y() - e.x() * y()),
-                (x() * e.z() - e.x() * z()) / (e.x() * y() - x() * e.y()));
-        }
+    gfx::PointF Intersect(const Edge& e) const {
+      return gfx::PointF(
+          (y() * e.z() - e.y() * z()) / (x() * e.y() - e.x() * y()),
+          (x() * e.z() - e.x() * z()) / (e.x() * y() - x() * e.y()));
+    }
 
-    private:
-        float m_x;
-        float m_y;
-        float m_z;
-    };
+   private:
+    float x_;
+    float y_;
+    float z_;
+  };
 
-    LayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom);
-    LayerQuad(const gfx::QuadF&);
+  LayerQuad(const Edge& left,
+            const Edge& top,
+            const Edge& right,
+            const Edge& bottom);
+  LayerQuad(const gfx::QuadF& quad);
 
-    Edge left() const { return m_left; }
-    Edge top() const { return m_top; }
-    Edge right() const { return m_right; }
-    Edge bottom() const { return m_bottom; }
+  Edge left() const { return left_; }
+  Edge top() const { return top_; }
+  Edge right() const { return right_; }
+  Edge bottom() const { return bottom_; }
 
-    void inflateX(float dx) { m_left.moveZ(dx); m_right.moveZ(dx); }
-    void inflateY(float dy) { m_top.moveZ(dy); m_bottom.moveZ(dy); }
-    void inflate(float d) { inflateX(d); inflateY(d); }
-    void inflateAntiAliasingDistance() { inflate(kAntiAliasingInflateDistance); }
+  void InflateX(float dx) { left_.move_z(dx); right_.move_z(dx); }
+  void InflateY(float dy) { top_.move_z(dy); bottom_.move_z(dy); }
+  void Inflate(float d) { InflateX(d); InflateY(d); }
+  void InflateAntiAliasingDistance() {
+    Inflate(kAntiAliasingInflateDistance);
+  }
 
-    gfx::QuadF ToQuadF() const;
+  gfx::QuadF ToQuadF() const;
 
-    void toFloatArray(float[12]) const;
+  void ToFloatArray(float flattened[12]) const;
 
-private:
-    Edge m_left;
-    Edge m_top;
-    Edge m_right;
-    Edge m_bottom;
+ private:
+  Edge left_;
+  Edge top_;
+  Edge right_;
+  Edge bottom_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerQuad);
 };
 
 }
