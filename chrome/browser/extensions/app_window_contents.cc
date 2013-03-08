@@ -87,6 +87,8 @@ void AppWindowContents::NativeWindowChanged(
   update.width.reset(new int(bounds.width()));
   update.height.reset(new int(bounds.height()));
   dictionary->Set("bounds", update.ToValue().release());
+  dictionary->SetBoolean("fullscreen",
+                         native_app_window->IsFullscreenOrPending());
   dictionary->SetBoolean("minimized", native_app_window->IsMinimized());
   dictionary->SetBoolean("maximized", native_app_window->IsMaximized());
 

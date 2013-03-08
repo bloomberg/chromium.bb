@@ -96,6 +96,9 @@ namespace app.window {
     // Focus the window.
     static void focus();
 
+    // Is the window fullscreen?
+    static boolean isFullscreen();
+
     // Minimize the window.
     static void minimize();
 
@@ -192,6 +195,9 @@ namespace app.window {
 
     // Fired when the window is closed.
     [nocompile] static void onClosed();
+
+    // Fired when the window is fullscreened.
+    [nocompile] static void onFullscreened();
 
     // Fired when the window is maximized.
     [nocompile] static void onMaximized();

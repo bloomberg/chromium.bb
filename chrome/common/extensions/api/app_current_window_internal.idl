@@ -33,6 +33,7 @@
   interface Events {
     static void onClosed();
     static void onBoundsChanged();
+    static void onFullscreened();
     static void onMinimized();
     static void onMaximized();
     static void onRestored();

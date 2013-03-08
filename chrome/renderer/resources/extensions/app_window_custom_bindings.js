@@ -98,6 +98,9 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
       return { left: bounds.left, top: bounds.top,
                width: bounds.width, height: bounds.height };
     };
+    AppWindow.prototype.isFullscreen = function() {
+      return chromeHidden.appWindowData.fullscreen;
+    };
     AppWindow.prototype.isMinimized = function() {
       return chromeHidden.appWindowData.minimized;
     };
@@ -113,6 +116,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
       id: params.id || '',
       bounds: { left: params.bounds.left, top: params.bounds.top,
                 width: params.bounds.width, height: params.bounds.height },
+      fullscreen: false,
       minimized: false,
       maximized: false
     };
@@ -139,12 +143,15 @@ chromeHidden.updateAppWindowProperties = function(update) {
   if (!boundsEqual(oldData.bounds, update.bounds))
     currentWindow["onBoundsChanged"].dispatch();
 
+  if (!oldData.fullscreen && update.fullscreen)
+    currentWindow["onFullscreened"].dispatch();
   if (!oldData.minimized && update.minimized)
     currentWindow["onMinimized"].dispatch();
   if (!oldData.maximized && update.maximized)
     currentWindow["onMaximized"].dispatch();
 
-  if ((oldData.minimized && !update.minimized) ||
+  if ((oldData.fullscreen && !update.fullscreen) ||
+      (oldData.minimized && !update.minimized) ||
       (oldData.maximized && !update.maximized))
     currentWindow["onRestored"].dispatch();
 };
