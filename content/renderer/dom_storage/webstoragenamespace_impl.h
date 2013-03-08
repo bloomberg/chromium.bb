@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGENAMESPACE_IMPL_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebStorageNamespace.h"
 
 namespace content {
 
