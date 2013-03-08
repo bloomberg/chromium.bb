@@ -20,4 +20,10 @@
 
     <!-- Certificate Viewer Dimensions -->
     <dimen name="certificate_viewer_padding">20dp</dimen>
+
+    <!-- Autofill Dialog -->
+    <dimen name="autofill_edit_margin">2dp</dimen>
+    <dimen name="autofill_edit_text_size">18sp</dimen>
+    <dimen name="autofill_edit_height">48dp</dimen>
+    <dimen name="autofill_translation_anim_distance">300dp</dimen>
 </resources>

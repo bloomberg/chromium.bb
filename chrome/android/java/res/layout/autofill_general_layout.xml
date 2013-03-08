@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/general_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:columnCount="4">
+    <TextView
+        android:text="@string/autofill_billing_title"
+        android:id="@+id/billing_title"
+        android:layout_marginLeft="5dp"
+        android:layout_columnSpan="2"
+        android:textSize="14sp"/>
+    <Space
+        android:layout_gravity="fill"
+        android:layout_columnSpan="2"/>
+    <Spinner
+        android:layout_margin="5dp"
+        android:id="@+id/cc_spinner"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
+    <TextView
+        android:text="@string/autofill_shipping_title"
+        android:id="@+id/shipping_title"
+        android:layout_marginLeft="5dp"
+        android:layout_columnSpan="2"
+        android:textSize="14sp"/>
+    <Space
+          android:layout_gravity="fill"
+          android:layout_columnSpan="2"/>
+    <Spinner
+        android:layout_margin="5dp"
+        android:id="@+id/address_spinner"
+        android:layout_gravity="fill_horizontal"
+        android:layout_columnSpan="4"/>
+     <CheckBox
+        android:id="@+id/check_box"
+        android:layout_margin="5dp"
+        android:textSize="12sp"
+        android:text="@string/autofill_use_wallet"
+        android:layout_columnSpan="4"/>
+    <View
+        android:id="@+id/line_bottom"
+        android:layout_height="1dp"
+        android:layout_columnSpan="4"
+        android:background="#D9D9DC"/>
+    <Button
+        android:text="@string/autofill_terms_of_service"
+        android:padding="10dp"
+        android:id="@+id/terms_info"
+        android:textSize="11sp"
+        android:background="?android:attr/selectableItemBackground"
+        android:drawableRight="@drawable/arrow"
+        android:layout_columnSpan="4"
+        android:gravity="left"/>
+</GridLayout>

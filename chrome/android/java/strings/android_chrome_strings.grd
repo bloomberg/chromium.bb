@@ -32,7 +32,6 @@
       <message desc="Dialog box title for viewing security certificates. [CHAR-LIMIT=32]" name="IDS_CERTTITLE">
         Certificate Viewer
       </message>
-
       <!-- Sync error strings -->
       <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">
         Sync error
@@ -63,6 +62,51 @@
       </message>
       <message desc="Sync error string for service unavailable. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_SERVICE_UNAVAILABLE_NO_RETRY">
          The service is not available.
+      </message>
+      <message desc="Message for adding a new account to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_ACCOUNT">
+        Add new account
+      </message>
+      <message desc="Message for using local data for payments. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_USE_LOCAL">
+        Use local data to pay
+      </message>
+      <message desc="Message for adding a new billing item to the autofill dialog. [CHAR-LIMIT=64]. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEW_BILLING">
+        Add new billing
+      </message>
+      <message desc="Autofill dialog title for billing details. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_BILLING_TITLE">
+        Billing Details
+      </message>
+      <message desc="Autofill dialog title for shipping details. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_SHIPPING_TITLE">
+        Shipping details
+      </message>
+      <message desc="Message for adding a new shipping item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_SHIPPING">
+        Add new shipping
+      </message>
+      <message desc="Message for editing the current shipping item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_SHIPPING">
+        Edit shipping details
+      </message>
+      <message desc="Message for editing the current billing item on the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_EDIT_BILLING">
+        Edit billing details
+      </message>
+      <message desc="Message for positive button on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON">
+        Submit
+      </message>
+      <message desc="Message for negative button on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEGATIVE_BUTTON">
+        Cancel
+      </message>
+      <message desc="Message for positive button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON_EDITING">
+        Done
+      </message>
+      <message desc="Message to show when additional information is needed for billing. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_ADDITIONAL_INFO">
+        Additional info needed
+      </message>
+      <message desc="Message for checkbox to use Google Wallet by default [CHAR-LIMIT=64]" name="IDS_AUTOFILL_USE_WALLET">
+        Use Google Wallet for future purchases
+      </message>
+      <message desc="Placeholder message for ToS on autofill dialog. [CHAR-LIMIT=None]" name="IDS_AUTOFILL_TERMS_OF_SERVICE">
+        By clicking the below button, you agree to the terms of service. And also some other text that makes sure this is not one line.
+      </message>
+      <message desc="Message to show on autofill dialog while fetching data from native. [CHAR-LIMIT=None]" name="IDS_AUTOFILL_FETCH_MESSAGE">
+      Retrieving Wallet information
       </message>
     </messages>
   </release>

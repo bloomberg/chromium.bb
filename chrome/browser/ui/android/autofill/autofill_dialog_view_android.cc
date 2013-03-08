@@ -7,10 +7,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AutofillDialogGlue_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/android/window_android.h"
 
 namespace autofill {
 
@@ -35,7 +37,8 @@ void AutofillDialogViewAndroid::Show() {
   java_object_.Reset(Java_AutofillDialogGlue_create(
       env,
       reinterpret_cast<jint>(this),
-      base::android::GetApplicationContext()));
+      WindowAndroidHelper::FromWebContents(controller_->web_contents())->
+          GetWindowAndroid()->GetJavaObject().obj()));
 }
 
 void AutofillDialogViewAndroid::Hide() {
