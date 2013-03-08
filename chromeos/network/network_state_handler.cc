@@ -102,6 +102,11 @@ void NetworkStateHandler::Initialize() {
 }
 
 // static
+bool NetworkStateHandler::IsInitialized() {
+  return g_network_state_handler != NULL;
+}
+
+// static
 void NetworkStateHandler::Shutdown() {
   CHECK(g_network_state_handler);
   delete g_network_state_handler;

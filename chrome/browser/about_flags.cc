@@ -1100,11 +1100,11 @@ const Experiment kExperiments[] = {
 #endif
 #endif
 #if defined(OS_CHROMEOS)
-  { "ash-enable-new-network-status-area",
-    IDS_FLAGS_ASH_ENABLE_NEW_NETWORK_STATUS_AREA_NAME,
-    IDS_FLAGS_ASH_ENABLE_NEW_NETWORK_STATUS_AREA_DESCRIPTION,
+  { "ash-disable-new-network-status-area",
+    IDS_FLAGS_ASH_DISABLE_NEW_NETWORK_STATUS_AREA_NAME,
+    IDS_FLAGS_ASH_DISABLE_NEW_NETWORK_STATUS_AREA_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewNetworkStatusArea),
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewNetworkStatusArea),
   },
   {
     "enable-carrier-switching",

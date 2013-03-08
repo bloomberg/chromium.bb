@@ -61,6 +61,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
 
+  // Returns true if the global instance has been initialized.
+  static bool IsInitialized();
+
   // Destroys the global instance.
   static void Shutdown();
 

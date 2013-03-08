@@ -51,6 +51,10 @@ const char kAshDisableLauncherPerDisplay[] = "ash-disable-launcher-per-display";
 // If present new lock animations are enabled.
 const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
 
+// Disable new network handlers in the status area.
+const char kAshDisableNewNetworkStatusArea[] =
+    "ash-disable-new-network-status-area";
+
 // Disable the per application grouping version of the launcher.
 const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 
@@ -73,10 +77,6 @@ const char kAshEnableFullBrowserListInLauncher[] =
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 #endif
-
-// Enable new network handlers in the status area.
-const char kAshEnableNewNetworkStatusArea[] =
-    "ash-enable-new-network-status-area";
 
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";

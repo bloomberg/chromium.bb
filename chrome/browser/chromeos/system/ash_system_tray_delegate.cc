@@ -743,8 +743,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshEnableNewNetworkStatusArea) &&
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshDisableNewNetworkStatusArea) &&
         CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
       // If the new network handlers are enabled, this should always trigger

@@ -32,6 +32,9 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
+using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
+
 namespace {
 
 using ash::internal::TrayNetwork;
@@ -56,14 +59,12 @@ int GetMessageIcon(
 }
 
 bool UseNewNetworkHandlers() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnableNewNetworkStatusArea);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshDisableNewNetworkStatusArea) &&
+      NetworkStateHandler::IsInitialized();
 }
 
 }  // namespace
-
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
 
 namespace ash {
 namespace internal {

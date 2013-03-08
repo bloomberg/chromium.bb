@@ -22,17 +22,18 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
+
 namespace {
 
 bool UseNewNetworkHandlers() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnableNewNetworkStatusArea);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshDisableNewNetworkStatusArea) &&
+      NetworkStateHandler::IsInitialized();
 }
 
 }
-
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
 
 namespace ash {
 namespace internal {

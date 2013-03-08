@@ -285,8 +285,8 @@ std::string AboutNetwork(const std::string& query) {
   std::string output = GetHeaderHtmlInfo(refresh);
   if (network_event_log::IsInitialized())
     output += GetHeaderEventLogInfo();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshEnableNewNetworkStatusArea)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshDisableNewNetworkStatusArea)) {
     output += GetNetworkStateHtmlInfo();
   } else {
     output += GetCrosNetworkHtmlInfo();
