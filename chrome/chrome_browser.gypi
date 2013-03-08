@@ -1764,6 +1764,8 @@
         'browser/safe_browsing/signature_util_posix.cc',
         'browser/safe_browsing/signature_util_win.cc',
         'browser/safe_browsing/signature_util.h',
+        'browser/safe_browsing/two_phase_uploader.cc',
+        'browser/safe_browsing/two_phase_uploader.h',
         'browser/safe_browsing/ui_manager.cc',
         'browser/safe_browsing/ui_manager.h',
         'browser/screensaver_window_finder_gtk.cc',
