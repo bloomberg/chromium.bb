@@ -9,6 +9,7 @@ import sys
 
 import pyauto_functional
 import pyauto
+import pyauto_paths
 import pyauto_utils
 import webrtc_test_base
 
@@ -140,19 +141,18 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
 
     On the bots we will be running fake webcam driver and we will feed a video
     with overlaid barcodes. In order to run the analysis on the output, we need
-    to use the original input video as a reference video. We take the name of
-    this file from an environment variable that the bots set.
+    to use the original input video as a reference video.
     """
     helper_page = webrtc_test_base.WebrtcTestBase.DEFAULT_TEST_PAGE
     self._StartVideoQualityTest(test_page='webrtc_video_quality_test.html',
                                 helper_page=helper_page,
                                 reference_yuv=_REFERENCE_YUV_FILE, width=640,
-                                height=480, barcode_height=32)
+                                height=480)
 
   def _StartVideoQualityTest(self, reference_yuv,
                              test_page='webrtc_video_quality_test.html',
                              helper_page='webrtc_jsep01_test.html',
-                             width=640, height=480, barcode_height=32):
+                             width=640, height=480):
     """Captures video output into a canvas and sends it to a server.
 
     This test captures the output frames of a WebRTC connection to a canvas and
@@ -172,8 +172,6 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
         the same directory as the test_page.
       width(int): The width of the test video frames.
       height(int): The height of the test video frames.
-      barcode_height(int): The height of the barcodes overlaid in every frame of
-        the video.
     """
     self._StartPywebsocketServer()
 
@@ -192,8 +190,8 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     self.assertTrue(self._RunRGBAToI420Converter(width, height))
 
     stats_file = os.path.join(_WORKING_DIR, 'pyauto_stats.txt')
-    self.assertTrue(self._RunBarcodeDecoder(width, height, barcode_height,
-                                            _OUTPUT_YUV_FILE, stats_file))
+    self.assertTrue(self._RunBarcodeDecoder(width, height, _OUTPUT_YUV_FILE,
+                                            stats_file))
 
     analysis_result = self._RunFrameAnalyzer(width, height, reference_yuv,
                                              _OUTPUT_YUV_FILE, stats_file)
@@ -203,10 +201,9 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
   def _StartPywebsocketServer(self):
     """Starts the pywebsocket server."""
     print 'Starting pywebsocket server.'
-    path_to_base = os.path.join(self.BrowserPath(), '..', '..')
 
     # Pywebsocket source directory.
-    path_pyws_dir = os.path.join(path_to_base, 'third_party', 'pywebsocket',
+    path_pyws_dir = os.path.join(pyauto_paths.GetThirdPartyDir(), 'pywebsocket',
                                  'src')
 
     # Pywebsocket standalone server.
@@ -214,7 +211,8 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
                                       'standalone.py')
 
     # Path to the data handler to handle data received by the server.
-    path_to_handler = os.path.join(path_to_base, 'chrome', 'test', 'functional')
+    path_to_handler = os.path.join(pyauto_paths.GetSourceDir(), 'chrome',
+                                   'test', 'functional')
 
     # The python interpreter binary.
     python_interp = sys.executable
@@ -270,33 +268,26 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
                  '--output_file=%s' % _OUTPUT_YUV_FILE, '--width=%d' % width,
                  '--height=%d' % height, '--delete_frames']
     print 'Start command: ', ' '.join(start_cmd)
-    rgba_converter = subprocess.Popen(start_cmd, stdout=subprocess.PIPE)
-    output = rgba_converter.communicate()[0]
-    if 'Unsuccessful' in output:
-      print 'Unsuccessful RGBA to I420 conversion'
-      return False
-    return True
+    rgba_converter = subprocess.Popen(start_cmd, stdout=sys.stdout,
+                                      stderr=sys.stderr)
+    rgba_converter.wait()
+    return rgba_converter.returncode == 0
 
-  def _RunBarcodeDecoder(self, width, height, barcode_height,
-                         captured_video_filename, stats_filename):
-    """Runs the barcode decoder.
+  def _RunBarcodeDecoder(self, width, height, captured_video_filename,
+                         stats_filename):
+    """Runs the barcode decoder script.
 
     The barcode decoder decodes the captured video containing barcodes overlaid
     into every frame of the video (produced by rgba_to_i420_converter). It
     produces a set of PNG images and a stats file that describes the relation
     between the filenames and the (decoded) frame number of each frame.
 
-    The barcode decoder uses a big Java library for decoding the barcodes called
-    Zxing (Zebra crossing). It is checked in WebRTC's tools/ repo which isn't
-    synced in Chrome. That's why we check it out next to Chrome using a
-    modified version of the .gclient file and than build the necessary jars for
-    the library to be usable.
+    The script depends on an external executable which is a part of the Zxing
+    barcode library, which must be located in the PATH when running this test.
 
     Args:
       width(int): The frames width of the video to be decoded.
       height(int): The frames height of the video to be decoded.
-      barcode_height(int): The height of the barcodes overlaid on top of every
-        frame.
       captured_video_filename(string): The captured video file we want to
         extract frame images and decode frame numbers from.
       stats_filename(string): Filename for the output file containing
@@ -306,36 +297,26 @@ class WebrtcVideoQualityTest(webrtc_test_base.WebrtcTestBase):
     Returns:
       (bool): True if the decoding was successful, False otherwise.
     """
-    # The barcode decoder lives in folder barcode_tools next to src.
-    path_to_decoder = os.path.join(self.BrowserPath(), '..', '..', '..',
-                                  'barcode_tools', 'barcode_decoder.py')
-    path_to_decoder = os.path.abspath(path_to_decoder)
-
+    path_to_decoder = os.path.join(pyauto_paths.GetThirdPartyDir(), 'webrtc',
+                                   'tools', 'barcode_tools',
+                                   'barcode_decoder.py')
     if not os.path.exists(path_to_decoder):
       raise MissingRequiredToolException(
-          'Could not locate the barcode decoder tool! The barcode decoder '
+          'Could not locate the barcode decoder script! The barcode decoder '
           'decodes the barcodes overlaid on top of every frame of the captured '
-          'video. As it uses a big Java library, it is checked in the '
-          'webrtc-tools repo which isn\'t synced in Chrome. Check it out next '
-          'to Chrome\' src by modifying the .gclient file. Than build the '
-          'necessary jar files for the library to become usable. You can build '
-          'them by running the build_zxing.py script.')
-
+          'video.')
     python_interp = sys.executable
     start_cmd = [python_interp, path_to_decoder,
                  '--yuv_file=%s' % captured_video_filename,
                  '--yuv_frame_width=%d' % width,
                  '--yuv_frame_height=%d' % height,
-                 '--barcode_height=%d' % barcode_height,
                  '--stats_file=%s' % stats_filename]
     print 'Start command: ', ' '.join(start_cmd)
 
-    barcode_decoder = subprocess.Popen(start_cmd, stderr=subprocess.PIPE)
-    error = barcode_decoder.communicate()[1]
-    if error:
-      print 'Error: ', error
-      return False
-    return True
+    barcode_decoder = subprocess.Popen(start_cmd, stdout=sys.stdout,
+                                       stderr=sys.stderr)
+    barcode_decoder.wait()
+    return barcode_decoder.returncode == 0
 
   def _RunFrameAnalyzer(self, width, height, reference_video_file,
                         captured_video_file, stats_file):
