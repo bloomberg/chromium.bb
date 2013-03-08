@@ -176,6 +176,10 @@ PP_Graphics3DTrustedState PPB_Graphics3D_Impl::FlushSyncFast(
       GetCommandBuffer()->FlushSync(put_offset, last_known_get));
 }
 
+uint32_t PPB_Graphics3D_Impl::InsertSyncPoint() {
+  return GetCommandBuffer()->InsertSyncPoint();
+}
+
 bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {
   bound_to_instance_ = bind;
   return true;

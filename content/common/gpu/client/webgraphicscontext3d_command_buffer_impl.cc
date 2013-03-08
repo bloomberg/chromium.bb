@@ -421,8 +421,7 @@ bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
 }
 
 unsigned int WebGraphicsContext3DCommandBufferImpl::insertSyncPoint() {
-  real_gl_->helper()->CommandBufferHelper::Flush();
-  return command_buffer_->InsertSyncPoint();
+  return gl_->InsertSyncPointCHROMIUM();
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::SetParent(

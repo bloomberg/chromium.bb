@@ -38,6 +38,7 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer {
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(error::Error error) OVERRIDE;
   virtual void SetContextLostReason(error::ContextLostReason) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress

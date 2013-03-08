@@ -1786,6 +1786,7 @@ TEST_F(GLES2ImplementationTest, LoseContextCHROMIUM) {
   gl_->LoseContextCHROMIUM(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+// TODO: Implement unit test for InsertSyncPointCHROMIUM
 
 TEST_F(GLES2ImplementationTest, WaitSyncPointCHROMIUM) {
   struct Cmds {

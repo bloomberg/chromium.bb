@@ -9075,6 +9075,11 @@ error::Error GLES2DecoderImpl::HandleLoseContextCHROMIUM(
   return error::kLostContext;
 }
 
+error::Error GLES2DecoderImpl::HandleInsertSyncPointCHROMIUM(
+    uint32 immediate_data_size, const cmds::InsertSyncPointCHROMIUM& c) {
+  return error::kUnknownCommand;
+}
+
 error::Error GLES2DecoderImpl::HandleWaitSyncPointCHROMIUM(
     uint32 immediate_data_size, const cmds::WaitSyncPointCHROMIUM& c) {
   if (wait_sync_point_callback_.is_null())

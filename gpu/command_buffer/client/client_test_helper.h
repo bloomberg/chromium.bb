@@ -38,6 +38,7 @@ class MockCommandBufferBase : public CommandBuffer {
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(error::Error error) OVERRIDE;
   virtual void SetContextLostReason(error::ContextLostReason reason) OVERRIDE;
+  virtual uint32 InsertSyncPoint() OVERRIDE;
 
   // Get's the Id of the next transfer buffer that will be returned
   // by CreateTransferBuffer. This is useful for testing expected ids.

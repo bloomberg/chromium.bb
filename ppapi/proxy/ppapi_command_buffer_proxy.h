@@ -51,6 +51,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
   virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
+  virtual uint32 InsertSyncPoint();
 
  private:
   bool Send(IPC::Message* msg);

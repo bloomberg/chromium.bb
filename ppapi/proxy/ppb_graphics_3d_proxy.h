@@ -46,6 +46,7 @@ class Graphics3D : public PPB_Graphics3D_Shared {
   virtual PP_Graphics3DTrustedState FlushSyncFast(
       int32_t put_offset,
       int32_t last_known_get) OVERRIDE;
+  virtual uint32_t InsertSyncPoint() OVERRIDE;
 
  private:
   class LockingCommandBuffer;
@@ -105,6 +106,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                               int32 id,
                               ppapi::proxy::SerializedHandle* transfer_buffer);
   void OnMsgSwapBuffers(const HostResource& context);
+  void OnMsgInsertSyncPoint(const HostResource& context, uint32* sync_point);
   // Renderer->plugin message handlers.
   void OnMsgSwapBuffersACK(const HostResource& context,
                            int32_t pp_error);

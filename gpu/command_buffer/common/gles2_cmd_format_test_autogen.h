@@ -4442,6 +4442,7 @@ TEST_F(GLES2FormatTest, LoseContextCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+// TODO(gman): Write test for InsertSyncPointCHROMIUM
 TEST_F(GLES2FormatTest, WaitSyncPointCHROMIUM) {
   cmds::WaitSyncPointCHROMIUM& cmd =
       *GetBufferAs<cmds::WaitSyncPointCHROMIUM>();

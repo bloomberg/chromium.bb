@@ -141,6 +141,10 @@ class GPU_EXPORT CommandBuffer {
   virtual error::Error GetLastError();
 #endif
 
+  // Inserts a sync point, returning its ID. Sync point IDs are global and can
+  // be used for cross-context synchronization.
+  virtual uint32 InsertSyncPoint() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);
 };

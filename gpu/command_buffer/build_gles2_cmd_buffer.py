@@ -2327,6 +2327,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'InsertSyncPointCHROMIUM': {
+    'type': 'HandWritten',
+    'impl_func': False,
+    'extension': True,
+    'chromium': True,
+  },
   'WaitSyncPointCHROMIUM': {
     'type': 'Custom',
     'impl_func': True,

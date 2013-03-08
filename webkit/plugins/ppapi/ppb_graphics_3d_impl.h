@@ -38,6 +38,7 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   virtual PP_Graphics3DTrustedState FlushSyncFast(
       int32_t put_offset,
       int32_t last_known_get) OVERRIDE;
+  virtual uint32_t InsertSyncPoint() OVERRIDE;
 
   // Binds/unbinds the graphics of this context with the associated instance.
   // Returns true if binding/unbinding is successful.

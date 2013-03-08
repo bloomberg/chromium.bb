@@ -36,6 +36,7 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD1(SetParseError, void(error::Error error));
   MOCK_METHOD1(SetContextLostReason,
                void(error::ContextLostReason context_lost_reason));
+  MOCK_METHOD0(InsertSyncPoint, uint32());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);

@@ -96,6 +96,11 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
     }
   }
 
+  GLuint InsertSyncPointCHROMIUM() {
+    CommandBufferHelper::Flush();
+    return command_buffer()->InsertSyncPoint();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2CmdHelper);
 };

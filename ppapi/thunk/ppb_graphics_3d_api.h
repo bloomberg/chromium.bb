@@ -53,6 +53,8 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
                                          GLenum type,
                                          GLenum access) = 0;
   virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) = 0;
+
+  virtual uint32_t InsertSyncPoint() = 0;
 };
 
 }  // namespace thunk

@@ -226,6 +226,15 @@ void PpapiCommandBufferProxy::SetContextLostReason(
   NOTREACHED();
 }
 
+uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
+  uint32 sync_point = 0;
+  if (last_state_.error == gpu::error::kNoError) {
+    Send(new PpapiHostMsg_PPBGraphics3D_InsertSyncPoint(
+         ppapi::API_ID_PPB_GRAPHICS_3D, resource_, &sync_point));
+  }
+  return sync_point;
+}
+
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 

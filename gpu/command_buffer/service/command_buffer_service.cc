@@ -200,4 +200,9 @@ void CommandBufferService::SetParseErrorCallback(
   parse_error_callback_ = callback;
 }
 
+uint32 CommandBufferService::InsertSyncPoint() {
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace gpu

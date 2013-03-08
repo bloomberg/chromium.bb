@@ -722,6 +722,9 @@ void GLES2DiscardFramebufferEXT(
 void GLES2LoseContextCHROMIUM(GLenum current, GLenum other) {
   gles2::GetGLContext()->LoseContextCHROMIUM(current, other);
 }
+GLuint GLES2InsertSyncPointCHROMIUM() {
+  return gles2::GetGLContext()->InsertSyncPointCHROMIUM();
+}
 void GLES2WaitSyncPointCHROMIUM(GLuint sync_point) {
   gles2::GetGLContext()->WaitSyncPointCHROMIUM(sync_point);
 }
@@ -1062,6 +1065,8 @@ NameToFunc g_gles2_function_table[] = {
       glDiscardFramebufferEXT), },
   { "glLoseContextCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glLoseContextCHROMIUM), },
+  { "glInsertSyncPointCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glInsertSyncPointCHROMIUM), },
   { "glWaitSyncPointCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glWaitSyncPointCHROMIUM), },
   { NULL, NULL, },

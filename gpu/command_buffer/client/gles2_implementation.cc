@@ -3447,6 +3447,12 @@ void GLES2Implementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
   CheckGLError();
 }
 
+GLuint GLES2Implementation::InsertSyncPointCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInsertSyncPointCHROMIUM");
+  return helper_->InsertSyncPointCHROMIUM();
+}
+
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.

@@ -70,6 +70,8 @@
 // TODO(gman): DiscardFramebufferEXTImmediate
 // TODO(gman): LoseContextCHROMIUM
 
+// TODO(gman): InsertSyncPointCHROMIUM
+
 // TODO(gman): WaitSyncPointCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
