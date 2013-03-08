@@ -184,6 +184,7 @@
  * must do so here as well.
  */
 #  define NACL_STACK_ALIGN_MASK   (0xf)
+#  define NACL_STACK_ARGS_SIZE    (0)
 #  define NACL_STACK_GETS_ARG     (1)
 #  define NACL_STACK_PAD_BELOW_ALIGN (4)
 #  define NACL_STACK_RED_ZONE     (0)
@@ -204,6 +205,7 @@
  * 3.2.2 discusses stack alignment.
  */
 #  define NACL_STACK_ALIGN_MASK   (0xf)
+#  define NACL_STACK_ARGS_SIZE    (0)
 #  define NACL_STACK_GETS_ARG     (0)
 #  define NACL_STACK_PAD_BELOW_ALIGN (8)
 #  define NACL_STACK_RED_ZONE     (128)
@@ -239,6 +241,7 @@
  * performance of vector instructions, we increase this to 16.
  */
 # define NACL_STACK_ALIGN_MASK    (0xf)
+# define NACL_STACK_ARGS_SIZE     (0)
 # define NACL_STACK_GETS_ARG      (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
 # define NACL_STACK_RED_ZONE      (0)
@@ -270,6 +273,11 @@
 # define NACL_USERRET_FIX           (-0x4)
 # define NACL_SYSARGS_FIX           (0)
 # define NACL_STACK_ALIGN_MASK      (0x7)
+/*
+ * The MIPS o32 ABI requires callers to reserve 16 bytes above the stack
+ * pointer, which the callee can spill arguments to.
+ */
+# define NACL_STACK_ARGS_SIZE       (0x10)
 # define NACL_STACK_GETS_ARG        (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
 # define NACL_STACK_RED_ZONE        (0)

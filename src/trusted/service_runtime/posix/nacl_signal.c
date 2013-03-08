@@ -223,6 +223,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   new_stack_ptr -=
       sizeof(struct NaClExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;
   new_stack_ptr = new_stack_ptr & ~NACL_STACK_ALIGN_MASK;
+  new_stack_ptr -= NACL_STACK_ARGS_SIZE;
   new_stack_ptr -= NACL_STACK_PAD_BELOW_ALIGN;
   frame_addr = NaClUserToSysAddrRange(nap, new_stack_ptr,
                                       sizeof(struct NaClExceptionFrame));
@@ -272,6 +273,11 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   regs->a0 = context_user_addr;
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
+  /*
+   * Per Linux/MIPS convention, PIC functions assume that t9 holds
+   * the function's address on entry.
+   */
+  regs->t9 = regs->prog_ctr;
 #else
 # error Unsupported architecture
 #endif

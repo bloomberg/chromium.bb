@@ -2455,7 +2455,8 @@ int32_t NaClSysThreadCreate(struct NaClAppThread *natp,
 
   /* Align the stack pointer. */
   stack_ptr = ((stack_ptr + NACL_STACK_PAD_BELOW_ALIGN)
-               & ~NACL_STACK_ALIGN_MASK) - NACL_STACK_PAD_BELOW_ALIGN;
+               & ~NACL_STACK_ALIGN_MASK) - NACL_STACK_PAD_BELOW_ALIGN
+              - NACL_STACK_ARGS_SIZE;
 
   sys_stack = NaClUserToSysAddr(nap, stack_ptr);
   if (kNaClBadAddress == sys_stack) {
