@@ -363,6 +363,11 @@ void ScreenCapturerWin::CaptureRegion(
   data->mutable_dirty_region() = region;
   data->set_shared_buffer(current_buffer->shared_buffer());
 
+  SkIPoint dpi = SkIPoint::Make(
+      GetDeviceCaps(*desktop_dc_, LOGPIXELSX),
+      GetDeviceCaps(*desktop_dc_, LOGPIXELSY));
+  data->set_dpi(dpi);
+
   helper_.set_size_most_recent(data->size());
 
   queue_.DoneWithCurrentFrame();

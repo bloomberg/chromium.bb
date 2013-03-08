@@ -19,6 +19,9 @@
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/host_script_object.h"
+#if defined(OS_WIN)
+#include "ui/base/win/dpi.h"
+#endif
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npfunctions.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -503,6 +506,11 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnetscape_funcs
 #endif
   // Init an empty command line for common objects that use it.
   CommandLine::Init(0, NULL);
+
+#if defined(OS_WIN)
+  ui::EnableHighDPISupport();
+#endif
+
   return NPERR_NO_ERROR;
 }
 
