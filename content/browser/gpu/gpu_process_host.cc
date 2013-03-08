@@ -335,7 +335,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       in_process_(false),
       software_rendering_(false),
       kind_(kind),
-      process_launched_(false) {
+      process_launched_(false),
+      uma_memory_stats_received_(false) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
     in_process_ = true;
@@ -431,17 +432,27 @@ GpuProcessHost::~GpuProcessHost() {
 
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
-  UMA_HISTOGRAM_COUNTS_100("GPU.AtExitWindowCount",
-                           uma_memory_stats_.window_count);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.AtExitMBytesAllocated",
-      uma_memory_stats_.bytes_allocated_current / 1024 / 1024, 1, 2000, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.AtExitMBytesAllocatedMax",
-      uma_memory_stats_.bytes_allocated_max / 1024 / 1024, 1, 2000, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.AtExitMBytesLimit",
-      uma_memory_stats_.bytes_limit / 1024 / 1024, 1, 2000, 50);
+
+  UMA_HISTOGRAM_BOOLEAN("GPU.AtExitReceivedMemoryStats",
+                        uma_memory_stats_received_);
+
+  if (uma_memory_stats_received_) {
+    UMA_HISTOGRAM_COUNTS_100("GPU.AtExitWindowCount",
+                             uma_memory_stats_.window_count);
+    UMA_HISTOGRAM_COUNTS_100("GPU.AtExitManagedMemoryClientCount",
+                             uma_memory_stats_.client_count);
+    UMA_HISTOGRAM_COUNTS_100("GPU.AtExitContextGroupCount",
+                             uma_memory_stats_.context_group_count);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "GPU.AtExitMBytesAllocated",
+        uma_memory_stats_.bytes_allocated_current / 1024 / 1024, 1, 2000, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "GPU.AtExitMBytesAllocatedMax",
+        uma_memory_stats_.bytes_allocated_max / 1024 / 1024, 1, 2000, 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "GPU.AtExitMBytesLimit",
+        uma_memory_stats_.bytes_limit / 1024 / 1024, 1, 2000, 50);
+  }
 
   if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
@@ -783,6 +794,7 @@ void GpuProcessHost::OnDidDestroyOffscreenContext(const GURL& url) {
 void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
     const GPUMemoryUmaStats& stats) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryUmaStatsReceived");
+  uma_memory_stats_received_ = true;
   uma_memory_stats_ = stats;
 }
 

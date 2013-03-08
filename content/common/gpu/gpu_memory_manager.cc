@@ -1048,6 +1048,10 @@ void GpuMemoryManager::SendUmaStatsToBrowser() {
   params.bytes_allocated_current = GetCurrentUsage();
   params.bytes_allocated_max = bytes_allocated_historical_max_;
   params.bytes_limit = bytes_available_gpu_memory_;
+  params.client_count = clients_visible_mru_.size() +
+                        clients_nonvisible_mru_.size() +
+                        clients_nonsurface_.size();
+  params.context_group_count = tracking_groups_.size();
   params.window_count = window_count_;
   channel_manager_->Send(new GpuHostMsg_GpuMemoryUmaStats(params));
 }

@@ -236,6 +236,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::multiset<GURL> urls_with_live_offscreen_contexts_;
 
   // Statics kept around to send to UMA histograms on GPU process lost.
+  bool uma_memory_stats_received_;
   GPUMemoryUmaStats uma_memory_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);

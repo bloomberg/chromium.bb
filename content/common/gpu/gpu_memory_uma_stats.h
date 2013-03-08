@@ -16,6 +16,8 @@ struct GPUMemoryUmaStats {
       : bytes_allocated_current(0),
         bytes_allocated_max(0),
         bytes_limit(0),
+        client_count(0),
+        context_group_count(0),
         window_count(0) {
   }
 
@@ -27,6 +29,12 @@ struct GPUMemoryUmaStats {
 
   // The memory limit being imposed by the memory manager.
   size_t bytes_limit;
+
+  // The number of managed memory clients.
+  size_t client_count;
+
+  // The number of context groups.
+  size_t context_group_count;
 
   // The number of visible windows.
   uint32 window_count;
