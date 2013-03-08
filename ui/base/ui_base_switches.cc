@@ -48,9 +48,6 @@ const char kLang[] = "lang";
 // path should point to a locale.pak file.
 const char kLocalePak[] = "locale_pak";
 
-// Disables the new appearance for checkboxes and radio buttons.
-const char kOldCheckboxStyle[] = "old-checkbox-style";
-
 // Disable ui::MessageBox. This is useful when running as part of scripts that
 // do not have a user interface.
 const char kNoMessageBox[] = "no-message-box";

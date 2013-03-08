@@ -1030,13 +1030,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableViewsTextfield),
   },
   {
-    "old-checkbox-style",
-    IDS_FLAGS_OLD_CHECKBOX_STYLE,
-    IDS_FLAGS_OLD_CHECKBOX_STYLE_DESCRIPTION,
-    kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kOldCheckboxStyle),
-  },
-  {
     "enable-new-dialog-style",
     IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_NAME,
     IDS_FLAGS_ENABLE_NEW_DIALOG_STYLE_DESCRIPTION,

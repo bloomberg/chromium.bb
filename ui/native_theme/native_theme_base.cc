@@ -473,52 +473,45 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
   }
 }
 
-bool NativeThemeBase::IsNewCheckboxStyleEnabled(SkCanvas* canvas) const {
-  // The new style is now the default.
-  // TODO(rbyers): Remove this flag once we're sure the new behavior is fine.
-  // http://crbug.com/133991
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kOldCheckboxStyle))
-    return true;
-
-  return false;
-}
-
 void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
                                     const ButtonExtraParams& button) const {
-  if (IsNewCheckboxStyleEnabled(canvas)) {
-    PaintCheckboxNew(canvas, state, rect, button);
-    return;
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect,
+                                           SkIntToScalar(2));
+  if (!skrect.isEmpty()) {
+    // Draw the checkmark / dash.
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+    if (state == kDisabled)
+      paint.setColor(kCheckboxStrokeDisabledColor);
+    else
+      paint.setColor(kCheckboxStrokeColor);
+    if (button.indeterminate) {
+      SkPath dash;
+      dash.moveTo(skrect.x() + skrect.width() * 0.16,
+                  (skrect.y() + skrect.bottom()) / 2);
+      dash.rLineTo(skrect.width() * 0.68, 0);
+      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.2));
+      canvas->drawPath(dash, paint);
+    } else if (button.checked) {
+      SkPath check;
+      check.moveTo(skrect.x() + skrect.width() * 0.2,
+                   skrect.y() + skrect.height() * 0.5);
+      check.rLineTo(skrect.width() * 0.2, skrect.height() * 0.2);
+      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.23));
+      check.lineTo(skrect.right() - skrect.width() * 0.2,
+                   skrect.y() + skrect.height() * 0.2);
+      canvas->drawPath(check, paint);
+    }
   }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = NULL;
-  if (button.indeterminate) {
-    image = state == kDisabled ?
-        rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED_INDETERMINATE) :
-        rb.GetImageSkiaNamed(IDR_CHECKBOX_INDETERMINATE);
-  } else if (button.checked) {
-    image = state == kDisabled ?
-        rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED_ON) :
-        rb.GetImageSkiaNamed(IDR_CHECKBOX_ON);
-  } else {
-    image = state == kDisabled ?
-        rb.GetImageSkiaNamed(IDR_CHECKBOX_DISABLED_OFF) :
-        rb.GetImageSkiaNamed(IDR_CHECKBOX_OFF);
-  }
-
-  gfx::Rect bounds = rect;
-  bounds.ClampToCenteredSize(gfx::Size(image->width(), image->height()));
-  DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
-      bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
 // Draws the common elements of checkboxes and radio buttons.
 // Returns the rectangle within which any additional decorations should be
 // drawn, or empty if none.
-SkRect NativeThemeBase::PaintCheckboxRadioNewCommon(
+SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
@@ -607,69 +600,7 @@ SkRect NativeThemeBase::PaintCheckboxRadioNewCommon(
   return skrect;
 }
 
-void NativeThemeBase::PaintCheckboxNew(SkCanvas* canvas,
-                                       State state,
-                                       const gfx::Rect& rect,
-                                       const ButtonExtraParams& button) const {
-  SkRect skrect = PaintCheckboxRadioNewCommon(canvas, state, rect,
-                                              SkIntToScalar(2));
-  if (!skrect.isEmpty()) {
-    // Draw the checkmark / dash.
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kStroke_Style);
-    if (state == kDisabled)
-      paint.setColor(kCheckboxStrokeDisabledColor);
-    else
-      paint.setColor(kCheckboxStrokeColor);
-    if (button.indeterminate) {
-      SkPath dash;
-      dash.moveTo(skrect.x() + skrect.width() * 0.16,
-                  (skrect.y() + skrect.bottom()) / 2);
-      dash.rLineTo(skrect.width() * 0.68, 0);
-      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.2));
-      canvas->drawPath(dash, paint);
-    } else if (button.checked) {
-      SkPath check;
-      check.moveTo(skrect.x() + skrect.width() * 0.2,
-                   skrect.y() + skrect.height() * 0.5);
-      check.rLineTo(skrect.width() * 0.2, skrect.height() * 0.2);
-      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.23));
-      check.lineTo(skrect.right() - skrect.width() * 0.2,
-                   skrect.y() + skrect.height() * 0.2);
-      canvas->drawPath(check, paint);
-    }
-  }
-}
-
 void NativeThemeBase::PaintRadio(SkCanvas* canvas,
-                                  State state,
-                                  const gfx::Rect& rect,
-                                  const ButtonExtraParams& button) const {
-  if (IsNewCheckboxStyleEnabled(canvas)) {
-    PaintRadioNew(canvas, state, rect, button);
-    return;
-  }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image = NULL;
-  if (state == kDisabled) {
-    image = button.checked ?
-        rb.GetImageSkiaNamed(IDR_RADIO_DISABLED_ON) :
-        rb.GetImageSkiaNamed(IDR_RADIO_DISABLED_OFF);
-  } else {
-    image = button.checked ?
-        rb.GetImageSkiaNamed(IDR_RADIO_ON) :
-        rb.GetImageSkiaNamed(IDR_RADIO_OFF);
-  }
-
-  gfx::Rect bounds = rect;
-  bounds.ClampToCenteredSize(gfx::Size(image->width(), image->height()));
-  DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
-      bounds.x(), bounds.y(), bounds.width(), bounds.height());
-}
-
-void NativeThemeBase::PaintRadioNew(SkCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) const {
@@ -678,7 +609,7 @@ void NativeThemeBase::PaintRadioNew(SkCanvas* canvas,
   // square is a circle (i.e. border radius >= 100%).
   const SkScalar radius = SkFloatToScalar(
       static_cast<float>(std::max(rect.width(), rect.height())) / 2);
-  SkRect skrect = PaintCheckboxRadioNewCommon(canvas, state, rect, radius);
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, radius);
   if (!skrect.isEmpty() && button.checked) {
     // Draw the dot.
     SkPaint paint;
