@@ -244,6 +244,11 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
+  // Skip processing of [Alt]+<num-pad digit> Unicode alt key codes.
+  // Otherwise, if num-lock is off, the events are handled as [Up], [Down], etc.
+  if (event.IsUnicodeKeyCode())
+    return views::Textfield::OnKeyPressed(event);
+
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
       model()->AcceptInput(event.IsAltDown() ? NEW_FOREGROUND_TAB : CURRENT_TAB,

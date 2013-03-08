@@ -138,7 +138,7 @@ void Event::StopPropagation() {
   // events.
   // CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
   CHECK(cancelable_);
-  result_ = static_cast<ui::EventResult>(result_ | ER_CONSUMED);
+  result_ = static_cast<EventResult>(result_ | ER_CONSUMED);
 }
 
 void Event::SetHandled() {
@@ -146,7 +146,7 @@ void Event::SetHandled() {
   // events.
   // CHECK(phase_ != EP_PREDISPATCH && phase_ != EP_POSTDISPATCH);
   CHECK(cancelable_);
-  result_ = static_cast<ui::EventResult>(result_ | ER_HANDLED);
+  result_ = static_cast<EventResult>(result_ | ER_HANDLED);
 }
 
 Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
@@ -176,7 +176,7 @@ Event::Event(const base::NativeEvent& native_event,
       target_(NULL),
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED) {
-  base::TimeDelta delta = ui::EventTimeForNow() - time_stamp_;
+  base::TimeDelta delta = EventTimeForNow() - time_stamp_;
   if (type_ < ET_LAST)
     name_ = EventTypeName(type_);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser",
@@ -233,7 +233,7 @@ void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
 // CancelModeEvent
 
 CancelModeEvent::CancelModeEvent()
-    : Event(ui::ET_CANCEL_MODE, base::TimeDelta(), 0) {
+    : Event(ET_CANCEL_MODE, base::TimeDelta(), 0) {
   set_cancelable(false);
 }
 
@@ -253,7 +253,7 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
       location_(EventLocationFromNative(native_event)),
       root_location_(location_),
       valid_system_location_(true),
-      system_location_(ui::EventSystemLocationFromNative(native_event)) {
+      system_location_(EventSystemLocationFromNative(native_event)) {
 }
 
 LocatedEvent::LocatedEvent(EventType type,
@@ -291,11 +291,7 @@ MouseEvent::MouseEvent(EventType type,
                        const gfx::Point& location,
                        const gfx::Point& root_location,
                        int flags)
-    : LocatedEvent(type,
-                   location,
-                   root_location,
-                   ui::EventTimeForNow(),
-                   flags),
+    : LocatedEvent(type, location, root_location, EventTimeForNow(), flags),
       changed_button_flags_(0) {
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
@@ -567,25 +563,41 @@ KeyEvent* KeyEvent::Copy() const {
   return copy;
 }
 
+bool KeyEvent::IsUnicodeKeyCode() const {
+  if (!IsAltDown())
+    return false;
+  const int key = key_code();
+  if (key >= VKEY_NUMPAD0 && key <= VKEY_NUMPAD9)
+    return true;
+  // Check whether the user is using the numeric keypad with num-lock off.
+  // In that case, EF_EXTENDED will not be set; if it is set, the key event
+  // originated from the relevant non-numpad dedicated key, e.g. [Insert].
+  return (!(flags() & EF_EXTENDED) &&
+          (key == VKEY_INSERT || key == VKEY_END  || key == VKEY_DOWN ||
+           key == VKEY_NEXT   || key == VKEY_LEFT || key == VKEY_CLEAR ||
+           key == VKEY_RIGHT  || key == VKEY_HOME || key == VKEY_UP ||
+           key == VKEY_PRIOR));
+}
+
 void KeyEvent::NormalizeFlags() {
   int mask = 0;
   switch (key_code()) {
-    case ui::VKEY_CONTROL:
-      mask = ui::EF_CONTROL_DOWN;
+    case VKEY_CONTROL:
+      mask = EF_CONTROL_DOWN;
       break;
-    case ui::VKEY_SHIFT:
-      mask = ui::EF_SHIFT_DOWN;
+    case VKEY_SHIFT:
+      mask = EF_SHIFT_DOWN;
       break;
-    case ui::VKEY_MENU:
-      mask = ui::EF_ALT_DOWN;
+    case VKEY_MENU:
+      mask = EF_ALT_DOWN;
       break;
-    case ui::VKEY_CAPITAL:
-      mask = ui::EF_CAPS_LOCK_DOWN;
+    case VKEY_CAPITAL:
+      mask = EF_CAPS_LOCK_DOWN;
       break;
     default:
       return;
   }
-  if (type() == ui::ET_KEY_PRESSED)
+  if (type() == ET_KEY_PRESSED)
     set_flags(flags() | mask);
   else
     set_flags(flags() & ~mask);
@@ -625,7 +637,7 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
     : LocatedEvent(ET_DROP_TARGET_EVENT,
                    location,
                    root_location,
-                   ui::EventTimeForNow(),
+                   EventTimeForNow(),
                    0),
       data_(data),
       source_operations_(source_operations) {

@@ -1121,12 +1121,8 @@ void OmniboxViewWin::CopyURL() {
 }
 
 bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
-  ui::KeyboardCode key = event.key_code();
-  // We don't process ALT + numpad digit as accelerators, they are used for
-  // entering special characters.  We do translate alt-home.
-  if (event.IsAltDown() && (key != ui::VKEY_HOME) &&
-      views::NativeTextfieldWin::IsNumPadDigit(key,
-          (event.flags() & ui::EF_EXTENDED) != 0))
+  // Skip processing of [Alt]+<num-pad digit> Unicode alt key codes.
+  if (event.IsUnicodeKeyCode())
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list
@@ -1136,7 +1132,7 @@ bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // We cannot return true for all keys because we still need to handle some
   // accelerators (e.g., F5 for reload the page should work even when the
   // Omnibox gets focused).
-  switch (key) {
+  switch (event.key_code()) {
     case ui::VKEY_ESCAPE: {
       ScopedFreeze freeze(this, GetTextObjectModel());
       return model()->OnEscapeKeyPressed();

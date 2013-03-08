@@ -1079,8 +1079,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
   // TODO(oshima): Refactor and consolidate with ExecuteCommand.
   if (key_event.type() == ui::ET_KEY_PRESSED) {
     ui::KeyboardCode key_code = key_event.key_code();
-    // TODO(oshima): shift-tab does not work. Figure out why and fix.
-    if (key_code == ui::VKEY_TAB)
+    if (key_code == ui::VKEY_TAB || key_event.IsUnicodeKeyCode())
       return false;
 
     OnBeforeUserAction();

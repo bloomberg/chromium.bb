@@ -179,7 +179,7 @@ class UI_EXPORT Event {
   // be in the list will not receive the event after this is called.
   // Note that StopPropagation() can be called only for cancelable events.
   void StopPropagation();
-  bool stopped_propagation() const { return !!(result_ & ui::ER_CONSUMED); }
+  bool stopped_propagation() const { return !!(result_ & ER_CONSUMED); }
 
   // Marks the event as having been handled. A handled event does not reach the
   // next event phase. For example, if an event is handled during the pre-target
@@ -187,7 +187,7 @@ class UI_EXPORT Event {
   // the target or post-target handlers.
   // Note that SetHandled() can be called only for cancelable events.
   void SetHandled();
-  bool handled() const { return result_ != ui::ER_UNHANDLED; }
+  bool handled() const { return result_ != ER_UNHANDLED; }
 
  protected:
   Event(EventType type, base::TimeDelta time_stamp, int flags);
@@ -561,6 +561,10 @@ class UI_EXPORT KeyEvent : public Event {
   // events in EventFilter::PreHandleKeyEvent().  set_character() should also be
   // called.
   void set_key_code(KeyboardCode key_code) { key_code_ = key_code; }
+
+  // Returns true for [Alt]+<num-pad digit> Unicode alt key codes used by Win.
+  // TODO(msw): Additional work may be needed for analogues on other platforms.
+  bool IsUnicodeKeyCode() const;
 
   // Normalizes flags_ to make it Windows/Mac compatible. Since the way
   // of setting modifier mask on X is very different than Windows/Mac as shown
