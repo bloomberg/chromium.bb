@@ -723,14 +723,12 @@ function HistoryView(model) {
 
 // HistoryView, public: -------------------------------------------------------
 /**
- * Do a search and optionally view a certain page.
+ * Do a search on a specific term.
  * @param {string} term The string to search for.
- * @param {number} opt_page The page we wish to view, only use this for
- *     setting up initial views, as this triggers a search.
  */
-HistoryView.prototype.setSearch = function(term, opt_page) {
+HistoryView.prototype.setSearch = function(term) {
   window.scrollTo(0, 0);
-  this.setPageState(term, opt_page, this.model_.getGroupByDomain(),
+  this.setPageState(term, 0, this.model_.getGroupByDomain(),
                     this.getRangeInDays(), this.getOffset());
 };
 
