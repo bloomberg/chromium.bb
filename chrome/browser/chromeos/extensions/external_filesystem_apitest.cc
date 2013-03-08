@@ -97,7 +97,8 @@ const char kTestFileContent[] = "xxxxxxxxxxxxx";
 //
 // All files except test_dir/empty_file.foo, which is empty, initially contain
 // kTestFileContent.
-const char kTestRootFeed[] = "gdata/remote_file_system_apitest_root_feed.json";
+const char kTestRootFeed[] =
+    "chromeos/gdata/remote_file_system_apitest_root_feed.json";
 
 // Creates a test file with predetermined content. Returns true on success.
 bool CreateFileWithContent(const base::FilePath& path,
@@ -343,8 +344,8 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     fake_drive_service_ = new google_apis::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(kTestRootFeed);
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
+        "chromeos/gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     return new drive::DriveSystemService(profile,
                                          fake_drive_service_,

@@ -36,9 +36,6 @@ namespace {
 
 const char kTestGDataAuthToken[] = "testtoken";
 
-// Base URL where feeds are located on the test server.
-const char kFeedBaseUrl[] = "gdata/contacts";
-
 // Filename of JSON feed containing contact groups.
 const char kGroupsFeedFilename[] = "/groups.json";
 
@@ -171,7 +168,7 @@ class GDataContactsServiceTest : public testing::Test {
     scoped_ptr<google_apis::test_server::HttpResponse> result =
         google_apis::test_util::CreateHttpResponseFromFile(
             google_apis::test_util::GetTestFilePath(
-                std::string(kFeedBaseUrl) + request.relative_url));
+                std::string("chromeos/gdata/contacts") + request.relative_url));
     return result.Pass();
   }
 

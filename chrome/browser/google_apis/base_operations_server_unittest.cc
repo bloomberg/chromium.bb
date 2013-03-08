@@ -102,7 +102,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
                  &result_code,
                  &contents),
       GetContentCallback(),
-      test_server_.GetURL("/files/gdata/testfile.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
@@ -112,10 +112,10 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
+  EXPECT_EQ("/files/chromeos/gdata/testfile.txt", http_request_.relative_url);
 
   const base::FilePath expected_path =
-      test_util::GetTestFilePath("gdata/testfile.txt");
+      test_util::GetTestFilePath("chromeos/gdata/testfile.txt");
   std::string expected_contents;
   file_util::ReadFileToString(expected_path, &expected_contents);
   EXPECT_EQ(expected_contents, contents);
@@ -133,7 +133,7 @@ TEST_F(BaseOperationsServerTest,
                  &result_code,
                  &contents),
       GetContentCallback(),
-      test_server_.GetURL("/files/gdata/no-such-file.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
@@ -143,7 +143,8 @@ TEST_F(BaseOperationsServerTest,
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/no-such-file.txt", http_request_.relative_url);
+  EXPECT_EQ("/files/chromeos/gdata/no-such-file.txt",
+            http_request_.relative_url);
   // Do not verify the not found message.
 }
 

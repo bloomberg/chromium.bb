@@ -64,7 +64,6 @@ base::FilePath GetTestFilePath(const std::string& relative_path) {
   path = path.AppendASCII("chrome")
              .AppendASCII("test")
              .AppendASCII("data")
-             .AppendASCII("chromeos")
              .Append(base::FilePath::FromUTF8Unsafe(relative_path));
   return path;
 }

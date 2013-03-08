@@ -479,14 +479,14 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
   void SetUpDriveServiceExpectCallsForGetSyncRoot() {
     SetUpDriveServiceExpectCallsForGetResourceList(
-        "sync_file_system/sync_root_found.json",
+        "chromeos/sync_file_system/sync_root_found.json",
         FormatTitleQuery(kSyncRootDirectoryName),
         std::string());
   }
 
   void SetUpDriveServiceExpectCallsForGetAboutResource() {
     scoped_ptr<Value> account_metadata_value(LoadJSONFile(
-        "gdata/account_metadata.json"));
+        "chromeos/gdata/account_metadata.json"));
     scoped_ptr<google_apis::AboutResource> about_resource(
         google_apis::AboutResource::CreateFromAccountMetadata(
             *google_apis::AccountMetadata::CreateFrom(*account_metadata_value),
@@ -501,7 +501,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   void SetUpDriveServiceExpectCallsForDownloadFile(
       const std::string& file_resource_id) {
     scoped_ptr<Value> file_entry_value(
-        LoadJSONFile("gdata/file_entry.json").Pass());
+        LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
     scoped_ptr<google_apis::ResourceEntry> file_entry
         = google_apis::ResourceEntry::ExtractAndParse(*file_entry_value);
     EXPECT_CALL(*mock_drive_service(),
@@ -521,7 +521,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
       const std::string& parent_directory,
       const std::string& directory_name) {
     scoped_ptr<Value> origin_directory_created_value(LoadJSONFile(
-        "sync_file_system/origin_directory_created.json"));
+        "chromeos/sync_file_system/origin_directory_created.json"));
     scoped_ptr<google_apis::ResourceEntry> origin_directory_created
         = google_apis::ResourceEntry::ExtractAndParse(
             *origin_directory_created_value);
@@ -604,7 +604,7 @@ TEST_F(DriveFileSyncServiceMockTest, BatchSyncOnInitialization) {
 
   SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/listing_files_in_directory.json",
+      "chromeos/sync_file_system/listing_files_in_directory.json",
       std::string(),
       kDirectoryResourceId1);
 
@@ -639,11 +639,11 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
       .Times(AnyNumber());
 
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/origin_directory_found.json",
+      "chromeos/sync_file_system/origin_directory_found.json",
       FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
       kSyncRootResourceId);
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/origin_directory_not_found.json",
+      "chromeos/sync_file_system/origin_directory_not_found.json",
       FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
       kSyncRootResourceId);
 
@@ -658,7 +658,7 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
   SetUpDriveServiceExpectCallsForGetAboutResource();
 
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/listing_files_in_empty_directory.json",
+      "chromeos/sync_file_system/listing_files_in_empty_directory.json",
       std::string(),
       kDirectoryResourceId);
 
@@ -691,7 +691,7 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
 
   // We already have a directory for the origin.
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/origin_directory_found.json",
+      "chromeos/sync_file_system/origin_directory_found.json",
       FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
       kSyncRootResourceId);
 
@@ -700,7 +700,7 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
   // DriveFileSyncService should fetch the list of the directory content
   // to start the batch sync.
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/listing_files_in_directory.json",
+      "chromeos/sync_file_system/listing_files_in_directory.json",
       std::string(),
       kDirectoryResourceId);
 
@@ -743,7 +743,7 @@ TEST_F(DriveFileSyncServiceMockTest, UnregisterOrigin) {
 
   SetUpDriveServiceExpectCallsForGetAboutResource();
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/listing_files_in_directory.json",
+      "chromeos/sync_file_system/listing_files_in_directory.json",
       std::string(),
       kDirectoryResourceId1);
 
@@ -893,7 +893,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Busy) {
   SetUpDriveSyncService(true);
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
-      *LoadJSONFile("gdata/file_entry.json")));
+      *LoadJSONFile("chromeos/gdata/file_entry.json")));
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
 
   ProcessRemoteChange(SYNC_STATUS_FILE_BUSY,
@@ -937,7 +937,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_NewFile) {
   SetUpDriveSyncService(true);
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
-      *LoadJSONFile("gdata/file_entry.json")));
+      *LoadJSONFile("chromeos/gdata/file_entry.json")));
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
 
   ProcessRemoteChange(SYNC_STATUS_OK,
@@ -981,7 +981,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_UpdateFile) {
   SetUpDriveSyncService(true);
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
-      *LoadJSONFile("gdata/file_entry.json")));
+      *LoadJSONFile("chromeos/gdata/file_entry.json")));
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
   ProcessRemoteChange(SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
@@ -1006,7 +1006,7 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterOriginWithSyncDisabled) {
   InSequence sequence;
 
   SetUpDriveServiceExpectCallsForGetResourceList(
-      "sync_file_system/origin_directory_found.json",
+      "chromeos/sync_file_system/origin_directory_found.json",
       FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
       kSyncRootResourceId);
 
@@ -1110,7 +1110,7 @@ TEST_F(DriveFileSyncServiceMockTest, RemoteChange_Folder) {
   SetUpDriveSyncService(true);
 
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(
-      *LoadJSONFile("gdata/file_entry.json")));
+      *LoadJSONFile("chromeos/gdata/file_entry.json")));
   entry->set_kind(google_apis::ENTRY_KIND_FOLDER);
 
   // Expect to drop this change for file.

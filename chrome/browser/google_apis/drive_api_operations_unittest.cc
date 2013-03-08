@@ -291,7 +291,7 @@ class DriveApiOperationsTest : public testing::Test {
     // (dummy) metadata.
     scoped_ptr<test_server::HttpResponse> response =
         test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("drive/file_entry.json"));
+            test_util::GetTestFilePath("chromeos/drive/file_entry.json"));
 
     // The response code is CREATED if it is new file uploading.
     if (http_request_.relative_url == kTestUploadNewFilePath) {
@@ -329,7 +329,8 @@ class DriveApiOperationsTest : public testing::Test {
 
 TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
   // Set an expected data file containing valid result.
-  expected_data_file_path_ = test_util::GetTestFilePath("drive/about.json");
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "chromeos/drive/about.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> feed_data;
@@ -349,7 +350,8 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
   EXPECT_EQ("/drive/v2/about", http_request_.relative_url);
 
   scoped_ptr<AboutResource> expected(
-      AboutResource::CreateFrom(*test_util::LoadJSONFile("drive/about.json")));
+      AboutResource::CreateFrom(
+          *test_util::LoadJSONFile("chromeos/drive/about.json")));
   ASSERT_TRUE(feed_data.get());
   EXPECT_EQ(expected->largest_change_id(), feed_data->largest_change_id());
   EXPECT_EQ(expected->quota_bytes_total(), feed_data->quota_bytes_total());
@@ -359,7 +361,8 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
 
 TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
   // Set an expected data file containing invalid result.
-  expected_data_file_path_ = test_util::GetTestFilePath("gdata/testfile.txt");
+  expected_data_file_path_ = test_util::GetTestFilePath(
+      "chromeos/gdata/testfile.txt");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> feed_data;
@@ -384,7 +387,7 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
 TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
   // Set an expected data file containing the directory's entry data.
   expected_data_file_path_ =
-      test_util::GetTestFilePath("drive/directory_entry.json");
+      test_util::GetTestFilePath("chromeos/drive/directory_entry.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> feed_data;
@@ -412,7 +415,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
 
   scoped_ptr<FileResource> expected(
       FileResource::CreateFrom(
-          *test_util::LoadJSONFile("drive/directory_entry.json")));
+          *test_util::LoadJSONFile("chromeos/drive/directory_entry.json")));
 
   // Sanity check.
   ASSERT_TRUE(feed_data.get());
@@ -427,7 +430,7 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   // Set an expected data file containing the directory's entry data.
   // It'd be returned if we rename a directory.
   expected_data_file_path_ =
-      test_util::GetTestFilePath("drive/directory_entry.json");
+      test_util::GetTestFilePath("chromeos/drive/directory_entry.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
 
@@ -458,7 +461,7 @@ TEST_F(DriveApiOperationsTest, CopyResourceOperation) {
   // Set an expected data file containing the dummy file entry data.
   // It'd be returned if we copy a file.
   expected_data_file_path_ =
-      test_util::GetTestFilePath("drive/file_entry.json");
+      test_util::GetTestFilePath("chromeos/drive/file_entry.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<FileResource> file_resource;
@@ -491,7 +494,7 @@ TEST_F(DriveApiOperationsTest, TrashResourceOperation) {
   // Set data for the expected result. Directory entry should be returned
   // if the trashing entry is a directory, so using it here should be fine.
   expected_data_file_path_ =
-      test_util::GetTestFilePath("drive/directory_entry.json");
+      test_util::GetTestFilePath("chromeos/drive/directory_entry.json");
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
 

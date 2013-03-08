@@ -40,10 +40,11 @@ class CreateDirectoryOperationTest
     profile_.reset(new TestingProfile);
 
     fake_drive_service_.reset(new google_apis::FakeDriveService);
-    fake_drive_service_->LoadResourceListForWapi("gdata/root_feed.json");
+    fake_drive_service_->LoadResourceListForWapi(
+        "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
+        "chromeos/gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     metadata_.reset(
         new DriveResourceMetadata(fake_drive_service_->GetRootResourceId()));
@@ -144,7 +145,7 @@ class CreateDirectoryOperationTest
 };
 
 TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
-  ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
+  ASSERT_TRUE(LoadRootFeedDocument("chromeos/gdata/root_feed.json"));
 
   CreateDirectoryOperation::FindFirstMissingParentDirectoryResult result;
 

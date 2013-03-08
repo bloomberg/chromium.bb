@@ -50,7 +50,7 @@ bool RemovePrefix(const std::string& input,
                   std::string* output);
 
 // Returns the absolute path for a test file stored under
-// chrome/test/data/chromeos.
+// chrome/test/data.
 base::FilePath GetTestFilePath(const std::string& relative_path);
 
 // Returns the base URL for communicating with the local test server for
@@ -58,7 +58,7 @@ base::FilePath GetTestFilePath(const std::string& relative_path);
 GURL GetBaseUrlForTesting(int port);
 
 // Loads a test JSON file as a base::Value, from a test file stored under
-// chrome/test/data/chromeos.
+// chrome/test/data.
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 // Copies the results from EntryActionCallback.

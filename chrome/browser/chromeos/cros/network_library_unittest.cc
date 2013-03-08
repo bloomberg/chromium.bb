@@ -389,7 +389,7 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectVPN) {
 TEST_F(NetworkLibraryStubTest, LoadOncNetworksWithInvalidConfig) {
   LoadOncAndVerifyNetworks(
       "toplevel_partially_invalid.onc",
-      "net/shill_for_toplevel_partially_invalid.json",
+      "chromeos/net/shill_for_toplevel_partially_invalid.json",
       onc::ONC_SOURCE_USER_POLICY,
       false  /* expect import to fail */);
 
@@ -402,7 +402,7 @@ struct ImportParams {
   // |onc_file|: Filename of source ONC, relative to
   //             chromeos/test/data/network.
   // |shill_file|: Filename of expected Shill config, relative to
-  //               chrome/test/data/chromeos).
+  //               chrome/test/data).
   // |onc_source|: The source of the ONC.
   // |expect_import_result|: The expected return value of LoadOncNetworks.
   ImportParams(const std::string& onc_file,
@@ -454,42 +454,44 @@ INSTANTIATE_TEST_CASE_P(
     LoadOncNetworksTest,
     ::testing::Values(
          ImportParams("managed_toplevel1.onc",
-                      "net/shill_for_managed_toplevel1.json",
+                      "chromeos/net/shill_for_managed_toplevel1.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("managed_toplevel2.onc",
-                      "net/shill_for_managed_toplevel2.json",
+                      "chromeos/net/shill_for_managed_toplevel2.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("managed_toplevel_l2tpipsec.onc",
-                      "net/shill_for_managed_toplevel_l2tpipsec.json",
+                      "chromeos/net/shill_for_managed_toplevel_l2tpipsec.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("managed_toplevel_wifi_peap.onc",
-                      "net/shill_for_managed_toplevel_wifi_peap.json",
+                      "chromeos/net/shill_for_managed_toplevel_wifi_peap.json",
                       onc::ONC_SOURCE_DEVICE_POLICY),
          ImportParams("toplevel_wifi_open.onc",
-                      "net/shill_for_toplevel_wifi_open.json",
+                      "chromeos/net/shill_for_toplevel_wifi_open.json",
                       onc::ONC_SOURCE_DEVICE_POLICY),
          ImportParams("toplevel_wifi_wep_proxy.onc",
-                      "net/shill_for_toplevel_wifi_wep_proxy.json",
+                      "chromeos/net/shill_for_toplevel_wifi_wep_proxy.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("toplevel_wifi_wpa_psk.onc",
-                      "net/shill_for_toplevel_wifi_wpa_psk.json",
+                      "chromeos/net/shill_for_toplevel_wifi_wpa_psk.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("toplevel_wifi_leap.onc",
-                      "net/shill_for_toplevel_wifi_leap.json",
+                      "chromeos/net/shill_for_toplevel_wifi_leap.json",
                       onc::ONC_SOURCE_USER_POLICY),
-         ImportParams("toplevel_wifi_eap_clientcert.onc",
-                      "net/shill_for_toplevel_wifi_eap_clientcert.json",
-                      onc::ONC_SOURCE_USER_POLICY),
+         ImportParams(
+            "toplevel_wifi_eap_clientcert.onc",
+            "chromeos/net/shill_for_toplevel_wifi_eap_clientcert.json",
+            onc::ONC_SOURCE_USER_POLICY),
          ImportParams("toplevel_openvpn_clientcert.onc",
-                      "net/shill_for_toplevel_openvpn_clientcert.json",
+                      "chromeos/net/shill_for_toplevel_openvpn_clientcert.json",
                       onc::ONC_SOURCE_USER_POLICY),
          ImportParams("toplevel_wifi_remove.onc",
-                      "net/shill_for_toplevel_wifi_remove.json",
+                      "chromeos/net/shill_for_toplevel_wifi_remove.json",
                       onc::ONC_SOURCE_USER_POLICY),
-         ImportParams("toplevel_with_unknown_fields.onc",
-                      "net/shill_for_toplevel_with_unknown_fields.json",
-                      onc::ONC_SOURCE_USER_POLICY,
-                      false)));
+         ImportParams(
+            "toplevel_with_unknown_fields.onc",
+            "chromeos/net/shill_for_toplevel_with_unknown_fields.json",
+            onc::ONC_SOURCE_USER_POLICY,
+            false)));
 
 // TODO(stevenjb): Test remembered networks.
 

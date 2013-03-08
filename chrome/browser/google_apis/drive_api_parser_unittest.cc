@@ -29,7 +29,8 @@ namespace google_apis {
 // Test about resource parsing.
 TEST(DriveAPIParserTest, AboutResourceParser) {
   std::string error;
-  scoped_ptr<Value> document = test_util::LoadJSONFile("drive/about.json");
+  scoped_ptr<Value> document = test_util::LoadJSONFile(
+      "chromeos/drive/about.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
@@ -64,7 +65,8 @@ TEST(DriveAPIParserTest, AboutResourceFromAccountMetadata) {
 // Test app list parsing.
 TEST(DriveAPIParserTest, AppListParser) {
   std::string error;
-  scoped_ptr<Value> document = test_util::LoadJSONFile("drive/applist.json");
+  scoped_ptr<Value> document = test_util::LoadJSONFile(
+      "chromeos/drive/applist.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
@@ -241,7 +243,8 @@ TEST(DriveAPIParserTest, AppListFromAccountMetadata) {
 // Test file list parsing.
 TEST(DriveAPIParserTest, FileListParser) {
   std::string error;
-  scoped_ptr<Value> document = test_util::LoadJSONFile("drive/filelist.json");
+  scoped_ptr<Value> document = test_util::LoadJSONFile(
+      "chromeos/drive/filelist.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
@@ -346,7 +349,7 @@ TEST(DriveAPIParserTest, FileListParser) {
 TEST(DriveAPIParserTest, ChangeListParser) {
   std::string error;
   scoped_ptr<Value> document =
-      test_util::LoadJSONFile("drive/changelist.json");
+      test_util::LoadJSONFile("chromeos/drive/changelist.json");
   ASSERT_TRUE(document.get());
 
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());

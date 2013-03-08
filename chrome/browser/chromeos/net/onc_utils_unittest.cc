@@ -19,7 +19,7 @@ namespace onc {
 
 TEST(ONCUtils, ProxySettingsToProxyConfig) {
   scoped_ptr<base::Value> test_data =
-      google_apis::test_util::LoadJSONFile("net/proxy_config.json");
+      google_apis::test_util::LoadJSONFile("chromeos/net/proxy_config.json");
 
   base::ListValue* list_of_tests;
   test_data->GetAsList(&list_of_tests);
@@ -72,14 +72,15 @@ INSTANTIATE_TEST_CASE_P(
     ONCCreateUIDataTest,
     ::testing::Values(
          std::make_pair("valid_wifi_clientcert.onc",
-                        "net/uidata_for_wifi_clientcert.json"),
+                        "chromeos/net/uidata_for_wifi_clientcert.json"),
          std::make_pair("valid_wifi_clientref.onc",
-                        "net/uidata_for_wifi_clientref.json"),
-         std::make_pair("valid_wifi_psk.onc", "net/uidata_for_wifi_psk.json"),
+                        "chromeos/net/uidata_for_wifi_clientref.json"),
+         std::make_pair("valid_wifi_psk.onc",
+                        "chromeos/net/uidata_for_wifi_psk.json"),
          std::make_pair("valid_openvpn_clientcert.onc",
-                        "net/uidata_for_openvpn_clientcert.json"),
+                        "chromeos/net/uidata_for_openvpn_clientcert.json"),
          std::make_pair("valid_l2tpipsec_clientcert.onc",
-                        "net/uidata_for_l2tpipsec_clientcert.json")));
+                        "chromeos/net/uidata_for_l2tpipsec_clientcert.json")));
 
 }  // namespace onc
 }  // namespace chromeos

@@ -30,7 +30,7 @@ namespace google_apis {
 TEST(GDataWAPIParserTest, ResourceListJsonParser) {
   std::string error;
   scoped_ptr<Value> document =
-      test_util::LoadJSONFile("gdata/basic_feed.json");
+      test_util::LoadJSONFile("chromeos/gdata/basic_feed.json");
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   scoped_ptr<ResourceList> feed(ResourceList::ExtractAndParse(*document));
@@ -159,7 +159,7 @@ TEST(GDataWAPIParserTest, ResourceListJsonParser) {
 TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
   std::string error;
   scoped_ptr<Value> document =
-      test_util::LoadJSONFile("gdata/file_entry.json");
+      test_util::LoadJSONFile("chromeos/gdata/file_entry.json");
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(*document));
@@ -240,7 +240,7 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
 
 TEST(GDataWAPIParserTest, AccountMetadataParser) {
   scoped_ptr<Value> document =
-      test_util::LoadJSONFile("gdata/account_metadata.json");
+      test_util::LoadJSONFile("chromeos/gdata/account_metadata.json");
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   DictionaryValue* entry_value = NULL;

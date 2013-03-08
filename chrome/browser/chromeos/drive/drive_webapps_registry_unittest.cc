@@ -75,7 +75,8 @@ class DriveWebAppsRegistryTest : public testing::Test {
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
   scoped_ptr<Value> document =
-      google_apis::test_util::LoadJSONFile("gdata/account_metadata.json");
+      google_apis::test_util::LoadJSONFile(
+          "chromeos/gdata/account_metadata.json");
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
   DictionaryValue* entry_value;
@@ -124,7 +125,7 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
   scoped_ptr<Value> document =
-      google_apis::test_util::LoadJSONFile("drive/applist.json");
+      google_apis::test_util::LoadJSONFile("chromeos/drive/applist.json");
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
 

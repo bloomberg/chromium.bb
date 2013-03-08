@@ -83,11 +83,11 @@ class DriveSchedulerTest : public testing::Test {
 
     fake_drive_service_.reset(new google_apis::FakeDriveService());
     fake_drive_service_->LoadResourceListForWapi(
-        "gdata/root_feed.json");
+        "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
+        "chromeos/gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi(
-        "drive/applist.json");
+        "chromeos/drive/applist.json");
     fake_uploader_.reset(new FakeDriveUploader);
 
     scheduler_.reset(new DriveScheduler(profile_.get(),

@@ -44,7 +44,7 @@ class SearchMetadataTest : public testing::Test {
                                            NULL,  // webapps registry
                                            blocking_task_runner_));
     file_system_->Initialize();
-    ASSERT_TRUE(test_util::LoadChangeFeed("gdata/root_feed.json",
+    ASSERT_TRUE(test_util::LoadChangeFeed("chromeos/gdata/root_feed.json",
                                           file_system_->change_list_loader(),
                                           false,
                                           1));

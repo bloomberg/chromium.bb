@@ -108,7 +108,7 @@ class GDataWapiOperationsTest : public testing::Test {
       // TODO(satorux): we should generate valid JSON data for the newly
       // copied document but for now, just return "file_entry.json"
       return test_util::CreateHttpResponseFromFile(
-          test_util::GetTestFilePath("gdata/file_entry.json"));
+          test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
     }
 
     if (!test_util::RemovePrefix(absolute_url.path(),
@@ -120,7 +120,7 @@ class GDataWapiOperationsTest : public testing::Test {
     if (remaining_path == "-/mine") {
       // Process the default feed.
       return test_util::CreateHttpResponseFromFile(
-          test_util::GetTestFilePath("gdata/root_feed.json"));
+          test_util::GetTestFilePath("chromeos/gdata/root_feed.json"));
     } else {
       // Process a feed for a single resource ID.
       const std::string resource_id = net::UnescapeURLComponent(
@@ -130,18 +130,18 @@ class GDataWapiOperationsTest : public testing::Test {
         if (request.method == test_server::METHOD_PUT &&
             request.content.find("<docs:authorizedApp>") != std::string::npos) {
           return test_util::CreateHttpResponseFromFile(
-              test_util::GetTestFilePath("gdata/basic_feed.json"));
+              test_util::GetTestFilePath("chromeos/gdata/basic_feed.json"));
         }
 
         return test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("gdata/file_entry.json"));
+            test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
       } else if (resource_id == "folder:root/contents" &&
                  request.method == test_server::METHOD_POST) {
         // This is a request for creating a directory in the root directory.
         // TODO(satorux): we should generate valid JSON data for the newly
         // created directory but for now, just return "directory_entry.json"
         return test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("gdata/directory_entry.json"));
+            test_util::GetTestFilePath("chromeos/gdata/directory_entry.json"));
       } else if (resource_id ==
                  "folder:root/contents/file:2_file_resource_id" &&
                  request.method == test_server::METHOD_DELETE) {
@@ -150,7 +150,7 @@ class GDataWapiOperationsTest : public testing::Test {
         // copy it. For now, just return a random file, as the contents don't
         // matter.
         return test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("gdata/testfile.txt"));
+            test_util::GetTestFilePath("chromeos/gdata/testfile.txt"));
       }
     }
 
@@ -168,7 +168,8 @@ class GDataWapiOperationsTest : public testing::Test {
 
     scoped_ptr<test_server::HttpResponse> result(
         test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("gdata/account_metadata.json")));
+            test_util::GetTestFilePath(
+                "chromeos/gdata/account_metadata.json")));
     if (absolute_url.query().find("include-installed-apps=true") ==
         string::npos) {
       // Exclude the list of installed apps.
@@ -254,7 +255,7 @@ class GDataWapiOperationsTest : public testing::Test {
     // file, but for now, just return file_entry.json.
     scoped_ptr<test_server::HttpResponse> response =
         test_util::CreateHttpResponseFromFile(
-            test_util::GetTestFilePath("gdata/file_entry.json"));
+            test_util::GetTestFilePath("chromeos/gdata/file_entry.json"));
     // response.code() is set to SUCCESS. Change it to CREATED if it's a new
     // file.
     if (absolute_url.path() == "/upload_new_file")
@@ -350,7 +351,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
             "&max-results=500&include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("gdata/root_feed.json"),
+      test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       result_data.get()));
 }
 
@@ -362,7 +363,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      test_server_.GetURL("/files/gdata/root_feed.json"),
+      test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
       0,  // start changestamp
       "",  // search string
       false,  // shared with me
@@ -376,11 +377,11 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/root_feed.json?v=3&alt=json&showfolders=true"
+  EXPECT_EQ("/files/chromeos/gdata/root_feed.json?v=3&alt=json&showfolders=true"
             "&max-results=500&include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("gdata/root_feed.json"),
+      test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       result_data.get()));
 }
 
@@ -394,7 +395,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      test_server_.GetURL("/files/gdata/testfile.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       0,  // start changestamp
       "",  // search string
       false,  // shared with me
@@ -408,7 +409,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/testfile.txt?v=3&alt=json&showfolders=true"
+  EXPECT_EQ("/files/chromeos/gdata/testfile.txt?v=3&alt=json&showfolders=true"
             "&max-results=500&include-installed-apps=true",
             http_request_.relative_url);
   EXPECT_FALSE(result_data);
@@ -436,7 +437,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
             "?v=3&alt=json",
             http_request_.relative_url);
   EXPECT_TRUE(test_util::VerifyJsonData(
-      test_util::GetTestFilePath("gdata/file_entry.json"),
+      test_util::GetTestFilePath("chromeos/gdata/file_entry.json"),
       result_data.get()));
 }
 
@@ -485,7 +486,7 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
 
   scoped_ptr<AccountMetadata> expected(
       AccountMetadata::CreateFrom(
-          *test_util::LoadJSONFile("gdata/account_metadata.json")));
+          *test_util::LoadJSONFile("chromeos/gdata/account_metadata.json")));
 
   ASSERT_TRUE(result_data.get());
   EXPECT_EQ(expected->largest_changestamp(),
@@ -523,7 +524,7 @@ TEST_F(GDataWapiOperationsTest,
 
   scoped_ptr<AccountMetadata> expected(
       AccountMetadata::CreateFrom(
-          *test_util::LoadJSONFile("gdata/account_metadata.json")));
+          *test_util::LoadJSONFile("chromeos/gdata/account_metadata.json")));
 
   ASSERT_TRUE(result_data.get());
   EXPECT_EQ(expected->largest_changestamp(),
@@ -733,7 +734,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
       base::Bind(&test_util::CopyResultsFromGetDataCallbackAndQuit,
                  &result_code,
                  &result_data),
-      test_server_.GetURL("/files/gdata/testfile.txt"),
+      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
       "APP_ID");
 
   operation->Start(kTestGDataAuthToken, kTestUserAgent,
@@ -742,7 +743,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
   EXPECT_EQ(test_server::METHOD_PUT, http_request_.method);
-  EXPECT_EQ("/files/gdata/testfile.txt?v=3&alt=json",
+  EXPECT_EQ("/files/chromeos/gdata/testfile.txt?v=3&alt=json",
             http_request_.relative_url);
   EXPECT_EQ("application/atom+xml", http_request_.headers["Content-Type"]);
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
