@@ -74,7 +74,15 @@ chrome.test.runTests([
       function (fileSystem) {
         chrome.test.assertFalse(!fileSystem, 'Failed to get file system.');
         fileSystem.root.getDirectory('drive', {create: false},
-            chrome.test.succeed,
+            // Also read the root directory. This will initiate loading of the
+            // resource metadata. As of now, 'search' only works with the
+            // resource metadata fully loaded. crbug.com/181075
+            function(entry) {
+              var reader = entry.createReader();
+              reader.readEntries(
+                  chrome.test.succeed,
+                  chrome.test.fail.bind(null, 'Error reading directory.'));
+            },
             chrome.test.fail.bind(null, 'Unable to get drive mount point.'));
       });
   },

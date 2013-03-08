@@ -253,6 +253,7 @@ void ChangeListLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
 }
 
 void ChangeListLoader::ReloadFromServerIfNeeded(
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -285,10 +286,12 @@ void ChangeListLoader::ReloadFromServerIfNeeded(
   scheduler_->GetAboutResource(
       base::Bind(&ChangeListLoader::OnGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info,
                  callback));
 }
 
 void ChangeListLoader::OnGetAboutResource(
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::AboutResource> about_resource) {
@@ -306,11 +309,13 @@ void ChangeListLoader::OnGetAboutResource(
   resource_metadata_->GetLargestChangestamp(
       base::Bind(&ChangeListLoader::CompareChangestampsAndLoadIfNeeded,
                  weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info,
                  callback,
                  remote_changestamp));
 }
 
 void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     int64 remote_changestamp,
     int64 local_changestamp) {
@@ -341,6 +346,8 @@ void ChangeListLoader::CompareChangestampsAndLoadIfNeeded(
                                       remote_changestamp,
                                       callback))));
   load_params->start_changestamp = start_changestamp;
+
+  // TODO(satorux): Use directory_fetch_info to start "fast-fetch" here.
   LoadFromServer(load_params.Pass());
 }
 

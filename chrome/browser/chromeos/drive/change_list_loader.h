@@ -37,6 +37,32 @@ typedef base::Callback<
     void(const ScopedVector<google_apis::ResourceList>& feed_list,
          DriveFileError error)> LoadFeedListCallback;
 
+// Holds information needed to fetch contents of a directory.
+// This object is copyable.
+class DirectoryFetchInfo {
+ public:
+  DirectoryFetchInfo() : changestamp_(0) {}
+  DirectoryFetchInfo(const std::string& resource_id,
+                     int64 changestamp)
+      : resource_id_(resource_id),
+        changestamp_(changestamp) {
+  }
+
+  // Returns true if the object is empty.
+  bool empty() const { return resource_id_.empty(); }
+
+  // Resource ID of the directory.
+  const std::string& resource_id() const { return resource_id_; }
+
+  // Changestamp of the directory. The changestamp is used to determine if
+  // the directory contents should be fetched.
+  int64 changestamp() const { return changestamp_; }
+
+ private:
+  const std::string resource_id_;
+  const int64 changestamp_;
+};
+
 // ChangeListLoader is used to load feeds from WAPI (codename for
 // Documents List API) and load the cached proto file.
 class ChangeListLoader {
@@ -76,10 +102,17 @@ class ChangeListLoader {
                         const GURL& next_feed,
                         const LoadFeedListCallback& feed_load_callback);
 
-  // Retrieves account metadata and determines from the last change timestamp
-  // if the feed content loading from the server needs to be initiated.
+  // Initiates the chnage list loading from the server if the local
+  // changestamp is older than the server changestamp.
+  //
+  // If |directory_fetch_info| is not empty, the directory will be fetched
+  // first so the UI can show the directory contents instantly before the
+  // entire change list loading is complete.
+  // TODO(satorux): Implement the "fast-fetch" behavior.
+  //
   // |callback| must not be null.
-  void ReloadFromServerIfNeeded(const FileOperationCallback& callback);
+  void ReloadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
+                                const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
@@ -127,18 +160,20 @@ class ChangeListLoader {
   void ContinueWithInitializedResourceMetadata(LoadRootFeedParams* params,
                                                DriveFileError error);
 
-  // Helper callback for handling results of metadata retrieval initiated from
-  // ReloadFromServerIfNeeded(). This method makes a decision about fetching
-  // the content of the root feed during the root directory refresh process.
+  // Helper callback for handling results of metadata retrieval initiated
+  // from ReloadFromServerIfNeeded(). This method calls
+  // CompareChangestampsAndLoadIfNeeded() to make a decision about whether or
+  // not to fetch the change list.
   void OnGetAboutResource(
+      const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Callback for DriveResourceMetadata::GetLargestChangestamp.
   // Compares |remote_changestamp| and |local_changestamp| and triggers
   // LoadFromServer if necessary.
   void CompareChangestampsAndLoadIfNeeded(
+      const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       int64 remote_changestamp,
       int64 local_changestamp);

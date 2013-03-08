@@ -263,6 +263,7 @@ void DriveFileSystem::Reload() {
   ResetResourceMetadata();
 
   change_list_loader_->ReloadFromServerIfNeeded(
+      DirectoryFetchInfo(),
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Bind(&DriveFileSystem::OnUpdateChecked,
@@ -304,10 +305,18 @@ void DriveFileSystem::ResetResourceMetadata() {
 
 void DriveFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  CheckForUpdatesWithDirectoryFetchInfo(DirectoryFetchInfo());
+}
+
+void DriveFileSystem::CheckForUpdatesWithDirectoryFetchInfo(
+    const DirectoryFetchInfo& directory_fetch_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "CheckForUpdates";
 
   if (resource_metadata_->loaded() && !change_list_loader_->refreshing()) {
     change_list_loader_->ReloadFromServerIfNeeded(
+        directory_fetch_info,
         base::Bind(&DriveFileSystem::OnUpdateChecked,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -343,14 +352,16 @@ void DriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
 
 void DriveFileSystem::StartInitialFeedFetch() {
   if (drive_service_->CanStartOperation()) {
-    LoadFeedIfNeeded(base::Bind(&util::EmptyFileOperationCallback));
+    LoadIfNeeded(DirectoryFetchInfo(),
+                 base::Bind(&util::EmptyFileOperationCallback));
   } else {
     // Wait for the service to get ready. The observer deletes itself after
     // OnReadyToPerformOperations() gets called.
     new OperationReadinessObserver(
         drive_service_,
-        base::Bind(&DriveFileSystem::LoadFeedIfNeeded,
+        base::Bind(&DriveFileSystem::LoadIfNeeded,
                    weak_ptr_factory_.GetWeakPtr(),
+                   DirectoryFetchInfo(),
                    base::Bind(&util::EmptyFileOperationCallback)));
   }
 }
@@ -418,14 +429,16 @@ void DriveFileSystem::GetEntryInfoByResourceIdAfterGetEntry(
                  file_path));
 }
 
-void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
+void DriveFileSystem::LoadIfNeeded(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (resource_metadata_->loaded()) {
     // The feed has already been loaded, so we have nothing to do, but post a
     // task to the same thread, rather than calling it here, as
-    // LoadFeedIfNeeded() is asynchronous.
+    // LoadIfNeeded() is asynchronous.
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_FILE_OK));
@@ -443,8 +456,9 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
 
   // Load root feed from the disk cache.
   change_list_loader_->LoadFromCache(
-      base::Bind(&DriveFileSystem::OnFeedCacheLoaded,
+      base::Bind(&DriveFileSystem::OnCacheLoaded,
                  weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info,
                  callback));
 }
 
@@ -845,11 +859,40 @@ void DriveFileSystem::GetEntryInfoByPath(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadFeedIfNeeded(
-      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterLoad,
+  // DriveResourceMetadata may know about the entry even if the resource
+  // metadata is not yet fully loaded. For instance, DriveResourceMetadata()
+  // always knows about the root directory. For "fast fetch"
+  // (crbug.com/178348) to work, it's needd to delay the resource metadata
+  // loading until the first call to ReadDirectoryByPath().
+  resource_metadata_->GetEntryInfoByPath(
+      file_path,
+      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterGetEntry1,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  callback));
+}
+
+void DriveFileSystem::GetEntryInfoByPathAfterGetEntry1(
+    const base::FilePath& file_path,
+    const GetEntryInfoCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error == DRIVE_FILE_OK) {
+    CheckLocalModificationAndRun(entry_proto.Pass(), callback);
+    return;
+  }
+
+  // Start loading if needed. Note that directory_fetch_info is empty here,
+  // as we don't need to fetch the contents of a directory when we just need
+  // to get an entry of the directory.
+  LoadIfNeeded(DirectoryFetchInfo(),
+               base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterLoad,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          file_path,
+                          callback));
 }
 
 void DriveFileSystem::GetEntryInfoByPathAfterLoad(
@@ -866,12 +909,12 @@ void DriveFileSystem::GetEntryInfoByPathAfterLoad(
 
   resource_metadata_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterGetEntry,
+      base::Bind(&DriveFileSystem::GetEntryInfoByPathAfterGetEntry2,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void DriveFileSystem::GetEntryInfoByPathAfterGetEntry(
+void DriveFileSystem::GetEntryInfoByPathAfterGetEntry2(
     const GetEntryInfoCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -893,10 +936,47 @@ void DriveFileSystem::ReadDirectoryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadFeedIfNeeded(base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              directory_path,
-                              callback));
+  // As described in GetEntryInfoByPath(), DriveResourceMetadata may know
+  // about the entry even if the file system is not yet fully loaded, hece we
+  // should just ask DriveResourceMetadata first.
+  resource_metadata_->GetEntryInfoByPath(
+      directory_path,
+      base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path,
+                 callback));
+}
+
+void DriveFileSystem::ReadDirectoryByPathAfterGetEntry(
+    const base::FilePath& directory_path,
+    const ReadDirectoryWithSettingCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, hide_hosted_docs_, scoped_ptr<DriveEntryProtoVector>());
+    return;
+  }
+
+  if (!entry_proto->file_info().is_directory()) {
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY,
+                 hide_hosted_docs_,
+                 scoped_ptr<DriveEntryProtoVector>());
+    return;
+  }
+
+  // Pass the directory fetch info so we can fetch the contents of the
+  // directory before loading change lists.
+  DirectoryFetchInfo directory_fetch_info(
+      entry_proto->resource_id(),
+      entry_proto->directory_specific_info().changestamp());
+  LoadIfNeeded(directory_fetch_info,
+               base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          directory_path,
+                          callback));
 }
 
 void DriveFileSystem::ReadDirectoryByPathAfterLoad(
@@ -1153,7 +1233,7 @@ void DriveFileSystem::OnFeedFromServerLoaded() {
                     OnFeedFromServerLoaded());
 }
 
-void DriveFileSystem::LoadRootFeedFromCacheForTesting(
+void DriveFileSystem::LoadFromCacheForTesting(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1268,14 +1348,17 @@ void DriveFileSystem::NotifyFileSystemToBeUnmounted() {
                     OnFileSystemBeingUnmounted());
 }
 
-void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
-                                        DriveFileError error) {
+void DriveFileSystem::OnCacheLoaded(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback,
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
     // If cache cannot be loaded, try to load from server directly.
     change_list_loader_->ReloadFromServerIfNeeded(
+        directory_fetch_info,
         base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
@@ -1286,7 +1369,7 @@ void DriveFileSystem::OnFeedCacheLoaded(const FileOperationCallback& callback,
   // the latest feed from the server.
   DCHECK(resource_metadata_->loaded());
   NotifyInitialLoadFinishedAndRun(callback, DRIVE_FILE_OK);
-  CheckForUpdates();
+  CheckForUpdatesWithDirectoryFetchInfo(directory_fetch_info);
 }
 
 void DriveFileSystem::NotifyInitialLoadFinishedAndRun(

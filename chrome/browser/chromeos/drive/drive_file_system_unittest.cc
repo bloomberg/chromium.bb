@@ -383,7 +383,7 @@ class DriveFileSystemTest : public testing::Test {
   // filesystem has a root at 'drive'
   bool TestLoadMetadataFromCache() {
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-    file_system_->LoadRootFeedFromCacheForTesting(
+    file_system_->LoadFromCacheForTesting(
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
     google_apis::test_util::RunBlockingPoolTask();
     return error == DRIVE_FILE_OK;
@@ -519,14 +519,13 @@ class DriveFileSystemTest : public testing::Test {
 void AsyncInitializationCallback(
     int* counter,
     int expected_counter,
-    const base::FilePath& expected_file_path,
     MessageLoop* message_loop,
     DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    bool hide_hosted_documents,
+    scoped_ptr<DriveEntryProtoVector> entries) {
   ASSERT_EQ(DRIVE_FILE_OK, error);
-  ASSERT_TRUE(entry_proto.get());
-  ASSERT_TRUE(entry_proto->file_info().is_directory());
-  EXPECT_EQ(expected_file_path.value(), entry_proto->base_name());
+  ASSERT_TRUE(entries.get());
+  ASSERT_FALSE(entries->empty());
 
   (*counter)++;
   if (*counter >= expected_counter)
@@ -535,33 +534,53 @@ void AsyncInitializationCallback(
 
 TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   int counter = 0;
-  GetEntryInfoCallback callback = base::Bind(
+  ReadDirectoryWithSettingCallback callback = base::Bind(
       &AsyncInitializationCallback,
       &counter,
       2,
-      base::FilePath(FILE_PATH_LITERAL("drive")),
       &message_loop_);
 
-  file_system_->GetEntryInfoByPath(
+  file_system_->ReadDirectoryByPath(
       base::FilePath(FILE_PATH_LITERAL("drive")), callback);
-  file_system_->GetEntryInfoByPath(
+  file_system_->ReadDirectoryByPath(
       base::FilePath(FILE_PATH_LITERAL("drive")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
-  // GetEntryInfoByPath() was called twice, but the account metadata and the
+  // ReadDirectoryByPath() was called twice, but the account metadata and the
   // resource list should only be loaded once. In the past, there was a bug
   // that caused them to be loaded twice.
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
+TEST_F(DriveFileSystemTest, GetRootEntry) {
+  const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("drive"));
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  ASSERT_TRUE(entry.get());
+  EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
+
+  // Getting the root entry should not cause the resource load to happen.
+  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+}
+
+TEST_F(DriveFileSystemTest, GetNonRootEntry) {
+  const base::FilePath kFilePath =
+      base::FilePath(FILE_PATH_LITERAL("drive/whatever.txt"));
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  // The entry should not exist as the resource metadata only contains the
+  // root entry now.
+  ASSERT_FALSE(entry.get());
+
+  // The resource load should happen because non-root entry is requested.
+  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
+}
+
 TEST_F(DriveFileSystemTest, SearchRootDirectory) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
   const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("drive"));
-  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
-      base::FilePath(FILE_PATH_LITERAL(kFilePath)));
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
 }

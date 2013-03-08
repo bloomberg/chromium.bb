@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
@@ -149,8 +150,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
-  // Used in tests to load the root feed from the cache.
-  void LoadRootFeedFromCacheForTesting(const FileOperationCallback& callback);
+  // Used in tests to load the file system from the cache.
+  void LoadFromCacheForTesting(const FileOperationCallback& callback);
 
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at ChangeListLoader::UpdateFromFeed().
@@ -306,12 +307,13 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // from CheckForUpdates().
   void OnUpdateChecked(DriveFileError error);
 
-  // Called when the initial cache load is finished. It triggers feed loading
-  // from the server. If the cache loading was successful, runs |callback| for
-  // notifying it to the callers. Otherwise, defer till the server feed arrival.
-  // |callback| must not be null.
-  void OnFeedCacheLoaded(const FileOperationCallback& callback,
-                         DriveFileError error);
+  // Called when the initial cache load is finished. It triggers change list
+  // loading from the server. If the cache loading was successful, runs
+  // |callback| for notifying it to the callers. Otherwise, defer till the
+  // change list arrival. |callback| must not be null.
+  void OnCacheLoaded(const DirectoryFetchInfo& directory_fetch_info,
+                     const FileOperationCallback& callback,
+                     DriveFileError error);
 
   // Notifies that the initial feed load is finished and runs |callback|.
   // |callback| must not be null.
@@ -358,20 +360,34 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void InitializePreferenceObserver();
 
   // Part of GetEntryInfoByPath()
-  // 1) Called when the feed is loaded.
-  // 2) Called when an entry is found.
-  // |callback| must not be null.
+  // 1) Called when DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  //    If succeeded, GetEntryInfoByPath() returns immediately here.
+  //    Otherwise, starts loading the file system.
+  // 2) Called when LoadIfNeeded() is complete.
+  // 3) Called when DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  void GetEntryInfoByPathAfterGetEntry1(
+      const base::FilePath& file_path,
+      const GetEntryInfoCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
   void GetEntryInfoByPathAfterLoad(const base::FilePath& file_path,
                                    const GetEntryInfoCallback& callback,
                                    DriveFileError error);
-  void GetEntryInfoByPathAfterGetEntry(const GetEntryInfoCallback& callback,
-                                       DriveFileError error,
-                                       scoped_ptr<DriveEntryProto> entry_proto);
+  void GetEntryInfoByPathAfterGetEntry2(
+      const GetEntryInfoCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of ReadDirectoryByPath()
-  // 1) Called when the feed is loaded.
-  // 2) Called when an entry is found.
+  // 1) Called when DriveResourceMetadata::GetEntryInfoByPath() is complete.
+  // 2) Called when LoadIfNeeded() is complete.
+  // 3) Called when DriveResourceMetadata::ReadDirectoryByPath() is complete.
   // |callback| must not be null.
+  void ReadDirectoryByPathAfterGetEntry(
+      const base::FilePath& directory_path,
+      const ReadDirectoryWithSettingCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
   void ReadDirectoryByPathAfterLoad(
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
@@ -381,10 +397,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       scoped_ptr<DriveEntryProtoVector> entries);
 
-  // Loads the feed from the cache or the server if not yet loaded. Runs
-  // |callback| upon the completion with the error code.
-  // |callback| must not be null.
-  void LoadFeedIfNeeded(const FileOperationCallback& callback);
+  // Loads the file system from the cache or the server via change lists if
+  // the file system is not yet loaded. Runs |callback| upon the completion
+  // with the error code.  |callback| must not be null.
+  void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
+                    const FileOperationCallback& callback);
 
   // Gets the file at |file_path| from the cache (if found in the cache),
   // or the server (if not found in the cache) after the file info is
@@ -448,6 +465,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetEntryInfoCallback& callback,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
+
+  // Similar to CheckForUpdates(), but takes the directory fetch info, so the
+  // directory fetch info can be passed to ChangeListLoader.
+  void CheckForUpdatesWithDirectoryFetchInfo(
+      const DirectoryFetchInfo& directory_fetch_info);
 
   scoped_ptr<DriveResourceMetadata> resource_metadata_;
 

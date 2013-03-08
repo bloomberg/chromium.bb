@@ -66,6 +66,7 @@ class CreateDirectoryOperationTest
 
     DriveFileError error = DRIVE_FILE_OK;
     change_list_loader_->ReloadFromServerIfNeeded(
+        DirectoryFetchInfo(),
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
                    &error));
     cache_->RequestInitializeForTesting();
