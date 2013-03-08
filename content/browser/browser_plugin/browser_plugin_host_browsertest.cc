@@ -912,9 +912,16 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadRedirect) {
   EXPECT_EQ(test_server()->GetURL("files/title1.html").spec().c_str(), result);
 }
 
+// Always failing in the win7_aura try bot.  See http://crbug.com/181107.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_AcceptDragEvents DISABLED_AcceptDragEvents
+#else
+#define MAYBE_AcceptDragEvents AcceptDragEvents
+#endif
+
 // Tests that a drag-n-drop over the browser plugin in the embedder happens
 // correctly.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptDragEvents) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
   const char kEmbedderURL[] = "files/browser_plugin_dragging.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuestAcceptDrag, true, "");
 
