@@ -146,6 +146,10 @@
 #include "base/android/build_info.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/active_tab_tracker.h"
+#endif
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 #endif
@@ -1104,6 +1108,16 @@ void ChromeBrowserMainParts::SetupPlatformFieldTrials() {
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+#if !defined(OS_ANDROID)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTrackActiveVisitTime)) {
+    active_tab_tracker_.reset(new ActiveTabTracker());
+    // TODO(sky): nuke this when all ports support ActiveTabTracker.
+    if (!active_tab_tracker_->is_valid())
+      active_tab_tracker_.reset();
+  }
+#endif
+
   // Android updates the metrics service dynamically depending on whether the
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)

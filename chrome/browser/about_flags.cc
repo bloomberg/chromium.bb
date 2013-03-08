@@ -1237,6 +1237,8 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     MULTI_VALUE_TYPE(kImplSidePaintingChoices)
   },
+  // TODO(sky): ifdef needed until focus sorted out in DesktopNativeWidgetAura.
+#if !defined(USE_AURA)
   {
     "track-active-visit-time",
     IDS_FLAGS_TRACK_ACTIVE_VISIT_TIME_NAME,
@@ -1244,6 +1246,7 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kTrackActiveVisitTime)
   },
+#endif
 #if defined(OS_ANDROID)
   {
     "disable-gesture-requirement-for-media-playback",

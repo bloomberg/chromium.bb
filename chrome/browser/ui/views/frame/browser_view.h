@@ -112,7 +112,6 @@ class BrowserView : public BrowserWindow,
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
 
-#if defined(OS_WIN) || defined(USE_AURA)
   // Returns a pointer to the BrowserView* interface implementation (an
   // instance of this object, typically) for a given native window, or NULL if
   // there is no such association.
@@ -120,7 +119,6 @@ class BrowserView : public BrowserWindow,
   // Don't use this unless you only have a NativeWindow. In nearly all
   // situations plumb through browser and use it.
   static BrowserView* GetBrowserViewForNativeWindow(gfx::NativeWindow window);
-#endif
 
   // Returns the BrowserView used for the specified Browser.
   static BrowserView* GetBrowserViewForBrowser(const Browser* browser);

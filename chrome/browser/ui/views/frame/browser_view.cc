@@ -501,7 +501,6 @@ BrowserView::~BrowserView() {
   browser_.reset();
 }
 
-#if defined(OS_WIN) || defined(USE_AURA)
 // static
 BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
@@ -510,7 +509,6 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
       reinterpret_cast<BrowserView*>(widget->GetNativeWindowProperty(
           kBrowserViewKey)) : NULL;
 }
-#endif
 
 // static
 BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {

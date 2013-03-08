@@ -68,6 +68,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
 
  private:
   scoped_ptr<chrome::StorageMonitorWin> storage_monitor_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };
 

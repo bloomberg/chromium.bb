@@ -65,6 +65,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/ui except for:
         # * tests and mocks.
+        'browser/ui/active_tab_tracker.cc',
+        'browser/ui/active_tab_tracker.h',
         'browser/ui/alternate_error_tab_observer.cc',
         'browser/ui/alternate_error_tab_observer.h',
         'browser/ui/android/android_about_app_info.cc',
@@ -1175,6 +1177,7 @@
         'browser/ui/metro_chrome_win.h',
         'browser/ui/metro_pin_tab_helper_win.cc',
         'browser/ui/metro_pin_tab_helper_win.h',
+        'browser/ui/native_focus_tracker.h',
         'browser/ui/native_web_contents_modal_dialog.h',
         'browser/ui/native_web_contents_modal_dialog_manager.h',
         'browser/ui/network_profile_bubble.cc',
@@ -1675,6 +1678,10 @@
         'browser/ui/views/message_center/web_notification_tray_win.cc',
         'browser/ui/views/missing_system_file_dialog_win.cc',
         'browser/ui/views/missing_system_file_dialog_win.h',
+        'browser/ui/views/native_focus_tracker_views.cc',
+        'browser/ui/views/native_focus_tracker_views.h',
+        'browser/ui/views/native_focus_tracker_views_aura.cc',
+        'browser/ui/views/native_focus_tracker_views_win.cc',
         'browser/ui/views/notifications/balloon_collection_views.cc',
         'browser/ui/views/notifications/balloon_view_host.cc',
         'browser/ui/views/notifications/balloon_view_host.h',
@@ -2467,6 +2474,7 @@
             ['OS=="win"', {
               'sources/': [
                 ['exclude', '^browser/ui/views/hwnd_util_win.cc'],
+                ['exclude', '^browser/ui/views/native_focus_tracker_views_win.cc'],
                 ['exclude', '^browser/ui/views/theme_image_mapper.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
                 ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
@@ -2574,6 +2582,8 @@
             'browser/ui/webui/sync_setup_handler.h',
 
             # There's no Browser/BrowserList on Android.
+            'browser/ui/active_tab_tracker.cc',
+            'browser/ui/active_tab_tracker.h',
             'browser/ui/bookmarks/bookmark_context_menu_controller.cc',
             'browser/ui/bookmarks/bookmark_prompt_controller.cc',
             'browser/ui/browser.cc',
