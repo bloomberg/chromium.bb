@@ -1391,31 +1391,6 @@ surface_set_input_region(struct wl_client *client,
 	}
 }
 
-static int
-surface_pending_buffer_has_different_size(struct weston_surface *surface)
-{
-	int width, height;
-
-	switch (surface->pending.buffer_transform) {
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		height = surface->pending.buffer->width;
-		width = surface->pending.buffer->height;
-		break;
-	default:
-		width = surface->pending.buffer->width;
-		height = surface->pending.buffer->height;
-	}
-
-	if (width == surface->geometry.width &&
-	    height == surface->geometry.height)
-		return 0;
-	else
-		return 1;
-}
-
 static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
@@ -1423,11 +1398,6 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	pixman_region32_t opaque;
 	int buffer_width = 0;
 	int buffer_height = 0;
-
-	if (surface->pending.sx || surface->pending.sy ||
-	    (surface->pending.buffer &&
-	     surface_pending_buffer_has_different_size(surface)))
-		surface->geometry.dirty = 1;
 
 	/* wl_surface.set_buffer_rotation */
 	surface->buffer_transform = surface->pending.buffer_transform;
@@ -1442,8 +1412,9 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 	}
 
 	if (surface->configure && surface->pending.newly_attached)
-		surface->configure(surface, surface->pending.sx,
-				   surface->pending.sy, buffer_width, buffer_height);
+		surface->configure(surface,
+				   surface->pending.sx, surface->pending.sy,
+				   buffer_width, buffer_height);
 
 	if (surface->pending.buffer)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
