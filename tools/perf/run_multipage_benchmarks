@@ -37,7 +37,7 @@ def bootstrapIfNeeded(module_name, module_path, module_deps_url):
 if __name__ == '__main__':
   bootstrapIfNeeded('perf_tools', 'src/tools/perf',
                     'http://src.chromium.org/viewvc/chrome/trunk/src/tools/' +
-                    'perf/perf_lib/bootstrap_deps')
+                    'perf/perf_tools/bootstrap_deps')
   import perf_tools
   from telemetry.page import page_benchmark_runner
   benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
