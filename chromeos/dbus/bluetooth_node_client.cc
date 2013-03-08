@@ -42,8 +42,6 @@ class BluetoothNodeClientImpl: public BluetoothNodeClient,
                           BluetoothDeviceClient* device_client)
       : bus_(bus),
         weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating BluetoothNodeClientImpl";
-
     DCHECK(device_client);
     device_client->AddObserver(this);
   }

@@ -39,8 +39,8 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
         delegate_(delegate),
         object_path_(object_path),
         weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating BluetoothAdapterClientImpl for "
-             << object_path.value();
+    VLOG(1) << "Creating BluetoothAdapterClientImpl for "
+            << object_path.value();
 
     exported_object_ = bus_->GetExportedObject(object_path_);
 

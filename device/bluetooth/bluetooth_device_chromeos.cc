@@ -169,7 +169,7 @@ void BluetoothDeviceChromeOS::Connect(
       agent_.reset(NULL);
     }
 
-    DVLOG(1) << "Pairing: " << address_;
+    VLOG(1) << "Pairing: " << address_;
     DBusThreadManager::Get()->GetBluetoothAdapterClient()->
         CreatePairedDevice(
             adapter_->object_path_,
@@ -371,7 +371,7 @@ void BluetoothDeviceChromeOS::OnCreateDevice(
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback,
     const dbus::ObjectPath& device_path) {
-  DVLOG(1) << "Connection successful: " << device_path.value();
+  VLOG(1) << "Connection successful: " << device_path.value();
   if (object_path_.value().empty()) {
     object_path_ = device_path;
   } else {
@@ -483,8 +483,8 @@ void BluetoothDeviceChromeOS::OnServiceRecordsChanged(void) {
   // adapter and can't be reconnected from the adapter. To avoid problems with
   // devices that don't export this properties we asume they are connectable.
   connectable_ = hid_normally_connectable || !hid_reconnect_initiate;
-  DVLOG(1) << "ServiceRecordsChanged for " << address_
-           << ": connectable = " << connectable_;
+  VLOG(1) << "ServiceRecordsChanged for " << address_
+          << ": connectable = " << connectable_;
 }
 
 void BluetoothDeviceChromeOS::OnSetTrusted(bool success) {
@@ -599,8 +599,8 @@ void BluetoothDeviceChromeOS::OnIntrospect(
 void BluetoothDeviceChromeOS::OnConnect(const base::Closure& callback,
                                         const std::string& interface_name,
                                         const dbus::ObjectPath& device_path) {
-  DVLOG(1) << "Application connection successful: " << device_path.value()
-           << ": " << interface_name;
+  VLOG(1) << "Application connection successful: " << device_path.value()
+          << ": " << interface_name;
 
   connecting_applications_counter_--;
   // |callback| should only be called once, meaning it cannot be called before
@@ -649,15 +649,15 @@ void BluetoothDeviceChromeOS::DisconnectCallback(
     bool success) {
   DCHECK(device_path == object_path_);
   if (success) {
-    DVLOG(1) << "Disconnection successful: " << address_;
+    VLOG(1) << "Disconnection successful: " << address_;
     callback.Run();
   } else {
     if (connected_)  {
       LOG(WARNING) << "Disconnection failed: " << address_;
       error_callback.Run();
     } else {
-      DVLOG(1) << "Disconnection failed on a already disconnected device: "
-               << address_;
+      VLOG(1) << "Disconnection failed on a already disconnected device: "
+              << address_;
       callback.Run();
     }
   }
@@ -745,7 +745,7 @@ void BluetoothDeviceChromeOS::DisconnectRequested(
 
 void BluetoothDeviceChromeOS::Release() {
   DCHECK(agent_.get());
-  DVLOG(1) << "Release: " << address_;
+  VLOG(1) << "Release: " << address_;
 
   DCHECK(pairing_delegate_);
   pairing_delegate_->DismissDisplayOrConfirm();
@@ -762,7 +762,7 @@ void BluetoothDeviceChromeOS::RequestPinCode(
     const dbus::ObjectPath& device_path,
     const PinCodeCallback& callback) {
   DCHECK(agent_.get());
-  DVLOG(1) << "RequestPinCode: " << device_path.value();
+  VLOG(1) << "RequestPinCode: " << device_path.value();
 
   DCHECK(pairing_delegate_);
   DCHECK(pincode_callback_.is_null());
@@ -775,7 +775,7 @@ void BluetoothDeviceChromeOS::RequestPasskey(
     const PasskeyCallback& callback) {
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
-  DVLOG(1) << "RequestPasskey: " << device_path.value();
+  VLOG(1) << "RequestPasskey: " << device_path.value();
 
   DCHECK(pairing_delegate_);
   DCHECK(passkey_callback_.is_null());
@@ -788,7 +788,7 @@ void BluetoothDeviceChromeOS::DisplayPinCode(
     const std::string& pincode) {
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
-  DVLOG(1) << "DisplayPinCode: " << device_path.value() << " " << pincode;
+  VLOG(1) << "DisplayPinCode: " << device_path.value() << " " << pincode;
 
   DCHECK(pairing_delegate_);
   pairing_delegate_->DisplayPinCode(this, pincode);
@@ -799,7 +799,7 @@ void BluetoothDeviceChromeOS::DisplayPasskey(
     uint32 passkey) {
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
-  DVLOG(1) << "DisplayPasskey: " << device_path.value() << " " << passkey;
+  VLOG(1) << "DisplayPasskey: " << device_path.value() << " " << passkey;
 
   DCHECK(pairing_delegate_);
   pairing_delegate_->DisplayPasskey(this, passkey);
@@ -811,7 +811,7 @@ void BluetoothDeviceChromeOS::RequestConfirmation(
     const ConfirmationCallback& callback) {
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
-  DVLOG(1) << "RequestConfirmation: " << device_path.value() << " " << passkey;
+  VLOG(1) << "RequestConfirmation: " << device_path.value() << " " << passkey;
 
   DCHECK(pairing_delegate_);
   DCHECK(confirmation_callback_.is_null());
@@ -840,7 +840,7 @@ void BluetoothDeviceChromeOS::ConfirmModeChange(
 
 void BluetoothDeviceChromeOS::Cancel() {
   DCHECK(agent_.get());
-  DVLOG(1) << "Cancel: " << address_;
+  VLOG(1) << "Cancel: " << address_;
 
   DCHECK(pairing_delegate_);
   pairing_delegate_->DismissDisplayOrConfirm();

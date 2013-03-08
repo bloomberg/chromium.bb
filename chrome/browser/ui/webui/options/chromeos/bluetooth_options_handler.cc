@@ -225,7 +225,7 @@ void BluetoothOptionsHandler::EnableChangeCallback(
 }
 
 void BluetoothOptionsHandler::EnableChangeError() {
-  DVLOG(1) << "Failed to change power state.";
+  VLOG(1) << "Failed to change power state.";
   ReportError("bluetoothChangePowerFailed", std::string());
 }
 
@@ -241,7 +241,7 @@ void BluetoothOptionsHandler::FindDevicesCallback(
 }
 
 void BluetoothOptionsHandler::FindDevicesError() {
-  DVLOG(1) << "Failed to start discovery.";
+  VLOG(1) << "Failed to start discovery.";
   ReportError("bluetoothStartDiscoveryFailed", std::string());
 }
 
@@ -270,7 +270,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
         // interpretation, and the one shared by BlueZ, is a UTF-8 string
         // of as many characters that will fit in that space, thus we
         // can use the auth token from JavaScript unmodified.
-        DVLOG(1) << "PIN Code supplied: " << address << ": " << auth_token;
+        VLOG(1) << "PIN Code supplied: " << address << ": " << auth_token;
         device->SetPinCode(auth_token);
       } else if (device->ExpectingPasskey()) {
         DeviceConnecting(device);
@@ -282,7 +282,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
         unsigned passkey = 0;
         base::StringToUint(auth_token, &passkey);
 
-        DVLOG(1) << "Passkey supplied: " << address << ": " << passkey;
+        VLOG(1) << "Passkey supplied: " << address << ": " << passkey;
         device->SetPasskey(passkey);
       } else {
         LOG(WARNING) << "Auth token supplied after pairing ended: " << address
@@ -290,7 +290,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
       }
     } else {
       // Connection request.
-      DVLOG(1) << "Connect: " << address;
+      VLOG(1) << "Connect: " << address;
       device->Connect(
           this,
           base::Bind(&base::DoNothing),
@@ -300,19 +300,19 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
     }
   } else if (command == kCancelCommand) {
     // Cancel pairing.
-    DVLOG(1) << "Cancel pairing: " << address;
+    VLOG(1) << "Cancel pairing: " << address;
     device->CancelPairing();
   } else if (command == kAcceptCommand) {
     // Confirm displayed Passkey.
-    DVLOG(1) << "Confirm pairing: " << address;
+    VLOG(1) << "Confirm pairing: " << address;
     device->ConfirmPairing();
   } else if (command == kRejectCommand) {
     // Reject displayed Passkey.
-    DVLOG(1) << "Reject pairing: " << address;
+    VLOG(1) << "Reject pairing: " << address;
     device->RejectPairing();
   } else if (command == kDisconnectCommand) {
     // Disconnect from device.
-    DVLOG(1) << "Disconnect device: " << address;
+    VLOG(1) << "Disconnect device: " << address;
     device->Disconnect(
         base::Bind(&base::DoNothing),
         base::Bind(&BluetoothOptionsHandler::DisconnectError,
@@ -320,7 +320,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
                    device->address()));
   } else if (command == kForgetCommand) {
     // Disconnect from device and delete pairing information.
-    DVLOG(1) << "Forget device: " << address;
+    VLOG(1) << "Forget device: " << address;
     device->Forget(base::Bind(&BluetoothOptionsHandler::ForgetError,
                               weak_ptr_factory_.GetWeakPtr(),
                               device->address()));
@@ -334,7 +334,7 @@ void BluetoothOptionsHandler::ConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   const char* error_name = NULL;
 
-  DVLOG(1) << "Failed to connect to device: " << address;
+  VLOG(1) << "Failed to connect to device: " << address;
   switch (error_code) {
     case device::BluetoothDevice::ERROR_UNKNOWN:
       error_name = "bluetoothConnectUnknownError";
@@ -367,12 +367,12 @@ void BluetoothOptionsHandler::ConnectError(
 }
 
 void BluetoothOptionsHandler::DisconnectError(const std::string& address) {
-  DVLOG(1) << "Failed to disconnect from device: " << address;
+  VLOG(1) << "Failed to disconnect from device: " << address;
   ReportError("bluetoothDisconnectFailed", address);
 }
 
 void BluetoothOptionsHandler::ForgetError(const std::string& address) {
-  DVLOG(1) << "Failed to disconnect and unpair device: " << address;
+  VLOG(1) << "Failed to disconnect and unpair device: " << address;
   ReportError("bluetoothForgetFailed", address);
 }
 
@@ -388,7 +388,7 @@ void BluetoothOptionsHandler::StopDiscoveryCallback(
 }
 
 void BluetoothOptionsHandler::StopDiscoveryError() {
-  DVLOG(1) << "Failed to stop discovery.";
+  VLOG(1) << "Failed to stop discovery.";
   ReportError("bluetoothStopDiscoveryFailed", std::string());
 }
 

@@ -53,8 +53,6 @@ class BluetoothInputClientImpl: public BluetoothInputClient,
                            BluetoothAdapterClient* adapter_client)
       : bus_(bus),
       weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating BluetoothInputClientImpl";
-
     DCHECK(adapter_client);
     adapter_client->AddObserver(this);
   }

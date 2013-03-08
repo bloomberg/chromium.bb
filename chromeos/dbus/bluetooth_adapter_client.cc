@@ -68,8 +68,6 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
                                       BluetoothManagerClient* manager_client)
       : bus_(bus),
         weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating BluetoothAdapterClientImpl";
-
     DCHECK(manager_client);
     manager_client->AddObserver(this);
   }
@@ -441,8 +439,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
       return;
     }
 
-    DVLOG(1) << object_path.value() << ": Device created: "
-             << device_path.value();
+    VLOG(1) << object_path.value() << ": Device created: "
+            << device_path.value();
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceCreated(object_path, device_path));
   }
@@ -469,8 +467,8 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
       return;
     }
 
-    DVLOG(1) << object_path.value() << ": Device removed: "
-             << device_path.value();
+    VLOG(1) << object_path.value() << ": Device removed: "
+            << device_path.value();
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceRemoved(object_path, device_path));
   }
@@ -509,7 +507,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
       return;
     }
 
-    DVLOG(1) << object_path.value() << ": Device found: " << address;
+    VLOG(1) << object_path.value() << ": Device found: " << address;
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceFound(object_path, address, device_properties));
   }
@@ -536,7 +534,7 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
       return;
     }
 
-    DVLOG(1) << object_path.value() << ": Device disappeared: " << address;
+    VLOG(1) << object_path.value() << ": Device disappeared: " << address;
     FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                       DeviceDisappeared(object_path, address));
   }

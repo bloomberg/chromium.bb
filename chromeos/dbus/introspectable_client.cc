@@ -35,7 +35,6 @@ class IntrospectableClientImpl : public IntrospectableClient {
   explicit IntrospectableClientImpl(dbus::Bus* bus)
       : bus_(bus),
         weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating IntrospectableClientImpl";
   }
 
   virtual ~IntrospectableClientImpl() {

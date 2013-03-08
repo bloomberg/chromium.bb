@@ -37,8 +37,6 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
   explicit BluetoothManagerClientImpl(dbus::Bus* bus)
       : object_proxy_(NULL),
         weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating BluetoothManagerClientImpl";
-
     // Create the object proxy.
     DCHECK(bus);
     object_proxy_ = bus->GetObjectProxy(
@@ -153,7 +151,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
       return;
     }
 
-    DVLOG(1) << "Adapter added: " << object_path.value();
+    VLOG(1) << "Adapter added: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, AdapterAdded(object_path));
   }
 
@@ -175,7 +173,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
       return;
     }
 
-    DVLOG(1) << "Adapter removed: " << object_path.value();
+    VLOG(1) << "Adapter removed: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, AdapterRemoved(object_path));
   }
 
@@ -197,7 +195,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
       return;
     }
 
-    DVLOG(1) << "Default adapter changed: " << object_path.value();
+    VLOG(1) << "Default adapter changed: " << object_path.value();
     FOR_EACH_OBSERVER(Observer, observers_, DefaultAdapterChanged(object_path));
   }
 

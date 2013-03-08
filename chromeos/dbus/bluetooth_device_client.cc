@@ -57,7 +57,7 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
                             BluetoothAdapterClient* adapter_client)
       : bus_(bus),
         weak_ptr_factory_(this) {
-    DVLOG(1) << "Creating BluetoothDeviceClientImpl";
+    VLOG(1) << "Creating BluetoothDeviceClientImpl";
 
     DCHECK(adapter_client);
     adapter_client->AddObserver(this);
@@ -288,7 +288,7 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
                                    dbus::Signal* signal) {
     DCHECK(signal);
 
-    DVLOG(1) << object_path.value() << ": Disconnect requested.";
+    VLOG(1) << object_path.value() << ": Disconnect requested.";
     FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                       DisconnectRequested(object_path));
   }
@@ -317,8 +317,8 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
       return;
     }
 
-    DVLOG(1) << object_path.value() << ": Node created: "
-             << node_path.value();
+    VLOG(1) << object_path.value() << ": Node created: "
+            << node_path.value();
     FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                       NodeCreated(object_path, node_path));
   }
@@ -345,8 +345,8 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
       return;
     }
 
-    DVLOG(1) << object_path.value() << ": Node removed: "
-             << node_path.value();
+    VLOG(1) << object_path.value() << ": Node removed: "
+            << node_path.value();
     FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                       NodeRemoved(object_path, node_path));
   }
