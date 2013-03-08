@@ -26,7 +26,9 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
-#if !defined(USE_OPENSSL)
+#if defined(USE_OPENSSL)
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
+#else
 #include "net/socket/nss_ssl_util.h"
 #endif
 
@@ -612,8 +614,14 @@ bool MediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
         new IpcPacketSocketFactory(p2p_socket_dispatcher_));
   }
 
-#if !defined(USE_OPENSSL)
-  // Init NSS, which will be needed by PeerConnection.
+  // Init SSL, which will be needed by PeerConnection.
+#if defined(USE_OPENSSL)
+  if (!talk_base::InitializeSSL()) {
+    LOG(ERROR) << "Failed on InitializeSSL.";
+    return false;
+  }
+#else
+  // TODO(ronghuawu): Replace this call with InitializeSSL.
   net::EnsureNSSSSLInit();
 #endif
 
