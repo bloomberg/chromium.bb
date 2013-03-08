@@ -15,6 +15,7 @@
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/event_executor.h"
 
@@ -128,7 +129,9 @@ void IpcDesktopEnvironmentFactory::ConnectTerminal(
   CHECK(inserted);
 
   VLOG(1) << "Network: registered desktop environment " << id;
-  daemon_channel_->Send(new ChromotingNetworkHostMsg_ConnectTerminal(id));
+
+  daemon_channel_->Send(new ChromotingNetworkHostMsg_ConnectTerminal(
+      id, DesktopSessionParams(), false));
 }
 
 void IpcDesktopEnvironmentFactory::DisconnectTerminal(

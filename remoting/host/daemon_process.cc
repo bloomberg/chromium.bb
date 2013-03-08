@@ -19,6 +19,18 @@
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/transport.h"
 
+namespace {
+
+std::ostream& operator<<(std::ostream& os, const SkIPoint& point) {
+  return os << "(" << point.x() << ", " << point.y() << ")";
+}
+
+std::ostream& operator<<(std::ostream& os, const SkISize& size) {
+  return os << size.width() << "x" << size.height();
+}
+
+}  // namespace
+
 namespace remoting {
 
 // This is used for tagging system event logs.
@@ -157,7 +169,9 @@ DaemonProcess::DaemonProcess(
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
-void DaemonProcess::CreateDesktopSession(int terminal_id) {
+void DaemonProcess::CreateDesktopSession(int terminal_id,
+                                         const DesktopSessionParams& params,
+                                         bool virtual_terminal) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   // Validate the supplied terminal ID. An attempt to create a desktop session
@@ -169,9 +183,36 @@ void DaemonProcess::CreateDesktopSession(int terminal_id) {
     return;
   }
 
-  VLOG(1) << "Daemon: opened desktop session " << terminal_id;
-  desktop_sessions_.push_back(
-      DoCreateDesktopSession(terminal_id).release());
+  // Validate |params|.
+  if (params.client_dpi_.x() < 0 || params.client_dpi_.y() < 0) {
+    LOG(ERROR) << "Invalid DPI of the remote screen specified: "
+               << params.client_dpi_;
+    SendToNetwork(
+        new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
+    return;
+  }
+  if (params.client_size_.width() < 0 || params.client_size_.height() < 0) {
+    LOG(ERROR) << "Invalid resolution of the remote screen specified: "
+               << params.client_size_;
+    SendToNetwork(
+        new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
+    return;
+  }
+
+  // Create the desktop session.
+  scoped_ptr<DesktopSession> session = DoCreateDesktopSession(
+      terminal_id, params, virtual_terminal);
+  if (session) {
+    VLOG(1) << "Daemon: opened desktop session " << terminal_id;
+    desktop_sessions_.push_back(session.release());
+  } else {
+    LOG(ERROR) << "Failed to create a desktop session.";
+    SendToNetwork(
+        new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
+    return;
+  }
+
+  // Update the expected terminal ID.
   next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
 }
 

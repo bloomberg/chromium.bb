@@ -23,6 +23,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
+#include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/host_mock_objects.h"
@@ -50,7 +51,7 @@ class FakeDaemonSender : public IPC::Sender {
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
-  MOCK_METHOD1(ConnectTerminal, void(int));
+  MOCK_METHOD3(ConnectTerminal, void(int, const DesktopSessionParams&, bool));
   MOCK_METHOD1(DisconnectTerminal, void(int));
 
  private:
@@ -115,7 +116,9 @@ class IpcDesktopEnvironmentTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
-  void ConnectTerminal(int terminal_id);
+  void ConnectTerminal(int terminal_id,
+                       const DesktopSessionParams& params,
+                       bool virtual_terminal);
   void DisconnectTerminal(int terminal_id);
 
   // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
@@ -229,7 +232,7 @@ void IpcDesktopEnvironmentTest::SetUp() {
                        &IpcDesktopEnvironmentTest::DestoyDesktopProcess));
 
   // Intercept requests to connect and disconnect a terminal.
-  EXPECT_CALL(daemon_channel_, ConnectTerminal(_))
+  EXPECT_CALL(daemon_channel_, ConnectTerminal(_, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(this,
                              &IpcDesktopEnvironmentTest::ConnectTerminal));
@@ -255,7 +258,10 @@ void IpcDesktopEnvironmentTest::SetUp() {
       desktop_environment_->CreateVideoCapturer(task_runner_, task_runner_);
 }
 
-void IpcDesktopEnvironmentTest::ConnectTerminal(int terminal_id) {
+void IpcDesktopEnvironmentTest::ConnectTerminal(
+    int terminal_id,
+    const DesktopSessionParams& params,
+    bool virtual_terminal) {
   EXPECT_NE(terminal_id_, terminal_id);
 
   terminal_id_ = terminal_id;

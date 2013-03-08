@@ -64,7 +64,9 @@ class DaemonProcessWin : public DaemonProcess {
 
   // DaemonProcess implementation.
   virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
-      int terminal_id) OVERRIDE;
+      int terminal_id,
+      const DesktopSessionParams& params,
+      bool virtual_terminal) OVERRIDE;
   virtual void LaunchNetworkProcess() OVERRIDE;
 
  private:
@@ -141,12 +143,14 @@ void DaemonProcessWin::DoStop() {
 }
 
 scoped_ptr<DesktopSession> DaemonProcessWin::DoCreateDesktopSession(
-    int terminal_id) {
+    int terminal_id,
+    const DesktopSessionParams& params,
+    bool virtual_terminal) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   return scoped_ptr<DesktopSession>(new DesktopSessionWin(
       caller_task_runner(), io_task_runner(), this, terminal_id,
-      HostService::GetInstance()));
+      params, virtual_terminal, HostService::GetInstance()));
 }
 
 void DaemonProcessWin::LaunchNetworkProcess() {

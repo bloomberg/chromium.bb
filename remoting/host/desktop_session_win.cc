@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/ip_endpoint.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
@@ -39,6 +40,8 @@ DesktopSessionWin::DesktopSessionWin(
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
+    const DesktopSessionParams& params,
+    bool virtual_terminal,
     WtsTerminalMonitor* monitor)
     : DesktopSession(daemon_process, id),
       main_task_runner_(main_task_runner),

@@ -22,6 +22,7 @@ namespace remoting {
 
 class AutoThreadTaskRunner;
 class DaemonProcess;
+struct DesktopSessionParams;
 class SasInjector;
 class WorkerProcessLauncher;
 class WtsTerminalMonitor;
@@ -45,6 +46,8 @@ class DesktopSessionWin
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
+    const DesktopSessionParams& params,
+    bool virtual_terminal,
     WtsTerminalMonitor* monitor);
   virtual ~DesktopSessionWin();
 
