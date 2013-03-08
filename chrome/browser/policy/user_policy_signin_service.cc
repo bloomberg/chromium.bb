@@ -257,6 +257,12 @@ UserPolicySigninService::UserPolicySigninService(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
+
+  // Register a listener for the import finished notification in a first run
+  // scenario, which indicates the profile is ready to be further initialized.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_IMPORT_FINISHED,
+                 content::Source<Profile>(profile));
 }
 
 UserPolicySigninService::~UserPolicySigninService() {}
@@ -351,6 +357,16 @@ void UserPolicySigninService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  // If an import process is running, wait for NOTIFICATION_IMPORT_FINISHED
+  // before potentially creating the SigninManager. Its dependencies can access
+  // databases that the import process is also accessing, causing conflicts.
+  // Note that the profile manager is NULL in unit tests.
+  if (g_browser_process->profile_manager() &&
+      g_browser_process->profile_manager()->will_import()) {
+    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
+    return;
+  }
+
   // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
   // skip initialization.
   if (!GetManager() || !SigninManagerFactory::GetForProfile(profile_)) {
@@ -362,6 +378,7 @@ void UserPolicySigninService::Observe(
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
       ShutdownUserCloudPolicyManager();
       break;
+    case chrome::NOTIFICATION_IMPORT_FINISHED:
     case chrome::NOTIFICATION_PROFILE_ADDED: {
       // A new profile has been loaded - if it's signed in, then initialize the
       // UCPM, otherwise shut down the UCPM (which deletes any cached policy
