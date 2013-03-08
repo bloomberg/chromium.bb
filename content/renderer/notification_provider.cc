@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPermissionCallback.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebDocument;
@@ -21,6 +22,7 @@ using WebKit::WebNotificationPermissionCallback;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebUserGestureIndicator;
 
 namespace content {
 
@@ -72,7 +74,7 @@ void NotificationProvider::requestPermission(
     const WebSecurityOrigin& origin,
     WebNotificationPermissionCallback* callback) {
   // We only request permission in response to a user gesture.
-  if (!render_view()->GetWebView()->mainFrame()->isProcessingUserGesture())
+  if (!WebUserGestureIndicator::isProcessingUserGesture())
     return;
 
   int id = manager_.RegisterPermissionRequest(callback);

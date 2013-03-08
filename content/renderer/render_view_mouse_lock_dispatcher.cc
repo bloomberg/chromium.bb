@@ -7,8 +7,11 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+
+using WebKit::WebUserGestureIndicator;
 
 namespace content {
 
@@ -23,10 +26,7 @@ RenderViewMouseLockDispatcher::~RenderViewMouseLockDispatcher() {
 
 void RenderViewMouseLockDispatcher::SendLockMouseRequest(
     bool unlocked_by_target) {
-  bool user_gesture =
-      render_view_impl_->webview() &&
-      render_view_impl_->webview()->mainFrame() &&
-      render_view_impl_->webview()->mainFrame()->isProcessingUserGesture();
+  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
 
   Send(new ViewHostMsg_LockMouse(routing_id(), user_gesture, unlocked_by_target,
                                  false));

@@ -182,6 +182,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
@@ -323,6 +324,7 @@ using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
+using WebKit::WebUserGestureIndicator;
 using WebKit::WebVector;
 using WebKit::WebView;
 using WebKit::WebWidget;
@@ -1918,7 +1920,7 @@ WebView* RenderViewImpl::createView(
 
   ViewHostMsg_CreateWindow_Params params;
   params.opener_id = routing_id_;
-  params.user_gesture = creator->isProcessingUserGesture();
+  params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   params.window_container_type = WindowFeaturesToContainerType(features);
   params.session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
@@ -1946,7 +1948,7 @@ WebView* RenderViewImpl::createView(
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
-  creator->consumeUserGesture();
+  WebUserGestureIndicator::consumeUserGesture();
 
   RenderViewImpl* view = RenderViewImpl::Create(
       routing_id_,
@@ -2526,8 +2528,7 @@ void RenderViewImpl::didFocus() {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
-  if (webview() && webview()->mainFrame() &&
-      webview()->mainFrame()->isProcessingUserGesture() &&
+  if (WebUserGestureIndicator::isProcessingUserGesture() &&
       RenderThreadImpl::current()->should_send_focus_ipcs()) {
     Send(new ViewHostMsg_Focus(routing_id_));
   }
@@ -2535,8 +2536,7 @@ void RenderViewImpl::didFocus() {
 
 void RenderViewImpl::didBlur() {
   // TODO(jcivelli): see TODO above in didFocus().
-  if (webview() && webview()->mainFrame() &&
-      webview()->mainFrame()->isProcessingUserGesture() &&
+  if (WebUserGestureIndicator::isProcessingUserGesture() &&
       RenderThreadImpl::current()->should_send_focus_ipcs()) {
     Send(new ViewHostMsg_Blur(routing_id_));
   }
@@ -3425,7 +3425,7 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
 
   bool is_top_most = !frame->parent();
   if (is_top_most) {
-    navigation_gesture_ = frame->isProcessingUserGesture() ?
+    navigation_gesture_ = WebUserGestureIndicator::isProcessingUserGesture() ?
         NavigationGestureUser : NavigationGestureAuto;
 
     // Make sure redirect tracking state is clear for the new load.
@@ -3860,7 +3860,7 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
     top_document_state->set_was_prefetcher(true);
 
   request.setRequestorID(routing_id_);
-  request.setHasUserGesture(frame->isProcessingUserGesture());
+  request.setHasUserGesture(WebUserGestureIndicator::isProcessingUserGesture());
 
   if (!renderer_preferences_.enable_referrers)
     request.clearHTTPHeaderField("Referer");
@@ -6393,8 +6393,7 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                              const WebString& base_url,
                                              const WebString& url,
                                              const WebString& title) {
-  bool user_gesture = (webview()->focusedFrame() &&
-                       webview()->focusedFrame()->isProcessingUserGesture());
+  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   GURL base(base_url);
   GURL absolute_url = base.Resolve(UTF16ToUTF8(url));
   if (base.GetOrigin() != absolute_url.GetOrigin()) {

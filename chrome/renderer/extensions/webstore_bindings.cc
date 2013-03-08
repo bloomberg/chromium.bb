@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebDocument;
@@ -22,6 +23,7 @@ using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebNode;
 using WebKit::WebNodeList;
+using WebKit::WebUserGestureIndicator;
 
 namespace extensions {
 
@@ -118,7 +120,7 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
     return false;
   }
 
-  if (!frame->isProcessingUserGesture()) {
+  if (!WebUserGestureIndicator::isProcessingUserGesture()) {
     *error = kNotUserGestureError;
     return false;
   }

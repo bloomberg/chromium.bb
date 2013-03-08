@@ -63,6 +63,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -134,6 +135,7 @@ using WebKit::WebPrintScalingOption;
 using WebKit::WebScopedUserGesture;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
+using WebKit::WebUserGestureIndicator;
 using WebKit::WebView;
 
 namespace webkit {
@@ -777,8 +779,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
       // Allow the user gesture to be pending after the plugin handles the
       // event. This allows out-of-process plugins to respond to the user
       // gesture after processing has finished here.
-      WebFrame* frame = container_->element().document().frame();
-      if (frame->isProcessingUserGesture()) {
+      if (WebUserGestureIndicator::isProcessingUserGesture()) {
         pending_user_gesture_ =
             ::ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
       }

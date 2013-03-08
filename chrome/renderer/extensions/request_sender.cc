@@ -14,6 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
 
 using content::V8ValueConverter;
 
@@ -111,7 +112,7 @@ void RequestSender::StartRequest(const std::string& name,
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =
-      webframe ? webframe->isProcessingUserGesture() : false;
+      WebKit::WebUserGestureIndicator::isProcessingUserGesture();
   if (for_io_thread) {
     renderview->Send(new ExtensionHostMsg_RequestForIOThread(
         renderview->GetRoutingID(), params));
