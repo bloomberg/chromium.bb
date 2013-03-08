@@ -78,6 +78,15 @@ std::string GetIBusKey(int keyval) {
       return "Home";
     case XK_End:
       return "End";
+    case XK_Shift_L:
+    case XK_Shift_R:
+      return "Shift";
+    case XK_Alt_L:
+    case XK_Alt_R:
+      return "Alt";
+    case XK_Control_L:
+    case XK_Control_R:
+      return "Ctrl";
     default: {
       // TODO: Properly support unicode characters.
       char value[2];

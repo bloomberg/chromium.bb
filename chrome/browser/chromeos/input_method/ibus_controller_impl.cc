@@ -84,7 +84,7 @@ bool PropertyKeyIsBlacklisted(const std::string& key) {
 bool ConvertProperty(const IBusProperty& ibus_prop,
                      InputMethodPropertyList* out_prop_list) {
   DCHECK(out_prop_list);
-  DCHECK(ibus_prop.key().empty());
+  DCHECK(!ibus_prop.key().empty());
   IBusProperty::IBusPropertyType type = ibus_prop.type();
 
   // Sanity checks.
