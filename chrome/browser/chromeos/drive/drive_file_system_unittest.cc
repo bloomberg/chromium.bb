@@ -562,6 +562,7 @@ TEST_F(DriveFileSystemTest, GetRootEntry) {
 
   // Getting the root entry should not cause the resource load to happen.
   EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
 
 TEST_F(DriveFileSystemTest, GetNonRootEntry) {
@@ -574,6 +575,7 @@ TEST_F(DriveFileSystemTest, GetNonRootEntry) {
 
   // The resource load should happen because non-root entry is requested.
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
 }
 
 TEST_F(DriveFileSystemTest, SearchRootDirectory) {
