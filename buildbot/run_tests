@@ -44,9 +44,15 @@ run_test() {
     rm "${log_file}"
     return
   elif [[ "${special}" == "inside" && ! -f /etc/debian_chroot ]]; then
-    echo "Starting unittest $1 inside the chroot"
-    ${IN_CHROOT} python "${CHROOT_CHROMITE}/$1" &> "${log_file}" ||
-      append_failed_test "$1" "${log_file}"
+    if ${SKIP_CHROOT_TESTS}; then
+      echo "Skipping unittest $1 because it must run inside the chroot"
+      rm "${log_file}"
+      return
+    else
+      echo "Starting unittest $1 inside the chroot"
+      ${IN_CHROOT} python "${CHROOT_CHROMITE}/$1" &> "${log_file}" ||
+        append_failed_test "$1" "${log_file}"
+    fi
   else
     echo "Starting unittest $1"
     python "${CHROMITE_PATH}/$1" &> "${log_file}" ||
@@ -105,6 +111,15 @@ if [[ $# -ne 0 && $1 == "--quick" ]]; then
   special_tests['lib/patch_unittest.py']=skip
 
   # cgroups_unittest runs cros_sdk a lot, so is slow.
+  special_tests['lib/cgroups_unittest.py']=skip
+fi
+
+SKIP_CHROOT_TESTS=false
+if ! repo list | grep -q chromiumos-overlay; then
+  echo "chromiumos-overlay is not present. Skipping chroot tests..."
+  SKIP_CHROOT_TESTS=true
+
+  # cgroups_unittest requires cros_sdk, so it doesn't work.
   special_tests['lib/cgroups_unittest.py']=skip
 fi
 
