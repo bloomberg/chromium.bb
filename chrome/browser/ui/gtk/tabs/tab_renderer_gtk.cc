@@ -979,6 +979,20 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
       int favicon_y = favicon_bounds_.y() + favicon_hiding_offset_ +
           favicon_bounds_.height() - offset_from_bottom;
       recording_mask->MaskSource(cr, widget, favicon_x, favicon_y);
+
+      if (!IsActive()) {
+        double throb_value = GetThrobValue();
+        if (throb_value > 0) {
+          cairo_push_group(cr);
+          gfx::CairoCachedSurface* active_bg =
+              theme_service_->GetImageNamed(IDR_THEME_TOOLBAR).ToCairo();
+          active_bg->SetSource(cr, widget, -background_offset_x_, 0);
+          cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+          recording_mask->MaskSource(cr, widget, favicon_x, favicon_y);
+          cairo_pop_group_to_source(cr);
+          cairo_paint_with_alpha(cr, throb_value);
+        }
+      }
     }
 
     int favicon_x = favicon_bounds_.x();
