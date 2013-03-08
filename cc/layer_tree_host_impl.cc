@@ -73,7 +73,7 @@ namespace cc {
 
 class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
 public:
-    static scoped_ptr<LayerTreeHostImplTimeSourceAdapter> create(LayerTreeHostImpl* layerTreeHostImpl, scoped_refptr<DelayBasedTimeSource> timeSource)
+    static scoped_ptr<LayerTreeHostImplTimeSourceAdapter> Create(LayerTreeHostImpl* layerTreeHostImpl, scoped_refptr<DelayBasedTimeSource> timeSource)
     {
         return make_scoped_ptr(new LayerTreeHostImplTimeSourceAdapter(layerTreeHostImpl, timeSource));
     }
@@ -343,7 +343,7 @@ void LayerTreeHostImpl::trackDamageForAllSurfaces(LayerImpl* rootDrawLayer, cons
         LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
         RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
-        renderSurface->damageTracker()->updateDamageTrackingState(renderSurface->layerList(), renderSurfaceLayer->id(), renderSurface->surfacePropertyChangedOnlyFromDescendant(), renderSurface->contentRect(), renderSurfaceLayer->maskLayer(), renderSurfaceLayer->filters(), renderSurfaceLayer->filter().get());
+        renderSurface->damageTracker()->UpdateDamageTrackingState(renderSurface->layerList(), renderSurfaceLayer->id(), renderSurface->surfacePropertyChangedOnlyFromDescendant(), renderSurface->contentRect(), renderSurfaceLayer->maskLayer(), renderSurfaceLayer->filters(), renderSurfaceLayer->filter().get());
     }
 }
 
@@ -559,7 +559,7 @@ void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
 {
     // Lazily create the timeSource adapter so that we can vary the interval for testing.
     if (!m_timeSourceClientAdapter)
-        m_timeSourceClientAdapter = LayerTreeHostImplTimeSourceAdapter::create(this, DelayBasedTimeSource::create(lowFrequencyAnimationInterval(), m_proxy->currentThread()));
+        m_timeSourceClientAdapter = LayerTreeHostImplTimeSourceAdapter::Create(this, DelayBasedTimeSource::create(lowFrequencyAnimationInterval(), m_proxy->currentThread()));
 
     m_timeSourceClientAdapter->setActive(enabled);
 }
@@ -830,7 +830,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
 
     // The next frame should start by assuming nothing has changed, and changes are noted as they occur.
     for (unsigned int i = 0; i < frame.renderSurfaceLayerList->size(); i++)
-        (*frame.renderSurfaceLayerList)[i]->renderSurface()->damageTracker()->didDrawDamagedArea();
+        (*frame.renderSurfaceLayerList)[i]->renderSurface()->damageTracker()->DidDrawDamagedArea();
     rootLayer()->resetAllChangeTrackingForSubtree();
     updateAnimationState();
 }
@@ -1463,7 +1463,7 @@ void LayerTreeHostImpl::SetFullRootLayerDamage()
     if (rootLayer()) {
         RenderSurfaceImpl* renderSurface = rootLayer()->renderSurface();
         if (renderSurface)
-            renderSurface->damageTracker()->forceFullDamageNextUpdate();
+            renderSurface->damageTracker()->ForceFullDamageNextUpdate();
     }
 }
 

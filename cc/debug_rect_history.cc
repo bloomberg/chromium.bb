@@ -97,7 +97,7 @@ void DebugRectHistory::saveSurfaceDamageRects(const std::vector<LayerImpl* >& re
         RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        m_debugRects.push_back(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->damageTracker()->currentDamageRect())));
+        m_debugRects.push_back(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->damageTracker()->current_damage_rect())));
     }
 }
 

@@ -37,7 +37,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owningLayer)
     , m_targetRenderSurfaceLayerIndexHistory(0)
     , m_currentLayerIndexHistory(0)
 {
-    m_damageTracker = DamageTracker::create();
+    m_damageTracker = DamageTracker::Create();
 }
 
 RenderSurfaceImpl::~RenderSurfaceImpl()
@@ -85,8 +85,8 @@ void RenderSurfaceImpl::dumpSurface(std::string* str, int indent) const
 
     str->append(indentStr);
     base::StringAppendF(str, "damageRect is pos(%f, %f), size(%f, %f)\n",
-        m_damageTracker->currentDamageRect().x(), m_damageTracker->currentDamageRect().y(),
-        m_damageTracker->currentDamageRect().width(), m_damageTracker->currentDamageRect().height());
+        m_damageTracker->current_damage_rect().x(), m_damageTracker->current_damage_rect().y(),
+        m_damageTracker->current_damage_rect().width(), m_damageTracker->current_damage_rect().height());
 }
 
 int RenderSurfaceImpl::owningLayerId() const
@@ -106,7 +106,7 @@ void RenderSurfaceImpl::setClipRect(const gfx::Rect& clipRect)
 
 bool RenderSurfaceImpl::contentsChanged() const
 {
-    return !m_damageTracker->currentDamageRect().IsEmpty();
+    return !m_damageTracker->current_damage_rect().IsEmpty();
 }
 
 void RenderSurfaceImpl::setContentRect(const gfx::Rect& contentRect)
@@ -164,7 +164,7 @@ void RenderSurfaceImpl::appendRenderPasses(RenderPassSink& passSink)
         m_contributingDelegatedRenderPassLayerList[i]->AppendContributingRenderPasses(&passSink);
 
     scoped_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(renderPassId(), m_contentRect, m_damageTracker->currentDamageRect(), m_screenSpaceTransform);
+    pass->SetNew(renderPassId(), m_contentRect, m_damageTracker->current_damage_rect(), m_screenSpaceTransform);
     passSink.appendRenderPass(pass.Pass());
 }
 
