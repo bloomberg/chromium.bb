@@ -29,7 +29,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
-#include "webkit/glue/webpreferences.h"
 
 using content::SiteInstance;
 using content::WebContents;
