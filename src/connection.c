@@ -801,7 +801,8 @@ wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 }
 
 static void
-convert_arguments_to_ffi(const char *signature, union wl_argument *args,
+convert_arguments_to_ffi(const char *signature, uint32_t flags,
+			 union wl_argument *args,
 			 int count, ffi_type **ffi_types, void** ffi_args)
 {
 	int i;
@@ -834,8 +835,13 @@ convert_arguments_to_ffi(const char *signature, union wl_argument *args,
 			ffi_args[i] = &args[i].o;
 			break;
 		case 'n':
-			ffi_types[i] = &ffi_type_uint32;
-			ffi_args[i] = &args[i].n;
+			if (flags & WL_CLOSURE_INVOKE_CLIENT) {
+				ffi_types[i] = &ffi_type_pointer;
+				ffi_args[i] = &args[i].o;
+			} else {
+				ffi_types[i] = &ffi_type_uint32;
+				ffi_args[i] = &args[i].n;
+			}
 			break;
 		case 'a':
 			ffi_types[i] = &ffi_type_pointer;
@@ -855,7 +861,7 @@ convert_arguments_to_ffi(const char *signature, union wl_argument *args,
 
 
 void
-wl_closure_invoke(struct wl_closure *closure,
+wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 		  struct wl_object *target, void (*func)(void), void *data)
 {
 	int count;
@@ -870,7 +876,7 @@ wl_closure_invoke(struct wl_closure *closure,
 	ffi_types[1] = &ffi_type_pointer;
 	ffi_args[1] = &target;
 
-	convert_arguments_to_ffi(closure->message->signature, closure->args,
+	convert_arguments_to_ffi(closure->message->signature, flags, closure->args,
 				 count, ffi_types + 2, ffi_args + 2);
 
 	ffi_prep_cif(&cif, FFI_DEFAULT_ABI,

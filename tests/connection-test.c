@@ -338,7 +338,7 @@ demarshal(struct marshal_data *data, const char *format,
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
 	assert(closure);
-	wl_closure_invoke(closure, &object, func, data);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, func, data);
 	wl_closure_destroy(closure);
 }
 
@@ -418,7 +418,7 @@ marshal_demarshal(struct marshal_data *data,
 	object.id = msg[0];
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
-	wl_closure_invoke(closure, &object, func, data);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, func, data);
 	wl_closure_destroy(closure);
 }
 
@@ -505,7 +505,7 @@ marshal_helper(const char *format, void *handler, ...)
 
 	assert(closure);
 	done = 0;
-	wl_closure_invoke(closure, &object, handler, &done);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, handler, &done);
 	wl_closure_destroy(closure);
 	assert(done);
 }
