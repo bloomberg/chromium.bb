@@ -159,11 +159,11 @@ class PresubmitUnittest(PresubmitTestsBase):
       'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
       'GetTrySlavesExecuter', 'GitAffectedFile',
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'Main',
-      'OutputApi', 'ParseFiles', 'PresubmitFailure',
-      'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
-      'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
-      'fix_encoding', 'fnmatch', 'gclient_utils', 'glob', 'inspect', 'json',
-      'load_files',
+      'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
+      'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
+      'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO', 'contextlib',
+      'canned_check_filter', 'fix_encoding', 'fnmatch', 'gclient_utils', 'glob',
+      'inspect', 'json', 'load_files',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess',
@@ -172,6 +172,23 @@ class PresubmitUnittest(PresubmitTestsBase):
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
+
+  def testCannedCheckFilter(self):
+    canned = presubmit.presubmit_canned_checks
+    orig = canned.CheckOwners
+    with presubmit.canned_check_filter(['CheckOwners']):
+      self.assertNotEqual(canned.CheckOwners, orig)
+      self.assertEqual(canned.CheckOwners(None, None), [])
+    self.assertEqual(canned.CheckOwners, orig)
+
+  def testCannedCheckFilterFail(self):
+    canned = presubmit.presubmit_canned_checks
+    orig = canned.CheckOwners
+    def failAttempt():
+      with presubmit.canned_check_filter(['CheckOwners', 'Spazfleem']):
+        pass
+    self.assertRaises(presubmit.NonexistantCannedCheckFilter, failAttempt)
+    self.assertEqual(canned.CheckOwners, orig)
 
   def testListRelevantPresubmitFiles(self):
     join = presubmit.os.path.join

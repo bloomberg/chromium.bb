@@ -14,6 +14,7 @@ __version__ = '1.6.1'
 
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
+import contextlib
 import fnmatch
 import glob
 import inspect
@@ -1198,6 +1199,25 @@ def load_files(options, args):
   return change_class, files
 
 
+class NonexistantCannedCheckFilter(Exception):
+  pass
+
+
+@contextlib.contextmanager
+def canned_check_filter(method_names):
+  filtered = {}
+  try:
+    for method_name in method_names:
+      if not hasattr(presubmit_canned_checks, method_name):
+        raise NonexistantCannedCheckFilter(method_name)
+      filtered[method_name] = getattr(presubmit_canned_checks, method_name)
+      setattr(presubmit_canned_checks, method_name, lambda *_a, **_kw: [])
+    yield
+  finally:
+    for name, method in filtered.iteritems():
+      setattr(presubmit_canned_checks, name, method)
+
+
 def Main(argv):
   parser = optparse.OptionParser(usage="%prog [options] <files...>",
                                  version="%prog " + str(__version__))
@@ -1221,6 +1241,10 @@ def Main(argv):
                     "system directories will also be searched.")
   parser.add_option("--default_presubmit")
   parser.add_option("--may_prompt", action='store_true', default=False)
+  parser.add_option("--skip_canned", action='append', default=[],
+                    help="A list of checks to skip which appear in "
+                    "presubmit_canned_checks. Can be provided multiple times "
+                    "to skip multiple canned checks.")
   parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_password", help=optparse.SUPPRESS_HELP)
@@ -1242,22 +1266,27 @@ def Main(argv):
         options.rietveld_email,
         options.rietveld_password)
   try:
-    results = DoPresubmitChecks(
-        change_class(options.name,
-                    options.description,
-                    options.root,
-                    files,
-                    options.issue,
-                    options.patchset,
-                    options.author),
-        options.commit,
-        options.verbose,
-        sys.stdout,
-        sys.stdin,
-        options.default_presubmit,
-        options.may_prompt,
-        rietveld_obj)
+    with canned_check_filter(options.skip_canned):
+      results = DoPresubmitChecks(
+          change_class(options.name,
+                      options.description,
+                      options.root,
+                      files,
+                      options.issue,
+                      options.patchset,
+                      options.author),
+          options.commit,
+          options.verbose,
+          sys.stdout,
+          sys.stdin,
+          options.default_presubmit,
+          options.may_prompt,
+          rietveld_obj)
     return not results.should_continue()
+  except NonexistantCannedCheckFilter, e:
+    print >> sys.stderr, (
+      'Attempted to skip nonexistent canned presubmit check: %s' % e.message)
+    return 2
   except PresubmitFailure, e:
     print >> sys.stderr, e
     print >> sys.stderr, 'Maybe your depot_tools is out of date?'
