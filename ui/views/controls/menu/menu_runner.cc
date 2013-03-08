@@ -6,10 +6,12 @@
 
 #include <set>
 
+#include "base/metrics/histogram.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -19,6 +21,35 @@
 namespace views {
 
 namespace internal {
+
+void RecordSelectedIndexes(const MenuItemView* menu_item) {
+  if (!menu_item)
+    return;
+  const MenuItemView* parent = menu_item->GetParentMenuItem();
+  if (!parent)
+    return;
+
+  SubmenuView* submenu = parent->GetSubmenu();
+  for (int i = 0; i < submenu->GetMenuItemCount(); ++i) {
+    if (submenu->GetMenuItemAt(i) == menu_item) {
+      HISTOGRAM_COUNTS_100("MenuSelection.Index", i);
+      break;
+    }
+  }
+
+  RecordSelectedIndexes(parent);
+}
+
+void RecordMenuStats(MenuItemView* result, base::TimeDelta time_elapsed) {
+  // Report if user made a selection.
+  HISTOGRAM_BOOLEAN("MenuSelection", result != NULL);
+
+  if (result) {
+    // Report how much time it took to make a selection.
+    HISTOGRAM_TIMES("MenuSelection.Time", time_elapsed);
+    RecordSelectedIndexes(result);
+  }
+}
 
 // Manages the menu. To destroy a MenuRunnerImpl invoke Release(). Release()
 // deletes immediately if the menu isn't showing. If the menu is showing
@@ -158,6 +189,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
       controller = NULL;
     }
   }
+
   running_ = true;
   for_drop_ = (types & MenuRunner::FOR_DROP) != 0;
   bool has_mnemonics = (types & MenuRunner::HAS_MNEMONICS) != 0 && !for_drop_;
@@ -176,6 +208,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
                        !for_drop_ && ShouldShowMnemonics(button));
 
   // Run the loop.
+  base::TimeTicks start_time = base::TimeTicks::Now();
   int mouse_event_flags = 0;
   MenuItemView* result = controller->Run(parent, button, menu_, bounds, anchor,
                                         (types & MenuRunner::CONTEXT_MENU) != 0,
@@ -185,7 +218,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
     // Drop menus return immediately. We finish processing in DropMenuClosed.
     return MenuRunner::NORMAL_EXIT;
   }
-
+  RecordMenuStats(result, base::TimeTicks::Now() - start_time);
   return MenuDone(result, mouse_event_flags);
 }
 
