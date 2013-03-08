@@ -37,7 +37,8 @@
   if ((self = [super initWithWindow:controlledWindow])) {
     appsGridController_.reset([gridController retain]);
     [[self window] setDelegate:self];
-    [[self window] makeFirstResponder:[appsGridController_ collectionView]];
+    [[self window] makeFirstResponder:[appsGridController_
+        collectionViewAtPageIndex:0]];
   }
   return self;
 }

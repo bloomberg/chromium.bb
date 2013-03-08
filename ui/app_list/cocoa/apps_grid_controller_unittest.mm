@@ -15,6 +15,8 @@
 
 namespace {
 
+const size_t kItemsPerPage = 16;
+
 class AppsGridControllerTest : public ui::CocoaTest {
  public:
   AppsGridControllerTest() {
@@ -34,7 +36,7 @@ class AppsGridControllerTest : public ui::CocoaTest {
 
     [[test_window() contentView] addSubview:[apps_grid_controller_ view]];
     [test_window() makePretendKeyWindowAndSetFirstResponder:
-        [apps_grid_controller_ collectionView]];
+        [apps_grid_controller_ collectionViewAtPageIndex:0]];
   }
 
   virtual void TearDown() OVERRIDE {
@@ -56,6 +58,14 @@ class AppsGridControllerTest : public ui::CocoaTest {
     [test_window() keyDown:cocoa_test_event_utils::KeyEventWithCharacter(c)];
   }
 
+  // Do a bulk replacement of the items in the grid.
+  void ReplaceTestModel(int item_count) {
+    scoped_ptr<app_list::test::AppListTestModel> new_model(
+        new app_list::test::AppListTestModel);
+    new_model->PopulateApps(item_count);
+    [apps_grid_controller_ setModel:new_model.PassAs<app_list::AppListModel>()];
+  }
+
   void DelayForCollectionView() {
     message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
                                   base::TimeDelta::FromMilliseconds(100));
@@ -67,22 +77,21 @@ class AppsGridControllerTest : public ui::CocoaTest {
     message_loop_.Run();
   }
 
-  NSView* GetItemViewAt(size_t index) {
-    if (index < [[[apps_grid_controller_ collectionView] content] count]) {
-      NSCollectionViewItem* item = [[apps_grid_controller_ collectionView]
-          itemAtIndex:index];
-      return [item view];
-    }
-
-    return nil;
+  NSButton* GetItemViewAt(size_t index) {
+    return [apps_grid_controller_ viewAtItemIndex:index];
   }
 
+  NSCollectionView* GetPageAt(size_t index) {
+    return [apps_grid_controller_ collectionViewAtPageIndex:index];
+  }
+
+  // TODO(tapted): Update this to work for selections on other than the first
+  // page.
   NSView* GetSelectedView() {
-    NSIndexSet* selection =
-        [[apps_grid_controller_ collectionView] selectionIndexes];
+    NSIndexSet* selection = [GetPageAt(0) selectionIndexes];
     if ([selection count]) {
-      NSCollectionViewItem* item = [[apps_grid_controller_ collectionView]
-          itemAtIndex:[selection firstIndex]];
+      NSCollectionViewItem* item =
+          [GetPageAt(0) itemAtIndex:[selection firstIndex]];
       return [item view];
     }
 
@@ -114,8 +123,12 @@ TEST_VIEW(AppsGridControllerTest, [apps_grid_controller_ view]);
 // Test showing with an empty model.
 TEST_F(AppsGridControllerTest, EmptyModelAndShow) {
   EXPECT_TRUE([[apps_grid_controller_ view] superview]);
-  EXPECT_TRUE([[apps_grid_controller_ collectionView] superview]);
-  EXPECT_EQ(0u, [[[apps_grid_controller_ collectionView] content] count]);
+
+  // First page should always exist, even if empty.
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(0u, [[GetPageAt(0) content] count]);
+  EXPECT_TRUE([GetPageAt(0) superview]);  // The pages container.
+  EXPECT_TRUE([[GetPageAt(0) superview] superview]);
 }
 
 // Test with a single item.
@@ -127,14 +140,15 @@ TEST_F(AppsGridControllerTest, DISABLED_SingleEntryModel) {
   // When this test is run by itself, it's enough just to send a keypress (and
   // this delay is not needed).
   DelayForCollectionView();
-  EXPECT_EQ(0u, [[[apps_grid_controller_ collectionView] content] count]);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(0u, [[GetPageAt(0) content] count]);
 
   model()->PopulateApps(1);
   SinkEvents();
-  EXPECT_FALSE([[apps_grid_controller_ collectionView] animations]);
+  EXPECT_FALSE([GetPageAt(0) animations]);
 
-  EXPECT_EQ(1u, [[[apps_grid_controller_ collectionView] content] count]);
-  NSArray* subviews = [[apps_grid_controller_ collectionView] subviews];
+  EXPECT_EQ(1u, [[GetPageAt(0) content] count]);
+  NSArray* subviews = [GetPageAt(0) subviews];
   EXPECT_EQ(1u, [subviews count]);
 
   // Note that using GetItemViewAt(0) here also works, and returns non-nil even
@@ -148,21 +162,65 @@ TEST_F(AppsGridControllerTest, DISABLED_SingleEntryModel) {
   EXPECT_EQ(std::string("Item 0"), delegate()->last_activated()->title());
 }
 
+// Test activating an item on the second page (the 17th item).
+TEST_F(AppsGridControllerTest, DISABLED_TwoPageModel) {
+  DelayForCollectionView();
+  ReplaceTestModel(kItemsPerPage * 2);
+  [apps_grid_controller_ scrollToPage:1];
+
+  // The NSScrollView animator ignores the duration configured on the
+  // NSAnimationContext (set by CocoaTest::Init), so we need to delay here.
+  DelayForCollectionView();
+  NSArray* subviews = [GetPageAt(1) subviews];
+  NSView* subview = [subviews objectAtIndex:0];
+  // Launch the item.
+  SimulateClick(subview);
+  SinkEvents();
+  EXPECT_EQ(1, delegate()->activate_count());
+  EXPECT_EQ(std::string("Item 16"), delegate()->last_activated()->title());
+}
+
 // Test setModel.
 TEST_F(AppsGridControllerTest, ReplaceModel) {
   const size_t kOrigItems = 1;
   const size_t kNewItems = 2;
 
   model()->PopulateApps(kOrigItems);
-  EXPECT_EQ(kOrigItems,
-            [[[apps_grid_controller_ collectionView] content] count]);
+  EXPECT_EQ(kOrigItems, [[GetPageAt(0) content] count]);
 
-  scoped_ptr<app_list::test::AppListTestModel> new_model(
-      new app_list::test::AppListTestModel);
-  new_model->PopulateApps(kNewItems);
-  [apps_grid_controller_ setModel:new_model.PassAs<app_list::AppListModel>()];
-  EXPECT_EQ(kNewItems,
-            [[[apps_grid_controller_ collectionView] content] count]);
+  ReplaceTestModel(kNewItems);
+  EXPECT_EQ(kNewItems, [[GetPageAt(0) content] count]);
+}
+
+// Test pagination.
+TEST_F(AppsGridControllerTest, Pagination) {
+  model()->PopulateApps(1);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(1u, [[GetPageAt(0) content] count]);
+
+  ReplaceTestModel(kItemsPerPage);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(kItemsPerPage, [[GetPageAt(0) content] count]);
+
+  // Test adding an item onto the next page.
+  model()->PopulateApps(1);  // Now 17 items.
+  EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(kItemsPerPage, [[GetPageAt(0) content] count]);
+  EXPECT_EQ(1u, [[GetPageAt(1) content] count]);
+
+  // Test N pages with the last page having one empty spot.
+  const size_t kPagesToTest = 3;
+  ReplaceTestModel(kPagesToTest * kItemsPerPage - 1);
+  EXPECT_EQ(kPagesToTest, [apps_grid_controller_ pageCount]);
+  for (size_t page_index = 0; page_index < kPagesToTest - 1; ++page_index) {
+    EXPECT_EQ(kItemsPerPage, [[GetPageAt(page_index) content] count]);
+  }
+  EXPECT_EQ(kItemsPerPage - 1, [[GetPageAt(kPagesToTest - 1) content] count]);
+
+  // Test removing pages.
+  ReplaceTestModel(1);
+  EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(1u, [[GetPageAt(0) content] count]);
 }
 
 // Tests basic left-right keyboard navigation on the first page, later tests
@@ -170,7 +228,7 @@ TEST_F(AppsGridControllerTest, ReplaceModel) {
 TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
   model()->PopulateApps(3);
   SinkEvents();
-  EXPECT_EQ(3u, [[[apps_grid_controller_ collectionView] content] count]);
+  EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
 
   SimulateKeyPress(NSRightArrowFunctionKey);
   SinkEvents();
@@ -197,11 +255,11 @@ TEST_F(AppsGridControllerTest, DISABLED_FirstPageKeyboardNavigation) {
 // Test runtime updates: adding items, changing titles and icons.
 TEST_F(AppsGridControllerTest, ModelUpdates) {
   model()->PopulateApps(2);
-  EXPECT_EQ(2u, [[[apps_grid_controller_ collectionView] content] count]);
+  EXPECT_EQ(2u, [[GetPageAt(0) content] count]);
 
   // Add an item (PopulateApps will create a duplicate "Item 0").
   model()->PopulateApps(1);
-  EXPECT_EQ(3u, [[[apps_grid_controller_ collectionView] content] count]);
+  EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
   NSButton* button = base::mac::ObjCCastStrict<NSButton>(GetItemViewAt(2));
   EXPECT_NSEQ(@"Item 0", [button title]);
 

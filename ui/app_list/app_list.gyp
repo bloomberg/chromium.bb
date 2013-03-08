@@ -41,6 +41,8 @@
         'cocoa/apps_grid_controller.mm',
         'cocoa/apps_grid_view_item.h',
         'cocoa/apps_grid_view_item.mm',
+        'cocoa/scroll_view_with_no_scrollbars.h',
+        'cocoa/scroll_view_with_no_scrollbars.mm',
         'pagination_model.cc',
         'pagination_model.h',
         'pagination_model_observer.h',
