@@ -1672,8 +1672,7 @@
    fun:v8::internal::Factory::NewCode
    fun:v8::internal::StubCompiler::GetCodeWithFlags
    fun:v8::internal::StubCompiler::GetCodeWithFlags
-   fun:v8::internal::CallStubCompiler::GetCode
-   fun:v8::internal::CallStubCompiler::CompileCallGlobal
+   ...
    fun:v8::internal::StubCache::ComputeCallGlobal
 }
 {
