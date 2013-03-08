@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/host/audio_capturer.h"
 
 namespace remoting {
@@ -27,7 +27,7 @@ class IpcAudioCapturer : public AudioCapturer {
   virtual void Stop() OVERRIDE;
   virtual bool IsStarted() OVERRIDE;
 
-  // Called by DesktopSessionProxy when an audio packet was received.
+  // Called by DesktopSessionProxy when an audio packet is received.
   void OnAudioPacket(scoped_ptr<AudioPacket> packet);
 
  private:
@@ -37,7 +37,8 @@ class IpcAudioCapturer : public AudioCapturer {
   // Wraps the IPC channel to the desktop session agent.
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
 
-  base::ThreadChecker thread_checker_;
+  // Used to cancel tasks pending on the capturer when it is stopped.
+  base::WeakPtrFactory<IpcAudioCapturer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcAudioCapturer);
 };

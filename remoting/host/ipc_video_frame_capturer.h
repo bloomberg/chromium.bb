@@ -6,6 +6,7 @@
 #define REMOTING_HOST_IPC_VIDEO_FRAME_CAPTURER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/video/capture/screen/screen_capturer.h"
 
 namespace IPC {
@@ -47,6 +48,9 @@ class IpcVideoFrameCapturer : public media::ScreenCapturer {
 
   // Wraps the IPC channel to the desktop session agent.
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
+
+  // Used to cancel tasks pending on the capturer when it is stopped.
+  base::WeakPtrFactory<IpcVideoFrameCapturer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcVideoFrameCapturer);
 };

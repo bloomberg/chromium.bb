@@ -28,6 +28,7 @@ class Sender;
 namespace remoting {
 
 class DesktopSessionProxy;
+struct DesktopSessionParams;
 
 // A variant of desktop environment integrating with the desktop by means of
 // a helper process and talking to that process via IPC.
@@ -42,7 +43,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       const std::string& client_jid,
       const base::Closure& disconnect_callback,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-      bool curtain_required);
+      bool virtual_terminal);
   virtual ~IpcDesktopEnvironment();
 
   // DesktopEnvironment implementation.
@@ -56,18 +57,8 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
 
  private:
-  // Binds DesktopSessionProxy to a desktop session if it is not bound already.
-  void ConnectToDesktopSession();
-
   // Task runner on which public methods of this class should be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-
-  // True if |desktop_session_proxy_| is connected to a desktop session.
-  bool connected_;
-
-  // Used to bind to a desktop session and receive notifications every time
-  // the desktop process is replaced.
-  base::WeakPtr<DesktopSessionConnector> desktop_session_connector_;
 
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
 
@@ -100,9 +91,11 @@ class IpcDesktopEnvironmentFactory
 
   // DesktopSessionConnector implementation.
   virtual void ConnectTerminal(
-      scoped_refptr<DesktopSessionProxy> desktop_session_proxy) OVERRIDE;
+      DesktopSessionProxy* desktop_session_proxy,
+      const DesktopSessionParams& params,
+      bool virtual_terminal) OVERRIDE;
   virtual void DisconnectTerminal(
-      scoped_refptr<DesktopSessionProxy> desktop_session_proxy) OVERRIDE;
+      DesktopSessionProxy* desktop_session_proxy) OVERRIDE;
   virtual void OnDesktopSessionAgentAttached(
       int terminal_id,
       base::ProcessHandle desktop_process,
@@ -123,8 +116,7 @@ class IpcDesktopEnvironmentFactory
   IPC::Sender* daemon_channel_;
 
   // List of DesktopEnvironment instances we've told the daemon process about.
-  typedef std::map<int, scoped_refptr<DesktopSessionProxy> >
-      ActiveConnectionsList;
+  typedef std::map<int, DesktopSessionProxy*> ActiveConnectionsList;
   ActiveConnectionsList active_connections_;
 
   // Factory for weak pointers to DesktopSessionConnector interface.
