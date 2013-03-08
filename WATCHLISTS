@@ -382,10 +382,6 @@
     'remoting': {
       'filepath': 'remoting/',
     },
-    'renderer': {
-      'filepath': 'chrome/browser/renderer_host/|chrome/renderer/|'\
-        'chrome/common/render',
-    },
     'search': {
       'filepath': 'chrome/browser/ui/search/',
     },
@@ -638,7 +634,7 @@
     'mouse_lock': ['scheib+watch@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['sbc@chromium.org', 'binji@chromium.org'],
-    'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
+    'net': ['cbentzel+watch@chromium.org'],
     'net_error_list': ['mmenke@chromium.org'],
     'net_log': ['mmenke@chromium.org', 'eroman@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
@@ -648,11 +644,11 @@
     'options': ['dbeam+watch-options@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'dcheng@chromium.org', 'jianli@chromium.org'],
-    'pepper_api': ['piman+watch@chromium.org', 'darin-cc@chromium.org',
+    'pepper_api': ['piman+watch@chromium.org',
                    'ihf+watch@chromium.org', 'yzshen+watch@chromium.org',
                    'yusukes+watch@chromium.org', 'raymes+watch@chromium.org'],
     'perf': ['chrome-speed-team+watch@google.com'],
-    'plugin': ['darin-cc@chromium.org', 'jam@chromium.org',
+    'plugin': ['jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
     'predictors': ['dominich+watch@chromium.org', 'shishir+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
@@ -674,7 +670,6 @@
                  'wez+watch@chromium.org',
                  'amit@chromium.org',
                  'sanjeevr@chromium.org'],
-    'renderer': ['darin-cc@chromium.org'],
     'search': ['dhollowa+watch@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'shell_window': ['jeremya+watch@chromium.org'],
