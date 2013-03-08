@@ -18,6 +18,7 @@ build directory) and rsyncs the contents of the staging directory onto your
 device's rootfs.
 """
 
+import contextlib
 import logging
 import multiprocessing
 import os
@@ -249,6 +250,10 @@ def _CreateParser():
   parser.add_option('--nostartui', action='store_false', dest='startui',
                     default=True,
                     help="Don't restart the ui daemon after deployment.")
+  parser.add_option('--nostrip', action='store_false', dest='dostrip',
+                    default=True,
+                    help="Don't strip binaries during deployment.  Warning: "
+                         "the resulting binaries will be very large!")
   parser.add_option('-p', '--port', type=int, default=remote.DEFAULT_SSH_PORT,
                     help='Port of the target device to connect to.')
   parser.add_option('-t', '--to',
@@ -271,6 +276,11 @@ def _CreateParser():
 
   parser.add_option_group(group)
 
+  # GYP_DEFINES that Chrome was built with.  Influences which files are staged
+  # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
+  # enviroment variable.
+  parser.add_option('--gyp-defines', default=None, type='gyp_defines',
+                    help=optparse.SUPPRESS_HELP)
   # Path of an empty directory to stage chrome artifacts to.  Defaults to a
   # temporary directory that is removed when the script finishes. If the path
   # is specified, then it will not be removed.
@@ -279,11 +289,11 @@ def _CreateParser():
   # Only prepare the staging directory, and skip deploying to the device.
   parser.add_option('--staging-only', action='store_true', default=False,
                     help=optparse.SUPPRESS_HELP)
-  # GYP_DEFINES that Chrome was built with.  Influences which files are staged
-  # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
-  # enviroment variable.
-  parser.add_option('--gyp-defines', default=None, type='gyp_defines',
+  # Path to a binutil 'strip' tool to strip binaries with.  Used by the Chrome
+  # ebuild to skip fetching the SDK toolchain.
+  parser.add_option('--strip-bin', type='path', default=None,
                     help=optparse.SUPPRESS_HELP)
+
   return parser
 
 
@@ -373,14 +383,13 @@ def _FetchChromePackage(cache_dir, tempdir, gs_path):
   return chrome_path
 
 
-def _PrepareStagingDir(options, tempdir, staging_dir):
-  """Place the necessary files in the staging directory.
-
-  The staging directory is the directory used to rsync the build artifacts over
-  to the device.  Only the necessary Chrome build artifacts are put into the
-  staging directory.
-  """
-  if options.build_dir:
+@contextlib.contextmanager
+def _StripBinContext(options):
+  if not options.dostrip:
+    yield None
+  elif options.strip_bin:
+    yield options.strip_bin
+  else:
     sdk = cros_chrome_sdk.SDKFetcher(options.cache_dir, options.board)
     components = (sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR)
     with sdk.Prepare(components=components) as ctx:
@@ -389,6 +398,18 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
       strip_bin = osutils.SourceEnvironment(env_path, ['STRIP'])['STRIP']
       strip_bin = os.path.join(ctx.key_map[sdk.TARGET_TOOLCHAIN_KEY].path,
                                'bin', os.path.basename(strip_bin))
+      yield strip_bin
+
+
+def _PrepareStagingDir(options, tempdir, staging_dir):
+  """Place the necessary files in the staging directory.
+
+  The staging directory is the directory used to rsync the build artifacts over
+  to the device.  Only the necessary Chrome build artifacts are put into the
+  staging directory.
+  """
+  if options.build_dir:
+    with _StripBinContext(options) as strip_bin:
       chrome_util.StageChromeFromBuildDir(
           staging_dir, options.build_dir, strip_bin, strict=options.strict,
           sloppy=options.sloppy, gyp_defines=options.gyp_defines,

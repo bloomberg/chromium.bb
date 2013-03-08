@@ -109,61 +109,123 @@ class MustNotBeDirError(results_lib.StepFailure):
 
 
 class Copier(object):
-  """Single file/directory copier.
+  """File/directory copier.
 
   Provides destination stripping and permission setting functionality.
   """
 
-  def __init__(self, strip_bin=None, exe_opts=None):
+  def __init__(self, strip_bin=None, default_mode=0644, dir_mode=0755,
+               exe_mode=0755):
     """Initialization.
 
     Arguments:
       strip_bin: Path to the program used to strip binaries.  If set to None,
                  binaries will not be stripped.
-      exe_opts: Permissions to set on executables.
+      default_mode: Default permissions to set on files.
+      dir_mode: Mode to set for directories.
+      exe_mode: Permissions to set on executables.
     """
     self.strip_bin = strip_bin
-    self.exe_opts = exe_opts
+    self.default_mode = default_mode
+    self.dir_mode = dir_mode
+    self.exe_mode = exe_mode
 
-  def Copy(self, src, dest, exe, strip):
+  @staticmethod
+  def Log(src, dest, directory):
+    sep = ' [d] -> ' if directory else ' -> '
+    logging.debug('%s %s %s', src, sep, dest)
+
+  def _CopyFile(self, src, dest, path):
     """Perform the copy.
 
     Arguments:
       src: The path of the file/directory to copy.
       dest: The exact path of the destination.  Should not already exist.
-      exe: If |src| is a file, whether the file is an executable.  If |src| is a
-           directory, whether to treat the contents of the directory as
-           executables.
-      strip: If |exe| is set, whether to strip the executable.
+      path: The Path instance containing copy operation modifiers (such as
+            Path.exe, Path.strip, etc.)
     """
-    def Log(directory):
-      sep = ' [d] -> ' if directory else ' -> '
-      logging.debug('%s %s %s', src, sep, dest)
-
-    osutils.SafeMakedirs(os.path.dirname(dest))
-    src_is_dir = os.path.isdir(src)
-    Log(src_is_dir)
-    if src_is_dir:
-      # copytree() does not know about copying to a containing directory.
-      if os.path.isdir(dest):
-        dest = os.path.join(dest, os.path.basename(src))
-      shutil.copytree(src, dest)
-    elif exe and self.strip_bin and strip and os.path.getsize(src) > 0:
+    assert not os.path.isdir(src), '%s: Not expecting a directory!' % src
+    osutils.SafeMakedirs(os.path.dirname(dest), mode=self.dir_mode)
+    if path.exe and self.strip_bin and path.strip and os.path.getsize(src) > 0:
       cros_build_lib.DebugRunCommand([self.strip_bin, '--strip-unneeded',
                                       '-o', dest, src])
       shutil.copystat(src, dest)
     else:
       shutil.copy2(src, dest)
 
-    if exe and self.exe_opts is not None:
-      os.chmod(dest, self.exe_opts)
+    mode = path.mode
+    if mode is None:
+      mode = self.exe_mode if path.exe else self.default_mode
+    os.chmod(dest, mode)
+
+  def Copy(self, src_base, dest_base, path, strict=False, sloppy=False):
+    """Copy artifact(s) from source directory to destination.
+
+    Arguments:
+      src_base: The directory to apply the src glob pattern match in.
+      dest_base: The directory to copy matched files to.  |Path.dest|.
+      path: A Path instance that specifies what is to be copied.
+      strict: If set, enforce that all optional files are copied.
+      sloppy: If set, ignore when mandatory artifacts are missing.
+    Returns:
+      A list of the artifacts copied.
+    """
+    assert not (strict and sloppy), 'strict and sloppy are not compatible.'
+    copied_paths = []
+    src = os.path.join(src_base, path.src)
+    if not src.endswith('/') and os.path.isdir(src):
+      raise MustNotBeDirError('%s must not be a directory\n'
+                              'Aborting copy...' % (src,))
+    paths = glob.glob(src)
+    if not paths:
+      if strict or (not path.optional and not sloppy):
+        msg = ('%s does not exist and is required.\n'
+               'You can bypass this error with --sloppy.\n'
+               'Aborting copy...' % src)
+        raise MissingPathError(msg)
+      elif path.optional:
+        logging.debug('%s does not exist and is optional.  Skipping.', src)
+      else:
+        logging.warn('%s does not exist and is required.  Skipping anyway.',
+                     src)
+    elif len(paths) > 1 and path.dest and not path.dest.endswith('/'):
+      raise MultipleMatchError(
+          'Glob pattern %r has multiple matches, but dest %s '
+          'is not a directory.\n'
+          'Aborting copy...' % (path.src, path.dest))
+    else:
+      for p in paths:
+        rel_src = os.path.relpath(p, src_base)
+        if path.dest is None:
+          rel_dest = rel_src
+        elif path.dest.endswith('/'):
+          rel_dest = os.path.join(path.dest, os.path.basename(p))
+        else:
+          rel_dest = path.dest
+        assert not rel_dest.endswith('/')
+        dest = os.path.join(dest_base, rel_dest)
+
+        copied_paths.append(p)
+        self.Log(p, dest, os.path.isdir(p))
+        if os.path.isdir(p):
+          for sub_path in osutils.DirectoryIterator(p):
+            rel_path = os.path.relpath(sub_path, p)
+            sub_dest = os.path.join(dest, rel_path)
+            if sub_path.endswith('/'):
+              osutils.SafeMakedirs(sub_dest, mode=self.dir_mode)
+            else:
+              self._CopyFile(sub_path, sub_dest, path)
+        else:
+          self._CopyFile(p, dest, path)
+
+    return copied_paths
 
 
 class Path(object):
   """Represents an artifact to be copied from build dir to staging dir."""
 
-  def __init__(self, src, exe=False, cond=None, dest=None, optional=False,
-               strip=True):
+  def __init__(self, src, exe=False, cond=None, dest=None, mode=None,
+               optional=False, strip=True):
     """Initializes the object.
 
     Arguments:
@@ -180,14 +242,19 @@ class Path(object):
             as optional unless --strict is supplied.
       dest: Name to give to the target file/directory.  Defaults to keeping the
             same name as the source.
+      mode: The mode to set for the matched files, and the contents of matched
+            directories.
       optional: Whether to enforce the existence of the artifact.  If unset, the
-                script errors out if the artifact does not exist.
+                script errors out if the artifact does not exist.  In 'strict'
+                mode, the Copier class ignores this flag.  In 'sloppy' mode, the
+                Copier class treats all artifacts as optional.
       strip: If |exe| is set, whether to strip the executable.
     """
     self.src = src
     self.exe = exe
     self.cond = cond
     self.dest = dest
+    self.mode = mode
     self.optional = optional or cond
     self.strip = strip
 
@@ -197,59 +264,17 @@ class Path(object):
       return self.cond(gyp_defines, staging_flags)
     return True
 
-  def Copy(self, src_base, dest_base, copier, strict, sloppy):
-    """Copy artifact(s) from source directory to destination.
-
-    Arguments:
-      src_base: The directory to apply the src glob pattern match in.
-      dest_base: The directory to copy matched files to.  |Path.dest|.
-      copier: A Copier instance that performs the actual file/directory copying.
-      strict: If set, enforce that all optional files are copied.
-      sloppy: If set, ignore when mandatory artifacts are missing.
-
-    Returns:
-      A list of the artifacts copied.
-    """
-    assert not (strict and sloppy), 'strict and sloppy are not compatible.'
-    src = os.path.join(src_base, self.src)
-    paths = glob.glob(src)
-    if not paths:
-      if strict or (not self.optional and not sloppy):
-        msg = ('%s does not exist and is required.\n'
-               'You can bypass this error with --sloppy.\n'
-               'Aborting copy...' % src)
-        raise MissingPathError(msg)
-      elif self.optional:
-        logging.debug('%s does not exist and is optional.  Skipping.', src)
-      else:
-        logging.warn('%s does not exist and is required. Skipping anyway.',
-                     src)
-    elif len(paths) > 1 and self.dest and not self.dest.endswith('/'):
-      raise MultipleMatchError(
-          'Glob pattern %r has multiple matches, but dest %s '
-          'is not a directory.\n'
-          'Aborting copy...' % (self.src, self.dest))
-    elif not src.endswith('/') and os.path.isdir(src):
-      raise MustNotBeDirError('%s must not be a directory\n'
-                              'Aborting copy...' % (src,))
-    else:
-      for p in paths:
-        dest = os.path.join(
-            dest_base,
-            os.path.relpath(p, src_base) if self.dest is None else self.dest)
-        copier.Copy(p, dest, self.exe, self.strip)
-
-    return paths
-
 
 _DISABLE_NACL = 'disable_nacl'
 _USE_DRM = 'use_drm'
-_USE_PDF = 'use_pdf'
 
-_HIGHDPI_FLAG = 'highdpi'
+
+_CHROME_INTERNAL_FLAG = 'chrome_internal'
 _CONTENT_SHELL_FLAG = 'content_shell'
-_WIDEVINE_FLAG = 'widevine'
-STAGING_FLAGS = (_HIGHDPI_FLAG, _CONTENT_SHELL_FLAG, _WIDEVINE_FLAG)
+_HIGHDPI_FLAG = 'highdpi'
+_PDF_FLAG = 'chrome_pdf'
+STAGING_FLAGS = (_CHROME_INTERNAL_FLAG, _CONTENT_SHELL_FLAG, _HIGHDPI_FLAG,
+                 _PDF_FLAG)
 
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
 C = Conditions
@@ -262,7 +287,7 @@ _COPY_PATHS = (
        cond=C.GypSet(_USE_DRM)),
   Path('chrome',
        exe=True),
-  Path('chrome_sandbox',
+  Path('chrome_sandbox', mode=04755,
        dest=_CHROME_SANDBOX_DEST),
   Path('chrome-wrapper'),
   Path('chrome.pak'),
@@ -275,7 +300,7 @@ _COPY_PATHS = (
   Path('content_shell.pak',
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
   Path('extensions/',
-       optional=True),
+       cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
   Path('lib/*.so',
        exe=True,
        cond=C.GypSet('component', value='shared_library')),
@@ -283,7 +308,7 @@ _COPY_PATHS = (
        exe=True),
   Path('libpdf.so',
        exe=True,
-       cond=C.GypSet(_USE_PDF)),
+       cond=C.StagingFlagSet(_PDF_FLAG)),
   Path('libppGoogleNaClPluginChrome.so',
        exe=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
@@ -295,21 +320,21 @@ _COPY_PATHS = (
   Path('libwidevinecdmadapter.so',
        exe=True,
        strip=False,
-       cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
+       cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
   Path('libwidevinecdm.so',
        exe=True,
        strip=False,
-       cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
+       cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
   Path('locales/'),
   # Do not strip the nacl_helper_bootstrap binary because the binutils
   # objcopy/strip mangles the ELF program headers.
   Path('nacl_helper_bootstrap',
+       exe=True, strip=False,
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('nacl_irt_*.nexe',
-       exe=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('nacl_helper',
-       exe=True, optional=True,
+       optional=True,
        cond=C.GypNotSet(_DISABLE_NACL)),
   Path('resources/'),
   Path('resources.pak'),
@@ -320,15 +345,9 @@ _COPY_PATHS = (
 
 def _FixPermissions(dest_base):
   """Last minute permission fixes."""
-  # Set the suid bit for the chrome sandbox.
-  # TODO(rcui): Implement this through a permission mask attribute in the Path
-  # class.
   cros_build_lib.DebugRunCommand(['chmod', '-R', 'a+r', dest_base])
   cros_build_lib.DebugRunCommand(
       ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
-  target = os.path.join(dest_base, _CHROME_SANDBOX_DEST)
-  if os.path.exists(target):
-    cros_build_lib.DebugRunCommand(['chmod', '4755', target])
 
 
 class StagingError(results_lib.StepFailure):
@@ -368,11 +387,12 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
   if staging_flags is None:
     staging_flags = []
 
-  copier = Copier(strip_bin=strip_bin, exe_opts=0755)
+  copier = Copier(strip_bin=strip_bin)
   copied_paths = []
   for p in _COPY_PATHS:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):
-      copied_paths += p.Copy(build_dir, staging_dir, copier, strict, sloppy)
+      copied_paths += copier.Copy(build_dir, staging_dir, p, strict=strict,
+                                  sloppy=sloppy)
 
   if not copied_paths:
     raise MissingPathError('Couldn\'t find anything to copy!\n'

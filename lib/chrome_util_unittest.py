@@ -29,11 +29,12 @@ class CopyTest(cros_test_lib.TempDirTestCase):
                      strict=False, sloppy=False):
     cros_test_lib.CreateOnDiskHierarchy(self.src_base, src_struct)
     if error:
-      self.assertRaises(error, path.Copy, self.src_base, self.dest_base, None,
-                        strict, sloppy)
+      self.assertRaises(error, self.copier.Copy, self.src_base, self.dest_base,
+                        path, strict=strict, sloppy=sloppy)
       return
 
-    path.Copy(self.src_base, self.dest_base, self.copier, strict, sloppy)
+    self.copier.Copy(self.src_base, self.dest_base, path, strict=strict,
+                     sloppy=sloppy)
     cros_test_lib.VerifyOnDiskHierarchy(self.dest_base, dest_struct)
 
 

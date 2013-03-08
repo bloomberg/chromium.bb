@@ -195,6 +195,13 @@ def FindMissingBinaries(needed_tools):
   return [binary for binary in needed_tools if Which(binary) is None]
 
 
+def DirectoryIterator(base_path):
+  """Iterates through the files and subdirs of a directory."""
+  for root, dirs, files in os.walk(base_path):
+    for e in [d + os.sep for d in dirs] + files:
+      yield os.path.join(root, e)
+
+
 def IteratePathParents(start_path):
   """Generator that iterates through a directory's parents.
 

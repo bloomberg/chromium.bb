@@ -102,13 +102,6 @@ def _VerifyDirectoryIterables(existing, expected):
                          % FormatPaths(missing))
 
 
-def _DirectoryIterator(base_path):
-  """Iterates through the files and subdirs of a directory."""
-  for root, dirs, files in os.walk(base_path):
-    for e in [d + os.sep for d in dirs] + files:
-      yield os.path.join(root, e)
-
-
 def VerifyOnDiskHierarchy(base_path, dir_struct):
   """Verify that an on-disk directory tree exactly matches a given structure.
 
@@ -120,7 +113,7 @@ def VerifyOnDiskHierarchy(base_path, dir_struct):
     structure and the structure specified by 'dir_struct'.
   """
   expected = _FlattenStructure(base_path, dir_struct)
-  _VerifyDirectoryIterables(_DirectoryIterator(base_path), expected)
+  _VerifyDirectoryIterables(osutils.DirectoryIterator(base_path), expected)
 
 
 def VerifyTarball(tarball, dir_struct):
