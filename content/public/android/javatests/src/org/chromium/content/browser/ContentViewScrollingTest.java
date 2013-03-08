@@ -4,10 +4,12 @@
 
 package org.chromium.content.browser;
 
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_shell.ContentShellTestBase;
 
 /*
@@ -16,20 +18,29 @@ import org.chromium.content_shell.ContentShellTestBase;
 public class ContentViewScrollingTest extends ContentShellTestBase {
 
     private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri(
-            "<html>" +
-            "<head><style>body { width: 5000px; height: 5000px; }</style></head>" +
+            "<html><head>" +
+            "<meta name=\"viewport\" content=\"width=device-width, " +
+            "initial-scale=1.0, maximum-scale=1.0\" />" +
+            "<style>body { width: 5000px; height: 5000px; }</style></head>" +
             "<body>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</body>" +
             "</html>");
 
-    /*
-     * @SmallTest
-     * @Feature({"Android-WebView"})
-     * BUG 162967
-     */
-    @FlakyTest
+    private void assertWaitForPageScaleFactor(final float scale) throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getContentViewCore().getScale() == scale;
+            }
+        }));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView"})
     public void testFling() throws Throwable {
         launchContentShellWithUrl(LARGE_PAGE);
-        waitForActiveShellToBeDoneLoading();
+        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        assertWaitForPageScaleFactor(1.0f);
+
         final ContentView view = getActivity().getActiveContentView();
 
         assertEquals(0, view.getContentViewCore().getNativeScrollXForTest());
