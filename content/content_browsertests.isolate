@@ -1,0 +1,82 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+  'variables': {
+    'isolate_dependency_tracked': [
+      '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
+    ],
+    'isolate_dependency_untracked': [
+      'test/data/',
+      '../net/data/',
+      '../net/tools/testserver/',
+      '../third_party/lighttpd/',
+      '../third_party/pyftpdlib/',
+      '../third_party/pywebsocket/',
+      '../third_party/tlslite/',
+      '../third_party/WebKit/Tools/Scripts/',
+    ],
+  },
+  'conditions': [
+    ['OS=="linux"', {
+      'variables': {
+        'command': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)',
+          '../tools/swarm_client/run_test_cases.py',
+          '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
+        ],
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/content_shell.pak',
+          '<(PRODUCT_DIR)/fonts.conf',
+          '<(PRODUCT_DIR)/libclearkeycdm.so',
+          '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/plugins/libnpapi_test_plugin.so',
+          '<(PRODUCT_DIR)/plugins/libTestNetscapePlugin.so',
+        ],
+      },
+    }],
+    ['OS=="mac" or OS=="win"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '../tools/swarm_client/run_test_cases.py',
+          '<(PRODUCT_DIR)/content_browsertests<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
+          '<(PRODUCT_DIR)/content_resources.pak',
+          '<(PRODUCT_DIR)/Content Shell.app/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.plugin',
+          '<(PRODUCT_DIR)/plugins/TestNestscapePlugin.plugin',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+        ],
+        'isolate_dependency_untracked': [
+          # The two directories below are only needed for
+          # WorkerXHRHttpLayoutTest.Tests which are currently disabled.
+          #'../third_party/cygwin/',
+          #'../third_party/perl/perl/',
+          '../third_party/python_26/',
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
+          '<(PRODUCT_DIR)/clearkeycdm.dll',
+          '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
+          '<(PRODUCT_DIR)/content_shell.pak',
+          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
+          '<(PRODUCT_DIR)/plugins/npTestNetscapePlugIn.dll',
+        ],
+      },
+    }],
+  ],
+}

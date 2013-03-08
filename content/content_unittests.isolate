@@ -1,0 +1,56 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+  'variables': {
+    'isolate_dependency_tracked': [
+      '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
+    ],
+    'isolate_dependency_untracked': [
+      'browser/gpu/software_rendering_list.json',
+      'test/data/',
+      '../third_party/hyphen/hyph_en_US.dic',
+      '../webkit/data/',
+    ],
+  },
+  'conditions': [
+    ['OS=="linux"', {
+      'variables': {
+        'command': [
+          '../testing/xvfb.py',
+          '<(PRODUCT_DIR)',
+          '../tools/swarm_client/run_test_cases.py',
+          '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/test_data/',
+        ],
+      },
+    }, {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '../tools/swarm_client/run_test_cases.py',
+          '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/content_resources.pak',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+          '<(PRODUCT_DIR)/icudt.dll',
+        ],
+      },
+    }],
+  ],
+}
