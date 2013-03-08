@@ -1184,8 +1184,14 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.assertEquals(json_data['bot-config'], 'x86-generic-paladin')
     self.assertEquals(json_data['cros-version'], self.archive_mock.VERSION)
     self.assertEquals(json_data['metadata-version'], '1')
-    self.assertEquals(json_data['toolchain-tuple'], ['i686-pc-linux-gnu',
-                                                     'arm-none-eabi'])
+
+    # The buildtools manifest doesn't have any overlays. In this case, we can't
+    # find any toolchains.
+    overlays = portage_utilities.FindOverlays(constants.BOTH_OVERLAYS, None)
+    overlay_tuples = ['i686-pc-linux-gnu', 'arm-none-eabi']
+    self.assertEquals(json_data['toolchain-tuple'],
+                      overlay_tuples if overlays else [])
+
   def testChromeEnvironment(self):
     """Test that the Chrome environment is built."""
     # Create the chrome environment compressed file.
