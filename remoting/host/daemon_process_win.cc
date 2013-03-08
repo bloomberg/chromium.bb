@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -67,6 +68,8 @@ class DaemonProcessWin : public DaemonProcess {
       int terminal_id,
       const DesktopSessionParams& params,
       bool virtual_terminal) OVERRIDE;
+  virtual void DoCrashNetworkProcess(
+      const tracked_objects::Location& location) OVERRIDE;
   virtual void LaunchNetworkProcess() OVERRIDE;
 
  private:
@@ -151,6 +154,13 @@ scoped_ptr<DesktopSession> DaemonProcessWin::DoCreateDesktopSession(
   return scoped_ptr<DesktopSession>(new DesktopSessionWin(
       caller_task_runner(), io_task_runner(), this, terminal_id,
       params, virtual_terminal, HostService::GetInstance()));
+}
+
+void DaemonProcessWin::DoCrashNetworkProcess(
+    const tracked_objects::Location& location) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  network_launcher_->Crash(location);
 }
 
 void DaemonProcessWin::LaunchNetworkProcess() {

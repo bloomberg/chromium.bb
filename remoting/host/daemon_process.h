@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -24,6 +23,10 @@
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 struct SerializedTransportRoute;
+
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
 
 namespace remoting {
 
@@ -125,6 +128,10 @@ class DaemonProcess
       int terminal_id,
       const DesktopSessionParams& params,
       bool virtual_terminal) = 0;
+
+  // Requests the network process to crash.
+  virtual void DoCrashNetworkProcess(
+      const tracked_objects::Location& location) = 0;
 
   // Launches the network process and establishes an IPC channel with it.
   virtual void LaunchNetworkProcess() = 0;

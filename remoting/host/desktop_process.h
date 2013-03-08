@@ -55,7 +55,7 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
  private:
   // Crashes the process in response to a daemon's request. The daemon passes
   // the location of the code that detected the fatal error resulted in this
-  // request. See the declaration of ChromotingDaemonDesktopMsg_Crash message.
+  // request. See the declaration of ChromotingDaemonMsg_Crash message.
   void OnCrash(const std::string& function_name,
                const std::string& file_name,
                const int& line_number);

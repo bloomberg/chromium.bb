@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
 #include "ipc/ipc_message.h"
@@ -26,7 +27,7 @@ namespace remoting {
 namespace {
 
 enum Messages {
-  kMessageCrash = ChromotingDaemonNetworkMsg_Crash::ID,
+  kMessageCrash = ChromotingDaemonMsg_Crash::ID,
   kMessageConfiguration = ChromotingDaemonNetworkMsg_Configuration::ID,
   kMessageConnectTerminal = ChromotingNetworkHostMsg_ConnectTerminal::ID,
   kMessageDisconnectTerminal = ChromotingNetworkHostMsg_DisconnectTerminal::ID,
@@ -68,6 +69,7 @@ class MockDaemonProcess : public DaemonProcess {
                bool(int, base::ProcessHandle, IPC::PlatformFileForTransit));
 
   MOCK_METHOD1(DoCreateDesktopSessionPtr, DesktopSession*(int));
+  MOCK_METHOD1(DoCrashNetworkProcess, void(const tracked_objects::Location&));
   MOCK_METHOD0(LaunchNetworkProcess, void());
 
  private:
@@ -124,6 +126,7 @@ class DaemonProcessTest : public testing::Test {
 
   // DaemonProcess mocks
   DesktopSession* DoCreateDesktopSession(int terminal_id);
+  void DoCrashNetworkProcess(const tracked_objects::Location& location);
   void LaunchNetworkProcess();
 
   // Deletes |daemon_process_|.
@@ -168,6 +171,9 @@ void DaemonProcessTest::SetUp() {
   EXPECT_CALL(*daemon_process_, DoCreateDesktopSessionPtr(_))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(this, &DaemonProcessTest::DoCreateDesktopSession));
+  EXPECT_CALL(*daemon_process_, DoCrashNetworkProcess(_))
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(this, &DaemonProcessTest::DoCrashNetworkProcess));
   EXPECT_CALL(*daemon_process_, LaunchNetworkProcess())
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(this, &DaemonProcessTest::LaunchNetworkProcess));
@@ -180,6 +186,14 @@ void DaemonProcessTest::TearDown() {
 
 DesktopSession* DaemonProcessTest::DoCreateDesktopSession(int terminal_id) {
   return new FakeDesktopSession(daemon_process_.get(), terminal_id);
+}
+
+void DaemonProcessTest::DoCrashNetworkProcess(
+    const tracked_objects::Location& location) {
+  daemon_process_->SendToNetwork(
+      new ChromotingDaemonMsg_Crash(location.function_name(),
+                                    location.file_name(),
+                                    location.line_number()));
 }
 
 void DaemonProcessTest::LaunchNetworkProcess() {

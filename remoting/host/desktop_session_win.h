@@ -67,8 +67,8 @@ class DesktopSessionWin
   // ChromotingDesktopDaemonMsg_InjectSas handler.
   void OnInjectSas();
 
-  // Restarts the desktop process.
-  void RestartDesktopProcess(const tracked_objects::Location& location);
+  // Requests the desktop process to crash.
+  void CrashDesktopProcess(const tracked_objects::Location& location);
 
   // Task runner on which public methods of this class should be called.
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;

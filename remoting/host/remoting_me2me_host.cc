@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -17,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -535,8 +537,7 @@ bool HostProcess::OnMessageReceived(const IPC::Message& message) {
 #if defined(REMOTING_MULTI_PROCESS)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HostProcess, message)
-    IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Crash,
-                        OnCrash)
+    IPC_MESSAGE_HANDLER(ChromotingDaemonMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Configuration,
                         OnConfigUpdated)
     IPC_MESSAGE_FORWARD(
@@ -1102,7 +1103,14 @@ void HostProcess::ShutdownOnNetworkThread() {
 void HostProcess::OnCrash(const std::string& function_name,
                           const std::string& file_name,
                           const int& line_number) {
-  CHECK(false);
+  char message[1024];
+  base::snprintf(message, sizeof(message),
+                 "Requested by %s at %s, line %d.",
+                 function_name.c_str(), file_name.c_str(), line_number);
+  base::debug::Alias(message);
+
+  // The daemon requested us to crash the process.
+  CHECK(false) << message;
 }
 
 int HostProcessMain() {

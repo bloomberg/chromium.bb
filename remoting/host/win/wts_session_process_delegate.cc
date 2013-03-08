@@ -62,6 +62,7 @@ class WtsSessionProcessDelegate::Core
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
+  virtual void CloseChannel() OVERRIDE;
   virtual DWORD GetProcessId() const OVERRIDE;
   virtual bool IsPermanentError(int failure_count) const OVERRIDE;
   virtual void KillProcess(DWORD exit_code) OVERRIDE;
@@ -173,12 +174,19 @@ void WtsSessionProcessDelegate::Core::OnIOCompleted(
 bool WtsSessionProcessDelegate::Core::Send(IPC::Message* message) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (channel_.get()) {
+  if (channel_) {
     return channel_->Send(message);
   } else {
     delete message;
     return false;
   }
+}
+
+void WtsSessionProcessDelegate::Core::CloseChannel() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  channel_.reset();
+  pipe_.Close();
 }
 
 DWORD WtsSessionProcessDelegate::Core::GetProcessId() const {
@@ -494,6 +502,11 @@ WtsSessionProcessDelegate::~WtsSessionProcessDelegate() {
 
 bool WtsSessionProcessDelegate::Send(IPC::Message* message) {
   return core_->Send(message);
+}
+
+void WtsSessionProcessDelegate::CloseChannel() {
+  if (core_)
+    core_->CloseChannel();
 }
 
 DWORD WtsSessionProcessDelegate::GetProcessId() const {

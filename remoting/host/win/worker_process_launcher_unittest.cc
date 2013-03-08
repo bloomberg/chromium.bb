@@ -12,12 +12,13 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::ScopedHandle;
@@ -37,27 +38,18 @@ namespace {
 
 const char kIpcSecurityDescriptor[] = "D:(A;;GA;;;AU)";
 
-class MockProcessLauncherDelegate
-    : public WorkerProcessLauncher::Delegate {
+class MockProcessLauncherDelegate : public WorkerProcessLauncher::Delegate {
  public:
   MockProcessLauncherDelegate() {}
   virtual ~MockProcessLauncherDelegate() {}
 
-  virtual DWORD GetProcessId() const OVERRIDE {
-    return const_cast<MockProcessLauncherDelegate*>(this)->GetProcessId();
-  }
-
-  virtual bool IsPermanentError(int failure_count) const OVERRIDE {
-    return const_cast<MockProcessLauncherDelegate*>(this)->IsPermanentError(
-        failure_count);
-  }
-
   // IPC::Sender implementation.
   MOCK_METHOD1(Send, bool(IPC::Message*));
 
-  // WorkerProcessLauncher::Delegate implementation
-  MOCK_METHOD0(GetProcessId, DWORD());
-  MOCK_METHOD1(IsPermanentError, bool(int));
+  // WorkerProcessLauncher::Delegate interface.
+  MOCK_METHOD0(CloseChannel, void());
+  MOCK_CONST_METHOD0(GetProcessId, DWORD());
+  MOCK_CONST_METHOD1(IsPermanentError, bool(int));
   MOCK_METHOD1(KillProcess, void(DWORD));
   MOCK_METHOD2(LaunchProcess, bool(IPC::Listener*, ScopedHandle*));
 
@@ -65,13 +57,12 @@ class MockProcessLauncherDelegate
   DISALLOW_COPY_AND_ASSIGN(MockProcessLauncherDelegate);
 };
 
-class MockIpcDelegate
-    : public WorkerProcessIpcDelegate {
+class MockIpcDelegate : public WorkerProcessIpcDelegate {
  public:
   MockIpcDelegate() {}
   virtual ~MockIpcDelegate() {}
 
-  // WorkerProcessIpcDelegate implementation
+  // WorkerProcessIpcDelegate interface.
   MOCK_METHOD1(OnChannelConnected, void(int32));
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message&));
   MOCK_METHOD0(OnPermanentError, void());
@@ -80,20 +71,41 @@ class MockIpcDelegate
   DISALLOW_COPY_AND_ASSIGN(MockIpcDelegate);
 };
 
+class MockWorkerListener : public IPC::Listener {
+ public:
+  MockWorkerListener() {}
+  virtual ~MockWorkerListener() {}
+
+  MOCK_METHOD3(OnCrash, void(const std::string&, const std::string&, int));
+
+  // IPC::Listener implementation
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWorkerListener);
+};
+
+bool MockWorkerListener::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(MockWorkerListener, message)
+    IPC_MESSAGE_HANDLER(ChromotingDaemonMsg_Crash, OnCrash)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  EXPECT_TRUE(handled);
+
+  return handled;
+}
+
 }  // namespace
 
-class WorkerProcessLauncherTest
-    : public testing::Test,
-      public IPC::Listener {
+class WorkerProcessLauncherTest : public testing::Test {
  public:
   WorkerProcessLauncherTest();
   virtual ~WorkerProcessLauncherTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
-
-  // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate mocks
   void KillProcess(DWORD exit_code);
@@ -104,8 +116,23 @@ class WorkerProcessLauncherTest
   bool FailLaunchAndStopWorker(IPC::Listener* delegate,
                                ScopedHandle* process_exit_event_out);
 
-  void ConnectChannel();
-  void DisconnectChannel();
+  // Connects the client end of the channel (the worker process's end).
+  void ConnectClient();
+
+  // Disconnects the client end of the channel.
+  void DisconnectClient();
+
+  // Disconnects the server end of the channel (the launcher's end).
+  void DisconnectServer();
+
+  // Sends a message to the worker process.
+  bool SendToProcess(IPC::Message* message);
+
+  // Sends a fake message to the launcher.
+  void SendFakeMessageToLauncher();
+
+  // Requests the worker to crash.
+  void CrashWorker();
 
   // Starts the worker.
   void StartWorker();
@@ -120,7 +147,13 @@ class WorkerProcessLauncherTest
   MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
-  MockIpcDelegate ipc_delegate_;
+  // Receives messages sent to the worker process.
+  MockWorkerListener client_listener_;
+
+  // Receives messages sent from the worker process.
+  MockIpcDelegate server_listener_;
+
+  // Implements WorkerProcessLauncher::Delegate.
   scoped_ptr<MockProcessLauncherDelegate> launcher_delegate_;
 
   // The name of the IPC channel.
@@ -163,7 +196,11 @@ void WorkerProcessLauncherTest::SetUp() {
   launcher_delegate_.reset(new MockProcessLauncherDelegate());
   EXPECT_CALL(*launcher_delegate_, Send(_))
       .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
+      .WillRepeatedly(Invoke(this, &WorkerProcessLauncherTest::SendToProcess));
+  EXPECT_CALL(*launcher_delegate_, CloseChannel())
+      .Times(AnyNumber())
+      .WillRepeatedly(Invoke(this,
+                             &WorkerProcessLauncherTest::DisconnectServer));
   EXPECT_CALL(*launcher_delegate_, GetProcessId())
       .Times(AnyNumber())
       .WillRepeatedly(ReturnPointee(&client_pid_));
@@ -175,16 +212,11 @@ void WorkerProcessLauncherTest::SetUp() {
       .WillRepeatedly(Invoke(this, &WorkerProcessLauncherTest::KillProcess));
 
   // Set up IPC delegate.
-  EXPECT_CALL(ipc_delegate_, OnMessageReceived(_))
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(server_listener_, OnMessageReceived(_))
+      .Times(0);
 }
 
 void WorkerProcessLauncherTest::TearDown() {
-}
-
-bool WorkerProcessLauncherTest::OnMessageReceived(const IPC::Message& message) {
-  return false;
 }
 
 void WorkerProcessLauncherTest::KillProcess(DWORD exit_code) {
@@ -229,7 +261,7 @@ bool WorkerProcessLauncherTest::LaunchProcessAndConnect(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WorkerProcessLauncherTest::ConnectChannel,
+      base::Bind(&WorkerProcessLauncherTest::ConnectClient,
                  base::Unretained(this)));
   return true;
 }
@@ -244,26 +276,54 @@ bool WorkerProcessLauncherTest::FailLaunchAndStopWorker(
   return false;
 }
 
-void WorkerProcessLauncherTest::ConnectChannel() {
+void WorkerProcessLauncherTest::ConnectClient() {
   channel_client_.reset(new IPC::ChannelProxy(
       IPC::ChannelHandle(channel_name_),
       IPC::Channel::MODE_CLIENT,
-      this,
+      &client_listener_,
       task_runner_));
+
+  // Pretend that |kLaunchSuccessTimeoutSeconds| passed since launching
+  // the worker process. This will make the backoff algorithm think that this
+  // launch attempt was successful and it will not delay the next launch.
+  launcher_->ResetLaunchSuccessTimeoutForTest();
 }
 
-void WorkerProcessLauncherTest::DisconnectChannel() {
+void WorkerProcessLauncherTest::DisconnectClient() {
   channel_client_.reset();
+}
+
+void WorkerProcessLauncherTest::DisconnectServer() {
+  channel_server_.reset();
+}
+
+bool WorkerProcessLauncherTest::SendToProcess(IPC::Message* message) {
+  if (channel_server_)
+    return channel_server_->Send(message);
+
+  delete message;
+  return false;
+}
+
+void WorkerProcessLauncherTest::SendFakeMessageToLauncher() {
+  if (channel_client_)
+    channel_client_->Send(new ChromotingDesktopNetworkMsg_DisconnectSession());
+}
+
+void WorkerProcessLauncherTest::CrashWorker() {
+  launcher_->Crash(FROM_HERE);
 }
 
 void WorkerProcessLauncherTest::StartWorker() {
   launcher_.reset(new WorkerProcessLauncher(
-      task_runner_, launcher_delegate_.Pass(), &ipc_delegate_));
+      task_runner_, launcher_delegate_.Pass(), &server_listener_));
+
+  launcher_->SetKillProcessTimeoutForTest(base::TimeDelta::FromMilliseconds(0));
 }
 
 void WorkerProcessLauncherTest::StopWorker() {
   launcher_.reset();
-  DisconnectChannel();
+  DisconnectClient();
   channel_name_.clear();
   channel_server_.reset();
   task_runner_ = NULL;
@@ -278,9 +338,9 @@ TEST_F(WorkerProcessLauncherTest, Start) {
       .Times(1)
       .WillRepeatedly(Invoke(this, &WorkerProcessLauncherTest::LaunchProcess));
 
-  EXPECT_CALL(ipc_delegate_, OnChannelConnected(_))
+  EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(0);
-  EXPECT_CALL(ipc_delegate_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError())
       .Times(0);
 
   StartWorker();
@@ -296,11 +356,11 @@ TEST_F(WorkerProcessLauncherTest, StartAndConnect) {
       .WillRepeatedly(Invoke(
           this, &WorkerProcessLauncherTest::LaunchProcessAndConnect));
 
-  EXPECT_CALL(ipc_delegate_, OnChannelConnected(_))
+  EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this,
                                   &WorkerProcessLauncherTest::StopWorker));
-  EXPECT_CALL(ipc_delegate_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError())
       .Times(0);
 
   StartWorker();
@@ -315,14 +375,14 @@ TEST_F(WorkerProcessLauncherTest, Restart) {
       .WillRepeatedly(Invoke(
           this, &WorkerProcessLauncherTest::LaunchProcessAndConnect));
   Expectation first_connect =
-      EXPECT_CALL(ipc_delegate_, OnChannelConnected(_))
+      EXPECT_CALL(server_listener_, OnChannelConnected(_))
           .Times(2)
           .WillOnce(InvokeWithoutArgs(CreateFunctor(
               this, &WorkerProcessLauncherTest::KillProcess, CONTROL_C_EXIT)))
           .WillOnce(InvokeWithoutArgs(this,
                                       &WorkerProcessLauncherTest::StopWorker));
 
-  EXPECT_CALL(ipc_delegate_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError())
       .Times(0);
 
   StartWorker();
@@ -338,14 +398,14 @@ TEST_F(WorkerProcessLauncherTest, DropIpcChannel) {
           this, &WorkerProcessLauncherTest::LaunchProcessAndConnect));
 
   Expectation first_connect =
-      EXPECT_CALL(ipc_delegate_, OnChannelConnected(_))
+      EXPECT_CALL(server_listener_, OnChannelConnected(_))
           .Times(2)
           .WillOnce(InvokeWithoutArgs(
-              this, &WorkerProcessLauncherTest::DisconnectChannel))
+              this, &WorkerProcessLauncherTest::DisconnectClient))
           .WillOnce(InvokeWithoutArgs(
               this, &WorkerProcessLauncherTest::StopWorker));
 
-  EXPECT_CALL(ipc_delegate_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError())
       .Times(0);
 
   StartWorker();
@@ -360,11 +420,11 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
       .WillRepeatedly(Invoke(
           this, &WorkerProcessLauncherTest::LaunchProcessAndConnect));
 
-  EXPECT_CALL(ipc_delegate_, OnChannelConnected(_))
+  EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(CreateFunctor(
           this, &WorkerProcessLauncherTest::KillProcess, CONTROL_C_EXIT)));
-  EXPECT_CALL(ipc_delegate_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError())
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this,
                                   &WorkerProcessLauncherTest::StopWorker));
@@ -383,12 +443,61 @@ TEST_F(WorkerProcessLauncherTest, InvalidClientPid) {
       .WillOnce(Invoke(
           this, &WorkerProcessLauncherTest::FailLaunchAndStopWorker));
 
-  EXPECT_CALL(ipc_delegate_, OnChannelConnected(_))
+  EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(0);
-  EXPECT_CALL(ipc_delegate_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError())
       .Times(0);
 
   client_pid_ = GetCurrentProcessId() + 4;
+  StartWorker();
+  message_loop_.Run();
+}
+
+// Requests the worker to crash and expects it to honor the request.
+TEST_F(WorkerProcessLauncherTest, Crash) {
+  EXPECT_CALL(*launcher_delegate_, LaunchProcess(_, _))
+      .Times(2)
+      .WillRepeatedly(Invoke(
+          this, &WorkerProcessLauncherTest::LaunchProcessAndConnect));
+
+  EXPECT_CALL(server_listener_, OnChannelConnected(_))
+      .Times(2)
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &WorkerProcessLauncherTest::CrashWorker))
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &WorkerProcessLauncherTest::StopWorker));
+
+  EXPECT_CALL(client_listener_, OnCrash(_, _, _))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(CreateFunctor(
+          this, &WorkerProcessLauncherTest::KillProcess,
+          EXCEPTION_BREAKPOINT)));
+
+  StartWorker();
+  message_loop_.Run();
+}
+
+// Requests the worker to crash and terminates the worker even if it does not
+// comply.
+TEST_F(WorkerProcessLauncherTest, CrashAnyway) {
+  EXPECT_CALL(*launcher_delegate_, LaunchProcess(_, _))
+      .Times(2)
+      .WillRepeatedly(Invoke(
+          this, &WorkerProcessLauncherTest::LaunchProcessAndConnect));
+
+  EXPECT_CALL(server_listener_, OnChannelConnected(_))
+      .Times(2)
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &WorkerProcessLauncherTest::CrashWorker))
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &WorkerProcessLauncherTest::StopWorker));
+
+  // Ignore the crash request and try send another message to the launcher.
+  EXPECT_CALL(client_listener_, OnCrash(_, _, _))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(
+          this, &WorkerProcessLauncherTest::SendFakeMessageToLauncher));
+
   StartWorker();
   message_loop_.Run();
 }

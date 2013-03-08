@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -218,9 +219,9 @@ void DaemonProcess::CreateDesktopSession(int terminal_id,
 
 void DaemonProcess::CrashNetworkProcess(
     const tracked_objects::Location& location) {
-  SendToNetwork(new ChromotingDaemonNetworkMsg_Crash(
-      location.function_name(), location.file_name(), location.line_number()));
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
+  DoCrashNetworkProcess(location);
   DeleteAllDesktopSessions();
 }
 

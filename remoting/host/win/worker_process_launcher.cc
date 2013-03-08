@@ -4,6 +4,7 @@
 
 #include "remoting/host/win/worker_process_launcher.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time.h"
@@ -13,6 +14,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "net/base/backoff_entry.h"
+#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 using base::TimeDelta;
@@ -44,6 +46,8 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   false,
 };
 
+const int kKillProcessTimeoutSeconds = 5;
+const int kLaunchSuccessTimeoutSeconds = 2;
 
 namespace remoting {
 
@@ -52,7 +56,7 @@ namespace remoting {
 // method. In case of error the channel is closed and the worker process is
 // terminated.
 class WorkerProcessLauncher::Core
-    : public base::RefCountedThreadSafe<WorkerProcessLauncher::Core>,
+    : public base::RefCountedThreadSafe<Core, Core>,
       public base::win::ObjectWatcher::Delegate,
       public IPC::Listener {
  public:
@@ -75,10 +79,17 @@ class WorkerProcessLauncher::Core
   // to |this| as soon as Stop() returns.
   void Stop();
 
-  // Sends an IPC message to the worker process. The message will be silently
-  // dropped if Send() is called before Start() or after stutdown has been
-  // initiated.
+  // See WorkerProcessLauncher::Crash().
+  void Crash(const tracked_objects::Location& location);
+
+  // See WorkerProcessLauncher::Send().
   void Send(IPC::Message* message);
+
+  // Used to emulate |launch_success_timer_| expiration.
+  void ResetLaunchSuccessTimeoutForTest();
+
+  // Set the desired timeout for |kill_process_timer_|.
+  void SetKillProcessTimeoutForTest(const base::TimeDelta& timeout);
 
   // base::win::ObjectWatcher::Delegate implementation.
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
@@ -88,8 +99,13 @@ class WorkerProcessLauncher::Core
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
+  // Destroys |Core| instances on the |caller_task_runner_| thread. This is
+  // needed because base::OneShotTimer instances must be destroyed on the same
+  // thread they were  created on.
+  static void Destruct(const Core* core);
+
  private:
-  friend class base::RefCountedThreadSafe<Core>;
+  friend class base::DeleteHelper<Core>;
   virtual ~Core();
 
   // Attempts to launch the worker process. Schedules next launch attempt if
@@ -119,18 +135,21 @@ class WorkerProcessLauncher::Core
   // True if IPC messages should be passed to |worker_delegate_|.
   bool ipc_enabled_;
 
-  // The timer used to delay termination of the process in the case of an IPC
-  // error.
-  scoped_ptr<base::OneShotTimer<Core> > ipc_error_timer_;
+  // The timer used to delay termination of the worker process when an IPC error
+  // occured or when Crash() request is pending
+  base::OneShotTimer<Core> kill_process_timer_;
+
+  // The default timeout for |kill_process_timer_|.
+  base::TimeDelta kill_process_timeout_;
 
   // Launch backoff state.
   net::BackoffEntry launch_backoff_;
 
   // Timer used to delay recording a successfull launch.
-  scoped_ptr<base::OneShotTimer<Core> > launch_success_timer_;
+  base::OneShotTimer<Core> launch_success_timer_;
 
   // Timer used to schedule the next attempt to launch the process.
-  scoped_ptr<base::OneShotTimer<Core> > launch_timer_;
+  base::OneShotTimer<Core> launch_timer_;
 
   // Used to determine when the launched process terminates.
   base::win::ObjectWatcher process_watcher_;
@@ -157,14 +176,11 @@ WorkerProcessLauncher::Core::Core(
       worker_delegate_(worker_delegate),
       get_named_pipe_client_pid_(NULL),
       ipc_enabled_(false),
+      kill_process_timeout_(
+          base::TimeDelta::FromSeconds(kKillProcessTimeoutSeconds)),
       launch_backoff_(&kDefaultBackoffPolicy),
       stopping_(false) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  // base::OneShotTimer must be destroyed on the same thread it was created on.
-  ipc_error_timer_.reset(new base::OneShotTimer<Core>());
-  launch_success_timer_.reset(new base::OneShotTimer<Core>());
-  launch_timer_.reset(new base::OneShotTimer<Core>());
 }
 
 void WorkerProcessLauncher::Core::Start() {
@@ -184,6 +200,28 @@ void WorkerProcessLauncher::Core::Stop() {
   }
 }
 
+void WorkerProcessLauncher::Core::Crash(
+    const tracked_objects::Location& location) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  // Ask the worker process to crash voluntarily if it is still connected.
+  if (ipc_enabled_) {
+    Send(new ChromotingDaemonMsg_Crash(location.function_name(),
+                                       location.file_name(),
+                                       location.line_number()));
+  }
+
+  // Close the channel and ignore any not yet processed messages.
+  launcher_delegate_->CloseChannel();
+  ipc_enabled_ = false;
+
+  // Give the worker process some time to crash.
+  if (!kill_process_timer_.IsRunning()) {
+    kill_process_timer_.Start(FROM_HERE, kill_process_timeout_, this,
+                              &Core::StopWorker);
+  }
+}
+
 void WorkerProcessLauncher::Core::Send(IPC::Message* message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
@@ -192,6 +230,22 @@ void WorkerProcessLauncher::Core::Send(IPC::Message* message) {
   } else {
     delete message;
   }
+}
+
+void WorkerProcessLauncher::Core::ResetLaunchSuccessTimeoutForTest() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  if (launch_success_timer_.IsRunning()) {
+    launch_success_timer_.Stop();
+    RecordSuccessfulLaunch();
+  }
+}
+
+void WorkerProcessLauncher::Core::SetKillProcessTimeoutForTest(
+    const base::TimeDelta& timeout) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  kill_process_timeout_ = timeout;
 }
 
 void WorkerProcessLauncher::Core::OnObjectSignaled(HANDLE object) {
@@ -241,19 +295,27 @@ void WorkerProcessLauncher::Core::OnChannelError() {
   // here allows the worker to exit completely and so, notify
   // |process_watcher_|. As the result KillProcess() will not be called and
   // the original exit code reported by the worker process will be retrieved.
-  ipc_error_timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(5),
-                          this, &Core::StopWorker);
+  if (!kill_process_timer_.IsRunning()) {
+    kill_process_timer_.Start(FROM_HERE, kill_process_timeout_, this,
+                              &Core::StopWorker);
+  }
+}
+
+// static
+void WorkerProcessLauncher::Core::Destruct(const Core* core) {
+  core->caller_task_runner_->DeleteSoon(FROM_HERE, core);
 }
 
 WorkerProcessLauncher::Core::~Core() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(stopping_);
 }
 
 void WorkerProcessLauncher::Core::LaunchWorker() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!ipc_enabled_);
-  DCHECK(!launch_success_timer_->IsRunning());
-  DCHECK(!launch_timer_->IsRunning());
+  DCHECK(!launch_success_timer_.IsRunning());
+  DCHECK(!launch_timer_.IsRunning());
   DCHECK(!process_exit_event_.IsValid());
   DCHECK(process_watcher_.GetWatchedObject() == NULL);
 
@@ -264,8 +326,9 @@ void WorkerProcessLauncher::Core::LaunchWorker() {
       ipc_enabled_ = true;
       // Record a successful launch once the process has been running for at
       // least two seconds.
-      launch_success_timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
-                                   this, &Core::RecordSuccessfulLaunch);
+      launch_success_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(kLaunchSuccessTimeoutSeconds),
+          this, &Core::RecordSuccessfulLaunch);
       return;
     }
 
@@ -289,8 +352,8 @@ void WorkerProcessLauncher::Core::StopWorker() {
   scoped_refptr<Core> self = this;
 
   // Record a launch failure if the process exited too soon.
-  if (launch_success_timer_->IsRunning()) {
-    launch_success_timer_->Stop();
+  if (launch_success_timer_.IsRunning()) {
+    launch_success_timer_.Stop();
     launch_backoff_.InformOfRequest(false);
   }
 
@@ -310,23 +373,20 @@ void WorkerProcessLauncher::Core::StopWorker() {
     process_watcher_.StopWatching();
   }
 
-  ipc_error_timer_->Stop();
+  kill_process_timer_.Stop();
   process_exit_event_.Close();
 
   // Do not relaunch the worker process if the caller has asked us to stop.
-  if (stopping_) {
-    ipc_error_timer_.reset();
-    launch_timer_.reset();
+  if (stopping_)
     return;
-  }
 
   if (launcher_delegate_->IsPermanentError(launch_backoff_.failure_count())) {
     if (!stopping_)
       worker_delegate_->OnPermanentError();
   } else {
     // Schedule the next attempt to launch the worker process.
-    launch_timer_->Start(FROM_HERE, launch_backoff_.GetTimeUntilRelease(),
-                         this, &Core::LaunchWorker);
+    launch_timer_.Start(FROM_HERE, launch_backoff_.GetTimeUntilRelease(), this,
+                        &Core::LaunchWorker);
   }
 }
 
@@ -344,8 +404,22 @@ WorkerProcessLauncher::~WorkerProcessLauncher() {
   core_ = NULL;
 }
 
+void WorkerProcessLauncher::Crash(const tracked_objects::Location& location) {
+  core_->Crash(location);
+}
+
 void WorkerProcessLauncher::Send(IPC::Message* message) {
   core_->Send(message);
 }
+
+void WorkerProcessLauncher::ResetLaunchSuccessTimeoutForTest() {
+  core_->ResetLaunchSuccessTimeoutForTest();
+}
+
+void WorkerProcessLauncher::SetKillProcessTimeoutForTest(
+    const base::TimeDelta& timeout) {
+  core_->SetKillProcessTimeoutForTest(timeout);
+}
+
 
 } // namespace remoting

@@ -67,7 +67,7 @@ void DesktopSessionWin::OnChannelConnected(int32 peer_pid) {
   // from the desktop process.
   desktop_process_.Set(OpenProcess(PROCESS_DUP_HANDLE, false, peer_pid));
   if (!desktop_process_.IsValid()) {
-    RestartDesktopProcess(FROM_HERE);
+    CrashDesktopProcess(FROM_HERE);
     return;
   }
 
@@ -88,7 +88,7 @@ bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
 
   if (!handled) {
     LOG(ERROR) << "Received unexpected IPC type: " << message.type();
-    RestartDesktopProcess(FROM_HERE);
+    CrashDesktopProcess(FROM_HERE);
   }
 
   return handled;
@@ -143,7 +143,7 @@ void DesktopSessionWin::OnDesktopSessionAgentAttached(
   if (!daemon_process()->OnDesktopSessionAgentAttached(id(),
                                                        desktop_process_,
                                                        desktop_pipe)) {
-    RestartDesktopProcess(FROM_HERE);
+    CrashDesktopProcess(FROM_HERE);
   }
 }
 
@@ -161,12 +161,11 @@ void DesktopSessionWin::OnInjectSas() {
     LOG(ERROR) << "Failed to inject Secure Attention Sequence.";
 }
 
-void DesktopSessionWin::RestartDesktopProcess(
+void DesktopSessionWin::CrashDesktopProcess(
     const tracked_objects::Location& location) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  launcher_->Send(new ChromotingDaemonDesktopMsg_Crash(
-      location.function_name(), location.file_name(), location.line_number()));
+  launcher_->Crash(location);
 }
 
 }  // namespace remoting

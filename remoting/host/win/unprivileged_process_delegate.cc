@@ -232,6 +232,12 @@ bool UnprivilegedProcessDelegate::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void UnprivilegedProcessDelegate::CloseChannel() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  channel_.reset();
+}
+
 DWORD UnprivilegedProcessDelegate::GetProcessId() const {
   if (worker_process_.IsValid()) {
     return ::GetProcessId(worker_process_);

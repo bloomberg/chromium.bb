@@ -14,12 +14,17 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TimeDelta;
 } // namespace base
 
 namespace IPC {
 class Listener;
 class Message;
 } // namespace IPC
+
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
 
 namespace remoting {
 
@@ -34,6 +39,9 @@ class WorkerProcessLauncher {
   class Delegate : public IPC::Sender {
    public:
     virtual ~Delegate();
+
+    // Closes the IPC channel.
+    virtual void CloseChannel() = 0;
 
     // Returns PID of the worker process or 0 if it is not available.
     virtual DWORD GetProcessId() const = 0;
@@ -68,12 +76,24 @@ class WorkerProcessLauncher {
       WorkerProcessIpcDelegate* worker_delegate);
   ~WorkerProcessLauncher();
 
+  // Asks the worker process to crash and generate a dump, and closes the IPC
+  // channel. |location| is passed to the worker so that it is on the stack in
+  // the dump. Restarts the worker process forcefully, if it does
+  // not exit on its own.
+  void Crash(const tracked_objects::Location& location);
+
   // Sends an IPC message to the worker process. The message will be silently
   // dropped if Send() is called before Start() or after stutdown has been
   // initiated.
   void Send(IPC::Message* message);
 
  private:
+  friend class WorkerProcessLauncherTest;
+
+  // Hooks that allow test code to call the corresponding methods of |Core|.
+  void ResetLaunchSuccessTimeoutForTest();
+  void SetKillProcessTimeoutForTest(const base::TimeDelta& timeout);
+
   // The actual implementation resides in WorkerProcessLauncher::Core class.
   class Core;
   scoped_refptr<Core> core_;

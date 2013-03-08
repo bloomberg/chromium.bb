@@ -41,6 +41,7 @@ class UnprivilegedProcessDelegate : public WorkerProcessLauncher::Delegate {
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
+  virtual void CloseChannel() OVERRIDE;
   virtual DWORD GetProcessId() const OVERRIDE;
   virtual bool IsPermanentError(int failure_count) const OVERRIDE;
   virtual void KillProcess(DWORD exit_code) OVERRIDE;
