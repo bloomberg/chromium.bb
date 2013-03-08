@@ -835,8 +835,28 @@ def gen_gtest_output_dir(cwd, gtest_output):
 
 
 def run_test_cases(
-    cmd, cwd, test_cases, jobs, timeout, retries, run_all, max_failures,
-    no_cr, gtest_output, result_file, verbose):
+    cmd, cwd, test_cases, jobs, timeout, retries, run_all,
+    max_failures, no_cr, gtest_output, result_file, verbose):
+  """Runs test cases in parallel.
+
+  Arguments:
+    - cmd: command to run.
+    - cwd: working directory.
+    - test_cases: list of preprocessed test cases to run.
+    - jobs: number of parallel execution threads to do.
+    - timeout: individual test case timeout.
+    - retries: number of times a test case can be retried.
+    - run_all: If true, do not early return even if all test cases fail.
+    - max_failures is the absolute maximum number of tolerated failures or None.
+    - no_cr: makes output friendly to piped logs.
+    - gtest_output: saves results as xml.
+    - result_file: saves results as json.
+    - verbose: print more details.
+
+  It may run a subset of the test cases if too many test cases failed, as
+  determined with max_failures, retries and run_all.
+  """
+  assert 0 <= retries <= 100000
   if not test_cases:
     return 0
   if run_all:
