@@ -252,14 +252,11 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onGeolocationPermissionsHidePrompt();
 
-    // TODO(mnaganov): Make final after updating the glue layer.
-    public /*final*/ void onScaleChanged(float oldScale, float newScale) {
+    public final void onScaleChanged(float oldScale, float newScale) {
         onScaleChangedScaled((float)(oldScale * mDIPScale), (float)(newScale * mDIPScale));
     }
 
-    // TODO(mnaganov): Make abstract after updating the glue layer.
-    public /*abstract*/ void onScaleChangedScaled(float oldScale, float newScale) {
-    }
+    public abstract void onScaleChangedScaled(float oldScale, float newScale);
 
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
 
