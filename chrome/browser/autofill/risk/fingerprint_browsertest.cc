@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/port.h"
 #include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"

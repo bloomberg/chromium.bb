@@ -22,7 +22,6 @@
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"

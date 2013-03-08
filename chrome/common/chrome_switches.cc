@@ -125,9 +125,6 @@ const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 // computer startup and not by some user action.
 const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
 
-// Flag used to tell Chrome the base url of the Autofill service.
-const char kAutofillServiceUrl[]            = "autofill-service-url";
-
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
@@ -491,10 +488,6 @@ const char kEasyOffStoreExtensionInstall[] = "easy-off-store-extension-install";
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";
 
-// Enable autofill for new elements like checkboxes. crbug.com/157636
-const char kEnableExperimentalFormFilling[] =
-    "enable-experimental-form-filling";
-
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";
@@ -781,7 +774,7 @@ const char kHstsHosts[]                     = "hsts-hosts";
 // Causes net::URLFetchers to ignore requests for SSL client certificates,
 // causing them to attempt an unauthenticated SSL/TLS session. This is intended
 // for use when testing various service URLs (eg: kPromoServerURL, kInstantURL,
-// kSbURLPrefix, kSyncServiceURL, kWalletServiceUrl, etc)
+// kSbURLPrefix, kSyncServiceURL, etc)
 const char kIgnoreUrlFetcherCertRequests[] =
     "ignore-urlfetcher-cert-requests";
 
@@ -1213,9 +1206,6 @@ const char kSetToken[]                      = "set-token";
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
 
-// Annotates forms with Autofill field type predictions.
-const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
-
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";
@@ -1401,14 +1391,6 @@ const char kViewerConnection[]              = "viewer-connection";
 
 // Cycle through a series of URLs listed in the specified file.
 const char kVisitURLs[]                     = "visit-urls";
-
-// Secure service URL for Online Wallet service. Used as the base url to escrow
-// credit card numbers.
-const char kWalletSecureServiceUrl[]        = "wallet-secure-service-url";
-
-// Service URL for Online Wallet service. Used as the base url for Online Wallet
-// API calls.
-const char kWalletServiceUrl[]              = "wallet-service-url";
 
 // Enable the "native services" feature of web-intents.
 const char kWebIntentsNativeServicesEnabled[] =

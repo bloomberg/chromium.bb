@@ -23,6 +23,10 @@
           'sources': [
             'autofill/common/autocheckout_status.h',
             'autofill/common/autofill_messages.h',
+            'autofill/common/autofill_pref_names.cc',
+            'autofill/common/autofill_pref_names.h',
+            'autofill/common/autofill_switches.cc',
+            'autofill/common/autofill_switches.h',
             'autofill/common/form_data.cc',
             'autofill/common/form_data.h',
             'autofill/common/form_data_predictions.cc',

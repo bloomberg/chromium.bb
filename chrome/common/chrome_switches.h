@@ -10,14 +10,15 @@
 #include "build/build_config.h"
 
 #include "base/base_switches.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "content/public/common/content_switches.h"
 
 namespace switches {
 
 // -----------------------------------------------------------------------------
 // Can't find the switch you are looking for? Try looking in
-// ui/gl/gl_switches.cc or base/base_switches.cc or
-// content/public/common/content_switches.cc or media/base/media_switches.cc
+// media/base/media_switches.cc or ui/gl/gl_switches.cc or one of the
+// .cc files corresponding to the *_switches.h files included above
 // instead.
 // -----------------------------------------------------------------------------
 
@@ -50,7 +51,6 @@ extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutoLaunchAtStartup[];
-extern const char kAutofillServiceUrl[];
 extern const char kAutomationClientChannelID[];
 extern const char kAutomationReinitializeOnChannelError[];
 extern const char kCheckForUpdateIntervalSec[];
@@ -142,7 +142,6 @@ extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDesktopGuestMode[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableExperimentalExtensionApis[];
-extern const char kEnableExperimentalFormFilling[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityUI[];
 extern const char kEnableFileCookies[];
@@ -323,7 +322,6 @@ extern const char kSideloadWipeout[];
 extern const char kSilentLaunch[];
 extern const char kSetToken[];
 extern const char kShowAppList[];
-extern const char kShowAutofillTypePredictions[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kShowIcons[];
 extern const char kSigninProcess[];
@@ -374,8 +372,6 @@ extern const char kVariationsServerURL[];
 extern const char kVersion[];
 extern const char kViewerConnection[];
 extern const char kVisitURLs[];
-extern const char kWalletSecureServiceUrl[];
-extern const char kWalletServiceUrl[];
 extern const char kWebIntentsNativeServicesEnabled[];
 extern const char kWhitelistedExtensionID[];
 extern const char kWindowPosition[];

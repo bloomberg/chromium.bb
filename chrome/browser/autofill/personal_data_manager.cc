@@ -24,7 +24,7 @@
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/validation.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
+#include "components/autofill/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_source.h"

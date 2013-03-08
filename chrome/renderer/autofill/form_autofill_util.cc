@@ -11,7 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"

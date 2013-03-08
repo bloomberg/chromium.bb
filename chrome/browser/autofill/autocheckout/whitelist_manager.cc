@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
