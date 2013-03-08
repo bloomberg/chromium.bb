@@ -655,9 +655,6 @@ class GitWrapper(SCMWrapper):
       detach_head = True
     if options.verbose:
       clone_cmd.append('--verbose')
-    if options.with_branch_heads:
-      clone_cmd.extend(['--config', 'remote.origin.fetch=+refs/branch-heads/*:'
-                        'refs/remotes/branch-heads/*'])
     clone_cmd.extend([url, self.checkout_path])
 
     # If the parent directory does not exist, Git clone on Windows will not
@@ -680,14 +677,6 @@ class GitWrapper(SCMWrapper):
       try:
         self._Run(clone_cmd, options, cwd=self._root_dir, filter_fn=_GitFilter,
                   print_stdout=False)
-        # Update the "branch-heads" remote-tracking branches, since clone
-        # doesn't automatically fetch those, and we might need it to checkout a
-        # specific revision below.
-        if options.with_branch_heads:
-          fetch_cmd = ['fetch', 'origin']
-          if options.verbose:
-            fetch_cmd.append('--verbose')
-          self._Run(fetch_cmd, options)
         break
       except subprocess2.CalledProcessError, e:
         # Too bad we don't have access to the actual output yet.
