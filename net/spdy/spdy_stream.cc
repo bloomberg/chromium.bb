@@ -91,7 +91,7 @@ class SpdyStream::SpdyStreamIOBufferProducer
       return NULL;
     if (stream_->stream_id() == 0)
       SpdySession::SpdyIOBufferProducer::ActivateStream(session, stream_);
-    frame_.reset(stream_->ProduceNextFrame());
+    frame_ = stream_->ProduceNextFrame();
     return frame_ == NULL ? NULL :
         SpdySession::SpdyIOBufferProducer::CreateIOBuffer(
             frame_.get(), GetPriority(), stream_);
@@ -107,7 +107,7 @@ void SpdyStream::SetHasWriteAvailable() {
                                        new SpdyStreamIOBufferProducer(this));
 }
 
-SpdyFrame* SpdyStream::ProduceNextFrame() {
+scoped_ptr<SpdyFrame> SpdyStream::ProduceNextFrame() {
   if (io_state_ == STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE) {
     CHECK(request_.get());
     CHECK_GT(stream_id_, 0u);
@@ -115,20 +115,20 @@ SpdyFrame* SpdyStream::ProduceNextFrame() {
     std::string origin = GetUrl().GetOrigin().spec();
     DCHECK(origin[origin.length() - 1] == '/');
     origin.erase(origin.length() - 1);  // Trim trailing slash.
-    SpdyFrame* frame = session_->CreateCredentialFrame(
+    scoped_ptr<SpdyFrame> frame(session_->CreateCredentialFrame(
         origin, domain_bound_cert_type_, domain_bound_private_key_,
-        domain_bound_cert_, priority_);
-    return frame;
+        domain_bound_cert_, priority_));
+    return frame.Pass();
   } else if (io_state_ == STATE_SEND_HEADERS_COMPLETE) {
     CHECK(request_.get());
     CHECK_GT(stream_id_, 0u);
 
     SpdyControlFlags flags =
         has_upload_data_ ? CONTROL_FLAG_NONE : CONTROL_FLAG_FIN;
-    SpdyFrame* frame = session_->CreateSynStream(
-        stream_id_, priority_, slot_, flags, *request_);
+    scoped_ptr<SpdyFrame> frame(session_->CreateSynStream(
+        stream_id_, priority_, slot_, flags, *request_));
     send_time_ = base::TimeTicks::Now();
-    return frame;
+    return frame.Pass();
   } else {
     CHECK(!cancelled());
     // We must need to write stream data.
@@ -145,15 +145,15 @@ SpdyFrame* SpdyStream::ProduceNextFrame() {
 
     if (frame.type == TYPE_DATA) {
       // Send queued data frame.
-      return frame.data_frame;
+      return scoped_ptr<SpdyFrame>(frame.data_frame);
     } else {
       DCHECK(frame.type == TYPE_HEADERS);
       // Create actual HEADERS frame just in time because it depends on
       // compression context and should not be reordered after the creation.
-      SpdyFrame* header_frame = session_->CreateHeadersFrame(
-          stream_id_, *frame.header_block, SpdyControlFlags());
+      scoped_ptr<SpdyFrame> header_frame(session_->CreateHeadersFrame(
+          stream_id_, *frame.header_block, SpdyControlFlags()));
       delete frame.header_block;
-      return header_frame;
+      return header_frame.Pass();
     }
   }
   NOTREACHED();
@@ -575,7 +575,7 @@ int SpdyStream::SendRequest(bool has_upload_data) {
   return DoLoop(OK);
 }
 
-int SpdyStream::WriteHeaders(SpdyHeaderBlock* headers) {
+void SpdyStream::QueueHeaders(scoped_ptr<SpdyHeaderBlock> headers) {
   // Until the first headers by SYN_STREAM have been completely sent, we can
   // not be sure that our stream_id is correct.
   DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
@@ -583,33 +583,35 @@ int SpdyStream::WriteHeaders(SpdyHeaderBlock* headers) {
 
   PendingFrame frame;
   frame.type = TYPE_HEADERS;
-  frame.header_block = headers;
+  // |frame.header_block| is deleted by either ProduceNextFrame() or
+  // the destructor.
+  frame.header_block = headers.release();
   pending_frames_.push_back(frame);
 
   SetHasWriteAvailable();
-  return ERR_IO_PENDING;
 }
 
-int SpdyStream::WriteStreamData(IOBuffer* data,
-                                int length,
-                                SpdyDataFlags flags) {
+void SpdyStream::QueueStreamData(IOBuffer* data,
+                                 int length,
+                                 SpdyDataFlags flags) {
   // Until the headers have been completely sent, we can not be sure
   // that our stream_id is correct.
   DCHECK_GT(io_state_, STATE_SEND_HEADERS_COMPLETE);
   CHECK_GT(stream_id_, 0u);
 
-  SpdyFrame* data_frame = session_->CreateDataFrame(
-      stream_id_, data, length, flags);
+  scoped_ptr<SpdyFrame> data_frame(session_->CreateDataFrame(
+      stream_id_, data, length, flags));
   if (!data_frame)
-    return ERR_IO_PENDING;
+    return;
 
   PendingFrame frame;
   frame.type = TYPE_DATA;
-  frame.data_frame = data_frame;
+  // |frame.data_frame| is either returned by ProduceNextFrame() or
+  // deleted in the destructor.
+  frame.data_frame = data_frame.release();
   pending_frames_.push_back(frame);
 
   SetHasWriteAvailable();
-  return ERR_IO_PENDING;
 }
 
 bool SpdyStream::GetSSLInfo(SSLInfo* ssl_info,

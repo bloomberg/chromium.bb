@@ -74,7 +74,8 @@ int SpdyWebSocketStream::SendData(const char* data, int length) {
   }
   scoped_refptr<IOBuffer> buf(new IOBuffer(length));
   memcpy(buf->data(), data, length);
-  return stream_->WriteStreamData(buf.get(), length, DATA_FLAG_NONE);
+  stream_->QueueStreamData(buf.get(), length, DATA_FLAG_NONE);
+  return ERR_IO_PENDING;
 }
 
 void SpdyWebSocketStream::Close() {

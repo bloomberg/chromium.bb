@@ -322,10 +322,11 @@ int SpdyHttpStream::OnSendBody() {
   CHECK(request_info_ && request_info_->upload_data_stream);
   const bool eof = request_info_->upload_data_stream->IsEOF();
   if (request_body_buf_->BytesRemaining() > 0) {
-    return stream_->WriteStreamData(
+    stream_->QueueStreamData(
         request_body_buf_,
         request_body_buf_->BytesRemaining(),
         eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+    return ERR_IO_PENDING;
   }
 
   // The entire body data has been sent.
@@ -528,9 +529,10 @@ int SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
   request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_, status);
 
   const bool eof = request_info_->upload_data_stream->IsEOF();
-  return stream_->WriteStreamData(request_body_buf_,
-                                  request_body_buf_->BytesRemaining(),
-                                  eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+  stream_->QueueStreamData(request_body_buf_,
+                           request_body_buf_->BytesRemaining(),
+                           eof ? DATA_FLAG_FIN : DATA_FLAG_NONE);
+  return ERR_IO_PENDING;
 }
 
 void SpdyHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
