@@ -230,6 +230,8 @@ void CookieManager::RemoveAllCookie() {
                             base::Unretained(this)), false);
 }
 
+// TODO(kristianm): Pass a null callback so it will not be invoked
+// across threads.
 void CookieManager::RemoveAllCookieAsyncHelper(
     base::WaitableEvent* completion) {
   DCHECK(!completion);
@@ -262,6 +264,8 @@ bool CookieManager::HasCookies() {
   return has_cookies;
 }
 
+// TODO(kristianm): Simplify this, copying the entire list around
+// should not be needed.
 void CookieManager::HasCookiesAsyncHelper(bool* result,
                                   base::WaitableEvent* completion) {
   cookie_monster_->GetAllCookiesAsync(
