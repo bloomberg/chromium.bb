@@ -1752,6 +1752,7 @@
                 # These tests crash when run with coverage turned on due to an
                 # issue with llvm_gcda_increment_indirect_counter:
                 # http://crbug.com/156058
+                ['exclude', '^browser/autocomplete/bookmark_provider_unittest\\.cc$'],
                 ['exclude', '^browser/autocomplete/builtin_provider_unittest\\.cc$'],
                 ['exclude', '^browser/autocomplete/shortcuts_provider_unittest\\.cc$'],
               ],
