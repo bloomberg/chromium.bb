@@ -31,6 +31,11 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
 
+  void set_leak_on_destroy() {
+    base::AutoLock lock(main_thread_lock_);
+    leak_on_destroy_ = true;
+  }
+
  protected:
   virtual ~ContextProviderCommandBuffer();
 
@@ -42,11 +47,11 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   virtual void OnMemoryAllocationChanged(bool nonzero_allocation);
 
  private:
-
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
-  base::Lock destroyed_lock_;
+  base::Lock main_thread_lock_;
+  bool leak_on_destroy_;
   bool destroyed_;
 
   class LostContextCallbackProxy;

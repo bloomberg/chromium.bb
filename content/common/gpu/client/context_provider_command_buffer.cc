@@ -42,10 +42,19 @@ class ContextProviderCommandBuffer::MemoryAllocationCallbackProxy
 };
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer()
-    : destroyed_(false) {
+    : leak_on_destroy_(false),
+      destroyed_(false) {
 }
 
-ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {}
+ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
+  base::AutoLock lock(main_thread_lock_);
+  if (leak_on_destroy_) {
+    WebGraphicsContext3DCommandBufferImpl* context3d ALLOW_UNUSED =
+        context3d_.release();
+    webkit::gpu::GrContextForWebGraphicsContext3D* gr_context ALLOW_UNUSED =
+        gr_context_.release();
+  }
+}
 
 bool ContextProviderCommandBuffer::InitializeOnMainThread() {
   if (destroyed_)
@@ -89,12 +98,12 @@ void ContextProviderCommandBuffer::VerifyContexts() {
 }
 
 void ContextProviderCommandBuffer::OnLostContext() {
-  base::AutoLock lock(destroyed_lock_);
+  base::AutoLock lock(main_thread_lock_);
   destroyed_ = true;
 }
 
 bool ContextProviderCommandBuffer::DestroyedOnMainThread() {
-  base::AutoLock lock(destroyed_lock_);
+  base::AutoLock lock(main_thread_lock_);
   return destroyed_;
 }
 

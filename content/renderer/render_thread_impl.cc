@@ -233,6 +233,19 @@ class RenderThreadImpl::GpuVDAContextLostCallback
   }
 };
 
+class RenderThreadImpl::RendererContextProviderCommandBuffer
+    : public ContextProviderCommandBuffer {
+ protected:
+  virtual ~RendererContextProviderCommandBuffer() {}
+
+  virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+  CreateOffscreenContext3d() {
+    RenderThreadImpl* self = RenderThreadImpl::current();
+    DCHECK(self);
+    return self->CreateOffscreenContext3d().Pass();
+  }
+};
+
 RenderThreadImpl::HistogramCustomizer::HistogramCustomizer() {
   custom_histograms_.insert("V8.MemoryExternalFragmentationTotal");
   custom_histograms_.insert("V8.MemoryHeapSampleTotalCommitted");
@@ -425,6 +438,11 @@ RenderThreadImpl::~RenderThreadImpl() {
   // Clean up plugin channels before this thread goes away.
   NPChannelBase::CleanupChannels();
 #endif
+
+  // Leak shared contexts on other threads, as we can not get to the correct
+  // thread to destroy them.
+  if (shared_contexts_compositor_thread_)
+    shared_contexts_compositor_thread_->set_leak_on_destroy();
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
@@ -925,19 +943,6 @@ RenderThreadImpl::CreateOffscreenContext3d() {
           attributes,
           GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d")));
 }
-
-class RenderThreadImpl::RendererContextProviderCommandBuffer
-    : public ContextProviderCommandBuffer {
- protected:
-  virtual ~RendererContextProviderCommandBuffer() {}
-
-  virtual scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-  CreateOffscreenContext3d() {
-    RenderThreadImpl* self = RenderThreadImpl::current();
-    DCHECK(self);
-    return self->CreateOffscreenContext3d().Pass();
-  }
-};
 
 scoped_refptr<ContextProviderCommandBuffer>
 RenderThreadImpl::OffscreenContextProviderForMainThread() {
