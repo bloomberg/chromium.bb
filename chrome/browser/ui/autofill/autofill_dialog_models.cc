@@ -146,7 +146,7 @@ void AccountChooserModel::SetHadWalletError() {
 }
 
 bool AccountChooserModel::WalletIsSelected() const {
-  return checked_item_ == 0;
+  return checked_item_ == kWalletItemId;
 }
 
 void AccountChooserModel::PrefChanged(const std::string& pref) {
