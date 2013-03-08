@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/process.h"
+#include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace net {
@@ -25,8 +26,6 @@ class IOBufferWithSize;
 }  // namespace net
 
 namespace extensions {
-
-class NativeProcessLauncher;
 
 // Manages the native side of a connection between an extension and a native
 // process.
@@ -91,7 +90,7 @@ class NativeMessageProcessHost
   void LaunchHostProcess();
 
   // Callback for NativeProcessLauncher::Launch().
-  void OnHostProcessLaunched(bool result,
+  void OnHostProcessLaunched(NativeProcessLauncher::LaunchResult result,
                              base::PlatformFile read_file,
                              base::PlatformFile write_file);
 

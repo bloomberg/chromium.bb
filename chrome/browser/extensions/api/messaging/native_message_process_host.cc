@@ -35,6 +35,11 @@ const size_t kMessageHeaderSize = 4;
 const size_t kReadBufferSize = 4096;
 
 const char kFailedToStartError[] = "Failed to start native messaging host.";
+const char kInvalidNameError[] =
+    "Invalid native messaging host name specified.";
+const char kNotFoundError[] = "Specified native messaging host not found.";
+const char kForbiddenError[] =
+    "Access to the specified native messaging host is forbidden.";
 const char kHostInputOuputError[] =
     "Error when communicating with the native messaging host.";
 
@@ -118,14 +123,26 @@ void NativeMessageProcessHost::LaunchHostProcess() {
 }
 
 void NativeMessageProcessHost::OnHostProcessLaunched(
-    bool result,
+    NativeProcessLauncher::LaunchResult result,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  if (!result) {
-    Close(kFailedToStartError);
-    return;
+  switch (result) {
+    case NativeProcessLauncher::RESULT_INVALID_NAME:
+      Close(kInvalidNameError);
+      return;
+    case NativeProcessLauncher::RESULT_NOT_FOUND:
+      Close(kNotFoundError);
+      return;
+    case NativeProcessLauncher::RESULT_FORBIDDEN:
+      Close(kForbiddenError);
+      return;
+    case NativeProcessLauncher::RESULT_FAILED_TO_START:
+      Close(kFailedToStartError);
+      return;
+    case NativeProcessLauncher::RESULT_SUCCESS:
+      break;
   }
 
   read_file_ = read_file;

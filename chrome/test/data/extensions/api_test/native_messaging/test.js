@@ -12,7 +12,7 @@ chrome.test.getConfig(function(config) {
             'not.installed.app', message,
             chrome.test.callback(function(response) {
               chrome.test.assertEq(typeof response, "undefined");
-            }, "Failed to start native messaging host."));
+            }, "Specified native messaging host not found."));
       },
 
       function sendMessageWithCallback() {

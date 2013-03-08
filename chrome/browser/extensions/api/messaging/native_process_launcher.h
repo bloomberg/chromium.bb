@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_PROCESS_LAUNCHER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_PROCESS_LAUNCHER_H_
 
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/platform_file.h"
 #include "base/process.h"
-#include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 
 class CommandLine;
 class GURL;
@@ -21,10 +23,18 @@ class NativeMessagingHostManifest;
 
 class NativeProcessLauncher {
  public:
+  enum LaunchResult {
+    RESULT_SUCCESS,
+    RESULT_INVALID_NAME,
+    RESULT_NOT_FOUND,
+    RESULT_FORBIDDEN,
+    RESULT_FAILED_TO_START,
+  };
+
   // Callback that's called after the process has been launched. |result| is
   // set to false in case of a failure. Handler must take ownership of the IO
   // handles.
-  typedef base::Callback<void (bool result,
+  typedef base::Callback<void (LaunchResult result,
                                base::PlatformFile read_file,
                                base::PlatformFile write_file)> LaunchedCallback;
 

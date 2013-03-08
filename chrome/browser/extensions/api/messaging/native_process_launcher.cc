@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
 namespace extensions {
@@ -73,7 +76,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
                               const std::string& native_host_name,
                               LaunchedCallback callback);
     void CallCallbackOnIOThread(LaunchedCallback callback,
-                                bool result,
+                                LaunchResult result,
                                 base::PlatformFile read_file,
                                 base::PlatformFile write_file);
 
@@ -115,35 +118,40 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     LaunchedCallback callback) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
+  if (!NativeMessagingHostManifest::IsValidName(native_host_name)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
+                   this, callback, RESULT_INVALID_NAME,
+                   base::kInvalidPlatformFileValue,
+                   base::kInvalidPlatformFileValue));
+    return;
+  }
+
   std::string error_message;
   scoped_ptr<NativeMessagingHostManifest> manifest;
 
-  if (!NativeMessagingHostManifest::IsValidName(native_host_name)) {
-    error_message = "Invalid native host name: " + native_host_name;
+  // First check if the manifest location is specified in the command line.
+  base::FilePath path = GetHostManifestPathFromCommandLine(native_host_name);
+  if (!path.empty()) {
+    manifest = NativeMessagingHostManifest::Load(path, &error_message);
   } else {
-    // First check if the manifest location is specified in the command line.
-    base::FilePath path = GetHostManifestPathFromCommandLine(native_host_name);
-    if (!path.empty()) {
-      manifest = NativeMessagingHostManifest::Load(path, &error_message);
-    } else {
-      // Try loading the manifest from the default location.
-      manifest = FindAndLoadManifest(native_host_name, &error_message);
-    }
+    // Try loading the manifest from the default location.
+    manifest = FindAndLoadManifest(native_host_name, &error_message);
+  }
 
-    if (manifest && manifest->name() != native_host_name) {
-      error_message = "Name specified in the manifest does not match.";
-      manifest.reset();
-    }
+  if (manifest && manifest->name() != native_host_name) {
+    error_message = "Name specified in the manifest does not match.";
+    manifest.reset();
   }
 
   if (!manifest) {
-    // TODO(sergeyu): Report the error to the application.
     LOG(ERROR) << "Failed to load manifest for native messaging host "
                << native_host_name << ": " << error_message;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                   this, callback, false,
+                   this, callback, RESULT_NOT_FOUND,
                    base::kInvalidPlatformFileValue,
                    base::kInvalidPlatformFileValue));
     return;
@@ -154,7 +162,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
-                   this, callback, false,
+                   this, callback, RESULT_FORBIDDEN,
                    base::kInvalidPlatformFileValue,
                    base::kInvalidPlatformFileValue));
     return;
@@ -165,8 +173,11 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
 
   base::PlatformFile read_file;
   base::PlatformFile write_file;
-  bool result = NativeProcessLauncher::LaunchNativeProcess(
-      command_line, &read_file, &write_file);
+  LaunchResult result = RESULT_FAILED_TO_START;
+  if (NativeProcessLauncher::LaunchNativeProcess(
+          command_line, &read_file, &write_file)) {
+    result = RESULT_SUCCESS;
+  }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -176,7 +187,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
 
 void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
     LaunchedCallback callback,
-    bool result,
+    LaunchResult result,
     base::PlatformFile read_file,
     base::PlatformFile write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
