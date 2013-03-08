@@ -156,6 +156,7 @@ void RootWindow::Init() {
   compositor()->SetRootLayer(layer());
   SetBounds(
       ui::ConvertRectToDIP(layer(), gfx::Rect(host_->GetBounds().size())));
+  Env::GetInstance()->NotifyRootWindowInitialized(this);
   Show();
 }
 

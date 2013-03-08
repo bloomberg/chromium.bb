@@ -17,6 +17,9 @@ class AURA_EXPORT EnvObserver {
   // Called when |window| has been initialized.
   virtual void OnWindowInitialized(Window* window) = 0;
 
+ // Called when |root_window| has been initialized.
+ virtual void OnRootWindowInitialized(RootWindow* root_window) {};
+
   // Called when a RootWindow's host is activated.
   virtual void OnRootWindowActivated(RootWindow* root_window) {}
 

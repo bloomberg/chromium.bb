@@ -14,6 +14,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
@@ -30,7 +31,8 @@ class TouchEventCalibrate;
 }
 
 class RootWindowHostLinux : public RootWindowHost,
-                            public MessageLoop::Dispatcher {
+                            public MessageLoop::Dispatcher,
+                            public EnvObserver {
  public:
   explicit RootWindowHostLinux(const gfx::Rect& bounds);
   virtual ~RootWindowHostLinux();
@@ -67,6 +69,9 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
+  // EnvObserver overrides.
+  virtual void OnWindowInitialized(Window* window) OVERRIDE;
+  virtual void OnRootWindowInitialized(RootWindow* root_window) OVERRIDE;
  private:
   class MouseMoveFilter;
 
@@ -94,6 +99,9 @@ class RootWindowHostLinux : public RootWindowHost,
   // CopyAreaToSkCanvas() and GrabSnapshot().
   scoped_ptr<ui::XScopedImage> GetXImage(const gfx::Rect& snapshot_bounds);
 
+  // Update is_internal_display_ based on delegate_ state
+  void UpdateIsInternalDisplay();
+
   RootWindowHostDelegate* delegate_;
 
   // The display and the native X window hosting the root window.
@@ -114,6 +122,9 @@ class RootWindowHostLinux : public RootWindowHost,
 
   // The bounds of |x_root_window_|.
   gfx::Rect x_root_bounds_;
+
+  // True if the root host resides on the internal display
+  bool is_internal_display_;
 
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;

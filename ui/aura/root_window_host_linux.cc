@@ -263,6 +263,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       current_cursor_(ui::kCursorNull),
       window_mapped_(false),
       bounds_(bounds),
+      is_internal_display_(false),
       focus_when_shown_(false),
       touch_calibrate_(new internal::TouchEventCalibrate),
       mouse_move_filter_(new MouseMoveFilter),
@@ -332,9 +333,11 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   XStoreName(xdisplay_, xwindow_, name.c_str());
   XRRSelectInput(xdisplay_, x_root_window_,
                  RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
+  Env::GetInstance()->AddObserver(this);
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {
+  Env::GetInstance()->RemoveObserver(this);
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(this);
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
 
@@ -402,6 +405,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       bool size_changed = bounds_.size() != bounds.size();
       bool origin_changed = bounds_.origin() != bounds.origin();
       bounds_ = bounds;
+      UpdateIsInternalDisplay();
       // Always update barrier and mouse location because |bounds_| might
       // have already been updated in |SetBounds|.
       if (pointer_barriers_.get()) {
@@ -564,6 +568,7 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_ = bounds;
+  UpdateIsInternalDisplay();
   if (origin_changed)
     delegate_->OnHostMoved(bounds.origin());
   if (size_changed || current_scale != new_scale) {
@@ -833,6 +838,21 @@ void RootWindowHostLinux::PrepareForShutdown() {
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
 }
 
+void RootWindowHostLinux::OnWindowInitialized(Window* window) {
+}
+
+void RootWindowHostLinux::OnRootWindowInitialized(RootWindow* root_window) {
+  // UpdateIsInternalDisplay relies on:
+  // 1. delegate_ pointing to RootWindow - available after SetDelegate.
+  // 2. RootWindow's kDisplayIdKey property set - available by the time
+  //    RootWindow::Init is called.
+  //    (set in DisplayManager::CreateRootWindowForDisplay)
+  // Ready when NotifyRootWindowInitialized is called from RootWindow::Init.
+  if (!delegate_ || root_window != GetRootWindow())
+    return;
+  UpdateIsInternalDisplay();
+}
+
 bool RootWindowHostLinux::DispatchEventForRootWindow(
     const base::NativeEvent& event) {
   switch (event->type) {
@@ -999,6 +1019,13 @@ scoped_ptr<ui::XScopedImage> RootWindowHostLinux::GetXImage(
     image.reset();
   }
   return image.Pass();
+}
+
+void RootWindowHostLinux::UpdateIsInternalDisplay() {
+  RootWindow* root_window = GetRootWindow();
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
+  gfx::Display display = screen->GetDisplayNearestWindow(root_window);
+  is_internal_display_ = display.IsInternal();
 }
 
 // static

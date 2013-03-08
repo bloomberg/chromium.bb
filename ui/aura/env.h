@@ -75,11 +75,15 @@ class AURA_EXPORT Env : public ui::EventTarget {
 
  private:
   friend class Window;
+  friend class RootWindow;
 
   void Init();
 
   // Called by the Window when it is initialized. Notifies observers.
   void NotifyWindowInitialized(Window* window);
+
+  // Called by the RootWindow when it is initialized. Notifies observers.
+  void NotifyRootWindowInitialized(RootWindow* root_window);
 
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;

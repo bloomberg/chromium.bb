@@ -98,6 +98,12 @@ void Env::NotifyWindowInitialized(Window* window) {
   FOR_EACH_OBSERVER(EnvObserver, observers_, OnWindowInitialized(window));
 }
 
+void Env::NotifyRootWindowInitialized(RootWindow* root_window) {
+  FOR_EACH_OBSERVER(EnvObserver,
+                    observers_,
+                    OnRootWindowInitialized(root_window));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Env, ui::EventTarget implementation:
 
