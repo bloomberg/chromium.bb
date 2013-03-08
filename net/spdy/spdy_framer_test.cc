@@ -52,7 +52,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId stream_id,
                                        const char* data,
                                        size_t len,
-                                       SpdyDataFlags flags));
+                                       bool fin));
   MOCK_METHOD3(OnSetting, void(SpdySettingsIds id, uint8 flags, uint32 value));
   MOCK_METHOD1(OnPing, void(uint32 unique_id));
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId stream_id,
@@ -206,7 +206,7 @@ class SpdyFramerTestUtil {
     virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                    const char* data,
                                    size_t len,
-                                   SpdyDataFlags flags) OVERRIDE {
+                                   bool fin) OVERRIDE {
       LOG(FATAL);
     }
     virtual void OnSetting(SpdySettingsIds id,
@@ -310,7 +310,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 SpdyDataFlags flags) OVERRIDE {
+                                 bool fin) OVERRIDE {
     EXPECT_EQ(header_stream_id_, stream_id);
     if (len == 0)
       ++zero_length_data_frame_count_;
@@ -3687,9 +3687,9 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
-      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, SpdyDataFlags()));
+      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, false));
       if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
       }
     }
 
@@ -3729,7 +3729,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
       EXPECT_CALL(visitor, OnControlFrameHeaderData(8, _, _))
           .WillRepeatedly(testing::Return(true));
       if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
       }
     }
 
@@ -3766,7 +3766,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
       EXPECT_CALL(visitor, OnControlFrameHeaderData(37, _, _))
           .WillRepeatedly(testing::Return(true));
       if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
       }
     }
 
@@ -3894,7 +3894,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
       EXPECT_CALL(visitor, OnControlFrameHeaderData(57, _, _))
           .WillRepeatedly(testing::Return(true));
       if (flags & DATA_FLAG_FIN) {
-        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, true));
       }
     }
 

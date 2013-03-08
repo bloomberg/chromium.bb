@@ -45,7 +45,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 SpdyDataFlags flags) OVERRIDE {}
+                                 bool fin) OVERRIDE {}
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE {}
   virtual void OnPing(uint32 unique_id) OVERRIDE {}

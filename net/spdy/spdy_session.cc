@@ -151,12 +151,12 @@ base::Value* NetLogSpdySessionWindowUpdateCallback(
 
 base::Value* NetLogSpdyDataCallback(SpdyStreamId stream_id,
                                     int size,
-                                    SpdyDataFlags flags,
+                                    bool fin,
                                     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("size", size);
-  dict->SetInteger("flags", static_cast<int>(flags));
+  dict->SetBoolean("fin", fin);
   return dict;
 }
 
@@ -791,7 +791,8 @@ SpdyFrame* SpdySession::CreateDataFrame(SpdyStreamId stream_id,
   if (net_log().IsLoggingAllEvents()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_SEND_DATA,
-        base::Bind(&NetLogSpdyDataCallback, stream_id, len, flags));
+        base::Bind(&NetLogSpdyDataCallback, stream_id, len,
+                   (flags & DATA_FLAG_FIN) != 0));
   }
 
   // Send PrefacePing for DATA_FRAMEs with nonzero payload size.
@@ -1379,12 +1380,12 @@ void SpdySession::OnStreamError(SpdyStreamId stream_id,
 void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
                                     const char* data,
                                     size_t len,
-                                    SpdyDataFlags flags) {
+                                    bool fin) {
   DCHECK_LT(len, 1u << 24);
   if (net_log().IsLoggingAllEvents()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_RECV_DATA,
-        base::Bind(&NetLogSpdyDataCallback, stream_id, len, flags));
+        base::Bind(&NetLogSpdyDataCallback, stream_id, len, fin));
   }
 
   if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION && len > 0)

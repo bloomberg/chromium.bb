@@ -194,7 +194,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len,
-                                 SpdyDataFlags flags) = 0;
+                                 bool fin) = 0;
 
   // Called when a complete setting within a SETTINGS frame has been parsed and
   // validated.

@@ -599,8 +599,8 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       } else {
         // Empty data frame.
         if (current_frame_flags_ & DATA_FLAG_FIN) {
-          visitor_->OnStreamFrameData(current_frame_stream_id_,
-                                      NULL, 0, DATA_FLAG_FIN);
+          visitor_->OnStreamFrameData(
+              current_frame_stream_id_, NULL, 0, true);
         }
         CHANGE_STATE(SPDY_AUTO_RESET);
       }
@@ -1131,8 +1131,7 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
 
     // If this is a FIN, tell the caller.
     if (current_frame_flags_ & CONTROL_FLAG_FIN) {
-      visitor_->OnStreamFrameData(
-          current_frame_stream_id_, NULL, 0, DATA_FLAG_FIN);
+      visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
     }
 
     CHANGE_STATE(SPDY_AUTO_RESET);
@@ -1355,7 +1354,7 @@ size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
       // Only inform the visitor if there is data.
       if (amount_to_forward) {
         visitor_->OnStreamFrameData(
-            current_frame_stream_id_, data, amount_to_forward, SpdyDataFlags());
+            current_frame_stream_id_, data, amount_to_forward, false);
       }
     }
     data += amount_to_forward;
@@ -1365,8 +1364,7 @@ size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
     // If the FIN flag is set, and there is no more data in this data
     // frame, inform the visitor of EOF via a 0-length data frame.
     if (!remaining_data_length_ && current_frame_flags_ & DATA_FLAG_FIN) {
-      visitor_->OnStreamFrameData(
-          current_frame_stream_id_, NULL, 0, DATA_FLAG_FIN);
+      visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
     }
   }
 
