@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "base/prefs/pref_service.h"
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -31,6 +32,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -1006,4 +1009,84 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(overlay, active_tab);
+}
+
+// Test that a transient entry is set properly when the overlay is committed
+// without a navigation.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TransientEntrySet) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantSupport();
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
+
+  // Commit the overlay without triggering a navigation.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_COMMITTED,
+      content::NotificationService::AllSources());
+  SetOmniboxText("query");
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+
+  // Confirm that the overlay has been committed.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(overlay, active_tab);
+
+  // The page hasn't navigated so there should be a transient entry with the
+  // same URL but different page ID as the last committed entry.
+  const content::NavigationEntry* transient_entry =
+      active_tab->GetController().GetTransientEntry();
+  const content::NavigationEntry* committed_entry =
+      active_tab->GetController().GetLastCommittedEntry();
+  EXPECT_EQ(transient_entry->GetURL(), committed_entry->GetURL());
+  EXPECT_NE(transient_entry->GetPageID(), committed_entry->GetPageID());
+}
+
+// Test that the a transient entry is cleared when the overlay is committed
+// with a navigation.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TransientEntryRemoved) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantSupport();
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
+
+  // Create an observer to wait for the commit.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_COMMITTED,
+      content::NotificationService::AllSources());
+
+  // Trigger a navigation on commit.
+  EXPECT_TRUE(ExecuteScript(
+      "getApiHandle().oncancel = function() {"
+      "  location.replace(location.href + '#q=query');"
+      "};"
+      ));
+
+  // Commit the overlay.
+  SetOmniboxText("query");
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+
+  // Confirm that the overlay has been committed.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(overlay, active_tab);
+
+  // The page has navigated so there should be no transient entry.
+  const content::NavigationEntry* transient_entry =
+      active_tab->GetController().GetTransientEntry();
+  EXPECT_EQ(NULL, transient_entry);
+
+  // The last committed entry should be the URL the page navigated to.
+  const content::NavigationEntry* committed_entry =
+      active_tab->GetController().GetLastCommittedEntry();
+  EXPECT_TRUE(EndsWith(committed_entry->GetURL().spec(), "#q=query", true));
 }

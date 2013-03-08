@@ -171,19 +171,25 @@ bool IsContentsFrom(const InstantPage* page,
 // search terms extraction to work correctly.
 void EnsureSearchTermsAreSet(content::WebContents* contents,
                              const string16& search_terms) {
-  content::NavigationController& controller = contents->GetController();
+  content::NavigationController* controller = &contents->GetController();
 
   // If search terms are already correct or there is already a transient entry
   // (there shouldn't be), bail out early.
   if (chrome::search::GetSearchTerms(contents) == search_terms ||
-      controller.GetTransientEntry())
+      controller->GetTransientEntry())
     return;
 
-  content::NavigationEntry* transient = content::NavigationEntry::Create(
-      *controller.GetActiveEntry());
+  const content::NavigationEntry* active_entry = controller->GetActiveEntry();
+  content::NavigationEntry* transient = controller->CreateNavigationEntry(
+      active_entry->GetURL(),
+      active_entry->GetReferrer(),
+      active_entry->GetTransitionType(),
+      false,
+      std::string(),
+      contents->GetBrowserContext());
   transient->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
                           search_terms);
-  controller.SetTransientEntry(transient);
+  controller->SetTransientEntry(transient);
 
   chrome::search::SearchTabHelper::FromWebContents(contents)->
       NavigationEntryUpdated();
