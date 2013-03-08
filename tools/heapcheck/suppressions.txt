@@ -230,11 +230,7 @@
    fun:gfx::GLApiBase::glLinkProgramFn
    fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::linkProgram
    fun:cc::ProgramBindingBase::link
-   fun:cc::ProgramBinding::initialize
-   ...
-   fun:cc::GLRenderer::drawQuad
-   fun:cc::DirectRenderer::drawRenderPass
-   fun:cc::DirectRenderer::drawFrame
+   fun:cc::ProgramBinding*
 }
 
 # There is not CloseTestNSSDB due to NSS bug 588269.
