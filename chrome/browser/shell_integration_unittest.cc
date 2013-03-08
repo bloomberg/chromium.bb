@@ -391,6 +391,27 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     // Dumb case.
     { "ignored", "ignored", "ignored", false, "", "#!/usr/bin/env xdg-open\n" },
 
+    // Non-empty file without [Desktop Entry].
+    // This tests a different code path to the above.
+    { "http://gmail.com",
+      "GMail",
+      "chrome-http__gmail.com",
+      false,
+      "\n",
+
+      // The resulting shortcut is not useful, but we just want to make sure
+      // this doesn't crash.
+      "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
+      "Name=GMail\n"
+      "Icon=chrome-http__gmail.com\n"
+#if !defined(USE_AURA)
+      // Aura Chrome does not (yet) set WMClass, so we only expect
+      // StartupWMClass on non-Aura builds.
+      "StartupWMClass=gmail.com\n"
+#endif
+    },
+
     // Real-world case.
     { "http://gmail.com",
       "GMail",

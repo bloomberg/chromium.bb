@@ -680,13 +680,15 @@ std::string GetDesktopFileContents(
                                             static_cast<GRegexMatchFlags>(0),
                                             NULL);
   gchar** keys = g_key_file_get_keys(key_file, kDesktopEntry, NULL, NULL);
-  for (gchar** keys_ptr = keys; *keys_ptr; ++keys_ptr) {
-    if (g_regex_match(localized_key_regex, *keys_ptr,
-                      static_cast<GRegexMatchFlags>(0), NULL)) {
-      g_key_file_remove_key(key_file, kDesktopEntry, *keys_ptr, NULL);
+  if (keys != NULL) {
+    for (gchar** keys_ptr = keys; *keys_ptr; ++keys_ptr) {
+      if (g_regex_match(localized_key_regex, *keys_ptr,
+                        static_cast<GRegexMatchFlags>(0), NULL)) {
+        g_key_file_remove_key(key_file, kDesktopEntry, *keys_ptr, NULL);
+      }
     }
+    g_strfreev(keys);
   }
-  g_strfreev(keys);
   g_regex_unref(localized_key_regex);
 
   // Set the "Name" key.
