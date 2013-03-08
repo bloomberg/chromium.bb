@@ -21,20 +21,26 @@ cr.define('options', function() {
   BrowserOptions.prototype = {
     __proto__: options.OptionsPage.prototype,
 
-    // State variables.
-    signedIn: false,
+    /**
+     * Keeps track of the state of |start-stop-button|. On chrome, the value is
+     * true when the user is signed in, and on chromeos, when sync setup has
+     * been completed.
+     * @type {boolean}
+     * @private
+     */
+    signedIn_: false,
 
     /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
      * |onShowHomeButtonChanged_|.
-     * @type {bool}
+     * @type {boolean}
      * @private
      */
     onShowHomeButtonChangedCalled_: false,
 
     /**
      * Track if page initialization is complete.  All C++ UI handlers have the
-     * chance to manipulate page content within their InitializePage mathods.
+     * chance to manipulate page content within their InitializePage methods.
      * This flag is set to true after all initializers have been called.
      * @type (boolean}
      * @private
@@ -80,7 +86,7 @@ cr.define('options', function() {
       this.updateSyncState_(loadTimeData.getValue('syncData'));
 
       $('start-stop-sync').onclick = function(event) {
-        if (self.signedIn)
+        if (self.signedIn_)
           SyncSetupOverlay.showStopSyncingUI();
         else if (cr.isChromeOS)
           SyncSetupOverlay.showSetupUIWithoutLogin();
@@ -698,29 +704,39 @@ cr.define('options', function() {
       }
 
       $('sync-section').hidden = false;
-      this.signedIn = syncData.signedIn;
+
+      if (cr.isChromeOS)
+        this.signedIn_ = syncData.setupCompleted;
+      else
+        this.signedIn_ = syncData.signedIn;
+
       // Display the "setup sync" button if we're signed in and sync is not
       // managed/disabled.
-      $('customize-sync').hidden = !syncData.signedIn ||
-          syncData.managed || !syncData.syncSystemEnabled;
+      $('customize-sync').hidden = !this.signedIn_ ||
+                                   syncData.managed ||
+                                   !syncData.syncSystemEnabled;
 
       var startStopButton = $('start-stop-sync');
-      // Disable the "start/stop syncing" if we're currently signing in, or
-      // if we're already signed in and signout is not allowed.
+      // Disable the "start/stop syncing" button if we're currently signing in,
+      // or if we're already signed in and signout is not allowed.
       startStopButton.disabled = syncData.setupInProgress ||
-          !syncData.signoutAllowed;
+                                 !syncData.signoutAllowed;
       if (!syncData.signoutAllowed)
         $('start-stop-sync-indicator').setAttribute('controlled-by', 'policy');
       else
         $('start-stop-sync-indicator').removeAttribute('controlled-by');
-      startStopButton.hidden =
-          syncData.setupCompleted && cr.isChromeOS;
+
+      // Hide the "start/stop syncing" button on Chrome OS if sync has already
+      // been set up, or if it is managed or disabled.
+      startStopButton.hidden = cr.isChromeOS && (syncData.setupCompleted ||
+                                                 syncData.isManaged ||
+                                                 !syncData.syncSystemEnabled);
       startStopButton.textContent =
-          syncData.signedIn ?
+          this.signedIn_ ?
               loadTimeData.getString('syncButtonTextStop') :
-          syncData.setupInProgress ?
-              loadTimeData.getString('syncButtonTextInProgress') :
-              loadTimeData.getString('syncButtonTextStart');
+              syncData.setupInProgress ?
+                  loadTimeData.getString('syncButtonTextInProgress') :
+                  loadTimeData.getString('syncButtonTextStart');
       $('start-stop-sync-indicator').hidden = startStopButton.hidden;
 
       // TODO(estade): can this just be textContent?
