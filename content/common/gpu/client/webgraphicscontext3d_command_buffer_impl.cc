@@ -264,9 +264,9 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
     GLint stencil_bits = 0;
     getIntegerv(GL_STENCIL_BITS, &stencil_bits);
     attributes_.stencil = stencil_bits > 0;
-    GLint samples = 0;
-    getIntegerv(GL_SAMPLES, &samples);
-    attributes_.antialias = samples > 0;
+    GLint sample_buffers = 0;
+    getIntegerv(GL_SAMPLE_BUFFERS, &sample_buffers);
+    attributes_.antialias = sample_buffers > 0;
   }
 
   if (attributes_.shareResources) {
