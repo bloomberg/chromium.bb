@@ -303,6 +303,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_insert(&surface->geometry.transformation_list,
 		       &surface->transform.position.link);
 	weston_matrix_init(&surface->transform.position.matrix);
+	wl_list_init(&surface->geometry.child_list);
 	pixman_region32_init(&surface->transform.boundingbox);
 	surface->transform.dirty = 1;
 
@@ -625,6 +626,7 @@ weston_surface_update_transform_disable(struct weston_surface *surface)
 static int
 weston_surface_update_transform_enable(struct weston_surface *surface)
 {
+	struct weston_surface *parent = surface->geometry.parent;
 	struct weston_matrix *matrix = &surface->transform.matrix;
 	struct weston_matrix *inverse = &surface->transform.inverse;
 	struct weston_transform *tform;
@@ -639,6 +641,9 @@ weston_surface_update_transform_enable(struct weston_surface *surface)
 	weston_matrix_init(matrix);
 	wl_list_for_each(tform, &surface->geometry.transformation_list, link)
 		weston_matrix_multiply(matrix, &tform->matrix);
+
+	if (parent)
+		weston_matrix_multiply(matrix, &parent->transform.matrix);
 
 	if (weston_matrix_invert(inverse, matrix) < 0) {
 		/* Oops, bad total transformation, not invertible */
@@ -657,8 +662,13 @@ weston_surface_update_transform_enable(struct weston_surface *surface)
 WL_EXPORT void
 weston_surface_update_transform(struct weston_surface *surface)
 {
+	struct weston_surface *parent = surface->geometry.parent;
+
 	if (!surface->transform.dirty)
 		return;
+
+	if (parent)
+		weston_surface_update_transform(parent);
 
 	surface->transform.dirty = 0;
 
@@ -672,7 +682,8 @@ weston_surface_update_transform(struct weston_surface *surface)
 	if (surface->geometry.transformation_list.next ==
 	    &surface->transform.position.link &&
 	    surface->geometry.transformation_list.prev ==
-	    &surface->transform.position.link) {
+	    &surface->transform.position.link &&
+	    !parent) {
 		weston_surface_update_transform_disable(surface);
 	} else {
 		if (weston_surface_update_transform_enable(surface) < 0)
@@ -687,7 +698,23 @@ weston_surface_update_transform(struct weston_surface *surface)
 WL_EXPORT void
 weston_surface_geometry_dirty(struct weston_surface *surface)
 {
+	struct weston_surface *child;
+
+	/*
+	 * The invariant: if surface->geometry.dirty, then all surfaces
+	 * in surface->geometry.child_list have geometry.dirty too.
+	 * Corollary: if not parent->geometry.dirty, then all ancestors
+	 * are not dirty.
+	 */
+
+	if (surface->transform.dirty)
+		return;
+
 	surface->transform.dirty = 1;
+
+	wl_list_for_each(child, &surface->geometry.child_list,
+			 geometry.parent_link)
+		weston_surface_geometry_dirty(child);
 }
 
 WL_EXPORT void
@@ -794,6 +821,40 @@ weston_surface_set_position(struct weston_surface *surface,
 {
 	surface->geometry.x = x;
 	surface->geometry.y = y;
+	weston_surface_geometry_dirty(surface);
+}
+
+static void
+transform_parent_handle_parent_destroy(struct wl_listener *listener,
+				       void *data)
+{
+	struct weston_surface *surface =
+		container_of(listener, struct weston_surface,
+			     geometry.parent_destroy_listener);
+
+	weston_surface_set_transform_parent(surface, NULL);
+}
+
+WL_EXPORT void
+weston_surface_set_transform_parent(struct weston_surface *surface,
+				    struct weston_surface *parent)
+{
+	if (surface->geometry.parent) {
+		wl_list_remove(&surface->geometry.parent_destroy_listener.link);
+		wl_list_remove(&surface->geometry.parent_link);
+	}
+
+	surface->geometry.parent = parent;
+
+	surface->geometry.parent_destroy_listener.notify =
+		transform_parent_handle_parent_destroy;
+	if (parent) {
+		wl_signal_add(&parent->surface.resource.destroy_signal,
+			      &surface->geometry.parent_destroy_listener);
+		wl_list_insert(&parent->geometry.child_list,
+			       &surface->geometry.parent_link);
+	}
+
 	weston_surface_geometry_dirty(surface);
 }
 
@@ -946,6 +1007,8 @@ destroy_surface(struct wl_resource *resource)
 	struct weston_compositor *compositor = surface->compositor;
 	struct weston_frame_callback *cb, *next;
 
+	assert(wl_list_empty(&surface->geometry.child_list));
+
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
@@ -972,6 +1035,8 @@ destroy_surface(struct wl_resource *resource)
 
 	wl_list_for_each_safe(cb, next, &surface->frame_callback_list, link)
 		wl_resource_destroy(&cb->resource);
+
+	weston_surface_set_transform_parent(surface, NULL);
 
 	free(surface);
 }

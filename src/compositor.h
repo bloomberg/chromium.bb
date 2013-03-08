@@ -388,6 +388,11 @@ struct weston_region {
  * If you want to apply a transformation in local coordinates, add your
  * weston_transform to the head of the list. If you want to apply a
  * transformation in global coordinates, add it to the tail of the list.
+ *
+ * If surface->geometry.parent is set, the total transformation of this
+ * surface will be the parent's total transformation and this transformation
+ * combined:
+ *    Mparent * Mn * ... * M2 * M1
  */
 
 struct weston_surface {
@@ -414,6 +419,12 @@ struct weston_surface {
 
 		/* struct weston_transform */
 		struct wl_list transformation_list;
+
+		/* managed by weston_surface_set_transform_parent() */
+		struct weston_surface *parent;
+		struct wl_listener parent_destroy_listener;
+		struct wl_list child_list; /* geometry.parent_link */
+		struct wl_list parent_link;
 	} geometry;
 
 	/* State derived from geometry state, read-only.
@@ -688,6 +699,10 @@ weston_surface_restack(struct weston_surface *surface, struct wl_list *below);
 void
 weston_surface_set_position(struct weston_surface *surface,
 			    float x, float y);
+
+void
+weston_surface_set_transform_parent(struct weston_surface *surface,
+				    struct weston_surface *parent);
 
 int
 weston_surface_is_mapped(struct weston_surface *surface);

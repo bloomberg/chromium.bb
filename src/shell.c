@@ -190,7 +190,6 @@ struct shell_surface {
 	struct {
 		struct wl_pointer_grab grab;
 		int32_t x, y;
-		struct weston_transform parent_transform;
 		int32_t initial_up;
 		struct wl_seat *seat;
 		uint32_t serial;
@@ -1909,35 +1908,11 @@ shell_map_popup(struct shell_surface *shsurf)
 	struct weston_surface *es = shsurf->surface;
 	struct weston_surface *parent = shsurf->parent;
 
-	/* Remove the old transform. We don't want to add it twice
-	 * otherwise Weston will go into an infinite loop when going
-	 * through the transforms. */
-	if (!wl_list_empty(&shsurf->popup.parent_transform.link)) {
-		wl_list_remove(&shsurf->popup.parent_transform.link);
-		wl_list_init(&shsurf->popup.parent_transform.link);
-	}
-
 	es->output = parent->output;
 	shsurf->popup.grab.interface = &popup_grab_interface;
 
-	weston_surface_update_transform(parent);
-	if (parent->transform.enabled) {
-		shsurf->popup.parent_transform.matrix =
-			parent->transform.matrix;
-	} else {
-		/* construct x, y translation matrix */
-		weston_matrix_init(&shsurf->popup.parent_transform.matrix);
-		shsurf->popup.parent_transform.matrix.type =
-			WESTON_MATRIX_TRANSFORM_TRANSLATE;
-		shsurf->popup.parent_transform.matrix.d[12] =
-			parent->geometry.x;
-		shsurf->popup.parent_transform.matrix.d[13] =
-			parent->geometry.y;
-	}
-	wl_list_insert(es->geometry.transformation_list.prev,
-		       &shsurf->popup.parent_transform.link);
-
 	shsurf->popup.initial_up = 0;
+	weston_surface_set_transform_parent(es, parent);
 	weston_surface_set_position(es, shsurf->popup.x, shsurf->popup.y);
 	weston_surface_update_transform(es);
 
@@ -2088,7 +2063,6 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	weston_matrix_init(&shsurf->rotation.rotation);
 
 	wl_list_init(&shsurf->workspace_transform.link);
-	wl_list_init(&shsurf->popup.parent_transform.link);
 
 	shsurf->type = SHELL_SURFACE_NONE;
 	shsurf->next_type = SHELL_SURFACE_NONE;
