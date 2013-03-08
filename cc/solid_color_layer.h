@@ -12,20 +12,21 @@
 namespace cc {
 
 // A Layer that renders a solid color. The color is specified by using
-// setBackgroundColor() on the base class.
+// SetBackgroundColor() on the base class.
 class CC_EXPORT SolidColorLayer : public Layer {
-public:
-    static scoped_refptr<SolidColorLayer> create();
+ public:
+  static scoped_refptr<SolidColorLayer> Create();
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
 
-    virtual void setBackgroundColor(SkColor) OVERRIDE;
+  virtual void setBackgroundColor(SkColor color) OVERRIDE;
 
-protected:
-    SolidColorLayer();
+ protected:
+  SolidColorLayer();
 
-private:
-    virtual ~SolidColorLayer();
+ private:
+  virtual ~SolidColorLayer();
 };
 
 }

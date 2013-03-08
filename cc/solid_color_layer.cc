@@ -8,29 +8,23 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> SolidColorLayer::createLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return SolidColorLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> SolidColorLayer::createLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return SolidColorLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-scoped_refptr<SolidColorLayer> SolidColorLayer::create()
-{
-    return make_scoped_refptr(new SolidColorLayer());
+scoped_refptr<SolidColorLayer> SolidColorLayer::Create() {
+  return make_scoped_refptr(new SolidColorLayer());
 }
 
 SolidColorLayer::SolidColorLayer()
-    : Layer()
-{
-}
+    : Layer() {}
 
-SolidColorLayer::~SolidColorLayer()
-{
-}
+SolidColorLayer::~SolidColorLayer() {}
 
-void SolidColorLayer::setBackgroundColor(SkColor color)
-{
-    setContentsOpaque(SkColorGetA(color) == 255);
-    Layer::setBackgroundColor(color);
+void SolidColorLayer::setBackgroundColor(SkColor color) {
+  setContentsOpaque(SkColorGetA(color) == 255);
+  Layer::setBackgroundColor(color);
 }
 
 }  // namespace cc

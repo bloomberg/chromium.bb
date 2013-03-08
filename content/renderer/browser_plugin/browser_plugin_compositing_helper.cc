@@ -44,7 +44,7 @@ void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
     texture_layer_->setIsDrawable(true);
     texture_layer_->setContentsOpaque(true);
 
-    background_layer_ = cc::SolidColorLayer::create();
+    background_layer_ = cc::SolidColorLayer::Create();
     background_layer_->setMasksToBounds(true);
     background_layer_->setBackgroundColor(
         SkColorSetARGBInline(255, 255, 255, 255));

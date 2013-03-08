@@ -814,7 +814,7 @@ void Layer::RemoveThreadedAnimation(int animation_id) {
 
 void Layer::CreateWebLayer() {
   if (type_ == LAYER_SOLID_COLOR) {
-    solid_color_layer_ = cc::SolidColorLayer::create();
+    solid_color_layer_ = cc::SolidColorLayer::Create();
     cc_layer_ = solid_color_layer_.get();
   } else {
     content_layer_ = cc::ContentLayer::create(this);

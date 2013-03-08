@@ -55,11 +55,11 @@ class DelegatedRendererLayerImplTestSimple
  public:
   DelegatedRendererLayerImplTestSimple()
       : DelegatedRendererLayerImplTest() {
-    scoped_ptr<LayerImpl> root_layer = SolidColorLayerImpl::create(
+    scoped_ptr<LayerImpl> root_layer = SolidColorLayerImpl::Create(
         host_impl_->activeTree(), 1).PassAs<LayerImpl>();
-    scoped_ptr<LayerImpl> layer_before = SolidColorLayerImpl::create(
+    scoped_ptr<LayerImpl> layer_before = SolidColorLayerImpl::Create(
         host_impl_->activeTree(), 2).PassAs<LayerImpl>();
-    scoped_ptr<LayerImpl> layer_after = SolidColorLayerImpl::create(
+    scoped_ptr<LayerImpl> layer_after = SolidColorLayerImpl::Create(
         host_impl_->activeTree(), 3).PassAs<LayerImpl>();
     scoped_ptr<FakeDelegatedRendererLayerImpl> delegated_renderer_layer =
         FakeDelegatedRendererLayerImpl::Create(host_impl_->activeTree(), 4);

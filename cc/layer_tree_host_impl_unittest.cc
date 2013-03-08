@@ -4071,7 +4071,7 @@ protected:
 
 TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect)
 {
-    scoped_ptr<SolidColorLayerImpl> root = SolidColorLayerImpl::create(m_hostImpl->activeTree(), 1);
+    scoped_ptr<SolidColorLayerImpl> root = SolidColorLayerImpl::Create(m_hostImpl->activeTree(), 1);
     root->setAnchorPoint(gfx::PointF(0.f, 0.f));
     root->setPosition(gfx::PointF(0.f, 0.f));
     root->setBounds(gfx::Size(10, 10));

@@ -37,7 +37,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
 
   scoped_refptr<Layer> new_layer;
   if (layer_type == "SolidColorLayer") {
-    new_layer = SolidColorLayer::create();
+    new_layer = SolidColorLayer::Create();
   } else if (layer_type == "ContentLayer") {
     new_layer = ContentLayer::create(content_client);
   } else if (layer_type == "NinePatchLayer") {

@@ -12,24 +12,26 @@
 namespace cc {
 
 class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
-public:
-    static scoped_ptr<SolidColorLayerImpl> create(LayerTreeImpl* treeImpl, int id)
-    {
-        return make_scoped_ptr(new SolidColorLayerImpl(treeImpl, id));
-    }
-    virtual ~SolidColorLayerImpl();
+ public:
+  static scoped_ptr<SolidColorLayerImpl> Create(LayerTreeImpl* tree_impl,
+                                                int id) {
+    return make_scoped_ptr(new SolidColorLayerImpl(tree_impl, id));
+  }
+  virtual ~SolidColorLayerImpl();
 
-    // LayerImpl overrides.
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+  // LayerImpl overrides.
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+  virtual void appendQuads(QuadSink& quad_sink,
+                           AppendQuadsData& append_quads_data) OVERRIDE;
 
-protected:
-    SolidColorLayerImpl(LayerTreeImpl* treeImpl, int id);
+ protected:
+  SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id);
 
-private:
-    virtual const char* layerTypeAsString() const OVERRIDE;
+ private:
+  virtual const char* layerTypeAsString() const OVERRIDE;
 
-    const int m_tileSize;
+  const int tile_size_;
 };
 
 }
