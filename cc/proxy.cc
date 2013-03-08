@@ -9,89 +9,73 @@
 
 namespace cc {
 
-Thread* Proxy::mainThread() const
-{
-    return m_mainThread.get();
+Thread* Proxy::MainThread() const { return main_thread_.get(); }
+
+bool Proxy::HasImplThread() const { return impl_thread_; }
+
+Thread* Proxy::ImplThread() const { return impl_thread_.get(); }
+
+Thread* Proxy::CurrentThread() const {
+  if (MainThread() && MainThread()->belongsToCurrentThread())
+    return MainThread();
+  if (ImplThread() && ImplThread()->belongsToCurrentThread())
+    return ImplThread();
+  return NULL;
 }
 
-bool Proxy::hasImplThread() const
-{
-    return m_implThread;
-}
-
-Thread* Proxy::implThread() const
-{
-    return m_implThread.get();
-}
-
-Thread* Proxy::currentThread() const
-{
-    if (mainThread() && mainThread()->belongsToCurrentThread())
-        return mainThread();
-    if (implThread() && implThread()->belongsToCurrentThread())
-        return implThread();
-    return 0;
-}
-
-bool Proxy::isMainThread() const
-{
+bool Proxy::IsMainThread() const {
 #ifndef NDEBUG
-    DCHECK(mainThread());
-    if (m_implThreadIsOverridden)
-        return false;
-    return mainThread()->belongsToCurrentThread();
+  DCHECK(MainThread());
+  if (impl_thread_is_overridden_)
+    return false;
+  return MainThread()->belongsToCurrentThread();
 #else
-    return true;
+  return true;
 #endif
 }
 
-bool Proxy::isImplThread() const
-{
+bool Proxy::IsImplThread() const {
 #ifndef NDEBUG
-    if (m_implThreadIsOverridden)
-        return true;
-    return implThread() && implThread()->belongsToCurrentThread();
+  if (impl_thread_is_overridden_)
+    return true;
+  return ImplThread() && ImplThread()->belongsToCurrentThread();
 #else
-    return true;
+  return true;
 #endif
 }
 
 #ifndef NDEBUG
-void Proxy::setCurrentThreadIsImplThread(bool isImplThread)
-{
-    m_implThreadIsOverridden = isImplThread;
+void Proxy::SetCurrentThreadIsImplThread(bool is_impl_thread) {
+  impl_thread_is_overridden_ = is_impl_thread;
 }
 #endif
 
-bool Proxy::isMainThreadBlocked() const
-{
+bool Proxy::IsMainThreadBlocked() const {
 #ifndef NDEBUG
-    return m_isMainThreadBlocked;
+  return is_main_thread_blocked_;
 #else
-    return true;
+  return true;
 #endif
 }
 
 #ifndef NDEBUG
-void Proxy::setMainThreadBlocked(bool isMainThreadBlocked)
-{
-    m_isMainThreadBlocked = isMainThreadBlocked;
+void Proxy::SetMainThreadBlocked(bool is_main_thread_blocked) {
+  is_main_thread_blocked_ = is_main_thread_blocked;
 }
 #endif
 
-Proxy::Proxy(scoped_ptr<Thread> implThread)
-    : m_mainThread(ThreadImpl::createForCurrentThread())
-    , m_implThread(implThread.Pass())
-#ifndef NDEBUG
-    , m_implThreadIsOverridden(false)
-    , m_isMainThreadBlocked(false)
+Proxy::Proxy(scoped_ptr<Thread> impl_thread)
+    : main_thread_(ThreadImpl::createForCurrentThread()),
+#ifdef NDEBUG
+      impl_thread_(impl_thread.Pass()) {}
+#else
+      impl_thread_(impl_thread.Pass()),
+      impl_thread_is_overridden_(false),
+      is_main_thread_blocked_(false) {}
 #endif
-{
-}
 
-Proxy::~Proxy()
-{
-    DCHECK(isMainThread());
+Proxy::~Proxy() {
+  DCHECK(IsMainThread());
 }
 
 }  // namespace cc

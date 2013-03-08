@@ -288,7 +288,7 @@ public:
 
     // Make sure callback is received on main and doesn't block the impl thread.
     void releaseCallback(unsigned syncPoint) {
-        EXPECT_EQ(true, proxy()->isMainThread());
+        EXPECT_EQ(true, proxy()->IsMainThread());
         ++m_callbackCount;
     }
 

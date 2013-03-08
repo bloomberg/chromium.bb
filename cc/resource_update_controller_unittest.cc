@@ -183,7 +183,7 @@ protected:
         scoped_ptr<ResourceUpdateController> updateController =
             ResourceUpdateController::Create(
                 NULL,
-                m_proxy.implThread(),
+                m_proxy.ImplThread(),
                 m_queue.Pass(),
                 m_resourceProvider.get());
         updateController->Finalize();

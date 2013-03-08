@@ -33,14 +33,14 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
     , m_totalCommitCount(0)
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     DCHECK(layerTreeHost);
 
     // Impl-side painting not supported without threaded compositing
     DCHECK(!layerTreeHost->settings().implSidePainting);
 }
 
-void SingleThreadProxy::start()
+void SingleThreadProxy::Start()
 {
     DebugScopedSetImplThread impl(this);
     m_layerTreeHostImpl = m_layerTreeHost->createLayerTreeHostImpl(this);
@@ -49,14 +49,14 @@ void SingleThreadProxy::start()
 SingleThreadProxy::~SingleThreadProxy()
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::~SingleThreadProxy");
-    DCHECK(Proxy::isMainThread());
-    DCHECK(!m_layerTreeHostImpl.get() && !m_layerTreeHost); // make sure stop() got called.
+    DCHECK(Proxy::IsMainThread());
+    DCHECK(!m_layerTreeHostImpl.get() && !m_layerTreeHost); // make sure Stop() got called.
 }
 
-bool SingleThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect)
+bool SingleThreadProxy::CompositeAndReadback(void *pixels, gfx::Rect rect)
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::compositeAndReadback");
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
 
     if (!commitAndComposite())
         return false;
@@ -75,29 +75,29 @@ bool SingleThreadProxy::compositeAndReadback(void *pixels, const gfx::Rect& rect
     return true;
 }
 
-void SingleThreadProxy::startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
+void SingleThreadProxy::StartPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
 {
     m_layerTreeHostImpl->startPageScaleAnimation(targetOffset, useAnchor, scale, base::TimeTicks::Now(), duration);
 }
 
-void SingleThreadProxy::finishAllRendering()
+void SingleThreadProxy::FinishAllRendering()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     {
         DebugScopedSetImplThread impl(this);
         m_layerTreeHostImpl->finishAllRendering();
     }
 }
 
-bool SingleThreadProxy::isStarted() const
+bool SingleThreadProxy::IsStarted() const
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     return m_layerTreeHostImpl.get();
 }
 
-bool SingleThreadProxy::initializeOutputSurface()
+bool SingleThreadProxy::InitializeOutputSurface()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
     if (!outputSurface.get())
         return false;
@@ -105,20 +105,20 @@ bool SingleThreadProxy::initializeOutputSurface()
     return true;
 }
 
-void SingleThreadProxy::setSurfaceReady()
+void SingleThreadProxy::SetSurfaceReady()
 {
     // Scheduling is controlled by the embedder in the single thread case, so nothing to do.
 }
 
-void SingleThreadProxy::setVisible(bool visible)
+void SingleThreadProxy::SetVisible(bool visible)
 {
     DebugScopedSetImplThread impl(this);
     m_layerTreeHostImpl->setVisible(visible);
 }
 
-bool SingleThreadProxy::initializeRenderer()
+bool SingleThreadProxy::InitializeRenderer()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     DCHECK(m_outputSurfaceBeforeInitialization.get());
     {
         DebugScopedSetImplThread impl(this);
@@ -132,10 +132,10 @@ bool SingleThreadProxy::initializeRenderer()
     }
 }
 
-bool SingleThreadProxy::recreateOutputSurface()
+bool SingleThreadProxy::RecreateOutputSurface()
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::recreateContext");
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     DCHECK(m_outputSurfaceLost);
 
     scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
@@ -168,21 +168,21 @@ bool SingleThreadProxy::recreateOutputSurface()
     return initialized;
 }
 
-void SingleThreadProxy::renderingStats(RenderingStats* stats)
+void SingleThreadProxy::GetRenderingStats(RenderingStats* stats)
 {
     stats->totalCommitTime = m_totalCommitTime;
     stats->totalCommitCount = m_totalCommitCount;
     m_layerTreeHostImpl->renderingStats(stats);
 }
 
-const RendererCapabilities& SingleThreadProxy::rendererCapabilities() const
+const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const
 {
     DCHECK(m_rendererInitialized);
     // Note: this gets called during the commit by the "impl" thread
     return m_RendererCapabilitiesForMainThread;
 }
 
-void SingleThreadProxy::setNeedsAnimate()
+void SingleThreadProxy::SetNeedsAnimate()
 {
     // Thread-only feature
     NOTREACHED();
@@ -190,7 +190,7 @@ void SingleThreadProxy::setNeedsAnimate()
 
 void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     // Commit immediately
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
@@ -205,7 +205,7 @@ void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
         scoped_ptr<ResourceUpdateController> updateController =
             ResourceUpdateController::Create(
                 NULL,
-                Proxy::mainThread(),
+                Proxy::MainThread(),
                 queue.Pass(),
                 m_layerTreeHostImpl->resourceProvider());
         updateController->Finalize();
@@ -229,18 +229,18 @@ void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
     m_nextFrameIsNewlyCommittedFrame = true;
 }
 
-void SingleThreadProxy::setNeedsCommit()
+void SingleThreadProxy::SetNeedsCommit()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     m_layerTreeHost->scheduleComposite();
 }
 
-void SingleThreadProxy::setNeedsRedraw()
+void SingleThreadProxy::SetNeedsRedraw()
 {
     // FIXME: Once we move render_widget scheduling into this class, we can
     // treat redraw requests more efficiently than commitAndRedraw requests.
     m_layerTreeHostImpl->SetFullRootLayerDamage();
-    setNeedsCommit();
+    SetNeedsCommit();
 }
 
 void SingleThreadProxy::onHasPendingTreeStateChanged(bool havePendingTree)
@@ -249,26 +249,26 @@ void SingleThreadProxy::onHasPendingTreeStateChanged(bool havePendingTree)
     NOTREACHED();
 }
 
-void SingleThreadProxy::setDeferCommits(bool deferCommits)
+void SingleThreadProxy::SetDeferCommits(bool deferCommits)
 {
     // Thread-only feature.
     NOTREACHED();
 }
 
-bool SingleThreadProxy::commitRequested() const
+bool SingleThreadProxy::CommitRequested() const
 {
     return false;
 }
 
-size_t SingleThreadProxy::maxPartialTextureUpdates() const
+size_t SingleThreadProxy::MaxPartialTextureUpdates() const
 {
     return std::numeric_limits<size_t>::max();
 }
 
-void SingleThreadProxy::stop()
+void SingleThreadProxy::Stop()
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::stop");
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
         DebugScopedSetImplThread impl(this);
@@ -302,14 +302,14 @@ void SingleThreadProxy::setNeedsManageTilesOnImplThread()
 
 void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(Proxy::IsImplThread());
     DebugScopedSetMainThread main(this);
     m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
 }
 
 bool SingleThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff)
 {
-    DCHECK(isImplThread());
+    DCHECK(IsImplThread());
     if (!m_layerTreeHost->contentsTextureManager())
         return false;
 
@@ -324,7 +324,7 @@ void SingleThreadProxy::reduceWastedContentsTextureMemoryOnImplThread()
 
 void SingleThreadProxy::sendManagedMemoryStats()
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(Proxy::IsImplThread());
     if (!m_layerTreeHostImpl.get())
         return;
     if (!m_layerTreeHost->contentsTextureManager())
@@ -356,12 +356,12 @@ void SingleThreadProxy::compositeImmediately()
     }
 }
 
-scoped_ptr<base::Value> SingleThreadProxy::asValue() const
+scoped_ptr<base::Value> SingleThreadProxy::AsValue() const
 {
     scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
     {
         // The following line casts away const modifiers because it is just
-        // setting debug state. We still want the asValue() function and its
+        // setting debug state. We still want the AsValue() function and its
         // call chain to be const throughout.
         DebugScopedSetImplThread impl(const_cast<SingleThreadProxy*>(this));
 
@@ -370,7 +370,7 @@ scoped_ptr<base::Value> SingleThreadProxy::asValue() const
     return state.PassAs<base::Value>();
 }
 
-void SingleThreadProxy::forceSerializeOnSwapBuffers()
+void SingleThreadProxy::ForceSerializeOnSwapBuffers()
 {
     {
         DebugScopedSetImplThread impl(this);
@@ -386,7 +386,7 @@ void SingleThreadProxy::onSwapBuffersCompleteOnImplThread()
 
 bool SingleThreadProxy::commitAndComposite()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(Proxy::IsMainThread());
 
     if (!m_layerTreeHost->initializeRendererIfNeeded())
         return false;
@@ -459,12 +459,12 @@ void SingleThreadProxy::didSwapFrame()
     }
 }
 
-bool SingleThreadProxy::commitPendingForTesting()
+bool SingleThreadProxy::CommitPendingForTesting()
 {
     return false;
 }
 
-skia::RefPtr<SkPicture> SingleThreadProxy::capturePicture()
+skia::RefPtr<SkPicture> SingleThreadProxy::CapturePicture()
 {
     // Requires impl-side painting, which is only supported in threaded compositing.
     NOTREACHED();

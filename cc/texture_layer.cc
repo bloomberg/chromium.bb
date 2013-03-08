@@ -184,7 +184,7 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     textureLayer->setVertexOpacity(m_vertexOpacity);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
     if (m_usesMailbox && m_ownMailbox) {
-        Thread* mainThread = layerTreeHost()->proxy()->mainThread();
+        Thread* mainThread = layerTreeHost()->proxy()->MainThread();
         TextureMailbox::ReleaseCallback callback;
         if (!m_textureMailbox.IsEmpty())
           callback = base::Bind(&postCallbackToMainThread, mainThread, m_textureMailbox.callback());

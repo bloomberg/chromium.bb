@@ -31,8 +31,8 @@ scoped_ptr<VideoLayerImpl> VideoLayerImpl::create(LayerTreeImpl* treeImpl, int i
 {
     scoped_ptr<VideoLayerImpl> layer(new VideoLayerImpl(treeImpl, id));
     layer->setProviderClientImpl(VideoFrameProviderClientImpl::Create(provider));
-    DCHECK(treeImpl->proxy()->isImplThread());
-    DCHECK(treeImpl->proxy()->isMainThreadBlocked());
+    DCHECK(treeImpl->proxy()->IsImplThread());
+    DCHECK(treeImpl->proxy()->IsMainThreadBlocked());
     return layer.Pass();
 }
 
@@ -53,8 +53,8 @@ VideoLayerImpl::~VideoLayerImpl()
         // on the VideoFrameProviderClientImpl, but we stop when the first
         // LayerImpl (the one on the pending tree) is destroyed since we know
         // the main thread is blocked for this commit.
-        DCHECK(layerTreeImpl()->proxy()->isImplThread());
-        DCHECK(layerTreeImpl()->proxy()->isMainThreadBlocked());
+        DCHECK(layerTreeImpl()->proxy()->IsImplThread());
+        DCHECK(layerTreeImpl()->proxy()->IsMainThreadBlocked());
         m_providerClientImpl->Stop();
     }
     freePlaneData(layerTreeImpl()->resource_provider());

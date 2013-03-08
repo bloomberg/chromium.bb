@@ -100,7 +100,7 @@ public:
         // correct. In fact, setting fake thread id's interferes with the real
         // thread id's and causes breakage.
         scoped_ptr<DebugScopedSetImplThread> setImplThread;
-        if (!m_layerTreeHostImpl->proxy()->hasImplThread())
+        if (!m_layerTreeHostImpl->proxy()->HasImplThread())
             setImplThread.reset(new DebugScopedSetImplThread(m_layerTreeHostImpl->proxy()));
 
         m_layerTreeHostImpl->activatePendingTreeIfNeeded();
@@ -156,7 +156,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
                             0,
                             ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING)
     , m_pinchGestureActive(false)
-    , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
+    , m_fpsCounter(FrameRateCounter::create(m_proxy->HasImplThread()))
     , m_paintTimeCounter(PaintTimeCounter::create())
     , m_memoryHistory(MemoryHistory::create())
     , m_debugRectHistory(DebugRectHistory::create())
@@ -169,7 +169,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_lastSentMemoryUseBytes(0)
     , m_animationRegistrar(AnimationRegistrar::create())
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(m_proxy->IsImplThread());
     didVisibilityChange(this, m_visible);
 
     setDebugState(settings.initialDebugState);
@@ -189,7 +189,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
 
 LayerTreeHostImpl::~LayerTreeHostImpl()
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(m_proxy->IsImplThread());
     TRACE_EVENT0("cc", "LayerTreeHostImpl::~LayerTreeHostImpl()");
 
     if (rootLayer()) {
@@ -559,7 +559,7 @@ void LayerTreeHostImpl::setBackgroundTickingEnabled(bool enabled)
 {
     // Lazily create the timeSource adapter so that we can vary the interval for testing.
     if (!m_timeSourceClientAdapter)
-        m_timeSourceClientAdapter = LayerTreeHostImplTimeSourceAdapter::Create(this, DelayBasedTimeSource::create(lowFrequencyAnimationInterval(), m_proxy->currentThread()));
+        m_timeSourceClientAdapter = LayerTreeHostImplTimeSourceAdapter::Create(this, DelayBasedTimeSource::create(lowFrequencyAnimationInterval(), m_proxy->CurrentThread()));
 
     m_timeSourceClientAdapter->setActive(enabled);
 }
@@ -713,7 +713,7 @@ void LayerTreeHostImpl::EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
 
 bool LayerTreeHostImpl::HasImplThread() const
 {
-    return m_proxy->hasImplThread();
+    return m_proxy->HasImplThread();
 }
 
 void LayerTreeHostImpl::ScheduleManageTiles()
@@ -739,13 +739,13 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy
         return;
 
     m_managedMemoryPolicy = policy;
-    if (!m_proxy->hasImplThread()) {
+    if (!m_proxy->HasImplThread()) {
         // FIXME: In single-thread mode, this can be called on the main thread
         // by GLRenderer::onMemoryAllocationChanged.
         DebugScopedSetImplThread implThread(m_proxy);
         EnforceManagedMemoryPolicy(m_managedMemoryPolicy);
     } else {
-        DCHECK(m_proxy->isImplThread());
+        DCHECK(m_proxy->IsImplThread());
         EnforceManagedMemoryPolicy(m_managedMemoryPolicy);
     }
     // We always need to commit after changing the memory policy because the new
@@ -853,7 +853,7 @@ void LayerTreeHostImpl::finishAllRendering()
 
 bool LayerTreeHostImpl::isContextLost()
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(m_proxy->IsImplThread());
     return m_renderer && m_renderer->IsContextLost();
 }
 
@@ -1033,7 +1033,7 @@ void LayerTreeHostImpl::activatePendingTree()
 
 void LayerTreeHostImpl::setVisible(bool visible)
 {
-    DCHECK(m_proxy->isImplThread());
+    DCHECK(m_proxy->IsImplThread());
 
     if (m_visible == visible)
         return;

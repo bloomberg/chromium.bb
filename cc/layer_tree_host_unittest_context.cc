@@ -124,7 +124,7 @@ class LayerTreeHostContextTest : public ThreadedTest {
 
   virtual scoped_refptr<cc::ContextProvider>
   OffscreenContextProviderForMainThread() OVERRIDE {
-    DCHECK(!implThread());
+    DCHECK(!ImplThread());
 
     if (!offscreen_contexts_main_thread_ ||
         offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
@@ -137,7 +137,7 @@ class LayerTreeHostContextTest : public ThreadedTest {
 
   virtual scoped_refptr<cc::ContextProvider>
   OffscreenContextProviderForCompositorThread() OVERRIDE {
-    DCHECK(implThread());
+    DCHECK(ImplThread());
 
     if (!offscreen_contexts_compositor_thread_ ||
         offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
@@ -661,8 +661,8 @@ class LayerTreeHostContextTestLostContextAndEvictTextures :
   }
 
   void PostEvictTextures() {
-    if (implThread()) {
-      implThread()->postTask(
+    if (ImplThread()) {
+      ImplThread()->postTask(
           base::Bind(
               &LayerTreeHostContextTestLostContextAndEvictTextures::
               EvictTexturesOnImplThread,

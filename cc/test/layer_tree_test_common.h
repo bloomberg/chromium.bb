@@ -125,7 +125,7 @@ protected:
 
     virtual void runTest(bool threaded);
 
-    Thread* implThread() { return proxy() ? proxy()->implThread() : 0; }
+    Thread* ImplThread() { return proxy() ? proxy()->ImplThread() : 0; }
     Proxy* proxy() const { return m_layerTreeHost ? m_layerTreeHost->proxy() : 0; }
 
     LayerTreeSettings m_settings;

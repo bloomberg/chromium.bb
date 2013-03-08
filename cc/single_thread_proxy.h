@@ -23,31 +23,31 @@ public:
     virtual ~SingleThreadProxy();
 
     // Proxy implementation
-    virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) OVERRIDE;
-    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
-    virtual void finishAllRendering() OVERRIDE;
-    virtual bool isStarted() const OVERRIDE;
-    virtual bool initializeOutputSurface() OVERRIDE;
-    virtual void setSurfaceReady() OVERRIDE;
-    virtual void setVisible(bool) OVERRIDE;
-    virtual bool initializeRenderer() OVERRIDE;
-    virtual bool recreateOutputSurface() OVERRIDE;
-    virtual void renderingStats(RenderingStats*) OVERRIDE;
-    virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
-    virtual void setNeedsAnimate() OVERRIDE;
-    virtual void setNeedsCommit() OVERRIDE;
-    virtual void setNeedsRedraw() OVERRIDE;
-    virtual void setDeferCommits(bool) OVERRIDE;
-    virtual bool commitRequested() const OVERRIDE;
-    virtual void mainThreadHasStoppedFlinging() OVERRIDE { }
-    virtual void start() OVERRIDE;
-    virtual void stop() OVERRIDE;
-    virtual size_t maxPartialTextureUpdates() const OVERRIDE;
-    virtual void acquireLayerTextures() OVERRIDE { }
-    virtual void forceSerializeOnSwapBuffers() OVERRIDE;
-    virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
-    virtual scoped_ptr<base::Value> asValue() const OVERRIDE;
-    virtual bool commitPendingForTesting() OVERRIDE;
+    virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
+    virtual void StartPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
+    virtual void FinishAllRendering() OVERRIDE;
+    virtual bool IsStarted() const OVERRIDE;
+    virtual bool InitializeOutputSurface() OVERRIDE;
+    virtual void SetSurfaceReady() OVERRIDE;
+    virtual void SetVisible(bool) OVERRIDE;
+    virtual bool InitializeRenderer() OVERRIDE;
+    virtual bool RecreateOutputSurface() OVERRIDE;
+    virtual void GetRenderingStats(RenderingStats*) OVERRIDE;
+    virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
+    virtual void SetNeedsAnimate() OVERRIDE;
+    virtual void SetNeedsCommit() OVERRIDE;
+    virtual void SetNeedsRedraw() OVERRIDE;
+    virtual void SetDeferCommits(bool) OVERRIDE;
+    virtual bool CommitRequested() const OVERRIDE;
+    virtual void MainThreadHasStoppedFlinging() OVERRIDE { }
+    virtual void Start() OVERRIDE;
+    virtual void Stop() OVERRIDE;
+    virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
+    virtual void AcquireLayerTextures() OVERRIDE { }
+    virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
+    virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
+    virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
+    virtual bool CommitPendingForTesting() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
     virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
@@ -82,7 +82,7 @@ private:
     bool m_outputSurfaceLost;
     bool m_createdOffscreenContextProvider;
 
-    // Holds on to the context between initializeContext() and initializeRenderer() calls. Shouldn't
+    // Holds on to the context between initializeContext() and InitializeRenderer() calls. Shouldn't
     // be used for anything else.
     scoped_ptr<OutputSurface> m_outputSurfaceBeforeInitialization;
 
@@ -104,22 +104,22 @@ private:
 class DebugScopedSetImplThread {
 public:
     explicit DebugScopedSetImplThread(Proxy* proxy)
-        : m_proxy(proxy)
+        : proxy_(proxy)
     {
 #ifndef NDEBUG
-        m_previousValue = m_proxy->m_implThreadIsOverridden;
-        m_proxy->setCurrentThreadIsImplThread(true);
+        m_previousValue = proxy_->impl_thread_is_overridden_;
+        proxy_->SetCurrentThreadIsImplThread(true);
 #endif
     }
     ~DebugScopedSetImplThread()
     {
 #ifndef NDEBUG
-        m_proxy->setCurrentThreadIsImplThread(m_previousValue);
+        proxy_->SetCurrentThreadIsImplThread(m_previousValue);
 #endif
     }
 private:
     bool m_previousValue;
-    Proxy* m_proxy;
+    Proxy* proxy_;
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
@@ -127,22 +127,22 @@ private:
 class DebugScopedSetMainThread {
 public:
     explicit DebugScopedSetMainThread(Proxy* proxy)
-        : m_proxy(proxy)
+        : proxy_(proxy)
     {
 #ifndef NDEBUG
-        m_previousValue = m_proxy->m_implThreadIsOverridden;
-        m_proxy->setCurrentThreadIsImplThread(false);
+        m_previousValue = proxy_->impl_thread_is_overridden_;
+        proxy_->SetCurrentThreadIsImplThread(false);
 #endif
     }
     ~DebugScopedSetMainThread()
     {
 #ifndef NDEBUG
-        m_proxy->setCurrentThreadIsImplThread(m_previousValue);
+        proxy_->SetCurrentThreadIsImplThread(m_previousValue);
 #endif
     }
 private:
     bool m_previousValue;
-    Proxy* m_proxy;
+    Proxy* proxy_;
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
@@ -151,12 +151,12 @@ private:
 class DebugScopedSetImplThreadAndMainThreadBlocked {
 public:
     explicit DebugScopedSetImplThreadAndMainThreadBlocked(Proxy* proxy)
-        : m_implThread(proxy)
+        : impl_thread_(proxy)
         , m_mainThreadBlocked(proxy)
     {
     }
 private:
-    DebugScopedSetImplThread m_implThread;
+    DebugScopedSetImplThread impl_thread_;
     DebugScopedSetMainThreadBlocked m_mainThreadBlocked;
 };
 

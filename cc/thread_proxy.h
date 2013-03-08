@@ -32,31 +32,31 @@ public:
     virtual ~ThreadProxy();
 
     // Proxy implementation
-    virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) OVERRIDE;
-    virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
-    virtual void finishAllRendering() OVERRIDE;
-    virtual bool isStarted() const OVERRIDE;
-    virtual bool initializeOutputSurface() OVERRIDE;
-    virtual void setSurfaceReady() OVERRIDE;
-    virtual void setVisible(bool) OVERRIDE;
-    virtual bool initializeRenderer() OVERRIDE;
-    virtual bool recreateOutputSurface() OVERRIDE;
-    virtual void renderingStats(RenderingStats*) OVERRIDE;
-    virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
-    virtual void setNeedsAnimate() OVERRIDE;
-    virtual void setNeedsCommit() OVERRIDE;
-    virtual void setNeedsRedraw() OVERRIDE;
-    virtual void setDeferCommits(bool) OVERRIDE;
-    virtual bool commitRequested() const OVERRIDE;
-    virtual void mainThreadHasStoppedFlinging() OVERRIDE;
-    virtual void start() OVERRIDE;
-    virtual void stop() OVERRIDE;
-    virtual size_t maxPartialTextureUpdates() const OVERRIDE;
-    virtual void acquireLayerTextures() OVERRIDE;
-    virtual void forceSerializeOnSwapBuffers() OVERRIDE;
-    virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
-    virtual scoped_ptr<base::Value> asValue() const OVERRIDE;
-    virtual bool commitPendingForTesting() OVERRIDE;
+    virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
+    virtual void StartPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE;
+    virtual void FinishAllRendering() OVERRIDE;
+    virtual bool IsStarted() const OVERRIDE;
+    virtual bool InitializeOutputSurface() OVERRIDE;
+    virtual void SetSurfaceReady() OVERRIDE;
+    virtual void SetVisible(bool) OVERRIDE;
+    virtual bool InitializeRenderer() OVERRIDE;
+    virtual bool RecreateOutputSurface() OVERRIDE;
+    virtual void GetRenderingStats(RenderingStats* stats) OVERRIDE;
+    virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
+    virtual void SetNeedsAnimate() OVERRIDE;
+    virtual void SetNeedsCommit() OVERRIDE;
+    virtual void SetNeedsRedraw() OVERRIDE;
+    virtual void SetDeferCommits(bool) OVERRIDE;
+    virtual bool CommitRequested() const OVERRIDE;
+    virtual void MainThreadHasStoppedFlinging() OVERRIDE;
+    virtual void Start() OVERRIDE;
+    virtual void Stop() OVERRIDE;
+    virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
+    virtual void AcquireLayerTextures() OVERRIDE;
+    virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
+    virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
+    virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
+    virtual bool CommitPendingForTesting() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
     virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
@@ -178,7 +178,7 @@ private:
     scoped_ptr<Scheduler> m_schedulerOnImplThread;
 
     // Holds on to the context we might use for compositing in between initializeContext()
-    // and initializeRenderer() calls.
+    // and InitializeRenderer() calls.
     scoped_ptr<OutputSurface> m_outputSurfaceBeforeInitializationOnImplThread;
 
     // Set when the main thread is waiting on a scheduledActionBeginFrame to be issued.

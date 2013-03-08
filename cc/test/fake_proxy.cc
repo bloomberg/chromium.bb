@@ -6,47 +6,47 @@
 
 namespace cc {
 
-bool FakeProxy::compositeAndReadback(void *pixels, const gfx::Rect&)
+bool FakeProxy::CompositeAndReadback(void* pixels, gfx::Rect rect)
 {
     return true;
 }
 
-bool FakeProxy::isStarted() const
+bool FakeProxy::IsStarted() const
 {
     return true;
 }
 
-bool FakeProxy::initializeOutputSurface()
+bool FakeProxy::InitializeOutputSurface()
 {
     return true;
 }
 
-bool FakeProxy::initializeRenderer()
+bool FakeProxy::InitializeRenderer()
 {
     return true;
 }
 
-bool FakeProxy::recreateOutputSurface()
+bool FakeProxy::RecreateOutputSurface()
 {
     return true;
 }
 
-const RendererCapabilities& FakeProxy::rendererCapabilities() const
+const RendererCapabilities& FakeProxy::GetRendererCapabilities() const
 {
     return m_capabilities;
 }
 
-RendererCapabilities& FakeProxy::rendererCapabilities()
+RendererCapabilities& FakeProxy::GetRendererCapabilities()
 {
     return m_capabilities;
 }
 
-bool FakeProxy::commitRequested() const
+bool FakeProxy::CommitRequested() const
 {
     return false;
 }
 
-size_t FakeProxy::maxPartialTextureUpdates() const
+size_t FakeProxy::MaxPartialTextureUpdates() const
 {
     return m_maxPartialTextureUpdates;
 }
@@ -56,17 +56,17 @@ void FakeProxy::setMaxPartialTextureUpdates(size_t max)
     m_maxPartialTextureUpdates = max;
 }
 
-bool FakeProxy::commitPendingForTesting()
+bool FakeProxy::CommitPendingForTesting()
 {
     return false;
 }
 
-skia::RefPtr<SkPicture> FakeProxy::capturePicture()
+skia::RefPtr<SkPicture> FakeProxy::CapturePicture()
 {
     return skia::RefPtr<SkPicture>();
 }
 
-scoped_ptr<base::Value> FakeProxy::asValue() const {
+scoped_ptr<base::Value> FakeProxy::AsValue() const {
     scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
     return state.PassAs<base::Value>();
 }

@@ -15,33 +15,33 @@ class FakeProxy : public Proxy {
 public:
     explicit FakeProxy(scoped_ptr<Thread> implThread) : Proxy(implThread.Pass()) { }
 
-    virtual bool compositeAndReadback(void *pixels, const gfx::Rect&) OVERRIDE;
-    virtual void startPageScaleAnimation(gfx::Vector2d targetPosition, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE { }
-    virtual void finishAllRendering() OVERRIDE { }
-    virtual bool isStarted() const OVERRIDE;
-    virtual bool initializeOutputSurface() OVERRIDE;
-    virtual void setSurfaceReady() OVERRIDE { }
-    virtual void setVisible(bool) OVERRIDE { }
-    virtual bool initializeRenderer() OVERRIDE;
-    virtual bool recreateOutputSurface() OVERRIDE;
-    virtual void renderingStats(RenderingStats*) OVERRIDE { }
-    virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
-    virtual void setNeedsAnimate() OVERRIDE { }
-    virtual void setNeedsCommit() OVERRIDE { }
-    virtual void setNeedsRedraw() OVERRIDE { }
-    virtual void setDeferCommits(bool) OVERRIDE { }
-    virtual void mainThreadHasStoppedFlinging() OVERRIDE { }
-    virtual bool commitRequested() const OVERRIDE;
-    virtual void start() OVERRIDE { }
-    virtual void stop() OVERRIDE { }
-    virtual void forceSerializeOnSwapBuffers() OVERRIDE { }
-    virtual size_t maxPartialTextureUpdates() const OVERRIDE;
-    virtual void acquireLayerTextures() OVERRIDE { }
-    virtual bool commitPendingForTesting() OVERRIDE;
-    virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
-    virtual scoped_ptr<base::Value> asValue() const OVERRIDE;
+    virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
+    virtual void StartPageScaleAnimation(gfx::Vector2d targetPosition, bool useAnchor, float scale, base::TimeDelta duration) OVERRIDE { }
+    virtual void FinishAllRendering() OVERRIDE { }
+    virtual bool IsStarted() const OVERRIDE;
+    virtual bool InitializeOutputSurface() OVERRIDE;
+    virtual void SetSurfaceReady() OVERRIDE { }
+    virtual void SetVisible(bool) OVERRIDE { }
+    virtual bool InitializeRenderer() OVERRIDE;
+    virtual bool RecreateOutputSurface() OVERRIDE;
+    virtual void GetRenderingStats(RenderingStats*) OVERRIDE { }
+    virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
+    virtual void SetNeedsAnimate() OVERRIDE { }
+    virtual void SetNeedsCommit() OVERRIDE { }
+    virtual void SetNeedsRedraw() OVERRIDE { }
+    virtual void SetDeferCommits(bool) OVERRIDE { }
+    virtual void MainThreadHasStoppedFlinging() OVERRIDE { }
+    virtual bool CommitRequested() const OVERRIDE;
+    virtual void Start() OVERRIDE { }
+    virtual void Stop() OVERRIDE { }
+    virtual void ForceSerializeOnSwapBuffers() OVERRIDE { }
+    virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
+    virtual void AcquireLayerTextures() OVERRIDE { }
+    virtual bool CommitPendingForTesting() OVERRIDE;
+    virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
+    virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
 
-    virtual RendererCapabilities& rendererCapabilities();
+    virtual RendererCapabilities& GetRendererCapabilities();
     void setMaxPartialTextureUpdates(size_t);
 
 private:

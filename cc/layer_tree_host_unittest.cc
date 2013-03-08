@@ -693,7 +693,7 @@ public:
 
         // We request animation only once.
         if (!m_animationRequested) {
-            impl->proxy()->mainThread()->postTask(base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
+            impl->proxy()->MainThread()->postTask(base::Bind(&LayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, base::Unretained(this)));
             m_animationRequested = true;
         }
     }
@@ -1592,8 +1592,8 @@ public:
 
     void postEvictTextures()
     {
-        DCHECK(implThread());
-        implThread()->postTask(base::Bind(&LayerTreeHostTestEvictTextures::evictTexturesOnImplThread,
+        DCHECK(ImplThread());
+        ImplThread()->postTask(base::Bind(&LayerTreeHostTestEvictTextures::evictTexturesOnImplThread,
                                base::Unretained(this)));
     }
 
@@ -1891,7 +1891,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
         FakeLayerImplTreeHostClient client;
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
-        proxy->rendererCapabilities().allowPartialTextureUpdates = false;
+        proxy->GetRendererCapabilities().allowPartialTextureUpdates = false;
         proxy->setMaxPartialTextureUpdates(5);
 
         LayerTreeSettings settings;
@@ -1908,7 +1908,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
         FakeLayerImplTreeHostClient client;
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
-        proxy->rendererCapabilities().allowPartialTextureUpdates = true;
+        proxy->GetRendererCapabilities().allowPartialTextureUpdates = true;
         proxy->setMaxPartialTextureUpdates(5);
 
         LayerTreeSettings settings;
@@ -1925,7 +1925,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
         FakeLayerImplTreeHostClient client;
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
-        proxy->rendererCapabilities().allowPartialTextureUpdates = true;
+        proxy->GetRendererCapabilities().allowPartialTextureUpdates = true;
         proxy->setMaxPartialTextureUpdates(20);
 
         LayerTreeSettings settings;
@@ -2081,7 +2081,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* hostImpl) OVERRIDE
     {
-        DCHECK(hostImpl->proxy()->hasImplThread());
+        DCHECK(hostImpl->proxy()->HasImplThread());
 
         const ThreadProxy* proxy = static_cast<ThreadProxy*>(hostImpl->proxy());
         if (m_delegatingRenderer)

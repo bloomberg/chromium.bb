@@ -150,7 +150,7 @@ PrioritizedResource::Backing::~Backing()
 
 void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProvider)
 {
-    DCHECK(!proxy() || proxy()->isImplThread());
+    DCHECK(!proxy() || proxy()->IsImplThread());
     DCHECK(!m_resourceHasBeenDeleted);
 #ifndef NDEBUG
     DCHECK(resourceProvider == m_resourceProvider);
@@ -163,19 +163,19 @@ void PrioritizedResource::Backing::deleteResource(ResourceProvider* resourceProv
 
 bool PrioritizedResource::Backing::resourceHasBeenDeleted() const
 {
-    DCHECK(!proxy() || proxy()->isImplThread());
+    DCHECK(!proxy() || proxy()->IsImplThread());
     return m_resourceHasBeenDeleted;
 }
 
 bool PrioritizedResource::Backing::canBeRecycled() const
 {
-    DCHECK(!proxy() || proxy()->isImplThread());
+    DCHECK(!proxy() || proxy()->IsImplThread());
     return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
 }
 
 void PrioritizedResource::Backing::updatePriority()
 {
-    DCHECK(!proxy() || proxy()->isImplThread() && proxy()->isMainThreadBlocked());
+    DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
     if (m_owner) {
         m_priorityAtLastPriorityUpdate = m_owner->requestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = m_owner->isAbovePriorityCutoff();
@@ -187,7 +187,7 @@ void PrioritizedResource::Backing::updatePriority()
 
 void PrioritizedResource::Backing::updateInDrawingImplTree()
 {
-    DCHECK(!proxy() || proxy()->isImplThread() && proxy()->isMainThreadBlocked());
+    DCHECK(!proxy() || proxy()->IsImplThread() && proxy()->IsMainThreadBlocked());
     m_inDrawingImplTree = !!owner();
     if (!m_inDrawingImplTree)
         DCHECK(m_priorityAtLastPriorityUpdate == PriorityCalculator::lowestPriority());
