@@ -322,17 +322,17 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     base::TimeDelta connect_duration =
         connect_timing_.ssl_end - connect_timing_.ssl_start;
     if (using_spdy) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SpdyConnectionLatency",
+      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SpdyConnectionLatency_2",
                                  connect_duration,
                                  base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(10),
+                                 base::TimeDelta::FromMinutes(1),
                                  100);
     }
 
-    UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency",
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_2",
                                connect_duration,
                                base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMinutes(10),
+                               base::TimeDelta::FromMinutes(1),
                                100);
 
     SSLInfo ssl_info;
@@ -357,10 +357,10 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                      (host.size() > 11 &&
                       host.rfind(".google.com") == host.size() - 11);
     if (is_google) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Google",
+      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Google2",
                                  connect_duration,
                                  base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(10),
+                                 base::TimeDelta::FromMinutes(1),
                                  100);
       if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
         UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Google_"
