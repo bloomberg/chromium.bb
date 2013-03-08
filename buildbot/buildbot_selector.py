@@ -92,17 +92,6 @@ BOT_ASSIGNMENT = {
     ######################################################################
     # Trybots.
     ######################################################################
-    'nacl-win32_newlib_opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 newlib --no-gyp',
-    'nacl-win32_glibc_opt':
-        python + ' buildbot\\buildbot_standard.py opt 32 glibc --no-gyp',
-    'nacl-win64_newlib_dbg':
-        python + ' buildbot\\buildbot_standard.py dbg 64 newlib',
-    'nacl-win64_newlib_opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 newlib',
-    'nacl-win64_glibc_opt':
-        python + ' buildbot\\buildbot_standard.py opt 64 glibc',
-
     'nacl-lucid64_validator_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'nacl-lucid64_newlib_dbg_valgrind':
@@ -229,16 +218,20 @@ BOT_ASSIGNMENT = {
 
 }
 
+special_for_arm = ['win7_64', 'win7-64', 'lucid-64', 'lucid64']
 for platform in [
-    'vista', 'win7', 'win8', 'win32', 'win64',
-    'win7_64', 'win7-64', 'lucid-64',  # For win7-64-arm etc.
+    'vista', 'win7', 'win8', 'win',
     'mac10.6', 'mac10.7', 'mac10.8',
-    'lucid', 'precise']:
-  for arch in ['', '32', '64', 'arm']:
+    'lucid', 'precise'] + special_for_arm:
+  if platform in special_for_arm:
+    arch_variants = ['arm']
+  else:
+    arch_variants = ['', '32', '64', 'arm']
+  for arch in arch_variants:
     arch_flags = ''
     real_arch = arch
     arch_part = '-' + arch
-    if arch == 'arm':
+    if arch == 'arm' or platform == 'win32':
       arch_flags += ' --no-gyp'
     if arch == '':
       arch_part = ''
@@ -249,18 +242,18 @@ for platform in [
       for libc in ['newlib', 'glibc']:
         # Buildbots.
         for bare in ['', '-bare']:
-          BOT_ASSIGNMENT.update({
-            platform + arch_part + bare + '-' + libc + '-' + mode:
-            python + ' buildbot/buildbot_standard.py ' +
-            mode + ' ' + real_arch + ' ' + libc + arch_flags
-          })
+          name = platform + arch_part + bare + '-' + libc + '-' + mode
+          assert name not in BOT_ASSIGNMENT, name
+          BOT_ASSIGNMENT[name] = (
+              python + ' buildbot/buildbot_standard.py ' +
+              mode + ' ' + real_arch + ' ' + libc + arch_flags)
         # Trybots
         for arch_sep in ['', '-', '_']:
-          BOT_ASSIGNMENT.update({
-            'nacl-' + platform + arch_sep + arch + '_' + libc + '_' + mode:
-            python + ' buildbot/buildbot_standard.py ' +
-            mode + ' ' + real_arch + ' ' + libc + arch_flags
-          })
+          name = 'nacl-' + platform + arch_sep + arch + '_' + libc + '_' + mode
+          assert name not in BOT_ASSIGNMENT, name
+          BOT_ASSIGNMENT[name] = (
+              python + ' buildbot/buildbot_standard.py ' +
+              mode + ' ' + real_arch + ' ' + libc + arch_flags)
 
 
 IRT_ARCHIVE_BUILDERS = [
