@@ -344,7 +344,7 @@ deps_os = {
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@cdda43427c6f46c07dd281cdec03f2eea7c21bca',
         'src/third_party/mtpd/source':
-            Var('git_url') + '/chromiumos/platform/mtpd.git@9d097425f10091405068445cc6f9c7e43d7ea41a',
+            Var('git_url') + '/chromiumos/platform/mtpd.git@132604f107368f617a3073ba2d515b78641ceeed',
         'src/third_party/openssl':
             Var('git_url') + '/chromium/deps/openssl.git@ecd56d84116e2acded8a6c4e0ea6ffdde09c2a78',
         'src/third_party/swig/linux':
