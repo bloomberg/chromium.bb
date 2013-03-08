@@ -637,7 +637,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
           match.fill_into_edit.length() - match.inline_autocomplete_offset;
     }
 
-    if (disposition == CURRENT_TAB) {
+    if ((disposition == CURRENT_TAB) && delegate_->CurrentPageExists()) {
       // If we know the destination is being opened in the current tab,
       // we can easily get the tab ID.  (If it's being opened in a new
       // tab, we don't know the tab ID yet.)
