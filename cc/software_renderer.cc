@@ -79,25 +79,25 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
     // The updater can access bitmaps while the SoftwareRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
     m_capabilities.usingPartialSwap = true;
-    if (m_client->hasImplThread())
+    if (client_->HasImplThread())
       m_capabilities.usingSwapCompleteCallback = true;
     m_compositorFrame.software_frame_data.reset(new SoftwareFrameData());
 
-    viewportChanged();
+    ViewportChanged();
 }
 
 SoftwareRenderer::~SoftwareRenderer()
 {
 }
 
-const RendererCapabilities& SoftwareRenderer::capabilities() const
+const RendererCapabilities& SoftwareRenderer::Capabilities() const
 {
     return m_capabilities;
 }
 
-void SoftwareRenderer::viewportChanged()
+void SoftwareRenderer::ViewportChanged()
 {
-    m_outputDevice->Resize(viewportSize());
+    m_outputDevice->Resize(ViewportSize());
 }
 
 void SoftwareRenderer::beginDrawingFrame(DrawingFrame& frame)
@@ -113,25 +113,25 @@ void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
     m_currentFramebufferLock.reset();
     m_skCurrentCanvas = NULL;
     m_skRootCanvas = NULL;
-    if (settings().compositorFrameMessage) {
-        m_compositorFrame.metadata = m_client->makeCompositorFrameMetadata();
+    if (Settings().compositorFrameMessage) {
+        m_compositorFrame.metadata = client_->MakeCompositorFrameMetadata();
         m_outputDevice->EndPaint(m_compositorFrame.software_frame_data.get());
     } else {
         m_outputDevice->EndPaint();
     }
 }
 
-bool SoftwareRenderer::swapBuffers()
+bool SoftwareRenderer::SwapBuffers()
 {
-    if (settings().compositorFrameMessage)
+    if (Settings().compositorFrameMessage)
         m_outputSurface->SendFrameToParentCompositor(&m_compositorFrame);
     return true;
 }
 
-void SoftwareRenderer::receiveCompositorFrameAck(const CompositorFrameAck& ack)
+void SoftwareRenderer::ReceiveCompositorFrameAck(const CompositorFrameAck& ack)
 {
-    if (m_client->hasImplThread())
-        m_client->onSwapBuffersComplete();
+    if (client_->HasImplThread())
+        client_->OnSwapBuffersComplete();
     m_outputDevice->ReclaimDIB(ack.last_content_dib);
 }
 
@@ -157,7 +157,7 @@ void SoftwareRenderer::ensureScissorTestDisabled()
     setClipRect(gfx::Rect(device->width(), device->height()));
 }
 
-void SoftwareRenderer::finish()
+void SoftwareRenderer::Finish()
 {
 }
 
@@ -404,7 +404,7 @@ void SoftwareRenderer::drawUnsupportedQuad(const DrawingFrame& frame, const Draw
     m_skCurrentCanvas->drawRect(gfx::RectFToSkRect(quadVertexRect()), m_skCurrentPaint);
 }
 
-void SoftwareRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
+void SoftwareRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect)
 {
     TRACE_EVENT0("cc", "SoftwareRenderer::getFramebufferPixels");
     SkBitmap subsetBitmap;
@@ -414,7 +414,7 @@ void SoftwareRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
                               4 * rect.width());
 }
 
-void SoftwareRenderer::setVisible(bool visible)
+void SoftwareRenderer::SetVisible(bool visible)
 {
     if (m_visible == visible)
         return;

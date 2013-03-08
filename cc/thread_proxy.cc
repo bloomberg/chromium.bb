@@ -546,7 +546,7 @@ void ThreadProxy::forceSerializeOnSwapBuffers()
 void ThreadProxy::forceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion)
 {
     if (m_rendererInitialized)
-        m_layerTreeHostImpl->renderer()->doNoOp();
+        m_layerTreeHostImpl->renderer()->DoNoOp();
     completion->signal();
 }
 
@@ -856,7 +856,7 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
     if (m_completionEventForCommitHeldOnTreeActivation && !m_layerTreeHostImpl->pendingTree())
     {
         TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation");
-        DCHECK(m_layerTreeHostImpl->settings().implSidePainting);
+        DCHECK(m_layerTreeHostImpl->Settings().implSidePainting);
         m_completionEventForCommitHeldOnTreeActivation->signal();
         m_completionEventForCommitHeldOnTreeActivation = 0;
     }
@@ -1064,7 +1064,7 @@ void ThreadProxy::layerTreeHostClosedOnImplThread(CompletionEvent* completion)
 void ThreadProxy::setFullRootLayerDamageOnImplThread()
 {
     DCHECK(isImplThread());
-    m_layerTreeHostImpl->setFullRootLayerDamage();
+    m_layerTreeHostImpl->SetFullRootLayerDamage();
 }
 
 size_t ThreadProxy::maxPartialTextureUpdates() const

@@ -119,7 +119,7 @@ void DirectRenderer::setEnlargePassTextureAmountForTesting(gfx::Vector2d amount)
     m_enlargePassTextureAmount = amount;
 }
 
-void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder)
+void DirectRenderer::DecideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder)
 {
     base::hash_map<RenderPass::Id, const RenderPass*> renderPassesInFrame;
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
@@ -158,7 +158,7 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
     }
 }
 
-void DirectRenderer::drawFrame(RenderPassList& renderPassesInDrawOrder)
+void DirectRenderer::DrawFrame(RenderPassList& renderPassesInDrawOrder)
 {
     TRACE_EVENT0("cc", "DirectRenderer::drawFrame");
     UMA_HISTOGRAM_COUNTS("Renderer4.renderPassCount", renderPassesInDrawOrder.size());
@@ -168,8 +168,8 @@ void DirectRenderer::drawFrame(RenderPassList& renderPassesInDrawOrder)
 
     DrawingFrame frame;
     frame.rootRenderPass = rootRenderPass;
-    frame.rootDamageRect = capabilities().usingPartialSwap ? rootRenderPass->damage_rect : rootRenderPass->output_rect;
-    frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
+    frame.rootDamageRect = Capabilities().usingPartialSwap ? rootRenderPass->damage_rect : rootRenderPass->output_rect;
+    frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), ViewportSize()));
 
     beginDrawingFrame(frame);
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
@@ -232,7 +232,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
     if (!useRenderPass(frame, renderPass))
         return;
 
-    bool usingScissorAsOptimization = capabilities().usingPartialSwap;
+    bool usingScissorAsOptimization = Capabilities().usingPartialSwap;
     gfx::RectF renderPassScissor;
 
     if (usingScissorAsOptimization) {
@@ -240,7 +240,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
         setScissorTestRect(moveScissorToWindowSpace(frame, renderPassScissor));
     }
 
-    if (frame.currentRenderPass != frame.rootRenderPass || m_client->shouldClearRootRenderPass()) {
+    if (frame.currentRenderPass != frame.rootRenderPass || client_->ShouldClearRootRenderPass()) {
         if (!usingScissorAsOptimization)
             ensureScissorTestDisabled();
         clearFramebuffer(frame);
@@ -289,9 +289,9 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
     return bindFramebufferToTexture(frame, texture, renderPass->output_rect);
 }
 
-bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
+bool DirectRenderer::HaveCachedResourcesForRenderPassId(RenderPass::Id id) const
 {
-    if (!settings().cacheRenderPassContents)
+    if (!Settings().cacheRenderPassContents)
         return false;
 
     CachedResource* texture = m_renderPassTextures.get(id);

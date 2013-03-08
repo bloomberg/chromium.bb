@@ -39,28 +39,28 @@ public:
 
     virtual ~GLRenderer();
 
-    virtual const RendererCapabilities& capabilities() const OVERRIDE;
+    virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
     WebKit::WebGraphicsContext3D* context();
 
-    virtual void viewportChanged() OVERRIDE;
+    virtual void ViewportChanged() OVERRIDE;
 
-    virtual void receiveCompositorFrameAck(const CompositorFrameAck& ack) OVERRIDE;
+    virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack) OVERRIDE;
 
     // waits for rendering to finish
-    virtual void finish() OVERRIDE;
+    virtual void Finish() OVERRIDE;
 
-    virtual void doNoOp() OVERRIDE;
+    virtual void DoNoOp() OVERRIDE;
     // puts backbuffer onscreen
-    virtual bool swapBuffers() OVERRIDE;
+    virtual bool SwapBuffers() OVERRIDE;
 
-    virtual void getFramebufferPixels(void *pixels, const gfx::Rect&) OVERRIDE;
+    virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
 
-    virtual bool isContextLost() OVERRIDE;
+    virtual bool IsContextLost() OVERRIDE;
 
-    virtual void setVisible(bool) OVERRIDE;
+    virtual void SetVisible(bool) OVERRIDE;
 
-    virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE;
+    virtual void SendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE;
 
     static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
 

@@ -234,7 +234,7 @@ bool LayerTreeHostImpl::canDraw()
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw no root layer");
         return false;
     }
-    if (deviceViewportSize().IsEmpty()) {
+    if (DeviceViewportSize().IsEmpty()) {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw empty viewport");
         return false;
     }
@@ -549,7 +549,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         occlusionTracker.OverdrawMetrics().recordMetrics(this);
 
     removeRenderPasses(CullRenderPassesWithNoQuads(), frame);
-    m_renderer->decideRenderPassAllocationsForFrame(frame.renderPasses);
+    m_renderer->DecideRenderPassAllocationsForFrame(frame.renderPasses);
     removeRenderPasses(CullRenderPassesWithCachedTextures(*m_renderer), frame);
 
     return drawFrame;
@@ -603,7 +603,7 @@ bool LayerTreeHostImpl::CullRenderPassesWithCachedTextures::shouldRemoveRenderPa
     if (!quad.contents_changed_since_last_frame.IsEmpty()) {
         TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have damage");
         return false;
-    } else if (!m_renderer.haveCachedResourcesForRenderPassId(quad.render_pass_id)) {
+    } else if (!m_renderer.HaveCachedResourcesForRenderPassId(quad.render_pass_id)) {
         TRACE_EVENT0("cc", "CullRenderPassesWithCachedTextures have no texture");
         return false;
     }
@@ -686,7 +686,7 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
     return true;
 }
 
-void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
+void LayerTreeHostImpl::EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
     bool evictedResources = m_client->reduceContentsTextureMemoryOnImplThread(
         m_visible ? policy.bytesLimitWhenVisible : policy.bytesLimitWhenNotVisible,
@@ -711,7 +711,7 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
     }
 }
 
-bool LayerTreeHostImpl::hasImplThread() const
+bool LayerTreeHostImpl::HasImplThread() const
 {
     return m_proxy->hasImplThread();
 }
@@ -728,12 +728,12 @@ void LayerTreeHostImpl::DidUploadVisibleHighResolutionTile()
         m_client->didUploadVisibleHighResolutionTileOnImplThread();
 }
 
-bool LayerTreeHostImpl::shouldClearRootRenderPass() const
+bool LayerTreeHostImpl::ShouldClearRootRenderPass() const
 {
     return m_settings.shouldClearRootRenderPass;
 }
 
-void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
+void LayerTreeHostImpl::SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
     if (m_managedMemoryPolicy == policy)
         return;
@@ -743,10 +743,10 @@ void LayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy
         // FIXME: In single-thread mode, this can be called on the main thread
         // by GLRenderer::onMemoryAllocationChanged.
         DebugScopedSetImplThread implThread(m_proxy);
-        enforceManagedMemoryPolicy(m_managedMemoryPolicy);
+        EnforceManagedMemoryPolicy(m_managedMemoryPolicy);
     } else {
         DCHECK(m_proxy->isImplThread());
-        enforceManagedMemoryPolicy(m_managedMemoryPolicy);
+        EnforceManagedMemoryPolicy(m_managedMemoryPolicy);
     }
     // We always need to commit after changing the memory policy because the new
     // limit can result in more or less content having texture allocated for it.
@@ -764,7 +764,7 @@ void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(const CompositorFrameAc
         return;
 
     // TODO(piman): We may need to do some validation on this ack before processing it.
-    m_renderer->receiveCompositorFrameAck(ack);
+    m_renderer->ReceiveCompositorFrameAck(ack);
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)
@@ -772,7 +772,7 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)
     m_client->onCanDrawStateChanged(canDraw());
 }
 
-CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
+CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const
 {
     CompositorFrameMetadata metadata;
     metadata.device_scale_factor = m_deviceScaleFactor;
@@ -823,7 +823,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
     if (m_activeTree->hud_layer())
         m_activeTree->hud_layer()->updateHudTexture(m_resourceProvider.get());
 
-    m_renderer->drawFrame(frame.renderPasses);
+    m_renderer->DrawFrame(frame.renderPasses);
     // The render passes should be consumed by the renderer.
     DCHECK(frame.renderPasses.empty());
     frame.renderPassesById.clear();
@@ -848,43 +848,43 @@ void LayerTreeHostImpl::didDrawAllLayers(const FrameData& frame)
 void LayerTreeHostImpl::finishAllRendering()
 {
     if (m_renderer)
-        m_renderer->finish();
+        m_renderer->Finish();
 }
 
 bool LayerTreeHostImpl::isContextLost()
 {
     DCHECK(m_proxy->isImplThread());
-    return m_renderer && m_renderer->isContextLost();
+    return m_renderer && m_renderer->IsContextLost();
 }
 
 const RendererCapabilities& LayerTreeHostImpl::rendererCapabilities() const
 {
-    return m_renderer->capabilities();
+    return m_renderer->Capabilities();
 }
 
 bool LayerTreeHostImpl::swapBuffers()
 {
     if (m_tileManager)
         m_tileManager->DidCompleteFrame();
-    return m_renderer->swapBuffers();
+    return m_renderer->SwapBuffers();
 }
 
-const gfx::Size& LayerTreeHostImpl::deviceViewportSize() const
+gfx::Size LayerTreeHostImpl::DeviceViewportSize() const
 {
     return m_deviceViewportSize;
 }
 
-const LayerTreeSettings& LayerTreeHostImpl::settings() const
+const LayerTreeSettings& LayerTreeHostImpl::Settings() const
 {
     return m_settings;
 }
 
-void LayerTreeHostImpl::didLoseOutputSurface()
+void LayerTreeHostImpl::DidLoseOutputSurface()
 {
     m_client->didLoseOutputSurfaceOnImplThread();
 }
 
-void LayerTreeHostImpl::onSwapBuffersComplete()
+void LayerTreeHostImpl::OnSwapBuffersComplete()
 {
     m_client->onSwapBuffersCompleteOnImplThread();
 }
@@ -892,7 +892,7 @@ void LayerTreeHostImpl::onSwapBuffersComplete()
 void LayerTreeHostImpl::readback(void* pixels, const gfx::Rect& rect)
 {
     DCHECK(m_renderer);
-    m_renderer->getFramebufferPixels(pixels, rect);
+    m_renderer->GetFramebufferPixels(pixels, rect);
 }
 
 bool LayerTreeHostImpl::haveRootScrollLayer() const {
@@ -1039,12 +1039,12 @@ void LayerTreeHostImpl::setVisible(bool visible)
         return;
     m_visible = visible;
     didVisibilityChange(this, m_visible);
-    enforceManagedMemoryPolicy(m_managedMemoryPolicy);
+    EnforceManagedMemoryPolicy(m_managedMemoryPolicy);
 
     if (!m_renderer)
         return;
 
-    m_renderer->setVisible(visible);
+    m_renderer->SetVisible(visible);
 
     setBackgroundTickingEnabled(!m_visible && !m_animationRegistrar->active_animation_controllers().empty());
 }
@@ -1099,7 +1099,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     m_outputSurface = outputSurface.Pass();
 
     if (!m_visible)
-        m_renderer->setVisible(m_visible);
+        m_renderer->SetVisible(m_visible);
 
     m_client->onCanDrawStateChanged(canDraw());
 
@@ -1126,7 +1126,7 @@ void LayerTreeHostImpl::setViewportSize(const gfx::Size& layoutViewportSize, con
     updateMaxScrollOffset();
 
     if (m_renderer)
-        m_renderer->viewportChanged();
+        m_renderer->ViewportChanged();
 
     m_client->onCanDrawStateChanged(canDraw());
 }
@@ -1458,7 +1458,7 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::processScrollDeltas()
     return scrollInfo.Pass();
 }
 
-void LayerTreeHostImpl::setFullRootLayerDamage()
+void LayerTreeHostImpl::SetFullRootLayerDamage()
 {
     if (rootLayer()) {
         RenderSurfaceImpl* renderSurface = rootLayer()->renderSurface();
@@ -1617,7 +1617,7 @@ void LayerTreeHostImpl::sendManagedMemoryStats(
     m_lastSentMemoryVisibleAndNearbyBytes = memoryVisibleAndNearbyBytes;
     m_lastSentMemoryUseBytes = memoryUseBytes;
 
-    renderer()->sendManagedMemoryStats(m_lastSentMemoryVisibleBytes,
+    renderer()->SendManagedMemoryStats(m_lastSentMemoryVisibleBytes,
                                        m_lastSentMemoryVisibleAndNearbyBytes,
                                        m_lastSentMemoryUseBytes);
 }

@@ -27,24 +27,23 @@ class CC_EXPORT DelegatingRenderer :
       ResourceProvider* resource_provider);
   virtual ~DelegatingRenderer();
 
-  virtual const RendererCapabilities& capabilities() const OVERRIDE;
+  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
-  virtual void drawFrame(RenderPassList& render_passes_in_draw_order) OVERRIDE;
+  virtual void DrawFrame(RenderPassList& render_passes_in_draw_order) OVERRIDE;
 
-  virtual void finish() OVERRIDE {}
+  virtual void Finish() OVERRIDE {}
 
-  virtual bool swapBuffers() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
 
-  virtual void getFramebufferPixels(void *pixels,
-                                    const gfx::Rect& rect) OVERRIDE;
+  virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
 
-  virtual void receiveCompositorFrameAck(const CompositorFrameAck&) OVERRIDE;
+  virtual void ReceiveCompositorFrameAck(const CompositorFrameAck&) OVERRIDE;
 
-  virtual bool isContextLost() OVERRIDE;
+  virtual bool IsContextLost() OVERRIDE;
 
-  virtual void setVisible(bool) OVERRIDE;
+  virtual void SetVisible(bool) OVERRIDE;
 
-  virtual void sendManagedMemoryStats(size_t bytes_visible,
+  virtual void SendManagedMemoryStats(size_t bytes_visible,
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) OVERRIDE {}
 

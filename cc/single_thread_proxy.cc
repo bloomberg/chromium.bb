@@ -239,7 +239,7 @@ void SingleThreadProxy::setNeedsRedraw()
 {
     // FIXME: Once we move render_widget scheduling into this class, we can
     // treat redraw requests more efficiently than commitAndRedraw requests.
-    m_layerTreeHostImpl->setFullRootLayerDamage();
+    m_layerTreeHostImpl->SetFullRootLayerDamage();
     setNeedsCommit();
 }
 
@@ -375,7 +375,7 @@ void SingleThreadProxy::forceSerializeOnSwapBuffers()
     {
         DebugScopedSetImplThread impl(this);
         if (m_rendererInitialized)
-            m_layerTreeHostImpl->renderer()->doNoOp();
+            m_layerTreeHostImpl->renderer()->DoNoOp();
     }
 }
 

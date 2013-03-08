@@ -119,16 +119,16 @@ bool GLRenderer::initialize()
     base::SplitString(extensionsString, ' ', &extensionsList);
     std::set<std::string> extensions(extensionsList.begin(), extensionsList.end());
 
-    if (settings().acceleratePainting && extensions.count("GL_EXT_texture_format_BGRA8888")
+    if (Settings().acceleratePainting && extensions.count("GL_EXT_texture_format_BGRA8888")
                                       && extensions.count("GL_EXT_read_format_bgra"))
         m_capabilities.usingAcceleratedPainting = true;
     else
         m_capabilities.usingAcceleratedPainting = false;
 
-    m_capabilities.usingPartialSwap = settings().partialSwapEnabled && extensions.count("GL_CHROMIUM_post_sub_buffer");
+    m_capabilities.usingPartialSwap = Settings().partialSwapEnabled && extensions.count("GL_CHROMIUM_post_sub_buffer");
 
     // Use the swapBuffers callback only with the threaded proxy.
-    if (m_client->hasImplThread())
+    if (client_->HasImplThread())
         m_capabilities.usingSwapCompleteCallback = extensions.count("GL_CHROMIUM_swapbuffers_complete_callback");
     if (m_capabilities.usingSwapCompleteCallback)
         m_context->setSwapBuffersCompleteCallbackCHROMIUM(this);
@@ -139,7 +139,7 @@ bool GLRenderer::initialize()
         DCHECK(extensions.count("GL_ARB_texture_rectangle"));
 
     m_capabilities.usingGpuMemoryManager = extensions.count("GL_CHROMIUM_gpu_memory_manager")
-                                           && settings().useMemoryManagement;
+                                           && Settings().useMemoryManagement;
     if (m_capabilities.usingGpuMemoryManager)
         m_context->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
@@ -167,7 +167,7 @@ bool GLRenderer::initialize()
         return false;
 
     // Make sure the viewport and context gets initialized, even if it is to zero.
-    viewportChanged();
+    ViewportChanged();
     return true;
 }
 
@@ -179,7 +179,7 @@ GLRenderer::~GLRenderer()
     cleanupSharedObjects();
 }
 
-const RendererCapabilities& GLRenderer::capabilities() const
+const RendererCapabilities& GLRenderer::Capabilities() const
 {
     return m_capabilities;
 }
@@ -196,7 +196,7 @@ void GLRenderer::debugGLCall(WebGraphicsContext3D* context, const char* command,
         LOG(ERROR) << "GL command failed: File: " << file << "\n\tLine " << line << "\n\tcommand: " << command << ", error " << static_cast<int>(error) << "\n";
 }
 
-void GLRenderer::setVisible(bool visible)
+void GLRenderer::SetVisible(bool visible)
 {
     if (m_visible == visible)
         return;
@@ -210,7 +210,7 @@ void GLRenderer::setVisible(bool visible)
         m_context->setVisibilityCHROMIUM(visible);
 }
 
-void GLRenderer::sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated)
+void GLRenderer::SendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated)
 {
     WebKit::WebGraphicsManagedMemoryStats stats;
     stats.bytesVisible = bytesVisible;
@@ -225,7 +225,7 @@ void GLRenderer::releaseRenderPassTextures()
     m_renderPassTextures.clear();
 }
 
-void GLRenderer::viewportChanged()
+void GLRenderer::ViewportChanged()
 {
     m_isViewportChanged = true;
 }
@@ -249,7 +249,7 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
     // FIXME: Remove this once backbuffer is automatically recreated on first use
     ensureBackbuffer();
 
-    if (viewportSize().IsEmpty())
+    if (ViewportSize().IsEmpty())
         return;
 
     TRACE_EVENT0("cc", "GLRenderer::drawLayers");
@@ -258,7 +258,7 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
         // can leave the window at the wrong size if we never draw and the proper
         // viewport size is never set.
         m_isViewportChanged = false;
-        m_outputSurface->Reshape(gfx::Size(viewportWidth(), viewportHeight()));
+        m_outputSurface->Reshape(gfx::Size(ViewportWidth(), ViewportHeight()));
     }
 
     makeContextCurrent();
@@ -275,7 +275,7 @@ void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
     m_programShadow = 0;
 }
 
-void GLRenderer::doNoOp()
+void GLRenderer::DoNoOp()
 {
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
     GLC(m_context, m_context->flush());
@@ -327,7 +327,7 @@ void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const Checkerbo
     setBlendEnabled(quad->ShouldDrawWithBlending());
 
     const TileCheckerboardProgram* program = tileCheckerboardProgram();
-    DCHECK(program && (program->initialized() || isContextLost()));
+    DCHECK(program && (program->initialized() || IsContextLost()));
     setUseProgram(program->program());
 
     SkColor color = quad->color;
@@ -355,7 +355,7 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
 
     static float glMatrix[16];
     const SolidColorProgram* program = solidColorProgram();
-    DCHECK(program && (program->initialized() || isContextLost()));
+    DCHECK(program && (program->initialized() || IsContextLost()));
     setUseProgram(program->program());
 
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
@@ -688,7 +688,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         GLC(context(), context()->uniform2f(shaderTexScaleLocation,
                                             tex_scale_x, tex_scale_y));
     } else {
-        DCHECK(isContextLost());
+        DCHECK(IsContextLost());
     }
 
     if (shaderMaskSamplerLocation != -1) {
@@ -962,7 +962,7 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     setBlendEnabled(quad->ShouldDrawWithBlending());
 
     const VideoYUVProgram* program = videoYUVProgram();
-    DCHECK(program && (program->initialized() || isContextLost()));
+    DCHECK(program && (program->initialized() || IsContextLost()));
 
     const VideoLayerImpl::FramePlane& yPlane = quad->y_plane;
     const VideoLayerImpl::FramePlane& uPlane = quad->u_plane;
@@ -1233,9 +1233,9 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
     GLC(m_context, m_context->disable(GL_BLEND));
     m_blendShadow = false;
 
-    if (settings().compositorFrameMessage) {
+    if (Settings().compositorFrameMessage) {
         CompositorFrame compositor_frame;
-        compositor_frame.metadata = m_client->makeCompositorFrameMetadata();
+        compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
         m_outputSurface->SendFrameToParentCompositor(&compositor_frame);
     }
 }
@@ -1343,13 +1343,13 @@ void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int texture
     drawQuadGeometry(frame, drawMatrix, rect, program->vertexShader().matrixLocation());
 }
 
-void GLRenderer::finish()
+void GLRenderer::Finish()
 {
     TRACE_EVENT0("cc", "GLRenderer::finish");
     m_context->finish();
 }
 
-bool GLRenderer::swapBuffers()
+bool GLRenderer::SwapBuffers()
 {
     DCHECK(m_visible);
     DCHECK(!m_isBackbufferDiscarded);
@@ -1359,8 +1359,8 @@ bool GLRenderer::swapBuffers()
 
     if (m_capabilities.usingPartialSwap) {
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)
-        m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
-        int flippedYPosOfRectBottom = viewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
+        m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), ViewportSize()));
+        int flippedYPosOfRectBottom = ViewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
         m_outputSurface->PostSubBuffer(gfx::Rect(m_swapBufferRect.x(), flippedYPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height()));
     } else {
         m_outputSurface->SwapBuffers();
@@ -1379,13 +1379,13 @@ bool GLRenderer::swapBuffers()
     return true;
 }
 
-void GLRenderer::receiveCompositorFrameAck(const CompositorFrameAck& ack) {
+void GLRenderer::ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {
     onSwapBuffersComplete();
 }
 
 void GLRenderer::onSwapBuffersComplete()
 {
-    m_client->onSwapBuffersComplete();
+    client_->OnSwapBuffersComplete();
 }
 
 void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocation)
@@ -1401,9 +1401,9 @@ void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocatio
             priorityCutoff(allocation.priorityCutoffWhenNotVisible));
 
         if (allocation.enforceButDoNotKeepAsPolicy)
-            m_client->enforceManagedMemoryPolicy(policy);
+            client_->EnforceManagedMemoryPolicy(policy);
         else
-            m_client->setManagedMemoryPolicy(policy);
+            client_->SetManagedMemoryPolicy(policy);
     }
 
     bool oldDiscardBackbufferWhenNotVisible = m_discardBackbufferWhenNotVisible;
@@ -1452,7 +1452,7 @@ void GLRenderer::discardBackbuffer()
     m_isBackbufferDiscarded = true;
 
     // Damage tracker needs a full reset every time framebuffer is discarded.
-    m_client->setFullRootLayerDamage();
+    client_->SetFullRootLayerDamage();
 }
 
 void GLRenderer::ensureBackbuffer()
@@ -1466,14 +1466,14 @@ void GLRenderer::ensureBackbuffer()
 
 void GLRenderer::onContextLost()
 {
-    m_client->didLoseOutputSurface();
+    client_->DidLoseOutputSurface();
 }
 
 
-void GLRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
+void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect)
 {
-    DCHECK(rect.right() <= viewportWidth());
-    DCHECK(rect.bottom() <= viewportHeight());
+    DCHECK(rect.right() <= ViewportWidth());
+    DCHECK(rect.bottom() <= ViewportHeight());
 
     if (!pixels)
         return;
@@ -1498,7 +1498,7 @@ void GLRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
         GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
         // Copy the contents of the current (IOSurface-backed) framebuffer into a temporary texture.
-        GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, viewportSize().width(), viewportSize().height(), 0));
+        GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, ViewportSize().width(), ViewportSize().height(), 0));
         temporaryFBO = m_context->createFramebuffer();
         // Attach this texture to an FBO, and perform the readback from that FBO.
         GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, temporaryFBO));
@@ -1508,7 +1508,7 @@ void GLRenderer::getFramebufferPixels(void *pixels, const gfx::Rect& rect)
     }
 
     scoped_array<uint8_t> srcPixels(new uint8_t[rect.width() * rect.height() * 4]);
-    GLC(m_context, m_context->readPixels(rect.x(), viewportSize().height() - rect.bottom(), rect.width(), rect.height(),
+    GLC(m_context, m_context->readPixels(rect.x(), ViewportSize().height() - rect.bottom(), rect.width(), rect.height(),
                                          GL_RGBA, GL_UNSIGNED_BYTE, srcPixels.get()));
 
     uint8_t* destPixels = static_cast<uint8_t*>(pixels);
@@ -1576,7 +1576,7 @@ bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResou
     unsigned textureId = m_currentFramebufferLock->texture_id();
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0));
 
-    DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE || isContextLost());
+    DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE || IsContextLost());
 
     initializeMatrices(frame, framebufferRect, false);
     setDrawViewportSize(framebufferRect.size());
@@ -1863,7 +1863,7 @@ void GLRenderer::cleanupSharedObjects()
     releaseRenderPassTextures();
 }
 
-bool GLRenderer::isContextLost()
+bool GLRenderer::IsContextLost()
 {
     return (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }

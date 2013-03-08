@@ -27,23 +27,23 @@ class FakeRendererClient : public RendererClient {
   }
 
   // RendererClient methods.
-  virtual const gfx::Size& deviceViewportSize() const OVERRIDE {
+  virtual gfx::Size DeviceViewportSize() const OVERRIDE {
     static gfx::Size fake_size(200, 200);
     return fake_size;
   }
-  virtual const LayerTreeSettings& settings() const OVERRIDE {
+  virtual const LayerTreeSettings& Settings() const OVERRIDE {
     static LayerTreeSettings fake_settings;
     return fake_settings;
   }
-  virtual void didLoseOutputSurface() OVERRIDE { }
-  virtual void onSwapBuffersComplete() OVERRIDE { }
-  virtual void setFullRootLayerDamage() OVERRIDE { }
-  virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy&) OVERRIDE {}
-  virtual void enforceManagedMemoryPolicy(
+  virtual void DidLoseOutputSurface() OVERRIDE { }
+  virtual void OnSwapBuffersComplete() OVERRIDE { }
+  virtual void SetFullRootLayerDamage() OVERRIDE { }
+  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy&) OVERRIDE {}
+  virtual void EnforceManagedMemoryPolicy(
       const ManagedMemoryPolicy&) OVERRIDE {}
-  virtual bool hasImplThread() const OVERRIDE { return false; }
-  virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
-  virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+  virtual bool HasImplThread() const OVERRIDE { return false; }
+  virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
+  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
       OVERRIDE { return CompositorFrameMetadata(); }
 };
 
@@ -70,7 +70,7 @@ class GLRendererPixelTest : public testing::Test {
                      viewport_rect.width(), viewport_rect.height());
     bitmap.allocPixels();
     unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
-    renderer_->getFramebufferPixels(pixels, viewport_rect);
+    renderer_->GetFramebufferPixels(pixels, viewport_rect);
 
     base::FilePath test_data_dir;
     if (!PathService::Get(cc::DIR_TEST_DATA, &test_data_dir))
@@ -148,7 +148,7 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
 
-  renderer_->drawFrame(pass_list);
+  renderer_->DrawFrame(pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("green.png")),
@@ -191,8 +191,8 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   pass_list.push_back(root_pass.Pass());
 
   renderer_->setEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
-  renderer_->decideRenderPassAllocationsForFrame(pass_list);
-  renderer_->drawFrame(pass_list);
+  renderer_->DecideRenderPassAllocationsForFrame(pass_list);
+  renderer_->DrawFrame(pass_list);
 
   EXPECT_TRUE(PixelsMatchReference(
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")), viewport_rect));

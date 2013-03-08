@@ -74,7 +74,7 @@ class CC_EXPORT LayerTreeImpl {
   // trivial accessors in a followup patch.
   const LayerTreeDebugState& debug_state() const;
   float device_scale_factor() const;
-  const gfx::Size& device_viewport_size() const;
+  gfx::Size device_viewport_size() const;
   const gfx::Size& layout_viewport_size() const;
   std::string layer_tree_as_text() const;
   DebugRectHistory* debug_rect_history() const;

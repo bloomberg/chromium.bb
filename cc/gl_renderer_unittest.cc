@@ -78,16 +78,16 @@ public:
     }
 
     // RendererClient methods.
-    virtual const gfx::Size& deviceViewportSize() const OVERRIDE { static gfx::Size fakeSize(1, 1); return fakeSize; }
-    virtual const LayerTreeSettings& settings() const OVERRIDE { static LayerTreeSettings fakeSettings; return fakeSettings; }
-    virtual void didLoseOutputSurface() OVERRIDE { }
-    virtual void onSwapBuffersComplete() OVERRIDE { }
-    virtual void setFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
-    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
-    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
-    virtual bool hasImplThread() const OVERRIDE { return false; }
-    virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
-    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+    virtual gfx::Size DeviceViewportSize() const OVERRIDE { static gfx::Size fakeSize(1, 1); return fakeSize; }
+    virtual const LayerTreeSettings& Settings() const OVERRIDE { static LayerTreeSettings fakeSettings; return fakeSettings; }
+    virtual void DidLoseOutputSurface() OVERRIDE { }
+    virtual void OnSwapBuffersComplete() OVERRIDE { }
+    virtual void SetFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
+    virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
+    virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { if (m_lastCallWasSetVisibility) *m_lastCallWasSetVisibility = false; }
+    virtual bool HasImplThread() const OVERRIDE { return false; }
+    virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
+    virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
         OVERRIDE { return CompositorFrameMetadata(); }
 
     // Methods added for test.
@@ -139,9 +139,9 @@ protected:
         m_renderer.initialize();
     }
 
-    void swapBuffers()
+    void SwapBuffers()
     {
-        m_renderer.swapBuffers();
+        m_renderer.SwapBuffers();
     }
 
     FrameCountingMemoryAllocationSettingContext* context() { return static_cast<FrameCountingMemoryAllocationSettingContext*>(m_outputSurface->context3d()); }
@@ -164,7 +164,7 @@ TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
     EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
-    swapBuffers();
+    SwapBuffers();
     EXPECT_EQ(1, context()->frameCount());
 }
 
@@ -173,7 +173,7 @@ TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
 // Expected: it is discarded and damage tracker is reset.
 TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerWhileNotVisible)
 {
-    m_renderer.setVisible(false);
+    m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
     EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
@@ -184,7 +184,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLa
 // Expected: the allocation is ignored.
 TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
 {
-    m_renderer.setVisible(true);
+    m_renderer.SetVisible(true);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
     EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
@@ -196,7 +196,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
 // Expected: it does nothing.
 TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
 {
-    m_renderer.setVisible(false);
+    m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
     EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
@@ -211,31 +211,31 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
 // Expected: will recreate framebuffer.
 TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration)
 {
-    m_renderer.setVisible(false);
+    m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
-    m_renderer.setVisible(true);
-    m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder());
+    m_renderer.SetVisible(true);
+    m_renderer.DrawFrame(m_mockClient.renderPassesInDrawOrder());
     EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
-    swapBuffers();
+    SwapBuffers();
     EXPECT_EQ(1, context()->frameCount());
 }
 
 TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
 {
-    m_renderer.setVisible(false);
+    m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     char pixels[4];
-    m_renderer.drawFrame(m_mockClient.renderPassesInDrawOrder());
+    m_renderer.DrawFrame(m_mockClient.renderPassesInDrawOrder());
     EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
 
-    m_renderer.getFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
+    m_renderer.GetFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
     EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
     EXPECT_EQ(2, m_mockClient.setFullRootLayerDamageCount());
 }
@@ -411,7 +411,7 @@ TEST(GLRendererTest2, opaqueBackground)
 
     EXPECT_TRUE(renderer.initialize());
 
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
+    renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
 
     // On DEBUG builds, render passes with opaque background clear to blue to
     // easily see regions that were not drawn on the screen.
@@ -434,7 +434,7 @@ TEST(GLRendererTest2, transparentBackground)
 
     EXPECT_TRUE(renderer.initialize());
 
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
+    renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
 
     EXPECT_EQ(1, context->clearCount());
 }
@@ -490,9 +490,9 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     // them both a pointer to a variable on the stack.
     context->setLastCallWasSetVisibilityPointer(&lastCallWasSetVisiblity);
     mockClient.setLastCallWasSetVisibilityPointer(&lastCallWasSetVisiblity);
-    renderer.setVisible(true);
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
-    renderer.setVisible(false);
+    renderer.SetVisible(true);
+    renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
+    renderer.SetVisible(false);
     EXPECT_TRUE(lastCallWasSetVisiblity);
 }
 
@@ -583,7 +583,7 @@ TEST(GLRendererTest2, activeTextureState)
 
 class NoClearRootRenderPassFakeClient : public FakeRendererClient {
 public:
-    virtual bool shouldClearRootRenderPass() const OVERRIDE { return false; }
+    virtual bool ShouldClearRootRenderPass() const OVERRIDE { return false; }
 };
 
 class NoClearRootRenderPassMockContext : public TestWebGraphicsContext3D {
@@ -601,7 +601,7 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
     EXPECT_TRUE(renderer.initialize());
 
-    gfx::Rect viewportRect(mockClient.deviceViewportSize());
+    gfx::Rect viewportRect(mockClient.DeviceViewportSize());
     ScopedPtrVector<RenderPass>& renderPasses = mockClient.renderPassesInDrawOrder();
     renderPasses.clear();
 
@@ -631,8 +631,8 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
         .Times(AnyNumber())
         .After(firstRenderPass);
 
-    renderer.decideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
+    renderer.DecideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
+    renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
 
     // In multiple render passes all but the root pass should clear the framebuffer.
     Mock::VerifyAndClearExpectations(&mockContext);
@@ -669,9 +669,9 @@ TEST(GLRendererTest2, scissorTestWhenClearing) {
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
     EXPECT_TRUE(renderer.initialize());
-    EXPECT_FALSE(renderer.capabilities().usingPartialSwap);
+    EXPECT_FALSE(renderer.Capabilities().usingPartialSwap);
 
-    gfx::Rect viewportRect(mockClient.deviceViewportSize());
+    gfx::Rect viewportRect(mockClient.DeviceViewportSize());
     ScopedPtrVector<RenderPass>& renderPasses = mockClient.renderPassesInDrawOrder();
     renderPasses.clear();
 
@@ -692,8 +692,8 @@ TEST(GLRendererTest2, scissorTestWhenClearing) {
     addRenderPassQuad(rootPass, childPass);
     addRenderPassQuad(childPass, grandChildPass);
 
-    renderer.decideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
-    renderer.drawFrame(mockClient.renderPassesInDrawOrder());
+    renderer.DecideRenderPassAllocationsForFrame(mockClient.renderPassesInDrawOrder());
+    renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
 }
 
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
@@ -745,14 +745,14 @@ protected:
         EXPECT_TRUE(m_renderer.initialize());
     }
 
-    void swapBuffers()
+    void SwapBuffers()
     {
-        m_renderer.swapBuffers();
+        m_renderer.SwapBuffers();
     }
 
-    void drawFrame()
+    void DrawFrame()
     {
-        gfx::Rect viewportRect(deviceViewportSize());
+        gfx::Rect viewportRect(DeviceViewportSize());
         ScopedPtrVector<RenderPass>& renderPasses = renderPassesInDrawOrder();
         renderPasses.clear();
 
@@ -772,8 +772,8 @@ protected:
         EXPECT_CALL(*context(), drawElements(_, _, _, _))
             .Times(1);
 
-        m_renderer.decideRenderPassAllocationsForFrame(renderPassesInDrawOrder());
-        m_renderer.drawFrame(renderPassesInDrawOrder());
+        m_renderer.DecideRenderPassAllocationsForFrame(renderPassesInDrawOrder());
+        m_renderer.DrawFrame(renderPassesInDrawOrder());
     }
 
     OutputSurfaceMockContext* context() { return static_cast<OutputSurfaceMockContext*>(m_outputSurface.context3d()); }
@@ -785,16 +785,16 @@ protected:
 
 TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap)
 {
-    drawFrame();
+    DrawFrame();
 
     EXPECT_CALL(m_outputSurface, SwapBuffers())
         .Times(1);
-    m_renderer.swapBuffers();
+    m_renderer.SwapBuffers();
 }
 
 class MockOutputSurfaceTestWithPartialSwap : public MockOutputSurfaceTest {
 public:
-    virtual const LayerTreeSettings& settings() const OVERRIDE
+    virtual const LayerTreeSettings& Settings() const OVERRIDE
     {
         static LayerTreeSettings fakeSettings;
         fakeSettings.partialSwapEnabled = true;
@@ -804,16 +804,16 @@ public:
 
 TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap)
 {
-    drawFrame();
+    DrawFrame();
 
     EXPECT_CALL(m_outputSurface, PostSubBuffer(_))
         .Times(1);
-    m_renderer.swapBuffers();
+    m_renderer.SwapBuffers();
 }
 
 class MockOutputSurfaceTestWithSendCompositorFrame : public MockOutputSurfaceTest {
 public:
-    virtual const LayerTreeSettings& settings() const OVERRIDE
+    virtual const LayerTreeSettings& Settings() const OVERRIDE
     {
         static LayerTreeSettings fakeSettings;
         fakeSettings.compositorFrameMessage = true;
@@ -825,7 +825,7 @@ TEST_F(MockOutputSurfaceTestWithSendCompositorFrame, DrawFrame)
 {
     EXPECT_CALL(m_outputSurface, SendFrameToParentCompositor(_))
         .Times(1);
-    drawFrame();
+    DrawFrame();
 }
 
 }  // namespace

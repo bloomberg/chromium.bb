@@ -106,7 +106,7 @@ bool DelegatingRenderer::Initialize() {
     DCHECK(hasARBTextureRect);
 
   capabilities_.usingAcceleratedPainting =
-      settings().acceleratePainting &&
+      Settings().acceleratePainting &&
       capabilities_.bestTextureFormat == GL_BGRA_EXT &&
       hasReadBGRA;
 
@@ -127,7 +127,7 @@ DelegatingRenderer::~DelegatingRenderer() {
     context3d->setContextLostCallback(NULL);
 }
 
-const RendererCapabilities& DelegatingRenderer::capabilities() const {
+const RendererCapabilities& DelegatingRenderer::Capabilities() const {
   return capabilities_;
 }
 
@@ -138,12 +138,12 @@ static ResourceProvider::ResourceId AppendToArray(
   return id;
 }
 
-void DelegatingRenderer::drawFrame(
+void DelegatingRenderer::DrawFrame(
     RenderPassList& render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::drawFrame");
 
   CompositorFrame out_frame;
-  out_frame.metadata = m_client->makeCompositorFrameMetadata();
+  out_frame.metadata = client_->MakeCompositorFrameMetadata();
 
   out_frame.delegated_frame_data = make_scoped_ptr(new DelegatedFrameData);
 
@@ -165,36 +165,35 @@ void DelegatingRenderer::drawFrame(
   output_surface_->SendFrameToParentCompositor(&out_frame);
 }
 
-bool DelegatingRenderer::swapBuffers() {
+bool DelegatingRenderer::SwapBuffers() {
   return true;
 }
 
-void DelegatingRenderer::getFramebufferPixels(void *pixels,
-                                              const gfx::Rect& rect) {
+void DelegatingRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   NOTIMPLEMENTED();
 }
 
-void DelegatingRenderer::receiveCompositorFrameAck(
+void DelegatingRenderer::ReceiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
   resource_provider_->ReceiveFromParent(ack.resources);
-  if (m_client->hasImplThread())
-    m_client->onSwapBuffersComplete();
+  if (client_->HasImplThread())
+    client_->OnSwapBuffersComplete();
 }
 
 
-bool DelegatingRenderer::isContextLost() {
+bool DelegatingRenderer::IsContextLost() {
   WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
   if (!context3d)
     return false;
   return context3d->getGraphicsResetStatusARB() != GL_NO_ERROR;
 }
 
-void DelegatingRenderer::setVisible(bool visible) {
+void DelegatingRenderer::SetVisible(bool visible) {
   visible_ = visible;
 }
 
 void DelegatingRenderer::onContextLost() {
-  m_client->didLoseOutputSurface();
+  client_->DidLoseOutputSurface();
 }
 
 }  // namespace cc

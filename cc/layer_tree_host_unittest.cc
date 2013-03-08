@@ -937,7 +937,7 @@ public:
 
         // Device viewport is scaled.
         EXPECT_EQ(gfx::Size(40, 40), impl->layoutViewportSize());
-        EXPECT_EQ(gfx::Size(60, 60), impl->deviceViewportSize());
+        EXPECT_EQ(gfx::Size(60, 60), impl->DeviceViewportSize());
 
         LayerImpl* root = impl->rootLayer();
         LayerImpl* child = impl->rootLayer()->children()[0];
@@ -1442,16 +1442,16 @@ public:
 
         switch (hostImpl->activeTree()->source_frame_number()) {
         case 0:
-            EXPECT_TRUE(renderer->haveCachedResourcesForRenderPassId(surface1RenderPassId));
-            EXPECT_TRUE(renderer->haveCachedResourcesForRenderPassId(surface2RenderPassId));
+            EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(surface1RenderPassId));
+            EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(surface2RenderPassId));
 
             // Reduce the memory limit to only fit the root layer and one render surface. This
             // prevents any contents drawing into surfaces from being allocated.
-            hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(100 * 100 * 4 * 2));
+            hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(100 * 100 * 4 * 2));
             break;
         case 1:
-            EXPECT_FALSE(renderer->haveCachedResourcesForRenderPassId(surface1RenderPassId));
-            EXPECT_FALSE(renderer->haveCachedResourcesForRenderPassId(surface2RenderPassId));
+            EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(surface1RenderPassId));
+            EXPECT_FALSE(renderer->HaveCachedResourcesForRenderPassId(surface2RenderPassId));
 
             endTest();
             break;
@@ -1600,7 +1600,7 @@ public:
     void evictTexturesOnImplThread()
     {
         DCHECK(m_implForEvictTextures);
-        m_implForEvictTextures->enforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
+        m_implForEvictTextures->EnforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
     }
 
     // Commit 1: Just commit and draw normally, then post an eviction at the end
@@ -2157,7 +2157,7 @@ public:
                 m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
             // Set a new policy that will kick out 1 of the 3 resources.
             // Because a resource was evicted, a commit will be kicked off.
-            hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+            hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
                 100 * 100 * 4 * 2,
                 ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
                 100 * 100 * 4 * 1,

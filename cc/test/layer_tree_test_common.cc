@@ -79,7 +79,7 @@ void MockLayerTreeHostImpl::commitComplete()
     LayerTreeHostImpl::commitComplete();
     m_testHooks->commitCompleteOnThread(this);
 
-    if (!settings().implSidePainting)
+    if (!Settings().implSidePainting)
         m_testHooks->treeActivatedOnThread(this);
 
 }

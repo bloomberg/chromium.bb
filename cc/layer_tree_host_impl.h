@@ -125,16 +125,16 @@ public:
     void didDrawAllLayers(const FrameData&);
 
     // RendererClient implementation
-    virtual const gfx::Size& deviceViewportSize() const OVERRIDE;
-    virtual const LayerTreeSettings& settings() const OVERRIDE;
-    virtual void didLoseOutputSurface() OVERRIDE;
-    virtual void onSwapBuffersComplete() OVERRIDE;
-    virtual void setFullRootLayerDamage() OVERRIDE;
-    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
-    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
-    virtual bool hasImplThread() const OVERRIDE;
-    virtual bool shouldClearRootRenderPass() const OVERRIDE;
-    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const OVERRIDE;
+    virtual gfx::Size DeviceViewportSize() const OVERRIDE;
+    virtual const LayerTreeSettings& Settings() const OVERRIDE;
+    virtual void DidLoseOutputSurface() OVERRIDE;
+    virtual void OnSwapBuffersComplete() OVERRIDE;
+    virtual void SetFullRootLayerDamage() OVERRIDE;
+    virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
+    virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
+    virtual bool HasImplThread() const OVERRIDE;
+    virtual bool ShouldClearRootRenderPass() const OVERRIDE;
+    virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE;
 
     // TileManagerClient implementation.
     virtual void ScheduleManageTiles() OVERRIDE;

@@ -18,67 +18,71 @@ class CompositorFrameMetadata;
 class ScopedResource;
 
 class CC_EXPORT RendererClient {
-public:
-    virtual const gfx::Size& deviceViewportSize() const = 0;
-    virtual const LayerTreeSettings& settings() const = 0;
-    virtual void didLoseOutputSurface() = 0;
-    virtual void onSwapBuffersComplete() = 0;
-    virtual void setFullRootLayerDamage() = 0;
-    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
-    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
-    virtual bool hasImplThread() const = 0;
-    virtual bool shouldClearRootRenderPass() const = 0;
-    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const = 0;
-protected:
-    virtual ~RendererClient() { }
+ public:
+  virtual gfx::Size DeviceViewportSize() const = 0;
+  virtual const LayerTreeSettings& Settings() const = 0;
+  virtual void DidLoseOutputSurface() = 0;
+  virtual void OnSwapBuffersComplete() = 0;
+  virtual void SetFullRootLayerDamage() = 0;
+  virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
+  virtual void EnforceManagedMemoryPolicy(
+      const ManagedMemoryPolicy& policy) = 0;
+  virtual bool HasImplThread() const = 0;
+  virtual bool ShouldClearRootRenderPass() const = 0;
+  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const = 0;
+
+ protected:
+  virtual ~RendererClient() {}
 };
 
 class CC_EXPORT Renderer {
-public:
-    virtual ~Renderer() { }
+ public:
+  virtual ~Renderer() {}
 
-    virtual const RendererCapabilities& capabilities() const = 0;
+  virtual const RendererCapabilities& Capabilities() const = 0;
 
-    const LayerTreeSettings& settings() const { return m_client->settings(); }
+  const LayerTreeSettings& Settings() const { return client_->Settings(); }
 
-    gfx::Size viewportSize() const { return m_client->deviceViewportSize(); }
-    int viewportWidth() const { return viewportSize().width(); }
-    int viewportHeight() const { return viewportSize().height(); }
+  gfx::Size ViewportSize() const { return client_->DeviceViewportSize(); }
+  int ViewportWidth() const { return ViewportSize().width(); }
+  int ViewportHeight() const { return ViewportSize().height(); }
 
-    virtual void viewportChanged() { }
-    virtual void receiveCompositorFrameAck(const CompositorFrameAck&) { }
+  virtual void ViewportChanged() {}
+  virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {}
 
-    virtual void decideRenderPassAllocationsForFrame(const RenderPassList&) { }
-    virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const;
+  virtual void DecideRenderPassAllocationsForFrame(
+      const RenderPassList& render_passes_in_draw_order) {}
+  virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const;
 
-    // This passes ownership of the render passes to the renderer. It should
-    // consume them, and empty the list.
-    virtual void drawFrame(RenderPassList&) = 0;
+  // This passes ownership of the render passes to the renderer. It should
+  // consume them, and empty the list.
+  virtual void DrawFrame(RenderPassList& render_passes_in_draw_order) = 0;
 
-    // waits for rendering to finish
-    virtual void finish() = 0;
+  // Waits for rendering to finish.
+  virtual void Finish() = 0;
 
-    virtual void doNoOp() { }
-    // puts backbuffer onscreen
-    virtual bool swapBuffers() = 0;
+  virtual void DoNoOp() {}
 
-    virtual void getFramebufferPixels(void *pixels, const gfx::Rect&) = 0;
+  // Puts backbuffer onscreen.
+  virtual bool SwapBuffers() = 0;
 
-    virtual bool isContextLost();
+  virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) = 0;
 
-    virtual void setVisible(bool) = 0;
+  virtual bool IsContextLost();
 
-    virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) = 0;
+  virtual void SetVisible(bool visible) = 0;
 
-protected:
-    explicit Renderer(RendererClient* client)
-        : m_client(client)
-    {
-    }
+  virtual void SendManagedMemoryStats(size_t bytes_visible,
+                                      size_t bytes_visible_and_nearby,
+                                      size_t bytes_allocated) = 0;
 
-    RendererClient* m_client;
+ protected:
+  explicit Renderer(RendererClient* client)
+      : client_(client) {}
 
-    DISALLOW_COPY_AND_ASSIGN(Renderer);
+  RendererClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(Renderer);
 };
 
 }

@@ -24,9 +24,9 @@ public:
 
     ResourceProvider* resourceProvider() const { return m_resourceProvider; }
 
-    virtual void decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder) OVERRIDE;
-    virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const OVERRIDE;
-    virtual void drawFrame(RenderPassList& renderPassesInDrawOrder) OVERRIDE;
+    virtual void DecideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder) OVERRIDE;
+    virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id) const OVERRIDE;
+    virtual void DrawFrame(RenderPassList& renderPassesInDrawOrder) OVERRIDE;
 
     struct CC_EXPORT DrawingFrame {
         DrawingFrame();

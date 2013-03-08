@@ -6,13 +6,11 @@
 
 namespace cc {
 
-bool Renderer::haveCachedResourcesForRenderPassId(RenderPass::Id) const
-{
+bool Renderer::HaveCachedResourcesForRenderPassId(RenderPass::Id id) const {
     return false;
 }
 
-bool Renderer::isContextLost()
-{
+bool Renderer::IsContextLost() {
     return false;
 }
 

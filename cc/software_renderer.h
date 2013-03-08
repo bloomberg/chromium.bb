@@ -28,21 +28,21 @@ public:
 
     virtual ~SoftwareRenderer();
 
-    virtual const RendererCapabilities& capabilities() const OVERRIDE;
+    virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
-    virtual void viewportChanged() OVERRIDE;
+    virtual void ViewportChanged() OVERRIDE;
 
-    virtual void finish() OVERRIDE;
+    virtual void Finish() OVERRIDE;
 
-    virtual bool swapBuffers() OVERRIDE;
+    virtual bool SwapBuffers() OVERRIDE;
 
-    virtual void getFramebufferPixels(void *pixels, const gfx::Rect&) OVERRIDE;
+    virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
 
-    virtual void setVisible(bool) OVERRIDE;
+    virtual void SetVisible(bool) OVERRIDE;
 
-    virtual void sendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE  { }
+    virtual void SendManagedMemoryStats(size_t bytesVisible, size_t bytesVisibleAndNearby, size_t bytesAllocated) OVERRIDE  { }
 
-    virtual void receiveCompositorFrameAck(const CompositorFrameAck&) OVERRIDE;
+    virtual void ReceiveCompositorFrameAck(const CompositorFrameAck&) OVERRIDE;
 
 protected:
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;

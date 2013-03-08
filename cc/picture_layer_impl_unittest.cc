@@ -513,7 +513,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
 
-  float low_res_factor = host_impl_.settings().lowResContentsScaleFactor;
+  float low_res_factor = host_impl_.Settings().lowResContentsScaleFactor;
   EXPECT_LT(low_res_factor, 1.f);
 
   // These are included in the scale given to the layer.
@@ -600,7 +600,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   SetupTrees(pending_pile, active_pile);
   EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
 
-  float low_res_factor = host_impl_.settings().lowResContentsScaleFactor;
+  float low_res_factor = host_impl_.Settings().lowResContentsScaleFactor;
   EXPECT_LT(low_res_factor, 1.f);
 
   // These are included in the scale given to the layer.

@@ -43,16 +43,16 @@ public:
     void setShouldClearRootRenderPass(bool clearRootRenderPass) { m_shouldClearRootRenderPass = clearRootRenderPass; }
 
     // RendererClient implementation.
-    virtual const gfx::Size& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
-    virtual const LayerTreeSettings& settings() const OVERRIDE { return m_settings; }
-    virtual void didLoseOutputSurface() OVERRIDE { }
-    virtual void onSwapBuffersComplete() OVERRIDE { }
-    virtual void setFullRootLayerDamage() OVERRIDE { }
-    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
-    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
-    virtual bool hasImplThread() const OVERRIDE { return false; }
-    virtual bool shouldClearRootRenderPass() const OVERRIDE { return m_shouldClearRootRenderPass; }
-    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+    virtual gfx::Size DeviceViewportSize() const OVERRIDE { return m_viewportSize; }
+    virtual const LayerTreeSettings& Settings() const OVERRIDE { return m_settings; }
+    virtual void DidLoseOutputSurface() OVERRIDE { }
+    virtual void OnSwapBuffersComplete() OVERRIDE { }
+    virtual void SetFullRootLayerDamage() OVERRIDE { }
+    virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
+    virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
+    virtual bool HasImplThread() const OVERRIDE { return false; }
+    virtual bool ShouldClearRootRenderPass() const OVERRIDE { return m_shouldClearRootRenderPass; }
+    virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
         OVERRIDE { return CompositorFrameMetadata(); }
 
 protected:
@@ -89,10 +89,10 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 
     RenderPassList list;
     list.push_back(rootRenderPass.PassAs<RenderPass>());
-    renderer()->drawFrame(list);
+    renderer()->DrawFrame(list);
 
-    scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
-    renderer()->getFramebufferPixels(pixels.get(), outerRect);
+    scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() * DeviceViewportSize().height()]);
+    renderer()->GetFramebufferPixels(pixels.get(), outerRect);
 
 // FIXME: This fails on Android. Endianness maybe?
 // Yellow: expects 0xFFFFFF00, was 0xFF00FFFF on android.
@@ -132,7 +132,7 @@ TEST_F(SoftwareRendererTest, tileQuad)
     resourceProvider()->SetPixels(resourceYellow, reinterpret_cast<uint8_t*>(yellowPixels.get()), gfx::Rect(outerSize), gfx::Rect(outerSize), gfx::Vector2d());
     resourceProvider()->SetPixels(resourceCyan, reinterpret_cast<uint8_t*>(cyanPixels.get()), gfx::Rect(innerSize), gfx::Rect(innerSize), gfx::Vector2d());
 
-    gfx::Rect rootRect = gfx::Rect(deviceViewportSize());
+    gfx::Rect rootRect = gfx::Rect(DeviceViewportSize());
 
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::Create();
     sharedQuadState->SetAll(gfx::Transform(), outerSize, outerRect, outerRect, false, 1.0);
@@ -148,10 +148,10 @@ TEST_F(SoftwareRendererTest, tileQuad)
 
     RenderPassList list;
     list.push_back(rootRenderPass.PassAs<RenderPass>());
-    renderer()->drawFrame(list);
+    renderer()->DrawFrame(list);
 
-    scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
-    renderer()->getFramebufferPixels(pixels.get(), outerRect);
+    scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() * DeviceViewportSize().height()]);
+    renderer()->GetFramebufferPixels(pixels.get(), outerRect);
 
     EXPECT_EQ(SK_ColorYELLOW, pixels[0]);
     EXPECT_EQ(SK_ColorYELLOW, pixels[outerPixels - 1]);
@@ -175,9 +175,9 @@ TEST_F(SoftwareRendererTest, shouldClearRootRenderPass)
     TestRenderPass* rootClearPass = addRenderPass(list, rootClearPassId, viewportRect, gfx::Transform());
     addQuad(rootClearPass, viewportRect, SK_ColorGREEN);
 
-    renderer()->decideRenderPassAllocationsForFrame(list);
-    renderer()->drawFrame(list);
-    renderer()->getFramebufferPixels(pixels.get(), viewportRect);
+    renderer()->DecideRenderPassAllocationsForFrame(list);
+    renderer()->DrawFrame(list);
+    renderer()->GetFramebufferPixels(pixels.get(), viewportRect);
 
     EXPECT_EQ(SK_ColorGREEN, pixels[0]);
     EXPECT_EQ(SK_ColorGREEN, pixels[viewportPixels - 1]);
@@ -191,9 +191,9 @@ TEST_F(SoftwareRendererTest, shouldClearRootRenderPass)
     TestRenderPass* rootSmallerPass = addRenderPass(list, rootSmallerPassId, viewportRect, gfx::Transform());
     addQuad(rootSmallerPass, smallerRect, SK_ColorMAGENTA);
 
-    renderer()->decideRenderPassAllocationsForFrame(list);
-    renderer()->drawFrame(list);
-    renderer()->getFramebufferPixels(pixels.get(), viewportRect);
+    renderer()->DecideRenderPassAllocationsForFrame(list);
+    renderer()->DrawFrame(list);
+    renderer()->GetFramebufferPixels(pixels.get(), viewportRect);
 
     // If we didn't clear, the borders should still be green.
     EXPECT_EQ(SK_ColorGREEN, pixels[0]);

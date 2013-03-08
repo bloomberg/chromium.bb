@@ -369,7 +369,7 @@ Proxy* LayerTreeImpl::proxy() const {
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {
-  return layer_tree_host_impl_->settings();
+  return layer_tree_host_impl_->Settings();
 }
 
 const RendererCapabilities& LayerTreeImpl::rendererCapabilities() const {
@@ -450,8 +450,8 @@ float LayerTreeImpl::device_scale_factor() const {
   return layer_tree_host_impl_->deviceScaleFactor();
 }
 
-const gfx::Size& LayerTreeImpl::device_viewport_size() const {
-  return layer_tree_host_impl_->deviceViewportSize();
+gfx::Size LayerTreeImpl::device_viewport_size() const {
+  return layer_tree_host_impl_->DeviceViewportSize();
 }
 
 const gfx::Size& LayerTreeImpl::layout_viewport_size() const {

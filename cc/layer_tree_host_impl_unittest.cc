@@ -274,7 +274,7 @@ TEST_F(LayerTreeHostImplTest, notifyIfCanDrawChanged)
     // Toggle contents textures purged without causing any evictions,
     // and make sure that it does not change canDraw.
     setReduceMemoryResult(false);
-    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+    m_hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
         m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_TRUE(m_hostImpl->canDraw());
     EXPECT_FALSE(m_onCanDrawStateChangedCalled);
@@ -282,7 +282,7 @@ TEST_F(LayerTreeHostImplTest, notifyIfCanDrawChanged)
 
     // Toggle contents textures purged to make sure it toggles canDraw.
     setReduceMemoryResult(true);
-    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+    m_hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
         m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_FALSE(m_hostImpl->canDraw());
     EXPECT_TRUE(m_onCanDrawStateChangedCalled);
@@ -806,7 +806,7 @@ TEST_F(LayerTreeHostImplTest, compositorFrameMetadata)
     initializeRendererAndDrawFrame();
 
     {
-        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        CompositorFrameMetadata metadata = m_hostImpl->MakeCompositorFrameMetadata();
         EXPECT_EQ(gfx::Vector2dF(0.0f, 0.0f), metadata.root_scroll_offset);
         EXPECT_EQ(1.0f, metadata.page_scale_factor);
         EXPECT_EQ(gfx::SizeF(50.0f, 50.0f), metadata.viewport_size);
@@ -819,13 +819,13 @@ TEST_F(LayerTreeHostImplTest, compositorFrameMetadata)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
     m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
     {
-        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        CompositorFrameMetadata metadata = m_hostImpl->MakeCompositorFrameMetadata();
         EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
     }
     m_hostImpl->scrollEnd();
 
     {
-        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        CompositorFrameMetadata metadata = m_hostImpl->MakeCompositorFrameMetadata();
         EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
     }
 
@@ -835,7 +835,7 @@ TEST_F(LayerTreeHostImplTest, compositorFrameMetadata)
     m_hostImpl->pinchGestureEnd();
 
     {
-        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        CompositorFrameMetadata metadata = m_hostImpl->MakeCompositorFrameMetadata();
         EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
         EXPECT_EQ(2, metadata.page_scale_factor);
         EXPECT_EQ(gfx::SizeF(25.0f, 25.0f), metadata.viewport_size);
@@ -849,7 +849,7 @@ TEST_F(LayerTreeHostImplTest, compositorFrameMetadata)
     m_hostImpl->activeTree()->SetPageScaleFactorAndLimits(4.0f, 0.5f, 4.0f);
     m_hostImpl->activeTree()->SetPageScaleDelta(1.0f);
     {
-        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        CompositorFrameMetadata metadata = m_hostImpl->MakeCompositorFrameMetadata();
         EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
         EXPECT_EQ(4.0f, metadata.page_scale_factor);
         EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.viewport_size);
@@ -3317,7 +3317,7 @@ TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
     myHostImpl->activeTree()->SetRootLayer(root.Pass());
     myHostImpl->setViewportSize(rootRect.size(), rootRect.size());
 
-    EXPECT_FALSE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(childPassId));
+    EXPECT_FALSE(myHostImpl->renderer()->HaveCachedResourcesForRenderPassId(childPassId));
 
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3327,7 +3327,7 @@ TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
     }
 
     // We should have cached textures for surface 2.
-    EXPECT_TRUE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(childPassId));
+    EXPECT_TRUE(myHostImpl->renderer()->HaveCachedResourcesForRenderPassId(childPassId));
 
     {
         LayerTreeHostImpl::FrameData frame;
@@ -3337,7 +3337,7 @@ TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
     }
 
     // We should still have cached textures for surface 2 after drawing with no damage.
-    EXPECT_TRUE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(childPassId));
+    EXPECT_TRUE(myHostImpl->renderer()->HaveCachedResourcesForRenderPassId(childPassId));
 
     // Damage a single tile of surface 2.
     childPtr->setUpdateRect(gfx::Rect(10, 10, 10, 10));
@@ -3350,7 +3350,7 @@ TEST_F(LayerTreeHostImplTest, textureCachingWithScissor)
     }
 
     // We should have a cached texture for surface 2 again even though it was damaged.
-    EXPECT_TRUE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(childPassId));
+    EXPECT_TRUE(myHostImpl->renderer()->HaveCachedResourcesForRenderPassId(childPassId));
 }
 
 TEST_F(LayerTreeHostImplTest, surfaceTextureCaching)
@@ -3469,7 +3469,7 @@ TEST_F(LayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_TRUE(targetPass->damage_rect.IsEmpty());
 
         // Was our surface evicted?
-        EXPECT_FALSE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(targetPass->id));
+        EXPECT_FALSE(myHostImpl->renderer()->HaveCachedResourcesForRenderPassId(targetPass->id));
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3633,7 +3633,7 @@ TEST_F(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_TRUE(targetPass->damage_rect.IsEmpty());
 
         // Was our surface evicted?
-        EXPECT_FALSE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(targetPass->id));
+        EXPECT_FALSE(myHostImpl->renderer()->HaveCachedResourcesForRenderPassId(targetPass->id));
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3683,7 +3683,7 @@ TEST_F(LayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
     // evicted, we need to re-commit because the new value may result in us
     // drawing something different than before.
     setReduceMemoryResult(false);
-    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+    m_hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
         m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_TRUE(m_didRequestCommit);
     m_didRequestCommit = false;
@@ -3691,14 +3691,14 @@ TEST_F(LayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
     // Especially if changing the memory limit caused evictions, we need
     // to re-commit.
     setReduceMemoryResult(true);
-    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+    m_hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
         m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_TRUE(m_didRequestCommit);
     m_didRequestCommit = false;
 
     // But if we set it to the same value that it was before, we shouldn't
     // re-commit.
-    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+    m_hostImpl->SetManagedMemoryPolicy(ManagedMemoryPolicy(
         m_hostImpl->memoryAllocationLimitBytes()));
     EXPECT_FALSE(m_didRequestCommit);
 }
@@ -3722,19 +3722,19 @@ public:
     void clearCachedTextures() { m_textures.clear(); }
     void setHaveCachedResourcesForRenderPassId(RenderPass::Id id) { m_textures.insert(id); }
 
-    virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id id) const OVERRIDE { return m_textures.count(id); }
+    virtual bool HaveCachedResourcesForRenderPassId(RenderPass::Id id) const OVERRIDE { return m_textures.count(id); }
 
     // RendererClient implementation.
-    virtual const gfx::Size& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
-    virtual const LayerTreeSettings& settings() const OVERRIDE { return m_settings; }
-    virtual void didLoseOutputSurface() OVERRIDE { }
-    virtual void onSwapBuffersComplete() OVERRIDE { }
-    virtual void setFullRootLayerDamage() OVERRIDE { }
-    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
-    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
-    virtual bool hasImplThread() const OVERRIDE { return false; }
-    virtual bool shouldClearRootRenderPass() const OVERRIDE { return true; }
-    virtual CompositorFrameMetadata makeCompositorFrameMetadata() const
+    virtual gfx::Size DeviceViewportSize() const OVERRIDE { return m_viewportSize; }
+    virtual const LayerTreeSettings& Settings() const OVERRIDE { return m_settings; }
+    virtual void DidLoseOutputSurface() OVERRIDE { }
+    virtual void OnSwapBuffersComplete() OVERRIDE { }
+    virtual void SetFullRootLayerDamage() OVERRIDE { }
+    virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
+    virtual void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
+    virtual bool HasImplThread() const OVERRIDE { return false; }
+    virtual bool ShouldClearRootRenderPass() const OVERRIDE { return true; }
+    virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
         OVERRIDE { return CompositorFrameMetadata(); }
 
 protected:
@@ -4080,7 +4080,7 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect)
     m_hostImpl->activeTree()->SetRootLayer(root.PassAs<LayerImpl>());
 
     // Draw a frame. In the first frame, the entire viewport should be damaged.
-    gfx::Rect fullFrameDamage = gfx::Rect(m_hostImpl->deviceViewportSize());
+    gfx::Rect fullFrameDamage = gfx::Rect(m_hostImpl->DeviceViewportSize());
     drawFrameAndTestDamage(fullFrameDamage);
 
     // The second frame should have no damage, but the quads should still be generated.
