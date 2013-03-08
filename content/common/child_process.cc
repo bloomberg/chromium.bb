@@ -133,7 +133,8 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
   LOG(ERROR) << label
              << " ("
              << getpid()
-             << ") paused waiting for debugger to attach @ pid";
+             << ") paused waiting for debugger to attach. "
+             << "Send SIGUSR1 to unpause.";
   // Install a signal handler so that pause can be woken.
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
