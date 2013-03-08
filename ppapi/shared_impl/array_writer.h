@@ -18,6 +18,7 @@
 namespace ppapi {
 
 class Resource;
+class Var;
 
 // Holds a PP_ArrayWriter and provides helper functions for writing arrays
 // to it. It also handles 0-initialization of the raw C struct and attempts
@@ -89,12 +90,24 @@ class PPAPI_SHARED_EXPORT ArrayWriter {
   // Note: potentially this could be a template in case you have a vector of
   // FileRef objects, for example. However, this saves code since there's only
   // one instantiation and is sufficient for now.
-  bool StoreResourceVector(
-      const std::vector< scoped_refptr<Resource> >& input);
+  bool StoreResourceVector(const std::vector< scoped_refptr<Resource> >& input);
 
-  // Like the above version but takes an array of AddRed'ed PP_Resources. On
+  // Like the above version but takes an array of AddRef'ed PP_Resources. On
   // storage failure, this will release each resource.
   bool StoreResourceVector(const std::vector<PP_Resource>& input);
+
+  // Stores the given vector of vars as PP_Vars to the output vector,
+  // adding one reference to each.
+  //
+  // On failure this returns false, nothing will be copied, and the var
+  // refcounts will be unchanged. In either case, the object will become
+  // is_null() immediately after the call since one output function should only
+  // be issued once.
+  bool StoreVarVector(const std::vector< scoped_refptr<Var> >& input);
+
+  // Like the above version but takes an array of AddRef'ed PP_Vars. On
+  // storage failure, this will release each var.
+  bool StoreVarVector(const std::vector<PP_Var>& input);
 
  private:
   PP_ArrayOutput pp_array_output_;
