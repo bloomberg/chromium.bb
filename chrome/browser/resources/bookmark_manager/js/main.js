@@ -1697,7 +1697,7 @@ function handleCommand(e) {
 // shortcuts for these commands.
 function installEventHandlerForCommand(eventName, commandId) {
   function handle(e) {
-    if (document.activeElement != list || document.activeElement != tree)
+    if (document.activeElement != list && document.activeElement != tree)
       return;
     var command = $(commandId);
     if (!command.disabled) {
