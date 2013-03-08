@@ -6,7 +6,6 @@
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"

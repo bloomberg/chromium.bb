@@ -22,6 +22,8 @@
           ],
           'sources': [
             'autofill/common/autocheckout_status.h',
+            'autofill/common/autofill_constants.cc',
+            'autofill/common/autofill_constants.h',
             'autofill/common/autofill_messages.h',
             'autofill/common/autofill_pref_names.cc',
             'autofill/common/autofill_pref_names.h',

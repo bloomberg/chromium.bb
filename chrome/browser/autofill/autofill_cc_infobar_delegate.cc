@@ -8,7 +8,7 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/common/url_constants.h"
+#include "components/autofill/common/autofill_constants.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -108,7 +108,7 @@ string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   owner()->GetWebContents()->GetDelegate()->OpenURLFromTab(
       owner()->GetWebContents(),
-      content::OpenURLParams(GURL(chrome::kAutofillHelpURL),
+      content::OpenURLParams(GURL(components::autofill::kHelpURL),
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
                              content::PAGE_TRANSITION_LINK,

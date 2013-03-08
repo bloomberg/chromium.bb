@@ -7,23 +7,13 @@ include_rules = [
   "-chrome/common",
   "+chrome/browser/autofill",
 
-  # TODO(joi): These rules are necessary until we move these files to
-  # //components/autofill/common.
-  "+chrome/common/autofill/autocheckout_status.h",
-  "+chrome/common/autofill/web_element_descriptor.h",
-  "+chrome/common/autofill_messages.h",
-  "+chrome/common/form_data.h",
-  "+chrome/common/form_data_predictions.h",
-  "+chrome/common/form_field_data.h",
-  "+chrome/common/form_field_data_predictions.h",
-  "+chrome/common/password_form_fill_data.h",
-
-  # TODO(joi): Get rid of these.
-  "!chrome/common/render_messages.h",
-  "!chrome/common/chrome_constants.h",
+  # TODO(joi): This is "ok" temporarily (it's just a header file with
+  # a large enum, and doesn't bring in any other dependencies on
+  # //chrome). The plan of record to get rid of this is to change
+  # Autofill and WebData to not use NotificationService, and instead
+  # use typed callback interfaces or allow registering base::Callback
+  # callbacks for each event.
   "!chrome/common/chrome_notification_types.h",
-  "!chrome/common/chrome_paths.h",
-  "!chrome/common/url_constants.h",
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.
@@ -61,7 +51,11 @@ specific_include_rules = {
     "!chrome/browser/ui/browser_tabstrip.h",
     "!chrome/browser/ui/browser_window.h",
     "!chrome/browser/ui/tabs/tab_strip_model.h",
-    "!chrome/common/pref_names.h"
+    "!chrome/common/chrome_constants.h",
+    "!chrome/common/chrome_paths.h",
+    "!chrome/common/pref_names.h",
+    "!chrome/common/render_messages.h",
+    "!chrome/common/url_constants.h",
   ],
 
   # TODO(joi): These files will stay in chrome/browser/autofill when

@@ -374,13 +374,6 @@ const char kAboutGoogleTranslateURL[] =
     "https://support.google.com/chrome/?p=ib_translation_bar";
 #endif
 
-const char kAutofillHelpURL[] =
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_autofill";
-#else
-    "https://support.google.com/chrome/?p=settings_autofill";
-#endif
-
 const char kOmniboxLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_omnibox";
