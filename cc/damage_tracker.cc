@@ -320,35 +320,35 @@ void DamageTracker::ExtendDamageForRenderSurface(
 
   // The drawableContextRect() already includes the replica if it exists.
   gfx::RectF surface_rect_in_target_space =
-      render_surface->drawableContentRect();
+      render_surface->DrawableContentRect();
   SaveRectForNextFrame(layer->id(), surface_rect_in_target_space);
 
   gfx::RectF damage_rect_in_local_space;
   if (surface_is_new ||
-      render_surface->surfacePropertyChanged() ||
+      render_surface->SurfacePropertyChanged() ||
       layer->layerSurfacePropertyChanged()) {
     // The entire surface contributes damage.
-    damage_rect_in_local_space = render_surface->contentRect();
+    damage_rect_in_local_space = render_surface->content_rect();
 
     // The surface's old region is now exposed on the target surface, too.
     target_damage_rect->Union(old_surface_rect);
   } else {
     // Only the surface's damage_rect will damage the target surface.
     damage_rect_in_local_space =
-        render_surface->damageTracker()->current_damage_rect();
+        render_surface->damage_tracker()->current_damage_rect();
   }
 
   // If there was damage, transform it to target space, and possibly contribute
   // its reflection if needed.
   if (!damage_rect_in_local_space.IsEmpty()) {
-    const gfx::Transform& draw_transform = render_surface->drawTransform();
+    const gfx::Transform& draw_transform = render_surface->draw_transform();
     gfx::RectF damage_rect_in_target_space =
         MathUtil::mapClippedRect(draw_transform, damage_rect_in_local_space);
     target_damage_rect->Union(damage_rect_in_target_space);
 
     if (layer->replicaLayer()) {
       const gfx::Transform& replica_draw_transform =
-          render_surface->replicaDrawTransform();
+          render_surface->replica_draw_transform();
       target_damage_rect->Union(MathUtil::mapClippedRect(
           replica_draw_transform, damage_rect_in_local_space));
     }
@@ -363,7 +363,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
     RemoveRectFromCurrentFrame(replica_mask_layer->id(), &replica_is_new);
 
     const gfx::Transform& replica_draw_transform =
-        render_surface->replicaDrawTransform();
+        render_surface->replica_draw_transform();
     gfx::RectF replica_mask_layer_rect = MathUtil::mapClippedRect(
         replica_draw_transform,
         gfx::RectF(gfx::PointF(), replica_mask_layer->bounds()));

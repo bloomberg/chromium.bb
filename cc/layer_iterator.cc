@@ -34,13 +34,13 @@ void LayerIteratorActions::BackToFront::next(LayerIterator<LayerType, LayerList,
     if (it.currentLayerRepresentsContributingRenderSurface()) {
         // Save our position in the childLayer list for the RenderSurfaceImpl, then jump to the next RenderSurfaceImpl. Save where we
         // came from in the next RenderSurfaceImpl so we can get back to it.
-        it.targetRenderSurface()->m_currentLayerIndexHistory = it.m_currentLayerIndex;
+        it.targetRenderSurface()->current_layer_index_history_ = it.m_currentLayerIndex;
         int previousTargetRenderSurfaceLayer = it.m_targetRenderSurfaceLayerIndex;
 
         it.m_targetRenderSurfaceLayerIndex = ++m_highestTargetRenderSurfaceLayer;
         it.m_currentLayerIndex = LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
 
-        it.targetRenderSurface()->m_targetRenderSurfaceLayerIndexHistory = previousTargetRenderSurfaceLayer;
+        it.targetRenderSurface()->target_render_surface_layer_index_history_ = previousTargetRenderSurfaceLayer;
     } else {
         ++it.m_currentLayerIndex;
 
@@ -53,8 +53,8 @@ void LayerIteratorActions::BackToFront::next(LayerIterator<LayerType, LayerList,
                 it.m_currentLayerIndex = 0;
                 return;
             }
-            it.m_targetRenderSurfaceLayerIndex = it.targetRenderSurface()->m_targetRenderSurfaceLayerIndexHistory;
-            it.m_currentLayerIndex = it.targetRenderSurface()->m_currentLayerIndexHistory + 1;
+            it.m_targetRenderSurfaceLayerIndex = it.targetRenderSurface()->target_render_surface_layer_index_history_;
+            it.m_currentLayerIndex = it.targetRenderSurface()->current_layer_index_history_ + 1;
 
             targetRenderSurfaceNumChildren = it.targetRenderSurfaceChildren().size();
         }
@@ -98,8 +98,8 @@ void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerType, LayerList,
                 it.m_currentLayerIndex = 0;
                 return;
             }
-            it.m_targetRenderSurfaceLayerIndex = it.targetRenderSurface()->m_targetRenderSurfaceLayerIndexHistory;
-            it.m_currentLayerIndex = it.targetRenderSurface()->m_currentLayerIndexHistory;
+            it.m_targetRenderSurfaceLayerIndex = it.targetRenderSurface()->target_render_surface_layer_index_history_;
+            it.m_currentLayerIndex = it.targetRenderSurface()->current_layer_index_history_;
         }
     }
 }
@@ -112,13 +112,13 @@ void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<Layer
     while (it.currentLayerRepresentsContributingRenderSurface()) {
         // Save where we were in the current target surface, move to the next one, and save the target surface that we
         // came from there so we can go back to it.
-        it.targetRenderSurface()->m_currentLayerIndexHistory = it.m_currentLayerIndex;
+        it.targetRenderSurface()->current_layer_index_history_ = it.m_currentLayerIndex;
         int previousTargetRenderSurfaceLayer = it.m_targetRenderSurfaceLayerIndex;
 
         for (LayerType* layer = it.currentLayer(); it.targetRenderSurfaceLayer() != layer; ++it.m_targetRenderSurfaceLayerIndex) { }
         it.m_currentLayerIndex = it.targetRenderSurfaceChildren().size() - 1;
 
-        it.targetRenderSurface()->m_targetRenderSurfaceLayerIndexHistory = previousTargetRenderSurfaceLayer;
+        it.targetRenderSurface()->target_render_surface_layer_index_history_ = previousTargetRenderSurfaceLayer;
     }
 }
 

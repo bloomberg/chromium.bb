@@ -2486,7 +2486,7 @@ static scoped_ptr<LayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, Lay
     root->setContentBounds(root->bounds());
     root->drawProperties().visible_content_rect = rootRect;
     root->setDrawsContent(false);
-    root->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), gfx::Size(rootRect.width(), rootRect.height())));
+    root->renderSurface()->SetContentRect(gfx::Rect(gfx::Point(), gfx::Size(rootRect.width(), rootRect.height())));
 
     child->setAnchorPoint(gfx::PointF(0, 0));
     child->setPosition(gfx::PointF(childRect.x(), childRect.y()));

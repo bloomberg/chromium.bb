@@ -688,7 +688,7 @@ size_t LayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& updateLi
         Layer* renderSurfaceLayer = updateList[i].get();
         RenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
 
-        size_t bytes = Resource::MemorySizeBytes(renderSurface->contentRect().size(), GL_RGBA);
+        size_t bytes = Resource::MemorySizeBytes(renderSurface->content_rect().size(), GL_RGBA);
         contentsTextureBytes += bytes;
 
         if (renderSurfaceLayer->backgroundFilters().isEmpty())
@@ -732,7 +732,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
 
     bool needMoreUpdates = false;
     bool recordMetricsForFrame = m_settings.showOverdrawInTracing && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
-    OcclusionTracker occlusionTracker(m_rootLayer->renderSurface()->contentRect(), recordMetricsForFrame);
+    OcclusionTracker occlusionTracker(m_rootLayer->renderSurface()->content_rect(), recordMetricsForFrame);
     occlusionTracker.set_minimum_tracking_size(m_settings.minimumOcclusionTrackingSize);
 
     prioritizeTextures(renderSurfaceLayerList, occlusionTracker.OverdrawMetrics());
@@ -744,7 +744,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
         occlusionTracker.EnterLayer(it);
 
         if (it.representsTargetRenderSurface()) {
-            DCHECK(it->renderSurface()->drawOpacity() || it->renderSurface()->drawOpacityIsAnimating());
+            DCHECK(it->renderSurface()->draw_opacity() || it->renderSurface()->draw_opacity_is_animating());
             needMoreUpdates |= paintMasksForRenderSurface(*it, queue);
         } else if (it.representsItself()) {
             DCHECK(!it->bounds().IsEmpty());

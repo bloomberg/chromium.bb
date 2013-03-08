@@ -25,208 +25,266 @@
 
 namespace cc {
 
-RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owningLayer)
-    : m_owningLayer(owningLayer)
-    , m_surfacePropertyChanged(false)
-    , m_drawOpacity(1)
-    , m_drawOpacityIsAnimating(false)
-    , m_targetSurfaceTransformsAreAnimating(false)
-    , m_screenSpaceTransformsAreAnimating(false)
-    , m_isClipped(false)
-    , m_nearestAncestorThatMovesPixels(0)
-    , m_targetRenderSurfaceLayerIndexHistory(0)
-    , m_currentLayerIndexHistory(0)
-{
-    m_damageTracker = DamageTracker::Create();
+RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
+    : owning_layer_(owning_layer),
+      surface_property_changed_(false),
+      draw_opacity_(1),
+      draw_opacity_is_animating_(false),
+      target_surface_transforms_are_animating_(false),
+      screen_space_transforms_are_animating_(false),
+      is_clipped_(false),
+      nearest_ancestor_that_moves_pixels_(NULL),
+      target_render_surface_layer_index_history_(0),
+      current_layer_index_history_(0) {
+  damage_tracker_ = DamageTracker::Create();
 }
 
-RenderSurfaceImpl::~RenderSurfaceImpl()
-{
+RenderSurfaceImpl::~RenderSurfaceImpl() {}
+
+gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
+  gfx::RectF drawable_content_rect =
+      MathUtil::mapClippedRect(draw_transform_, content_rect_);
+  if (owning_layer_->hasReplica()) {
+    drawable_content_rect.Union(
+        MathUtil::mapClippedRect(replica_draw_transform_, content_rect_));
+  }
+
+  return drawable_content_rect;
 }
 
-gfx::RectF RenderSurfaceImpl::drawableContentRect() const
-{
-    gfx::RectF drawableContentRect = MathUtil::mapClippedRect(m_drawTransform, m_contentRect);
-    if (m_owningLayer->hasReplica())
-        drawableContentRect.Union(MathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
-
-    return drawableContentRect;
+std::string RenderSurfaceImpl::Name() const {
+  return base::StringPrintf("RenderSurfaceImpl(id=%i,owner=%s)",
+                            owning_layer_->id(),
+                            owning_layer_->debugName().data());
 }
 
-std::string RenderSurfaceImpl::name() const
-{
-    return base::StringPrintf("RenderSurfaceImpl(id=%i,owner=%s)", m_owningLayer->id(), m_owningLayer->debugName().data());
+static std::string IndentString(int indent) {
+  std::string str;
+  for (int i = 0; i != indent; ++i)
+    str.append("  ");
+  return str;
 }
 
-static std::string indentString(int indent)
-{
-    std::string str;
-    for (int i = 0; i != indent; ++i)
-        str.append("  ");
-    return str;
+void RenderSurfaceImpl::DumpSurface(std::string* str, int indent) const {
+  std::string indent_str = IndentString(indent);
+  str->append(indent_str);
+  base::StringAppendF(str, "%s\n", Name().data());
+
+  indent_str.append("  ");
+  str->append(indent_str);
+  base::StringAppendF(str,
+                      "content_rect: (%d, %d, %d, %d)\n",
+                      content_rect_.x(),
+                      content_rect_.y(),
+                      content_rect_.width(),
+                      content_rect_.height());
+
+  str->append(indent_str);
+  base::StringAppendF(str,
+                      "draw_transform: "
+                      "%f, %f, %f, %f, "
+                      "%f, %f, %f, %f, "
+                      "%f, %f, %f, %f, "
+                      "%f, %f, %f, %f\n",
+                      draw_transform_.matrix().getDouble(0, 0),
+                      draw_transform_.matrix().getDouble(0, 1),
+                      draw_transform_.matrix().getDouble(0, 2),
+                      draw_transform_.matrix().getDouble(0, 3),
+                      draw_transform_.matrix().getDouble(1, 0),
+                      draw_transform_.matrix().getDouble(1, 1),
+                      draw_transform_.matrix().getDouble(1, 2),
+                      draw_transform_.matrix().getDouble(1, 3),
+                      draw_transform_.matrix().getDouble(2, 0),
+                      draw_transform_.matrix().getDouble(2, 1),
+                      draw_transform_.matrix().getDouble(2, 2),
+                      draw_transform_.matrix().getDouble(2, 3),
+                      draw_transform_.matrix().getDouble(3, 0),
+                      draw_transform_.matrix().getDouble(3, 1),
+                      draw_transform_.matrix().getDouble(3, 2),
+                      draw_transform_.matrix().getDouble(3, 3));
+
+  str->append(indent_str);
+  base::StringAppendF(str,
+                      "damageRect is pos(%f, %f), size(%f, %f)\n",
+                      damage_tracker_->current_damage_rect().x(),
+                      damage_tracker_->current_damage_rect().y(),
+                      damage_tracker_->current_damage_rect().width(),
+                      damage_tracker_->current_damage_rect().height());
 }
 
-void RenderSurfaceImpl::dumpSurface(std::string* str, int indent) const
-{
-    std::string indentStr = indentString(indent);
-    str->append(indentStr);
-    base::StringAppendF(str, "%s\n", name().data());
-
-    indentStr.append("  ");
-    str->append(indentStr);
-    base::StringAppendF(str, "contentRect: (%d, %d, %d, %d)\n", m_contentRect.x(), m_contentRect.y(), m_contentRect.width(), m_contentRect.height());
-
-    str->append(indentStr);
-    base::StringAppendF(str, "drawTransform: %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n",
-        m_drawTransform.matrix().getDouble(0, 0), m_drawTransform.matrix().getDouble(0, 1), m_drawTransform.matrix().getDouble(0, 2), m_drawTransform.matrix().getDouble(0, 3),
-        m_drawTransform.matrix().getDouble(1, 0), m_drawTransform.matrix().getDouble(1, 1), m_drawTransform.matrix().getDouble(1, 2), m_drawTransform.matrix().getDouble(1, 3),
-        m_drawTransform.matrix().getDouble(2, 0), m_drawTransform.matrix().getDouble(2, 1), m_drawTransform.matrix().getDouble(2, 2), m_drawTransform.matrix().getDouble(2, 3),
-        m_drawTransform.matrix().getDouble(3, 0), m_drawTransform.matrix().getDouble(3, 1), m_drawTransform.matrix().getDouble(3, 2), m_drawTransform.matrix().getDouble(3, 3));
-
-    str->append(indentStr);
-    base::StringAppendF(str, "damageRect is pos(%f, %f), size(%f, %f)\n",
-        m_damageTracker->current_damage_rect().x(), m_damageTracker->current_damage_rect().y(),
-        m_damageTracker->current_damage_rect().width(), m_damageTracker->current_damage_rect().height());
-}
-
-int RenderSurfaceImpl::owningLayerId() const
-{
-    return m_owningLayer ? m_owningLayer->id() : 0;
+int RenderSurfaceImpl::OwningLayerId() const {
+  return owning_layer_ ? owning_layer_->id() : 0;
 }
 
 
-void RenderSurfaceImpl::setClipRect(const gfx::Rect& clipRect)
-{
-    if (m_clipRect == clipRect)
-        return;
+void RenderSurfaceImpl::SetClipRect(gfx::Rect clip_rect) {
+  if (clip_rect_ == clip_rect)
+    return;
 
-    m_surfacePropertyChanged = true;
-    m_clipRect = clipRect;
+  surface_property_changed_ = true;
+  clip_rect_ = clip_rect;
 }
 
-bool RenderSurfaceImpl::contentsChanged() const
-{
-    return !m_damageTracker->current_damage_rect().IsEmpty();
+bool RenderSurfaceImpl::ContentsChanged() const {
+  return !damage_tracker_->current_damage_rect().IsEmpty();
 }
 
-void RenderSurfaceImpl::setContentRect(const gfx::Rect& contentRect)
-{
-    if (m_contentRect == contentRect)
-        return;
+void RenderSurfaceImpl::SetContentRect(gfx::Rect content_rect) {
+  if (content_rect_ == content_rect)
+    return;
 
-    m_surfacePropertyChanged = true;
-    m_contentRect = contentRect;
+  surface_property_changed_ = true;
+  content_rect_ = content_rect;
 }
 
-bool RenderSurfaceImpl::surfacePropertyChanged() const
-{
-    // Surface property changes are tracked as follows:
-    //
-    // - m_surfacePropertyChanged is flagged when the clipRect or contentRect change. As
-    //   of now, these are the only two properties that can be affected by descendant layers.
-    //
-    // - all other property changes come from the owning layer (or some ancestor layer
-    //   that propagates its change to the owning layer).
-    //
-    DCHECK(m_owningLayer);
-    return m_surfacePropertyChanged || m_owningLayer->layerPropertyChanged();
+bool RenderSurfaceImpl::SurfacePropertyChanged() const {
+  // Surface property changes are tracked as follows:
+  //
+  // - surface_property_changed_ is flagged when the clip_rect or content_rect
+  //   change. As of now, these are the only two properties that can be affected
+  //   by descendant layers.
+  //
+  // - all other property changes come from the owning layer (or some ancestor
+  //   layer that propagates its change to the owning layer).
+  //
+  DCHECK(owning_layer_);
+  return surface_property_changed_ || owning_layer_->layerPropertyChanged();
 }
 
-bool RenderSurfaceImpl::surfacePropertyChangedOnlyFromDescendant() const
-{
-    return m_surfacePropertyChanged && !m_owningLayer->layerPropertyChanged();
+bool RenderSurfaceImpl::SurfacePropertyChangedOnlyFromDescendant() const {
+  return surface_property_changed_ && !owning_layer_->layerPropertyChanged();
 }
 
-void RenderSurfaceImpl::addContributingDelegatedRenderPassLayer(LayerImpl* layer)
-{
-    DCHECK(std::find(m_layerList.begin(), m_layerList.end(), layer) != m_layerList.end());
-    DelegatedRendererLayerImpl* delegatedRendererLayer = static_cast<DelegatedRendererLayerImpl*>(layer);
-    m_contributingDelegatedRenderPassLayerList.push_back(delegatedRendererLayer);
+void RenderSurfaceImpl::AddContributingDelegatedRenderPassLayer(
+    LayerImpl* layer) {
+  DCHECK(std::find(layer_list_.begin(), layer_list_.end(), layer) !=
+         layer_list_.end());
+  DelegatedRendererLayerImpl* delegated_renderer_layer =
+      static_cast<DelegatedRendererLayerImpl*>(layer);
+  contributing_delegated_render_pass_layer_list_.push_back(
+      delegated_renderer_layer);
 }
 
-void RenderSurfaceImpl::clearLayerLists()
-{
-    m_layerList.clear();
-    m_contributingDelegatedRenderPassLayerList.clear();
+void RenderSurfaceImpl::ClearLayerLists() {
+  layer_list_.clear();
+  contributing_delegated_render_pass_layer_list_.clear();
 }
 
-RenderPass::Id RenderSurfaceImpl::renderPassId()
-{
-    int layerId = m_owningLayer->id();
-    int subId = 0;
-    DCHECK(layerId > 0);
-    return RenderPass::Id(layerId, subId);
+RenderPass::Id RenderSurfaceImpl::RenderPassId() {
+  int layer_id = owning_layer_->id();
+  int sub_id = 0;
+  DCHECK_GT(layer_id, 0);
+  return RenderPass::Id(layer_id, sub_id);
 }
 
-void RenderSurfaceImpl::appendRenderPasses(RenderPassSink& passSink)
-{
-    for (size_t i = 0; i < m_contributingDelegatedRenderPassLayerList.size(); ++i)
-        m_contributingDelegatedRenderPassLayerList[i]->AppendContributingRenderPasses(&passSink);
+void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
+  for (size_t i = 0;
+       i < contributing_delegated_render_pass_layer_list_.size();
+       ++i) {
+    DelegatedRendererLayerImpl* delegated_renderer_layer =
+        contributing_delegated_render_pass_layer_list_[i];
+    delegated_renderer_layer->AppendContributingRenderPasses(pass_sink);
+  }
 
-    scoped_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(renderPassId(), m_contentRect, m_damageTracker->current_damage_rect(), m_screenSpaceTransform);
-    passSink.appendRenderPass(pass.Pass());
+  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  pass->SetNew(RenderPassId(),
+               content_rect_,
+               damage_tracker_->current_damage_rect(),
+               screen_space_transform_);
+  pass_sink->appendRenderPass(pass.Pass());
 }
 
-void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, bool forReplica, RenderPass::Id renderPassId)
-{
-    DCHECK(!forReplica || m_owningLayer->hasReplica());
+void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
+                                    AppendQuadsData* append_quads_data,
+                                    bool for_replica,
+                                    RenderPass::Id render_pass_id) {
+  DCHECK(!for_replica || owning_layer_->hasReplica());
 
-    const gfx::Transform& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::Create());
-    sharedQuadState->SetAll(drawTransform, m_contentRect.size(), m_contentRect, m_clipRect, m_isClipped, m_drawOpacity);
+  const gfx::Transform& draw_transform =
+      for_replica ? replica_draw_transform_ : draw_transform_;
+  SharedQuadState* shared_quad_state =
+      quad_sink->useSharedQuadState(SharedQuadState::Create());
+  shared_quad_state->SetAll(draw_transform,
+                            content_rect_.size(),
+                            content_rect_,
+                            clip_rect_,
+                            is_clipped_,
+                            draw_opacity_);
 
-    if (m_owningLayer->showDebugBorders()) {
-        SkColor color = forReplica ? DebugColors::SurfaceReplicaBorderColor() : DebugColors::SurfaceBorderColor();
-        float width = forReplica ? DebugColors::SurfaceReplicaBorderWidth(m_owningLayer->layerTreeImpl()) : DebugColors::SurfaceBorderWidth(m_owningLayer->layerTreeImpl());
-        scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
-        debugBorderQuad->SetNew(sharedQuadState, contentRect(), color, width);
-        quadSink.append(debugBorderQuad.PassAs<DrawQuad>(), appendQuadsData);
-    }
+  if (owning_layer_->showDebugBorders()) {
+    SkColor color = for_replica ?
+                    DebugColors::SurfaceReplicaBorderColor() :
+                    DebugColors::SurfaceBorderColor();
+    float width = for_replica ?
+                  DebugColors::SurfaceReplicaBorderWidth(
+                      owning_layer_->layerTreeImpl()) :
+                  DebugColors::SurfaceBorderWidth(
+                      owning_layer_->layerTreeImpl());
+    scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
+        DebugBorderDrawQuad::Create();
+    debug_border_quad->SetNew(shared_quad_state, content_rect_, color, width);
+    quad_sink->append(debug_border_quad.PassAs<DrawQuad>(), *append_quads_data);
+  }
 
-    // FIXME: By using the same RenderSurfaceImpl for both the content and its reflection,
-    // it's currently not possible to apply a separate mask to the reflection layer
-    // or correctly handle opacity in reflections (opacity must be applied after drawing
-    // both the layer and its reflection). The solution is to introduce yet another RenderSurfaceImpl
-    // to draw the layer and its reflection in. For now we only apply a separate reflection
-    // mask if the contents don't have a mask of their own.
-    LayerImpl* maskLayer = m_owningLayer->maskLayer();
-    if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().IsEmpty()))
-        maskLayer = 0;
+  // FIXME: By using the same RenderSurfaceImpl for both the content and its
+  // reflection, it's currently not possible to apply a separate mask to the
+  // reflection layer or correctly handle opacity in reflections (opacity must
+  // be applied after drawing both the layer and its reflection). The solution
+  // is to introduce yet another RenderSurfaceImpl to draw the layer and its
+  // reflection in. For now we only apply a separate reflection mask if the
+  // contents don't have a mask of their own.
+  LayerImpl* mask_layer = owning_layer_->maskLayer();
+  if (mask_layer &&
+      (!mask_layer->drawsContent() || mask_layer->bounds().IsEmpty()))
+    mask_layer = NULL;
 
-    if (!maskLayer && forReplica) {
-        maskLayer = m_owningLayer->replicaLayer()->maskLayer();
-        if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().IsEmpty()))
-            maskLayer = 0;
-    }
+  if (!mask_layer && for_replica) {
+    mask_layer = owning_layer_->replicaLayer()->maskLayer();
+    if (mask_layer &&
+        (!mask_layer->drawsContent() || mask_layer->bounds().IsEmpty()))
+      mask_layer = NULL;
+  }
 
-    gfx::RectF maskUVRect(0.0f, 0.0f, 1.0f, 1.0f);
-    if (maskLayer) {
-        gfx::Vector2dF owningLayerDrawScale = MathUtil::computeTransform2dScaleComponents(m_owningLayer->drawTransform(), 1.f);
-        gfx::SizeF unclippedSurfaceSize = gfx::ScaleSize(
-            m_owningLayer->contentBounds(),
-            owningLayerDrawScale.x(),
-            owningLayerDrawScale.y());
-        // This assumes that the owning layer clips its subtree when a mask is
-        // present.
-        DCHECK(gfx::RectF(unclippedSurfaceSize).Contains(contentRect()));
+  gfx::RectF mask_uv_rect(0.f, 0.f, 1.f, 1.f);
+  if (mask_layer) {
+    gfx::Vector2dF owning_layer_draw_scale =
+        MathUtil::computeTransform2dScaleComponents(
+            owning_layer_->drawTransform(), 1.f);
+    gfx::SizeF unclipped_surface_size = gfx::ScaleSize(
+        owning_layer_->contentBounds(),
+        owning_layer_draw_scale.x(),
+        owning_layer_draw_scale.y());
+    // This assumes that the owning layer clips its subtree when a mask is
+    // present.
+    DCHECK(gfx::RectF(unclipped_surface_size).Contains(content_rect_));
 
-        float uvScaleX = contentRect().width() / unclippedSurfaceSize.width();
-        float uvScaleY = contentRect().height() / unclippedSurfaceSize.height();
+    float uv_scale_x = content_rect_.width() / unclipped_surface_size.width();
+    float uv_scale_y = content_rect_.height() / unclipped_surface_size.height();
 
-        maskUVRect = gfx::RectF(
-            static_cast<float>(contentRect().x()) / contentRect().width() * uvScaleX,
-            static_cast<float>(contentRect().y()) / contentRect().height() * uvScaleY,
-            uvScaleX,
-            uvScaleY);
-    }
+    mask_uv_rect = gfx::RectF(
+        uv_scale_x * content_rect_.x() / content_rect_.width(),
+        uv_scale_y * content_rect_.y() / content_rect_.height(),
+        uv_scale_x,
+        uv_scale_y);
+  }
 
-    ResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
-    gfx::Rect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : gfx::Rect();
+  ResourceProvider::ResourceId mask_resource_id =
+      mask_layer ? mask_layer->contentsResourceId() : 0;
+  gfx::Rect contents_changed_since_last_frame =
+      ContentsChanged() ? content_rect_ : gfx::Rect();
 
-    scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
-    quad->SetNew(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame, maskUVRect, m_owningLayer->filters(), m_owningLayer->filter(), m_owningLayer->backgroundFilters());
-    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+  scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
+  quad->SetNew(shared_quad_state,
+               content_rect_,
+               render_pass_id,
+               for_replica,
+               mask_resource_id,
+               contents_changed_since_last_frame,
+               mask_uv_rect,
+               owning_layer_->filters(),
+               owning_layer_->filter(),
+               owning_layer_->backgroundFilters());
+  quad_sink->append(quad.PassAs<DrawQuad>(), *append_quads_data);
 }
 
 }  // namespace cc

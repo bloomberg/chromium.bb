@@ -10,27 +10,24 @@
 
 namespace cc {
 
-RenderSurface::RenderSurface(Layer* owningLayer)
-    : m_owningLayer(owningLayer)
-    , m_drawOpacity(1)
-    , m_drawOpacityIsAnimating(false)
-    , m_targetSurfaceTransformsAreAnimating(false)
-    , m_screenSpaceTransformsAreAnimating(false)
-    , m_isClipped(false)
-    , m_nearestAncestorThatMovesPixels(0)
-{
-}
+RenderSurface::RenderSurface(Layer* owning_layer)
+    : owning_layer_(owning_layer),
+      draw_opacity_(1),
+      draw_opacity_is_animating_(false),
+      target_surface_transforms_are_animating_(false),
+      screen_space_transforms_are_animating_(false),
+      is_clipped_(false),
+      nearest_ancestor_that_moves_pixels_(NULL) {}
 
-RenderSurface::~RenderSurface()
-{
-}
+RenderSurface::~RenderSurface() {}
 
-gfx::RectF RenderSurface::drawableContentRect() const
-{
-    gfx::RectF drawableContentRect = MathUtil::mapClippedRect(m_drawTransform, m_contentRect);
-    if (m_owningLayer->hasReplica())
-        drawableContentRect.Union(MathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
-    return drawableContentRect;
+gfx::RectF RenderSurface::DrawableContentRect() const {
+  gfx::RectF drawable_content_rect =
+      MathUtil::mapClippedRect(draw_transform_, content_rect_);
+  if (owning_layer_->hasReplica())
+    drawable_content_rect.Union(
+        MathUtil::mapClippedRect(replica_draw_transform_, content_rect_));
+  return drawable_content_rect;
 }
 
 }  // namespace cc

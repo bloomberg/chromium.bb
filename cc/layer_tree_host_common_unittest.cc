@@ -444,10 +444,10 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 
     // Because the grandChild is the only drawable content, the child's renderSurface will tighten its bounds to the grandChild.
     // The scale at which the surface's subtree is drawn must be removed from the composite transform.
-    EXPECT_TRANSFORMATION_MATRIX_EQ(surfaceSublayerCompositeTransform, child->renderTarget()->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(surfaceSublayerCompositeTransform, child->renderTarget()->renderSurface()->draw_transform());
 
     // The screen space is the same as the target since the child surface draws into the root.
-    EXPECT_TRANSFORMATION_MATRIX_EQ(surfaceSublayerCompositeTransform, child->renderTarget()->renderSurface()->screenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(surfaceSublayerCompositeTransform, child->renderTarget()->renderSurface()->screen_space_transform());
 }
 
 TEST(LayerTreeHostCommonTest, verifySublayerTransformWithAnchorPoint)
@@ -611,8 +611,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
     ASSERT_TRUE(child->renderSurface());
     ASSERT_EQ(child, child->renderTarget());
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(replicaCompositeTransform, child->renderTarget()->renderSurface()->replicaDrawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(replicaCompositeTransform, child->renderTarget()->renderSurface()->replicaScreenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(replicaCompositeTransform, child->renderTarget()->renderSurface()->replica_draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(replicaCompositeTransform, child->renderTarget()->renderSurface()->replica_screen_space_transform());
 }
 
 TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
@@ -769,15 +769,15 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // Verify render surface transforms.
     //
     // Draw transform of render surface 1 is described with respect to root.
-    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * S1, renderSurface1->renderSurface()->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * R * S1, renderSurface1->renderSurface()->replicaDrawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * S1, renderSurface1->renderSurface()->screenSpaceTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * R * S1, renderSurface1->renderSurface()->replicaScreenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * S1, renderSurface1->renderSurface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * R * S1, renderSurface1->renderSurface()->replica_draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * S1, renderSurface1->renderSurface()->screen_space_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * R * S1, renderSurface1->renderSurface()->replica_screen_space_transform());
     // Draw transform of render surface 2 is described with respect to render surface 1.
-    EXPECT_TRANSFORMATION_MATRIX_EQ(SS1 * B * A * S2, renderSurface2->renderSurface()->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(SS1 * B * R * S2, renderSurface2->renderSurface()->replicaDrawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * B * A * S2, renderSurface2->renderSurface()->screenSpaceTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * B * R * S2, renderSurface2->renderSurface()->replicaScreenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(SS1 * B * A * S2, renderSurface2->renderSurface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(SS1 * B * R * S2, renderSurface2->renderSurface()->replica_draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * B * A * S2, renderSurface2->renderSurface()->screen_space_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(A * B * A * B * R * S2, renderSurface2->renderSurface()->replica_screen_space_transform());
 
     // Sanity check. If these fail there is probably a bug in the test itself.
     // It is expected that we correctly set up transforms so that the y-component of the screen-space transform
@@ -834,8 +834,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
 
     // The child's drawTransform should have been taken by its surface.
     ASSERT_TRUE(child->renderSurface());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildDrawTransform, child->renderSurface()->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildScreenSpaceTransform, child->renderSurface()->screenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildDrawTransform, child->renderSurface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildScreenSpaceTransform, child->renderSurface()->screen_space_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildScreenSpaceTransform, child->screenSpaceTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildDrawTransform, grandChild->drawTransform());
@@ -867,7 +867,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
     executeCalculateDrawProperties(root.get());
 
     ASSERT_TRUE(child->renderSurface());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, child->renderSurface()->drawTransform()); // This is the real test, the rest are sanity checks.
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, child->renderSurface()->draw_transform()); // This is the real test, the rest are sanity checks.
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, grandChild->drawTransform());
 }
@@ -922,7 +922,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
     // Since the layer is transparent, renderSurface1->renderSurface() should not have gotten added anywhere.
     // Also, the drawable content rect should not have been extended by the children.
     ASSERT_TRUE(parent->renderSurface());
-    EXPECT_EQ(0U, parent->renderSurface()->layerList().size());
+    EXPECT_EQ(0U, parent->renderSurface()->layer_list().size());
     EXPECT_EQ(1U, renderSurfaceLayerList.size());
     EXPECT_EQ(parent->id(), renderSurfaceLayerList[0]->id());
     EXPECT_EQ(gfx::Rect(), parent->drawableContentRect());
@@ -1249,7 +1249,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     gfx::Transform expectedGreatGrandChildTransform;
     ASSERT_TRUE(grandChild->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, grandChild->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, grandChild->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 
@@ -1282,7 +1282,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
 
     ASSERT_TRUE(grandChild->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, grandChild->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, grandChild->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 }
@@ -1352,9 +1352,9 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     ASSERT_TRUE(grandChild->renderSurface());
     ASSERT_TRUE(greatGrandChild->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildSurfaceDrawTransform, grandChild->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildSurfaceDrawTransform, grandChild->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildSurfaceDrawTransform, greatGrandChild->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildSurfaceDrawTransform, greatGrandChild->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedFixedPositionChildTransform, fixedPositionChild->drawTransform());
 
@@ -1391,9 +1391,9 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     ASSERT_TRUE(grandChild->renderSurface());
     ASSERT_TRUE(greatGrandChild->renderSurface());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildSurfaceDrawTransform, grandChild->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildSurfaceDrawTransform, grandChild->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildSurfaceDrawTransform, greatGrandChild->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildSurfaceDrawTransform, greatGrandChild->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedFixedPositionChildTransform, fixedPositionChild->drawTransform());
 }
@@ -1424,7 +1424,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     gfx::Transform expectedChildTransform;
     gfx::Transform expectedGrandChildTransform;
     ASSERT_TRUE(child->renderSurface());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 
@@ -1441,7 +1441,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     expectedGrandChildTransform.Translate(10, 10);
 
     ASSERT_TRUE(child->renderSurface());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildTransform, child->drawTransform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
@@ -1692,11 +1692,11 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     ASSERT_TRUE(child2->renderSurface());
 
     EXPECT_FALSE(root->isClipped());
-    EXPECT_TRUE(root->renderSurface()->isClipped());
+    EXPECT_TRUE(root->renderSurface()->is_clipped());
     EXPECT_FALSE(parent->isClipped());
     EXPECT_FALSE(child1->isClipped());
     EXPECT_FALSE(child2->isClipped());
-    EXPECT_FALSE(child2->renderSurface()->isClipped());
+    EXPECT_FALSE(child2->renderSurface()->is_clipped());
     EXPECT_FALSE(grandChild->isClipped());
     EXPECT_FALSE(leafNode1->isClipped());
     EXPECT_FALSE(leafNode2->isClipped());
@@ -1713,11 +1713,11 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     ASSERT_TRUE(child2->renderSurface());
 
     EXPECT_FALSE(root->isClipped());
-    EXPECT_TRUE(root->renderSurface()->isClipped());
+    EXPECT_TRUE(root->renderSurface()->is_clipped());
     EXPECT_TRUE(parent->isClipped());
     EXPECT_TRUE(child1->isClipped());
     EXPECT_FALSE(child2->isClipped());
-    EXPECT_TRUE(child2->renderSurface()->isClipped());
+    EXPECT_TRUE(child2->renderSurface()->is_clipped());
     EXPECT_TRUE(grandChild->isClipped());
     EXPECT_TRUE(leafNode1->isClipped());
     EXPECT_FALSE(leafNode2->isClipped());
@@ -1733,11 +1733,11 @@ TEST(LayerTreeHostCommonTest, verifyIsClippedIsSetCorrectly)
     ASSERT_TRUE(child2->renderSurface());
 
     EXPECT_FALSE(root->isClipped());
-    EXPECT_TRUE(root->renderSurface()->isClipped());
+    EXPECT_TRUE(root->renderSurface()->is_clipped());
     EXPECT_FALSE(parent->isClipped());
     EXPECT_FALSE(child1->isClipped());
     EXPECT_TRUE(child2->isClipped());
-    EXPECT_FALSE(child2->renderSurface()->isClipped());
+    EXPECT_FALSE(child2->renderSurface()->is_clipped());
     EXPECT_FALSE(grandChild->isClipped());
     EXPECT_FALSE(leafNode1->isClipped());
     EXPECT_TRUE(leafNode2->isClipped());
@@ -1864,9 +1864,9 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     EXPECT_FALSE(grandChild4->renderSurface()); // Because grandChild4 is entirely clipped, it is expected to not have a renderSurface.
 
     // Surfaces are clipped by their parent, but un-affected by the owning layer's masksToBounds.
-    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20)), grandChild1->renderSurface()->clipRect());
-    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20)), grandChild2->renderSurface()->clipRect());
-    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20)), grandChild3->renderSurface()->clipRect());
+    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20)), grandChild1->renderSurface()->clip_rect());
+    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20)), grandChild2->renderSurface()->clip_rect());
+    EXPECT_RECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(20, 20)), grandChild3->renderSurface()->clip_rect());
 }
 
 TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
@@ -1957,11 +1957,11 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     EXPECT_FALSE(childOfRoot->drawOpacityIsAnimating());
     EXPECT_TRUE(grandChildOfRoot->drawOpacityIsAnimating());
     EXPECT_FALSE(renderSurface1->drawOpacityIsAnimating());
-    EXPECT_TRUE(renderSurface1->renderSurface()->drawOpacityIsAnimating());
+    EXPECT_TRUE(renderSurface1->renderSurface()->draw_opacity_is_animating());
     EXPECT_FALSE(childOfRS1->drawOpacityIsAnimating());
     EXPECT_FALSE(grandChildOfRS1->drawOpacityIsAnimating());
     EXPECT_FALSE(renderSurface2->drawOpacityIsAnimating());
-    EXPECT_FALSE(renderSurface2->renderSurface()->drawOpacityIsAnimating());
+    EXPECT_FALSE(renderSurface2->renderSurface()->draw_opacity_is_animating());
     EXPECT_FALSE(childOfRS2->drawOpacityIsAnimating());
     EXPECT_FALSE(grandChildOfRS2->drawOpacityIsAnimating());
 
@@ -1971,11 +1971,11 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     EXPECT_FALSE(childOfRoot->drawTransformIsAnimating());
     EXPECT_TRUE(grandChildOfRoot->drawTransformIsAnimating());
     EXPECT_FALSE(renderSurface1->drawTransformIsAnimating());
-    EXPECT_FALSE(renderSurface1->renderSurface()->targetSurfaceTransformsAreAnimating());
+    EXPECT_FALSE(renderSurface1->renderSurface()->target_surface_transforms_are_animating());
     EXPECT_FALSE(childOfRS1->drawTransformIsAnimating());
     EXPECT_FALSE(grandChildOfRS1->drawTransformIsAnimating());
     EXPECT_FALSE(renderSurface2->drawTransformIsAnimating());
-    EXPECT_TRUE(renderSurface2->renderSurface()->targetSurfaceTransformsAreAnimating());
+    EXPECT_TRUE(renderSurface2->renderSurface()->target_surface_transforms_are_animating());
     EXPECT_FALSE(childOfRS2->drawTransformIsAnimating());
     EXPECT_TRUE(grandChildOfRS2->drawTransformIsAnimating());
 
@@ -1985,11 +1985,11 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     EXPECT_FALSE(childOfRoot->screenSpaceTransformIsAnimating());
     EXPECT_TRUE(grandChildOfRoot->screenSpaceTransformIsAnimating());
     EXPECT_FALSE(renderSurface1->screenSpaceTransformIsAnimating());
-    EXPECT_FALSE(renderSurface1->renderSurface()->screenSpaceTransformsAreAnimating());
+    EXPECT_FALSE(renderSurface1->renderSurface()->screen_space_transforms_are_animating());
     EXPECT_FALSE(childOfRS1->screenSpaceTransformIsAnimating());
     EXPECT_FALSE(grandChildOfRS1->screenSpaceTransformIsAnimating());
     EXPECT_TRUE(renderSurface2->screenSpaceTransformIsAnimating());
-    EXPECT_TRUE(renderSurface2->renderSurface()->screenSpaceTransformsAreAnimating());
+    EXPECT_TRUE(renderSurface2->renderSurface()->screen_space_transforms_are_animating());
     EXPECT_TRUE(childOfRS2->screenSpaceTransformIsAnimating());
     EXPECT_TRUE(grandChildOfRS2->screenSpaceTransformIsAnimating());
 
@@ -2286,7 +2286,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLayer
 
     executeCalculateDrawProperties(root.get());
 
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->drawableContentRect());
 
     // Layers that do not draw content should have empty visibleContentRects.
@@ -2327,7 +2327,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersClipp
 
     ASSERT_FALSE(child->renderSurface());
 
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->drawableContentRect());
 
     // Layers that do not draw content should have empty visibleContentRects.
@@ -2369,7 +2369,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnc
 
     ASSERT_TRUE(renderSurface1->renderSurface());
 
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->drawableContentRect());
 
     // Layers that do not draw content should have empty visibleContentRects.
@@ -2377,7 +2377,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnc
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), renderSurface1->visibleContentRect());
 
     // An unclipped surface grows its drawableContentRect to include all drawable regions of the subtree.
-    EXPECT_RECT_EQ(gfx::Rect(5, 5, 170, 170), renderSurface1->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(5, 5, 170, 170), renderSurface1->renderSurface()->DrawableContentRect());
 
     // All layers that draw content into the unclipped surface are also unclipped.
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visibleContentRect());
@@ -2414,7 +2414,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInCli
 
     ASSERT_TRUE(renderSurface1->renderSurface());
 
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->drawableContentRect());
 
     // Layers that do not draw content should have empty visibleContentRects.
@@ -2423,7 +2423,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInCli
 
     // A clipped surface grows its drawableContentRect to include all drawable regions of the subtree,
     // but also gets clamped by the ancestor's clip.
-    EXPECT_RECT_EQ(gfx::Rect(5, 5, 95, 95), renderSurface1->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(5, 5, 95, 95), renderSurface1->renderSurface()->DrawableContentRect());
 
     // All layers that draw content into the surface have their visibleContentRect clipped by the surface clipRect.
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visibleContentRect());
@@ -2467,7 +2467,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHier
     ASSERT_TRUE(renderSurface1->renderSurface());
     ASSERT_TRUE(renderSurface2->renderSurface());
 
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->drawableContentRect());
 
     // Layers that do not draw content should have empty visibleContentRects.
@@ -2477,12 +2477,12 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHier
 
     // A clipped surface grows its drawableContentRect to include all drawable regions of the subtree,
     // but also gets clamped by the ancestor's clip.
-    EXPECT_RECT_EQ(gfx::Rect(5, 5, 95, 95), renderSurface1->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(5, 5, 95, 95), renderSurface1->renderSurface()->DrawableContentRect());
 
     // renderSurface1 lives in the "unclipped universe" of renderSurface1, and is only
     // implicitly clipped by renderSurface1's contentRect. So, renderSurface2 grows to
     // enclose all drawable content of its subtree.
-    EXPECT_RECT_EQ(gfx::Rect(5, 5, 170, 170), renderSurface2->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(5, 5, 170, 170), renderSurface2->renderSurface()->DrawableContentRect());
 
     // All layers that draw content into renderSurface2 think they are unclipped.
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visibleContentRect());
@@ -2518,7 +2518,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
 
     ASSERT_TRUE(renderSurface1->renderSurface());
 
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), root->drawableContentRect());
 
     // Layers that do not draw content should have empty visibleContentRects.
@@ -2528,7 +2528,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
     // The unclipped surface grows its drawableContentRect to include all drawable regions of the subtree.
     int diagonalRadius = ceil(sqrt(2.0) * 25);
     gfx::Rect expectedSurfaceDrawableContent = gfx::Rect(50 - diagonalRadius, 50 - diagonalRadius, diagonalRadius * 2, diagonalRadius * 2);
-    EXPECT_RECT_EQ(expectedSurfaceDrawableContent, renderSurface1->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(expectedSurfaceDrawableContent, renderSurface1->renderSurface()->DrawableContentRect());
 
     // All layers that draw content into the unclipped surface are also unclipped.
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child1->visibleContentRect());
@@ -2563,7 +2563,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
     int diagonalRadius = ceil(sqrt(2.0) * 25);
     gfx::Rect unclippedSurfaceContent = gfx::Rect(50 - diagonalRadius, 50 - diagonalRadius, diagonalRadius * 2, diagonalRadius * 2);
     gfx::Rect expectedSurfaceDrawableContent = gfx::IntersectRects(unclippedSurfaceContent, gfx::Rect(0, 0, 50, 50));
-    EXPECT_RECT_EQ(expectedSurfaceDrawableContent, renderSurface1->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(expectedSurfaceDrawableContent, renderSurface1->renderSurface()->DrawableContentRect());
 
     // On the clipped surface, only a quarter  of the child1 is visible, but when rotating
     // it back to  child1's content space, the actual enclosing rect ends up covering the
@@ -2609,13 +2609,13 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
     ASSERT_TRUE(renderSurface2->renderSurface());
 
     // DrawableContentRects for all layers and surfaces are scaled by deviceScaleFactor.
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), root->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), root->renderSurface()->DrawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), root->drawableContentRect());
-    EXPECT_RECT_EQ(gfx::Rect(10, 10, 190, 190), renderSurface1->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(10, 10, 190, 190), renderSurface1->renderSurface()->DrawableContentRect());
 
     // renderSurface2 lives in the "unclipped universe" of renderSurface1, and
     // is only implicitly clipped by renderSurface1.
-    EXPECT_RECT_EQ(gfx::Rect(10, 10, 350, 350), renderSurface2->renderSurface()->drawableContentRect());
+    EXPECT_RECT_EQ(gfx::Rect(10, 10, 350, 350), renderSurface2->renderSurface()->DrawableContentRect());
 
     EXPECT_RECT_EQ(gfx::Rect(10, 10, 100, 100), child1->drawableContentRect());
     EXPECT_RECT_EQ(gfx::Rect(150, 150, 100, 100), child2->drawableContentRect());
@@ -2712,19 +2712,19 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     EXPECT_EQ(backFacingSurface->id(), renderSurfaceLayerList[2]->id());
 
     // Verify root surface's layerList.
-    ASSERT_EQ(3u, renderSurfaceLayerList[0]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingChild->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[1]->id());
-    EXPECT_EQ(backFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[2]->id());
+    ASSERT_EQ(3u, renderSurfaceLayerList[0]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingChild->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[1]->id());
+    EXPECT_EQ(backFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[2]->id());
 
     // Verify frontFacingSurface's layerList.
-    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(frontFacingChildOfFrontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[1]->id());
+    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(frontFacingChildOfFrontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[1]->id());
 
     // Verify backFacingSurface's layerList; its own layer should be culled from the surface list.
-    ASSERT_EQ(1u, renderSurfaceLayerList[2]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingChildOfBackFacingSurface->id(), renderSurfaceLayerList[2]->renderSurface()->layerList()[0]->id());
+    ASSERT_EQ(1u, renderSurfaceLayerList[2]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingChildOfBackFacingSurface->id(), renderSurfaceLayerList[2]->renderSurface()->layer_list()[0]->id());
 }
 
 TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
@@ -2809,14 +2809,14 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->id());
 
     // Verify root surface's layerList.
-    ASSERT_EQ(2u, renderSurfaceLayerList[0]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingChild->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[1]->id());
+    ASSERT_EQ(2u, renderSurfaceLayerList[0]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingChild->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[1]->id());
 
     // Verify frontFacingSurface's layerList.
-    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(frontFacingChildOfFrontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[1]->id());
+    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(frontFacingChildOfFrontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[1]->id());
 }
 
 TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
@@ -2885,14 +2885,14 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     EXPECT_EQ(animatingSurface->id(), renderSurfaceLayerList[1]->id());
 
     // The non-animating child be culled from the layer list for the parent render surface.
-    ASSERT_EQ(3u, renderSurfaceLayerList[0]->renderSurface()->layerList().size());
-    EXPECT_EQ(animatingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(animatingChild->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[1]->id());
-    EXPECT_EQ(child2->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[2]->id());
+    ASSERT_EQ(3u, renderSurfaceLayerList[0]->renderSurface()->layer_list().size());
+    EXPECT_EQ(animatingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(animatingChild->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[1]->id());
+    EXPECT_EQ(child2->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[2]->id());
 
-    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layerList().size());
-    EXPECT_EQ(animatingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(childOfAnimatingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[1]->id());
+    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layer_list().size());
+    EXPECT_EQ(animatingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(childOfAnimatingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[1]->id());
 
     EXPECT_FALSE(child2->visibleContentRect().IsEmpty());
 
@@ -2951,13 +2951,13 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
     EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->id());
 
     // Verify root surface's layerList.
-    ASSERT_EQ(1u, renderSurfaceLayerList[0]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layerList()[0]->id());
+    ASSERT_EQ(1u, renderSurfaceLayerList[0]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[0]->renderSurface()->layer_list()[0]->id());
 
     // Verify frontFacingSurface's layerList.
-    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layerList().size());
-    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[0]->id());
-    EXPECT_EQ(child1->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[1]->id());
+    ASSERT_EQ(2u, renderSurfaceLayerList[1]->renderSurface()->layer_list().size());
+    EXPECT_EQ(frontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[0]->id());
+    EXPECT_EQ(child1->id(), renderSurfaceLayerList[1]->renderSurface()->layer_list()[1]->id());
 }
 
 TEST(LayerTreeHostCommonTest, verifyHitTestingForEmptyLayerList)
@@ -2993,7 +2993,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit testing for a point outside the layer should return a null pointer.
     gfx::Point testPoint(101, 101);
@@ -3044,7 +3044,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerAndHud)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(2u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(2u, root->renderSurface()->layer_list().size());
 
     // Hit testing for a point inside HUD, but outside root should return null
     gfx::Point testPoint(101, 101);
@@ -3093,7 +3093,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
     ASSERT_FALSE(root->screenSpaceTransform().IsInvertible());
 
     // Hit testing any point should not hit the layer. If the invertible matrix is
@@ -3147,7 +3147,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit testing for a point outside the layer should return a null pointer.
     gfx::Point testPoint(49, 49);
@@ -3194,7 +3194,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit testing for points outside the layer.
     // These corners would have been inside the un-transformed layer, but they should not hit the correctly transformed layer.
@@ -3250,7 +3250,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit testing for points outside the layer.
     // These corners would have been inside the un-transformed layer, but they should not hit the correctly transformed layer.
@@ -3318,7 +3318,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     LayerImpl* testLayer = root->children()[0];
     EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(100, 100)), testLayer->visibleContentRect());
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit testing for a point outside the layer should return a null pointer (the root layer does not draw content, so it will not be hit tested either).
     gfx::Point testPoint(101, 101);
@@ -3379,8 +3379,8 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
-    ASSERT_EQ(456, root->renderSurface()->layerList()[0]->id());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
+    ASSERT_EQ(456, root->renderSurface()->layer_list()[0]->id());
 
     // Hit testing for a point outside the layer should return a null pointer.
     // Despite the child layer being very large, it should be clipped to the root layer's bounds.
@@ -3470,10 +3470,10 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     // Sanity check the scenario we just created.
     // The grandChild is expected to create a renderSurface because it masksToBounds and is not axis aligned.
     ASSERT_EQ(2u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, renderSurfaceLayerList[0]->renderSurface()->layerList().size());
-    ASSERT_EQ(789, renderSurfaceLayerList[0]->renderSurface()->layerList()[0]->id()); // grandChild's surface.
-    ASSERT_EQ(1u, renderSurfaceLayerList[1]->renderSurface()->layerList().size());
-    ASSERT_EQ(2468, renderSurfaceLayerList[1]->renderSurface()->layerList()[0]->id());
+    ASSERT_EQ(1u, renderSurfaceLayerList[0]->renderSurface()->layer_list().size());
+    ASSERT_EQ(789, renderSurfaceLayerList[0]->renderSurface()->layer_list()[0]->id()); // grandChild's surface.
+    ASSERT_EQ(1u, renderSurfaceLayerList[1]->renderSurface()->layer_list().size());
+    ASSERT_EQ(2468, renderSurfaceLayerList[1]->renderSurface()->layer_list()[0]->id());
 
     // (11, 89) is close to the the bottom left corner within the clip, but it is not inside the layer.
     gfx::Point testPoint(11, 89);
@@ -3551,8 +3551,8 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
-    ASSERT_EQ(456, root->renderSurface()->layerList()[0]->id());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
+    ASSERT_EQ(456, root->renderSurface()->layer_list()[0]->id());
 
     // Hit testing for a point outside the layer should return a null pointer.
     gfx::Point testPoint(69, 69);
@@ -3634,11 +3634,11 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
     ASSERT_TRUE(child2);
     ASSERT_TRUE(grandChild1);
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(4u, root->renderSurface()->layerList().size());
-    ASSERT_EQ(1, root->renderSurface()->layerList()[0]->id()); // root layer
-    ASSERT_EQ(2, root->renderSurface()->layerList()[1]->id()); // child1
-    ASSERT_EQ(4, root->renderSurface()->layerList()[2]->id()); // grandChild1
-    ASSERT_EQ(3, root->renderSurface()->layerList()[3]->id()); // child2
+    ASSERT_EQ(4u, root->renderSurface()->layer_list().size());
+    ASSERT_EQ(1, root->renderSurface()->layer_list()[0]->id()); // root layer
+    ASSERT_EQ(2, root->renderSurface()->layer_list()[1]->id()); // child1
+    ASSERT_EQ(4, root->renderSurface()->layer_list()[2]->id()); // grandChild1
+    ASSERT_EQ(3, root->renderSurface()->layer_list()[3]->id()); // child2
 
     // Nothing overlaps the rootLayer at (1, 1), so hit testing there should find the root layer.
     gfx::Point testPoint = gfx::Point(1, 1);
@@ -3745,10 +3745,10 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     ASSERT_TRUE(child2->renderSurface());
     ASSERT_TRUE(grandChild1->renderSurface());
     ASSERT_EQ(4u, renderSurfaceLayerList.size());
-    ASSERT_EQ(3u, root->renderSurface()->layerList().size()); // The root surface has the root layer, and child1's and child2's renderSurfaces.
-    ASSERT_EQ(2u, child1->renderSurface()->layerList().size()); // The child1 surface has the child1 layer and grandChild1's renderSurface.
-    ASSERT_EQ(1u, child2->renderSurface()->layerList().size());
-    ASSERT_EQ(1u, grandChild1->renderSurface()->layerList().size());
+    ASSERT_EQ(3u, root->renderSurface()->layer_list().size()); // The root surface has the root layer, and child1's and child2's renderSurfaces.
+    ASSERT_EQ(2u, child1->renderSurface()->layer_list().size()); // The child1 surface has the child1 layer and grandChild1's renderSurface.
+    ASSERT_EQ(1u, child2->renderSurface()->layer_list().size());
+    ASSERT_EQ(1u, grandChild1->renderSurface()->layer_list().size());
     ASSERT_EQ(1, renderSurfaceLayerList[0]->id()); // root layer
     ASSERT_EQ(2, renderSurfaceLayerList[1]->id()); // child1
     ASSERT_EQ(4, renderSurfaceLayerList[2]->id()); // grandChild1
@@ -3825,7 +3825,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit checking for any point should return a null pointer for a layer without any touch event handler regions.
     gfx::Point testPoint(11, 11);
@@ -3891,7 +3891,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForUninvertibl
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
     ASSERT_FALSE(root->screenSpaceTransform().IsInvertible());
 
     // Hit checking any point should not hit the touch handler region on the layer. If the invertible matrix is
@@ -3947,7 +3947,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSinglePosit
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit checking for a point outside the layer should return a null pointer.
     gfx::Point testPoint(49, 49);
@@ -4022,7 +4022,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     LayerImpl* testLayer = root->children()[0];
     EXPECT_RECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(100, 100)), testLayer->visibleContentRect());
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Hit checking for a point outside the layer should return a null pointer (the root layer does not draw content, so it will not be tested either).
     gfx::Point testPoint(76, 76);
@@ -4097,7 +4097,7 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSingleLayer
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
     LayerImpl* testLayer = root->children()[0];
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
 
     // Check whether the child layer fits into the root after scaled.
     EXPECT_RECT_EQ(gfx::Rect(testLayer->contentBounds()), testLayer->visibleContentRect());;
@@ -4179,8 +4179,8 @@ TEST(LayerTreeHostCommonTest, verifyHitCheckingTouchHandlerRegionsForSimpleClipp
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
-    ASSERT_EQ(1u, root->renderSurface()->layerList().size());
-    ASSERT_EQ(456, root->renderSurface()->layerList()[0]->id());
+    ASSERT_EQ(1u, root->renderSurface()->layer_list().size());
+    ASSERT_EQ(456, root->renderSurface()->layer_list()[0]->id());
 
     // Hit checking for a point outside the layer should return a null pointer.
     // Despite the child layer being very large, it should be clipped to the root layer's bounds.
@@ -4384,7 +4384,7 @@ TEST(LayerTreeHostCommonTest, verifySurfaceLayerTransformsInHighDPI)
         deviceScaleFactor * pageScaleFactor * scaleSurface->position().y());
     gfx::Transform expectedScaleSurfaceLayerDrawTransform;
     expectedScaleSurfaceLayerDrawTransform.PreconcatTransform(scaleSmallMatrix);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedScaleSurfaceDrawTransform, scaleSurface->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedScaleSurfaceDrawTransform, scaleSurface->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedScaleSurfaceLayerDrawTransform, scaleSurface->drawTransform());
 
     // The scale for the perspective surface is not known, so it is rendered 1:1
@@ -4396,7 +4396,7 @@ TEST(LayerTreeHostCommonTest, verifySurfaceLayerTransformsInHighDPI)
     expectedPerspectiveSurfaceDrawTransform.PreconcatTransform(perspectiveMatrix);
     expectedPerspectiveSurfaceDrawTransform.PreconcatTransform(scaleSmallMatrix);
     gfx::Transform expectedPerspectiveSurfaceLayerDrawTransform;
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedPerspectiveSurfaceDrawTransform, perspectiveSurface->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedPerspectiveSurfaceDrawTransform, perspectiveSurface->renderSurface()->draw_transform());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedPerspectiveSurfaceLayerDrawTransform, perspectiveSurface->drawTransform());
 }
 
@@ -4753,8 +4753,8 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     EXPECT_FLOAT_EQ(1, parent->drawTransform().matrix().getDouble(1, 1));
 
     // RenderSurfaces should always be 1:1 with their target.
-    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->drawTransform().matrix().getDouble(0, 0));
-    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->draw_transform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceScale->renderSurface()->draw_transform().matrix().getDouble(1, 1));
 
     // The surfaceScale can apply contents scale so the layer shouldn't need to scale during draw.
     EXPECT_FLOAT_EQ(1, surfaceScale->drawTransform().matrix().getDouble(0, 0));
@@ -4769,8 +4769,8 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceScaleChildNoScale->drawTransform().matrix().getDouble(1, 1));
 
     // RenderSurfaces should always be 1:1 with their target.
-    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->drawTransform().matrix().getDouble(0, 0));
-    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->draw_transform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceNoScale->renderSurface()->draw_transform().matrix().getDouble(1, 1));
 
     // The surfaceNoScale layer can not apply contents scale, so it needs to be scaled during draw.
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale, surfaceNoScale->drawTransform().matrix().getDouble(0, 0));
@@ -4785,8 +4785,8 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForSurfaces)
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale * initialChildScale, surfaceNoScaleChildNoScale->drawTransform().matrix().getDouble(1, 1));
 
     // RenderSurfaces should always be 1:1 with their target.
-    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->drawTransform().matrix().getDouble(0, 0));
-    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->drawTransform().matrix().getDouble(1, 1));
+    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->draw_transform().matrix().getDouble(0, 0));
+    EXPECT_FLOAT_EQ(1, surfaceNoAutoScale->renderSurface()->draw_transform().matrix().getDouble(1, 1));
 
     // The surfaceNoAutoScale layer has a fixed contents scale, so it needs to be scaled during draw.
     EXPECT_FLOAT_EQ(deviceScaleFactor * pageScaleFactor * initialParentScale * initialChildScale / (deviceScaleFactor * pageScaleFactor * fixedRasterScale), surfaceNoAutoScale->drawTransform().matrix().getDouble(0, 0));
@@ -4899,28 +4899,28 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 
     gfx::Transform expectedRenderSurfaceDrawTransform;
     expectedRenderSurfaceDrawTransform.Translate(deviceScaleFactor * child->position().x(), deviceScaleFactor * child->position().y());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedRenderSurfaceDrawTransform, child->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedRenderSurfaceDrawTransform, child->renderSurface()->draw_transform());
 
     gfx::Transform expectedSurfaceDrawTransform;
     expectedSurfaceDrawTransform.Translate(deviceScaleFactor * 2, deviceScaleFactor * 2);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->drawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceDrawTransform, child->renderSurface()->draw_transform());
 
     gfx::Transform expectedSurfaceScreenSpaceTransform;
     expectedSurfaceScreenSpaceTransform.Translate(deviceScaleFactor * 2, deviceScaleFactor * 2);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceScreenSpaceTransform, child->renderSurface()->screenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedSurfaceScreenSpaceTransform, child->renderSurface()->screen_space_transform());
 
     gfx::Transform expectedReplicaDrawTransform;
     expectedReplicaDrawTransform.matrix().setDouble(1, 1, -1);
     expectedReplicaDrawTransform.matrix().setDouble(0, 3, 6);
     expectedReplicaDrawTransform.matrix().setDouble(1, 3, 6);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaDrawTransform, child->renderSurface()->replicaDrawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaDrawTransform, child->renderSurface()->replica_draw_transform());
 
     gfx::Transform expectedReplicaScreenSpaceTransform;
     expectedReplicaScreenSpaceTransform.matrix().setDouble(1, 1, -1);
     expectedReplicaScreenSpaceTransform.matrix().setDouble(0, 3, 6);
     expectedReplicaScreenSpaceTransform.matrix().setDouble(1, 3, 6);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replica_screen_space_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replica_screen_space_transform());
 }
 
 TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScaleZeroPosition)
@@ -4969,17 +4969,17 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPIAccurateScal
     EXPECT_RECT_EQ(child->drawableContentRect(), duplicateChildNonOwner->drawableContentRect());
     EXPECT_EQ(child->contentBounds(), duplicateChildNonOwner->contentBounds());
 
-    EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->drawTransform());
-    EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->screenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->draw_transform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(identityTransform, child->renderSurface()->screen_space_transform());
 
     gfx::Transform expectedReplicaDrawTransform;
     expectedReplicaDrawTransform.matrix().setDouble(1, 1, -1);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaDrawTransform, child->renderSurface()->replicaDrawTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaDrawTransform, child->renderSurface()->replica_draw_transform());
 
     gfx::Transform expectedReplicaScreenSpaceTransform;
     expectedReplicaScreenSpaceTransform.matrix().setDouble(1, 1, -1);
-    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replica_screen_space_transform());
 }
 
 TEST(LayerTreeHostCommonTest, verifySubtreeSearch)

@@ -63,8 +63,8 @@ void resetCounts(std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
         renderSurfaceLayer->m_countRepresentingContributingSurface = -1;
         renderSurfaceLayer->m_countRepresentingItself = -1;
 
-        for (unsigned layerIndex = 0; layerIndex < renderSurface->layerList().size(); ++layerIndex) {
-            TestLayer* layer = static_cast<TestLayer*>(renderSurface->layerList()[layerIndex].get());
+        for (unsigned layerIndex = 0; layerIndex < renderSurface->layer_list().size(); ++layerIndex) {
+            TestLayer* layer = static_cast<TestLayer*>(renderSurface->layer_list()[layerIndex].get());
 
             layer->m_countRepresentingTargetSurface = -1;
             layer->m_countRepresentingContributingSurface = -1;
@@ -208,7 +208,7 @@ TEST(LayerIteratorTest, complexTreeMultiSurface)
     scoped_refptr<TestLayer> root231 = TestLayer::create();
 
     rootLayer->createRenderSurface();
-    rootLayer->renderSurface()->setContentRect(gfx::Rect(gfx::Point(), rootLayer->bounds()));
+    rootLayer->renderSurface()->SetContentRect(gfx::Rect(gfx::Point(), rootLayer->bounds()));
 
     rootLayer->addChild(root1);
     rootLayer->addChild(root2);

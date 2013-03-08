@@ -22,19 +22,19 @@ namespace cc {
 namespace {
 
 #define EXECUTE_AND_VERIFY_SURFACE_CHANGED(codeToTest)                  \
-    renderSurface->resetPropertyChangedFlag();                          \
+    renderSurface->ResetPropertyChangedFlag();                          \
     codeToTest;                                                         \
-    EXPECT_TRUE(renderSurface->surfacePropertyChanged())
+    EXPECT_TRUE(renderSurface->SurfacePropertyChanged())
 
 #define EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(codeToTest)           \
-    renderSurface->resetPropertyChangedFlag();                          \
+    renderSurface->ResetPropertyChangedFlag();                          \
     codeToTest;                                                         \
-    EXPECT_FALSE(renderSurface->surfacePropertyChanged())
+    EXPECT_FALSE(renderSurface->SurfacePropertyChanged())
 
 TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 {
     //
-    // This test checks that surfacePropertyChanged() has the correct behavior.
+    // This test checks that SurfacePropertyChanged() has the correct behavior.
     //
 
     FakeImplProxy proxy;
@@ -48,16 +48,16 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
     // Currently, the contentRect, clipRect, and owningLayer->layerPropertyChanged() are
     // the only sources of change.
-    EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->setClipRect(testRect));
-    EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->setContentRect(testRect));
+    EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->SetClipRect(testRect));
+    EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->SetContentRect(testRect));
 
     owningLayer->setOpacity(0.5f);
-    EXPECT_TRUE(renderSurface->surfacePropertyChanged());
+    EXPECT_TRUE(renderSurface->SurfacePropertyChanged());
     owningLayer->resetAllChangeTrackingForSubtree();
 
     // Setting the surface properties to the same values again should not be considered "change".
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setClipRect(testRect));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
+    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetClipRect(testRect));
+    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetContentRect(testRect));
 
     scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(hostImpl.activeTree(), 2);
     gfx::Transform dummyMatrix;
@@ -65,10 +65,10 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
     // The rest of the surface properties are either internal and should not cause change,
     // or they are already accounted for by the owninglayer->layerPropertyChanged().
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setDrawOpacity(0.5));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setDrawTransform(dummyMatrix));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setReplicaDrawTransform(dummyMatrix));
-    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->clearLayerLists());
+    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetDrawOpacity(0.5f));
+    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetDrawTransform(dummyMatrix));
+    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetReplicaDrawTransform(dummyMatrix));
+    EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->ClearLayerLists());
 }
 
 TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
@@ -91,10 +91,10 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
     origin.Translate(30, 40);
 
-    renderSurface->setDrawTransform(origin);
-    renderSurface->setContentRect(contentRect);
-    renderSurface->setClipRect(clipRect);
-    renderSurface->setDrawOpacity(1);
+    renderSurface->SetDrawTransform(origin);
+    renderSurface->SetContentRect(contentRect);
+    renderSurface->SetClipRect(clipRect);
+    renderSurface->SetDrawOpacity(1.f);
 
     QuadList quadList;
     SharedQuadStateList sharedStateList;
@@ -102,7 +102,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     AppendQuadsData appendQuadsData;
 
     bool forReplica = false;
-    renderSurface->appendQuads(mockQuadCuller, appendQuadsData, forReplica, RenderPass::Id(2, 0));
+    renderSurface->AppendQuads(&mockQuadCuller, &appendQuadsData, forReplica, RenderPass::Id(2, 0));
 
     ASSERT_EQ(1u, sharedStateList.size());
     SharedQuadState* sharedQuadState = sharedStateList[0];
@@ -141,12 +141,12 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     gfx::Transform origin;
     origin.Translate(30, 40);
 
-    renderSurface->setScreenSpaceTransform(origin);
-    renderSurface->setContentRect(contentRect);
+    renderSurface->SetScreenSpaceTransform(origin);
+    renderSurface->SetContentRect(contentRect);
 
     TestRenderPassSink passSink;
 
-    renderSurface->appendRenderPasses(passSink);
+    renderSurface->AppendRenderPasses(&passSink);
 
     ASSERT_EQ(1u, passSink.renderPasses().size());
     RenderPass* pass = passSink.renderPasses()[0];

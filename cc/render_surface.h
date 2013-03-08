@@ -20,90 +20,119 @@ namespace cc {
 class Layer;
 
 class CC_EXPORT RenderSurface {
-public:
-    explicit RenderSurface(Layer*);
-    ~RenderSurface();
+ public:
+  explicit RenderSurface(Layer* owning_layer);
+  ~RenderSurface();
 
-    // Returns the rect that encloses the RenderSurfaceImpl including any reflection.
-    gfx::RectF drawableContentRect() const;
+  // Returns the rect that encloses the RenderSurfaceImpl including any
+  // reflection.
+  gfx::RectF DrawableContentRect() const;
 
-    const gfx::Rect& contentRect() const { return m_contentRect; }
-    void setContentRect(const gfx::Rect& contentRect) { m_contentRect = contentRect; }
+  void SetContentRect(gfx::Rect content_rect) { content_rect_ = content_rect; }
+  gfx::Rect content_rect() const { return content_rect_; }
 
-    float drawOpacity() const { return m_drawOpacity; }
-    void setDrawOpacity(float drawOpacity) { m_drawOpacity = drawOpacity; }
+  void SetDrawOpacity(float opacity) { draw_opacity_ = opacity; }
+  float draw_opacity() const { return draw_opacity_; }
 
-    bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
-    void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
+  void SetDrawOpacityIsAnimating(bool draw_opacity_is_animating) {
+    draw_opacity_is_animating_ = draw_opacity_is_animating;
+  }
+  bool draw_opacity_is_animating() const { return draw_opacity_is_animating_; }
 
-    // This goes from content space with the origin in the center of the rect being transformed to the target space with the origin in the top left of the
-    // rect being transformed. Position the rect so that the origin is in the center of it before applying this transform.
-    const gfx::Transform& drawTransform() const { return m_drawTransform; }
-    void setDrawTransform(const gfx::Transform& drawTransform) { m_drawTransform = drawTransform; }
+  void SetDrawTransform(const gfx::Transform& draw_transform) {
+    draw_transform_ = draw_transform;
+  }
+  const gfx::Transform& draw_transform() const { return draw_transform_; }
 
-    const gfx::Transform& screenSpaceTransform() const { return m_screenSpaceTransform; }
-    void setScreenSpaceTransform(const gfx::Transform& screenSpaceTransform) { m_screenSpaceTransform = screenSpaceTransform; }
+  void SetScreenSpaceTransform(const gfx::Transform& screen_space_transform) {
+    screen_space_transform_ = screen_space_transform;
+  }
+  const gfx::Transform& screen_space_transform() const {
+    return screen_space_transform_;
+  }
 
-    const gfx::Transform& replicaDrawTransform() const { return m_replicaDrawTransform; }
-    void setReplicaDrawTransform(const gfx::Transform& replicaDrawTransform) { m_replicaDrawTransform = replicaDrawTransform; }
+  void SetReplicaDrawTransform(const gfx::Transform& replica_draw_transform) {
+    replica_draw_transform_ = replica_draw_transform;
+  }
+  const gfx::Transform& replica_draw_transform() const {
+    return replica_draw_transform_;
+  }
 
-    const gfx::Transform& replicaScreenSpaceTransform() const { return m_replicaScreenSpaceTransform; }
-    void setReplicaScreenSpaceTransform(const gfx::Transform& replicaScreenSpaceTransform) { m_replicaScreenSpaceTransform = replicaScreenSpaceTransform; }
+  void SetReplicaScreenSpaceTransform(
+      const gfx::Transform& replica_screen_space_transform) {
+    replica_screen_space_transform_ = replica_screen_space_transform;
+  }
+  const gfx::Transform& replica_screen_space_transform() const {
+    return replica_screen_space_transform_;
+  }
 
-    bool targetSurfaceTransformsAreAnimating() const { return m_targetSurfaceTransformsAreAnimating; }
-    void setTargetSurfaceTransformsAreAnimating(bool animating) { m_targetSurfaceTransformsAreAnimating = animating; }
-    bool screenSpaceTransformsAreAnimating() const { return m_screenSpaceTransformsAreAnimating; }
-    void setScreenSpaceTransformsAreAnimating(bool animating) { m_screenSpaceTransformsAreAnimating = animating; }
+  void SetTargetSurfaceTransformsAreAnimating(bool animating) {
+    target_surface_transforms_are_animating_ = animating;
+ }
+  bool target_surface_transforms_are_animating() const {
+    return target_surface_transforms_are_animating_;
+  }
+  void SetScreenSpaceTransformsAreAnimating(bool animating) {
+    screen_space_transforms_are_animating_ = animating;
+  }
+  bool screen_space_transforms_are_animating() const {
+    return screen_space_transforms_are_animating_;
+  }
 
-    bool isClipped() const { return m_isClipped; }
-    void setIsClipped(bool isClipped) { m_isClipped = isClipped; }
+  bool is_clipped() const { return is_clipped_; }
+  void SetIsClipped(bool is_clipped) { is_clipped_ = is_clipped; }
 
-    const gfx::Rect& clipRect() const { return m_clipRect; }
-    void setClipRect(const gfx::Rect& clipRect) { m_clipRect = clipRect; }
+  gfx::Rect clip_rect() const { return clip_rect_; }
+  void SetClipRect(gfx::Rect clip_rect) { clip_rect_ = clip_rect; }
 
-    typedef std::vector<scoped_refptr<Layer> > LayerList;
-    LayerList& layerList() { return m_layerList; }
-    // A no-op since DelegatedRendererLayers on the main thread don't have any
-    // RenderPasses so they can't contribute to a surface.
-    void addContributingDelegatedRenderPassLayer(Layer*) { }
-    void clearLayerLists() { m_layerList.clear(); }
+  typedef std::vector<scoped_refptr<Layer> > LayerList;
+  LayerList& layer_list() { return layer_list_; }
+  // A no-op since DelegatedRendererLayers on the main thread don't have any
+  // RenderPasses so they can't contribute to a surface.
+  void AddContributingDelegatedRenderPassLayer(Layer* layer) {}
+  void ClearLayerLists() { layer_list_.clear(); }
 
-    void setNearestAncestorThatMovesPixels(RenderSurface* surface) { m_nearestAncestorThatMovesPixels = surface; }
-    const RenderSurface* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }
+  void SetNearestAncestorThatMovesPixels(RenderSurface* surface) {
+    nearest_ancestor_that_moves_pixels_ = surface;
+  }
+  const RenderSurface* nearest_ancestor_that_moves_pixels() const {
+    return nearest_ancestor_that_moves_pixels_;
+  }
 
-private:
-    friend struct LayerIteratorActions;
+ private:
+  friend struct LayerIteratorActions;
 
-    Layer* m_owningLayer;
+  Layer* owning_layer_;
 
-    // Uses this surface's space.
-    gfx::Rect m_contentRect;
+  // Uses this surface's space.
+  gfx::Rect content_rect_;
 
-    float m_drawOpacity;
-    bool m_drawOpacityIsAnimating;
-    gfx::Transform m_drawTransform;
-    gfx::Transform m_screenSpaceTransform;
-    gfx::Transform m_replicaDrawTransform;
-    gfx::Transform m_replicaScreenSpaceTransform;
-    bool m_targetSurfaceTransformsAreAnimating;
-    bool m_screenSpaceTransformsAreAnimating;
+  float draw_opacity_;
+  bool draw_opacity_is_animating_;
+  gfx::Transform draw_transform_;
+  gfx::Transform screen_space_transform_;
+  gfx::Transform replica_draw_transform_;
+  gfx::Transform replica_screen_space_transform_;
+  bool target_surface_transforms_are_animating_;
+  bool screen_space_transforms_are_animating_;
 
-    bool m_isClipped;
+  bool is_clipped_;
 
-    // Uses the space of the surface's target surface.
-    gfx::Rect m_clipRect;
+  // Uses the space of the surface's target surface.
+  gfx::Rect clip_rect_;
 
-    LayerList m_layerList;
+  LayerList layer_list_;
 
-    // The nearest ancestor target surface that will contain the contents of this surface, and that is going
-    // to move pixels within the surface (such as with a blur). This can point to itself.
-    RenderSurface* m_nearestAncestorThatMovesPixels;
+  // The nearest ancestor target surface that will contain the contents of this
+  // surface, and that is going to move pixels within the surface (such as with
+  // a blur). This can point to itself.
+  RenderSurface* nearest_ancestor_that_moves_pixels_;
 
-    // For LayerIteratorActions
-    int m_targetRenderSurfaceLayerIndexHistory;
-    int m_currentLayerIndexHistory;
+  // For LayerIteratorActions
+  int target_render_surface_layer_index_history_;
+  int current_layer_index_history_;
 
-    DISALLOW_COPY_AND_ASSIGN(RenderSurface);
+  DISALLOW_COPY_AND_ASSIGN(RenderSurface);
 };
 
 }

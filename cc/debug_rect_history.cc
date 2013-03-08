@@ -74,7 +74,7 @@ void DebugRectHistory::savePropertyChangedRects(const std::vector<LayerImpl*>& r
         RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        const std::vector<LayerImpl*>& layerList = renderSurface->layerList();
+        const std::vector<LayerImpl*>& layerList = renderSurface->layer_list();
         for (unsigned layerIndex = 0; layerIndex < layerList.size(); ++layerIndex) {
             LayerImpl* layer = layerList[layerIndex];
 
@@ -97,7 +97,7 @@ void DebugRectHistory::saveSurfaceDamageRects(const std::vector<LayerImpl* >& re
         RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        m_debugRects.push_back(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->damageTracker()->current_damage_rect())));
+        m_debugRects.push_back(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screen_space_transform(), renderSurface->damage_tracker()->current_damage_rect())));
     }
 }
 
@@ -108,10 +108,10 @@ void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& rend
         RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        m_debugRects.push_back(DebugRect(ScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->contentRect())));
+        m_debugRects.push_back(DebugRect(ScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->screen_space_transform(), renderSurface->content_rect())));
 
         if (renderSurfaceLayer->replicaLayer())
-            m_debugRects.push_back(DebugRect(ReplicaScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->replicaScreenSpaceTransform(), renderSurface->contentRect())));
+            m_debugRects.push_back(DebugRect(ReplicaScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->replica_screen_space_transform(), renderSurface->content_rect())));
     }
 }
 

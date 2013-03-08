@@ -264,9 +264,9 @@ void LayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterato
         gfx::Transform drawTransform;
         float layerWidth, layerHeight;
         if (renderSurface) {
-            drawTransform = renderSurface->drawTransform();
-            layerWidth = renderSurface->contentRect().width();
-            layerHeight = renderSurface->contentRect().height();
+            drawTransform = renderSurface->draw_transform();
+            layerWidth = renderSurface->content_rect().width();
+            layerHeight = renderSurface->content_rect().height();
         } else {
             drawTransform = node.layer->drawTransform();
             layerWidth = node.layer->contentBounds().width();

@@ -71,7 +71,7 @@ public:
         , m_memoryAllocationLimitBytes(PrioritizedResourceManager::defaultMemoryAllocationLimit())
     {
         m_rootLayer->createRenderSurface();
-        RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
+        RenderPass::Id renderPassId = m_rootLayer->renderSurface()->RenderPassId();
         scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
         root_render_pass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
         m_renderPassesInDrawOrder.push_back(root_render_pass.Pass());

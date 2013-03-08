@@ -1919,7 +1919,7 @@ protected:
 
         EXPECT_TRUE(layer->drawOpacityIsAnimating());
         EXPECT_FALSE(surface->drawOpacityIsAnimating());
-        EXPECT_TRUE(surface->renderSurface()->drawOpacityIsAnimating());
+        EXPECT_TRUE(surface->renderSurface()->draw_opacity_is_animating());
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
@@ -1984,7 +1984,7 @@ protected:
 
         EXPECT_TRUE(layer->drawOpacityIsAnimating());
         EXPECT_FALSE(surface->drawOpacityIsAnimating());
-        EXPECT_TRUE(surface->renderSurface()->drawOpacityIsAnimating());
+        EXPECT_TRUE(surface->renderSurface()->draw_opacity_is_animating());
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
@@ -2049,8 +2049,8 @@ protected:
 
         EXPECT_TRUE(layer->drawTransformIsAnimating());
         EXPECT_TRUE(layer->screenSpaceTransformIsAnimating());
-        EXPECT_TRUE(surface->renderSurface()->targetSurfaceTransformsAreAnimating());
-        EXPECT_TRUE(surface->renderSurface()->screenSpaceTransformsAreAnimating());
+        EXPECT_TRUE(surface->renderSurface()->target_surface_transforms_are_animating());
+        EXPECT_TRUE(surface->renderSurface()->screen_space_transforms_are_animating());
         // The surface owning layer doesn't animate against its own surface.
         EXPECT_FALSE(surface->drawTransformIsAnimating());
         EXPECT_TRUE(surface->screenSpaceTransformIsAnimating());

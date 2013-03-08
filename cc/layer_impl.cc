@@ -539,7 +539,7 @@ void LayerImpl::resetAllChangeTrackingForSubtree()
     m_updateRect = gfx::RectF();
 
     if (m_drawProperties.render_surface)
-        m_drawProperties.render_surface->resetPropertyChangedFlag();
+        m_drawProperties.render_surface->ResetPropertyChangedFlag();
 
     if (m_maskLayer)
         m_maskLayer->resetAllChangeTrackingForSubtree();

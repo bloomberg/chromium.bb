@@ -957,10 +957,10 @@ public:
         // Both layers should be drawing into the root render surface.
         ASSERT_EQ(1u, renderSurfaceLayerList.size());
         ASSERT_EQ(root->renderSurface(), renderSurfaceLayerList[0]->renderSurface());
-        ASSERT_EQ(2u, root->renderSurface()->layerList().size());
+        ASSERT_EQ(2u, root->renderSurface()->layer_list().size());
 
         // The root render surface is the size of the viewport.
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 60, 60), root->renderSurface()->contentRect());
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 60, 60), root->renderSurface()->content_rect());
 
         // The content bounds of the child should be scaled.
         gfx::Size childBoundsScaled = gfx::ToCeiledSize(gfx::ScaleSize(child->bounds(), 1.5));
@@ -1437,8 +1437,8 @@ public:
     virtual void drawLayersOnThread(LayerTreeHostImpl* hostImpl) OVERRIDE
     {
         Renderer* renderer = hostImpl->renderer();
-        RenderPass::Id surface1RenderPassId = hostImpl->rootLayer()->children()[0]->renderSurface()->renderPassId();
-        RenderPass::Id surface2RenderPassId = hostImpl->rootLayer()->children()[0]->children()[0]->renderSurface()->renderPassId();
+        RenderPass::Id surface1RenderPassId = hostImpl->rootLayer()->children()[0]->renderSurface()->RenderPassId();
+        RenderPass::Id surface2RenderPassId = hostImpl->rootLayer()->children()[0]->children()[0]->renderSurface()->RenderPassId();
 
         switch (hostImpl->activeTree()->source_frame_number()) {
         case 0:

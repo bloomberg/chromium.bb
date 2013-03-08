@@ -146,7 +146,7 @@ private:
     inline bool currentLayerRepresentsTargetRenderSurface() const { return m_currentLayerIndex == LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface; }
 
     inline RenderSurfaceType* targetRenderSurface() const { return targetRenderSurfaceLayer()->renderSurface(); }
-    inline const LayerList& targetRenderSurfaceChildren() const { return targetRenderSurface()->layerList(); }
+    inline const LayerList& targetRenderSurfaceChildren() const { return targetRenderSurface()->layer_list(); }
 
     IteratorActionType m_actions;
     const LayerList* m_renderSurfaceLayerList;

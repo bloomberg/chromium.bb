@@ -149,7 +149,7 @@ static gfx::Rect calculateVisibleContentRect(LayerType* layer, const gfx::Rect& 
     // Compute visible bounds in target surface space.
     gfx::Rect visibleRectInTargetSurfaceSpace = layer->drawableContentRect();
 
-    if (!layer->renderTarget()->renderSurface()->clipRect().IsEmpty()) {
+    if (!layer->renderTarget()->renderSurface()->clip_rect().IsEmpty()) {
         // In this case the target surface does clip layers that contribute to
         // it. So, we have to convert the current surface's clipRect from its
         // ancestor surface space to the current (descendant) surface
@@ -397,11 +397,11 @@ gfx::Transform computeScrollCompensationMatrixForChildren(LayerImpl* layer, cons
     //  Step 3: transform back to the new surface.
     if (layer->renderSurface() && !nextScrollCompensationMatrix.IsIdentity()) {
         gfx::Transform inverseSurfaceDrawTransform(gfx::Transform::kSkipInitialization);
-        if (!layer->renderSurface()->drawTransform().GetInverse(&inverseSurfaceDrawTransform)) {
+        if (!layer->renderSurface()->draw_transform().GetInverse(&inverseSurfaceDrawTransform)) {
             // TODO(shawnsingh): Either we need to handle uninvertible transforms
             // here, or DCHECK that the transform is invertible.
         }
-        nextScrollCompensationMatrix = inverseSurfaceDrawTransform * nextScrollCompensationMatrix * layer->renderSurface()->drawTransform();
+        nextScrollCompensationMatrix = inverseSurfaceDrawTransform * nextScrollCompensationMatrix * layer->renderSurface()->draw_transform();
     }
 
     return nextScrollCompensationMatrix;
@@ -751,14 +751,14 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
             layer->createRenderSurface();
 
         RenderSurfaceType* renderSurface = layer->renderSurface();
-        renderSurface->clearLayerLists();
+        renderSurface->ClearLayerLists();
 
         // The owning layer's draw transform has a scale from content to layer
         // space which we do not want; so here we use the combinedTransform
         // instead of the drawTransform. However, we do need to add a different
         // scale factor that accounts for the surface's pixel dimensions.
         combinedTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
-        renderSurface->setDrawTransform(combinedTransform);
+        renderSurface->SetDrawTransform(combinedTransform);
 
         // The owning layer's transform was re-parented by the surface, so the layer's new drawTransform
         // only needs to scale the layer to surface space.
@@ -772,22 +772,22 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         sublayerMatrix.Scale(renderSurfaceSublayerScale.x(), renderSurfaceSublayerScale.y());
 
         // The opacity value is moved from the layer to its surface, so that the entire subtree properly inherits opacity.
-        renderSurface->setDrawOpacity(accumulatedDrawOpacity);
-        renderSurface->setDrawOpacityIsAnimating(animatingOpacityToTarget);
+        renderSurface->SetDrawOpacity(accumulatedDrawOpacity);
+        renderSurface->SetDrawOpacityIsAnimating(animatingOpacityToTarget);
         animatingOpacityToTarget = false;
         layerDrawProperties.opacity = 1;
         layerDrawProperties.opacity_is_animating = animatingOpacityToTarget;
         layerDrawProperties.screen_space_opacity_is_animating = animatingOpacityToScreen;
 
-        renderSurface->setTargetSurfaceTransformsAreAnimating(animatingTransformToTarget);
-        renderSurface->setScreenSpaceTransformsAreAnimating(animatingTransformToScreen);
+        renderSurface->SetTargetSurfaceTransformsAreAnimating(animatingTransformToTarget);
+        renderSurface->SetScreenSpaceTransformsAreAnimating(animatingTransformToScreen);
         animatingTransformToTarget = false;
         layerDrawProperties.target_space_transform_is_animating = animatingTransformToTarget;
         layerDrawProperties.screen_space_transform_is_animating = animatingTransformToScreen;
 
         // Update the aggregate hierarchy matrix to include the transform of the
         // newly created RenderSurfaceImpl.
-        nextHierarchyMatrix.PreconcatTransform(renderSurface->drawTransform());
+        nextHierarchyMatrix.PreconcatTransform(renderSurface->draw_transform());
 
         // The new renderSurface here will correctly clip the entire subtree. So, we do
         // not need to continue propagating the clipping state further down the tree. This
@@ -813,22 +813,22 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
             nearestAncestorThatMovesPixels = renderSurface;
 
         // The render surface clipRect is expressed in the space where this surface draws, i.e. the same space as clipRectFromAncestor.
-        renderSurface->setIsClipped(ancestorClipsSubtree);
+        renderSurface->SetIsClipped(ancestorClipsSubtree);
         if (ancestorClipsSubtree) {
-            renderSurface->setClipRect(clipRectFromAncestor);
+            renderSurface->SetClipRect(clipRectFromAncestor);
 
             gfx::Transform inverseSurfaceDrawTransform(gfx::Transform::kSkipInitialization);
-            if (!renderSurface->drawTransform().GetInverse(&inverseSurfaceDrawTransform)) {
+            if (!renderSurface->draw_transform().GetInverse(&inverseSurfaceDrawTransform)) {
                 // TODO(shawnsingh): Either we need to handle uninvertible transforms
                 // here, or DCHECK that the transform is invertible.
             }
-            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::projectClippedRect(inverseSurfaceDrawTransform, renderSurface->clipRect()));
+            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::projectClippedRect(inverseSurfaceDrawTransform, renderSurface->clip_rect()));
         } else {
-            renderSurface->setClipRect(gfx::Rect());
+            renderSurface->SetClipRect(gfx::Rect());
             clipRectForSubtreeInDescendantSpace = clipRectFromAncestorInDescendantSpace;
         }
 
-        renderSurface->setNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
+        renderSurface->SetNearestAncestorThatMovesPixels(nearestAncestorThatMovesPixels);
 
         // If the new render surface is drawn translucent or with a non-integral translation
         // then the subtree that gets drawn on this render surface cannot use LCD text.
@@ -886,7 +886,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         sublayerMatrix.Translate(-layer->anchorPoint().x() * bounds.width(), -layer->anchorPoint().y() * bounds.height());
     }
 
-    LayerList& descendants = (layer->renderSurface() ? layer->renderSurface()->layerList() : layerList);
+    LayerList& descendants = (layer->renderSurface() ? layer->renderSurface()->layer_list() : layerList);
 
     // Any layers that are appended after this point are in the layer's subtree and should be included in the sorting process.
     unsigned sortingStartIndex = descendants.size();
@@ -911,7 +911,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         }
     }
 
-    if (layer->renderSurface() && !isRootLayer(layer) && !layer->renderSurface()->layerList().size()) {
+    if (layer->renderSurface() && !isRootLayer(layer) && !layer->renderSurface()->layer_list().size()) {
         removeSurfaceForEarlyExit(layer, renderSurfaceLayerList);
         return;
     }
@@ -948,7 +948,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     if (isRootLayer(layer)) {
         // The root layer's surface's contentRect is always the entire viewport.
         DCHECK(layer->renderSurface());
-        layer->renderSurface()->setContentRect(clipRectFromAncestor);
+        layer->renderSurface()->SetContentRect(clipRectFromAncestor);
     } else if (layer->renderSurface() && !isRootLayer(layer)) {
         RenderSurfaceType* renderSurface = layer->renderSurface();
         gfx::Rect clippedContentRect = localDrawableContentRectOfSubtree;
@@ -960,7 +960,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         if (!layer->replicaLayer() && transformToParentIsKnown(layer)) {
             // Note, it is correct to use ancestorClipsSubtree here, because we are looking at this layer's renderSurface, not the layer itself.
             if (ancestorClipsSubtree && !clippedContentRect.IsEmpty()) {
-                gfx::Rect surfaceClipRect = LayerTreeHostCommon::calculateVisibleRect(renderSurface->clipRect(), clippedContentRect, renderSurface->drawTransform());
+                gfx::Rect surfaceClipRect = LayerTreeHostCommon::calculateVisibleRect(renderSurface->clip_rect(), clippedContentRect, renderSurface->draw_transform());
                 clippedContentRect.Intersect(surfaceClipRect);
             }
         }
@@ -971,18 +971,18 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         clippedContentRect.set_height(std::min(clippedContentRect.height(), maxTextureSize));
 
         if (clippedContentRect.IsEmpty()) {
-            renderSurface->clearLayerLists();
+            renderSurface->ClearLayerLists();
             removeSurfaceForEarlyExit(layer, renderSurfaceLayerList);
             return;
         }
         
-        renderSurface->setContentRect(clippedContentRect);
+        renderSurface->SetContentRect(clippedContentRect);
 
         // The owning layer's screenSpaceTransform has a scale from content to layer space which we need to undo and
         // replace with a scale from the surface's subtree into layer space.
         gfx::Transform screenSpaceTransform = layer->screenSpaceTransform();
         screenSpaceTransform.Scale(layer->contentsScaleX() / renderSurfaceSublayerScale.x(), layer->contentsScaleY() / renderSurfaceSublayerScale.y());
-        renderSurface->setScreenSpaceTransform(screenSpaceTransform);
+        renderSurface->SetScreenSpaceTransform(screenSpaceTransform);
 
         if (layer->replicaLayer()) {
             gfx::Transform surfaceOriginToReplicaOriginTransform;
@@ -994,12 +994,12 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
             surfaceOriginToReplicaOriginTransform.Scale(1 / renderSurfaceSublayerScale.x(), 1 / renderSurfaceSublayerScale.y());
 
             // Compute the replica's "originTransform" that maps from the replica's origin space to the target surface origin space.
-            gfx::Transform replicaOriginTransform = layer->renderSurface()->drawTransform() * surfaceOriginToReplicaOriginTransform;
-            renderSurface->setReplicaDrawTransform(replicaOriginTransform);
+            gfx::Transform replicaOriginTransform = layer->renderSurface()->draw_transform() * surfaceOriginToReplicaOriginTransform;
+            renderSurface->SetReplicaDrawTransform(replicaOriginTransform);
 
             // Compute the replica's "screenSpaceTransform" that maps from the replica's origin space to the screen's origin space.
-            gfx::Transform replicaScreenSpaceTransform = layer->renderSurface()->screenSpaceTransform() * surfaceOriginToReplicaOriginTransform;
-            renderSurface->setReplicaScreenSpaceTransform(replicaScreenSpaceTransform);
+            gfx::Transform replicaScreenSpaceTransform = layer->renderSurface()->screen_space_transform() * surfaceOriginToReplicaOriginTransform;
+            renderSurface->SetReplicaScreenSpaceTransform(replicaScreenSpaceTransform);
         }
     }
 
@@ -1017,12 +1017,12 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         sortLayers(descendants.begin() + sortingStartIndex, descendants.end(), layerSorter);
 
     if (layer->renderSurface())
-        drawableContentRectOfSubtree = gfx::ToEnclosingRect(layer->renderSurface()->drawableContentRect());
+        drawableContentRectOfSubtree = gfx::ToEnclosingRect(layer->renderSurface()->DrawableContentRect());
     else
         drawableContentRectOfSubtree = localDrawableContentRectOfSubtree;
 
     if (layer->hasContributingDelegatedRenderPasses())
-        layer->renderTarget()->renderSurface()->addContributingDelegatedRenderPassLayer(layer);
+        layer->renderTarget()->renderSurface()->AddContributingDelegatedRenderPassLayer(layer);
 }
 
 void LayerTreeHostCommon::calculateDrawProperties(Layer* rootLayer, const gfx::Size& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, bool canUseLCDText, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
@@ -1128,13 +1128,13 @@ static bool pointIsClippedBySurfaceOrClipRect(const gfx::PointF& screenSpacePoin
 
     // Walk up the layer tree and hit-test any renderSurfaces and any layer clipRects that are active.
     while (currentLayer) {
-        if (currentLayer->renderSurface() && !pointHitsRect(screenSpacePoint, currentLayer->renderSurface()->screenSpaceTransform(), currentLayer->renderSurface()->contentRect()))
+        if (currentLayer->renderSurface() && !pointHitsRect(screenSpacePoint, currentLayer->renderSurface()->screen_space_transform(), currentLayer->renderSurface()->content_rect()))
             return true;
 
         // Note that drawableContentRects are actually in targetSurface space, so the transform we
         // have to provide is the target surface's screenSpaceTransform.
         LayerImpl* renderTarget = currentLayer->renderTarget();
-        if (layerClipsSubtree(currentLayer) && !pointHitsRect(screenSpacePoint, renderTarget->renderSurface()->screenSpaceTransform(), currentLayer->drawableContentRect()))
+        if (layerClipsSubtree(currentLayer) && !pointHitsRect(screenSpacePoint, renderTarget->renderSurface()->screen_space_transform(), currentLayer->drawableContentRect()))
             return true;
 
         currentLayer = currentLayer->parent();

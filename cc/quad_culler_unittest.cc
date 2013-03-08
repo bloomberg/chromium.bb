@@ -72,14 +72,14 @@ public:
         gfx::Rect rectInTarget = MathUtil::mapClippedRect(layer->drawTransform(), layer->visibleContentRect());
         if (!parent) {
             layer->createRenderSurface();
-            layer->renderSurface()->setContentRect(rectInTarget);
+            layer->renderSurface()->SetContentRect(rectInTarget);
             surfaceLayerList.push_back(layer.get());
-            layer->renderSurface()->layerList().push_back(layer.get());
+            layer->renderSurface()->layer_list().push_back(layer.get());
         } else {
             layer->drawProperties().render_target = parent->renderTarget();
-            parent->renderSurface()->layerList().push_back(layer.get());
+            parent->renderSurface()->layer_list().push_back(layer.get());
             rectInTarget.Union(MathUtil::mapClippedRect(parent->drawTransform(), parent->visibleContentRect()));
-            parent->renderSurface()->setContentRect(rectInTarget);
+            parent->renderSurface()->SetContentRect(rectInTarget);
         }
         layer->drawProperties().drawable_content_rect = rectInTarget;
 
