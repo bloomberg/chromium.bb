@@ -1209,7 +1209,11 @@ TEST_PPAPI_OUT_OF_PROCESS(Printing)
 // PPB_MessageLoop is only supported out-of-process.
 // TODO(dmichael): Enable for NaCl with the IPC proxy. crbug.com/116317
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Basics)
+// MessageLoop_Post starts a thread so only run it if pepper threads are
+// enabled.
+#ifdef ENABLE_PEPPER_THREADING
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
+#endif
 
 // Going forward, Flash APIs will only work out-of-process.
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)

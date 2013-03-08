@@ -7,14 +7,10 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/proxy/locking_resource_releaser.h"
 #include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
-#include "ppapi/shared_impl/proxy_lock.h"
-#include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -63,10 +59,11 @@ TEST_F(WebSocketResourceTest, Connect) {
   PP_Var url_var = MakeStringVar(url);
   PP_Var protocols[] = { MakeStringVar(protocol0), MakeStringVar(protocol1) };
 
-  LockingResourceReleaser res(websocket_iface->Create(pp_instance()));
+  ScopedPPResource res(ScopedPPResource::PassRef(),
+                       websocket_iface->Create(pp_instance()));
 
-  int32_t result = websocket_iface->Connect(res.get(), url_var, protocols, 2,
-                                            MakeCallback());
+  int32_t result =
+      websocket_iface->Connect(res, url_var, protocols, 2, MakeCallback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
   // Should be sent a "Connect" message.
@@ -97,17 +94,18 @@ TEST_F(WebSocketResourceTest, UnsolicitedReplies) {
   const PPB_WebSocket_1_0* websocket_iface =
       thunk::GetPPB_WebSocket_1_0_Thunk();
 
-  LockingResourceReleaser res(websocket_iface->Create(pp_instance()));
+  ScopedPPResource res(ScopedPPResource::PassRef(),
+                       websocket_iface->Create(pp_instance()));
 
   // Check if BufferedAmountReply is handled.
-  ResourceMessageReplyParams reply_params(res.get(), 0);
+  ResourceMessageReplyParams reply_params(res, 0);
   reply_params.set_result(PP_OK);
   ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
       PpapiPluginMsg_ResourceReply(
           reply_params,
           PpapiPluginMsg_WebSocket_BufferedAmountReply(19760227u))));
 
-  uint64_t amount = websocket_iface->GetBufferedAmount(res.get());
+  uint64_t amount = websocket_iface->GetBufferedAmount(res);
   EXPECT_EQ(19760227u, amount);
 
   // Check if StateReply is handled.
@@ -117,7 +115,7 @@ TEST_F(WebSocketResourceTest, UnsolicitedReplies) {
           PpapiPluginMsg_WebSocket_StateReply(
               static_cast<int32_t>(PP_WEBSOCKETREADYSTATE_CLOSING)))));
 
-  PP_WebSocketReadyState state = websocket_iface->GetReadyState(res.get());
+  PP_WebSocketReadyState state = websocket_iface->GetReadyState(res);
   EXPECT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING, state);
 }
 
@@ -128,11 +126,12 @@ TEST_F(WebSocketResourceTest, MessageError) {
   std::string url("ws://ws.google.com");
   PP_Var url_var = MakeStringVar(url);
 
-  LockingResourceReleaser res(websocket_iface->Create(pp_instance()));
+  ScopedPPResource res(ScopedPPResource::PassRef(),
+                       websocket_iface->Create(pp_instance()));
 
   // Establish the connection virtually.
   int32_t result =
-      websocket_iface->Connect(res.get(), url_var, NULL, 0, MakeCallback());
+      websocket_iface->Connect(res, url_var, NULL, 0, MakeCallback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
   ResourceMessageCallParams params;
@@ -151,11 +150,11 @@ TEST_F(WebSocketResourceTest, MessageError) {
   EXPECT_TRUE(g_callback_called);
 
   PP_Var message;
-  result = websocket_iface->ReceiveMessage(res.get(), &message, MakeCallback());
+  result = websocket_iface->ReceiveMessage(res, &message, MakeCallback());
   EXPECT_FALSE(g_callback_called);
 
   // Synthesize a WebSocket_ErrorReply message.
-  ResourceMessageReplyParams error_reply_params(res.get(), 0);
+  ResourceMessageReplyParams error_reply_params(res, 0);
   error_reply_params.set_result(PP_OK);
   ASSERT_TRUE(plugin_dispatcher()->OnMessageReceived(
       PpapiPluginMsg_ResourceReply(error_reply_params,
