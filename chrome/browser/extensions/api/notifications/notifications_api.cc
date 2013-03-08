@@ -139,7 +139,7 @@ void NotificationsApiFunction::CreateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options) {
   message_center::NotificationType type =
-      MapApiTemplateTypeToType(options->template_type);
+      MapApiTemplateTypeToType(options->type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
   string16 title(UTF8ToUTF16(options->title));
   string16 message(UTF8ToUTF16(options->message));
@@ -164,7 +164,7 @@ void NotificationsApiFunction::CreateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options) {
   message_center::NotificationType type =
-      MapApiTemplateTypeToType(options->template_type);
+      MapApiTemplateTypeToType(options->type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
   string16 title(UTF8ToUTF16(options->title));
   string16 message(UTF8ToUTF16(options->message));

@@ -4,12 +4,10 @@
 
 // Custom bindings for the notifications API.
 
-var binding = require('binding').Binding.create('notifications');
-
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var imageUtil = require('imageUtil');
 var lastError = require('lastError');
-var json = require('json');
 
 function url_getter(context, key) {
   var f = function() {
@@ -101,8 +99,8 @@ function genHandle(failure_function) {
   return function(id, input_notification_details, callback) {
     // TODO(dewittj): Remove this hack. This is used as a way to deep
     // copy a complex JSON object.
-    var notification_details = json.parse(
-        json.stringify(input_notification_details));
+    var notification_details = JSON.parse(
+        JSON.stringify(input_notification_details));
     var that = this;
     replaceNotificationOptionURLs(notification_details, function(success) {
       if (success) {
@@ -111,11 +109,8 @@ function genHandle(failure_function) {
             that.definition.parameters);
         return;
       }
-      // TODO(kalman): This is probably wrong, failure_function is created in
-      // this context but it should be created in the caller's context. I just
-      // don't know where that is.
-      lastError.run('Unable to download all specified images.',
-                    failure_function, [callback, id]);
+      lastError.set('Unable to download all specified images.');
+      failure_function(callback, id);
     });
   };
 }
@@ -129,6 +124,4 @@ var notificationsCustomHook = function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest('update', handleCreate);
 };
 
-binding.registerCustomHook(notificationsCustomHook);
-
-exports.binding = binding.generate();
+chromeHidden.registerCustomHook('notifications', notificationsCustomHook);

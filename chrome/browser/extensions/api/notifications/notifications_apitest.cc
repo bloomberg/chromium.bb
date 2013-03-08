@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
         notification_function,
         "[\"\", "  // Empty string: ask API to generate ID
         "{"
-        "\"templateType\": \"simple\","
+        "\"type\": \"simple\","
         "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"Attention!\","
         "\"message\": \"Check out Cirque du Soleil\""
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
         notification_function,
         "[\"" + notification_id + "\", "
         "{"
-        "\"templateType\": \"simple\","
+        "\"type\": \"simple\","
         "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"Attention!\","
         "\"message\": \"Too late! The show ended yesterday\""
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestIdUsage) {
         notification_function,
         "[\"xxxxxxxxxxxx\", "
         "{"
-        "\"templateType\": \"simple\","
+        "\"type\": \"simple\","
         "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"!\","
         "\"message\": \"!\""
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestBaseFormatNotification) {
       notification_create_function,
       "[\"\", "
       "{"
-      "\"templateType\": \"basic\","
+      "\"type\": \"basic\","
       "\"iconUrl\": \"an/image/that/does/not/exist.png\","
       "\"title\": \"Attention!\","
       "\"message\": \"Check out Cirque du Soleil\","
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestMultipleItemNotification) {
       notification_create_function,
       "[\"\", "
       "{"
-      "\"templateType\": \"list\","
+      "\"type\": \"list\","
       "\"iconUrl\": \"an/image/that/does/not/exist.png\","
       "\"title\": \"Multiple Item Notification Title\","
       "\"message\": \"Multiple item notification message.\","
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestEvents) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestCSP) {
-//  ASSERT_TRUE(RunExtensionTest("notifications/api/csp")) << message_;
+  ASSERT_TRUE(RunExtensionTest("notifications/api/csp")) << message_;
 }
 
 #ifdef ENABLE_MESSAGE_CENTER

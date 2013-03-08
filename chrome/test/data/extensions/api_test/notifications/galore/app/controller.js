@@ -32,10 +32,10 @@ Galore.controller = {
     Galore.NOTIFICATIONS.forEach(function (type) {
       type.notifications.forEach(function (options) {
         this.view.addNotificationButton(
-            type.templateType,
+            type.type,
             type.name,
             this.replace_(options.iconUrl, this.BUTTON_IMAGE_SIZE),
-            this.notify_.bind(this, type.templateType, options));
+            this.notify_.bind(this, type.type, options));
       }, this);
     }, this);
   },
@@ -66,7 +66,7 @@ Galore.controller = {
 
   /** @private */
   expand_: function(options, type, priority) {
-    var expanded = {templateType: type, priority: priority};
+    var expanded = {type: type, priority: priority};
     Object.keys(options).forEach(function (key) {
       expanded[key] = this.replace_(options[key], this.NOTIFICATION_ICON_SIZE);
     }, this);

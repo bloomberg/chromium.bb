@@ -6,7 +6,7 @@ const notifications = chrome.notifications;
 var theOnlyTestDone = null;
 
 var notificationData = {
-  templateType: "basic",
+  type: "basic",
   iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
            "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
            "AAAABJRU5ErkJggg==",

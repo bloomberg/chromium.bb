@@ -16,7 +16,7 @@ var testCSP = function() {
   }
 
   var options = {
-    templateType: "basic",
+    type: "basic",
     iconUrl: "http://google.com/clearly-a-security-problem.png",
     title: "Attention!",
     message: "Check out Cirque du Soleil"
@@ -34,7 +34,7 @@ function testDataURL() {
     chrome.test.succeed();
   }
   var options = {
-    templateType: "basic",
+    type: "basic",
     iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
              "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
              "AAAABJRU5ErkJggg==",
@@ -58,7 +58,7 @@ function testCSPUpdateIconURL() {
       return;
     }
     var options2 = {
-      templateType: "basic",
+      type: "basic",
       iconUrl: "http://www.google.com/favicon.ico",
       title: "Attention!",
       message: "Check out Cirque du Soleil"
@@ -66,7 +66,7 @@ function testCSPUpdateIconURL() {
     notifications.update(idString, options2, onUpdateCallback);
   }
   var options = {
-    templateType: "basic",
+    type: "basic",
     iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
              "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
              "AAAABJRU5ErkJggg==",
@@ -90,7 +90,7 @@ function testCSPUpdateImageURL() {
       return;
     }
     var options2 = {
-      templateType: "basic",
+      type: "basic",
       iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
                "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
                "AAAABJRU5ErkJggg==",
@@ -101,7 +101,7 @@ function testCSPUpdateImageURL() {
     notifications.update(idString, options2, onUpdateCallback);
   }
   var options = {
-    templateType: "image",
+    type: "image",
     iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
              "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
              "AAAABJRU5ErkJggg==",
@@ -128,7 +128,7 @@ function testCSPUpdateButtonIconURL() {
       return;
     }
     var options2 = {
-      templateType: "basic",
+      type: "basic",
       iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
                "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
                "AAAABJRU5ErkJggg==",
@@ -142,7 +142,7 @@ function testCSPUpdateButtonIconURL() {
     notifications.update(idString, options2, onUpdateCallback);
   }
   var options = {
-    templateType: "basic",
+    type: "basic",
     iconUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAA" +
              "CNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHw" +
              "AAAABJRU5ErkJggg==",

@@ -13,11 +13,6 @@ var testBasicEvents = function() {
     chrome.test.assertTrue(id.length > 0);
     chrome.test.assertEq(idString, id);
     incidents++;
-
-    // TODO(miket): Something is going on with the bots, or maybe this is a
-    // real problem. onDisplayed is called everywhere but the bots. Disabling
-    // the onDisplayed check for now.
-    chrome.test.succeed();
   }
 
   var onDisplayed = function(id) {
@@ -32,7 +27,7 @@ var testBasicEvents = function() {
   notifications.onDisplayed.addListener(onDisplayed);
 
   var options = {
-    templateType: "basic",
+    type: "basic",
     iconUrl: "icon.png",
     title: "Attention!",
     message: "Check out Cirque du Soleil"

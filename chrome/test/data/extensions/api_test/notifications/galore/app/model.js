@@ -7,7 +7,7 @@ var Galore = Galore || {};
 Galore.NOTIFICATIONS = [
   {
     name: 'Simple Notifications',
-    templateType: 'simple',
+    type: 'simple',
     notifications: [
       {
         iconUrl: '$@/images/man1-$%x$%.jpg',
@@ -33,7 +33,7 @@ Galore.NOTIFICATIONS = [
   },
   {
     name: 'Basic Notifications',
-    templateType: 'basic',
+    type: 'basic',
     notifications: [
       {
         iconUrl: '$@/images/man1-$%x$%.jpg',
@@ -93,7 +93,7 @@ Galore.NOTIFICATIONS = [
   },
   {
     name: 'Image Notifications',
-    templateType: 'image',
+    type: 'image',
     notifications: [
       {
         iconUrl: '$@/images/woman3-$%x$%.jpg',
@@ -129,7 +129,7 @@ Galore.NOTIFICATIONS = [
   },
   {
     name: 'List Notifications',
-    templateType: 'list',
+    type: 'list',
     notifications: [
       {
         iconUrl: '$@/images/inbox-00-$%x$%.png',

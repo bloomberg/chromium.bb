@@ -9,7 +9,7 @@
     // TODO(vadimt): Replace <all_urls> with real URL patterns once we know
     // them.
     "<all_urls>",
-    "experimental",
+    "notifications",
     "alarms",
     "storage",
     "tabs"

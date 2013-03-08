@@ -32,7 +32,7 @@ namespace notifications {
 
   dictionary NotificationOptions {
     // Which type of notification to display.
-    TemplateType templateType;
+    TemplateType type;
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
     DOMString iconUrl;
