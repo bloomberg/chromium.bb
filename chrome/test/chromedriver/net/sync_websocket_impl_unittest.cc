@@ -9,7 +9,9 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/test_http_server.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
@@ -114,6 +116,14 @@ TEST_F(SyncWebSocketImplTest, Reconnect) {
   SyncWebSocketImpl sock(context_getter_);
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
+  // Wait for SyncWebSocket to receive the response from the server.
+  base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
+  while (base::Time::Now() < deadline) {
+    if (sock.IsConnected() && !sock.HasNextMessage())
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+    else
+      break;
+  }
   server_.Stop();
   ASSERT_FALSE(sock.Send("2"));
   ASSERT_FALSE(sock.IsConnected());
