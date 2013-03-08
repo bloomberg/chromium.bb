@@ -63,50 +63,47 @@ TEST_F(VertexAttribManagerTest, Basic) {
   EXPECT_TRUE(manager_->GetVertexAttrib(kNumVertexAttribs) == NULL);
   EXPECT_FALSE(manager_->HaveFixedAttribs());
 
-  const VertexAttribManager::VertexAttribInfoList& infos =
-      manager_->GetEnabledVertexAttribInfos();
-  EXPECT_EQ(0u, infos.size());
+  const VertexAttribManager::VertexAttribList& enabled_attribs =
+      manager_->GetEnabledVertexAttribs();
+  EXPECT_EQ(0u, enabled_attribs.size());
 
   for (uint32 ii = 0; ii < kNumVertexAttribs; ii += kNumVertexAttribs - 1) {
-    VertexAttrib* info =
-        manager_->GetVertexAttrib(ii);
-    ASSERT_TRUE(info != NULL);
-    EXPECT_EQ(ii, info->index());
-    EXPECT_TRUE(info->buffer() == NULL);
-    EXPECT_EQ(0, info->offset());
-    EXPECT_EQ(4, info->size());
-    EXPECT_EQ(static_cast<GLenum>(GL_FLOAT), info->type());
-    EXPECT_EQ(GL_FALSE, info->normalized());
-    EXPECT_EQ(0, info->gl_stride());
-    EXPECT_FALSE(info->enabled());
+    VertexAttrib* attrib = manager_->GetVertexAttrib(ii);
+    ASSERT_TRUE(attrib != NULL);
+    EXPECT_EQ(ii, attrib->index());
+    EXPECT_TRUE(attrib->buffer() == NULL);
+    EXPECT_EQ(0, attrib->offset());
+    EXPECT_EQ(4, attrib->size());
+    EXPECT_EQ(static_cast<GLenum>(GL_FLOAT), attrib->type());
+    EXPECT_EQ(GL_FALSE, attrib->normalized());
+    EXPECT_EQ(0, attrib->gl_stride());
+    EXPECT_FALSE(attrib->enabled());
     manager_->Enable(ii, true);
-    EXPECT_TRUE(info->enabled());
+    EXPECT_TRUE(attrib->enabled());
   }
 }
 
 TEST_F(VertexAttribManagerTest, Enable) {
-  const VertexAttribManager::VertexAttribInfoList& infos =
-      manager_->GetEnabledVertexAttribInfos();
+  const VertexAttribManager::VertexAttribList& enabled_attribs =
+      manager_->GetEnabledVertexAttribs();
 
-  VertexAttrib* info1 =
-      manager_->GetVertexAttrib(1);
-  VertexAttrib* info2 =
-      manager_->GetVertexAttrib(3);
+  VertexAttrib* attrib1 = manager_->GetVertexAttrib(1);
+  VertexAttrib* attrib2 = manager_->GetVertexAttrib(3);
 
   manager_->Enable(1, true);
-  ASSERT_EQ(1u, infos.size());
-  EXPECT_TRUE(info1->enabled());
+  ASSERT_EQ(1u, enabled_attribs.size());
+  EXPECT_TRUE(attrib1->enabled());
   manager_->Enable(3, true);
-  ASSERT_EQ(2u, infos.size());
-  EXPECT_TRUE(info2->enabled());
+  ASSERT_EQ(2u, enabled_attribs.size());
+  EXPECT_TRUE(attrib2->enabled());
 
   manager_->Enable(1, false);
-  ASSERT_EQ(1u, infos.size());
-  EXPECT_FALSE(info1->enabled());
+  ASSERT_EQ(1u, enabled_attribs.size());
+  EXPECT_FALSE(attrib1->enabled());
 
   manager_->Enable(3, false);
-  ASSERT_EQ(0u, infos.size());
-  EXPECT_FALSE(info2->enabled());
+  ASSERT_EQ(0u, enabled_attribs.size());
+  EXPECT_FALSE(attrib2->enabled());
 }
 
 TEST_F(VertexAttribManagerTest, SetAttribInfo) {
@@ -115,17 +112,16 @@ TEST_F(VertexAttribManagerTest, SetAttribInfo) {
   Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
 
-  VertexAttrib* info =
-      manager_->GetVertexAttrib(1);
+  VertexAttrib* attrib = manager_->GetVertexAttrib(1);
 
   manager_->SetAttribInfo(1, buffer, 3, GL_SHORT, GL_TRUE, 32, 32, 4);
 
-  EXPECT_EQ(buffer, info->buffer());
-  EXPECT_EQ(4, info->offset());
-  EXPECT_EQ(3, info->size());
-  EXPECT_EQ(static_cast<GLenum>(GL_SHORT), info->type());
-  EXPECT_EQ(GL_TRUE, info->normalized());
-  EXPECT_EQ(32, info->gl_stride());
+  EXPECT_EQ(buffer, attrib->buffer());
+  EXPECT_EQ(4, attrib->offset());
+  EXPECT_EQ(3, attrib->size());
+  EXPECT_EQ(static_cast<GLenum>(GL_SHORT), attrib->type());
+  EXPECT_EQ(GL_TRUE, attrib->normalized());
+  EXPECT_EQ(32, attrib->gl_stride());
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
@@ -152,41 +148,40 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   Buffer* buffer = buffer_manager.GetBuffer(1);
   ASSERT_TRUE(buffer != NULL);
 
-  VertexAttrib* info =
-      manager_->GetVertexAttrib(1);
+  VertexAttrib* attrib = manager_->GetVertexAttrib(1);
 
-  EXPECT_TRUE(info->CanAccess(0));
+  EXPECT_TRUE(attrib->CanAccess(0));
   manager_->Enable(1, true);
-  EXPECT_FALSE(info->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(0));
 
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0);
-  EXPECT_FALSE(info->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(0));
 
   EXPECT_TRUE(buffer_manager.SetTarget(buffer, GL_ARRAY_BUFFER));
   TestHelper::DoBufferData(
       gl_.get(), &decoder, &buffer_manager, buffer, 15, GL_STATIC_DRAW, NULL,
       GL_NO_ERROR);
 
-  EXPECT_FALSE(info->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(0));
   TestHelper::DoBufferData(
       gl_.get(), &decoder, &buffer_manager, buffer, 16, GL_STATIC_DRAW, NULL,
       GL_NO_ERROR);
-  EXPECT_TRUE(info->CanAccess(0));
-  EXPECT_FALSE(info->CanAccess(1));
+  EXPECT_TRUE(attrib->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(1));
 
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 1);
-  EXPECT_FALSE(info->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(0));
 
   TestHelper::DoBufferData(
       gl_.get(), &decoder, &buffer_manager, buffer, 32, GL_STATIC_DRAW, NULL,
       GL_NO_ERROR);
-  EXPECT_TRUE(info->CanAccess(0));
-  EXPECT_FALSE(info->CanAccess(1));
+  EXPECT_TRUE(attrib->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(1));
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0);
-  EXPECT_TRUE(info->CanAccess(1));
+  EXPECT_TRUE(attrib->CanAccess(1));
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 20, 0);
-  EXPECT_TRUE(info->CanAccess(0));
-  EXPECT_FALSE(info->CanAccess(1));
+  EXPECT_TRUE(attrib->CanAccess(0));
+  EXPECT_FALSE(attrib->CanAccess(1));
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.
@@ -203,27 +198,25 @@ TEST_F(VertexAttribManagerTest, Unbind) {
   ASSERT_TRUE(buffer1 != NULL);
   ASSERT_TRUE(buffer2 != NULL);
 
-  VertexAttrib* info1 =
-      manager_->GetVertexAttrib(1);
-  VertexAttrib* info3 =
-      manager_->GetVertexAttrib(3);
+  VertexAttrib* attrib1 = manager_->GetVertexAttrib(1);
+  VertexAttrib* attrib3 = manager_->GetVertexAttrib(3);
 
   // Attach to 2 buffers.
   manager_->SetAttribInfo(1, buffer1, 3, GL_SHORT, GL_TRUE, 32, 32, 4);
   manager_->SetAttribInfo(3, buffer1, 3, GL_SHORT, GL_TRUE, 32, 32, 4);
   // Check they were attached.
-  EXPECT_EQ(buffer1, info1->buffer());
-  EXPECT_EQ(buffer1, info3->buffer());
+  EXPECT_EQ(buffer1, attrib1->buffer());
+  EXPECT_EQ(buffer1, attrib3->buffer());
   // Unbind unattached buffer.
   manager_->Unbind(buffer2);
   // Should be no-op.
-  EXPECT_EQ(buffer1, info1->buffer());
-  EXPECT_EQ(buffer1, info3->buffer());
+  EXPECT_EQ(buffer1, attrib1->buffer());
+  EXPECT_EQ(buffer1, attrib3->buffer());
   // Unbind buffer.
   manager_->Unbind(buffer1);
   // Check they were detached
-  EXPECT_TRUE(NULL == info1->buffer());
-  EXPECT_TRUE(NULL == info3->buffer());
+  EXPECT_TRUE(NULL == attrib1->buffer());
+  EXPECT_TRUE(NULL == attrib3->buffer());
 
   // The VertexAttribManager must be destroyed before the BufferManager
   // so it releases its buffers.

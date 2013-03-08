@@ -1113,6 +1113,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Helper for glGetBooleanv, glGetFloatv and glGetIntegerv
   bool GetHelper(GLenum pname, GLint* params, GLsizei* num_written);
 
+  // Helper for glGetVertexAttrib
+  void GetVertexAttribHelper(
+    const VertexAttrib* attrib, GLenum pname, GLint* param);
+
   // Wrapper for glCreateProgram
   bool CreateProgramHelper(GLuint client_id);
 
@@ -5781,12 +5785,12 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
     return true;
 
-  const VertexAttrib* info =
+  const VertexAttrib* attrib =
       state_.vertex_attrib_manager->GetVertexAttrib(0);
   // If it's enabled or it's not used then we don't need to do anything.
   bool attrib_0_used =
       state_.current_program->GetAttribInfoByLocation(0) != NULL;
-  if (info->enabled() && attrib_0_used) {
+  if (attrib->enabled() && attrib_0_used) {
     return true;
   }
 
@@ -5836,24 +5840,24 @@ bool GLES2DecoderImpl::SimulateAttrib0(
 
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
-  if (info->divisor())
+  if (attrib->divisor())
     glVertexAttribDivisorANGLE(0, 0);
 
   *simulated = true;
   return true;
 }
 
-void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib) {
-  const VertexAttrib* info =
-      state_.vertex_attrib_manager->GetVertexAttrib(attrib);
-  const void* ptr = reinterpret_cast<const void*>(info->offset());
-  Buffer* buffer = info->buffer();
+void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib_index) {
+  const VertexAttrib* attrib =
+      state_.vertex_attrib_manager->GetVertexAttrib(attrib_index);
+  const void* ptr = reinterpret_cast<const void*>(attrib->offset());
+  Buffer* buffer = attrib->buffer();
   glBindBuffer(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
   glVertexAttribPointer(
-      attrib, info->size(), info->type(), info->normalized(), info->gl_stride(),
-      ptr);
-  if (info->divisor())
-    glVertexAttribDivisorANGLE(attrib, info->divisor());
+      attrib_index, attrib->size(), attrib->type(), attrib->normalized(),
+      attrib->gl_stride(), ptr);
+  if (attrib->divisor())
+    glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
   glBindBuffer(
       GL_ARRAY_BUFFER,
       state_.bound_array_buffer ? state_.bound_array_buffer->service_id() : 0);
@@ -5861,12 +5865,12 @@ void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib) {
   // Never touch vertex attribute 0's state (in particular, never
   // disable it) when running on desktop GL because it will never be
   // re-enabled.
-  if (attrib != 0 ||
+  if (attrib_index != 0 ||
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
-    if (info->enabled()) {
-      glEnableVertexAttribArray(attrib);
+    if (attrib->enabled()) {
+      glEnableVertexAttribArray(attrib_index);
     } else {
-      glDisableVertexAttribArray(attrib);
+      glDisableVertexAttribArray(attrib_index);
     }
   }
 }
@@ -5893,25 +5897,25 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   // tests so we just add to the buffer attrib used.
 
   GLuint elements_needed = 0;
-  const VertexAttribManager::VertexAttribInfoList& infos =
-      state_.vertex_attrib_manager->GetEnabledVertexAttribInfos();
-  for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
-       infos.begin(); it != infos.end(); ++it) {
-    const VertexAttrib* info = *it;
+  const VertexAttribManager::VertexAttribList& enabled_attribs =
+      state_.vertex_attrib_manager->GetEnabledVertexAttribs();
+  for (VertexAttribManager::VertexAttribList::const_iterator it =
+       enabled_attribs.begin(); it != enabled_attribs.end(); ++it) {
+    const VertexAttrib* attrib = *it;
     const Program::VertexAttrib* attrib_info =
-        state_.current_program->GetAttribInfoByLocation(info->index());
-    GLuint max_accessed = info->MaxVertexAccessed(primcount,
-                                                  max_vertex_accessed);
+        state_.current_program->GetAttribInfoByLocation(attrib->index());
+    GLuint max_accessed = attrib->MaxVertexAccessed(primcount,
+                                                    max_vertex_accessed);
     GLuint num_vertices = max_accessed + 1;
     if (num_vertices == 0) {
       SetGLError(GL_OUT_OF_MEMORY, function_name, "Simulating attrib 0");
       return false;
     }
     if (attrib_info &&
-        info->CanAccess(max_accessed) &&
-        info->type() == GL_FIXED) {
+        attrib->CanAccess(max_accessed) &&
+        attrib->type() == GL_FIXED) {
       uint32 elements_used = 0;
-      if (!SafeMultiplyUint32(num_vertices, info->size(), &elements_used) ||
+      if (!SafeMultiplyUint32(num_vertices, attrib->size(), &elements_used) ||
           !SafeAddUint32(elements_needed, elements_used, &elements_needed)) {
         SetGLError(
             GL_OUT_OF_MEMORY, function_name, "simulating GL_FIXED attribs");
@@ -5943,12 +5947,12 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
 
   // Copy the elements and convert to float
   GLintptr offset = 0;
-  for (VertexAttribManager::VertexAttribInfoList::const_iterator it =
-           infos.begin(); it != infos.end(); ++it) {
-    const VertexAttrib* info = *it;
+  for (VertexAttribManager::VertexAttribList::const_iterator it =
+       enabled_attribs.begin(); it != enabled_attribs.end(); ++it) {
+    const VertexAttrib* attrib = *it;
     const Program::VertexAttrib* attrib_info =
-        state_.current_program->GetAttribInfoByLocation(info->index());
-    GLuint max_accessed = info->MaxVertexAccessed(primcount,
+        state_.current_program->GetAttribInfoByLocation(attrib->index());
+    GLuint max_accessed = attrib->MaxVertexAccessed(primcount,
                                                   max_vertex_accessed);
     GLuint num_vertices = max_accessed + 1;
     if (num_vertices == 0) {
@@ -5956,13 +5960,13 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
       return false;
     }
     if (attrib_info &&
-        info->CanAccess(max_accessed) &&
-        info->type() == GL_FIXED) {
-      int num_elements = info->size() * kSizeOfFloat;
+        attrib->CanAccess(max_accessed) &&
+        attrib->type() == GL_FIXED) {
+      int num_elements = attrib->size() * kSizeOfFloat;
       int size = num_elements * num_vertices;
       scoped_array<float> data(new float[size]);
       const int32* src = reinterpret_cast<const int32 *>(
-          info->buffer()->GetRange(info->offset(), size));
+          attrib->buffer()->GetRange(attrib->offset(), size));
       const int32* end = src + num_elements;
       float* dst = data.get();
       while (src != end) {
@@ -5970,7 +5974,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
       }
       glBufferSubData(GL_ARRAY_BUFFER, offset, size, data.get());
       glVertexAttribPointer(
-          info->index(), info->size(), GL_FLOAT, false, 0,
+          attrib->index(), attrib->size(), GL_FLOAT, false, 0,
           reinterpret_cast<GLvoid*>(offset));
       offset += size;
     }
@@ -6482,67 +6486,11 @@ void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
   program->Validate();
 }
 
-void GLES2DecoderImpl::DoGetVertexAttribfv(
-    GLuint index, GLenum pname, GLfloat* params) {
-  VertexAttrib* info =
-      state_.vertex_attrib_manager->GetVertexAttrib(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetVertexAttribfv", "index out of range");
-    return;
-  }
+void GLES2DecoderImpl::GetVertexAttribHelper(
+    const VertexAttrib* attrib, GLenum pname, GLint* params) {
   switch (pname) {
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: {
-        Buffer* buffer = info->buffer();
-        if (buffer && !buffer->IsDeleted()) {
-          GLuint client_id;
-          buffer_manager()->GetClientId(buffer->service_id(), &client_id);
-          *params = static_cast<GLfloat>(client_id);
-        }
-        break;
-      }
-    case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-      *params = static_cast<GLfloat>(info->enabled());
-      break;
-    case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-      *params = static_cast<GLfloat>(info->size());
-      break;
-    case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-      *params = static_cast<GLfloat>(info->gl_stride());
-      break;
-    case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-      *params = static_cast<GLfloat>(info->type());
-      break;
-    case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-      *params = static_cast<GLfloat>(info->normalized());
-      break;
-    case GL_CURRENT_VERTEX_ATTRIB: {
-      const Vec4& value = state_.attrib_values[index];
-      params[0] = value.v[0];
-      params[1] = value.v[1];
-      params[2] = value.v[2];
-      params[3] = value.v[3];
-      break;
-    }
-    case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
-      *params = static_cast<GLfloat>(info->divisor());
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void GLES2DecoderImpl::DoGetVertexAttribiv(
-    GLuint index, GLenum pname, GLint* params) {
-  VertexAttrib* info =
-      state_.vertex_attrib_manager->GetVertexAttrib(index);
-  if (!info) {
-    SetGLError(GL_INVALID_VALUE, "glGetVertexAttribiv", "index out of range");
-    return;
-  }
-  switch (pname) {
-    case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: {
-        Buffer* buffer = info->buffer();
+        Buffer* buffer = attrib->buffer();
         if (buffer && !buffer->IsDeleted()) {
           GLuint client_id;
           buffer_manager()->GetClientId(buffer->service_id(), &client_id);
@@ -6551,23 +6499,62 @@ void GLES2DecoderImpl::DoGetVertexAttribiv(
         break;
       }
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-      *params = info->enabled();
+      *params = attrib->enabled();
       break;
     case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-      *params = info->size();
+      *params = attrib->size();
       break;
     case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-      *params = info->gl_stride();
+      *params = attrib->gl_stride();
       break;
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-      *params = info->type();
+      *params = attrib->type();
       break;
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-      *params = static_cast<GLint>(info->normalized());
+      *params = attrib->normalized();
       break;
     case GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE:
-      *params = info->divisor();
+      *params = attrib->divisor();
       break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void GLES2DecoderImpl::DoGetVertexAttribfv(
+    GLuint index, GLenum pname, GLfloat* params) {
+  VertexAttrib* attrib = state_.vertex_attrib_manager->GetVertexAttrib(index);
+  if (!attrib) {
+    SetGLError(GL_INVALID_VALUE, "glGetVertexAttribfv", "index out of range");
+    return;
+  }
+  switch (pname) {
+    case GL_CURRENT_VERTEX_ATTRIB: {
+      const Vec4& value = state_.attrib_values[index];
+      params[0] = value.v[0];
+      params[1] = value.v[1];
+      params[2] = value.v[2];
+      params[3] = value.v[3];
+      break;
+    }
+    default: {
+      GLint value = 0;
+      GetVertexAttribHelper(attrib, pname, &value);
+      *params = static_cast<GLfloat>(value);
+      break;
+    }
+  }
+}
+
+void GLES2DecoderImpl::DoGetVertexAttribiv(
+    GLuint index, GLenum pname, GLint* params) {
+  VertexAttrib* attrib = state_.vertex_attrib_manager->GetVertexAttrib(index);
+  if (!attrib) {
+    SetGLError(GL_INVALID_VALUE, "glGetVertexAttribiv", "index out of range");
+    return;
+  }
+  switch (pname) {
     case GL_CURRENT_VERTEX_ATTRIB: {
       const Vec4& value = state_.attrib_values[index];
       params[0] = static_cast<GLint>(value.v[0]);
@@ -6577,7 +6564,7 @@ void GLES2DecoderImpl::DoGetVertexAttribiv(
       break;
     }
     default:
-      NOTREACHED();
+      GetVertexAttribHelper(attrib, pname, params);
       break;
   }
 }

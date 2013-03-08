@@ -27,7 +27,7 @@ class VertexArrayManager;
 // glDrawXXX time.
 class GPU_EXPORT VertexAttrib {
  public:
-  typedef std::list<VertexAttrib*> VertexAttribInfoList;
+  typedef std::list<VertexAttrib*> VertexAttribList;
 
   VertexAttrib();
   ~VertexAttrib();
@@ -97,7 +97,7 @@ class GPU_EXPORT VertexAttrib {
     index_ = index;
   }
 
-  void SetList(VertexAttribInfoList* new_list) {
+  void SetList(VertexAttribList* new_list) {
     DCHECK(new_list);
 
     if (list_) {
@@ -157,10 +157,10 @@ class GPU_EXPORT VertexAttrib {
   scoped_refptr<Buffer> buffer_;
 
   // List this info is on.
-  VertexAttribInfoList* list_;
+  VertexAttribList* list_;
 
   // Iterator for list this info is on. Enabled/Disabled
-  VertexAttribInfoList::iterator it_;
+  VertexAttribList::iterator it_;
 };
 
 // Manages vertex attributes.
@@ -169,7 +169,7 @@ class GPU_EXPORT VertexAttrib {
 class GPU_EXPORT VertexAttribManager :
     public base::RefCounted<VertexAttribManager> {
  public:
-  typedef std::list<VertexAttrib*> VertexAttribInfoList;
+  typedef std::list<VertexAttrib*> VertexAttribList;
 
   VertexAttribManager();
 
@@ -181,13 +181,13 @@ class GPU_EXPORT VertexAttribManager :
     return num_fixed_attribs_ != 0;
   }
 
-  const VertexAttribInfoList& GetEnabledVertexAttribInfos() const {
+  const VertexAttribList& GetEnabledVertexAttribs() const {
     return enabled_vertex_attribs_;
   }
 
   VertexAttrib* GetVertexAttrib(GLuint index) {
-    if (index < vertex_attrib_infos_.size()) {
-      return &vertex_attrib_infos_[index];
+    if (index < vertex_attribs_.size()) {
+      return &vertex_attribs_[index];
     }
     return NULL;
   }
@@ -201,23 +201,23 @@ class GPU_EXPORT VertexAttribManager :
       GLsizei gl_stride,
       GLsizei real_stride,
       GLsizei offset) {
-    VertexAttrib* info = GetVertexAttrib(index);
-    if (info) {
-      if (info->type() == GL_FIXED) {
+    VertexAttrib* attrib = GetVertexAttrib(index);
+    if (attrib) {
+      if (attrib->type() == GL_FIXED) {
         --num_fixed_attribs_;
       }
       if (type == GL_FIXED) {
         ++num_fixed_attribs_;
       }
-      info->SetInfo(
+      attrib->SetInfo(
           buffer, size, type, normalized, gl_stride, real_stride, offset);
     }
   }
 
   void SetDivisor(GLuint index, GLuint divisor) {
-    VertexAttrib* info = GetVertexAttrib(index);
-    if (info) {
-      info->SetDivisor(divisor);
+    VertexAttrib* attrib = GetVertexAttrib(index);
+    if (attrib) {
+      attrib->SetDivisor(divisor);
     }
   }
 
@@ -242,7 +242,7 @@ class GPU_EXPORT VertexAttribManager :
   }
 
   size_t num_attribs() const {
-    return vertex_attrib_infos_.size();
+    return vertex_attribs_.size();
   }
 
   bool ValidateBindings(
@@ -273,15 +273,15 @@ class GPU_EXPORT VertexAttribManager :
 
   // Info for each vertex attribute saved so we can check at glDrawXXX time
   // if it is safe to draw.
-  std::vector<VertexAttrib> vertex_attrib_infos_;
+  std::vector<VertexAttrib> vertex_attribs_;
 
   // The currently bound element array buffer. If this is 0 it is illegal
   // to call glDrawElements.
   scoped_refptr<Buffer> element_array_buffer_;
 
   // Lists for which vertex attribs are enabled, disabled.
-  VertexAttribInfoList enabled_vertex_attribs_;
-  VertexAttribInfoList disabled_vertex_attribs_;
+  VertexAttribList enabled_vertex_attribs_;
+  VertexAttribList disabled_vertex_attribs_;
 
   // The VertexArrayManager that owns this VertexAttribManager
   VertexArrayManager* manager_;

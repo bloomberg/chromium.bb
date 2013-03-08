@@ -120,13 +120,13 @@ VertexAttribManager::~VertexAttribManager() {
 
 void VertexAttribManager::Initialize(
     uint32 max_vertex_attribs, bool init_attribs) {
-  vertex_attrib_infos_.resize(max_vertex_attribs);
+  vertex_attribs_.resize(max_vertex_attribs);
   bool disable_workarounds = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuDriverBugWorkarounds);
 
-  for (uint32 vv = 0; vv < vertex_attrib_infos_.size(); ++vv) {
-    vertex_attrib_infos_[vv].set_index(vv);
-    vertex_attrib_infos_[vv].SetList(&disabled_vertex_attribs_);
+  for (uint32 vv = 0; vv < vertex_attribs_.size(); ++vv) {
+    vertex_attribs_[vv].set_index(vv);
+    vertex_attribs_[vv].SetList(&disabled_vertex_attribs_);
 
     if (!disable_workarounds && init_attribs) {
       glVertexAttrib4f(vv, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -139,10 +139,10 @@ void VertexAttribManager::SetElementArrayBuffer(Buffer* buffer) {
 }
 
 bool VertexAttribManager::Enable(GLuint index, bool enable) {
-  if (index >= vertex_attrib_infos_.size()) {
+  if (index >= vertex_attribs_.size()) {
     return false;
   }
-  VertexAttrib& info = vertex_attrib_infos_[index];
+  VertexAttrib& info = vertex_attribs_[index];
   if (info.enabled() != enable) {
     info.set_enabled(enable);
     info.SetList(enable ? &enabled_vertex_attribs_ : &disabled_vertex_attribs_);
@@ -154,8 +154,8 @@ void VertexAttribManager::Unbind(Buffer* buffer) {
   if (element_array_buffer_ == buffer) {
     element_array_buffer_ = NULL;
   }
-  for (uint32 vv = 0; vv < vertex_attrib_infos_.size(); ++vv) {
-    vertex_attrib_infos_[vv].Unbind(buffer);
+  for (uint32 vv = 0; vv < vertex_attribs_.size(); ++vv) {
+    vertex_attribs_[vv].Unbind(buffer);
   }
 }
 
@@ -176,7 +176,7 @@ bool VertexAttribManager::ValidateBindings(
   // program then check that they have enough elements to handle the draw call.
   // If they are not used by the current program check that they have a buffer
   // assigned.
-  for (VertexAttribInfoList::iterator it = enabled_vertex_attribs_.begin();
+  for (VertexAttribList::iterator it = enabled_vertex_attribs_.begin();
        it != enabled_vertex_attribs_.end(); ++it) {
     VertexAttrib* attrib = *it;
     const Program::VertexAttrib* attrib_info =
