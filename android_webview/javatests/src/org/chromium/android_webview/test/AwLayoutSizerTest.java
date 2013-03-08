@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+package org.chromium.android_webview.test;
+
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.test.InstrumentationTestCase;
@@ -29,10 +31,10 @@ public class AwLayoutSizerTest extends InstrumentationTestCase {
         }
     }
 
-    private final int firstContentWidth = 101;
-    private final int firstContentHeight = 389;
-    private final int secondContentWidth = 103;
-    private final int secondContentHeight = 397;
+    private static final int firstContentWidth = 101;
+    private static final int firstContentHeight = 389;
+    private static final int secondContentWidth = 103;
+    private static final int secondContentHeight = 397;
 
     public void testCanQueryContentSize() {
         LayoutSizerDelegate delegate = new LayoutSizerDelegate();
