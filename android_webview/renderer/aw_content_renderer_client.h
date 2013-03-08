@@ -18,7 +18,10 @@ namespace android_webview {
 
 class AwContentRendererClient : public content::ContentRendererClient {
  public:
-  explicit AwContentRendererClient(MessageLoop* compositor_message_loop);
+  typedef MessageLoop* CompositorMessageLoopGetter();
+
+  explicit AwContentRendererClient(
+      CompositorMessageLoopGetter* compositor_message_loop_getter);
   virtual ~AwContentRendererClient();
 
   // ContentRendererClient implementation.
@@ -41,7 +44,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
   scoped_ptr<components::VisitedLinkSlave> visited_link_slave_;
-  MessageLoop* compositor_message_loop_;
+  CompositorMessageLoopGetter* compositor_message_loop_getter_;
 };
 
 }  // namespace android_webview

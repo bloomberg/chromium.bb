@@ -22,8 +22,8 @@
 namespace android_webview {
 
 AwContentRendererClient::AwContentRendererClient(
-    MessageLoop* compositor_message_loop)
-    : compositor_message_loop_(compositor_message_loop) {
+    CompositorMessageLoopGetter* compositor_message_loop_getter)
+    : compositor_message_loop_getter_(compositor_message_loop_getter) {
 }
 
 AwContentRendererClient::~AwContentRendererClient() {
@@ -97,7 +97,7 @@ void AwContentRendererClient::PrefetchHostName(const char* hostname,
 }
 
 MessageLoop* AwContentRendererClient::OverrideCompositorMessageLoop() const {
-  return compositor_message_loop_;
+  return (*compositor_message_loop_getter_)();
 }
 
 }  // namespace android_webview

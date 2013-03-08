@@ -75,19 +75,24 @@ content::ContentBrowserClient*
   return content_browser_client_.get();
 }
 
+namespace {
+MessageLoop* GetRendererCompositorThreadOverrideLoop() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(
+      switches::kMergeUIAndRendererCompositorThreads))
+    return NULL;
+
+  MessageLoop* rv = content::BrowserThread::UnsafeGetMessageLoopForThread(
+      content::BrowserThread::UI);
+  DCHECK(rv);
+  return rv;
+}
+}
+
 content::ContentRendererClient*
     AwMainDelegate::CreateContentRendererClient() {
-  MessageLoop* renderer_compositor_loop = NULL;
-
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kMergeUIAndRendererCompositorThreads)) {
-    renderer_compositor_loop =
-        content::BrowserThread::UnsafeGetMessageLoopForThread(
-            content::BrowserThread::UI);
-  }
-
   content_renderer_client_.reset(
-      new AwContentRendererClient(renderer_compositor_loop));
+      new AwContentRendererClient(&GetRendererCompositorThreadOverrideLoop));
   return content_renderer_client_.get();
 }
 
