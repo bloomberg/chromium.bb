@@ -138,7 +138,6 @@ class AwContents : public FindHelper::Listener,
                                  jstring origin);
 
   // Find-in-page API and related methods.
-  jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
   void FindNext(JNIEnv* env, jobject obj, jboolean forward);
   void ClearMatches(JNIEnv* env, jobject obj);

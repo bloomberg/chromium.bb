@@ -1326,21 +1326,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_ActivateNearestFindResult,
 IPC_MESSAGE_ROUTED1(ViewMsg_FindMatchRects,
                     int /* current_version */)
 
-// Sent when the user wants to search for all occurrences of a word or find
-// the next result in a synchronous way. This method forces the UI thread in
-// the browser to wait for the renderer to reply, therefore blocking the UI.
-//
-// This functionality is required for compatibility with the legacy Android
-// WebView API. As this goes strongly against the Chromium design guidelines,
-// don't use this as inspiration.
-//
-IPC_SYNC_MESSAGE_ROUTED3_2(ViewMsg_SynchronousFind,
-                           int /* request_id */,
-                           string16 /* search_string */,
-                           WebKit::WebFindOptions /* options */,
-                           int /* match_count */,
-                           int /* active_ordinal */)
-
 // External popup menus.
 IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
                     bool /* user canceled the popup */,

@@ -31,9 +31,6 @@ class FindHelper : public content::WebContentsObserver {
   // Does not own the listener and must set to NULL when invalid.
   void SetListener(Listener* listener);
 
-  // Synchronous API.
-  int FindAllSync(const string16& search_string);
-
   // Asynchronous API.
   void FindAllAsync(const string16& search_string);
   void HandleFindReply(int request_id,

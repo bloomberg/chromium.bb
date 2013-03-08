@@ -1065,10 +1065,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnFindMatchRects(int current_version);
   void OnSelectPopupMenuItems(bool canceled,
                               const std::vector<int>& selected_indices);
-  void OnSynchronousFind(int request_id,
-                         const string16& search_string,
-                         const WebKit::WebFindOptions& options,
-                         IPC::Message* reply_msg);
   void OnUndoScrollFocusedEditableNodeIntoRect();
   void OnEnableHidingTopControls(bool enable);
 #elif defined(OS_MACOSX)
@@ -1140,11 +1136,6 @@ class CONTENT_EXPORT RenderViewImpl
   // doesn't have a frame at the specified size, the first is returned.
   bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
-  // Starts a new find-in-page search or looks for the next match.
-  void Find(int request_id,
-            const string16& search_text,
-            const WebKit::WebFindOptions& options);
-
   GURL GetAlternateErrorPageURL(const GURL& failed_url,
                                 ErrorPageType error_type);
 
@@ -1204,9 +1195,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
-
-  // Stops the current find-in-page search.
-  void StopFinding(StopFindAction action);
 
   // Dispatches the current state of selection on the webpage to the browser if
   // it has changed.
@@ -1499,14 +1487,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Resource manager for all the android media player objects if they are
   // created in the renderer process.
   scoped_ptr<webkit_media::MediaPlayerBridgeManagerImpl> media_bridge_manager_;
-
-  // Holds the message used to return find results to the browser during
-  // synchronous find-in-page requests. Only non-null during these requests.
-  scoped_ptr<IPC::Message> synchronous_find_reply_message_;
-
-  // The active find-in-page match ordinal during synchronous requests.
-  // Needed to be remembered across WebKit callbacks.
-  int synchronous_find_active_match_ordinal_;
 
   // A date/time picker object for date and time related input elements.
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;

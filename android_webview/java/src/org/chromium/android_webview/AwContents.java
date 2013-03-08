@@ -381,9 +381,12 @@ public class AwContents {
         nativeEnableOnNewPicture(mNativeAwContents, enabled, invalidationOnly);
     }
 
+    // This is no longer synchronous and just calls the Async version and return 0.
+    // TODO(boliu): Remove this method.
+    @Deprecated
     public int findAllSync(String searchString) {
-        if (mNativeAwContents == 0) return 0;
-        return nativeFindAllSync(mNativeAwContents, searchString);
+        findAllAsync(searchString);
+        return 0;
     }
 
     public void findAllAsync(String searchString) {
@@ -1055,7 +1058,6 @@ public class AwContents {
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
 
     private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);
-    private native int nativeFindAllSync(int nativeAwContents, String searchString);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);

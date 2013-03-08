@@ -649,7 +649,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       update_frame_info_scheduled_(false),
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
-      synchronous_find_active_match_ordinal_(-1),
       enumeration_completion_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           load_progress_tracker_(new LoadProgressTracker(this))),
@@ -1105,7 +1104,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnActivateNearestFindResult)
     IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects, OnFindMatchRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewMsg_SynchronousFind, OnSynchronousFind)
     IPC_MESSAGE_HANDLER(ViewMsg_UndoScrollFocusedEditableNodeIntoView,
                         OnUndoScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableHidingTopControls,
@@ -4243,19 +4241,6 @@ void RenderViewImpl::SendFindReply(int request_id,
                                    int ordinal,
                                    const WebRect& selection_rect,
                                    bool final_status_update) {
-#if defined(OS_ANDROID)
-  if (synchronous_find_reply_message_.get()) {
-    if (final_status_update) {
-      ViewMsg_SynchronousFind::WriteReplyParams(
-          synchronous_find_reply_message_.get(),
-          match_count,
-          match_count ? synchronous_find_active_match_ordinal_ : 0);
-      Send(synchronous_find_reply_message_.release());
-    }
-    return;
-  }
-#endif
-
   Send(new ViewHostMsg_Find_Reply(routing_id_,
                                   request_id,
                                   match_count,
@@ -4302,15 +4287,6 @@ void RenderViewImpl::reportFindInPageMatchCount(int request_id,
 void RenderViewImpl::reportFindInPageSelection(int request_id,
                                                int active_match_ordinal,
                                                const WebRect& selection_rect) {
-#if defined(OS_ANDROID)
-  // If this was a SynchronousFind request, we need to remember the ordinal
-  // value here for replying when reportFindInPageMatchCount is called.
-  if (synchronous_find_reply_message_.get()) {
-    synchronous_find_active_match_ordinal_ = active_match_ordinal;
-    return;
-  }
-#endif
-
   SendFindReply(request_id,
                 -1,
                 active_match_ordinal,
@@ -4886,19 +4862,6 @@ WebKit::WebPlugin* RenderViewImpl::GetWebPluginFromPluginDocument() {
 void RenderViewImpl::OnFind(int request_id,
                             const string16& search_text,
                             const WebFindOptions& options) {
-#if defined(OS_ANDROID)
-  // Make sure any asynchronous messages do not disrupt an ongoing synchronous
-  // find request as it might lead to deadlocks. Also, these should be safe to
-  // ignore since they would belong to a previous find request.
-  if (synchronous_find_reply_message_.get())
-    return;
-#endif
-  Find(request_id, search_text, options);
-}
-
-void RenderViewImpl::Find(int request_id,
-                          const string16& search_text,
-                          const WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
 
   // Check if the plugin still exists in the document.
@@ -5015,18 +4978,6 @@ void RenderViewImpl::Find(int request_id,
 }
 
 void RenderViewImpl::OnStopFinding(StopFindAction action) {
-#if defined(OS_ANDROID)
-  // Make sure any asynchronous messages do not disrupt an ongoing synchronous
-  // find request as it might lead to deadlocks. Also, these should be safe to
-  // ignore since they would belong to a previous find request.
-  if (synchronous_find_reply_message_.get())
-    return;
-#endif
-
-  StopFinding(action);
-}
-
-void RenderViewImpl::StopFinding(StopFindAction action) {
   WebView* view = webview();
   if (!view)
     return;
@@ -5061,23 +5012,6 @@ void RenderViewImpl::StopFinding(StopFindAction action) {
 }
 
 #if defined(OS_ANDROID)
-void RenderViewImpl::OnSynchronousFind(int request_id,
-                                       const string16& search_string,
-                                       const WebFindOptions& options,
-                                       IPC::Message* reply_msg) {
-  // It is impossible for simultaneous blocking finds to occur.
-  CHECK(!synchronous_find_reply_message_.get());
-  synchronous_find_reply_message_.reset(reply_msg);
-
-  // Find next should be asynchronous in order to minimize blocking
-  // the UI thread as much as possible.
-  DCHECK(!options.findNext);
-  StopFinding(STOP_FIND_ACTION_KEEP_SELECTION);
-  synchronous_find_active_match_ordinal_ = -1;
-
-  Find(request_id, search_string, options);
-}
-
 void RenderViewImpl::OnActivateNearestFindResult(int request_id,
                                                  float x, float y) {
   if (!webview())

@@ -439,11 +439,6 @@ void AwContents::HideGeolocationPrompt(const GURL& origin) {
   }
 }
 
-jint AwContents::FindAllSync(JNIEnv* env, jobject obj, jstring search_string) {
-  return GetFindHelper()->FindAllSync(
-      ConvertJavaStringToUTF16(env, search_string));
-}
-
 void AwContents::FindAllAsync(JNIEnv* env, jobject obj, jstring search_string) {
   GetFindHelper()->FindAllAsync(ConvertJavaStringToUTF16(env, search_string));
 }

@@ -35,41 +35,6 @@ void FindHelper::SetListener(Listener* listener) {
   listener_ = listener;
 }
 
-int FindHelper::FindAllSync(const string16& search_string) {
-  sync_find_started_ = true;
-  async_find_started_ = false;
-
-  WebFindOptions options;
-  options.forward = true;
-  options.matchCase = false;
-  options.findNext = false;
-
-  int match_count = 0;
-  int active_ordinal = 0;
-
-  StartNewRequest(search_string);
-
-  // Any ongoing asynchronous requests will be stopped in the renderer when
-  // calling SynchronousFind. Using the asynchronous StopFinding message could
-  // lead to deadblocks as the message could arrive in the middle of the
-  // synchronous operation and cancel the reply back.
-  ScopedAllowWaitForLegacyWebViewApi wait;
-  web_contents()->GetRenderViewHost()->SynchronousFind(current_request_id_,
-                                                       search_string,
-                                                       options,
-                                                       &match_count,
-                                                       &active_ordinal);
-
-  // Post the task to ourselves to prevent trigerring the notification before
-  // we actually return from the request.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FindHelper::NotifyResults, weak_factory_.GetWeakPtr(),
-          active_ordinal, match_count, true));
-
-  return match_count;
-}
-
 void FindHelper::FindAllAsync(const string16& search_string) {
   // Stop any ongoing asynchronous request.
   web_contents()->GetRenderViewHost()->StopFinding(
