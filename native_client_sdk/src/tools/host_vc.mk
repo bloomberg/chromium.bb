@@ -43,14 +43,12 @@ WIN_FLAGS?=-D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
 # $2 = Compile Flags
 #
 define C_COMPILER_RULE
--include $(OUTDIR)/$(basename $(1)).d
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
+$(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CC,$$@,$(HOST_CC) /Fo$$@ /c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS))
 endef
 
 define CXX_COMPILER_RULE
--include $(OUTDIR)/$(basename $(1)).d
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
+$(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CXX,$$@,$(HOST_CXX) /Fo$$@ -c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS))
 endef
 
@@ -60,7 +58,7 @@ endef
 # $3 = VC Compile Flags
 #
 define COMPILE_RULE
-ifeq ('.c','$(suffix $(1))')
+ifeq ($(suffix $(1)),.c)
 $(call C_COMPILER_RULE,$(1),$(3) $(foreach inc,$(INC_PATHS),/I$(inc)))
 else
 $(call CXX_COMPILER_RULE,$(1),$(3) $(foreach inc,$(INC_PATHS),/I$(inc)))

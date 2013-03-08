@@ -38,14 +38,14 @@ LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NA
 # $2 = Compile Flags
 #
 define C_COMPILER_RULE
--include $(OUTDIR)/$(basename $(1)).d
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
+-include $(call SRC_TO_DEP,$(1))
+$(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CC,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
 endef
 
 define CXX_COMPILER_RULE
--include $(OUTDIR)/$(basename $(1)).d
-$(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) |$(dir $(OUTDIR)/$(basename $(1)))dir.stamp
+-include $(call SRC_TO_DEP,$(1))
+$(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CXX,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
 endef
 
@@ -55,7 +55,7 @@ endef
 # $3 = VC Flags (unused)
 #
 define COMPILE_RULE
-ifeq ('.c','$(suffix $(1))')
+ifeq ($(suffix $(1)),.c)
 $(call C_COMPILER_RULE,$(1),$(2) $(foreach inc,$(INC_PATHS),-I$(inc)))
 else
 $(call CXX_COMPILER_RULE,$(1),$(2) $(foreach inc,$(INC_PATHS),-I$(inc)))
@@ -83,11 +83,11 @@ endef
 #
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp: $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
-all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
-$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
+all: $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
+$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(HOST_LIB) $$@ $$^)
 endef
@@ -105,7 +105,7 @@ endef
 #
 define LINKER_RULE
 all: $(1)
-$(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+$(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(HOST_LINK) -shared -o $(1) $(2) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 
@@ -121,8 +121,7 @@ endef
 # $6 = VC Linker Switches
 #
 define LINK_RULE
-$(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
+$(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(call SRC_TO_OBJ,$(src))),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
 endef
-
 
 all : $(LIB_LIST) $(DEPS_LIST)

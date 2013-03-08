@@ -26,14 +26,14 @@ PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar r
 # $3 = Include Directories
 #
 define C_COMPILER_RULE
--include $(OUTDIR)/$(basename $(1))_pnacl.d
-$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
+-include $(call SRC_TO_DEP,$(1),_pnacl)
+$(call SRC_TO_OBJ,$(1),_pnacl): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CC,$$@,$(PNACL_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
 endef
 
 define CXX_COMPILER_RULE
--include $(OUTDIR)/$(basename $(1))_pnacl.d
-$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
+-include $(call SRC_TO_DEP,$(1))
+$(call SRC_TO_OBJ,$(1),_pnacl): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CXX,$$@,$(PNACL_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
 endef
 
@@ -43,7 +43,7 @@ endef
 # $3 = Include Directories
 # $4 = VC Flags (unused)
 define COMPILE_RULE
-ifeq ('.c','$(suffix $(1))')
+ifeq ($(suffix $(1)),.c)
 $(call C_COMPILER_RULE,$(1),$(2) $(foreach inc,$(INC_PATHS),-I$(inc)) $(3))
 else
 $(call CXX_COMPILER_RULE,$(1),$(2) $(foreach inc,$(INC_PATHS),-I$(inc)) $(3))
@@ -71,11 +71,11 @@ endef
 # $3 = POSIX Link Flags
 # $4 = VC Link Flags (unused)
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
+$(STAMPDIR)/$(1).stamp: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
 all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
-$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_pnacl.o)
+$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(PNACL_LIB) $$@ $$^ $(3))
 endef
@@ -93,7 +93,7 @@ endef
 #
 define LINKER_RULE
 all: $(1)
-$(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+$(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(PNACL_LINK) -o $(1) $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 
@@ -109,7 +109,7 @@ endef
 # $6 = VC Linker Switches
 #
 define LINK_RULE
-$(call LINKER_RULE,$(OUTDIR)/$(1).pexe,$(foreach src,$(2),$(OUTDIR)/$(basename $(src))_pnacl.o),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
+$(call LINKER_RULE,$(OUTDIR)/$(1).pexe,$(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl)),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
 endef
 
 
@@ -132,5 +132,3 @@ all:$(OUTDIR)/$(1).nmf
 $(OUTDIR)/$(1).nmf : $(OUTDIR)/$(1).pexe
 	$(call LOG,CREATE_NMF,$$@,$(NMF) -o $$@ $$^ -s $(OUTDIR) $(2))
 endef
-
-

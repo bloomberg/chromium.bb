@@ -29,8 +29,8 @@ TOP_MAKE:=$(word 1,$(MAKEFILE_LIST))
 # Verify we selected a valid toolchain for this example
 #
 ifeq (,$(findstring $(TOOLCHAIN),$(VALID_TOOLCHAINS)))
-$(warning Availbile choices are: $(VALID_TOOLCHAINS))
-$(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this example.)
+  $(warning Availbile choices are: $(VALID_TOOLCHAINS))
+  $(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this example.)
 endif
 
 
@@ -44,12 +44,11 @@ endif
 CONFIG?=Debug
 
 
-
 # Note for Windows:
-#   Both GCC and LLVM bases tools (include the version of Make.exe that comes
-# with the SDK) both expect and are capable of dealing with the '/' seperator.
-# For that reason, the tools in the SDK, including build, compilers, scripts
-# all have a preference for POSIX style command-line arguments.
+#   The GCC and LLVM toolchains (include the version of Make.exe that comes
+# with the SDK) expect and are capable of dealing with the '/' seperator.
+# For this reason, the tools in the SDK, including Makefiles and build scripts
+# have a preference for POSIX style command-line arguments.
 #
 # Keep in mind however that the shell is responsible for command-line escaping,
 # globbing, and variable expansion, so those may change based on which shell
@@ -58,17 +57,17 @@ CONFIG?=Debug
 #
 # Disable DOS PATH warning when using Cygwin based NaCl tools on Windows.
 #
-CYGWIN?=nodosfilewarning
-export CYGWIN
+ifeq ($(OSNAME),win)
+  CYGWIN?=nodosfilewarning
+  export CYGWIN
+endif
 
 
 #
 # If NACL_SDK_ROOT is not already set, then set it relative to this makefile.
 #
 THIS_MAKEFILE:=$(CURDIR)/$(lastword $(MAKEFILE_LIST))
-ifndef NACL_SDK_ROOT
-  NACL_SDK_ROOT:=$(realpath $(dir $(THIS_MAKEFILE))/..)
-endif
+NACL_SDK_ROOT?=$(realpath $(dir $(THIS_MAKEFILE))/..)
 
 
 #
@@ -160,7 +159,7 @@ endef
 #
 USABLE_TOOLCHAINS=$(filter $(OSNAME) newlib glibc pnacl,$(VALID_TOOLCHAINS))
 
-ifeq (1,$(NO_HOST_BUILDS))
+ifeq ($(NO_HOST_BUILDS),1)
 USABLE_TOOLCHAINS:=$(filter-out $(OSNAME),$(USABLE_TOOLCHAINS))
 endif
 
@@ -205,7 +204,7 @@ clean:
 # $3 = Extra Settings
 #
 define DEPEND_RULE
-ifeq (,$(IGNORE_DEPS))
+ifndef $(IGNORE_DEPS)
 .PHONY : rebuild_$(1)
 
 rebuild_$(1) :| $(STAMPDIR)/dir.stamp
@@ -227,8 +226,7 @@ endif
 endef
 
 
-
-ifeq ('win','$(TOOLCHAIN)')
+ifeq ($(TOOLCHAIN),win)
 HOST_EXT=.dll
 else
 HOST_EXT=.so
@@ -238,7 +236,7 @@ endif
 #
 # Common Compile Options
 #
-ifeq ('Release','$(CONFIG)')
+ifeq ($(CONFIG),Release)
 POSIX_FLAGS?=-g -O2 -pthread -MMD
 else
 POSIX_FLAGS?=-g -O0 -pthread -MMD
@@ -288,6 +286,28 @@ endif
 
 
 #
+# Convert a source path to a object file path.
+#
+# $1 = Source Name
+# $2 = Arch suffix
+#
+define SRC_TO_OBJ
+$(OUTDIR)/$(basename $(subst ..,__,$(1)))$(2).o
+endef
+
+
+#
+# Convert a source path to a dependency file path.
+#
+# $1 = Source Name
+# $2 = Arch suffix
+#
+define SRC_TO_DEP
+$(patsubst %.o,%.d,$(call SRC_TO_OBJ,$(1),$(2)))
+endef
+
+
+#
 # If the requested toolchain is a NaCl or PNaCl toolchain, the use the
 # macros and targets defined in nacl.mk, otherwise use the host sepecific
 # macros and targets.
@@ -320,9 +340,7 @@ endif
 #
 # Assign a sensible default to CHROME_PATH.
 #
-ifndef CHROME_PATH
-CHROME_PATH:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome 2> $(DEV_NULL))
-endif
+CHROME_PATH?=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --chrome 2> $(DEV_NULL))
 
 #
 # Verify we can find the Chrome executable if we need to launch it.
