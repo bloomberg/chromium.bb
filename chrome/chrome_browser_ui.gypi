@@ -2383,6 +2383,8 @@
             ['exclude', 'browser/speech/extension_api/tts_extension_api_linux.cc'],
             ['exclude', 'browser/storage_monitor/storage_monitor_linux.cc'],
             ['exclude', 'browser/storage_monitor/storage_monitor_linux.h'],
+            ['exclude', 'browser/ui/ash/caps_lock_delegate_views.cc'],
+            ['exclude', 'browser/ui/ash/chrome_shell_delegate_views.cc'],
             ['exclude', 'browser/ui/views/frame/desktop_browser_frame_aura.cc'],
             ['exclude', 'browser/ui/views/frame/desktop_browser_frame_aura.h'],
             ['exclude', 'browser/ui/views/frame/browser_desktop_root_window_host_linux.cc'],
