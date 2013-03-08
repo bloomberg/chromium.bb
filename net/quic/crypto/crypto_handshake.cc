@@ -31,6 +31,7 @@ QuicServerConfigProtobuf::QuicServerConfigProtobuf() {
 }
 
 QuicServerConfigProtobuf::~QuicServerConfigProtobuf() {
+  STLDeleteElements(&keys_);
 }
 
 QuicCryptoNegotiatedParams::QuicCryptoNegotiatedParams()
