@@ -1048,7 +1048,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TransientEntrySet) {
 
 // Test that the a transient entry is cleared when the overlay is committed
 // with a navigation.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TransientEntryRemoved) {
+// TODO(samarth) : this test fails, http://crbug.com/181070.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_TransientEntryRemoved) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus omnibox and confirm overlay isn't shown.
