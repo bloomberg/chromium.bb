@@ -58,16 +58,36 @@ struct NET_EXPORT_PRIVATE CryptoHandshakeMessage {
   QuicErrorCode GetTaglist(CryptoTag tag, const CryptoTag** out_tags,
                            size_t* out_len) const;
 
+  bool GetStringPiece(CryptoTag tag, base::StringPiece* out) const;
+
+  // GetNthValue16 interprets the value with the given tag to be a series of
+  // 16-bit length prefixed values and it returns the subvalue with the given
+  // index.
+  QuicErrorCode GetNthValue16(CryptoTag tag,
+                              unsigned index,
+                              base::StringPiece* out) const;
   bool GetString(CryptoTag tag, std::string* out) const;
+  QuicErrorCode GetUint16(CryptoTag tag, uint16* out) const;
   QuicErrorCode GetUint32(CryptoTag tag, uint32* out) const;
 
   CryptoTag tag;
   CryptoTagValueMap tag_value_map;
+
+ private:
+  // GetPOD is a utility function for extracting a plain-old-data value. If
+  // |tag| exists in the message, and has a value of exactly |len| bytes then
+  // it copies |len| bytes of data into |out|. Otherwise |len| bytes at |out|
+  // are zeroed out.
+  //
+  // If used to copy integers then this assumes that the machine is
+  // little-endian.
+  QuicErrorCode GetPOD(CryptoTag tag, void* out, size_t len) const;
 };
 
 const CryptoTag kCHLO = MAKE_TAG('C', 'H', 'L', 'O');  // Client hello
 const CryptoTag kSHLO = MAKE_TAG('S', 'H', 'L', 'O');  // Server hello
 const CryptoTag kSCFG = MAKE_TAG('S', 'H', 'L', 'O');  // Server config
+const CryptoTag kREJ  = MAKE_TAG('R', 'E', 'J', '\0');  // Reject
 
 // Key exchange methods
 const CryptoTag kP256 = MAKE_TAG('P', '2', '5', '6');  // ECDH, Curve P-256
@@ -75,7 +95,6 @@ const CryptoTag kC255 = MAKE_TAG('C', '2', '5', '5');  // ECDH, Curve25519
 
 // AEAD algorithms
 const CryptoTag kNULL = MAKE_TAG('N', 'U', 'L', 'L');  // null algorithm
-const CryptoTag kAESH = MAKE_TAG('A', 'E', 'S', 'H');  // AES128 + SHA256
 const CryptoTag kAESG = MAKE_TAG('A', 'E', 'S', 'G');  // AES128 + GCM
 
 // Congestion control feedback types

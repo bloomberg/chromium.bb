@@ -24,6 +24,7 @@ class FixRateReceiverPeer : public FixRateReceiver {
   }
 };
 
+const bool kHasRetransmittableData = true;
 class FixRateTest : public ::testing::Test {
  protected:
   FixRateTest()
@@ -60,10 +61,13 @@ TEST_F(FixRateTest, SenderAPI) {
       unused_bandwidth_, unused_packet_map_);
   EXPECT_EQ(300000, sender_->BandwidthEstimate().ToBytesPerSecond());
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-  sender_->SentPacket(clock_.Now(), 1, kMaxPacketSize, false);
+  sender_->SentPacket(clock_.Now(), 1, kMaxPacketSize, false,
+                      kHasRetransmittableData);
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-  sender_->SentPacket(clock_.Now(), 2, kMaxPacketSize, false);
-  sender_->SentPacket(clock_.Now(), 3, 600, false);
+  sender_->SentPacket(clock_.Now(), 2, kMaxPacketSize, false,
+                      kHasRetransmittableData);
+  sender_->SentPacket(clock_.Now(), 3, 600, false,
+                      kHasRetransmittableData);
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
             sender_->TimeUntilSend(clock_.Now(), false));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(2));
@@ -89,9 +93,11 @@ TEST_F(FixRateTest, FixRatePacing) {
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {
     EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false);
+    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false,
+                        kHasRetransmittableData);
     EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());
-    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false);
+    sender_->SentPacket(clock_.Now(), sequence_number++, packet_size, false,
+                        kHasRetransmittableData);
     QuicTime::Delta advance_time = sender_->TimeUntilSend(clock_.Now(), false);
     clock_.AdvanceTime(advance_time);
     sender_->OnIncomingAck(sequence_number - 1, packet_size, rtt_);

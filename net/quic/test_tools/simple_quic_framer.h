@@ -13,6 +13,7 @@
 
 namespace net {
 
+struct CryptoHandshakeMessage;
 struct QuicAckFrame;
 class QuicConnection;
 class QuicConnectionVisitorInterface;
@@ -42,6 +43,10 @@ class SimpleQuicFramer {
   const std::vector<QuicRstStreamFrame>& rst_stream_frames() const;
   const std::vector<QuicStreamFrame>& stream_frames() const;
   const QuicFecData& fec_data() const;
+  // HandshakeMessage returns the index'th stream frame as a freshly allocated
+  // handshake message which the caller takes ownership of. If parsing fails
+  // then NULL is returned.
+  CryptoHandshakeMessage* HandshakeMessage(size_t index) const;
 
  private:
   QuicFramer framer_;

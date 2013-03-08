@@ -34,28 +34,6 @@ class TestQuicVisitor : public NoOpFramerVisitor {
   DISALLOW_COPY_AND_ASSIGN(TestQuicVisitor);
 };
 
-class TestCryptoVisitor : public CryptoFramerVisitorInterface {
- public:
-  TestCryptoVisitor()
-      : error_count_(0) {
-  }
-
-  virtual void OnError(CryptoFramer* framer) OVERRIDE {
-    DLOG(ERROR) << "CryptoFramer Error: " << framer->error();
-    ++error_count_;
-  }
-
-  virtual void OnHandshakeMessage(
-      const CryptoHandshakeMessage& message) OVERRIDE {
-    messages_.push_back(message);
-  }
-
-  // Counters from the visitor callbacks.
-  int error_count_;
-
-  vector<CryptoHandshakeMessage> messages_;
-};
-
 // The same as MockHelper, except that WritePacketToWire() checks whether
 // the packet has the expected contents.
 class TestMockHelper : public MockHelper  {
@@ -94,17 +72,11 @@ void TestMockHelper::CheckClientHelloPacket(
   EXPECT_EQ(0u, quic_visitor.frame()->offset);
 
   // Check quic_visitor.frame()->data.
-  TestCryptoVisitor crypto_visitor;
-  CryptoFramer crypto_framer;
-  crypto_framer.set_visitor(&crypto_visitor);
-  ASSERT_TRUE(crypto_framer.ProcessInput(quic_visitor.frame()->data));
-  ASSERT_EQ(0u, crypto_framer.InputBytesRemaining());
-  ASSERT_EQ(1u, crypto_visitor.messages_.size());
-  EXPECT_EQ(kCHLO, crypto_visitor.messages_[0].tag);
+  scoped_ptr<CryptoHandshakeMessage> chlo(
+      CryptoFramer::ParseMessage(quic_visitor.frame()->data));
+  EXPECT_EQ(kCHLO, chlo->tag);
 
-  CryptoTagValueMap& tag_value_map =
-      crypto_visitor.messages_[0].tag_value_map;
-  ASSERT_EQ(8u, tag_value_map.size());
+  CryptoTagValueMap& tag_value_map = chlo->tag_value_map;
 
   // kSNI
   EXPECT_EQ(kServerHostname, tag_value_map[kSNI]);
@@ -113,14 +85,27 @@ void TestMockHelper::CheckClientHelloPacket(
   // TODO(wtc): check the nonce.
   ASSERT_EQ(32u, tag_value_map[kNONC].size());
 
-  // kAEAD
-  ASSERT_EQ(8u, tag_value_map[kAEAD].size());
-  CryptoTag cipher[2];
-  memcpy(&cipher[0], &tag_value_map[kAEAD][0], 4);
-  memcpy(&cipher[1], &tag_value_map[kAEAD][4], 4);
-  EXPECT_EQ(kAESG, cipher[0]);
-  EXPECT_EQ(kAESH, cipher[1]);
+  // kVERS
+  ASSERT_EQ(2u, tag_value_map[kVERS].size());
+  uint16 version;
+  memcpy(&version, tag_value_map[kVERS].data(), 2);
+  EXPECT_EQ(0u, version);
 
+  // kKEXS
+  ASSERT_EQ(4u, tag_value_map[kKEXS].size());
+  CryptoTag key_exchange[1];
+  memcpy(&key_exchange[0], &tag_value_map[kKEXS][0], 4);
+  EXPECT_EQ(kC255, key_exchange[0]);
+
+  // kAEAD
+  ASSERT_EQ(4u, tag_value_map[kAEAD].size());
+  CryptoTag cipher[1];
+  memcpy(&cipher[0], &tag_value_map[kAEAD][0], 4);
+  EXPECT_EQ(kAESG, cipher[0]);
+
+  // TODO(agl): reenable these once the non-crypto parts of the handshake have
+  // been split from crypto/
+#if 0
   // kICSL
   ASSERT_EQ(4u, tag_value_map[kICSL].size());
   uint32 idle_lifetime;
@@ -133,25 +118,12 @@ void TestMockHelper::CheckClientHelloPacket(
   memcpy(&keepalive_timeout, tag_value_map[kKATO].data(), 4);
   EXPECT_EQ(0u, keepalive_timeout);
 
-  // kVERS
-  ASSERT_EQ(2u, tag_value_map[kVERS].size());
-  uint16 version;
-  memcpy(&version, tag_value_map[kVERS].data(), 2);
-  EXPECT_EQ(0u, version);
-
-  // kKEXS
-  ASSERT_EQ(8u, tag_value_map[kKEXS].size());
-  CryptoTag key_exchange[2];
-  memcpy(&key_exchange[0], &tag_value_map[kKEXS][0], 4);
-  memcpy(&key_exchange[1], &tag_value_map[kKEXS][4], 4);
-  EXPECT_EQ(kC255, key_exchange[0]);
-  EXPECT_EQ(kP256, key_exchange[1]);
-
   // kCGST
   ASSERT_EQ(4u, tag_value_map[kCGST].size());
   CryptoTag congestion[1];
   memcpy(&congestion[0], &tag_value_map[kCGST][0], 4);
   EXPECT_EQ(kQBIC, congestion[0]);
+#endif
 }
 
 // The same as MockSession, except that WriteData() is not mocked.
@@ -176,9 +148,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
       : connection_(new MockConnection(1, addr_, new TestMockHelper())),
         session_(connection_, true),
         stream_(&session_, kServerHostname) {
-    message_.tag = kSHLO;
-    message_.tag_value_map[1] = "abc";
-    message_.tag_value_map[2] = "def";
+    message_ = CreateShloMessage(&clock_, &random_, "www.google.com");
     ConstructHandshakeMessage();
   }
 
@@ -190,6 +160,8 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
   IPEndPoint addr_;
   MockConnection* connection_;
   TestMockSession session_;
+  MockClock clock_;
+  MockRandom random_;
   QuicCryptoClientStream stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
@@ -200,11 +172,13 @@ TEST_F(QuicCryptoClientStreamTest, NotInitiallyConected) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
+  stream_.CryptoConnect();
   stream_.ProcessData(message_data_->data(), message_data_->length());
   EXPECT_TRUE(stream_.handshake_complete());
 }
 
 TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
+  stream_.CryptoConnect();
   stream_.ProcessData(message_data_->data(), message_data_->length());
 
   EXPECT_CALL(*connection_, SendConnectionClose(

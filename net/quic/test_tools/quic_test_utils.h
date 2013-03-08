@@ -31,8 +31,9 @@ void CompareQuicDataWithHexError(const std::string& description,
                                  QuicData* actual,
                                  QuicData* expected);
 
-// Constructs a basic crypto handshake message
-QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag);
+CryptoHandshakeMessage CreateChloMessage(const QuicClock* clock,
+                                         QuicRandom* random_generator,
+                                         const string& server_hostname);
 
 // Constructs a ClientHello crypto handshake message
 QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
@@ -40,10 +41,15 @@ QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        QuicRandom* random_generator,
                                        const std::string& server_hostname);
 
-// Constructs a ServerHello crypto handshake message
+CryptoHandshakeMessage CreateShloMessage(const QuicClock* clock,
+                                         QuicRandom* random_generator,
+                                         const string& server_hostname);
+
+// Constructs a ClientHello crypto handshake message
 QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
-                                       QuicRandom* random_generator);
+                                       QuicRandom* random_generator,
+                                       const std::string& server_hostname);
 
 // Returns the length of the QuicPacket that will be created if it contains
 // a stream frame that has |payload| bytes.
@@ -239,7 +245,8 @@ class PacketSavingConnection : public MockConnection {
 
   virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
-                                 QuicPacketEntropyHash entropy_hash) OVERRIDE;
+                                 QuicPacketEntropyHash entropy_hash,
+                                 bool has_retransmittable_data) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
 
@@ -284,8 +291,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD3(OnIncomingAck,
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
   MOCK_METHOD1(OnIncomingLoss, void(QuicTime));
-  MOCK_METHOD4(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
-                                QuicByteCount, bool));
+  MOCK_METHOD5(SentPacket, void(QuicTime sent_time, QuicPacketSequenceNumber,
+                                QuicByteCount, bool, bool));
   MOCK_METHOD2(TimeUntilSend, QuicTime::Delta(QuicTime now, bool));
   MOCK_METHOD0(BandwidthEstimate, QuicBandwidth(void));
 

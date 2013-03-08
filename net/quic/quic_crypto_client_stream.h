@@ -16,9 +16,9 @@ class QuicSession;
 struct CryptoHandshakeMessage;
 
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
-
  public:
   QuicCryptoClientStream(QuicSession* session, const string& server_hostname);
+  virtual ~QuicCryptoClientStream();
 
   // CryptoFramerVisitorInterface implementation
   virtual void OnHandshakeMessage(
@@ -29,7 +29,12 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool CryptoConnect();
 
  private:
+  QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
+
+  QuicNegotiatedParameters negotiated_params_;
+  QuicCryptoNegotiatedParams crypto_negotiated_params_;
+
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;
   // Server's hostname

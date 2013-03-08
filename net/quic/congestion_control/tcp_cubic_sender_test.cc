@@ -40,7 +40,7 @@ class TcpCubicSenderTest : public ::testing::Test {
     while (bytes_to_send > 0) {
       QuicByteCount bytes_in_packet = std::min(kMaxPacketSize, bytes_to_send);
       sender_->SentPacket(clock_.Now(), sequence_number_++, bytes_in_packet,
-                          false);
+                          false, true);
       bytes_to_send -= bytes_in_packet;
       if (bytes_to_send > 0) {
         EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), false).IsZero());

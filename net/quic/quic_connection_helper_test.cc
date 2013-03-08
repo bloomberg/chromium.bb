@@ -23,6 +23,7 @@ namespace net {
 namespace test {
 
 const char kData[] = "foo";
+const bool kHasData = true;
 
 class TestConnection : public QuicConnection {
  public:
@@ -248,7 +249,7 @@ TEST_F(QuicConnectionHelperTest, SetAckAlarm) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()),
             runner_->GetPostedTasks()[1].delay);
 
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false, !kHasData));
   runner_->RunNextTask();
   EXPECT_EQ(QuicTime::Zero().Add(delta), clock_.ApproximateNow());
 }
@@ -292,7 +293,7 @@ TEST_F(QuicConnectionHelperTest, ResetAckAlarm) {
   // Verify that the ack alarm task has been re-posted.
   ASSERT_EQ(2u, runner_->GetPostedTasks().size());
 
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false, !kHasData));
   runner_->RunNextTask();
   EXPECT_EQ(QuicTime::Zero().Add(delta2), clock_.ApproximateNow());
 }
@@ -306,10 +307,10 @@ TEST_F(QuicConnectionHelperTest, TestRetransmission) {
       QuicTime::Delta::FromMilliseconds(500);
   QuicTime start = clock_.ApproximateNow();
 
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false, kHasData));
   // Send a packet.
   connection_->SendStreamData(1, kData, 0, false);
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, true));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, true, kHasData));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.
   runner_->RunNextTask();
@@ -328,7 +329,7 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(kDefaultTimeoutUs),
             runner_->GetPostedTasks().front().delay);
 
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false, !kHasData));
   // After we run the next task, we should close the connection.
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
 
@@ -373,7 +374,7 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   // When we send a packet, the timeout will change to 5000 + kDefaultTimeout.
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(5000));
   EXPECT_EQ(5000u, clock_.ApproximateNow().ToMicroseconds());
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false, !kHasData));
 
   // Send an ack so we don't set the retransmission alarm.
   connection_->SendAck();
@@ -388,7 +389,7 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
 
   // This time, we should time out.
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_CONNECTION_TIMED_OUT, false));
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, false));
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 2, _, false, !kHasData));
   runner_->RunNextTask();
   EXPECT_EQ(kDefaultTimeoutUs + 5000, clock_.ApproximateNow().ToMicroseconds());
   EXPECT_FALSE(connection_->connected());
@@ -404,8 +405,8 @@ TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
       testing::Return(QuicTime::Delta::FromMicroseconds(1)));
 
   QuicPacket* packet = ConstructRawDataPacket(1);
-  connection_->SendOrQueuePacket(1, packet, 0);
-  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false));
+  connection_->SendOrQueuePacket(1, packet, 0, kHasData);
+  EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, false, kHasData));
   EXPECT_EQ(1u, connection_->NumQueuedPackets());
 
   // Advance the clock to fire the alarm, and configure the scheduler

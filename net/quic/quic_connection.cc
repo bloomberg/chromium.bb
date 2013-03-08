@@ -69,6 +69,8 @@ const int kMaxPacketsPerRetransmissionAlarm = 10;
 const bool kForce = true;
 // Named constant for CanWrite().
 const bool kIsRetransmission = true;
+// Named constatn for WritePacket.
+const bool kHasRetransmittableData = true;
 
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
@@ -583,7 +585,8 @@ bool QuicConnection::WriteQueuedPackets() {
     DCHECK_LT(queued_packets_.size(), num_queued_packets);
     num_queued_packets = queued_packets_.size();
     if (WritePacket(packet_iterator->sequence_number,
-                    packet_iterator->packet, !kForce)) {
+                    packet_iterator->packet, kHasRetransmittableData,
+                    !kForce)) {
       packet_iterator = queued_packets_.erase(packet_iterator);
     } else {
       // Continue, because some queued packets may still be writable.
@@ -679,7 +682,8 @@ void QuicConnection::RetransmitPacket(
                                     unacked));
   SendOrQueuePacket(serialized_packet.sequence_number,
                     serialized_packet.packet,
-                    serialized_packet.entropy_hash);
+                    serialized_packet.entropy_hash,
+                    true);
 }
 
 bool QuicConnection::CanWrite(bool is_retransmission) {
@@ -735,6 +739,7 @@ void QuicConnection::MaybeSetupRetransmission(
 
 bool QuicConnection::WritePacket(QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
+                                 bool has_retransmittable_data,
                                  bool forced) {
   if (!connected_) {
     DLOG(INFO)
@@ -783,7 +788,7 @@ bool QuicConnection::WritePacket(QuicPacketSequenceNumber sequence_number,
   MaybeSetupRetransmission(sequence_number);
 
   congestion_manager_.SentPacket(sequence_number, now, packet->length(),
-                                 is_retransmission);
+                                 is_retransmission, has_retransmittable_data);
   delete packet;
   return true;
 }
@@ -804,14 +809,18 @@ bool QuicConnection::OnSerializedPacket(
   }
   return SendOrQueuePacket(serialized_packet.sequence_number,
                            serialized_packet.packet,
-                           serialized_packet.entropy_hash);
+                           serialized_packet.entropy_hash,
+                           serialized_packet.retransmittable_frames != NULL);
 }
 
 bool QuicConnection::SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
                                        QuicPacket* packet,
-                                       QuicPacketEntropyHash entropy_hash) {
-  entropy_manager_.RecordSentPacketEntropyHash(sequence_number, entropy_hash);
-  if (!WritePacket(sequence_number, packet, !kForce)) {
+                                       QuicPacketEntropyHash entropy_hash,
+                                       bool has_retransmittable_data) {
+  entropy_manager_.RecordSentPacketEntropyHash(sequence_number,
+                                               entropy_hash);
+  if (!WritePacket(sequence_number, packet, has_retransmittable_data,
+                   !kForce)) {
     queued_packets_.push_back(QueuedPacket(sequence_number, packet));
     return false;
   }
@@ -954,8 +963,10 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
 
   SerializedPacket serialized_packet =
       packet_creator_.SerializeConnectionClose(&frame);
-  SendOrQueuePacket(serialized_packet.sequence_number, serialized_packet.packet,
-                    serialized_packet.entropy_hash);
+  SendOrQueuePacket(serialized_packet.sequence_number,
+                    serialized_packet.packet,
+                    serialized_packet.entropy_hash,
+                    serialized_packet.retransmittable_frames != NULL);
 }
 
 void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,

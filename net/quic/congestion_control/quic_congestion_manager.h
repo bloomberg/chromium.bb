@@ -46,7 +46,8 @@ class QuicCongestionManager {
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
                           QuicTime sent_time,
                           QuicByteCount bytes,
-                          bool is_retransmission);
+                          bool is_retransmission,
+                          bool has_retransmittable_data);
 
   // Calculate the time until we can send the next packet to the wire.
   // Note 1: When kUnknownWaitTime is returned, there is no need to poll

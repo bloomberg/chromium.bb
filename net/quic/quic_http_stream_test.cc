@@ -124,8 +124,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
-    // Do null initialization for simple tests.
-    Initialize();
   }
 
   ~QuicHttpStreamTest() {
@@ -180,8 +178,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     connection_->SetReceiveAlgorithm(receive_algorithm_);
     session_.reset(new QuicClientSession(connection_, helper_, NULL,
                                          "www.google.com", NULL));
-    CryptoHandshakeMessage message;
-    message.tag = kSHLO;
+    CryptoHandshakeMessage message =
+        CreateShloMessage(&clock_, &random_generator_, "www.google.com");
+    session_->GetCryptoStream()->CryptoConnect();
     session_->GetCryptoStream()->OnHandshakeMessage(message);
     EXPECT_TRUE(session_->IsCryptoHandshakeComplete());
     QuicReliableClientStream* stream =
@@ -215,6 +214,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
     scoped_ptr<SpdyFrame> frame(builder.take());
     return std::string(frame->data(), len);
+  }
+
+  QuicEncryptedPacket* ConstructChloPacket() {
+    scoped_ptr<QuicPacket> chlo(
+        ConstructClientHelloPacket(guid_, &clock_, &random_generator_,
+                                   "www.google.com"));
+    return framer_.EncryptPacket(1, *chlo);
   }
 
   // Returns a newly created packet to send kData on stream 1.
@@ -306,26 +312,35 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
 };
 
 TEST_F(QuicHttpStreamTest, RenewStreamForAuth) {
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  Initialize();
   EXPECT_EQ(NULL, stream_->RenewStreamForAuth());
 }
 
 TEST_F(QuicHttpStreamTest, CanFindEndOfResponse) {
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  Initialize();
   EXPECT_TRUE(stream_->CanFindEndOfResponse());
 }
 
 TEST_F(QuicHttpStreamTest, IsMoreDataBuffered) {
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  Initialize();
   EXPECT_FALSE(stream_->IsMoreDataBuffered());
 }
 
 TEST_F(QuicHttpStreamTest, IsConnectionReusable) {
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  Initialize();
   EXPECT_FALSE(stream_->IsConnectionReusable());
 }
 
 TEST_F(QuicHttpStreamTest, GetRequest) {
   SetRequestString("GET", "/");
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0,
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, 0,
                                             request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 2));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 2));
   Initialize();
 
   request_.method = "GET";
@@ -366,8 +381,9 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
 
 TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
   SetRequestString("GET", "/");
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(2, 2, 2));
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, 0, request_data_));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 2));
   Initialize();
 
   request_.method = "GET";
@@ -409,10 +425,11 @@ TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
 
 TEST_F(QuicHttpStreamTest, SendPostRequest) {
   SetRequestString("POST", "/");
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, !kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, request_data_.length(),
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, !kFin, 0, request_data_));
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(3, kFin, request_data_.length(),
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 3));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 3));
 
   Initialize();
 
@@ -465,13 +482,14 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
 TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
   SetRequestString("POST", "/");
   size_t chunk_size = strlen(kUploadData);
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, !kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, !kFin, request_data_.length(),
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, !kFin, 0, request_data_));
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(3, !kFin, request_data_.length(),
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(3, kFin,
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(4, kFin,
                                             request_data_.length() + chunk_size,
                                             kUploadData));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 3));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(5, 2, 3));
 
   Initialize();
 
@@ -524,9 +542,10 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
 
 TEST_F(QuicHttpStreamTest, DestroyedEarly) {
   SetRequestString("GET", "/");
-  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, kFin, 0, request_data_));
-  AddWrite(SYNCHRONOUS, ConstructRstPacket(2, 3));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 2));
+  AddWrite(SYNCHRONOUS, ConstructChloPacket());
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, 0, request_data_));
+  AddWrite(SYNCHRONOUS, ConstructRstPacket(3, 3));
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 2, 2));
   use_closing_stream_ = true;
   Initialize();
 

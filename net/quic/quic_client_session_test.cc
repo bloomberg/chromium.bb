@@ -13,6 +13,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using testing::_;
@@ -31,40 +32,31 @@ class QuicClientSessionTest : public ::testing::Test {
         session_(connection_, NULL, NULL, kServerHostname, &net_log_) {
   }
 
-  CapturingNetLog net_log_;
+  void CompleteCryptoHandshake() {
+    ASSERT_EQ(ERR_IO_PENDING,
+              session_.CryptoConnect(callback_.callback()));
+    session_.GetCryptoStream()->OnHandshakeMessage(
+        CreateShloMessage(&clock_, &random_, "www.google.com"));
+    ASSERT_EQ(OK, callback_.WaitForResult());
+
+  }
+
   QuicGuid guid_;
   PacketSavingConnection* connection_;
+  CapturingNetLog net_log_;
   QuicClientSession session_;
+  MockClock clock_;
+  MockRandom random_;
   QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
 };
 
-TEST_F(QuicClientSessionTest, CryptoConnectSendsCorrectData) {
-  EXPECT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
-  ASSERT_EQ(1u, connection_->packets_.size());
-  scoped_ptr<QuicPacket> chlo(ConstructClientHelloPacket(
-      guid_, connection_->clock(), connection_->random_generator(),
-      kServerHostname));
-  CompareQuicDataWithHexError("CHLO", connection_->packets_[0], chlo.get());
-}
-
-TEST_F(QuicClientSessionTest, CryptoConnectSendsCompletesAfterSHLO) {
-  ASSERT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
-  // Send the SHLO message.
-  CryptoHandshakeMessage server_message;
-  server_message.tag = kSHLO;
-  session_.GetCryptoStream()->OnHandshakeMessage(server_message);
-  EXPECT_EQ(OK, callback_.WaitForResult());
+TEST_F(QuicClientSessionTest, CryptoConnect) {
+  CompleteCryptoHandshake();
 }
 
 TEST_F(QuicClientSessionTest, MaxNumConnections) {
-  // Initialize crypto before the client session will create a stream.
-  ASSERT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
-  // Simulate the server crypto handshake.
-  CryptoHandshakeMessage server_message;
-  server_message.tag = kSHLO;
-  session_.GetCryptoStream()->OnHandshakeMessage(server_message);
-  callback_.WaitForResult();
+  CompleteCryptoHandshake();
 
   std::vector<QuicReliableClientStream*> streams;
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection; i++) {
@@ -94,13 +86,7 @@ TEST_F(QuicClientSessionTest, GoAwayReceived) {
 }
 
 TEST_F(QuicClientSessionTest, Logging) {
-  // Initialize crypto before the client session will create a stream.
-  ASSERT_EQ(ERR_IO_PENDING, session_.CryptoConnect(callback_.callback()));
-  // Simulate the server crypto handshake.
-  CryptoHandshakeMessage server_message;
-  server_message.tag = kSHLO;
-  session_.GetCryptoStream()->OnHandshakeMessage(server_message);
-  callback_.WaitForResult();
+  CompleteCryptoHandshake();
 
   // TODO(rch): Add some helper methods to simplify packet creation in tests.
   // Receive a packet, and verify that it was logged.

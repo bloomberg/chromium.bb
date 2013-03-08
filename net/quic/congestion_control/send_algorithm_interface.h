@@ -58,7 +58,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual void SentPacket(QuicTime sent_time,
                           QuicPacketSequenceNumber sequence_number,
                           QuicByteCount bytes,
-                          bool is_retransmission) = 0;
+                          bool is_retransmission,
+                          bool has_retransmittable_data) = 0;
 
   // Calculate the time until we can send the next packet.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,

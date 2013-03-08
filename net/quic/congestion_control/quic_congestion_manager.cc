@@ -45,10 +45,11 @@ QuicCongestionManager::~QuicCongestionManager() {
 void QuicCongestionManager::SentPacket(QuicPacketSequenceNumber sequence_number,
                                        QuicTime sent_time,
                                        QuicByteCount bytes,
-                                       bool is_retransmission) {
+                                       bool is_retransmission,
+                                       bool has_retransmittable_data) {
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
   send_algorithm_->SentPacket(sent_time, sequence_number, bytes,
-                              is_retransmission);
+                              is_retransmission, has_retransmittable_data);
 
   packet_history_map_[sequence_number] =
       new class SendAlgorithmInterface::SentPacket(bytes, sent_time);

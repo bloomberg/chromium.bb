@@ -22,7 +22,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_framer.h"
-#include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -96,7 +96,11 @@ class QuicNetworkTransactionTest : public PlatformTest {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructShlo() {
-    scoped_ptr<QuicPacket> shlo(ConstructHandshakePacket(0xDEADBEEF, kSHLO));
+    const std::string host = "www.google.com";
+    scoped_ptr<QuicPacket> shlo(ConstructServerHelloPacket(0xDEADBEEF,
+                                                           clock_,
+                                                           &random_generator_,
+                                                           host));
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));

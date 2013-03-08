@@ -53,7 +53,8 @@ void FixRateSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 void FixRateSender::SentPacket(QuicTime sent_time,
                                QuicPacketSequenceNumber /*sequence_number*/,
                                QuicByteCount bytes,
-                               bool is_retransmission) {
+                               bool is_retransmission,
+                               bool /*has_retransmittable_data*/) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.SentPacket(sent_time, bytes);
   if (!is_retransmission) {

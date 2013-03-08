@@ -182,6 +182,9 @@ enum QuicErrorCode {
   // A crypto message was received with a parameter that has no overlap
   // with the local parameter.
   QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP,
+  // A crypto message was received that contained a parameter with too few
+  // values.
+  QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND,
 };
 
 // Version and Crypto tags are written to the wire with a big-endian

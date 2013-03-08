@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 
+using base::StringPiece;
 using std::string;
 
 namespace net {
@@ -65,6 +66,52 @@ QuicErrorCode CryptoHandshakeMessage::GetTaglist(CryptoTag tag,
   return ret;
 }
 
+bool CryptoHandshakeMessage::GetStringPiece(CryptoTag tag,
+                                            StringPiece* out) const {
+  CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
+  if (it == tag_value_map.end()) {
+    return false;
+  }
+  *out = it->second;
+  return true;
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetNthValue16(
+    CryptoTag tag,
+    unsigned index,
+    StringPiece* out) const {
+  StringPiece value;
+  if (!GetStringPiece(tag, &value)) {
+    return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
+  }
+
+  for (unsigned i = 0;; i++) {
+    if (value.empty()) {
+      return QUIC_CRYPTO_MESSAGE_INDEX_NOT_FOUND;
+    }
+    if (value.size() < 2) {
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
+
+    const unsigned char* data =
+        reinterpret_cast<const unsigned char*>(value.data());
+    size_t size = static_cast<size_t>(data[0]) |
+                  (static_cast<size_t>(data[1]) << 8);
+    value.remove_prefix(2);
+
+    if (value.size() < size) {
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
+    }
+
+    if (i == index) {
+      *out = StringPiece(value.data(), size);
+      return QUIC_NO_ERROR;
+    }
+
+    value.remove_prefix(size);
+  }
+}
+
 bool CryptoHandshakeMessage::GetString(CryptoTag tag, string* out) const {
   CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
   if (it == tag_value_map.end()) {
@@ -74,23 +121,33 @@ bool CryptoHandshakeMessage::GetString(CryptoTag tag, string* out) const {
   return true;
 }
 
+QuicErrorCode CryptoHandshakeMessage::GetUint16(CryptoTag tag,
+                                                uint16* out) const {
+  return GetPOD(tag, out, sizeof(uint16));
+}
+
 QuicErrorCode CryptoHandshakeMessage::GetUint32(CryptoTag tag,
                                                 uint32* out) const {
+  return GetPOD(tag, out, sizeof(uint32));
+}
+
+QuicErrorCode CryptoHandshakeMessage::GetPOD(
+    CryptoTag tag, void* out, size_t len) const {
   CryptoTagValueMap::const_iterator it = tag_value_map.find(tag);
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map.end()) {
     ret = QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
-  } else if (it->second.size() != sizeof(uint32)) {
+  } else if (it->second.size() != len) {
     ret = QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
   if (ret != QUIC_NO_ERROR) {
-    *out = 0;
+    memset(out, 0, len);
     return ret;
   }
 
-  memcpy(out, it->second.data(), sizeof(uint32));
+  memcpy(out, it->second.data(), len);
   return ret;
 }
 

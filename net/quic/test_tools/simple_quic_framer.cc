@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/simple_quic_framer.h"
 
+#include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 
@@ -159,6 +160,13 @@ const vector<QuicStreamFrame>& SimpleQuicFramer::stream_frames() const {
 
 const vector<QuicRstStreamFrame>& SimpleQuicFramer::rst_stream_frames() const {
   return visitor_->rst_stream_frames();
+}
+
+CryptoHandshakeMessage* SimpleQuicFramer::HandshakeMessage(size_t index) const {
+  if (index >= visitor_->stream_frames().size()) {
+    return NULL;
+  }
+  return CryptoFramer::ParseMessage(visitor_->stream_frames()[index].data);
 }
 
 const vector<QuicCongestionFeedbackFrame>&

@@ -15,8 +15,11 @@ QuicCryptoClientStream::QuicCryptoClientStream(QuicSession* session,
                                                const string& server_hostname)
     : QuicCryptoStream(session),
       server_hostname_(server_hostname) {
+  config_.SetDefaults();
 }
 
+QuicCryptoClientStream::~QuicCryptoClientStream() {
+}
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
@@ -31,18 +34,36 @@ void QuicCryptoClientStream::OnHandshakeMessage(
     return;
   }
 
-  // TODO(rch): correctly validate the message
+  string error_details;
+  QuicErrorCode error = config_.ProcessPeerHandshake(
+      message,
+      CryptoUtils::PEER_PRIORITY,
+      &negotiated_params_,
+      &error_details);
+  if (error != QUIC_NO_ERROR) {
+    CloseConnectionWithDetails(error, error_details);
+    return;
+  }
+
+  QuicErrorCode err = crypto_config_.ProcessServerHello(
+      message, &crypto_negotiated_params_, &error_details);
+  if (err != QUIC_NO_ERROR) {
+    CloseConnectionWithDetails(err, error_details);
+    return;
+  }
+
   SetHandshakeComplete(QUIC_NO_ERROR);
   return;
 }
 
 bool QuicCryptoClientStream::CryptoConnect() {
-  crypto_config_.SetDefaults();
+  crypto_config_.SetDefaults(session()->connection()->random_generator());
   CryptoUtils::GenerateNonce(session()->connection()->clock(),
                              session()->connection()->random_generator(),
                              &nonce_);
   CryptoHandshakeMessage message;
   crypto_config_.FillClientHello(nonce_, server_hostname_, &message);
+  config_.ToHandshakeMessage(&message);
   SendHandshakeMessage(message);
   return true;
 }

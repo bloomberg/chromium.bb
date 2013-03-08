@@ -1540,6 +1540,8 @@
         'quic/crypto/null_encrypter_test.cc',
         'quic/crypto/p256_key_exchange_test.cc',
         'quic/crypto/quic_random_test.cc',
+        'quic/test_tools/crypto_test_utils.cc',
+        'quic/test_tools/crypto_test_utils.h',
         'quic/test_tools/mock_clock.cc',
         'quic/test_tools/mock_clock.h',
         'quic/test_tools/mock_random.cc',

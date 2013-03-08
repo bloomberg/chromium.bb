@@ -140,7 +140,8 @@ PacketSavingConnection::~PacketSavingConnection() {
 bool PacketSavingConnection::SendOrQueuePacket(
     QuicPacketSequenceNumber sequence_number,
     QuicPacket* packet,
-    QuicPacketEntropyHash hash) {
+    QuicPacketEntropyHash entropy_hash,
+    bool has_retransmittable_data) {
   packets_.push_back(packet);
   return true;
 }
@@ -277,31 +278,73 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
   return ConstructPacketFromHandshakeMessage(guid, message);
 }
 
+CryptoHandshakeMessage CreateChloMessage(const QuicClock* clock,
+                                         QuicRandom* random_generator,
+                                         const string& server_hostname) {
+  QuicCryptoClientConfig client_config;
+  client_config.SetDefaults(random_generator);
+  string nonce;
+  CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
+
+  QuicConfig config;
+  config.SetDefaults();
+
+  CryptoHandshakeMessage message;
+  client_config.FillClientHello(nonce, server_hostname, &message);
+  config.ToHandshakeMessage(&message);
+  return message;
+}
+
 QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
                                        QuicRandom* random_generator,
                                        const string& server_hostname) {
-  QuicCryptoClientConfig config;
-  config.SetDefaults();
-  string nonce;
-  CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
+  CryptoHandshakeMessage chlo = CreateChloMessage(clock, random_generator,
+                                                  server_hostname);
+  return ConstructPacketFromHandshakeMessage(guid, chlo);
+}
 
-  CryptoHandshakeMessage message;
-  config.FillClientHello(nonce, server_hostname, &message);
-  return ConstructPacketFromHandshakeMessage(guid, message);
+CryptoHandshakeMessage CreateShloMessage(const QuicClock* clock,
+                                         QuicRandom* random_generator,
+                                         const string& server_hostname) {
+  // Expected CHLO
+  CryptoHandshakeMessage chlo = CreateChloMessage(clock, random_generator,
+                                                  server_hostname);
+
+  QuicConfig config;
+  config.SetDefaults();
+  QuicNegotiatedParameters negotiated_params;
+  string error_details;
+  QuicErrorCode error = config.ProcessPeerHandshake(
+      chlo, CryptoUtils::LOCAL_PRIORITY, &negotiated_params, &error_details);
+  DCHECK_EQ(QUIC_NO_ERROR, error);
+
+  std::string nonce;
+  CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
+  QuicCryptoNegotiatedParams params;
+  QuicCryptoServerConfig server_config;
+  // Use hardcoded crypto parameters for now.
+  CryptoHandshakeMessage extra_tags;
+  config.ToHandshakeMessage(&extra_tags);
+  scoped_ptr<CryptoTagValueMap> config_tags(
+      server_config.AddTestingConfig(random_generator, clock, extra_tags));
+
+  CryptoHandshakeMessage shlo;
+  server_config.ProcessClientHello(chlo, nonce, &shlo, &params,
+                                   &error_details);
+  DCHECK(error_details.empty()) << error_details;
+  config.ToHandshakeMessage(&shlo);
+
+  return shlo;
 }
 
 QuicPacket* ConstructServerHelloPacket(QuicGuid guid,
                                        const QuicClock* clock,
-                                       QuicRandom* random_generator) {
-  string nonce;
-  CryptoUtils::GenerateNonce(clock, random_generator, &nonce);
-
-  CryptoHandshakeMessage dummy_client_hello, server_hello;
-  QuicCryptoServerConfig server_config;
-  server_config.AddTestingConfig(random_generator, clock);
-  server_config.ProcessClientHello(dummy_client_hello, nonce, &server_hello);
-  return ConstructPacketFromHandshakeMessage(guid, server_hello);
+                                       QuicRandom* random_generator,
+                                       const string& server_hostname) {
+  CryptoHandshakeMessage shlo =
+      CreateShloMessage(clock, random_generator, server_hostname);
+  return ConstructPacketFromHandshakeMessage(guid, shlo);
 }
 
 size_t GetPacketLengthForOneStream(bool include_version, size_t payload) {

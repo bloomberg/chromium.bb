@@ -84,8 +84,9 @@ void TcpCubicSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
 void TcpCubicSender::SentPacket(QuicTime /*sent_time*/,
                                 QuicPacketSequenceNumber sequence_number,
                                 QuicByteCount bytes,
-                                bool is_retransmission) {
-  if (!is_retransmission) {
+                                bool is_retransmission,
+                                bool has_retransmittable_data) {
+  if (!is_retransmission && has_retransmittable_data) {
     bytes_in_flight_ += bytes;
   }
   if (!is_retransmission && update_end_sequence_number_) {

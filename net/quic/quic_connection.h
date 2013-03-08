@@ -321,7 +321,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // TODO(wtc): none of the callers check the return value.
   virtual bool SendOrQueuePacket(QuicPacketSequenceNumber sequence_number,
                                  QuicPacket* packet,
-                                 QuicPacketEntropyHash entropy_hash);
+                                 QuicPacketEntropyHash entropy_hash,
+                                 bool has_retransmittable_data);
 
   // Writes the given packet to socket with the help of helper. Returns true on
   // successful write, false otherwise. However, behavior is undefined if
@@ -333,6 +334,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // scheduler will not be consulted.
   bool WritePacket(QuicPacketSequenceNumber sequence_number,
                    QuicPacket* packet,
+                   bool has_retransmittable_data,
                    bool force);
 
   // Make sure an ack we got from our peer is sane.

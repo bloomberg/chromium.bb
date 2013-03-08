@@ -45,7 +45,11 @@ class QuicStreamFactoryTest : public ::testing::Test {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructShlo() {
-    scoped_ptr<QuicPacket> shlo(ConstructHandshakePacket(0xDEADBEEF, kSHLO));
+    const std::string host = "www.google.com";
+    scoped_ptr<QuicPacket> shlo(ConstructServerHelloPacket(0xDEADBEEF,
+                                                           clock_,
+                                                           &random_generator_,
+                                                           host));
     QuicFramer framer(kQuicVersion1,
                       QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
