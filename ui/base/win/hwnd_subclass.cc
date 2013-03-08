@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
+#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 
 namespace {
@@ -30,6 +31,19 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
 WNDPROC GetCurrentWndProc(HWND target) {
   return reinterpret_cast<WNDPROC>(GetWindowLongPtr(target, GWLP_WNDPROC));
+}
+
+// Not defined before Win7
+BOOL GetTouchInputInfoWrapper(HTOUCHINPUT handle, UINT count,
+                              PTOUCHINPUT pointer, int size) {
+  typedef BOOL(WINAPI *GetTouchInputInfoPtr)(HTOUCHINPUT, UINT,
+                                             PTOUCHINPUT, int);
+  GetTouchInputInfoPtr get_touch_input_info_func =
+      reinterpret_cast<GetTouchInputInfoPtr>(
+          GetProcAddress(GetModuleHandleA("user32.dll"), "GetTouchInputInfo"));
+  if (get_touch_input_info_func)
+    return get_touch_input_info_func(handle, count, pointer, size);
+  return FALSE;
 }
 
 }  // namespace
@@ -119,6 +133,25 @@ LRESULT HWNDSubclass::OnWndProc(HWND hwnd,
                                 UINT message,
                                 WPARAM w_param,
                                 LPARAM l_param) {
+
+  // Touch messages are always passed in screen coordinates. If the OS is
+  // scaled, but the app is not DPI aware, then then WM_TOUCH might be
+  // intended for a different window.
+  if (message == WM_TOUCH) {
+    TOUCHINPUT point;
+
+    if (GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param), 1,
+                                 &point, sizeof(TOUCHINPUT))) {
+      POINT touch_location = {
+        TOUCH_COORD_TO_PIXEL(point.x) / ui::win::GetUndocumentedDPIScale(),
+        TOUCH_COORD_TO_PIXEL(point.y) / ui::win::GetUndocumentedDPIScale()};
+      HWND actual_target = WindowFromPoint(touch_location);
+      if (actual_target != hwnd) {
+        return SendMessage(actual_target, message, w_param, l_param);
+      }
+    }
+  }
+
   for (std::vector<HWNDMessageFilter*>::iterator it = filters_.begin();
       it != filters_.end(); ++it) {
     LRESULT l_result = 0;
