@@ -47,6 +47,17 @@ std::string AutocheckoutStatusToString(AutocheckoutStatus status) {
   return "NOT_POSSIBLE";
 }
 
+std::string DialogTypeToFeatureString(autofill::DialogType dialog_type) {
+  switch (dialog_type) {
+    case DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
+      return "REQUEST_AUTOCOMPLETE";
+    case DIALOG_TYPE_AUTOCHECKOUT:
+      return "AUTOCHECKOUT";
+  }
+  NOTREACHED();
+  return "NOT_POSSIBLE";
+}
+
 // Gets and parses required actions from a SaveToWallet response. Returns
 // false if any unknown required actions are seen and true otherwise.
 void GetRequiredActionsForSaveToWallet(
@@ -77,6 +88,7 @@ const char kApiKeyKey[] = "api_key";
 const char kAuthResultKey[] = "auth_result";
 const char kCartKey[] = "cart";
 const char kEncryptedOtpKey[] = "encrypted_otp";
+const char kFeatureKey[] = "feature";
 const char kGoogleTransactionIdKey[] = "google_transaction_id";
 const char kInstrumentIdKey[] = "instrument_id";
 const char kInstrumentKey[] = "instrument";
@@ -161,6 +173,7 @@ void WalletClient::GetFullWallet(const std::string& instrument_id,
                                  const GURL& source_url,
                                  const Cart& cart,
                                  const std::string& google_transaction_id,
+                                 autofill::DialogType dialog_type,
                                  base::WeakPtr<WalletClientObserver> observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   DCHECK(observer);
@@ -177,6 +190,8 @@ void WalletClient::GetFullWallet(const std::string& instrument_id,
   pending_request_body_.SetString(kGoogleTransactionIdKey,
                                   google_transaction_id);
   pending_request_body_.Set(kCartKey, cart.ToDictionary().release());
+  pending_request_body_.SetString(kFeatureKey,
+                                  DialogTypeToFeatureString(dialog_type));
 
   crypto::RandBytes(&(one_time_pad_[0]), one_time_pad_.size());
   encryption_escrow_client_.EncryptOneTimePad(one_time_pad_,

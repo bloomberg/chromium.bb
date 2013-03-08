@@ -254,6 +254,7 @@ const char kGetFullWalletValidRequest[] =
             "\"total_price\":\"currency_code\""
         "},"
         "\"encrypted_otp\":\"encrypted_one_time_pad\","
+        "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
         "\"risk_params\":\"\","
@@ -603,6 +604,7 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
                               GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
+                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -633,6 +635,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
                               GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
+                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -657,6 +660,7 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
                               GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
+                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
@@ -682,6 +686,7 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
                               GURL(kMerchantUrl),
                               cart,
                               "google_transaction_id",
+                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
                               observer.AsWeakPtr());
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);

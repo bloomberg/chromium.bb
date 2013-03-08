@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/wallet/encryption_escrow_client.h"
 #include "chrome/browser/autofill/wallet/encryption_escrow_client_observer.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
@@ -96,13 +97,15 @@ class WalletClient
   // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
   // |adddress_id| should have been selected by the user in some UI,
   // |merchant_domain| should come from the BrowserContext, the |cart|
-  // information will have been provided by the browser, and
-  // |google_transaction_id| is the same one that GetWalletItems returns.
+  // information will have been provided by the browser, |dialog_type| indicates
+  // which dialog requests the full wallet, RequestAutocomplete or Autocheckout,
+  // and |google_transaction_id| is the same one that GetWalletItems returns.
   void GetFullWallet(const std::string& instrument_id,
                      const std::string& address_id,
                      const GURL& source_url,
                      const Cart& cart,
                      const std::string& google_transaction_id,
+                     autofill::DialogType dialog_type,
                      base::WeakPtr<WalletClientObserver> observer);
 
   // SaveAddress saves a new shipping address.
@@ -147,7 +150,7 @@ class WalletClient
 
  private:
   // TODO(ahutter): Implement this.
-  std::string GetRiskParams() { return ""; }
+  std::string GetRiskParams() { return std::string(); }
 
   enum RequestType {
     NO_PENDING_REQUEST,
