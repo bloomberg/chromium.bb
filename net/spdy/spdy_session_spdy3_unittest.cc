@@ -2275,6 +2275,41 @@ TEST_F(SpdySessionSpdy3Test, AdjustSendWindowSize31) {
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
 }
 
+// Incoming data for an inactive stream should not cause the session
+// receive window size to decrease.
+TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
+  session_deps_.enable_spdy_31 = true;
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  scoped_ptr<SpdyFrame> resp(ConstructSpdyBodyFrame(1, false));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 0),
+    MockRead(ASYNC, 0, 1)  // EOF
+  };
+  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+  scoped_refptr<SpdySession> session = GetSession(pair_);
+  InitializeSession(
+      http_session_.get(), session.get(), test_host_port_pair_);
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
+            session->flow_control_state());
+
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+
+  data.RunFor(2);
+
+  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+}
+
 namespace {
 
 void ExpectOK(int status) {

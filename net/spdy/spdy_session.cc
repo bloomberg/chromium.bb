@@ -1388,12 +1388,13 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
         base::Bind(&NetLogSpdyDataCallback, stream_id, len, fin));
   }
 
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION && len > 0)
-    DecreaseRecvWindowSize(static_cast<int32>(len));
-
   // By the time data comes in, the stream may already be inactive.
   if (!IsStreamActive(stream_id))
     return;
+
+  // Only decrease the window size for data for active streams.
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION && len > 0)
+    DecreaseRecvWindowSize(static_cast<int32>(len));
 
   scoped_refptr<SpdyStream> stream = active_streams_[stream_id];
   stream->OnDataReceived(data, len);
