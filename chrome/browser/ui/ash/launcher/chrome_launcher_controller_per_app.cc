@@ -71,8 +71,6 @@
 using extensions::Extension;
 using content::WebContents;
 
-// TODO(skuhne): Incognito markers need to be added with the advanced menu.
-
 namespace {
 
 std::string GetPrefKeyForRootWindow(aura::RootWindow* root_window) {
@@ -287,11 +285,11 @@ ash::LauncherID ChromeLauncherControllerPerApp::CreateTabbedLauncherItem(
   // the browser proxy nor ever use it. As such the controller will only be
   // used for event tracking.
   ash::LauncherID id = model_->reserve_external_id();
-  DCHECK(!HasItemController(id));
+  CHECK(!HasItemController(id));
   // TODO(skuhne): We should get rid of this entire controller and make sure
   // that we add only some general observers to make sure that we get the
   // state changes.
-  DCHECK(controller);
+  CHECK(controller);
   id_to_item_controller_map_[id] = controller;
   controller->set_launcher_id(id);
   return id;
@@ -301,7 +299,7 @@ ash::LauncherID ChromeLauncherControllerPerApp::CreateAppLauncherItem(
     LauncherItemController* controller,
     const std::string& app_id,
     ash::LauncherItemStatus status) {
-  DCHECK(controller);
+  CHECK(controller);
   return InsertAppLauncherItem(controller,
                                app_id,
                                status,
@@ -329,18 +327,20 @@ void ChromeLauncherControllerPerApp::SetItemStatus(
 void ChromeLauncherControllerPerApp::SetItemController(
     ash::LauncherID id,
     LauncherItemController* controller) {
+  CHECK(controller);
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
-  DCHECK(iter != id_to_item_controller_map_.end());
+  CHECK(iter != id_to_item_controller_map_.end());
   iter->second->OnRemoved();
   iter->second = controller;
   controller->set_launcher_id(id);
 }
 
 void ChromeLauncherControllerPerApp::CloseLauncherItem(ash::LauncherID id) {
+  CHECK(id);
   if (IsPinned(id)) {
     // Create a new shortcut controller.
     IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
-    DCHECK(iter != id_to_item_controller_map_.end());
+    CHECK(iter != id_to_item_controller_map_.end());
     SetItemStatus(id, ash::STATUS_CLOSED);
     std::string app_id = iter->second->app_id();
     iter->second->OnRemoved();
@@ -437,15 +437,15 @@ void ChromeLauncherControllerPerApp::LockV1AppWithID(
                                           ash::TYPE_WINDOWED_APP);
     id = GetLauncherIDForAppID(app_id);
   }
-  DCHECK(id);
+  CHECK(id);
   id_to_item_controller_map_[id]->lock();
 }
 
 void ChromeLauncherControllerPerApp::UnlockV1AppWithID(
     const std::string& app_id) {
   ash::LauncherID id = GetLauncherIDForAppID(app_id);
-  DCHECK(IsPinned(id) || IsWindowedAppInLauncher(app_id));
-  DCHECK(id);
+  CHECK(IsPinned(id) || IsWindowedAppInLauncher(app_id));
+  CHECK(id);
   LauncherItemController* controller = id_to_item_controller_map_[id];
   controller->unlock();
   if (!controller->locked() && !IsPinned(id))
@@ -562,7 +562,7 @@ ash::LauncherID ChromeLauncherControllerPerApp::GetLauncherIDForAppID(
 
 std::string ChromeLauncherControllerPerApp::GetAppIDForLauncherID(
     ash::LauncherID id) {
-  DCHECK(HasItemController(id));
+  CHECK(HasItemController(id));
   return id_to_item_controller_map_[id]->app_id();
 }
 
@@ -1052,14 +1052,13 @@ ChromeLauncherAppMenuItems ChromeLauncherControllerPerApp::GetApplicationList(
   if (item.type == ash::TYPE_BROWSER_SHORTCUT)
     return GetBrowserApplicationList();
 
-  std::string app_id = id_to_item_controller_map_[item.id]->app_id();
-  ash::LauncherID id = GetLauncherIDForAppID(app_id);
-  // If there is no launcher item (e.g. for panels), return an empty list.
-  if (!id)
+  // Make sure that there is a controller associated with the id and that the
+  // extension itself is a valid application and not a panel.
+  if (!HasItemController(item.id) ||
+      !GetLauncherIDForAppID(id_to_item_controller_map_[item.id]->app_id()))
     return ChromeLauncherAppMenuItems().Pass();
 
-  DCHECK(id_to_item_controller_map_[id]);
-  return id_to_item_controller_map_[id]->GetApplicationList();
+  return id_to_item_controller_map_[item.id]->GetApplicationList();
 }
 
 std::vector<content::WebContents*>
@@ -1204,7 +1203,8 @@ Profile* ChromeLauncherControllerPerApp::GetProfileForNewWindows() {
 
 void ChromeLauncherControllerPerApp::LauncherItemClosed(ash::LauncherID id) {
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
-  DCHECK(iter != id_to_item_controller_map_.end());
+  CHECK(iter != id_to_item_controller_map_.end());
+  CHECK(iter->second);
   app_icon_loader_->ClearImage(iter->second->app_id());
   iter->second->OnRemoved();
   id_to_item_controller_map_.erase(iter);
@@ -1406,8 +1406,8 @@ ash::LauncherID ChromeLauncherControllerPerApp::InsertAppLauncherItem(
     int index,
     ash::LauncherItemType launcher_item_type) {
   ash::LauncherID id = model_->next_id();
-  DCHECK(!HasItemController(id));
-  DCHECK(controller);
+  CHECK(!HasItemController(id));
+  CHECK(controller);
   id_to_item_controller_map_[id] = controller;
   controller->set_launcher_id(id);
 
