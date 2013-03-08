@@ -33,15 +33,15 @@ const int kActionButtonWidth = 32;
 // Extra margin at the right of the rightmost action icon.
 const int kActionButtonRightMargin = 8;
 
-const SkColor kBorderColor = SkColorSetARGB(0x0F, 0, 0, 0);
+const SkColor kBorderColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 
 const SkColor kDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kDimmedTextColor = SkColorSetRGB(0x96, 0x96, 0x96);
 const SkColor kURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
-const SkColor kSelectedBorderColor = kBorderColor;
-const SkColor kSelectedBackgroundColor = SkColorSetARGB(0x0F, 0x4D, 0x90, 0xFE);
-const SkColor kHoverAndPushedColor = SkColorSetARGB(0x05, 0, 0, 0);
+const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xEC, 0xEC, 0xEC);
+// 6% black on top of kSelectedBackgroundColor
+const SkColor kHoverSelectedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
 
 // A non-interactive image view to display result icon.
 class IconView : public views::ImageView {
@@ -182,18 +182,17 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect content_rect(rect);
   content_rect.set_height(rect.height() - kBorderSize);
 
-  canvas->FillRect(content_rect, kContentsBackgroundColor);
-
-  bool selected = list_view_->IsResultViewSelected(this);
-  if (selected) {
+  const bool selected = list_view_->IsResultViewSelected(this);
+  const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
+  if (hover && selected)
+    canvas->FillRect(content_rect, kHoverSelectedColor);
+  else if (selected || hover)
     canvas->FillRect(content_rect, kSelectedBackgroundColor);
-  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    canvas->FillRect(content_rect, kHoverAndPushedColor);
-  }
+  else
+    canvas->FillRect(content_rect, kContentsBackgroundColor);
 
   gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);
-  canvas->FillRect(border_bottom,
-                   selected ? kSelectedBorderColor : kBorderColor);
+  canvas->FillRect(border_bottom, kBorderColor);
 
   gfx::Rect text_bounds(rect);
   text_bounds.set_x(kIconViewWidth);
