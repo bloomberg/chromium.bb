@@ -388,13 +388,10 @@ Status ExecuteGetElementAttribute(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  args.Append(CreateElement(element_id));
-  return web_view->CallFunction(
-      session->frame,
-      webdriver::atoms::asString(webdriver::atoms::GET_ATTRIBUTE),
-      args,
-      value);
+  std::string name;
+  if (!params.GetString("name", &name))
+    return Status(kUnknownError, "missing 'name'");
+  return GetElementAttribute(session, web_view, element_id, name, value);
 }
 
 Status ExecuteGetElementValueOfCSSProperty(

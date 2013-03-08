@@ -178,7 +178,7 @@ Status GetElementAttribute(
     scoped_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendString(element_id);
+  args.AppendString(attribute_name);
   return CallAtomsJs(
       session, web_view, webdriver::atoms::GET_ATTRIBUTE, args, value);
 }
