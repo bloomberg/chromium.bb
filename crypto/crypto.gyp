@@ -186,6 +186,9 @@
         'crypto_module_blocking_password_delegate.h',
         'cssm_init.cc',
         'cssm_init.h',
+        'curve25519.cc',
+        'curve25519.h',
+        'curve25519-donna.c',
         'ghash.cc',
         'ghash.h',
         'ec_private_key.h',
@@ -262,6 +265,7 @@
         'run_all_unittests.cc',
 
         # Tests.
+        'curve25519_unittest.cc',
         'ec_private_key_unittest.cc',
         'ec_signature_creator_unittest.cc',
         'encryptor_unittest.cc',
