@@ -397,21 +397,4 @@ scoped_ptr<DriveEntryProtoVector> DriveDirectory::ToProtoVector() const {
   return entries.Pass();
 }
 
-void DriveEntry::SerializeToString(std::string* serialized_proto) const {
-  const DriveFile* file = AsDriveFileConst();
-  const DriveDirectory* dir = AsDriveDirectoryConst();
-
-  if (file) {
-    DriveEntryProto entry_proto;
-    file->ToProto(&entry_proto);
-    const bool ok = entry_proto.SerializeToString(serialized_proto);
-    DCHECK(ok);
-  } else if (dir) {
-    DriveDirectoryProto dir_proto;
-    dir->ToProto(&dir_proto);
-    const bool ok = dir_proto.SerializeToString(serialized_proto);
-    DCHECK(ok);
-  }
-}
-
 }  // namespace drive

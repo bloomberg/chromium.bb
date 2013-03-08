@@ -40,9 +40,6 @@ class DriveEntry {
   const DriveFile* AsDriveFileConst() const;
   const DriveDirectory* AsDriveDirectoryConst() const;
 
-  // Serialize/Parse to/from string via proto classes.
-  void SerializeToString(std::string* serialized_proto) const;
-
   // Converts to/from proto. Only handles the common part (i.e. does not
   // touch |file_specific_info|).
   void FromProto(const DriveEntryProto& proto);
