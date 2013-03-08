@@ -19,7 +19,6 @@
 #include <signal.h>
 #include <spawn.h>
 #include <sys/event.h>
-#include <sys/mman.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -659,6 +658,62 @@ namespace {
 
 bool g_oom_killer_enabled;
 
+// Starting with Mac OS X 10.7, the zone allocators set up by the system are
+// read-only, to prevent them from being overwritten in an attack. However,
+// blindly unprotecting and reprotecting the zone allocators fails with
+// GuardMalloc because GuardMalloc sets up its zone allocator using a block of
+// memory in its bss. Explicit saving/restoring of the protection is required.
+//
+// This function takes a pointer to a malloc zone, de-protects it if necessary,
+// and returns (in the out parameters) a region of memory (if any) to be
+// re-protected when modifications are complete. This approach assumes that
+// there is no contention for the protection of this memory.
+void DeprotectMallocZone(ChromeMallocZone* default_zone,
+                         mach_vm_address_t* reprotection_start,
+                         mach_vm_size_t* reprotection_length,
+                         vm_prot_t* reprotection_value) {
+  mach_port_t unused;
+  *reprotection_start = reinterpret_cast<mach_vm_address_t>(default_zone);
+  struct vm_region_basic_info_64 info;
+  mach_msg_type_number_t count = VM_REGION_BASIC_INFO_COUNT_64;
+  kern_return_t result =
+      mach_vm_region(mach_task_self(),
+                     reprotection_start,
+                     reprotection_length,
+                     VM_REGION_BASIC_INFO_64,
+                     reinterpret_cast<vm_region_info_t>(&info),
+                     &count,
+                     &unused);
+  CHECK(result == KERN_SUCCESS);
+
+  result = mach_port_deallocate(mach_task_self(), unused);
+  CHECK(result == KERN_SUCCESS);
+
+  // Does the region fully enclose the zone pointers? Possibly unwarranted
+  // simplification used: using the size of a full version 8 malloc zone rather
+  // than the actual smaller size if the passed-in zone is not version 8.
+  CHECK(*reprotection_start <=
+            reinterpret_cast<mach_vm_address_t>(default_zone));
+  mach_vm_size_t zone_offset = reinterpret_cast<mach_vm_size_t>(default_zone) -
+      reinterpret_cast<mach_vm_size_t>(*reprotection_start);
+  CHECK(zone_offset + sizeof(ChromeMallocZone) <= *reprotection_length);
+
+  if (info.protection & VM_PROT_WRITE) {
+    // No change needed; the zone is already writable.
+    *reprotection_start = 0;
+    *reprotection_length = 0;
+    *reprotection_value = VM_PROT_NONE;
+  } else {
+    *reprotection_value = info.protection;
+    result = mach_vm_protect(mach_task_self(),
+                             *reprotection_start,
+                             *reprotection_length,
+                             false,
+                             info.protection | VM_PROT_WRITE);
+    CHECK(result == KERN_SUCCESS);
+  }
+}
+
 // === C malloc/calloc/valloc/realloc/posix_memalign ===
 
 typedef void* (*malloc_type)(struct _malloc_zone_t* zone,
@@ -918,34 +973,27 @@ void EnableTerminationOnOutOfMemory() {
   // Don't do anything special on OOM for the malloc zones replaced by
   // AddressSanitizer, as modifying or protecting them may not work correctly.
 
-  // See http://trac.webkit.org/changeset/53362/trunk/Tools/DumpRenderTree/mac
-  bool zone_allocators_protected = base::mac::IsOSLionOrLater();
-
   ChromeMallocZone* default_zone =
       reinterpret_cast<ChromeMallocZone*>(malloc_default_zone());
   ChromeMallocZone* purgeable_zone =
       reinterpret_cast<ChromeMallocZone*>(malloc_default_purgeable_zone());
 
-  vm_address_t page_start_default = 0;
-  vm_address_t page_start_purgeable = 0;
-  vm_size_t len_default = 0;
-  vm_size_t len_purgeable = 0;
-  if (zone_allocators_protected) {
-    page_start_default = reinterpret_cast<vm_address_t>(default_zone) &
-        static_cast<vm_size_t>(~(getpagesize() - 1));
-    len_default = reinterpret_cast<vm_address_t>(default_zone) -
-        page_start_default + sizeof(ChromeMallocZone);
-    mprotect(reinterpret_cast<void*>(page_start_default), len_default,
-             PROT_READ | PROT_WRITE);
+  mach_vm_address_t default_reprotection_start = 0;
+  mach_vm_size_t default_reprotection_length = 0;
+  vm_prot_t default_reprotection_value = VM_PROT_NONE;
+  DeprotectMallocZone(default_zone,
+                      &default_reprotection_start,
+                      &default_reprotection_length,
+                      &default_reprotection_value);
 
-    if (purgeable_zone) {
-      page_start_purgeable = reinterpret_cast<vm_address_t>(purgeable_zone) &
-          static_cast<vm_size_t>(~(getpagesize() - 1));
-      len_purgeable = reinterpret_cast<vm_address_t>(purgeable_zone) -
-          page_start_purgeable + sizeof(ChromeMallocZone);
-      mprotect(reinterpret_cast<void*>(page_start_purgeable), len_purgeable,
-               PROT_READ | PROT_WRITE);
-    }
+  mach_vm_address_t purgeable_reprotection_start = 0;
+  mach_vm_size_t purgeable_reprotection_length = 0;
+  vm_prot_t purgeable_reprotection_value = VM_PROT_NONE;
+  if (purgeable_zone) {
+    DeprotectMallocZone(purgeable_zone,
+                        &purgeable_reprotection_start,
+                        &purgeable_reprotection_length,
+                        &purgeable_reprotection_value);
   }
 
   // Default zone
@@ -997,13 +1045,24 @@ void EnableTerminationOnOutOfMemory() {
     }
   }
 
-  if (zone_allocators_protected) {
-    mprotect(reinterpret_cast<void*>(page_start_default), len_default,
-             PROT_READ);
-    if (purgeable_zone) {
-      mprotect(reinterpret_cast<void*>(page_start_purgeable), len_purgeable,
-               PROT_READ);
-    }
+  // Restore protection if it was active.
+
+  if (default_reprotection_start) {
+    kern_return_t result = mach_vm_protect(mach_task_self(),
+                                           default_reprotection_start,
+                                           default_reprotection_length,
+                                           false,
+                                           default_reprotection_value);
+    CHECK(result == KERN_SUCCESS);
+  }
+
+  if (purgeable_reprotection_start) {
+    kern_return_t result = mach_vm_protect(mach_task_self(),
+                                           purgeable_reprotection_start,
+                                           purgeable_reprotection_length,
+                                           false,
+                                           purgeable_reprotection_value);
+    CHECK(result == KERN_SUCCESS);
   }
 #endif
 
