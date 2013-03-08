@@ -276,11 +276,41 @@ bool URLIndexPrivateData::DeleteURL(const GURL& url) {
 }
 
 // static
-void URLIndexPrivateData::RestoreFromFileTask(
+scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
     const base::FilePath& file_path,
-    scoped_refptr<URLIndexPrivateData> private_data,
     const std::string& languages) {
-  private_data = URLIndexPrivateData::RestoreFromFile(file_path, languages);
+  base::TimeTicks beginning_time = base::TimeTicks::Now();
+  if (!file_util::PathExists(file_path))
+    return NULL;
+  std::string data;
+  // If there is no cache file then simply give up. This will cause us to
+  // attempt to rebuild from the history database.
+  if (!file_util::ReadFileToString(file_path, &data))
+    return NULL;
+
+  scoped_refptr<URLIndexPrivateData> restored_data(new URLIndexPrivateData);
+  InMemoryURLIndexCacheItem index_cache;
+  if (!index_cache.ParseFromArray(data.c_str(), data.size())) {
+    LOG(WARNING) << "Failed to parse URLIndexPrivateData cache data read from "
+                 << file_path.value();
+    return restored_data;
+  }
+
+  if (!restored_data->RestorePrivateData(index_cache, languages))
+    return NULL;
+
+  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexRestoreCacheTime",
+                      base::TimeTicks::Now() - beginning_time);
+  UMA_HISTOGRAM_COUNTS("History.InMemoryURLHistoryItems",
+                       restored_data->history_id_word_map_.size());
+  UMA_HISTOGRAM_COUNTS("History.InMemoryURLCacheSize", data.size());
+  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
+                             restored_data->word_map_.size());
+  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
+                             restored_data->char_word_map_.size());
+  if (restored_data->Empty())
+    return NULL;  // 'No data' is the same as a failed reload.
+  return restored_data;
 }
 
 // static
@@ -944,44 +974,6 @@ void URLIndexPrivateData::SaveWordStartsMap(
 }
 
 // Cache Restoring -------------------------------------------------------------
-
-// static
-scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
-    const base::FilePath& file_path,
-    const std::string& languages) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-  if (!file_util::PathExists(file_path))
-    return NULL;
-  std::string data;
-  // If there is no cache file then simply give up. This will cause us to
-  // attempt to rebuild from the history database.
-  if (!file_util::ReadFileToString(file_path, &data))
-    return NULL;
-
-  scoped_refptr<URLIndexPrivateData> restored_data(new URLIndexPrivateData);
-  InMemoryURLIndexCacheItem index_cache;
-  if (!index_cache.ParseFromArray(data.c_str(), data.size())) {
-    LOG(WARNING) << "Failed to parse URLIndexPrivateData cache data read from "
-                 << file_path.value();
-    return restored_data;
-  }
-
-  if (!restored_data->RestorePrivateData(index_cache, languages))
-    return NULL;
-
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexRestoreCacheTime",
-                      base::TimeTicks::Now() - beginning_time);
-  UMA_HISTOGRAM_COUNTS("History.InMemoryURLHistoryItems",
-                       restored_data->history_id_word_map_.size());
-  UMA_HISTOGRAM_COUNTS("History.InMemoryURLCacheSize", data.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
-                             restored_data->word_map_.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
-                             restored_data->char_word_map_.size());
-  if (restored_data->Empty())
-    return NULL;  // 'No data' is the same as a failed reload.
-  return restored_data;
-}
 
 bool URLIndexPrivateData::RestorePrivateData(
     const InMemoryURLIndexCacheItem& cache,

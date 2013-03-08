@@ -87,12 +87,13 @@ class URLIndexPrivateData
   // was actually updated.
   bool DeleteURL(const GURL& url);
 
-  // Creates a new URLIndexPrivateData object, populates it from the contents
-  // of the cache file stored in |file_path|, and assigns it to |private_data|.
-  // |languages| will be used to break URLs and page titles into words.
-  static void RestoreFromFileTask(
-      const base::FilePath& file_path,
-      scoped_refptr<URLIndexPrivateData> private_data,
+  // Constructs a new object by restoring its contents from the cache file
+  // at |path|. Returns the new URLIndexPrivateData which on success will
+  // contain the restored data but upon failure will be empty.  |languages|
+  // is used to break URLs and page titles into words.  This function
+  // should be run on the the file thread.
+  static scoped_refptr<URLIndexPrivateData> RestoreFromFile(
+      const base::FilePath& path,
       const std::string& languages);
 
   // Constructs a new object by rebuilding its contents from the history
@@ -272,14 +273,6 @@ class URLIndexPrivateData
   void SaveWordIDHistoryMap(imui::InMemoryURLIndexCacheItem* cache) const;
   void SaveHistoryInfoMap(imui::InMemoryURLIndexCacheItem* cache) const;
   void SaveWordStartsMap(imui::InMemoryURLIndexCacheItem* cache) const;
-
-  // Constructs a new object by restoring its contents from the file at |path|.
-  // Returns the new URLIndexPrivateData which on success will contain the
-  // restored data but upon failure will be empty.  |languages| will be used to
-  // break URLs and page titles into words
-  static scoped_refptr<URLIndexPrivateData> RestoreFromFile(
-      const base::FilePath& path,
-      const std::string& languages);
 
   // Decode a data structure from the protobuf |cache|. Return false if there
   // is any kind of failure. |languages| will be used to break URLs and page

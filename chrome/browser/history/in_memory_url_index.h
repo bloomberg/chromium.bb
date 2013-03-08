@@ -210,8 +210,7 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // successful, sets the private data and notifies any
   // |restore_cache_observer_|. Otherwise, kicks off a rebuild from the history
   // database.
-  void OnCacheLoadDone(
-    scoped_refptr<URLIndexPrivateData> private_data_ptr);
+  void OnCacheLoadDone(scoped_refptr<URLIndexPrivateData> private_data_ptr);
 
   // Callback function that sets the private data from the just-restored-from-
   // file |private_data|. Notifies any |restore_cache_observer_| that the

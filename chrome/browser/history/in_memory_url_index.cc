@@ -238,14 +238,11 @@ void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
     return;
   }
 
-  scoped_refptr<URLIndexPrivateData> restored_private_data =
-      new URLIndexPrivateData;
-  content::BrowserThread::PostTaskAndReply(
+  content::BrowserThread::PostTaskAndReplyWithResult
+      <scoped_refptr<URLIndexPrivateData> >(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&URLIndexPrivateData::RestoreFromFileTask, path,
-          restored_private_data, languages_),
-      base::Bind(&InMemoryURLIndex::OnCacheLoadDone, AsWeakPtr(),
-          restored_private_data));
+      base::Bind(&URLIndexPrivateData::RestoreFromFile, path, languages_),
+      base::Bind(&InMemoryURLIndex::OnCacheLoadDone, AsWeakPtr()));
 }
 
 void InMemoryURLIndex::OnCacheLoadDone(
