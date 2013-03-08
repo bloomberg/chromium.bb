@@ -4854,6 +4854,7 @@
    fun:_ZN3WTF10fastMallocEm
    fun:_ZN3WTF10RefCountedIN7WebCore7ArchiveEEnwEm
    fun:_ZN7WebCore12MHTMLArchive6createEv
+   ...
    fun:_ZN7WebCore11MHTMLParser22parseArchiveWithHeaderEPNS_10MIMEHeaderE
    fun:_ZN7WebCore11MHTMLParser12parseArchiveEv
    fun:_ZN7WebCore12MHTMLArchive6createERKNS_4KURLEPNS_12SharedBufferE
@@ -5325,6 +5326,20 @@
    fun:_ZN3ash5Shell10ShowCursorEb
    fun:_ZN3ash13CursorManager10ShowCursorEb
    fun:_ZN3ash4test11AshTestBase5SetUpEv
+}
+{
+   bug_144118
+   Memcheck:Unaddressable
+   fun:NPP_SetWindow
+   fun:_ZN6webkit5npapi14PluginInstance13NPP_SetWindowEP9_NPWindow
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl17WindowedSetWindowEv
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl22WindowedUpdateGeometryERKN3gfx4RectES5_
+   fun:_ZN6webkit5npapi21WebPluginDelegateImpl14UpdateGeometryERKN3gfx4RectES5_
+   fun:_ZN6webkit5npapi13WebPluginImpl14updateGeometryERKN6WebKit7WebRectES5_RKNS2_9WebVectorIS3_EEb
+   fun:_ZN6WebKit22WebPluginContainerImpl14reportGeometryEv
+   fun:_ZN6WebKit22WebPluginContainerImpl12setFrameRectERKN7WebCore7IntRectE
+   ...
+   fun:_ZN9TestShell4dumpEv
 }
 {
    bug_144913
@@ -6699,6 +6714,20 @@
    fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
    fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
    fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+}
+{
+   bug_181038_link
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3gfx9GLApiBase15glLinkProgramFnEj
+   fun:_ZN3gpu5gles27Program4LinkEPNS0_13ShaderManagerEPNS0_16ShaderTranslatorES5_PNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_4cmds11LinkProgramE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 {
    bug_181050
