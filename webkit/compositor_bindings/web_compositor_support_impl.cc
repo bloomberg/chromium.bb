@@ -15,7 +15,6 @@
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
 #include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 #include "webkit/compositor_bindings/web_image_layer_impl.h"
-#include "webkit/compositor_bindings/web_io_surface_layer_impl.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_scrollbar_layer_impl.h"
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
@@ -32,7 +31,6 @@ using WebKit::WebContentLayerClient;
 using WebKit::WebExternalTextureLayer;
 using WebKit::WebExternalTextureLayerClient;
 using WebKit::WebFloatAnimationCurve;
-using WebKit::WebIOSurfaceLayer;
 using WebKit::WebImageLayer;
 using WebKit::WebImageLayer;
 using WebKit::WebLayer;
@@ -102,10 +100,6 @@ WebContentLayer* WebCompositorSupportImpl::createContentLayer(
 WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(
     WebExternalTextureLayerClient* client) {
   return new WebKit::WebExternalTextureLayerImpl(client);
-}
-
-WebKit::WebIOSurfaceLayer* WebCompositorSupportImpl::createIOSurfaceLayer() {
-  return new WebKit::WebIOSurfaceLayerImpl();
 }
 
 WebKit::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {

@@ -15,8 +15,6 @@
       'web_external_texture_layer_impl.h',
       'web_float_animation_curve_impl.cc',
       'web_float_animation_curve_impl.h',
-      'web_io_surface_layer_impl.cc',
-      'web_io_surface_layer_impl.h',
       'web_image_layer_impl.cc',
       'web_image_layer_impl.h',
       'web_layer_impl.cc',
