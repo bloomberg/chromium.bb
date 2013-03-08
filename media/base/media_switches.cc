@@ -47,6 +47,9 @@ const char kDisableRendererSideMixing[] = "disable-renderer-side-mixing";
 // Enable browser-side audio mixer.
 const char kEnableAudioMixer[] = "enable-audio-mixer";
 
+// Enable live audio input with getUserMedia() and the Web Audio API.
+const char kEnableWebAudioInput[] = "enable-webaudio-input";
+
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 

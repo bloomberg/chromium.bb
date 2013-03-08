@@ -298,7 +298,11 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
   // TODO(crogers): support more than stereo input.
-  if (params.input_channels() == 2) {
+  // TODO(crogers): remove flag once we handle input device selection.
+  // https://code.google.com/p/chromium/issues/detail?id=147327
+  if (params.input_channels() == 2 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebAudioInput)) {
     if (HasUnifiedDefaultIO())
       return new AudioHardwareUnifiedStream(this, params);
 
@@ -340,9 +344,10 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     channel_layout = input_params.channel_layout();
     input_channels = input_params.input_channels();
 
-    if (input_channels > 0) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableWebAudioInput)) {
       // TODO(crogers): given the limitations of the AudioOutputStream
-      // back-ends used with synchronized I/O, we hard-code to stereo.
+      // back-ends used with kEnableWebAudioInput, we hard-code to stereo.
       // Specifically, this is a limitation of AudioSynchronizedStream which
       // can be removed as part of the work to consolidate these back-ends.
       channel_layout = CHANNEL_LAYOUT_STEREO;

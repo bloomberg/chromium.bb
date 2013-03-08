@@ -39,6 +39,8 @@ MEDIA_EXPORT extern const char kDisableRendererSideMixing[];
 
 MEDIA_EXPORT extern const char kEnableAudioMixer[];
 
+MEDIA_EXPORT extern const char kEnableWebAudioInput[];
+
 MEDIA_EXPORT extern const char kVideoThreads[];
 
 MEDIA_EXPORT extern const char kDisableEncryptedMedia[];

@@ -123,6 +123,12 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
 // Convenience method which ensures that we fulfill all required conditions
 // to run unified audio tests on Windows.
 static bool CanRunUnifiedAudioTests(AudioManager* audio_man) {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableWebAudioInput)) {
+    DVLOG(1) << "--enable-webaudio-input must be defined to run this test.";
+    return false;
+  }
+
   if (!CoreAudioUtil::IsSupported()) {
     LOG(WARNING) << "This tests requires Windows Vista or higher.";
     return false;

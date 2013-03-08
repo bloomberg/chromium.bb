@@ -170,12 +170,13 @@ void WebRtcLocalAudioRenderer::Start() {
                                      source_params.bits_per_sample(),
                                      2 * source_params.frames_per_buffer());
   sink_ = AudioDeviceFactory::NewOutputDevice();
-
-  // TODO(henrika): we could utilize the unified audio here instead and do
-  // sink_->InitializeIO(sink_params, 2, callback_.get());
-  // It would then be possible to avoid using the WebRtcAudioCapturer.
-  DVLOG(1) << "The live audio input feature is enabled";
-
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebAudioInput)) {
+    // TODO(henrika): we could utilize the unified audio here instead and do
+    // sink_->InitializeIO(sink_params, 2, callback_.get());
+    // It would then be possible to avoid using the WebRtcAudioCapturer.
+    DVLOG(1) << "enable-webaudio-input command-line flag is enabled";
+  }
   sink_->Initialize(sink_params, callback_.get());
   sink_->SetSourceRenderView(source_render_view_id_);
 
