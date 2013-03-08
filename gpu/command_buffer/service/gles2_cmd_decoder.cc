@@ -4894,6 +4894,11 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     SetGLError(GL_INVALID_OPERATION,
                "glBlitFramebufferEXT", "function not available");
   }
+
+  if (!CheckBoundFramebuffersValid("glBlitFramebufferEXT")) {
+    return;
+  }
+
   glDisable(GL_SCISSOR_TEST);
   if (IsAngle()) {
     glBlitFramebufferANGLE(
