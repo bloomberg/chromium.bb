@@ -639,6 +639,7 @@ std::string GetDesktopFileContents(
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
+  // An empty file causes a crash with glib <= 2.32, so special case here.
   if (template_contents.empty())
     return output_buffer;
 
@@ -654,8 +655,9 @@ std::string GetDesktopFileContents(
           template_contents.size(),
           G_KEY_FILE_NONE,
           &err)) {
-    NOTREACHED() << "Unable to read desktop file template:" << err->message;
+    LOG(WARNING) << "Unable to read desktop file template: " << err->message;
     g_error_free(err);
+    g_key_file_free(key_file);
     return output_buffer;
   }
 

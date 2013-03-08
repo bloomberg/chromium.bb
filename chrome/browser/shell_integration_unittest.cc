@@ -391,6 +391,10 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     // Dumb case.
     { "ignored", "ignored", "ignored", false, "", "#!/usr/bin/env xdg-open\n" },
 
+    // Invalid desktop file.
+    { "ignored", "ignored", "ignored", false, "[Desktop\n",
+      "#!/usr/bin/env xdg-open\n" },
+
     // Non-empty file without [Desktop Entry].
     // This tests a different code path to the above.
     { "http://gmail.com",
