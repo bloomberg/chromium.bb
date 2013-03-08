@@ -125,8 +125,8 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
         switches::kDefaultTileHeight, size.str());
   }
 
-  // Increase the resolution of low resolution tiles for Nexus 10.
-  if (is_nexus10 &&
+  // Increase the resolution of low resolution tiles for Nexus tablets.
+  if ((is_nexus7 || is_nexus10) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kLowResolutionContentsScaleFactor)) {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
