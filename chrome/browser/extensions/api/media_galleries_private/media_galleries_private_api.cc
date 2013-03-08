@@ -318,14 +318,13 @@ bool MediaGalleriesPrivateEjectDeviceFunction::RunImpl() {
   monitor->EjectDevice(
       device_id_str,
       base::Bind(&MediaGalleriesPrivateEjectDeviceFunction::HandleResponse,
-                 base::Unretained(this)));
+                 this));
 
   return true;
 }
 
 void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
     chrome::StorageMonitor::EjectStatus status) {
-
   using extensions::api::media_galleries_private::
       EJECT_DEVICE_RESULT_CODE_FAILURE;
   using extensions::api::media_galleries_private::
