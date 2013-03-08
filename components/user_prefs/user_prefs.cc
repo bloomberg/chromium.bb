@@ -20,12 +20,6 @@ void* UserDataKey() {
 
 }  // namespace
 
-UserPrefs::UserPrefs(PrefService* prefs) : prefs_(prefs) {
-}
-
-UserPrefs::~UserPrefs() {
-}
-
 // static
 PrefService* UserPrefs::Get(content::BrowserContext* context) {
   DCHECK(context);
@@ -39,6 +33,12 @@ void UserPrefs::Set(content::BrowserContext* context, PrefService* prefs) {
   DCHECK(prefs);
   DCHECK(!context->GetUserData(UserDataKey()));
   context->SetUserData(UserDataKey(), new UserPrefs(prefs));
+}
+
+UserPrefs::UserPrefs(PrefService* prefs) : prefs_(prefs) {
+}
+
+UserPrefs::~UserPrefs() {
 }
 
 }  // namespace components

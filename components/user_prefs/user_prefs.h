@@ -6,7 +6,6 @@
 #define COMPONENTS_USER_PREFS_USER_PREFS_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/user_prefs/user_prefs_export.h"
 
@@ -22,7 +21,7 @@ namespace components {
 // hang off of content::BrowserContext and can be retrieved using
 // UserPrefs::Get().
 //
-// It is up to the embedder tof create and own the PrefService and
+// It is up to the embedder to create and own the PrefService and
 // attach it to BrowserContext using the UserPrefs::Set() function.
 class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
  public:
@@ -35,7 +34,7 @@ class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
   static void Set(content::BrowserContext* context, PrefService* prefs);
 
  private:
-  UserPrefs(PrefService* prefs);
+  explicit UserPrefs(PrefService* prefs);
   virtual ~UserPrefs();
 
   // Non-owning; owned by embedder.
