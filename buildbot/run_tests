@@ -94,6 +94,20 @@ special_tests=(
   ['scripts/cros_portage_upgrade_unittest.py']=skip
 )
 
+if [[ $# -ne 0 && $1 == "--quick" ]]; then
+  shift
+  # Tests that require network can be really slow.
+  special_tests['buildbot/manifest_version_unittest.py']=skip
+  special_tests['buildbot/repository_unittest.py']=skip
+  special_tests['buildbot/remote_try_unittest.py']=skip
+  special_tests['lib/cros_build_lib_unittest.py']=skip
+  special_tests['lib/gerrit_unittest.py']=skip
+  special_tests['lib/patch_unittest.py']=skip
+
+  # cgroups_unittest runs cros_sdk a lot, so is slow.
+  special_tests['lib/cgroups_unittest.py']=skip
+fi
+
 if [[ $# -eq 0 ]]; then
   # List all unit test scripts that match the given pattern.
   all_tests=(
