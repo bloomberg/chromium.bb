@@ -46,6 +46,8 @@ WalletItems::MaskedInstrument::Status
     return WalletItems::MaskedInstrument::VALID;
   if (status_string == "DECLINED")
     return WalletItems::MaskedInstrument::DECLINED;
+  if (status_string == "DISABLED_FOR_THIS_MERCHANT")
+    return WalletItems::MaskedInstrument::DISABLED_FOR_THIS_MERCHANT;
   if (status_string == "UNSUPPORTED_COUNTRY")
     return WalletItems::MaskedInstrument::UNSUPPORTED_COUNTRY;
   if (status_string == "EXPIRED")

@@ -56,6 +56,7 @@ class WalletItems {
     enum Status {
       BILLING_INCOMPLETE,
       DECLINED,
+      DISABLED_FOR_THIS_MERCHANT,
       EXPIRED,
       INAPPLICABLE,  // Catch all status.
       PENDING,
