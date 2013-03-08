@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/native_web_contents_modal_dialog.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
 
 typedef struct _GdkColor GdkColor;
 class ChromeWebContentsViewDelegateGtk;
@@ -67,7 +66,7 @@ class ConstrainedWindowGtk {
   content::WebContents* owner() const { return web_contents_; }
 
   // Returns the toplevel widget that displays this "window".
-  GtkWidget* widget() { return border_.get(); }
+  GtkWidget* widget() { return border_; }
 
   // Returns the View that we collaborate with to position ourselves.
   TabContentsViewType* ContainingView();
@@ -78,12 +77,13 @@ class ConstrainedWindowGtk {
                        GdkEventKey*);
   CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, void, OnHierarchyChanged,
                        GtkWidget*);
+  CHROMEGTK_CALLBACK_0(ConstrainedWindowGtk, void, OnDestroy);
 
   // The WebContents that owns and constrains this ConstrainedWindowGtk.
   content::WebContents* web_contents_;
 
   // The top level widget container that exports to our WebContentsView.
-  ui::OwnedWidgetGtk border_;
+  GtkWidget* border_;
 
   // Delegate that provides the contents of this constrained window.
   ConstrainedWindowGtkDelegate* delegate_;

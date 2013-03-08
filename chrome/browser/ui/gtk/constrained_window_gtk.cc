@@ -45,7 +45,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
 
   // Unlike other users of CreateBorderBin, we need a dedicated frame around
   // our "window".
-  GtkWidget* ebox = gtk_event_box_new();
+  border_ = gtk_event_box_new();
+  g_object_ref_sink(border_);
   GtkWidget* frame = gtk_frame_new(NULL);
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
 
@@ -62,8 +63,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
     gtk_container_add(GTK_CONTAINER(alignment), dialog);
 
   gtk_container_add(GTK_CONTAINER(frame), alignment);
-  gtk_container_add(GTK_CONTAINER(ebox), frame);
-  border_.Own(ebox);
+  gtk_container_add(GTK_CONTAINER(border_), frame);
 
   BackgroundColorChanged();
 
@@ -72,6 +72,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
                    this);
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
+  g_signal_connect(widget(), "destroy", G_CALLBACK(OnDestroyThunk),
+                   this);
 
   // TODO(wittman): Getting/setting data on the widget is a hack to facilitate
   // looking up the ConstrainedWindowGtk from the GtkWindow during refactoring.
@@ -84,11 +86,10 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
-  border_.Destroy();
 }
 
 void ConstrainedWindowGtk::ShowWebContentsModalDialog() {
-  gtk_widget_show_all(border_.get());
+  gtk_widget_show_all(border_);
 
   // We collaborate with WebContentsView and stick ourselves in the
   // WebContentsView's floating container.
@@ -98,14 +99,7 @@ void ConstrainedWindowGtk::ShowWebContentsModalDialog() {
 }
 
 void ConstrainedWindowGtk::CloseWebContentsModalDialog() {
-  if (visible_)
-    ContainingView()->RemoveConstrainedWindow(this);
-  delegate_->DeleteDelegate();
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->WillClose(widget());
-
-  delete this;
+  gtk_widget_destroy(border_);
 }
 
 void ConstrainedWindowGtk::FocusWebContentsModalDialog() {
@@ -131,9 +125,9 @@ NativeWebContentsModalDialog ConstrainedWindowGtk::GetNativeDialog() {
 void ConstrainedWindowGtk::BackgroundColorChanged() {
   GdkColor background;
   if (delegate_->GetBackgroundColor(&background)) {
-    gtk_widget_modify_base(border_.get(), GTK_STATE_NORMAL, &background);
-    gtk_widget_modify_fg(border_.get(), GTK_STATE_NORMAL, &background);
-    gtk_widget_modify_bg(border_.get(), GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_base(border_, GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_fg(border_, GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &background);
   }
 }
 
@@ -145,12 +139,7 @@ ConstrainedWindowGtk::ContainingView() {
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
                                           GdkEventKey* key) {
   if (key->keyval == GDK_Escape) {
-    // Let the stack unwind so the event handler can release its ref
-    // on widget().
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ConstrainedWindowGtk::CloseWebContentsModalDialog,
-                   weak_factory_.GetWeakPtr()));
+    CloseWebContentsModalDialog();
     return TRUE;
   }
 
@@ -160,8 +149,23 @@ gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
 void ConstrainedWindowGtk::OnHierarchyChanged(GtkWidget* sender,
                                               GtkWidget* previous_toplevel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(widget())))
+
+  if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(border_)))
     return;
 
   FocusWebContentsModalDialog();
+}
+
+void ConstrainedWindowGtk::OnDestroy(GtkWidget* sender) {
+  if (visible_)
+    ContainingView()->RemoveConstrainedWindow(this);
+  delegate_->DeleteDelegate();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->WillClose(border_);
+
+  g_object_unref(border_);
+  border_ = NULL;
+
+  delete this;
 }

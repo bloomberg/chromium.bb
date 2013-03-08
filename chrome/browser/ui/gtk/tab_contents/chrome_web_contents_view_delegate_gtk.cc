@@ -79,8 +79,6 @@ void ChromeWebContentsViewDelegateGtk::RemoveConstrainedWindow(
   DCHECK(constrained_window == constrained_window_);
 
   constrained_window_ = NULL;
-  gtk_container_remove(GTK_CONTAINER(floating_.get()),
-                       constrained_window->widget());
 }
 
 void ChromeWebContentsViewDelegateGtk::Initialize(

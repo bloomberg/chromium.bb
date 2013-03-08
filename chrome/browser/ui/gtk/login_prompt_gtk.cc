@@ -21,6 +21,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
