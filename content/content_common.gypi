@@ -6,7 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../build/temp_gyp/googleurl.gyp:googleurl',
-    '../components/components_tracing.gyp:tracing',
+    '../components/tracing.gyp:tracing',
     '../media/media.gyp:media',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',

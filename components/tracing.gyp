@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file is intentionally a gyp file rather than a gypi for dependencies
+# reasons. The other gypi files include content.gyp and content_common depends
+# on this, thus if you try to rename this to gypi and include it in
+# components.gyp, you will get a circular dependency error.
 {
   'targets' : [
     {
