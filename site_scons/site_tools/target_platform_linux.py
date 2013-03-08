@@ -58,7 +58,7 @@ def generate(env):
 
   # Preserve some variables that get blown away by the tools.
   saved = dict()
-  for k in ['CFLAGS', 'CCFLAGS', 'CXXFLAGS', 'LINKFLAGS', 'LIBS']:
+  for k in ['ASFLAGS', 'CFLAGS', 'CCFLAGS', 'CXXFLAGS', 'LINKFLAGS', 'LIBS']:
     saved[k] = env.get(k, [])
     env[k] = []
 
@@ -93,6 +93,7 @@ def generate(env):
           '-O0',     # turn off optimizations
           '-g',      # turn on debugging info
       ],
+      LINKFLAGS_DEBUG=['-g'],
 
       # Settings for optimized
       CCFLAGS_OPTIMIZED=['-O2'],

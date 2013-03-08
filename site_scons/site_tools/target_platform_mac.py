@@ -144,8 +144,9 @@ def generate(env):
       CCFLAG_INCLUDE='-include',     # Command line option to include a header
 
       # Code coverage related.
-      COVERAGE_CCFLAGS=['-ftest-coverage', '-fprofile-arcs', '-DCOVERAGE'],
-      COVERAGE_LIBS='gcov',
+      COVERAGE_CCFLAGS=['--coverage', '-DCOVERAGE'],
+      COVERAGE_LIBS='',
+      COVERAGE_LINKFLAGS=['--coverage', '-lprofile_rt'],
       COVERAGE_STOP_CMD=[
           '$COVERAGE_MCOV --directory "$TARGET_ROOT" --output "$TARGET"',
           ('$COVERAGE_GENHTML --output-directory $COVERAGE_HTML_DIR '
@@ -176,7 +177,10 @@ def generate(env):
       SHLINKFLAGS = ['$DYLIB_INSTALL_NAME_FLAGS'],
 
       # Settings for debug
-      CCFLAGS_DEBUG=['-g'],
+      CCFLAGS_DEBUG=[
+          '-O0',     # turn off optimizations
+          '-g',      # turn on debugging info
+      ],
       LINKFLAGS_DEBUG=['-g'],
 
       # Settings for optimized

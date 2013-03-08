@@ -26,11 +26,14 @@ echo @@@BUILD_STEP cleanup_temp@@@
 ls -al /tmp/
 rm -rf /tmp/* /tmp/.[!.]* || true
 
+echo @@BUILD_STEP update_clang@@@
+../tools/clang/scripts/update.sh
+
 echo @@@BUILD_STEP scons_compile@@@
-./scons -j 8 -k --verbose --mode=coverage-mac,nacl platform=x86-32
+./scons -j 8 -k --verbose --mode=coverage-mac,nacl platform=x86-32 --clang
 
 echo @@@BUILD_STEP coverage@@@
-./scons -k --verbose --mode=coverage-mac,nacl coverage platform=x86-32
+./scons -k --verbose --mode=coverage-mac,nacl coverage platform=x86-32 --clang
 
 # Stop here and don't archive if on trybots.
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
