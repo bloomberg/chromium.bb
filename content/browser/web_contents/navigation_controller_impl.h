@@ -79,7 +79,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual bool NeedsReload() const OVERRIDE;
   virtual void CancelPendingReload() OVERRIDE;
   virtual void ContinuePendingReload() OVERRIDE;
-  virtual bool IsInitialNavigation() OVERRIDE;
+  virtual bool IsInitialNavigation() const OVERRIDE;
   virtual void Reload(bool check_for_repost) OVERRIDE;
   virtual void ReloadIgnoringCache(bool check_for_repost) OVERRIDE;
   virtual void ReloadOriginalRequestURL(bool check_for_repost) OVERRIDE;
@@ -117,9 +117,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   WebContentsImpl* web_contents() const {
     return web_contents_;
   }
-
-  // Called when a document has been loaded in a frame.
-  void DocumentLoadedInFrame();
 
   // For use by WebContentsImpl ------------------------------------------------
 
@@ -380,7 +377,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool needs_reload_;
 
   // Whether this is the initial navigation.
-  // Becomes false when initial navigation is loaded.
+  // Becomes false when initial navigation commits.
   bool is_initial_navigation_;
 
   // Used to find the appropriate SessionStorageNamespace for the storage

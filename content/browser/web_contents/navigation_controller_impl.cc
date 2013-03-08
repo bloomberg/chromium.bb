@@ -365,7 +365,7 @@ void NavigationControllerImpl::ContinuePendingReload() {
   }
 }
 
-bool NavigationControllerImpl::IsInitialNavigation() {
+bool NavigationControllerImpl::IsInitialNavigation() const {
   return is_initial_navigation_;
 }
 
@@ -825,13 +825,11 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   LoadEntry(entry);
 }
 
-void NavigationControllerImpl::DocumentLoadedInFrame() {
-  is_initial_navigation_ = false;
-}
-
 bool NavigationControllerImpl::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
     LoadCommittedDetails* details) {
+  is_initial_navigation_ = false;
+
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {
     details->previous_url = GetLastCommittedEntry()->GetURL();

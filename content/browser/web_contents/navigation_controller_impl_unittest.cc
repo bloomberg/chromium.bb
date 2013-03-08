@@ -1885,7 +1885,6 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
   {
     const GURL url("http://foo2/");
     test_rvh()->SendNavigate(1, url);
-    controller.DocumentLoadedInFrame();
     EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
   }
 
@@ -3054,16 +3053,16 @@ TEST_F(NavigationControllerTest, IsInitialNavigation) {
   // Initial state.
   EXPECT_TRUE(controller.IsInitialNavigation());
 
-  // After load, it is false.
-  controller.DocumentLoadedInFrame();
-  EXPECT_FALSE(controller.IsInitialNavigation());
-
+  // After commit, it stays false.
   const GURL url1("http://foo1");
   test_rvh()->SendNavigate(0, url1);
   EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_COMMITTED));
-
-  // After commit, it stays false.
   EXPECT_FALSE(controller.IsInitialNavigation());
+
+  // After starting a new navigation, it stays false.
+  const GURL url2("http://foo2");
+  controller.LoadURL(
+      url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
 }
 
 // Check that the favicon is not reused across a client redirect.

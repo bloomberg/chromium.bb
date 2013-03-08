@@ -365,8 +365,8 @@ class NavigationController {
   virtual void ContinuePendingReload() = 0;
 
   // Returns true if we are navigating to the URL the tab is opened with.
-  // Returns false after initial navigation has loaded in frame.
-  virtual bool IsInitialNavigation() = 0;
+  // Returns false after the initial navigation has committed.
+  virtual bool IsInitialNavigation() const = 0;
 
   // Broadcasts the NOTIFY_NAV_ENTRY_CHANGED notification for the given entry
   // (which must be at the given index). This will keep things in sync like
