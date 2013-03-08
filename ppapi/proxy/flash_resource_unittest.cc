@@ -5,9 +5,9 @@
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/proxy/locking_resource_releaser.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
-#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
@@ -43,7 +43,7 @@ TEST_F(FlashResourceTest, EnumerateVideoCaptureDevices) {
   sink().AddFilter(&enumerate_video_devices_handler);
 
   // Set up the arguments to the call.
-  ScopedPPResource video_capture(ScopedPPResource::PassRef(),
+  LockingResourceReleaser video_capture(
       ::ppapi::thunk::GetPPB_VideoCapture_Dev_0_3_Thunk()->Create(
           pp_instance()));
   std::vector<PP_Resource> unused;

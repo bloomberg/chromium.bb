@@ -164,11 +164,7 @@ class RemoveRefVarThreadDelegate : public base::PlatformThread::Delegate {
 
 }  // namespace
 
-#ifdef ENABLE_PEPPER_THREADING
 TEST_F(PPB_VarTest, Threads) {
-#else
-TEST_F(PPB_VarTest, DISABLED_Threads) {
-#endif
   std::vector<base::PlatformThreadHandle> create_var_threads(kNumThreads);
   std::vector<CreateVarThreadDelegate> create_var_delegates;
   // The strings that the threads will re-extract from Vars (so we can check
