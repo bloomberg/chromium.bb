@@ -1304,6 +1304,7 @@ TEST_F(BrowsingDataRemoverTest, OriginAndTimeBasedHistoryRemoval) {
 
 // Verify that clearing autofill form data works.
 TEST_F(BrowsingDataRemoverTest, AutofillRemovalLastHour) {
+  GetProfile()->CreateWebDatabaseService();
   GetProfile()->CreateWebDataService();
   RemoveAutofillTester tester(GetProfile());
 
@@ -1321,6 +1322,7 @@ TEST_F(BrowsingDataRemoverTest, AutofillRemovalLastHour) {
 }
 
 TEST_F(BrowsingDataRemoverTest, AutofillRemovalEverything) {
+  GetProfile()->CreateWebDatabaseService();
   GetProfile()->CreateWebDataService();
   RemoveAutofillTester tester(GetProfile());
 

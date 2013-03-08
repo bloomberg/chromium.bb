@@ -153,7 +153,8 @@ syncer::ModelType GetModelType<AutofillProfile>() {
 class WebDataServiceFake : public WebDataService {
  public:
   WebDataServiceFake()
-      : web_database_(NULL),
+      : WebDataService(NULL),
+        web_database_(NULL),
         syncable_service_created_or_destroyed_(false, false) {
   }
 

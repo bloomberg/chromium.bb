@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_database_service.h"
+#include "chrome/browser/webdata/web_database_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 
 // static
@@ -31,7 +33,7 @@ WebDataServiceFactory::WebDataServiceFactory()
     : RefcountedProfileKeyedServiceFactory(
           "WebDataService",
           ProfileDependencyManager::GetInstance()) {
-  // WebDataServiceFactory has no dependecies.
+  DependsOn(WebDatabaseServiceFactory::GetInstance());
 }
 
 WebDataServiceFactory::~WebDataServiceFactory() {}
@@ -70,10 +72,11 @@ WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
 
   base::FilePath path = profile->GetPath();
   path = path.Append(chrome::kWebDataFilename);
+  WebDatabaseService* wdbs = WebDatabaseServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
 
-  scoped_refptr<WebDataService> wds(new WebDataService());
-  if (!wds->Init(profile->GetPath()))
-    NOTREACHED();
+  scoped_refptr<WebDataService> wds(new WebDataService(wdbs));
+  wds->Init();
   return wds.get();
 }
 
