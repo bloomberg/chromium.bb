@@ -245,8 +245,12 @@ bool AudioOutputResampler::StartStream(
   } else {
     resampler_callback = it->second;
   }
+
   resampler_callback->Start(callback);
-  return dispatcher_->StartStream(resampler_callback, stream_proxy);
+  bool result = dispatcher_->StartStream(resampler_callback, stream_proxy);
+  if (!result)
+    resampler_callback->Stop();
+  return result;
 }
 
 void AudioOutputResampler::StreamVolumeSet(AudioOutputProxy* stream_proxy,

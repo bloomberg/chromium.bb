@@ -37,7 +37,11 @@ bool AudioOutputProxy::Open() {
 
 void AudioOutputProxy::Start(AudioSourceCallback* callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(state_, kOpened);
+
+  // We need to support both states since the callback may not handle OnError()
+  // immediately (or at all).  It's also possible for subsequent StartStream()
+  // calls to succeed after failing, so we allow it to be called again.
+  DCHECK(state_ == kOpened || state_ == kStartError);
 
   if (!dispatcher_->StartStream(callback, this)) {
     state_ = kStartError;

@@ -415,7 +415,7 @@ class AudioOutputProxyTest : public testing::Test {
     EXPECT_CALL(stream, Close())
         .Times(1);
 
-    AudioOutputProxy* proxy = new AudioOutputProxy(dispatcher_impl_);
+    AudioOutputProxy* proxy = new AudioOutputProxy(dispatcher);
     EXPECT_TRUE(proxy->Open());
 
     // Simulate a delay.
@@ -428,11 +428,17 @@ class AudioOutputProxyTest : public testing::Test {
 
     // |stream| is closed at this point. Start() should reopen it again.
     EXPECT_CALL(manager(), MakeAudioOutputStream(_))
-        .WillOnce(Return(reinterpret_cast<AudioOutputStream*>(NULL)));
+        .Times(2)
+        .WillRepeatedly(Return(reinterpret_cast<AudioOutputStream*>(NULL)));
 
     EXPECT_CALL(callback_, OnError(_, _))
-        .Times(1);
+        .Times(2);
 
+    proxy->Start(&callback_);
+
+    // Double Start() in the error case should be allowed since it's possible a
+    // callback may not have had time to process the OnError() in between.
+    proxy->Stop();
     proxy->Start(&callback_);
 
     Mock::VerifyAndClear(&callback_);
