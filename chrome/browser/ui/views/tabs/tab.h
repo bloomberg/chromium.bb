@@ -128,7 +128,7 @@ class Tab : public ui::AnimationDelegate,
 
  private:
   friend class TabTest;
-   // The animation object used to swap the favicon with the sad tab icon.
+  // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
   class TabCloseButton;
 
@@ -210,6 +210,7 @@ class Tab : public ui::AnimationDelegate,
 
   // Paints the icon at the specified coordinates, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas);
+  void PaintCaptureState(gfx::Canvas* canvas, gfx::Rect bounds);
   void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 
   // Invoked if data_.network_state changes, or the network_state is not none.
@@ -251,6 +252,11 @@ class Tab : public ui::AnimationDelegate,
 
   // Returns the rectangle for the light bar in immersive mode.
   gfx::Rect GetImmersiveBarRect() const;
+
+  // Gets the tab id and frame id.
+  void GetTabIdAndFrameId(views::Widget* widget,
+                          int* tab_id,
+                          int* frame_id) const;
 
   // Performs a one-time initialization of static resources such as tab images.
   static void InitTabResources();
