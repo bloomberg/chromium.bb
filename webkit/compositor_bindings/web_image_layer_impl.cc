@@ -21,7 +21,7 @@ WebImageLayerImpl::WebImageLayerImpl() {
   if (usingPictureLayer())
     layer_.reset(new WebLayerImplFixedBounds(cc::PictureImageLayer::create()));
   else
-    layer_.reset(new WebLayerImpl(cc::ImageLayer::create()));
+    layer_.reset(new WebLayerImpl(cc::ImageLayer::Create()));
 }
 
 WebImageLayerImpl::~WebImageLayerImpl() {}
@@ -33,7 +33,7 @@ void WebImageLayerImpl::setBitmap(SkBitmap bitmap) {
     static_cast<cc::PictureImageLayer*>(layer_->layer())->setBitmap(bitmap);
     static_cast<WebLayerImplFixedBounds*>(layer_.get())->SetFixedBounds(gfx::Size(bitmap.width(), bitmap.height()));
   } else
-    static_cast<cc::ImageLayer*>(layer_->layer())->setBitmap(bitmap);
+    static_cast<cc::ImageLayer*>(layer_->layer())->SetBitmap(bitmap);
 }
 
 }  // namespace WebKit
