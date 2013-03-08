@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -31,6 +32,7 @@ namespace extensions {
 
 StartupHelper::StartupHelper() : pack_job_succeeded_(false) {
   (new DefaultLocaleHandler)->Register();
+  (new BackgroundManifestHandler)->Register();
 }
 
 void StartupHelper::OnPackSuccess(
