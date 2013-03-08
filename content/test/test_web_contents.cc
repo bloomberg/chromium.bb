@@ -174,6 +174,13 @@ void TestWebContents::SetOpener(TestWebContents* opener) {
                  Source<WebContents>(opener_));
 }
 
+void TestWebContents::AddPendingContents(TestWebContents* contents) {
+  // This is normally only done in WebContentsImpl::CreateNewWindow.
+  pending_contents_[contents->GetRenderViewHost()->GetRoutingID()] = contents;
+  registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 Source<WebContents>(contents));
+}
+
 void TestWebContents::ExpectSetHistoryLengthAndPrune(
     const SiteInstance* site_instance,
     int history_length,

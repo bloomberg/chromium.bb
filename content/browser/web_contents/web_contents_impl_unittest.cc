@@ -2037,5 +2037,15 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   EXPECT_EQ(url_normalized, other_observer.last_url());
 }
 
+// Test that if a pending contents is deleted before it is shown, we don't
+// crash.
+TEST_F(WebContentsImplTest, PendingContents) {
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  contents()->AddPendingContents(other_contents.get());
+  int route_id = other_contents->GetRenderViewHost()->GetRoutingID();
+  other_contents.reset();
+  EXPECT_EQ(NULL, contents()->GetCreatedWindow(route_id));
+}
 
 }  // namespace content

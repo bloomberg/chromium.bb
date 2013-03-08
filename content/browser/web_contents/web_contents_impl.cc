@@ -1225,7 +1225,20 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContents* web_contents) {
     registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
                       Source<WebContents>(opener_));
     opener_ = NULL;
+    return;
   }
+  // Clear a pending contents that has been closed before being shown.
+  for (PendingContents::iterator iter = pending_contents_.begin();
+       iter != pending_contents_.end();
+       ++iter) {
+    if (iter->second != web_contents)
+      continue;
+    pending_contents_.erase(iter);
+    registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      Source<WebContents>(web_contents));
+    return;
+  }
+  NOTREACHED();
 }
 
 void WebContentsImpl::AddObserver(WebContentsObserver* observer) {
@@ -1407,6 +1420,8 @@ void WebContentsImpl::CreateNewWindow(
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, route_id);
     pending_contents_[route_id] = new_contents;
+    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   Source<WebContents>(new_contents));
   }
 
   if (delegate_) {
@@ -1540,6 +1555,8 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
 
   WebContentsImpl* new_contents = iter->second;
   pending_contents_.erase(route_id);
+  registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    Source<WebContents>(new_contents));
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
       !new_contents->GetRenderViewHost()->GetView())
@@ -2982,6 +2999,8 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
 void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
   // Clear our opener so that future cross-process navigations don't have an
   // opener assigned.
+  registrar_.Remove(this, NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    Source<WebContents>(opener_));
   opener_ = NULL;
 
   // Notify all swapped out RenderViewHosts for this tab.  This is important

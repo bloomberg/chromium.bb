@@ -76,6 +76,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Allows us to simulate this tab having an opener.
   void SetOpener(TestWebContents* opener);
 
+  // Allows us to simulate that a contents was created via CreateNewWindow.
+  void AddPendingContents(TestWebContents* contents);
+
   // Establish expected arguments for |SetHistoryLengthAndPrune()|. When
   // |SetHistoryLengthAndPrune()| is called, the arguments are compared
   // with the expected arguments specified here.
