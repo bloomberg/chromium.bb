@@ -426,6 +426,7 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
       self.overlays[b] = d = {}
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
         d[o] = portage_utilities.FindOverlays(o, b, constants.SOURCE_ROOT)
+    self.no_overlays = not bool(any(d.values()))
 
   def testMissingPrimaryOverlay(self):
     """Test what happens when a primary overlay is missing.
@@ -459,6 +460,9 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     there may not be any private overlays, e.g. if the user has
     a public checkout.)
     """
+    if self.no_overlays:
+      return
+
     for d in self.overlays.itervalues():
       self.assertTrue(set(d[self.BOTH]) >= set(d[self.PUBLIC]))
       self.assertTrue(set(d[self.BOTH]) > set(d[self.PRIVATE]))
@@ -474,12 +478,18 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     If we specify a non-existent board to FindOverlays, only generic
     overlays should be returned.
     """
+    if self.no_overlays:
+      return
+
     for o in (self.PUBLIC, self.BOTH):
       self.assertTrue(set(self.overlays[self.FAKE][o]) <
                       set(self.overlays[self.MARIO][o]))
 
   def testAllBoards(self):
     """If we specify board=None, all overlays should be returned."""
+    if self.no_overlays:
+      return
+
     for o in (self.PUBLIC, self.BOTH):
       for b in (self.FAKE, self.MARIO):
         self.assertTrue(set(self.overlays[b][o]) < set(self.overlays[None][o]))
@@ -490,6 +500,9 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     Further, the only difference between the public overlays for mario and a
     fake board is the primary overlay, which is listed last.
     """
+    if self.no_overlays:
+      return
+
     mario_primary = portage_utilities.FindPrimaryOverlay(self.BOTH, self.MARIO,
                                                          constants.SOURCE_ROOT)
     self.assertTrue(mario_primary in self.overlays[self.MARIO][self.BOTH])
@@ -575,9 +588,10 @@ class ProjectMappingTest(cros_test_lib.TestCase):
       ([kernel], set([kernel_project])),
       ([power_manager, kernel], set([power_manager_project, kernel_project]))
     ]
-    for packages, projects in matches:
-      self.assertEquals(projects,
-                        portage_utilities.FindWorkonProjects(packages))
+    if portage_utilities.FindOverlays(constants.BOTH_OVERLAYS):
+      for packages, projects in matches:
+        self.assertEquals(projects,
+                          portage_utilities.FindWorkonProjects(packages))
 
 class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
   fake_pkgdb = { 'category1' : [ 'package-1', 'package-2' ],
