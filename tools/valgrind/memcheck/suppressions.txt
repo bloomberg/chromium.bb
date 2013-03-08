@@ -1152,11 +1152,21 @@
    fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
 }
 {
-  intentional_see_bug_156466
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
-  fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
+   intentional_see_bug_156466
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
+   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
+}
+{
+   intentional OOM in layout test: fast/js/string-replacement-outofmemory.html
+   Memcheck:Unaddressable
+   fun:_ZN7WebCoreL28reportFatalErrorInMainThreadEPKcS1_
+   fun:_ZN2v88internal2V823FatalProcessOutOfMemoryEPKcb
+   ...
+   fun:_ZN7WebCore16ScriptController8evaluateERKNS_16ScriptSourceCodeE
+   fun:_ZN7WebCore13ScriptElement13executeScriptERKNS_16ScriptSourceCodeE
+   fun:_ZN7WebCore16HTMLScriptRunner36executePendingScriptAndDispatchEventERNS_13PendingScriptE
 }
 
 #-----------------------------------------------------------------------
@@ -2161,26 +2171,6 @@
    fun:_ZN7WebCore21WebGLRenderingContext13compileShaderEPNS_11WebGLShaderERi
    fun:_ZN7WebCore29WebGLRenderingContextInternal21compileShaderCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_03DBA2A116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
-}
-{
-   bug_60667
-   Memcheck:Leak
-   fun:malloc
-   fun:ScanFromString
-   fun:_Z12glslang_scaniPKPKcPKiP13TParseContext
-   fun:_Z14PaParseStringsiPKPKcPKiP13TParseContext
-   fun:_ZN9TCompiler7compileEPKPKcii
-   fun:ShCompile
-}
-{
-   bug_60667b
-   Memcheck:Leak
-   fun:_Zna*
-   fun:_ZN14TPoolAllocator8allocateEm
-   fun:_ZN17TSymbolTableLevelnwEm
-   fun:_ZN12TSymbolTable4pushEv
-   fun:_ZN9TCompiler7compileEPKPKcii
-   fun:ShCompile
 }
 {
    bug_60667c
@@ -4183,7 +4173,7 @@
    fun:_ZN7WebCore18HTMLContentElement18ensureSelectParsedEv
    fun:_ZN7WebCore18HTMLContentElement13isSelectValidEv
    fun:_ZN7WebCore9Internals20isValidContentSelectEPNS_7ElementERi
-   fun:_ZN7WebCore19InternalsV8InternalL28isValidContentSelectCallbackERKN2v89ArgumentsE
+   ...
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
@@ -4631,8 +4621,8 @@
    fun:_mesa_LinkProgramARB
    fun:glLinkProgram
    ...
-   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_11LinkProgramE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgram*
+   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgram*
    fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
@@ -6703,4 +6693,27 @@
    fun:_ZN11dom_storage14DomStorageArea12DeleteOriginEv
    fun:_ZN11dom_storage19DomStorageNamespace24DeleteLocalStorageOriginERK4GURL
    fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
+}
+{
+   bug_181038
+   Memcheck:Leak
+   ...
+   fun:_ZN3gfx9GLApiBase17glCompileShaderFnEj
+   fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+}
+{
+   bug_181050
+   Memcheck:Unaddressable
+   fun:_ZN13WebTestRunner10TestRunner20requestPointerUnlockEv
+   fun:_ZN13WebTestRunner16WebTestProxyBase20requestPointerUnlockEv
+   fun:_ZN13WebTestRunner12WebTestProxyI11WebViewHostP9TestShellE20requestPointerUnlockEv
+   fun:_ZN6WebKit11WebViewImpl20requestPointerUnlockEv
+   fun:_ZN6WebKit16ChromeClientImpl20requestPointerUnlockEv
+   fun:_ZN7WebCore21PointerLockController20requestPointerUnlockEv
+   fun:_ZN7WebCore21PointerLockController16documentDetachedEPNS_8DocumentE
+   fun:_ZN7WebCore8Document6detachEv
+   fun:_ZN7WebCore8Document21prepareForDestructionEv
+   fun:_ZN7WebCore5Frame7setViewEN3WTF10PassRefPtrINS_9FrameViewEEE
 }
