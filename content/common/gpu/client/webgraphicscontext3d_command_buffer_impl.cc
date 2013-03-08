@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/command_buffer_proxy.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
 
 namespace content {
@@ -624,11 +625,13 @@ bool WebGraphicsContext3DCommandBufferImpl::readBackFramebuffer(
   }
   gl_->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-  // Swizzle red and blue channels
-  // TODO(kbr): expose GL_BGRA as extension
+#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
+  // Swizzle red and blue channels to match SkBitmap's byte ordering.
+  // TODO(kbr): expose GL_BGRA as extension.
   for (size_t i = 0; i < buffer_size; i += 4) {
     std::swap(pixels[i], pixels[i + 2]);
   }
+#endif
 
   if (mustRestoreFBO) {
     gl_->BindFramebuffer(GL_FRAMEBUFFER, bound_fbo_);
