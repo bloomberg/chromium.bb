@@ -58,6 +58,12 @@ class TabModel : public content::NotificationObserver,
 
   ToolbarModel::SecurityLevel GetSecurityLevelForCurrentTab();
 
+  // Returns search terms extracted from the current url if possible.
+  string16 GetSearchTermsForCurrentTab();
+
+  // Returns the parameter that is used to trigger query extraction.
+  std::string GetQueryExtractionParam();
+
  protected:
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.

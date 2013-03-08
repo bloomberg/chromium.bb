@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/sync/glue/synced_window_delegate_android.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -90,6 +91,17 @@ ToolbarModel* TabModel::GetToolbarModel() {
 
 ToolbarModel::SecurityLevel TabModel::GetSecurityLevelForCurrentTab() {
   return toolbar_model_->GetSecurityLevel();
+}
+
+string16 TabModel::GetSearchTermsForCurrentTab() {
+  return toolbar_model_->GetText(true);
+}
+
+std::string TabModel::GetQueryExtractionParam() {
+  if (!profile_)
+    return std::string();
+  UIThreadSearchTermsData search_terms_data(profile_);
+  return search_terms_data.InstantExtendedEnabledParam();
 }
 
 void TabModel::Observe(

@@ -188,10 +188,13 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
   // faking search terms in the URL. Random pages can't get into the Instant
   // renderer and scripting doesn't work cross-process, so if the page is in
   // the Instant process, we know it isn't being exploited.
+  // Since iOS and Android doesn't use the instant framework, these checks are
+  // disabled for the two platforms.
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   if (!IsRenderedInInstantProcess(contents, profile))
     return string16();
-
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
   // Check to see if search terms have already been extracted.
   string16 search_terms = GetSearchTermsFromNavigationEntry(entry);
   if (!search_terms.empty())
