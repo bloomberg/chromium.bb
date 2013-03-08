@@ -1270,7 +1270,15 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   switch (error) {
-    case google_apis::HTTP_SUCCESS: {
+    // Regardless of whether the deletion has succeeded (HTTP_SUCCESS) or
+    // has failed with ETag conflict error (HTTP_PRECONDITION or HTTP_CONFLICT)
+    // we should just delete the drive_metadata.
+    // In the former case the file should be just gone now, and
+    // in the latter case the remote change will be applied in a future
+    // remote sync.
+    case google_apis::HTTP_SUCCESS:
+    case google_apis::HTTP_PRECONDITION:
+    case google_apis::HTTP_CONFLICT:
       metadata_store_->DeleteEntry(
           url,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
@@ -1280,13 +1288,6 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
                                        SYNC_ACTION_DELETED,
                                        SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
-    }
-    case google_apis::HTTP_PRECONDITION:
-      // FALLTHROUGH
-    case google_apis::HTTP_CONFLICT: {
-      HandleConflictForLocalSync(token.Pass(), url, callback);
-      return;
-    }
     default: {
       const SyncStatusCode status =
           GDataErrorCodeToSyncStatusCodeWrapper(error);
