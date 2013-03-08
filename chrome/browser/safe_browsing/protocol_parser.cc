@@ -401,11 +401,15 @@ bool SafeBrowsingProtocolParser::ReadPrefixes(
     if (*remaining < hash_len)
       return false;
     if (entry->IsPrefix()) {
-      DCHECK_EQ(hash_len, (int)sizeof(SBPrefix));
-      entry->SetPrefixAt(i, *reinterpret_cast<const SBPrefix*>(*data));
+      SBPrefix prefix;
+      DCHECK_EQ(hash_len, (int)sizeof(prefix));
+      memcpy(&prefix, *data, sizeof(prefix));
+      entry->SetPrefixAt(i, prefix);
     } else {
-      DCHECK_EQ(hash_len, (int)sizeof(SBFullHash));
-      entry->SetFullHashAt(i, *reinterpret_cast<const SBFullHash*>(*data));
+      SBFullHash hash;
+      DCHECK_EQ(hash_len, (int)sizeof(hash));
+      memcpy(&hash, *data, sizeof(hash));
+      entry->SetFullHashAt(i, hash);
     }
     *data += hash_len;
     *remaining -= hash_len;
