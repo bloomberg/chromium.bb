@@ -303,6 +303,8 @@ void DriveEntry::ToProtoFull(DriveEntryProto* proto) const {
 void DriveFile::FromProto(const DriveEntryProto& proto) {
   DCHECK(!proto.file_info().is_directory());
 
+  DriveEntry::FromProto(proto);
+
   thumbnail_url_ = GURL(proto.file_specific_info().thumbnail_url());
   alternate_url_ = GURL(proto.file_specific_info().alternate_url());
   share_url_ = GURL(proto.file_specific_info().share_url());
@@ -313,7 +315,7 @@ void DriveFile::FromProto(const DriveEntryProto& proto) {
 
   // SetBaseNameFromTitle is called here, which is necessary because
   // is_hosted_document_ and document_extension_ have changed.
-  DriveEntry::FromProto(proto);
+  SetBaseNameFromTitle();
 }
 
 void DriveFile::ToProto(DriveEntryProto* proto) const {
@@ -334,6 +336,8 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   DCHECK(proto.drive_entry().file_info().is_directory());
   DCHECK(!proto.drive_entry().has_file_specific_info());
 
+  DriveEntry::FromProto(proto.drive_entry());
+
   for (int i = 0; i < proto.child_files_size(); ++i) {
     scoped_ptr<DriveFile> file(resource_metadata_->CreateDriveFile());
     file->FromProto(proto.child_files(i));
@@ -346,10 +350,6 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   }
 
   changestamp_ = proto.drive_entry().directory_specific_info().changestamp();
-
-  // The states of the directory should be updated after children are
-  // handled successfully, so that incomplete states are not left.
-  DriveEntry::FromProto(proto.drive_entry());
 }
 
 void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
