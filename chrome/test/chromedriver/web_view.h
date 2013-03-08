@@ -71,6 +71,13 @@ class WebView {
   // Dispatch a sequence of key events.
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) = 0;
 
+  // Return all the cookies visible to the current page.
+  virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) = 0;
+
+  // Delete the cookie with the given name.
+  virtual Status DeleteCookie(const std::string& name,
+                              const std::string& url) = 0;
+
   // Waits until all pending navigations have completed in the given frame.
   // If |frame_id| is "", waits for navigations on the main frame.
   virtual Status WaitForPendingNavigations(const std::string& frame_id) = 0;

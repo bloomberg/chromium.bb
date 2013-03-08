@@ -13,6 +13,7 @@
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/element_util.h"
+#include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/ui_events.h"
@@ -30,6 +31,87 @@ Status GetMouseButton(const base::DictionaryValue& params,
                   base::StringPrintf("invalid button: %d", button_num));
   }
   *button = static_cast<MouseButton>(button_num);
+  return Status(kOk);
+}
+
+Status GetUrl(WebView* web_view, const std::string& frame, std::string* url) {
+  scoped_ptr<base::Value> value;
+  base::ListValue args;
+  Status status = web_view->CallFunction(
+      frame, "function() { return document.URL; }", args, &value);
+  if (status.IsError())
+    return status;
+  if (!value->GetAsString(url))
+    return Status(kUnknownError, "javascript failed to return the url");
+  return Status(kOk);
+}
+
+struct Cookie {
+  Cookie(const std::string& name,
+         const std::string& value,
+         const std::string& domain,
+         const std::string& path,
+         int expiry,
+         bool secure,
+         bool session)
+      : name(name), value(value), domain(domain), path(path), expiry(expiry),
+        secure(secure), session(session) {}
+
+  std::string name;
+  std::string value;
+  std::string domain;
+  std::string path;
+  int expiry;
+  bool secure;
+  bool session;
+};
+
+base::DictionaryValue* CreateDictionaryFrom(const Cookie& cookie) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("name", cookie.name);
+  dict->SetString("value", cookie.value);
+  if (!cookie.domain.empty())
+    dict->SetString("domain", cookie.domain);
+  if (!cookie.path.empty())
+    dict->SetString("path", cookie.path);
+  if (!cookie.session)
+    dict->SetInteger("expiry", cookie.expiry);
+  dict->SetBoolean("secure", cookie.secure);
+  return dict;
+}
+
+Status GetVisibleCookies(WebView* web_view,
+                         std::list<Cookie>* cookies) {
+  scoped_ptr<base::ListValue> internal_cookies;
+  Status status = web_view->GetCookies(&internal_cookies);
+  if (status.IsError())
+    return status;
+  std::list<Cookie> cookies_tmp;
+  for (size_t i = 0; i < internal_cookies->GetSize(); ++i) {
+    base::DictionaryValue* cookie_dict;
+    if (!internal_cookies->GetDictionary(i, &cookie_dict))
+      return Status(kUnknownError, "DevTools returns a non-dictionary cookie");
+
+    std::string name;
+    cookie_dict->GetString("name", &name);
+    std::string value;
+    cookie_dict->GetString("value", &value);
+    std::string domain;
+    cookie_dict->GetString("domain", &domain);
+    std::string path;
+    cookie_dict->GetString("path", &path);
+    double expiry_tmp = 0;
+    cookie_dict->GetDouble("expires", &expiry_tmp);
+    int expiry = static_cast<int>(expiry_tmp/1000);
+    bool session = false;
+    cookie_dict->GetBoolean("session", &session);
+    bool secure = false;
+    cookie_dict->GetBoolean("secure", &secure);
+
+    cookies_tmp.push_back(
+        Cookie(name, value, domain, path, expiry, secure, session));
+  }
+  cookies->swap(cookies_tmp);
   return Status(kOk);
 }
 
@@ -203,9 +285,12 @@ Status ExecuteGetCurrentUrl(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  return web_view->CallFunction(
-      "", "function() { return document.URL; }", args, value);
+  std::string url;
+  Status status = GetUrl(web_view, session->frame, &url);
+  if (status.IsError())
+    return status;
+  value->reset(new base::StringValue(url));
+  return Status(kOk);
 }
 
 Status ExecuteGoBack(
@@ -491,5 +576,83 @@ Status ExecuteScreenshot(
   if (status.IsError())
     return status;
   value->reset(new base::StringValue(screenshot));
+  return Status(kOk);
+}
+
+Status ExecuteGetCookies(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::list<Cookie> cookies;
+  Status status = GetVisibleCookies(web_view, &cookies);
+  if (status.IsError())
+    return status;
+  scoped_ptr<base::ListValue> cookie_list(new base::ListValue());
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    cookie_list->Append(CreateDictionaryFrom(*it));
+  }
+  value->reset(cookie_list.release());
+  return Status(kOk);
+}
+
+Status ExecuteAddCookie(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const base::DictionaryValue* cookie;
+  if (!params.GetDictionary("cookie", &cookie))
+    return Status(kUnknownError, "missing 'cookie'");
+  base::ListValue args;
+  args.Append(cookie->DeepCopy());
+  scoped_ptr<base::Value> result;
+  return web_view->CallFunction(
+      session->frame, kAddCookieScript, args, &result);
+}
+
+Status ExecuteDeleteCookie(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string name;
+  if (!params.GetString("name", &name))
+    return Status(kUnknownError, "missing 'name'");
+  base::DictionaryValue params_url;
+  scoped_ptr<base::Value> value_url;
+  std::string url;
+  Status status = GetUrl(web_view, session->frame, &url);
+  if (status.IsError())
+    return status;
+  return web_view->DeleteCookie(name, url);
+}
+
+Status ExecuteDeleteAllCookies(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::list<Cookie> cookies;
+  Status status = GetVisibleCookies(web_view, &cookies);
+  if (status.IsError())
+    return status;
+
+  if (!cookies.empty()) {
+    base::DictionaryValue params_url;
+    scoped_ptr<base::Value> value_url;
+    std::string url;
+    status = GetUrl(web_view, session->frame, &url);
+    if (status.IsError())
+      return status;
+    for (std::list<Cookie>::const_iterator it = cookies.begin();
+         it != cookies.end(); ++it) {
+      status = web_view->DeleteCookie(it->name, url);
+      if (status.IsError())
+        return status;
+    }
+  }
+
   return Status(kOk);
 }

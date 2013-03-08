@@ -21,6 +21,8 @@ class XPathLookupError(ChromeDriverException):
   pass
 class NoSuchWindow(ChromeDriverException):
   pass
+class InvalidCookieDomain(ChromeDriverException):
+  pass
 class InvalidSelector(ChromeDriverException):
   pass
 class SessionNotCreatedException(ChromeDriverException):
@@ -36,6 +38,7 @@ def _ExceptionForResponse(response):
     13: UnknownError,
     19: XPathLookupError,
     23: NoSuchWindow,
+    24: InvalidCookieDomain,
     32: InvalidSelector,
     33: SessionNotCreatedException,
     100: NoSuchSession
@@ -212,6 +215,18 @@ class ChromeDriver(object):
 
   def MouseDoubleClick(self, button=0):
     self.ExecuteSessionCommand('mouseDoubleClick', {'button': button})
+
+  def GetCookies(self):
+    return self.ExecuteSessionCommand('getCookies')
+
+  def AddCookie(self, cookie):
+    self.ExecuteSessionCommand('addCookie', {'cookie': cookie})
+
+  def DeleteCookie(self, name):
+    self.ExecuteSessionCommand('deleteCookie', {'name': name})
+
+  def DeleteAllCookies(self):
+    self.ExecuteSessionCommand('deleteAllCookies')
 
   def IsAlertOpen(self):
     return self.ExecuteSessionCommand('getAlert')

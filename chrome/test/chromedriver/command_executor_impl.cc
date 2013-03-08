@@ -162,6 +162,14 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteGetStorageSize, kSessionStorage);
   window_command_map[CommandNames::kScreenshot] =
       base::Bind(&ExecuteScreenshot);
+  window_command_map[CommandNames::kGetCookies] =
+      base::Bind(&ExecuteGetCookies);
+  window_command_map[CommandNames::kAddCookie] =
+      base::Bind(&ExecuteAddCookie);
+  window_command_map[CommandNames::kDeleteCookie] =
+      base::Bind(&ExecuteDeleteCookie);
+  window_command_map[CommandNames::kDeleteAllCookies] =
+      base::Bind(&ExecuteDeleteAllCookies);
 
   // Commands which require a session.
   typedef std::map<std::string, SessionCommand> SessionCommandMap;

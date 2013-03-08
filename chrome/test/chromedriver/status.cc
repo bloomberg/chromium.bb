@@ -29,6 +29,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "xpath lookup error";
     case kNoSuchWindow:
       return "no such window";
+    case kInvalidCookieDomain:
+      return "invalid cookie domain";
     case kUnexpectedAlertOpen:
       return "unexpected alert open";
     case kNoAlertOpen:

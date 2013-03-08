@@ -213,4 +213,33 @@ Status ExecuteScreenshot(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Retrieve all cookies visible to the current page.
+Status ExecuteGetCookies(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Set a cookie. If the cookie path is not specified, it should be set to "/".
+// If the domain is omitted, it should default to the current page's domain.
+Status ExecuteAddCookie(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Delete the cookie with the given name if it exists in the current page.
+Status ExecuteDeleteCookie(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Delete all cookies visible to the current page.
+Status ExecuteDeleteAllCookies(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_WINDOW_COMMANDS_H_

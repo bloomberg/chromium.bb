@@ -213,6 +213,28 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
   return Status(kOk);
 }
 
+Status WebViewImpl::GetCookies(scoped_ptr<base::ListValue>* cookies) {
+  base::DictionaryValue params;
+  scoped_ptr<base::DictionaryValue> result;
+  Status status = client_->SendCommandAndGetResult(
+      "Page.getCookies", params, &result);
+  if (status.IsError())
+    return status;
+  base::ListValue* cookies_tmp;
+  if (!result->GetList("cookies", &cookies_tmp))
+    return Status(kUnknownError, "DevTools didn't return cookies");
+  cookies->reset(cookies_tmp->DeepCopy());
+  return Status(kOk);
+}
+
+Status WebViewImpl::DeleteCookie(const std::string& name,
+                                 const std::string& url) {
+  base::DictionaryValue params;
+  params.SetString("cookieName", name);
+  params.SetString("url", url);
+  return client_->SendCommand("Page.deleteCookie", params);
+}
+
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
   std::string full_frame_id(frame_id);
   if (full_frame_id.empty()) {
@@ -337,8 +359,11 @@ Status ParseCallFunctionResult(const base::Value& temp_result,
     return Status(kUnknownError,
                   "call function result missing int 'status'");
   }
-  if (status_code != kOk)
-    return Status(static_cast<StatusCode>(status_code));
+  if (status_code != kOk) {
+    std::string message;
+    dict->GetString("value", &message);
+    return Status(static_cast<StatusCode>(status_code), message);
+  }
   const base::Value* unscoped_value;
   if (!dict->Get("value", &unscoped_value)) {
     return Status(kUnknownError,

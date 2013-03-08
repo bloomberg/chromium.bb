@@ -59,6 +59,15 @@ Status StubWebView::DispatchKeyEvents(const std::list<KeyEvent>& events) {
   return Status(kOk);
 }
 
+Status StubWebView::GetCookies(scoped_ptr<base::ListValue>* cookies) {
+  return Status(kOk);
+}
+
+Status StubWebView::DeleteCookie(const std::string& name,
+                                 const std::string& url) {
+  return Status(kOk);
+}
+
 Status StubWebView::WaitForPendingNavigations(const std::string& frame_id) {
   return Status(kOk);
 }

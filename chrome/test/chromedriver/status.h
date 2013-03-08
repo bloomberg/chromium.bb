@@ -18,6 +18,7 @@ enum StatusCode {
   kUnknownError = 13,
   kXPathLookupError = 19,
   kNoSuchWindow = 23,
+  kInvalidCookieDomain = 24,
   kUnexpectedAlertOpen = 26,
   kNoAlertOpen = 27,
   kInvalidSelector = 32,

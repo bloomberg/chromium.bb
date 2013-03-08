@@ -64,7 +64,7 @@ def main():
   for name, script in scripts.iteritems():
     lines = []
     for line in script.split('\n'):
-      lines += ['    "%s\\n"' % line.replace('"', '\\"')]
+      lines += ['    "%s\\n"' % line.replace('\\', '\\\\').replace('"', '\\"')]
     declarations += ['const char %s[] = \n%s;' % (name, '\n'.join(lines))]
   cc = '\n'.join([
       copyright,

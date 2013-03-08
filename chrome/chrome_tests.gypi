@@ -829,6 +829,7 @@
           'action_name': 'embed_js_in_cpp',
           'inputs': [
             'test/chromedriver/embed_js_in_cpp.py',
+            'test/chromedriver/js/add_cookie.js',
             'test/chromedriver/js/call_function.js',
             'test/chromedriver/js/focus.js',
             'test/chromedriver/js/get_element_region.js',
@@ -842,6 +843,7 @@
                       'test/chromedriver/embed_js_in_cpp.py',
                       '--directory',
                       '<(INTERMEDIATE_DIR)/chrome/test/chromedriver',
+                      'test/chromedriver/js/add_cookie.js',
                       'test/chromedriver/js/call_function.js',
                       'test/chromedriver/js/focus.js',
                       'test/chromedriver/js/get_element_region.js',
