@@ -402,7 +402,7 @@ bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int
     // The texture upload queue may reference textures that were just purged, clear
     // them from the queue.
     if (m_currentResourceUpdateControllerOnImplThread.get())
-        m_currentResourceUpdateControllerOnImplThread->discardUploadsToEvictedResources();
+        m_currentResourceUpdateControllerOnImplThread->DiscardUploadsToEvictedResources();
     return true;
 }
 
@@ -734,8 +734,8 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
 
     m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
 
-    m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider());
-    m_currentResourceUpdateControllerOnImplThread->performMoreUpdates(
+    m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::Create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider());
+    m_currentResourceUpdateControllerOnImplThread->PerformMoreUpdates(
         m_schedulerOnImplThread->anticipatedDrawTime());
 
     m_commitCompletionEventOnImplThread = completion;
@@ -759,7 +759,7 @@ void ThreadProxy::scheduledActionCommit()
     DCHECK(m_currentResourceUpdateControllerOnImplThread);
 
     // Complete all remaining texture updates.
-    m_currentResourceUpdateControllerOnImplThread->finalize();
+    m_currentResourceUpdateControllerOnImplThread->Finalize();
     m_currentResourceUpdateControllerOnImplThread.reset();
 
     m_layerTreeHostImpl->beginCommit();
@@ -943,10 +943,10 @@ void ThreadProxy::didAnticipatedDrawTimeChange(base::TimeTicks time)
     if (!m_currentResourceUpdateControllerOnImplThread)
         return;
 
-    m_currentResourceUpdateControllerOnImplThread->performMoreUpdates(time);
+    m_currentResourceUpdateControllerOnImplThread->PerformMoreUpdates(time);
 }
 
-void ThreadProxy::readyToFinalizeTextureUpdates()
+void ThreadProxy::ReadyToFinalizeTextureUpdates()
 {
     DCHECK(isImplThread());
     m_schedulerOnImplThread->beginFrameComplete();
@@ -1069,7 +1069,7 @@ void ThreadProxy::setFullRootLayerDamageOnImplThread()
 
 size_t ThreadProxy::maxPartialTextureUpdates() const
 {
-    return ResourceUpdateController::maxPartialTextureUpdates();
+    return ResourceUpdateController::MaxPartialTextureUpdates();
 }
 
 void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion, scoped_ptr<OutputSurface> outputSurface, scoped_refptr<cc::ContextProvider> offscreenContextProvider, bool* recreateSucceeded, RendererCapabilities* capabilities)

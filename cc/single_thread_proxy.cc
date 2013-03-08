@@ -203,12 +203,12 @@ void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
         m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
 
         scoped_ptr<ResourceUpdateController> updateController =
-            ResourceUpdateController::create(
+            ResourceUpdateController::Create(
                 NULL,
                 Proxy::mainThread(),
                 queue.Pass(),
                 m_layerTreeHostImpl->resourceProvider());
-        updateController->finalize();
+        updateController->Finalize();
 
         m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
 

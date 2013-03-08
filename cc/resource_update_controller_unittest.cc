@@ -181,12 +181,12 @@ protected:
         DebugScopedSetImplThreadAndMainThreadBlocked
             implThreadAndMainThreadBlocked(&m_proxy);
         scoped_ptr<ResourceUpdateController> updateController =
-            ResourceUpdateController::create(
+            ResourceUpdateController::Create(
                 NULL,
                 m_proxy.implThread(),
                 m_queue.Pass(),
                 m_resourceProvider.get());
-        updateController->finalize();
+        updateController->Finalize();
     }
 
     void makeQueryResultAvailable()
@@ -342,7 +342,7 @@ public:
     void reset() { m_readyToFinalizeCalled = false; }
     bool readyToFinalizeCalled() const { return m_readyToFinalizeCalled; }
 
-    virtual void readyToFinalizeTextureUpdates() OVERRIDE { m_readyToFinalizeCalled = true; }
+    virtual void ReadyToFinalizeTextureUpdates() OVERRIDE { m_readyToFinalizeCalled = true; }
 
 protected:
     bool m_readyToFinalizeCalled;
@@ -356,11 +356,11 @@ public:
     }
 
     void setNow(base::TimeTicks time) { m_now = time; }
-    virtual base::TimeTicks now() const OVERRIDE { return m_now; }
+    virtual base::TimeTicks Now() const OVERRIDE { return m_now; }
     void setUpdateMoreTexturesTime(base::TimeDelta time) { m_updateMoreTexturesTime = time; }
-    virtual base::TimeDelta updateMoreTexturesTime() const OVERRIDE { return m_updateMoreTexturesTime; }
+    virtual base::TimeDelta UpdateMoreTexturesTime() const OVERRIDE { return m_updateMoreTexturesTime; }
     void setUpdateMoreTexturesSize(size_t size) { m_updateMoreTexturesSize = size; }
-    virtual size_t updateMoreTexturesSize() const OVERRIDE { return m_updateMoreTexturesSize; }
+    virtual size_t UpdateMoreTexturesSize() const OVERRIDE { return m_updateMoreTexturesSize; }
 
 protected:
     FakeResourceUpdateController(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
@@ -375,7 +375,7 @@ protected:
 static void runPendingTask(FakeThread* thread, FakeResourceUpdateController* controller)
 {
     EXPECT_TRUE(thread->hasPendingTask());
-    controller->setNow(controller->now() + base::TimeDelta::FromMilliseconds(thread->pendingDelayMs()));
+    controller->setNow(controller->Now() + base::TimeDelta::FromMilliseconds(thread->pendingDelayMs()));
     thread->runPendingTask();
 }
 
@@ -393,21 +393,21 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
-        controller->now() + base::TimeDelta::FromMilliseconds(1));
+        controller->Now() + base::TimeDelta::FromMilliseconds(1));
     controller->setUpdateMoreTexturesTime(
         base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Not enough time for any updates.
-    controller->performMoreUpdates(
-        controller->now() + base::TimeDelta::FromMilliseconds(90));
+    controller->PerformMoreUpdates(
+        controller->Now() + base::TimeDelta::FromMilliseconds(90));
     EXPECT_FALSE(thread.hasPendingTask());
 
     controller->setUpdateMoreTexturesTime(
         base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Only enough time for 1 update.
-    controller->performMoreUpdates(
-        controller->now() + base::TimeDelta::FromMilliseconds(120));
+    controller->PerformMoreUpdates(
+        controller->Now() + base::TimeDelta::FromMilliseconds(120));
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_EQ(1, m_numTotalUploads);
 
@@ -418,8 +418,8 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
         base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for 2 updates.
-    controller->performMoreUpdates(
-        controller->now() + base::TimeDelta::FromMilliseconds(220));
+    controller->PerformMoreUpdates(
+        controller->Now() + base::TimeDelta::FromMilliseconds(220));
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
@@ -440,13 +440,13 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
-        controller->now() + base::TimeDelta::FromMilliseconds(1));
+        controller->Now() + base::TimeDelta::FromMilliseconds(1));
     controller->setUpdateMoreTexturesTime(
         base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for 3 updates but only 2 necessary.
-    controller->performMoreUpdates(
-        controller->now() + base::TimeDelta::FromMilliseconds(310));
+    controller->PerformMoreUpdates(
+        controller->Now() + base::TimeDelta::FromMilliseconds(310));
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
     EXPECT_TRUE(client.readyToFinalizeCalled());
@@ -456,8 +456,8 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
         base::TimeDelta::FromMilliseconds(100));
     controller->setUpdateMoreTexturesSize(1);
     // Enough time for updates but no more updates left.
-    controller->performMoreUpdates(
-        controller->now() + base::TimeDelta::FromMilliseconds(310));
+    controller->PerformMoreUpdates(
+        controller->Now() + base::TimeDelta::FromMilliseconds(310));
     // 0-delay task used to call readyToFinalizeTextureUpdates().
     runPendingTask(&thread, controller.get());
     EXPECT_FALSE(thread.hasPendingTask());
@@ -479,7 +479,7 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
     scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
-        controller->now() + base::TimeDelta::FromMilliseconds(1));
+        controller->Now() + base::TimeDelta::FromMilliseconds(1));
     controller->setUpdateMoreTexturesTime(
         base::TimeDelta::FromMilliseconds(500));
     controller->setUpdateMoreTexturesSize(1);
@@ -489,8 +489,8 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
             break;
 
         // Not enough time for any updates.
-        controller->performMoreUpdates(
-            controller->now() + base::TimeDelta::FromMilliseconds(400));
+        controller->PerformMoreUpdates(
+            controller->Now() + base::TimeDelta::FromMilliseconds(400));
 
         if (thread.hasPendingTask())
             runPendingTask(&thread, controller.get());

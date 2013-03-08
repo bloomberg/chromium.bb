@@ -18,63 +18,70 @@ class ResourceProvider;
 class Thread;
 
 class ResourceUpdateControllerClient {
-public:
-    virtual void readyToFinalizeTextureUpdates() = 0;
+ public:
+  virtual void ReadyToFinalizeTextureUpdates() = 0;
 
-protected:
-    virtual ~ResourceUpdateControllerClient() { }
+ protected:
+  virtual ~ResourceUpdateControllerClient() {}
 };
 
 class CC_EXPORT ResourceUpdateController {
-public:
-    static scoped_ptr<ResourceUpdateController> create(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
-    {
-        return make_scoped_ptr(new ResourceUpdateController(client, thread, queue.Pass(), resourceProvider));
-    }
-    static size_t maxPartialTextureUpdates();
+ public:
+  static scoped_ptr<ResourceUpdateController> Create(
+      ResourceUpdateControllerClient* client,
+      Thread* thread,
+      scoped_ptr<ResourceUpdateQueue> queue,
+      ResourceProvider* resource_provider) {
+    return make_scoped_ptr(new ResourceUpdateController(
+        client, thread, queue.Pass(), resource_provider));
+  }
+  static size_t MaxPartialTextureUpdates();
 
-    virtual ~ResourceUpdateController();
+  virtual ~ResourceUpdateController();
 
-    // Discard uploads to textures that were evicted on the impl thread.
-    void discardUploadsToEvictedResources();
+  // Discard uploads to textures that were evicted on the impl thread.
+  void DiscardUploadsToEvictedResources();
 
-    void performMoreUpdates(base::TimeTicks timeLimit);
-    void finalize();
+  void PerformMoreUpdates(base::TimeTicks time_limit);
+  void Finalize();
 
 
-    // Virtual for testing.
-    virtual base::TimeTicks now() const;
-    virtual base::TimeDelta updateMoreTexturesTime() const;
-    virtual size_t updateMoreTexturesSize() const;
+  // Virtual for testing.
+  virtual base::TimeTicks Now() const;
+  virtual base::TimeDelta UpdateMoreTexturesTime() const;
+  virtual size_t UpdateMoreTexturesSize() const;
 
-protected:
-    ResourceUpdateController(ResourceUpdateControllerClient*, Thread*, scoped_ptr<ResourceUpdateQueue>, ResourceProvider*);
+ protected:
+  ResourceUpdateController(ResourceUpdateControllerClient* client,
+                           Thread* thread,
+                           scoped_ptr<ResourceUpdateQueue> queue,
+                           ResourceProvider* resource_provider);
 
-private:
-    static size_t maxFullUpdatesPerTick(ResourceProvider*);
+ private:
+  static size_t MaxFullUpdatesPerTick(ResourceProvider* resource_provider);
 
-    size_t maxBlockingUpdates() const;
-    base::TimeDelta pendingUpdateTime() const;
+  size_t MaxBlockingUpdates() const;
+  base::TimeDelta PendingUpdateTime() const;
 
-    void updateTexture(ResourceUpdate);
+  void UpdateTexture(ResourceUpdate update);
 
-    // This returns true when there were textures left to update.
-    bool updateMoreTexturesIfEnoughTimeRemaining();
-    void updateMoreTexturesNow();
-    void onTimerFired();
+  // This returns true when there were textures left to update.
+  bool UpdateMoreTexturesIfEnoughTimeRemaining();
+  void UpdateMoreTexturesNow();
+  void OnTimerFired();
 
-    ResourceUpdateControllerClient* m_client;
-    scoped_ptr<ResourceUpdateQueue> m_queue;
-    bool m_contentsTexturesPurged;
-    ResourceProvider* m_resourceProvider;
-    base::TimeTicks m_timeLimit;
-    size_t m_textureUpdatesPerTick;
-    bool m_firstUpdateAttempt;
-    Thread* m_thread;
-    base::WeakPtrFactory<ResourceUpdateController> m_weakFactory;
-    bool m_taskPosted;
+  ResourceUpdateControllerClient* client_;
+  scoped_ptr<ResourceUpdateQueue> queue_;
+  bool contents_textures_purged_;
+  ResourceProvider* resource_provider_;
+  base::TimeTicks time_limit_;
+  size_t texture_updates_per_tick_;
+  bool first_update_attempt_;
+  Thread* thread_;
+  base::WeakPtrFactory<ResourceUpdateController> weak_factory_;
+  bool task_posted_;
 
-    DISALLOW_COPY_AND_ASSIGN(ResourceUpdateController);
+  DISALLOW_COPY_AND_ASSIGN(ResourceUpdateController);
 };
 
 }  // namespace cc

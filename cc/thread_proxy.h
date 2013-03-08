@@ -87,7 +87,7 @@ public:
     virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE;
 
     // ResourceUpdateControllerClient implementation
-    virtual void readyToFinalizeTextureUpdates() OVERRIDE;
+    virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
 
     int maxFramesPendingForTesting() const { return m_schedulerOnImplThread->maxFramesPending(); }
 
