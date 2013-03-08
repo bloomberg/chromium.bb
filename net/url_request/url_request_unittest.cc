@@ -1361,8 +1361,8 @@ TEST_F(URLRequestTest, InterceptRespectsCancelInRestart) {
 TEST_F(URLRequestTest, Identifiers) {
   TestDelegate d;
   TestURLRequestContext context;
-  TestURLRequest req(GURL("http://example.com"), &d, &context);
-  TestURLRequest other_req(GURL("http://example.com"), &d, &context);
+  TestURLRequest req(GURL("http://example.com"), &d, &context, NULL);
+  TestURLRequest other_req(GURL("http://example.com"), &d, &context, NULL);
 
   ASSERT_NE(req.identifier(), other_req.identifier());
 }
@@ -3881,7 +3881,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
   req.SetExtraRequestHeaders(headers);
 
   URLRequestRedirectJob* job = new URLRequestRedirectJob(
-      &req, default_context_.network_delegate(), test_server_.GetURL("echo"),
+      &req, &default_network_delegate_, test_server_.GetURL("echo"),
       URLRequestRedirectJob::REDIRECT_302_FOUND);
   AddTestInterceptor()->set_main_intercept_job(job);
 
@@ -3905,7 +3905,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
   req.SetExtraRequestHeaders(headers);
 
   URLRequestRedirectJob* job = new URLRequestRedirectJob(
-      &req, default_context_.network_delegate(), test_server_.GetURL("echo"),
+      &req, &default_network_delegate_, test_server_.GetURL("echo"),
       URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT);
   AddTestInterceptor()->set_main_intercept_job(job);
 
@@ -4612,7 +4612,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   params.ssl_config_service = default_context_.ssl_config_service();
   params.http_auth_handler_factory =
       default_context_.http_auth_handler_factory();
-  params.network_delegate = default_context_.network_delegate();
+  params.network_delegate = &default_network_delegate_;
   params.http_server_properties = default_context_.http_server_properties();
   params.ssl_session_cache_shard = "alternate";
 

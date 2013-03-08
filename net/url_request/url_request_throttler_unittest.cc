@@ -172,7 +172,7 @@ struct GurlAndString {
 
 class URLRequestThrottlerEntryTest : public testing::Test {
  protected:
-  URLRequestThrottlerEntryTest() : request_(GURL(), NULL, &context_) {
+  URLRequestThrottlerEntryTest() : request_(GURL(), NULL, &context_, NULL) {
   }
 
   virtual void SetUp();
@@ -391,7 +391,7 @@ TEST_F(URLRequestThrottlerEntryTest, ExplicitUserRequest) {
 class URLRequestThrottlerManagerTest : public testing::Test {
  protected:
   URLRequestThrottlerManagerTest()
-      : request_(GURL(), NULL, &context_) {
+      : request_(GURL(), NULL, &context_, NULL) {
   }
 
   virtual void SetUp() {

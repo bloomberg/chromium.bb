@@ -44,7 +44,7 @@ TEST(URLRequestJob, TransactionNotifiedWhenDone) {
   context.set_http_transaction_factory(&network_layer);
 
   net::TestDelegate d;
-  net::TestURLRequest req(GURL(kGZip_Transaction.url), &d, &context);
+  net::TestURLRequest req(GURL(kGZip_Transaction.url), &d, &context, NULL);
   AddMockTransaction(&kGZip_Transaction);
 
   req.set_method("GET");
@@ -63,7 +63,7 @@ TEST(URLRequestJob, SyncTransactionNotifiedWhenDone) {
   context.set_http_transaction_factory(&network_layer);
 
   net::TestDelegate d;
-  net::TestURLRequest req(GURL(kGZip_Transaction.url), &d, &context);
+  net::TestURLRequest req(GURL(kGZip_Transaction.url), &d, &context, NULL);
   MockTransaction transaction(kGZip_Transaction);
   transaction.test_mode = TEST_MODE_SYNC_ALL;
   AddMockTransaction(&transaction);

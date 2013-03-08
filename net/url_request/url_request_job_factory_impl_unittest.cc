@@ -60,7 +60,7 @@ class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
 TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context);
+  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context, NULL);
   request.Start();
 
   MessageLoop::current()->Run();
@@ -74,7 +74,7 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context);
+  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context, NULL);
   request.Start();
 
   MessageLoop::current()->Run();

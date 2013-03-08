@@ -284,6 +284,9 @@ class NET_EXPORT URLRequestJob : public base::RefCounted<URLRequestJob>,
   // to get SDCH to emit stats.
   void DestroyFilters() { filter_.reset(); }
 
+  // Provides derived classes with access to the request's network delegate.
+  NetworkDelegate* network_delegate() { return network_delegate_; }
+
   // The status of the job.
   const URLRequestStatus GetStatus();
 
@@ -379,6 +382,7 @@ class NET_EXPORT URLRequestJob : public base::RefCounted<URLRequestJob>,
   GURL deferred_redirect_url_;
   int deferred_redirect_status_code_;
 
+  // The network delegate to use with this request, if any.
   NetworkDelegate* network_delegate_;
 
   base::WeakPtrFactory<URLRequestJob> weak_factory_;

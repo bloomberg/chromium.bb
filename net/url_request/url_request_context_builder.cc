@@ -200,7 +200,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 
   if (!network_delegate_)
     network_delegate_.reset(new BasicNetworkDelegate);
-  storage->set_network_delegate(network_delegate_.release());
+  NetworkDelegate* network_delegate = network_delegate_.release();
+  storage->set_network_delegate(network_delegate);
 
   storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
 
@@ -245,8 +246,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
       context->ssl_config_service();
   network_session_params.http_auth_handler_factory =
       context->http_auth_handler_factory();
-  network_session_params.network_delegate =
-      context->network_delegate();
+  network_session_params.network_delegate = network_delegate;
   network_session_params.http_server_properties =
       context->http_server_properties();
   network_session_params.net_log = context->net_log();

@@ -80,9 +80,10 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
 class URLRequestHttpJob::HttpTransactionDelegateImpl
     : public HttpTransactionDelegate {
  public:
-  explicit HttpTransactionDelegateImpl(URLRequest* request)
+  HttpTransactionDelegateImpl(
+      URLRequest* request, NetworkDelegate* network_delegate)
       : request_(request),
-        network_delegate_(request->context()->network_delegate()),
+        network_delegate_(network_delegate),
         cache_active_(false),
         network_active_(false) {
   }
@@ -257,7 +258,8 @@ URLRequestHttpJob::URLRequestHttpJob(
           base::Bind(&URLRequestHttpJob::OnHeadersReceivedCallback,
                      base::Unretained(this)))),
       awaiting_callback_(false),
-      http_transaction_delegate_(new HttpTransactionDelegateImpl(request)),
+      http_transaction_delegate_(new HttpTransactionDelegateImpl(
+          request, network_delegate)),
       http_user_agent_settings_(http_user_agent_settings) {
   URLRequestThrottlerManager* manager = request->context()->throttler_manager();
   if (manager)
@@ -335,8 +337,8 @@ void URLRequestHttpJob::DestroyTransaction() {
 }
 
 void URLRequestHttpJob::StartTransaction() {
-  if (request_->context()->network_delegate()) {
-    int rv = request_->context()->network_delegate()->NotifyBeforeSendHeaders(
+  if (network_delegate()) {
+    int rv = network_delegate()->NotifyBeforeSendHeaders(
         request_, notify_before_headers_sent_callback_,
         &request_info_.extra_headers);
     // If an extension blocks the request, we rely on the callback to
@@ -380,8 +382,8 @@ void URLRequestHttpJob::StartTransactionInternal() {
 
   int rv;
 
-  if (request_->context()->network_delegate()) {
-    request_->context()->network_delegate()->NotifySendHeaders(
+  if (network_delegate()) {
+    network_delegate()->NotifySendHeaders(
         request_, request_info_.extra_headers);
   }
 
@@ -762,13 +764,13 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
 
   if (result == OK) {
     scoped_refptr<HttpResponseHeaders> headers = GetResponseHeaders();
-    if (context->network_delegate()) {
+    if (network_delegate()) {
       // Note that |this| may not be deleted until
       // |on_headers_received_callback_| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
-      int error = context->network_delegate()->
-          NotifyHeadersReceived(request_, on_headers_received_callback_,
-                                headers, &override_response_headers_);
+      int error = network_delegate()->NotifyHeadersReceived(
+          request_, on_headers_received_callback_,
+          headers, &override_response_headers_);
       if (error != net::OK) {
         if (error == net::ERR_IO_PENDING) {
           awaiting_callback_ = true;

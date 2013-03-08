@@ -53,10 +53,10 @@ TEST(URLRequestFilter, BasicMatching) {
   TestURLRequestContext request_context;
 
   GURL url_1("http://foo.com/");
-  TestURLRequest request_1(url_1, &delegate, &request_context);
+  TestURLRequest request_1(url_1, &delegate, &request_context, NULL);
 
   GURL url_2("http://bar.com/");
-  TestURLRequest request_2(url_2, &delegate, &request_context);
+  TestURLRequest request_2(url_2, &delegate, &request_context, NULL);
 
   // Check AddUrlHandler checks for invalid URLs.
   EXPECT_FALSE(URLRequestFilter::GetInstance()->AddUrlHandler(GURL(),
@@ -68,7 +68,7 @@ TEST(URLRequestFilter, BasicMatching) {
                                                              &FactoryA));
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, request_context.network_delegate(), url_1.scheme());
+        &request_1, NULL, url_1.scheme());
     EXPECT_EQ(job_a, found);
     EXPECT_TRUE(job_a != NULL);
     job_a = NULL;
@@ -77,13 +77,13 @@ TEST(URLRequestFilter, BasicMatching) {
 
   // Check we don't match other URLs.
   EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_2, request_context.network_delegate(), url_2.scheme()) == NULL);
+      &request_2, NULL, url_2.scheme()) == NULL);
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
   // Check we can remove URL matching.
   URLRequestFilter::GetInstance()->RemoveUrlHandler(url_1);
   EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_1, request_context.network_delegate(), url_1.scheme()) == NULL);
+      &request_1, NULL, url_1.scheme()) == NULL);
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
   // Check hostname matching.
@@ -94,7 +94,7 @@ TEST(URLRequestFilter, BasicMatching) {
                                                       &FactoryB);
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, request_context.network_delegate(), url_1.scheme());
+        &request_1, NULL, url_1.scheme());
     EXPECT_EQ(job_b, found);
     EXPECT_TRUE(job_b != NULL);
     job_b = NULL;
@@ -103,14 +103,14 @@ TEST(URLRequestFilter, BasicMatching) {
 
   // Check we don't match other hostnames.
   EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_2, request_context.network_delegate(), url_2.scheme()) == NULL);
+      &request_2, NULL, url_2.scheme()) == NULL);
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
   // Check we can remove hostname matching.
   URLRequestFilter::GetInstance()->RemoveHostnameHandler(url_1.scheme(),
                                                          url_1.host());
   EXPECT_TRUE(URLRequestFilter::Factory(
-      &request_1, request_context.network_delegate(), url_1.scheme()) == NULL);
+      &request_1, NULL, url_1.scheme()) == NULL);
   EXPECT_EQ(1, URLRequestFilter::GetInstance()->hit_count());
 
   // Check ProtocolHandler hostname matching.
@@ -122,7 +122,7 @@ TEST(URLRequestFilter, BasicMatching) {
           new TestProtocolHandler()));
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_1, request_context.network_delegate(), url_1.scheme());
+        &request_1, NULL, url_1.scheme());
     EXPECT_EQ(job_c, found);
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
@@ -138,7 +138,7 @@ TEST(URLRequestFilter, BasicMatching) {
           new TestProtocolHandler()));
   {
     scoped_refptr<URLRequestJob> found = URLRequestFilter::Factory(
-        &request_2, request_context.network_delegate(), url_2.scheme());
+        &request_2, NULL, url_2.scheme());
     EXPECT_EQ(job_c, found);
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;

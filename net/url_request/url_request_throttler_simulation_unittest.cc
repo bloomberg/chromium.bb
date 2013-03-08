@@ -124,7 +124,7 @@ class Server : public DiscreteTimeSimulation::Actor {
         num_current_tick_queries_(0),
         num_overloaded_ticks_(0),
         max_experienced_queries_per_tick_(0),
-        mock_request_(GURL(), NULL, &context_) {
+        mock_request_(GURL(), NULL, &context_, NULL) {
   }
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
