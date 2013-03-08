@@ -1207,6 +1207,7 @@ _x86_depthcharge_firmware_boards = (
 
 _arm_firmware_boards = (
   'daisy',
+  'daisy_spring',
 )
 
 def _AddFirmwareConfigs():
