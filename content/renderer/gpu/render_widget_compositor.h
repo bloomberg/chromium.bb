@@ -26,9 +26,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
-  static scoped_ptr<RenderWidgetCompositor> Create(
-      RenderWidget* widget,
-      WebKit::WebLayerTreeView::Settings settings);
+  static scoped_ptr<RenderWidgetCompositor> Create(RenderWidget* widget);
 
   virtual ~RenderWidgetCompositor();
 

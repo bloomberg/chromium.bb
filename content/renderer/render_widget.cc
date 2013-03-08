@@ -1362,18 +1362,23 @@ void RenderWidget::didDeactivateCompositor() {
     webwidget_->enterForceCompositingMode(false);
 }
 
+void RenderWidget::initializeLayerTreeView() {
+  compositor_ = RenderWidgetCompositor::Create(this);
+  if (!compositor_)
+    return;
+
+  compositor_->setViewportSize(size_, physical_backing_size_);
+  if (init_complete_)
+    compositor_->setSurfaceReady();
+}
+
 void RenderWidget::initializeLayerTreeView(
     WebKit::WebLayerTreeViewClient* client,
     const WebKit::WebLayer& root_layer,
     const WebKit::WebLayerTreeView::Settings& settings) {
-  compositor_ = RenderWidgetCompositor::Create(this, settings);
-  if (!compositor_)
-    return;
-
-  compositor_->setRootLayer(root_layer);
-  compositor_->setViewportSize(size_, physical_backing_size_);
-  if (init_complete_)
-    compositor_->setSurfaceReady();
+  initializeLayerTreeView();
+  if (compositor_)
+    compositor_->setRootLayer(root_layer);
 }
 
 WebKit::WebLayerTreeView* RenderWidget::layerTreeView() {

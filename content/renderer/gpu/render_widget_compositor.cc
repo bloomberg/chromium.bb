@@ -79,8 +79,7 @@ bool GetSwitchValueAsFloat(
 
 // static
 scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
-      RenderWidget* widget,
-      WebKit::WebLayerTreeView::Settings web_settings) {
+      RenderWidget* widget) {
   scoped_ptr<RenderWidgetCompositor> compositor(
       new RenderWidgetCompositor(widget));
 
