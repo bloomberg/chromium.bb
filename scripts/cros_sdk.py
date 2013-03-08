@@ -6,7 +6,9 @@
 """This script fetches and prepares an SDK chroot.
 """
 
+import glob
 import os
+import pwd
 import sys
 import urlparse
 
@@ -30,9 +32,25 @@ MAKE_CHROOT = [os.path.join(constants.SOURCE_ROOT,
 ENTER_CHROOT = [os.path.join(constants.SOURCE_ROOT,
                              'src/scripts/sdk_lib/enter_chroot.sh')]
 
+# Proxy simulator configuration.
+PROXY_HOST_IP = '192.168.240.1'
+PROXY_PORT = 8080
+PROXY_GUEST_IP = '192.168.240.2'
+PROXY_NETMASK = 30
+PROXY_VETH_PREFIX = 'veth'
+PROXY_CONNECT_PORTS = (80, 443, 9418)
+PROXY_APACHE_FALLBACK_USERS = ('www-data', 'apache', 'nobody')
+PROXY_APACHE_MPMS = ('event', 'worker', 'prefork')
+PROXY_APACHE_FALLBACK_PATH = ':'.join(
+    '/usr/lib/apache2/mpm-%s' % mpm for mpm in PROXY_APACHE_MPMS
+)
+PROXY_APACHE_MODULE_GLOBS = ('/usr/lib*/apache2/modules', '/usr/lib*/apache2')
+
 # We need these tools to run. Very common tools (tar,..) are omitted.
 NEEDED_TOOLS = ('curl', 'xz')
 
+# Tools needed for --proxy-sim only.
+PROXY_NEEDED_TOOLS = ('ip',)
 
 def GetArchStageTarballs(version):
   """Returns the URL for a given arch/version"""
@@ -185,6 +203,196 @@ def _SudoCommand():
   return cmd
 
 
+def _ReportMissing(missing):
+  """Report missing utilities, then exit.
+
+  Args:
+    missing: List of missing utilities, as returned by
+             osutils.FindMissingBinaries.  If non-empty, will not return.
+  """
+
+  if missing:
+    raise SystemExit(
+        'The tool(s) %s were not found.\n'
+        'Please install the appropriate package in your host.\n'
+        'Example(ubuntu):\n'
+        '  sudo apt-get install <packagename>'
+        % ', '.join(missing))
+
+
+def _ProxySimSetup(options):
+  """Set up proxy simulator, and return only in the child environment.
+
+  TODO: Ideally, this should support multiple concurrent invocations of
+  cros_sdk --proxy-sim; currently, such invocations will conflict with each
+  other due to the veth device names and IP addresses.  Either this code would
+  need to generate fresh, unused names for all of these before forking, or it
+  would need to support multiple concurrent cros_sdk invocations sharing one
+  proxy and allowing it to exit when unused (without counting on any local
+  service-management infrastructure on the host).
+  """
+
+  may_need_mpm = False
+  apache_bin = osutils.Which('apache2')
+  if apache_bin is None:
+    apache_bin = osutils.Which('apache2', PROXY_APACHE_FALLBACK_PATH)
+    if apache_bin is None:
+      _ReportMissing(('apache2',))
+  else:
+    may_need_mpm = True
+
+  # Module names and .so names included for ease of grepping.
+  apache_modules = [('proxy_module', 'mod_proxy.so'),
+                    ('proxy_connect_module', 'mod_proxy_connect.so'),
+                    ('proxy_http_module', 'mod_proxy_http.so'),
+                    ('proxy_ftp_module', 'mod_proxy_ftp.so')]
+
+  # Find the apache module directory, and make sure it has the modules we need.
+  module_dirs = {}
+  for g in PROXY_APACHE_MODULE_GLOBS:
+    for mod, so in apache_modules:
+      for f in glob.glob(os.path.join(g, so)):
+        module_dirs.setdefault(os.path.dirname(f), []).append(so)
+  for apache_module_path, modules_found in module_dirs.iteritems():
+    if len(modules_found) == len(apache_modules):
+      break
+  else:
+    # Appease cros lint, which doesn't understand that this else block will not
+    # fall through to the subsequent code which relies on apache_module_path.
+    apache_module_path = None
+    raise SystemExit(
+        'Could not find apache module path containing all required modules: %s'
+            % ', '.join(so for mod, so in apache_modules))
+
+  def check_add_module(name):
+    so = 'mod_%s.so' % name
+    if os.access(os.path.join(apache_module_path, so), os.F_OK):
+      mod = '%s_module' % name
+      apache_modules.append((mod, so))
+      return True
+    return False
+
+  check_add_module('authz_core')
+  if may_need_mpm:
+    for mpm in PROXY_APACHE_MPMS:
+      if check_add_module('mpm_%s' % mpm):
+        break
+
+  veth_host = '%s-host' % PROXY_VETH_PREFIX
+  veth_guest = '%s-guest' % PROXY_VETH_PREFIX
+
+  # Set up pipes from parent to child and vice versa.
+  # The child writes a byte to the parent after calling unshare, so that the
+  # parent can then assign the guest end of the veth interface to the child's
+  # new network namespace.  The parent then writes a byte to the child after
+  # assigning the guest interface, so that the child can then configure that
+  # interface.  In both cases, if we get back an EOF when reading from the
+  # pipe, we assume the other end exited with an error message, so just exit.
+  parent_readfd, child_writefd = os.pipe()
+  child_readfd, parent_writefd = os.pipe()
+  SUCCESS_FLAG = '+'
+
+  pid = os.fork()
+  if not pid:
+    os.close(parent_readfd)
+    os.close(parent_writefd)
+
+    namespaces.Unshare(namespaces.CLONE_NEWNET)
+    os.write(child_writefd, SUCCESS_FLAG)
+    os.close(child_writefd)
+    if os.read(child_readfd, 1) != SUCCESS_FLAG:
+      # Parent failed; it will have already have outputted an error message.
+      sys.exit(1)
+    os.close(child_readfd)
+
+    # Set up child side of the network.
+    commands = (
+      ('ip', 'address', 'add',
+       '%s/%u' % (PROXY_GUEST_IP, PROXY_NETMASK),
+       'dev', veth_guest),
+      ('ip', 'link', 'set', veth_guest, 'up'),
+    )
+    try:
+      for cmd in commands:
+        cros_build_lib.RunCommand(cmd, print_cmd=False)
+    except cros_build_lib.RunCommandError:
+      raise SystemExit('Running %r failed!' % (cmd,))
+
+    proxy_url = 'http://%s:%u' % (PROXY_HOST_IP, PROXY_PORT)
+    for proto in ('http', 'https', 'ftp'):
+      os.environ[proto + '_proxy'] = proxy_url
+    for v in ('all_proxy', 'RSYNC_PROXY', 'no_proxy'):
+      os.environ.pop(v, None)
+    return
+
+  os.close(child_readfd)
+  os.close(child_writefd)
+
+  if os.read(parent_readfd, 1) != SUCCESS_FLAG:
+    # Child failed; it will have already have outputted an error message.
+    sys.exit(1)
+  os.close(parent_readfd)
+
+  # Set up parent side of the network.
+  uid = int(os.environ.get('SUDO_UID', '0'))
+  gid = int(os.environ.get('SUDO_GID', '0'))
+  if uid == 0 or gid == 0:
+    for username in PROXY_APACHE_FALLBACK_USERS:
+      try:
+        pwnam = pwd.getpwnam(username)
+        uid, gid = pwnam.pw_uid, pwnam.pw_gid
+        break
+      except KeyError:
+        continue
+    if uid == 0 or gid == 0:
+      raise SystemExit('Could not find a non-root user to run Apache as')
+
+  chroot_parent, chroot_base = os.path.split(options.chroot)
+  pid_file = os.path.join(chroot_parent, '.%s-apache-proxy.pid' % chroot_base)
+  log_file = os.path.join(chroot_parent, '.%s-apache-proxy.log' % chroot_base)
+
+  apache_directives = [
+    'User #%u' % uid,
+    'Group #%u' % gid,
+    'PidFile %s' % pid_file,
+    'ErrorLog %s' % log_file,
+    'Listen %s:%u' % (PROXY_HOST_IP, PROXY_PORT),
+    'ServerName %s' % PROXY_HOST_IP,
+    'ProxyRequests On',
+    'AllowCONNECT %s' % ' '.join(map(str, PROXY_CONNECT_PORTS)),
+  ] + [
+    'LoadModule %s %s' % (mod, os.path.join(apache_module_path, so))
+    for (mod, so) in apache_modules
+  ]
+  commands = (
+    ('ip', 'link', 'add', 'name', veth_host,
+     'type', 'veth', 'peer', 'name', veth_guest),
+    ('ip', 'address', 'add',
+     '%s/%u' % (PROXY_HOST_IP, PROXY_NETMASK),
+     'dev', veth_host),
+    ('ip', 'link', 'set', veth_host, 'up'),
+    [apache_bin, '-f', '/dev/null']
+        + [arg for d in apache_directives for arg in ('-C', d)],
+    ('ip', 'link', 'set', veth_guest, 'netns', str(pid)),
+  )
+  cmd = None # Make cros lint happy.
+  try:
+    for cmd in commands:
+      cros_build_lib.RunCommand(cmd, print_cmd=False)
+  except cros_build_lib.RunCommandError:
+    # Clean up existing interfaces, if any.
+    cmd_cleanup = ('ip', 'link', 'del', veth_host)
+    try:
+      cros_build_lib.RunCommand(cmd_cleanup, print_cmd=False)
+    except cros_build_lib.RunCommandError:
+      cros_build_lib.Error('running %r failed', cmd_cleanup)
+    raise SystemExit('Running %r failed!' % (cmd,))
+  os.write(parent_writefd, SUCCESS_FLAG)
+  os.close(parent_writefd)
+
+  sys.exit(os.waitpid(pid, 0)[1])
+
+
 def _ReExecuteIfNeeded(argv):
   """Re-execute cros_sdk as root.
 
@@ -255,6 +463,9 @@ If given args those are passed to the chroot environment, and executed."""
                     help='Mount chrome into this path inside SDK chroot')
   parser.add_option('--nousepkg', action='store_true', default=False,
                     help='Do not use binary packages when creating a chroot.')
+  parser.add_option('--proxy-sim', action='store_true', default=False,
+                    help='Simulate a restrictive network requiring an outbound'
+                         ' proxy.')
   parser.add_option('-u', '--url',
                     dest='sdk_url', default=None,
                     help=('''Use sdk tarball located at this url.
@@ -274,14 +485,9 @@ If given args those are passed to the chroot environment, and executed."""
         "cros_sdk is currently only supported on x86_64; you're running"
         " %s.  Please find a x86_64 machine." % (host,))
 
-  missing = osutils.FindMissingBinaries(NEEDED_TOOLS)
-  if missing:
-    parser.error((
-        'The tool(s) %s were not found.\n'
-        'Please install the appropriate package in your host.\n'
-        'Example(ubuntu):\n'
-        '  sudo apt-get install <packagename>'
-        % (', '.join(missing))))
+  _ReportMissing(osutils.FindMissingBinaries(NEEDED_TOOLS))
+  if options.proxy_sim:
+    _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
 
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
 
@@ -333,6 +539,9 @@ If given args those are passed to the chroot environment, and executed."""
                            '.%s_lock' % os.path.basename(options.chroot))
   with cgroups.SimpleContainChildren('cros_sdk'):
     with locking.FileLock(lock_path, 'chroot lock') as lock:
+
+      if options.proxy_sim:
+        _ProxySimSetup(options)
 
       if options.delete and os.path.exists(options.chroot):
         lock.write_lock()
