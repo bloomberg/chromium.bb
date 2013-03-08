@@ -10,7 +10,6 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -167,6 +166,8 @@ FramePainter::~FramePainter() {
                         static_cast<FramePainter*>(NULL));
     }
     window_->RemoveObserver(this);
+    if (root)
+      root->RemoveObserver(this);
   }
   instances_->erase(this);
 }
@@ -216,6 +217,9 @@ void FramePainter::Init(views::Widget* frame,
   // itself in OnWindowDestroying() below, or in the destructor if we go away
   // before the window.
   window_->AddObserver(this);
+  aura::Window* root = window_->GetRootWindow();
+  if (root)
+    root->AddObserver(this);
 
   // If there is already a solo window in the same root, this initialization
   // should turn off its solo-mode.
@@ -583,13 +587,16 @@ void FramePainter::SchedulePaintForTitle(views::NonClientFrameView* view,
 void FramePainter::OnWindowPropertyChanged(aura::Window* window,
                                            const void* key,
                                            intptr_t old) {
+  // When either 'kWindowTrackedByWorkspaceKey' changes or
+  // 'kCyclingThroughWorkspacesKey' changes, we are going to paint the header
+  // differently. Schedule a paint to ensure everything is updated correctly.
   if (key == internal::kWindowTrackedByWorkspaceKey &&
       GetTrackedByWorkspace(window)) {
-    // When 'kWindowTrackedByWorkspaceKey' changes we're going to paint the
-    // header differently. Schedule a paint to ensure everything is updated
-    // correctly.
+    frame_->non_client_view()->SchedulePaint();
+  } else if (key == internal::kCyclingThroughWorkspacesKey) {
     frame_->non_client_view()->SchedulePaint();
   }
+
   if (key != aura::client::kShowStateKey)
     return;
 
@@ -608,16 +615,24 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
 
 void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
                                              bool visible) {
+  // Ignore updates from the root window.
+  if (window != window_)
+    return;
+
   // Window visibility change may trigger the change of window solo-ness in a
   // different window.
   UpdateSoloWindowFramePainter(visible ? NULL : window_);
 }
 
 void FramePainter::OnWindowDestroying(aura::Window* destroying) {
-  DCHECK_EQ(window_, destroying);
+  aura::Window* root = window_->GetRootWindow();
+  DCHECK(destroying == window_ || destroying == root);
+
   // Must be removed here and not in the destructor, as the aura::Window is
   // already destroyed when our destructor runs.
   window_->RemoveObserver(this);
+  if (root)
+    root->RemoveObserver(this);
 
   // For purposes of painting and solo window computation, we're done.
   instances_->erase(this);
@@ -632,6 +647,10 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
 void FramePainter::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
+  // Ignore updates from the root window.
+  if (window != window_)
+    return;
+
   // TODO(sky): this isn't quite right. What we really want is a method that
   // returns bounds ignoring transforms on certain windows (such as workspaces).
   if (!frame_->IsMaximized() &&
@@ -642,12 +661,18 @@ void FramePainter::OnWindowBoundsChanged(aura::Window* window,
 }
 
 void FramePainter::OnWindowAddedToRootWindow(aura::Window* window) {
+  DCHECK_EQ(window_, window);
+  window->GetRootWindow()->AddObserver(this);
+
   // Needs to trigger the window appearance change if the window moves across
   // root windows and a solo window is already in the new root.
   UpdateSoloWindowFramePainter(NULL);
 }
 
 void FramePainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
+  DCHECK_EQ(window_, window);
+  window->GetRootWindow()->RemoveObserver(this);
+
   // Needs to trigger the window appearance change if the window moves across
   // root windows and only one window is left in the previous root.  Because
   // |window| is not yet moved, |window| has to be ignored.
@@ -705,10 +730,15 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
   if (theme_frame_overlay)
     return kFullyOpaque;
 
-  // Maximized windows with workspace2 are totally transparent, except those not
-  // tracked by workspace code (which are used for tab dragging).
-  if (frame_->IsMaximized() && GetTrackedByWorkspace(frame_->GetNativeWindow()))
+  // Maximized windows with workspaces are totally transparent, except:
+  // - For windows whose workspace is not tracked by the workspace code (which
+  //   are used for tab dragging).
+  // - When the user is cycling through workspaces.
+  if (frame_->IsMaximized() &&
+      GetTrackedByWorkspace(frame_->GetNativeWindow()) &&
+      !IsCyclingThroughWorkspaces()) {
     return 0;
+  }
 
   // Single browser window is very transparent.
   if (UseSoloWindowHeader())
@@ -755,6 +785,11 @@ int FramePainter::AdjustFrameHitCodeForMaximizedModes(int hit_code) {
     }
   }
   return hit_code;
+}
+
+bool FramePainter::IsCyclingThroughWorkspaces() const {
+  aura::RootWindow* root = window_->GetRootWindow();
+  return root && root->GetProperty(internal::kCyclingThroughWorkspacesKey);
 }
 
 bool FramePainter::UseSoloWindowHeader() {

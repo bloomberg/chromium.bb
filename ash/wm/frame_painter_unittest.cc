@@ -102,6 +102,36 @@ class WindowRepaintChecker : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowRepaintChecker);
 };
 
+// Modifies the values of kInactiveWindowOpacity, kActiveWindowOpacity, and
+// kSoloWindowOpacity for the lifetime of the class. This is useful so that
+// the constants each have different values.
+class ScopedOpacityConstantModifier {
+ public:
+  ScopedOpacityConstantModifier()
+      : initial_active_window_opacity_(
+            ash::FramePainter::kActiveWindowOpacity),
+        initial_inactive_window_opacity_(
+            ash::FramePainter::kInactiveWindowOpacity),
+        initial_solo_window_opacity_(ash::FramePainter::kSoloWindowOpacity) {
+    ash::FramePainter::kActiveWindowOpacity = 100;
+    ash::FramePainter::kInactiveWindowOpacity = 120;
+    ash::FramePainter::kSoloWindowOpacity = 140;
+  }
+  ~ScopedOpacityConstantModifier() {
+    ash::FramePainter::kActiveWindowOpacity = initial_active_window_opacity_;
+    ash::FramePainter::kInactiveWindowOpacity =
+        initial_inactive_window_opacity_;
+    ash::FramePainter::kSoloWindowOpacity = initial_solo_window_opacity_;
+  }
+
+ private:
+  int initial_active_window_opacity_;
+  int initial_inactive_window_opacity_;
+  int initial_solo_window_opacity_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedOpacityConstantModifier);
+};
+
 }  // namespace
 
 namespace ash {
@@ -443,6 +473,10 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
   p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
   w1->Show();
 
+  // Modify the values of the opacity constants so that they each have a
+  // different value.
+  ScopedOpacityConstantModifier opacity_constant_modifier;
+
   // Solo active window has solo window opacity.
   EXPECT_EQ(FramePainter::kSoloWindowOpacity,
             p1.GetHeaderOpacity(FramePainter::ACTIVE,
@@ -475,6 +509,28 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
             p1.GetHeaderOpacity(FramePainter::ACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
                                 &custom_overlay));
+
+  // Regular maximized window is fully transparent.
+  ash::wm::MaximizeWindow(w1->GetNativeWindow());
+  EXPECT_EQ(0,
+            p1.GetHeaderOpacity(FramePainter::ACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                NULL));
+
+  // Windows with custom overlays are fully opaque when maximized.
+  EXPECT_EQ(255,
+            p1.GetHeaderOpacity(FramePainter::ACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                &custom_overlay));
+
+  // The maximized window frame should take on the active/inactive opacity
+  // while the user is cycling through workspaces.
+  w1->GetNativeWindow()->GetRootWindow()->SetProperty(
+      ash::internal::kCyclingThroughWorkspacesKey, true);
+  EXPECT_EQ(FramePainter::kInactiveWindowOpacity,
+            p1.GetHeaderOpacity(FramePainter::INACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                NULL));
 }
 
 // Test the hit test function with windows which are "partially maximized".

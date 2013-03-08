@@ -170,6 +170,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Adjust frame operations for left / right maximized modes.
   int AdjustFrameHitCodeForMaximizedModes(int hit_code);
 
+  // Returns true if the user is cycling through workspaces.
+  bool IsCyclingThroughWorkspaces() const;
+
   // Returns true if |window_| is exactly one visible, normal-type window in
   // |window_->GetRootWindow()|, in which case we should paint a transparent
   // window header.
