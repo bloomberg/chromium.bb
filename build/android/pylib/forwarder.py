@@ -88,8 +88,14 @@ class Forwarder(object):
           'Failed to start device forwarder:\n%s' % '\n'.join(output))
 
     for redirection_command in redirection_commands:
-      (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
-          [self._host_forwarder_path, redirection_command])
+      try:
+        (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
+            [self._host_forwarder_path, redirection_command])
+      except OSError as e:
+        if e.errno == 2:
+          raise Exception('Unable to start host forwarder. Make sure you have '
+                          'built host_forwarder.')
+        else: raise
       if exit_code != 0:
         raise Exception('%s exited with %d:\n%s' % (
             self._host_forwarder_path, exit_code, '\n'.join(output)))
