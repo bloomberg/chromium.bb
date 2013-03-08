@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -333,6 +334,11 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
         isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
 
       PerfTimer exec_timer;
+      DOMActivityLogger::AttachToWorld(
+          isolated_world_id,
+          extension->id(),
+          UserScriptSlave::GetDataSourceURLForFrame(frame),
+          frame->document().title());
       frame->executeScriptInIsolatedWorld(
           isolated_world_id, &sources.front(), sources.size(),
           EXTENSION_GROUP_CONTENT_SCRIPTS);

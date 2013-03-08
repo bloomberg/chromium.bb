@@ -28,6 +28,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/content_watcher.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
+#include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
@@ -57,6 +58,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
+
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -912,8 +914,16 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
 
   UpdateActiveExtensions();
 
-  if (is_webkit_initialized_)
+  if (is_webkit_initialized_) {
     InitOriginPermissions(extension);
+    // DOMActivity logger for a main world controlled by an extension (as in
+    // the case of an extension background page, options page, popup etc.)
+    // gets an empty title.
+    DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
+                                     extension_id,
+                                     extension->url(),
+                                     string16());
+  }
 }
 
 void Dispatcher::InitOriginPermissions(const Extension* extension) {

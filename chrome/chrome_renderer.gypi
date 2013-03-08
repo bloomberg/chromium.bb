@@ -77,6 +77,8 @@
         'renderer/extensions/context_menus_custom_bindings.h',
         'renderer/extensions/dispatcher.cc',
         'renderer/extensions/dispatcher.h',
+        'renderer/extensions/dom_activity_logger.cc',
+        'renderer/extensions/dom_activity_logger.h',
         'renderer/extensions/event_bindings.cc',
         'renderer/extensions/event_bindings.h',
         'renderer/extensions/extension_custom_bindings.cc',
