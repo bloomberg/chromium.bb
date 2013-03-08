@@ -171,8 +171,7 @@ std::string FormatEntry(const base::FilePath& path,
 class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
   DriveInternalsWebUIHandler()
-      : num_pending_reads_(0),
-        last_sent_event_id_(-1),
+      : last_sent_event_id_(-1),
         weak_ptr_factory_(this) {
   }
 
@@ -256,8 +255,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void ClearAccessToken(const base::ListValue* args);
   void ClearRefreshToken(const base::ListValue* args);
 
-  // The number of pending ReadDirectoryByPath() calls.
-  int num_pending_reads_;
   // The last event sent to the JavaScript side.
   int last_sent_event_id_;
 
@@ -576,14 +573,12 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
 
   // Start rendering the file system tree as text.
   const base::FilePath root_path = base::FilePath(drive::kDriveRootDirectory);
-  ++num_pending_reads_;
   system_service->file_system()->GetEntryInfoByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnGetEntryInfoByPath,
                  weak_ptr_factory_.GetWeakPtr(),
                  root_path));
 
-  ++num_pending_reads_;
   system_service->file_system()->ReadDirectoryByPath(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
@@ -650,7 +645,6 @@ void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
     const base::FilePath& path,
     drive::DriveFileError error,
     scoped_ptr<drive::DriveEntryProto> entry) {
-  --num_pending_reads_;
   if (error == drive::DRIVE_FILE_OK) {
     DCHECK(entry.get());
     const base::StringValue value(FormatEntry(path, *entry) + "\n");
@@ -663,7 +657,6 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     drive::DriveFileError error,
     bool hide_hosted_documents,
     scoped_ptr<drive::DriveEntryProtoVector> entries) {
-  --num_pending_reads_;
   if (error == drive::DRIVE_FILE_OK) {
     DCHECK(entries.get());
 
@@ -676,7 +669,6 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
       file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
 
       if (entry.file_info().is_directory()) {
-        ++num_pending_reads_;
         GetSystemService()->file_system()->ReadDirectoryByPath(
             current_path,
             base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
