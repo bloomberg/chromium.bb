@@ -87,19 +87,19 @@ const Shader::VariableInfo*
 ShaderManager::ShaderManager() {}
 
 ShaderManager::~ShaderManager() {
-  DCHECK(shader_infos_.empty());
+  DCHECK(shaders_.empty());
 }
 
 void ShaderManager::Destroy(bool have_context) {
-  while (!shader_infos_.empty()) {
+  while (!shaders_.empty()) {
     if (have_context) {
-      Shader* info = shader_infos_.begin()->second;
-      if (!info->IsDeleted()) {
-        glDeleteShader(info->service_id());
-        info->MarkAsDeleted();
+      Shader* shader = shaders_.begin()->second;
+      if (!shader->IsDeleted()) {
+        glDeleteShader(shader->service_id());
+        shader->MarkAsDeleted();
       }
     }
-    shader_infos_.erase(shader_infos_.begin());
+    shaders_.erase(shaders_.begin());
   }
 }
 
@@ -107,8 +107,8 @@ Shader* ShaderManager::CreateShader(
     GLuint client_id,
     GLuint service_id,
     GLenum shader_type) {
-  std::pair<ShaderInfoMap::iterator, bool> result =
-      shader_infos_.insert(std::make_pair(
+  std::pair<ShaderMap::iterator, bool> result =
+      shaders_.insert(std::make_pair(
           client_id, scoped_refptr<Shader>(
               new Shader(service_id, shader_type))));
   DCHECK(result.second);
@@ -116,14 +116,14 @@ Shader* ShaderManager::CreateShader(
 }
 
 Shader* ShaderManager::GetShader(GLuint client_id) {
-  ShaderInfoMap::iterator it = shader_infos_.find(client_id);
-  return it != shader_infos_.end() ? it->second : NULL;
+  ShaderMap::iterator it = shaders_.find(client_id);
+  return it != shaders_.end() ? it->second : NULL;
 }
 
 bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
-  for (ShaderInfoMap::const_iterator it = shader_infos_.begin();
-       it != shader_infos_.end(); ++it) {
+  for (ShaderMap::const_iterator it = shaders_.begin();
+       it != shaders_.end(); ++it) {
     if (it->second->service_id() == service_id) {
       *client_id = it->first;
       return true;
@@ -132,24 +132,24 @@ bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   return false;
 }
 
-bool ShaderManager::IsOwned(Shader* info) {
-  for (ShaderInfoMap::iterator it = shader_infos_.begin();
-       it != shader_infos_.end(); ++it) {
-    if (it->second.get() == info) {
+bool ShaderManager::IsOwned(Shader* shader) {
+  for (ShaderMap::iterator it = shaders_.begin();
+       it != shaders_.end(); ++it) {
+    if (it->second.get() == shader) {
       return true;
     }
   }
   return false;
 }
 
-void ShaderManager::RemoveShader(Shader* info) {
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  if (info->IsDeleted() && !info->InUse()) {
-    for (ShaderInfoMap::iterator it = shader_infos_.begin();
-         it != shader_infos_.end(); ++it) {
-      if (it->second.get() == info) {
-        shader_infos_.erase(it);
+void ShaderManager::RemoveShader(Shader* shader) {
+  DCHECK(shader);
+  DCHECK(IsOwned(shader));
+  if (shader->IsDeleted() && !shader->InUse()) {
+    for (ShaderMap::iterator it = shaders_.begin();
+         it != shaders_.end(); ++it) {
+      if (it->second.get() == shader) {
+        shaders_.erase(it);
         return;
       }
     }
@@ -157,24 +157,24 @@ void ShaderManager::RemoveShader(Shader* info) {
   }
 }
 
-void ShaderManager::MarkAsDeleted(Shader* info) {
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  info->MarkAsDeleted();
-  RemoveShader(info);
+void ShaderManager::MarkAsDeleted(Shader* shader) {
+  DCHECK(shader);
+  DCHECK(IsOwned(shader));
+  shader->MarkAsDeleted();
+  RemoveShader(shader);
 }
 
-void ShaderManager::UseShader(Shader* info) {
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  info->IncUseCount();
+void ShaderManager::UseShader(Shader* shader) {
+  DCHECK(shader);
+  DCHECK(IsOwned(shader));
+  shader->IncUseCount();
 }
 
-void ShaderManager::UnuseShader(Shader* info) {
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  info->DecUseCount();
-  RemoveShader(info);
+void ShaderManager::UnuseShader(Shader* shader) {
+  DCHECK(shader);
+  DCHECK(IsOwned(shader));
+  shader->DecUseCount();
+  RemoveShader(shader);
 }
 
 }  // namespace gles2

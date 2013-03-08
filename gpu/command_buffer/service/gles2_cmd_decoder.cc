@@ -914,8 +914,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // generates a GL error. Returns NULL if not program.
   Program* GetProgramInfoNotShader(
       GLuint client_id, const char* function_name) {
-    Program* info = GetProgram(client_id);
-    if (!info) {
+    Program* program = GetProgram(client_id);
+    if (!program) {
       if (GetShader(client_id)) {
         SetGLError(
             GL_INVALID_OPERATION, function_name, "shader passed for program");
@@ -923,8 +923,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
         SetGLError(GL_INVALID_VALUE, function_name, "unknown program");
       }
     }
-    LogClientServiceForInfo(info, client_id, function_name);
-    return info;
+    LogClientServiceForInfo(program, client_id, function_name);
+    return program;
   }
 
 
@@ -946,8 +946,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // GL error. Returns NULL if not shader.
   Shader* GetShaderInfoNotProgram(
       GLuint client_id, const char* function_name) {
-    Shader* info = GetShader(client_id);
-    if (!info) {
+    Shader* shader = GetShader(client_id);
+    if (!shader) {
       if (GetProgram(client_id)) {
         SetGLError(
             GL_INVALID_OPERATION, function_name, "program passed for shader");
@@ -956,8 +956,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
             GL_INVALID_VALUE, function_name, "unknown shader");
       }
     }
-    LogClientServiceForInfo(info, client_id, function_name);
-    return info;
+    LogClientServiceForInfo(shader, client_id, function_name);
+    return shader;
   }
 
   // Creates a buffer info for the given buffer.
@@ -1558,7 +1558,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
            surface_->DeferDraws();
   }
 
-  void ForceCompileShaderIfPending(Shader* info);
+  void ForceCompileShaderIfPending(Shader* shader);
 
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -4314,12 +4314,11 @@ void GLES2DecoderImpl::DoGetIntegerv(GLenum pname, GLint* params) {
 
 void GLES2DecoderImpl::DoGetProgramiv(
     GLuint program_id, GLenum pname, GLint* params) {
-  Program* info = GetProgramInfoNotShader(
-      program_id, "glGetProgramiv");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(program_id, "glGetProgramiv");
+  if (!program) {
     return;
   }
-  info->GetProgramiv(pname, params);
+  program->GetProgramiv(pname, params);
 }
 
 void GLES2DecoderImpl::DoGetBufferParameteriv(
@@ -4344,7 +4343,7 @@ void GLES2DecoderImpl::DoGetBufferParameteriv(
 }
 
 void GLES2DecoderImpl::DoBindAttribLocation(
-    GLuint program, GLuint index, const char* name) {
+    GLuint program_id, GLuint index, const char* name) {
   if (!StringIsValidForGLES(name)) {
     SetGLError(GL_INVALID_VALUE, "glBindAttribLocation", "Invalid character");
     return;
@@ -4357,13 +4356,13 @@ void GLES2DecoderImpl::DoBindAttribLocation(
     SetGLError(GL_INVALID_VALUE, "glBindAttribLocation", "index out of range");
     return;
   }
-  Program* info = GetProgramInfoNotShader(
-      program, "glBindAttribLocation");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glBindAttribLocation");
+  if (!program) {
     return;
   }
-  info->SetAttribLocationBinding(name, static_cast<GLint>(index));
-  glBindAttribLocation(info->service_id(), index, name);
+  program->SetAttribLocationBinding(name, static_cast<GLint>(index));
+  glBindAttribLocation(program->service_id(), index, name);
 }
 
 error::Error GLES2DecoderImpl::HandleBindAttribLocation(
@@ -4413,7 +4412,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocationBucket(
 }
 
 void GLES2DecoderImpl::DoBindUniformLocationCHROMIUM(
-    GLuint program, GLint location, const char* name) {
+    GLuint program_id, GLint location, const char* name) {
   if (!StringIsValidForGLES(name)) {
     SetGLError(GL_INVALID_VALUE,
                "glBindUniformLocationCHROMIUM", "Invalid character");
@@ -4431,12 +4430,12 @@ void GLES2DecoderImpl::DoBindUniformLocationCHROMIUM(
                "glBindUniformLocationCHROMIUM", "location out of range");
     return;
   }
-  Program* info = GetProgramInfoNotShader(
-      program, "glBindUniformLocationCHROMIUM");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glBindUniformLocationCHROMIUM");
+  if (!program) {
     return;
   }
-  if (!info->SetUniformLocationBinding(name, location)) {
+  if (!program->SetUniformLocationBinding(name, location)) {
     SetGLError(GL_INVALID_VALUE,
                "glBindUniformLocationCHROMIUM", "location out of range");
   }
@@ -4494,11 +4493,11 @@ error::Error GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const cmds::DeleteShader& c) {
   GLuint client_id = c.shader;
   if (client_id) {
-    Shader* info = GetShader(client_id);
-    if (info) {
-      if (!info->IsDeleted()) {
-        glDeleteShader(info->service_id());
-        shader_manager()->MarkAsDeleted(info);
+    Shader* shader = GetShader(client_id);
+    if (shader) {
+      if (!shader->IsDeleted()) {
+        glDeleteShader(shader->service_id());
+        shader_manager()->MarkAsDeleted(shader);
       }
     } else {
       SetGLError(GL_INVALID_VALUE, "glDeleteShader", "unknown shader");
@@ -4511,10 +4510,10 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
     uint32 immediate_data_size, const cmds::DeleteProgram& c) {
   GLuint client_id = c.program;
   if (client_id) {
-    Program* info = GetProgram(client_id);
-    if (info) {
-      if (!info->IsDeleted()) {
-        program_manager()->MarkAsDeleted(shader_manager(), info);
+    Program* program = GetProgram(client_id);
+    if (program) {
+      if (!program->IsDeleted()) {
+        program_manager()->MarkAsDeleted(shader_manager(), program);
       }
     } else {
       SetGLError(GL_INVALID_VALUE, "glDeleteProgram", "unknown program");
@@ -5013,30 +5012,30 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
   }
 }
 
-void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
+void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoLinkProgram");
-  Program* info = GetProgramInfoNotShader(
-      program, "glLinkProgram");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glLinkProgram");
+  if (!program) {
     return;
   }
 
-  LogClientServiceForInfo(info, program, "glLinkProgram");
+  LogClientServiceForInfo(program, program_id, "glLinkProgram");
   ShaderTranslator* vertex_translator = NULL;
   ShaderTranslator* fragment_translator = NULL;
   if (use_shader_translator_) {
     vertex_translator = vertex_translator_;
     fragment_translator = fragment_translator_;
   }
-  if (info->Link(shader_manager(),
+  if (program->Link(shader_manager(),
                  vertex_translator,
                  fragment_translator,
                  feature_info_)) {
-    if (info == state_.current_program.get()) {
+    if (program == state_.current_program.get()) {
       if (workarounds().use_current_program_after_successful_link) {
-        glUseProgram(info->service_id());
+        glUseProgram(program->service_id());
       }
-      program_manager()->ClearUniforms(info);
+      program_manager()->ClearUniforms(program);
     }
   }
 };
@@ -5489,26 +5488,26 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(
   glUniformMatrix4fv(real_location, count, transpose, value);
 }
 
-void GLES2DecoderImpl::DoUseProgram(GLuint program) {
+void GLES2DecoderImpl::DoUseProgram(GLuint program_id) {
   GLuint service_id = 0;
-  Program* info = NULL;
-  if (program) {
-    info = GetProgramInfoNotShader(program, "glUseProgram");
-    if (!info) {
+  Program* program = NULL;
+  if (program_id) {
+    program = GetProgramInfoNotShader(program_id, "glUseProgram");
+    if (!program) {
       return;
     }
-    if (!info->IsValid()) {
+    if (!program->IsValid()) {
       // Program was not linked successfully. (ie, glLinkProgram)
       SetGLError(GL_INVALID_OPERATION, "glUseProgram", "program not linked");
       return;
     }
-    service_id = info->service_id();
+    service_id = program->service_id();
   }
   if (state_.current_program) {
     program_manager()->UnuseProgram(shader_manager(), state_.current_program);
   }
-  state_.current_program = info;
-  LogClientServiceMapping("glUseProgram", program, service_id);
+  state_.current_program = program;
+  LogClientServiceMapping("glUseProgram", program_id, service_id);
   glUseProgram(service_id);
   if (state_.current_program) {
     program_manager()->UseProgram(state_.current_program);
@@ -5616,19 +5615,18 @@ void GLES2DecoderImpl::PerformanceWarning(const std::string& msg) {
   LogMessage(std::string("PERFORMANCE WARNING: ") + msg);
 }
 
-void GLES2DecoderImpl::ForceCompileShaderIfPending(
-    Shader* info) {
-  if (info->compilation_status() ==
+void GLES2DecoderImpl::ForceCompileShaderIfPending(Shader* shader) {
+  if (shader->compilation_status() ==
       Shader::PENDING_DEFERRED_COMPILE) {
     ShaderTranslator* translator = NULL;
     if (use_shader_translator_) {
-      translator = info->shader_type() == GL_VERTEX_SHADER ?
+      translator = shader->shader_type() == GL_VERTEX_SHADER ?
           vertex_translator_.get() : fragment_translator_.get();
     }
     // We know there will be no errors, because we only defer compilation on
     // shaders that were previously compiled successfully.
-    program_manager()->ForceCompileShader(info->deferred_compilation_source(),
-                                          info,
+    program_manager()->ForceCompileShader(shader->deferred_compilation_source(),
+                                          shader,
                                           translator,
                                           feature_info_);
   }
@@ -6249,14 +6247,13 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
 error::Error GLES2DecoderImpl::ShaderSourceHelper(
     GLuint client_id, const char* data, uint32 data_size) {
   std::string str(data, data + data_size);
-  Shader* info = GetShaderInfoNotProgram(
-      client_id, "glShaderSource");
-  if (!info) {
+  Shader* shader = GetShaderInfoNotProgram(client_id, "glShaderSource");
+  if (!shader) {
     return error::kNoError;
   }
   // Note: We don't actually call glShaderSource here. We wait until
   // the call to glCompileShader.
-  info->UpdateSource(str.c_str());
+  shader->UpdateSource(str.c_str());
   return error::kNoError;
 }
 
@@ -6295,110 +6292,105 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCompileShader");
-  Shader* info = GetShaderInfoNotProgram(
-      client_id, "glCompileShader");
-  if (!info) {
+  Shader* shader = GetShaderInfoNotProgram(client_id, "glCompileShader");
+  if (!shader) {
     return;
   }
   ShaderTranslator* translator = NULL;
   if (use_shader_translator_) {
-    translator = info->shader_type() == GL_VERTEX_SHADER ?
+    translator = shader->shader_type() == GL_VERTEX_SHADER ?
         vertex_translator_.get() : fragment_translator_.get();
   }
 
-  program_manager()->DoCompileShader(info, translator, feature_info_);
+  program_manager()->DoCompileShader(shader, translator, feature_info_);
 };
 
 void GLES2DecoderImpl::DoGetShaderiv(
-    GLuint shader, GLenum pname, GLint* params) {
-  Shader* info = GetShaderInfoNotProgram(
-      shader, "glGetShaderiv");
-  if (!info) {
+    GLuint shader_id, GLenum pname, GLint* params) {
+  Shader* shader = GetShaderInfoNotProgram(shader_id, "glGetShaderiv");
+  if (!shader) {
     return;
   }
   switch (pname) {
     case GL_SHADER_SOURCE_LENGTH:
-      *params = info->source() ? info->source()->size() + 1 : 0;
+      *params = shader->source() ? shader->source()->size() + 1 : 0;
       return;
     case GL_COMPILE_STATUS:
-      *params = compile_shader_always_succeeds_ ? true : info->IsValid();
+      *params = compile_shader_always_succeeds_ ? true : shader->IsValid();
       return;
     case GL_INFO_LOG_LENGTH:
-      *params = info->log_info() ? info->log_info()->size() + 1 : 0;
+      *params = shader->log_info() ? shader->log_info()->size() + 1 : 0;
       return;
     case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
-      ForceCompileShaderIfPending(info);
-      *params = info->translated_source() ?
-          info->translated_source()->size() + 1 : 0;
+      ForceCompileShaderIfPending(shader);
+      *params = shader->translated_source() ?
+          shader->translated_source()->size() + 1 : 0;
       return;
     default:
       break;
   }
-  glGetShaderiv(info->service_id(), pname, params);
+  glGetShaderiv(shader->service_id(), pname, params);
 }
 
 error::Error GLES2DecoderImpl::HandleGetShaderSource(
     uint32 immediate_data_size, const cmds::GetShaderSource& c) {
-  GLuint shader = c.shader;
+  GLuint shader_id = c.shader;
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
-  Shader* info = GetShaderInfoNotProgram(
-      shader, "glGetShaderSource");
-  if (!info || !info->source()) {
+  Shader* shader = GetShaderInfoNotProgram(shader_id, "glGetShaderSource");
+  if (!shader || !shader->source()) {
     bucket->SetSize(0);
     return error::kNoError;
   }
-  bucket->SetFromString(info->source()->c_str());
+  bucket->SetFromString(shader->source()->c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetTranslatedShaderSourceANGLE(
     uint32 immediate_data_size,
     const cmds::GetTranslatedShaderSourceANGLE& c) {
-  GLuint shader = c.shader;
-
+  GLuint shader_id = c.shader;
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
-  Shader* info = GetShaderInfoNotProgram(
-      shader, "glTranslatedGetShaderSourceANGLE");
-  if (!info) {
+  Shader* shader = GetShaderInfoNotProgram(
+      shader_id, "glTranslatedGetShaderSourceANGLE");
+  if (!shader) {
     bucket->SetSize(0);
     return error::kNoError;
   }
-  ForceCompileShaderIfPending(info);
+  ForceCompileShaderIfPending(shader);
 
-  bucket->SetFromString(info->translated_source() ?
-      info->translated_source()->c_str() : NULL);
+  bucket->SetFromString(shader->translated_source() ?
+      shader->translated_source()->c_str() : NULL);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
     uint32 immediate_data_size, const cmds::GetProgramInfoLog& c) {
-  GLuint program = c.program;
+  GLuint program_id = c.program;
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
-  Program* info = GetProgramInfoNotShader(
-      program, "glGetProgramInfoLog");
-  if (!info || !info->log_info()) {
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glGetProgramInfoLog");
+  if (!program || !program->log_info()) {
     bucket->SetFromString("");
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info()->c_str());
+  bucket->SetFromString(program->log_info()->c_str());
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     uint32 immediate_data_size, const cmds::GetShaderInfoLog& c) {
-  GLuint shader = c.shader;
+  GLuint shader_id = c.shader;
   uint32 bucket_id = static_cast<uint32>(c.bucket_id);
   Bucket* bucket = CreateBucket(bucket_id);
-  Shader* info = GetShaderInfoNotProgram(
-      shader, "glGetShaderInfoLog");
-  if (!info || !info->log_info()) {
+  Shader* shader = GetShaderInfoNotProgram(shader_id, "glGetShaderInfoLog");
+  if (!shader || !shader->log_info()) {
     bucket->SetFromString("");
     return error::kNoError;
   }
-  bucket->SetFromString(info->log_info()->c_str());
+  bucket->SetFromString(shader->log_info()->c_str());
   return error::kNoError;
 }
 
@@ -6444,52 +6436,50 @@ bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
 
 void GLES2DecoderImpl::DoAttachShader(
     GLuint program_client_id, GLint shader_client_id) {
-  Program* program_info = GetProgramInfoNotShader(
+  Program* program = GetProgramInfoNotShader(
       program_client_id, "glAttachShader");
-  if (!program_info) {
+  if (!program) {
     return;
   }
-  Shader* shader_info = GetShaderInfoNotProgram(
-      shader_client_id, "glAttachShader");
-  if (!shader_info) {
+  Shader* shader = GetShaderInfoNotProgram(shader_client_id, "glAttachShader");
+  if (!shader) {
     return;
   }
-  if (!program_info->AttachShader(shader_manager(), shader_info)) {
+  if (!program->AttachShader(shader_manager(), shader)) {
     SetGLError(GL_INVALID_OPERATION,
                "glAttachShader", "can not attach more than"
                " one shader of the same type.");
     return;
   }
-  glAttachShader(program_info->service_id(), shader_info->service_id());
+  glAttachShader(program->service_id(), shader->service_id());
 }
 
 void GLES2DecoderImpl::DoDetachShader(
     GLuint program_client_id, GLint shader_client_id) {
-  Program* program_info = GetProgramInfoNotShader(
+  Program* program = GetProgramInfoNotShader(
       program_client_id, "glDetachShader");
-  if (!program_info) {
+  if (!program) {
     return;
   }
-  Shader* shader_info = GetShaderInfoNotProgram(
-      shader_client_id, "glDetachShader");
-  if (!shader_info) {
+  Shader* shader = GetShaderInfoNotProgram(shader_client_id, "glDetachShader");
+  if (!shader) {
     return;
   }
-  if (!program_info->DetachShader(shader_manager(), shader_info)) {
+  if (!program->DetachShader(shader_manager(), shader)) {
     SetGLError(GL_INVALID_OPERATION,
                "glDetachShader", "shader not attached to program");
     return;
   }
-  glDetachShader(program_info->service_id(), shader_info->service_id());
+  glDetachShader(program->service_id(), shader->service_id());
 }
 
 void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {
-  Program* info = GetProgramInfoNotShader(
+  Program* program = GetProgramInfoNotShader(
       program_client_id, "glValidateProgram");
-  if (!info) {
+  if (!program) {
     return;
   }
-  info->Validate();
+  program->Validate();
 }
 
 void GLES2DecoderImpl::DoGetVertexAttribfv(
@@ -6995,12 +6985,12 @@ error::Error GLES2DecoderImpl::GetAttribLocationHelper(
     SetGLError(GL_INVALID_VALUE, "glGetAttribLocation", "Invalid character");
     return error::kNoError;
   }
-  Program* info = GetProgramInfoNotShader(
+  Program* program = GetProgramInfoNotShader(
       client_id, "glGetAttribLocation");
-  if (!info) {
+  if (!program) {
     return error::kNoError;
   }
-  if (!info->IsValid()) {
+  if (!program->IsValid()) {
     SetGLError(
         GL_INVALID_OPERATION, "glGetAttribLocation", "program not linked");
     return error::kNoError;
@@ -7015,7 +7005,7 @@ error::Error GLES2DecoderImpl::GetAttribLocationHelper(
   if (*location != -1) {
     return error::kGenericError;
   }
-  *location = info->GetAttribLocation(name_str);
+  *location = program->GetAttribLocation(name_str);
   return error::kNoError;
 }
 
@@ -7066,12 +7056,12 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     SetGLError(GL_INVALID_VALUE, "glGetUniformLocation", "Invalid character");
     return error::kNoError;
   }
-  Program* info = GetProgramInfoNotShader(
+  Program* program = GetProgramInfoNotShader(
       client_id, "glUniformLocation");
-  if (!info) {
+  if (!program) {
     return error::kNoError;
   }
-  if (!info->IsValid()) {
+  if (!program->IsValid()) {
     SetGLError(
         GL_INVALID_OPERATION, "glGetUniformLocation", "program not linked");
     return error::kNoError;
@@ -7086,7 +7076,7 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
   if (*location != -1) {
     return error::kGenericError;
   }
-  *location = info->GetUniformFakeLocation(name_str);
+  *location = program->GetUniformFakeLocation(name_str);
   return error::kNoError;
 }
 
@@ -8394,7 +8384,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
 }
 
 bool GLES2DecoderImpl::GetUniformSetup(
-    GLuint program, GLint fake_location,
+    GLuint program_id, GLint fake_location,
     uint32 shm_id, uint32 shm_offset,
     error::Error* error, GLint* real_location,
     GLuint* service_id, void** result_pointer, GLenum* result_type) {
@@ -8415,20 +8405,19 @@ bool GLES2DecoderImpl::GetUniformSetup(
   *result_pointer = result;
   // Set the result size to 0 so the client does not have to check for success.
   result->SetNumResults(0);
-  Program* info = GetProgramInfoNotShader(
-      program, "glGetUniform");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(program_id, "glGetUniform");
+  if (!program) {
     return false;
   }
-  if (!info->IsValid()) {
+  if (!program->IsValid()) {
     // Program was not linked successfully. (ie, glLinkProgram)
     SetGLError(GL_INVALID_OPERATION, "glGetUniform", "program not linked");
     return false;
   }
-  *service_id = info->service_id();
+  *service_id = program->service_id();
   GLint array_index = -1;
   const Program::UniformInfo* uniform_info =
-      info->GetUniformInfoByFakeLocation(
+      program->GetUniformInfoByFakeLocation(
           fake_location, real_location, &array_index);
   if (!uniform_info) {
     // No such location.
@@ -8571,10 +8560,10 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
     uint32 immediate_data_size, const cmds::GetAttachedShaders& c) {
   uint32 result_size = c.result_size;
-  GLuint program = static_cast<GLuint>(c.program);
-  Program* info = GetProgramInfoNotShader(
-      program, "glGetAttachedShaders");
-  if (!info) {
+  GLuint program_id = static_cast<GLuint>(c.program);
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glGetAttachedShaders");
+  if (!program) {
     return error::kNoError;
   }
   typedef cmds::GetAttachedShaders::Result Result;
@@ -8590,7 +8579,7 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
   }
   GLsizei count = 0;
   glGetAttachedShaders(
-      info->service_id(), max_count, &count, result->GetData());
+      program->service_id(), max_count, &count, result->GetData());
   for (GLsizei ii = 0; ii < count; ++ii) {
     if (!shader_manager()->GetClientId(result->GetData()[ii],
                                        &result->GetData()[ii])) {
@@ -8604,7 +8593,7 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
 
 error::Error GLES2DecoderImpl::HandleGetActiveUniform(
     uint32 immediate_data_size, const cmds::GetActiveUniform& c) {
-  GLuint program = c.program;
+  GLuint program_id = c.program;
   GLuint index = c.index;
   uint32 name_bucket_id = c.name_bucket_id;
   typedef cmds::GetActiveUniform::Result Result;
@@ -8617,13 +8606,13 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  Program* info = GetProgramInfoNotShader(
-      program, "glGetActiveUniform");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glGetActiveUniform");
+  if (!program) {
     return error::kNoError;
   }
   const Program::UniformInfo* uniform_info =
-      info->GetUniformInfo(index);
+      program->GetUniformInfo(index);
   if (!uniform_info) {
     SetGLError(GL_INVALID_VALUE, "glGetActiveUniform", "index out of range");
     return error::kNoError;
@@ -8638,7 +8627,7 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
 
 error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
     uint32 immediate_data_size, const cmds::GetActiveAttrib& c) {
-  GLuint program = c.program;
+  GLuint program_id = c.program;
   GLuint index = c.index;
   uint32 name_bucket_id = c.name_bucket_id;
   typedef cmds::GetActiveAttrib::Result Result;
@@ -8651,13 +8640,13 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   if (result->success != 0) {
     return error::kInvalidArguments;
   }
-  Program* info = GetProgramInfoNotShader(
-      program, "glGetActiveAttrib");
-  if (!info) {
+  Program* program = GetProgramInfoNotShader(
+      program_id, "glGetActiveAttrib");
+  if (!program) {
     return error::kNoError;
   }
   const Program::VertexAttrib* attrib_info =
-      info->GetAttribInfo(index);
+      program->GetAttribInfo(index);
   if (!attrib_info) {
     SetGLError(GL_INVALID_VALUE, "glGetActiveAttrib", "index out of range");
     return error::kNoError;
@@ -8700,12 +8689,12 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
   }
   scoped_array<GLuint> service_ids(new GLuint[n]);
   for (GLsizei ii = 0; ii < n; ++ii) {
-    Shader* info = GetShader(shaders[ii]);
-    if (!info) {
+    Shader* shader = GetShader(shaders[ii]);
+    if (!shader) {
       SetGLError(GL_INVALID_VALUE, "glShaderBinary", "unknown shader");
       return error::kNoError;
     }
-    service_ids[ii] = info->service_id();
+    service_ids[ii] = shader->service_id();
   }
   // TODO(gman): call glShaderBinary
   return error::kNoError;
@@ -8985,16 +8974,16 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
 
 error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
     uint32 immediate_data_size, const cmds::GetProgramInfoCHROMIUM& c) {
-  GLuint program = static_cast<GLuint>(c.program);
+  GLuint program_id = static_cast<GLuint>(c.program);
   uint32 bucket_id = c.bucket_id;
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(ProgramInfoHeader));  // in case we fail.
-  Program* info = NULL;
-  info = GetProgram(program);
-  if (!info || !info->IsValid()) {
+  Program* program = NULL;
+  program = GetProgram(program_id);
+  if (!program || !program->IsValid()) {
     return error::kNoError;
   }
-  info->GetProgram(program_manager(), bucket);
+  program->GetProgramInfo(program_manager(), bucket);
   return error::kNoError;
 }
 

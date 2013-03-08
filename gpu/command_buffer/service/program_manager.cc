@@ -440,16 +440,16 @@ void Program::ExecuteBindAttribLocationCalls() {
   }
 }
 
-void ProgramManager::DoCompileShader(Shader* info,
+void ProgramManager::DoCompileShader(Shader* shader,
                                      ShaderTranslator* translator,
                                      FeatureInfo* feature_info) {
   TimeTicks before = TimeTicks::HighResNow();
   if (program_cache_ &&
-      program_cache_->GetShaderCompilationStatus(info->source() ?
-                                                 *info->source() : "") ==
+      program_cache_->GetShaderCompilationStatus(shader->source() ?
+                                                 *shader->source() : "") ==
           ProgramCache::COMPILATION_SUCCEEDED) {
-    info->SetStatus(true, "", translator);
-    info->FlagSourceAsCompiled(false);
+    shader->SetStatus(true, "", translator);
+    shader->FlagSourceAsCompiled(false);
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "GPU.ProgramCache.CompilationCacheHitTime",
         (TimeTicks::HighResNow() - before).InMicroseconds(),
@@ -458,7 +458,7 @@ void ProgramManager::DoCompileShader(Shader* info,
         50);
     return;
   }
-  ForceCompileShader(info->source(), info, translator, feature_info);
+  ForceCompileShader(shader->source(), shader, translator, feature_info);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "GPU.ProgramCache.CompilationCacheMissTime",
       (TimeTicks::HighResNow() - before).InMicroseconds(),
@@ -468,44 +468,44 @@ void ProgramManager::DoCompileShader(Shader* info,
 }
 
 void ProgramManager::ForceCompileShader(const std::string* source,
-                                        Shader* info,
+                                        Shader* shader,
                                         ShaderTranslator* translator,
                                         FeatureInfo* feature_info) {
-  info->FlagSourceAsCompiled(true);
+  shader->FlagSourceAsCompiled(true);
 
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
   const char* shader_src = source ? source->c_str() : "";
   if (translator) {
     if (!translator->Translate(shader_src)) {
-      info->SetStatus(false, translator->info_log(), NULL);
+      shader->SetStatus(false, translator->info_log(), NULL);
       return;
     }
     shader_src = translator->translated_shader();
     if (!feature_info->feature_flags().angle_translated_shader_source)
-      info->UpdateTranslatedSource(shader_src);
+      shader->UpdateTranslatedSource(shader_src);
   }
 
-  glShaderSource(info->service_id(), 1, &shader_src, NULL);
-  glCompileShader(info->service_id());
+  glShaderSource(shader->service_id(), 1, &shader_src, NULL);
+  glCompileShader(shader->service_id());
   if (feature_info->feature_flags().angle_translated_shader_source) {
     GLint max_len = 0;
-    glGetShaderiv(info->service_id(),
+    glGetShaderiv(shader->service_id(),
                   GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
                   &max_len);
     scoped_array<char> temp(new char[max_len]);
     GLint len = 0;
     glGetTranslatedShaderSourceANGLE(
-        info->service_id(), max_len, &len, temp.get());
+        shader->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len == 0 || temp[len] == '\0');
-    info->UpdateTranslatedSource(max_len ? temp.get() : NULL);
+    shader->UpdateTranslatedSource(max_len ? temp.get() : NULL);
   }
 
   GLint status = GL_FALSE;
-  glGetShaderiv(info->service_id(), GL_COMPILE_STATUS, &status);
+  glGetShaderiv(shader->service_id(), GL_COMPILE_STATUS, &status);
   if (status) {
-    info->SetStatus(true, "", translator);
+    shader->SetStatus(true, "", translator);
     if (program_cache_) {
       const char* untranslated_source = source ? source->c_str() : "";
       program_cache_->ShaderCompilationSucceeded(untranslated_source);
@@ -515,26 +515,26 @@ void ProgramManager::ForceCompileShader(const std::string* source,
     // All invalid shaders must be rejected by the translator.
     // All translated shaders must compile.
     GLint max_len = 0;
-    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &max_len);
+    glGetShaderiv(shader->service_id(), GL_INFO_LOG_LENGTH, &max_len);
     scoped_array<char> temp(new char[max_len]);
     GLint len = 0;
-    glGetShaderInfoLog(info->service_id(), max_len, &len, temp.get());
+    glGetShaderInfoLog(shader->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len == 0 || temp[len] == '\0');
-    info->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
+    shader->SetStatus(false, std::string(temp.get(), len).c_str(), NULL);
     LOG_IF(ERROR, translator)
         << "Shader translator allowed/produced an invalid shader "
         << "unless the driver is buggy:"
         << "\n--original-shader--\n" << (source ? *source : "")
         << "\n--translated-shader--\n" << shader_src
-        << "\n--info-log--\n" << *info->log_info();
+        << "\n--info-log--\n" << *shader->log_info();
   }
 }
 
 bool Program::Link(ShaderManager* manager,
-                                       ShaderTranslator* vertex_translator,
-                                       ShaderTranslator* fragment_translator,
-                                       FeatureInfo* feature_info) {
+                   ShaderTranslator* vertex_translator,
+                   ShaderTranslator* fragment_translator,
+                   FeatureInfo* feature_info) {
   ClearLinkStatus();
   if (!CanLink()) {
     set_log_info("missing shaders");
@@ -569,18 +569,18 @@ bool Program::Link(ShaderManager* manager,
       // compile our shaders if they're pending
       const int kShaders = Program::kMaxAttachedShaders;
       for (int i = 0; i < kShaders; ++i) {
-        Shader* info = attached_shaders_[i].get();
-        if (info->compilation_status() ==
+        Shader* shader = attached_shaders_[i].get();
+        if (shader->compilation_status() ==
             Shader::PENDING_DEFERRED_COMPILE) {
           ShaderTranslator* translator = ShaderIndexToTranslator(
               i,
               vertex_translator,
               fragment_translator);
-          manager_->ForceCompileShader(info->deferred_compilation_source(),
+          manager_->ForceCompileShader(shader->deferred_compilation_source(),
                                        attached_shaders_[i],
                                        translator,
                                        feature_info);
-          CHECK(info->IsValid());
+          CHECK(shader->IsValid());
         }
       }
     }
@@ -709,10 +709,10 @@ const Program::UniformInfo*
 const std::string* Program::GetAttribMappedName(
     const std::string& original_name) const {
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    Shader* shader_info = attached_shaders_[ii].get();
-    if (shader_info) {
+    Shader* shader = attached_shaders_[ii].get();
+    if (shader) {
       const std::string* mapped_name =
-          shader_info->GetAttribMappedName(original_name);
+          shader->GetAttribMappedName(original_name);
       if (mapped_name)
         return mapped_name;
     }
@@ -723,10 +723,10 @@ const std::string* Program::GetAttribMappedName(
 const std::string* Program::GetOriginalNameFromHashedName(
     const std::string& hashed_name) const {
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-    Shader* shader_info = attached_shaders_[ii].get();
-    if (shader_info) {
+    Shader* shader = attached_shaders_[ii].get();
+    if (shader) {
       const std::string* original_name =
-          shader_info->GetOriginalNameFromHashedName(hashed_name);
+          shader->GetOriginalNameFromHashedName(hashed_name);
       if (original_name)
         return original_name;
     }
@@ -762,11 +762,11 @@ void Program::GetCorrectedVariableInfo(
   for (int jj = 0; jj < 2; ++jj) {
     std::string test_name(name + ((jj == 1) ? kArraySpec : ""));
     for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
-      Shader* shader_info = attached_shaders_[ii].get();
-      if (shader_info) {
+      Shader* shader = attached_shaders_[ii].get();
+      if (shader) {
         const Shader::VariableInfo* variable_info =
-            use_uniforms ? shader_info->GetUniformInfo(test_name) :
-                           shader_info->GetAttribInfo(test_name);
+            use_uniforms ? shader->GetUniformInfo(test_name) :
+                           shader->GetAttribInfo(test_name);
         // Note: There is an assuption here that if an attrib is defined in more
         // than 1 attached shader their types and sizes match. Should we check
         // for that case?
@@ -937,28 +937,29 @@ void Program::GetProgramiv(GLenum pname, GLint* params) {
 
 bool Program::AttachShader(
     ShaderManager* shader_manager,
-    Shader* info) {
+    Shader* shader) {
   DCHECK(shader_manager);
-  DCHECK(info);
-  int index = ShaderTypeToIndex(info->shader_type());
+  DCHECK(shader);
+  int index = ShaderTypeToIndex(shader->shader_type());
   if (attached_shaders_[index] != NULL) {
     return false;
   }
-  attached_shaders_[index] = scoped_refptr<Shader>(info);
-  shader_manager->UseShader(info);
+  attached_shaders_[index] = scoped_refptr<Shader>(shader);
+  shader_manager->UseShader(shader);
   return true;
 }
 
 bool Program::DetachShader(
     ShaderManager* shader_manager,
-    Shader* info) {
+    Shader* shader) {
   DCHECK(shader_manager);
-  DCHECK(info);
-  if (attached_shaders_[ShaderTypeToIndex(info->shader_type())].get() != info) {
+  DCHECK(shader);
+  if (attached_shaders_[ShaderTypeToIndex(shader->shader_type())].get() !=
+      shader) {
     return false;
   }
-  attached_shaders_[ShaderTypeToIndex(info->shader_type())] = NULL;
-  shader_manager->UnuseShader(info);
+  attached_shaders_[ShaderTypeToIndex(shader->shader_type())] = NULL;
+  shader_manager->UnuseShader(shader);
   return true;
 }
 
@@ -1009,7 +1010,7 @@ static uint32 ComputeOffset(const void* start, const void* position) {
          static_cast<const uint8*>(start);
 }
 
-void Program::GetProgram(
+void Program::GetProgramInfo(
     ProgramManager* manager, CommonDecoder::Bucket* bucket) const {
   // NOTE: It seems to me the math in here does not need check for overflow
   // because the data being calucated from has various small limits. The max
@@ -1102,7 +1103,7 @@ Program::~Program() {
 
 
 ProgramManager::ProgramManager(ProgramCache* program_cache)
-    : program_info_count_(0),
+    : program_count_(0),
       have_context_(true),
       disable_workarounds_(
           CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1110,26 +1111,26 @@ ProgramManager::ProgramManager(ProgramCache* program_cache)
       program_cache_(program_cache) { }
 
 ProgramManager::~ProgramManager() {
-  DCHECK(program_infos_.empty());
+  DCHECK(programs_.empty());
 }
 
 void ProgramManager::Destroy(bool have_context) {
   have_context_ = have_context;
-  program_infos_.clear();
+  programs_.clear();
 }
 
 void ProgramManager::StartTracking(Program* /* program */) {
-  ++program_info_count_;
+  ++program_count_;
 }
 
 void ProgramManager::StopTracking(Program* /* program */) {
-  --program_info_count_;
+  --program_count_;
 }
 
 Program* ProgramManager::CreateProgram(
     GLuint client_id, GLuint service_id) {
-  std::pair<ProgramInfoMap::iterator, bool> result =
-      program_infos_.insert(
+  std::pair<ProgramMap::iterator, bool> result =
+      programs_.insert(
           std::make_pair(client_id,
                          scoped_refptr<Program>(
                              new Program(this, service_id))));
@@ -1138,14 +1139,14 @@ Program* ProgramManager::CreateProgram(
 }
 
 Program* ProgramManager::GetProgram(GLuint client_id) {
-  ProgramInfoMap::iterator it = program_infos_.find(client_id);
-  return it != program_infos_.end() ? it->second : NULL;
+  ProgramMap::iterator it = programs_.find(client_id);
+  return it != programs_.end() ? it->second : NULL;
 }
 
 bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
-  for (ProgramInfoMap::const_iterator it = program_infos_.begin();
-       it != program_infos_.end(); ++it) {
+  for (ProgramMap::const_iterator it = programs_.begin();
+       it != programs_.end(); ++it) {
     if (it->second->service_id() == service_id) {
       *client_id = it->first;
       return true;
@@ -1158,10 +1159,10 @@ ProgramCache* ProgramManager::program_cache() const {
   return program_cache_;
 }
 
-bool ProgramManager::IsOwned(Program* info) {
-  for (ProgramInfoMap::iterator it = program_infos_.begin();
-       it != program_infos_.end(); ++it) {
-    if (it->second.get() == info) {
+bool ProgramManager::IsOwned(Program* program) {
+  for (ProgramMap::iterator it = programs_.begin();
+       it != programs_.end(); ++it) {
+    if (it->second.get() == program) {
       return true;
     }
   }
@@ -1169,16 +1170,16 @@ bool ProgramManager::IsOwned(Program* info) {
 }
 
 void ProgramManager::RemoveProgramInfoIfUnused(
-    ShaderManager* shader_manager, Program* info) {
+    ShaderManager* shader_manager, Program* program) {
   DCHECK(shader_manager);
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  if (info->IsDeleted() && !info->InUse()) {
-    info->DetachShaders(shader_manager);
-    for (ProgramInfoMap::iterator it = program_infos_.begin();
-         it != program_infos_.end(); ++it) {
-      if (it->second.get() == info) {
-        program_infos_.erase(it);
+  DCHECK(program);
+  DCHECK(IsOwned(program));
+  if (program->IsDeleted() && !program->InUse()) {
+    program->DetachShaders(shader_manager);
+    for (ProgramMap::iterator it = programs_.begin();
+         it != programs_.end(); ++it) {
+      if (it->second.get() == program) {
+        programs_.erase(it);
         return;
       }
     }
@@ -1188,35 +1189,35 @@ void ProgramManager::RemoveProgramInfoIfUnused(
 
 void ProgramManager::MarkAsDeleted(
     ShaderManager* shader_manager,
-    Program* info) {
+    Program* program) {
   DCHECK(shader_manager);
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  info->MarkAsDeleted();
-  RemoveProgramInfoIfUnused(shader_manager, info);
+  DCHECK(program);
+  DCHECK(IsOwned(program));
+  program->MarkAsDeleted();
+  RemoveProgramInfoIfUnused(shader_manager, program);
 }
 
-void ProgramManager::UseProgram(Program* info) {
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  info->IncUseCount();
-  ClearUniforms(info);
+void ProgramManager::UseProgram(Program* program) {
+  DCHECK(program);
+  DCHECK(IsOwned(program));
+  program->IncUseCount();
+  ClearUniforms(program);
 }
 
 void ProgramManager::UnuseProgram(
     ShaderManager* shader_manager,
-    Program* info) {
+    Program* program) {
   DCHECK(shader_manager);
-  DCHECK(info);
-  DCHECK(IsOwned(info));
-  info->DecUseCount();
-  RemoveProgramInfoIfUnused(shader_manager, info);
+  DCHECK(program);
+  DCHECK(IsOwned(program));
+  program->DecUseCount();
+  RemoveProgramInfoIfUnused(shader_manager, program);
 }
 
-void ProgramManager::ClearUniforms(Program* info) {
-  DCHECK(info);
+void ProgramManager::ClearUniforms(Program* program) {
+  DCHECK(program);
   if (!disable_workarounds_) {
-    info->ClearUniforms(&zero_);
+    program->ClearUniforms(&zero_);
   }
 }
 

@@ -197,7 +197,7 @@ class GPU_EXPORT ShaderManager {
   // Must call before destruction.
   void Destroy(bool have_context);
 
-  // Creates a shader info for the given shader ID.
+  // Creates a shader for the given shader ID.
   Shader* CreateShader(
       GLuint client_id,
       GLuint service_id,
@@ -210,26 +210,26 @@ class GPU_EXPORT ShaderManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
-  void MarkAsDeleted(Shader* info);
+  void MarkAsDeleted(Shader* shader);
 
   // Mark a shader as used
-  void UseShader(Shader* info);
+  void UseShader(Shader* shader);
 
   // Unmark a shader as used. If it has been deleted and is not used
-  // then we free the info.
-  void UnuseShader(Shader* info);
+  // then we free the shader.
+  void UnuseShader(Shader* shader);
 
   // Check if a Shader is owned by this ShaderManager.
-  bool IsOwned(Shader* info);
+  bool IsOwned(Shader* shader);
 
  private:
   friend class Shader;
 
   // Info for each shader by service side shader Id.
-  typedef base::hash_map<GLuint, scoped_refptr<Shader> > ShaderInfoMap;
-  ShaderInfoMap shader_infos_;
+  typedef base::hash_map<GLuint, scoped_refptr<Shader> > ShaderMap;
+  ShaderMap shaders_;
 
-  void RemoveShader(Shader* info);
+  void RemoveShader(Shader* shader);
 
   DISALLOW_COPY_AND_ASSIGN(ShaderManager);
 };

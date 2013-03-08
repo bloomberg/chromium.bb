@@ -124,7 +124,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
       GLint fake_location, GLint* real_location, GLint* array_index) const;
 
   // Gets all the program info.
-  void GetProgram(
+  void GetProgramInfo(
       ProgramManager* manager, CommonDecoder::Bucket* bucket) const;
 
   // Sets the sampler values for a uniform.
@@ -146,8 +146,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     return valid_;
   }
 
-  bool AttachShader(ShaderManager* manager, Shader* info);
-  bool DetachShader(ShaderManager* manager, Shader* info);
+  bool AttachShader(ShaderManager* manager, Shader* shader);
+  bool DetachShader(ShaderManager* manager, Shader* shader);
 
   bool CanLink() const;
 
@@ -323,10 +323,10 @@ class GPU_EXPORT ProgramManager {
   // Must call before destruction.
   void Destroy(bool have_context);
 
-  // Creates a new program info.
+  // Creates a new program.
   Program* CreateProgram(GLuint client_id, GLuint service_id);
 
-  // Gets a program info
+  // Gets a program.
   Program* GetProgram(GLuint client_id);
 
   // Gets a client id for a given service id.
@@ -335,52 +335,52 @@ class GPU_EXPORT ProgramManager {
   // Gets the shader cache
   ProgramCache* program_cache() const;
 
-  // Marks a program as deleted. If it is not used the info will be deleted.
-  void MarkAsDeleted(ShaderManager* shader_manager, Program* info);
+  // Marks a program as deleted. If it is not used the program will be deleted.
+  void MarkAsDeleted(ShaderManager* shader_manager, Program* program);
 
   // Marks a program as used.
-  void UseProgram(Program* info);
+  void UseProgram(Program* program);
 
-  // Makes a program as unused. If deleted the program info will be removed.
-  void UnuseProgram(ShaderManager* shader_manager, Program* info);
+  // Makes a program as unused. If deleted the program will be removed.
+  void UnuseProgram(ShaderManager* shader_manager, Program* program);
 
   // Clears the uniforms for this program.
-  void ClearUniforms(Program* info);
+  void ClearUniforms(Program* program);
 
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);
 
   // Check if a Program is owned by this ProgramManager.
-  bool IsOwned(Program* info);
+  bool IsOwned(Program* program);
 
   static int32 MakeFakeLocation(int32 index, int32 element);
 
   // Cache-aware shader compiling.  If no cache or if the shader wasn't
   // previously compiled, ForceCompileShader is called
-  void DoCompileShader(Shader* info,
+  void DoCompileShader(Shader* shader,
                        ShaderTranslator* translator,
                        FeatureInfo* feature_info);
 
   // Actually compiles the shader
   void ForceCompileShader(const std::string* source,
-                          Shader* info,
+                          Shader* shader,
                           ShaderTranslator* translator,
                           FeatureInfo* feature_info);
 
  private:
   friend class Program;
 
-  void StartTracking(Program* info);
-  void StopTracking(Program* info);
+  void StartTracking(Program* program);
+  void StopTracking(Program* program);
 
   // Info for each "successfully linked" program by service side program Id.
   // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, scoped_refptr<Program> > ProgramInfoMap;
-  ProgramInfoMap program_infos_;
+  typedef std::map<GLuint, scoped_refptr<Program> > ProgramMap;
+  ProgramMap programs_;
 
   // Counts the number of Program allocated with 'this' as its manager.
   // Allows to check no Program will outlive this.
-  unsigned int program_info_count_;
+  unsigned int program_count_;
 
   bool have_context_;
 
@@ -392,7 +392,7 @@ class GPU_EXPORT ProgramManager {
   ProgramCache* program_cache_;
 
   void RemoveProgramInfoIfUnused(
-      ShaderManager* shader_manager, Program* info);
+      ShaderManager* shader_manager, Program* program);
 
   DISALLOW_COPY_AND_ASSIGN(ProgramManager);
 };
