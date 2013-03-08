@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 
 #include <string>
 
@@ -17,19 +17,17 @@
 namespace {
 
 // Field trial names.
-static const char kDisallowInlineHQPFieldTrialName[] =
-    "OmniboxDisallowInlineHQP";
+const char kDisallowInlineHQPFieldTrialName[] = "OmniboxDisallowInlineHQP";
 // Because we regularly change the name of the suggest field trial in
 // order to shuffle users among groups, we use the date the current trial
 // was created as part of the name.
-static const char kSuggestFieldTrialStarted2013Q1Name[] =
+const char kSuggestFieldTrialStarted2013Q1Name[] =
     "OmniboxSearchSuggestTrialStarted2013Q1";
-static const char kHQPNewScoringFieldTrialName[] =
-    "OmniboxHQPNewScoringMax1400";
-static const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
-static const char kHUPCreateShorterMatchFieldTrialName[] =
+const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoringMax1400";
+const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
+const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
-static const char kHQPReplaceHUPScoringFieldTrialName[] =
+const char kHQPReplaceHUPScoringFieldTrialName[] =
     "OmniboxHQPReplaceHUPProhibitTrumpingInlineableResult";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
@@ -122,7 +120,7 @@ std::string DynamicFieldTrialName(int id) {
 }  // namespace
 
 
-void AutocompleteFieldTrial::ActivateStaticTrials() {
+void OmniboxFieldTrial::ActivateStaticTrials() {
   DCHECK(!static_field_trials_initialized);
 
   // Create inline History Quick Provider field trial.
@@ -219,14 +217,14 @@ void AutocompleteFieldTrial::ActivateStaticTrials() {
   static_field_trials_initialized = true;
 }
 
-void AutocompleteFieldTrial::ActivateDynamicTrials() {
+void OmniboxFieldTrial::ActivateDynamicTrials() {
   // Initialize all autocomplete dynamic field trials.  This method may be
   // called multiple times.
   for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i)
     base::FieldTrialList::FindValue(DynamicFieldTrialName(i));
 }
 
-int AutocompleteFieldTrial::GetDisabledProviderTypes() {
+int OmniboxFieldTrial::GetDisabledProviderTypes() {
   // Make sure that Autocomplete dynamic field trials are activated.  It's OK to
   // call this method multiple times.
   ActivateDynamicTrials();
@@ -254,11 +252,11 @@ int AutocompleteFieldTrial::GetDisabledProviderTypes() {
   return provider_types;
 }
 
-bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {
+bool OmniboxFieldTrial::InDisallowInlineHQPFieldTrial() {
   return base::FieldTrialList::TrialExists(kDisallowInlineHQPFieldTrialName);
 }
 
-bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
+bool OmniboxFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
   if (!base::FieldTrialList::TrialExists(kDisallowInlineHQPFieldTrialName))
     return false;
 
@@ -268,7 +266,7 @@ bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrialExperimentGroup() {
   return group == disallow_inline_hqp_experiment_group;
 }
 
-bool AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
+bool OmniboxFieldTrial::GetActiveSuggestFieldTrialHash(
     uint32* field_trial_hash) {
   if (!base::FieldTrialList::TrialExists(kSuggestFieldTrialStarted2013Q1Name))
     return false;
@@ -277,11 +275,11 @@ bool AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
   return true;
 }
 
-bool AutocompleteFieldTrial::InHQPNewScoringFieldTrial() {
+bool OmniboxFieldTrial::InHQPNewScoringFieldTrial() {
   return base::FieldTrialList::TrialExists(kHQPNewScoringFieldTrialName);
 }
 
-bool AutocompleteFieldTrial::InHQPNewScoringFieldTrialExperimentGroup() {
+bool OmniboxFieldTrial::InHQPNewScoringFieldTrialExperimentGroup() {
   if (!InHQPNewScoringFieldTrial())
     return false;
 
@@ -291,11 +289,11 @@ bool AutocompleteFieldTrial::InHQPNewScoringFieldTrialExperimentGroup() {
   return group == hqp_new_scoring_experiment_group;
 }
 
-bool AutocompleteFieldTrial::InHUPCullRedirectsFieldTrial() {
+bool OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() {
   return base::FieldTrialList::TrialExists(kHUPCullRedirectsFieldTrialName);
 }
 
-bool AutocompleteFieldTrial::InHUPCullRedirectsFieldTrialExperimentGroup() {
+bool OmniboxFieldTrial::InHUPCullRedirectsFieldTrialExperimentGroup() {
   if (!base::FieldTrialList::TrialExists(kHUPCullRedirectsFieldTrialName))
     return false;
 
@@ -305,13 +303,12 @@ bool AutocompleteFieldTrial::InHUPCullRedirectsFieldTrialExperimentGroup() {
   return group == hup_dont_cull_redirects_experiment_group;
 }
 
-bool AutocompleteFieldTrial::InHUPCreateShorterMatchFieldTrial() {
+bool OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrial() {
   return
       base::FieldTrialList::TrialExists(kHUPCreateShorterMatchFieldTrialName);
 }
 
-bool AutocompleteFieldTrial::
-    InHUPCreateShorterMatchFieldTrialExperimentGroup() {
+bool OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrialExperimentGroup() {
   if (!base::FieldTrialList::TrialExists(kHUPCreateShorterMatchFieldTrialName))
     return false;
 
@@ -321,11 +318,11 @@ bool AutocompleteFieldTrial::
   return group == hup_dont_create_shorter_match_experiment_group;
 }
 
-bool AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrial() {
+bool OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() {
   return base::FieldTrialList::TrialExists(kHQPReplaceHUPScoringFieldTrialName);
 }
 
-bool AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
+bool OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
   if (!InHQPReplaceHUPScoringFieldTrial())
     return false;
 

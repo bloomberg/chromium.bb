@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/instant/search.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -168,7 +168,7 @@ void SearchProviderTest::SetUpTestCase() {
   // Set up Suggest experiments.
   field_trial_list_ = new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("foo"));
-  AutocompleteFieldTrial::ActivateStaticTrials();
+  OmniboxFieldTrial::ActivateStaticTrials();
 }
 
 // static

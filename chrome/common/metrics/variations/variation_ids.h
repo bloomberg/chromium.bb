@@ -162,9 +162,9 @@ enum VariationID {
 
   // Reserve 100 IDs to be used by autocomplete dynamic field trials.
   // The dynamic field trials are activated by a call to
-  // AutocompleteFieldTrial::ActivateDynamicFieldTrials.
+  // OmniboxFieldTrial::ActivateDynamicFieldTrials.
   // For more details, see
-  // chrome/browser/autocomplete/autocomplete_field_trial.{h,cc}.
+  // chrome/browser/omnibox/omnibox_field_trial.{h,cc}.
   AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_ID_MIN = 3310086,
   AUTOCOMPLETE_DYANMIC_FIELD_TRIAL_ID_MAX = 3310185,
 

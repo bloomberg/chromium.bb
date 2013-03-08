@@ -14,7 +14,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/history/history_backend.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -327,16 +327,15 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
           AutocompleteProvider::TYPE_HISTORY_URL),
       params_(NULL),
       cull_redirects_(
-          !AutocompleteFieldTrial::InHUPCullRedirectsFieldTrial() ||
-          !AutocompleteFieldTrial::
-              InHUPCullRedirectsFieldTrialExperimentGroup()),
+          !OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() ||
+          !OmniboxFieldTrial::InHUPCullRedirectsFieldTrialExperimentGroup()),
       create_shorter_match_(
-          !AutocompleteFieldTrial::InHUPCreateShorterMatchFieldTrial() ||
-          !AutocompleteFieldTrial::
+          !OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrial() ||
+          !OmniboxFieldTrial::
               InHUPCreateShorterMatchFieldTrialExperimentGroup()),
       search_url_database_(
-          !AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrial() ||
-          !AutocompleteFieldTrial::
+          !OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() ||
+          !OmniboxFieldTrial::
               InHQPReplaceHUPScoringFieldTrialExperimentGroup()) {
 }
 

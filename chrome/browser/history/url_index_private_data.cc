@@ -20,7 +20,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_database.h"

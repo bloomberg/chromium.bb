@@ -11,7 +11,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/autocomplete/autocomplete_field_trial.h",
   "!chrome/browser/autocomplete/autocomplete_log.h",
   "!chrome/browser/autocomplete/autocomplete_match.h",
   "!chrome/browser/autocomplete/autocomplete_provider.h",
@@ -27,6 +26,7 @@ include_rules = [
   "!chrome/browser/diagnostics/sqlite_diagnostics.h",
   "!chrome/browser/favicon/favicon_service.h",
   "!chrome/browser/instant/instant_overlay.h",
+  "!chrome/browser/omnibox/omnibox_field_trial.h",
   "!chrome/browser/prefs/scoped_user_pref_update.h",
   "!chrome/browser/prerender/prerender_contents.h",
   "!chrome/browser/prerender/prerender_manager.h",

@@ -14,10 +14,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/auto_launch_trial.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu/chrome_gpu_util.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -70,7 +70,7 @@ void ChromeBrowserFieldTrials::SetupDesktopFieldTrials() {
   WarmConnectionFieldTrial();
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
-  AutocompleteFieldTrial::ActivateStaticTrials();
+  OmniboxFieldTrial::ActivateStaticTrials();
   SetUpInfiniteCacheFieldTrial();
   SetUpCacheSensitivityAnalysisFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
@@ -235,5 +235,5 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   base::FieldTrialList::FindValue("InstantChannel");
   base::FieldTrialList::FindValue("Test0PercentDefault");
   // Activate the autocomplete dynamic field trials.
-  AutocompleteFieldTrial::ActivateDynamicTrials();
+  OmniboxFieldTrial::ActivateDynamicTrials();
 }

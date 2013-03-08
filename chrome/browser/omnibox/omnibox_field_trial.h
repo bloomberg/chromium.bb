@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_FIELD_TRIAL_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_FIELD_TRIAL_H_
+#ifndef CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
+#define CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 
-// This class manages the Autocomplete field trials.
-class AutocompleteFieldTrial {
+// This class manages the Omnibox field trials.
+class OmniboxFieldTrial {
  public:
   // Creates the static field trial groups.
   // *** MUST NOT BE CALLED MORE THAN ONCE. ***
@@ -108,7 +108,7 @@ class AutocompleteFieldTrial {
   static bool InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_FIELD_TRIAL_H_
+#endif  // CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_

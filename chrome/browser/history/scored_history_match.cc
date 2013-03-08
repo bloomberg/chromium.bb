@@ -17,9 +17,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -698,7 +698,7 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
 
     // For the field trial stuff to work correctly, we must be running
     // on the same thread as the thread that created the field trial,
-    // which happens via a call to AutocompleteFieldTrial::Active in
+    // which happens via a call to OmniboxFieldTrial::Active in
     // chrome_browser_main.cc on the main thread.  Let's check this to
     // be sure.  We check "if we've heard of the UI thread then we'd better
     // be on it."  The first part is necessary so unit tests pass.  (Many
@@ -707,9 +707,8 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
     DCHECK(!content::BrowserThread::IsWellKnownThread(
                content::BrowserThread::UI) ||
            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (AutocompleteFieldTrial::InHQPNewScoringFieldTrial()) {
-      if (AutocompleteFieldTrial::
-          InHQPNewScoringFieldTrialExperimentGroup()) {
+    if (OmniboxFieldTrial::InHQPNewScoringFieldTrial()) {
+      if (OmniboxFieldTrial::InHQPNewScoringFieldTrialExperimentGroup()) {
         new_scoring_option = NEW_SCORING_FIELD_TRIAL_EXPERIMENT_GROUP;
         use_new_scoring = true;
       } else {
@@ -732,8 +731,8 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
 
 void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringField() {
   also_do_hup_like_scoring =
-      AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrial() &&
-      AutocompleteFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup();
+      OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() &&
+      OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 }
 
 }  // namespace history

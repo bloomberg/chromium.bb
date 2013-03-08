@@ -20,7 +20,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -362,8 +362,7 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   new_entry.set_provider(AsOmniboxEventProviderType());
   new_entry.set_provider_done(done_);
   uint32 field_trial_hash = 0;
-  if (AutocompleteFieldTrial::GetActiveSuggestFieldTrialHash(
-      &field_trial_hash)) {
+  if (OmniboxFieldTrial::GetActiveSuggestFieldTrialHash(&field_trial_hash)) {
     if (field_trial_triggered_)
       new_entry.mutable_field_trial_triggered()->Add(field_trial_hash);
     if (field_trial_triggered_in_session_) {

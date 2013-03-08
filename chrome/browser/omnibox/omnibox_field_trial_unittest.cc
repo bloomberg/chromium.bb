@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 
 #include "base/basictypes.h"
 #include "base/metrics/field_trial.h"
@@ -10,9 +10,9 @@
 #include "chrome/common/metrics/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class AutocompleteFieldTrialTest : public testing::Test {
+class OmniboxFieldTrialTest : public testing::Test {
  public:
-  AutocompleteFieldTrialTest() {}
+  OmniboxFieldTrialTest() {}
 
   static void SetUpTestCase() {
     ResetFieldTrialList();
@@ -30,7 +30,7 @@ class AutocompleteFieldTrialTest : public testing::Test {
       delete field_trial_list_;
     field_trial_list_ = new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("foo"));
-    AutocompleteFieldTrial::ActivateDynamicTrials();
+    OmniboxFieldTrial::ActivateDynamicTrials();
   }
 
   // Creates and activates a field trial.
@@ -46,43 +46,43 @@ class AutocompleteFieldTrialTest : public testing::Test {
   // Needed for Activate{Static/Dynamic}Trials().
   static base::FieldTrialList* field_trial_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteFieldTrialTest);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxFieldTrialTest);
 };
 
 // static
-base::FieldTrialList* AutocompleteFieldTrialTest::field_trial_list_ = NULL;
+base::FieldTrialList* OmniboxFieldTrialTest::field_trial_list_ = NULL;
 
 // Test if GetDisabledProviderTypes() properly parses various field trial
 // group names.
-TEST_F(AutocompleteFieldTrialTest, GetDisabledProviderTypes) {
-  EXPECT_EQ(0, AutocompleteFieldTrial::GetDisabledProviderTypes());
+TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
+  EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
 
   {
     SCOPED_TRACE("Invalid groups");
     CreateTestTrial("AutocompleteDynamicTrial_0", "DisabledProviders_");
-    EXPECT_EQ(0, AutocompleteFieldTrial::GetDisabledProviderTypes());
+    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
     ResetFieldTrialList();
     CreateTestTrial("AutocompleteDynamicTrial_1", "DisabledProviders_XXX");
-    EXPECT_EQ(0, AutocompleteFieldTrial::GetDisabledProviderTypes());
+    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
     ResetFieldTrialList();
     CreateTestTrial("AutocompleteDynamicTrial_1", "DisabledProviders_12abc");
-    EXPECT_EQ(0, AutocompleteFieldTrial::GetDisabledProviderTypes());
+    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 
   {
     SCOPED_TRACE("Valid group name, unsupported trial name.");
     ResetFieldTrialList();
     CreateTestTrial("UnsupportedTrialName", "DisabledProviders_20");
-    EXPECT_EQ(0, AutocompleteFieldTrial::GetDisabledProviderTypes());
+    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 
   {
     SCOPED_TRACE("Valid field and group name.");
     ResetFieldTrialList();
     CreateTestTrial("AutocompleteDynamicTrial_2", "DisabledProviders_3");
-    EXPECT_EQ(3, AutocompleteFieldTrial::GetDisabledProviderTypes());
+    EXPECT_EQ(3, OmniboxFieldTrial::GetDisabledProviderTypes());
     // Two groups should be OR-ed together.
     CreateTestTrial("AutocompleteDynamicTrial_3", "DisabledProviders_6");
-    EXPECT_EQ(7, AutocompleteFieldTrial::GetDisabledProviderTypes());
+    EXPECT_EQ(7, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 }

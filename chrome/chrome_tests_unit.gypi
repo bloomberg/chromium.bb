@@ -455,7 +455,6 @@
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
-        'browser/autocomplete/autocomplete_field_trial_unittest.cc',
         'browser/autocomplete/autocomplete_input_unittest.cc',
         'browser/autocomplete/autocomplete_match_unittest.cc',
         'browser/autocomplete/autocomplete_provider_unittest.cc',
@@ -937,6 +936,7 @@
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_unittest.cc',
+        'browser/omnibox/omnibox_field_trial_unittest.cc',
         'browser/page_cycler/page_cycler_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',
