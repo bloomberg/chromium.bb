@@ -53,8 +53,7 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
 
 WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(
     double time) const {
-  return webkit::WebTransformationMatrixUtil::ToWebTransformationMatrix(
-      curve_->getValue(time));
+  return WebTransformationMatrix();
 }
 
 scoped_ptr<cc::AnimationCurve>

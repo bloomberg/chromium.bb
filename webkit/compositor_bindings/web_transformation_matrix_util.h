@@ -14,9 +14,6 @@ class WebTransformationMatrixUtil {
  public:
   static gfx::Transform ToTransform(
       const WebKit::WebTransformationMatrix& matrix);
-
-  static WebKit::WebTransformationMatrix ToWebTransformationMatrix(
-      const gfx::Transform& transform);
 };
 
 }  // namespace webkit

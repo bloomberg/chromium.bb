@@ -28,6 +28,7 @@ class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
   virtual void appendScale(double x, double y, double z);
   virtual void appendSkew(double x, double y);
   virtual void appendPerspective(double depth);
+  virtual void appendMatrix(const SkMatrix44&);
   virtual void appendMatrix(const WebKit::WebTransformationMatrix&);
   virtual void appendIdentity();
   virtual bool isIdentity() const;

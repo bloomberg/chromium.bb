@@ -28,25 +28,4 @@ gfx::Transform WebTransformationMatrixUtil::ToTransform(
                         matrix.m44());
 }
 
-WebTransformationMatrix WebTransformationMatrixUtil::ToWebTransformationMatrix(
-    const gfx::Transform& transform) {
-  return WebTransformationMatrix(transform.matrix().getDouble(0, 0),
-                                 transform.matrix().getDouble(1, 0),
-                                 transform.matrix().getDouble(2, 0),
-                                 transform.matrix().getDouble(3, 0),
-                                 transform.matrix().getDouble(0, 1),
-                                 transform.matrix().getDouble(1, 1),
-                                 transform.matrix().getDouble(2, 1),
-                                 transform.matrix().getDouble(3, 1),
-                                 transform.matrix().getDouble(0, 2),
-                                 transform.matrix().getDouble(1, 2),
-                                 transform.matrix().getDouble(2, 2),
-                                 transform.matrix().getDouble(3, 2),
-                                 transform.matrix().getDouble(0, 3),
-                                 transform.matrix().getDouble(1, 3),
-                                 transform.matrix().getDouble(2, 3),
-                                 transform.matrix().getDouble(3, 3));
-
-}
-
 }  // namespace webkit

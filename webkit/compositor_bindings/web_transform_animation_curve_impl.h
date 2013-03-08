@@ -17,6 +17,7 @@ class KeyframedTransformAnimationCurve;
 namespace WebKit {
 
 class WebTransformKeyframe;
+class WebTransformationMatrix;
 
 class WebTransformAnimationCurveImpl : public WebTransformAnimationCurve {
  public:
