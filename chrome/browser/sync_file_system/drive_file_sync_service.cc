@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
@@ -265,6 +266,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       push_notification_enabled_(false),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
       may_have_unfetched_changes_(true),
+      conflict_resolution_(CONFLICT_RESOLUTION_MANUAL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   temporary_file_dir_ =
       profile->GetPath().Append(kSyncFileSystemDir).Append(kTempDirName);
@@ -536,6 +538,16 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   }
 }
 
+void DriveFileSyncService::SetConflictResolutionPolicy(
+    ConflictResolutionPolicy resolution) {
+  conflict_resolution_ = resolution;
+}
+
+ConflictResolutionPolicy
+DriveFileSyncService::GetConflictResolutionPolicy() const {
+  return conflict_resolution_;
+}
+
 void DriveFileSyncService::ApplyLocalChange(
     const FileChange& local_file_change,
     const base::FilePath& local_file_path,
@@ -692,6 +704,7 @@ DriveFileSyncService::DriveFileSyncService(
       push_notification_enabled_(false),
       polling_delay_seconds_(-1),
       may_have_unfetched_changes_(false),
+      conflict_resolution_(CONFLICT_RESOLUTION_MANUAL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(profile);
   temporary_file_dir_ = base_dir.Append(kTempDirName);

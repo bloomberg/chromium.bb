@@ -51,6 +51,10 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                      RemoteServiceState());
   MOCK_CONST_METHOD0(GetServiceName, const char*());
   MOCK_METHOD1(SetSyncEnabled, void(bool));
+  MOCK_METHOD1(SetConflictResolutionPolicy,
+               void(ConflictResolutionPolicy));
+  MOCK_CONST_METHOD0(GetConflictResolutionPolicy,
+                     ConflictResolutionPolicy());
 
   // Send notifications to the observers.
   // Can be used in the mock implementation.

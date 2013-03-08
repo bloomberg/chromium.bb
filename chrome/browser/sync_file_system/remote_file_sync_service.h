@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
 
@@ -137,6 +138,13 @@ class RemoteFileSyncService {
   // (for example if Chrome is offline the service state will become
   // REMOTE_SERVICE_TEMPORARY_UNAVAILABLE).
   virtual void SetSyncEnabled(bool enabled) = 0;
+
+  // Sets the conflict resolution policy.
+  virtual void SetConflictResolutionPolicy(
+      ConflictResolutionPolicy policy) = 0;
+
+  // Gets the conflict resolution policy.
+  virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);

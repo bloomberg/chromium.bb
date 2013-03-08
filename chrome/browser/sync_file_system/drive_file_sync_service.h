@@ -91,6 +91,9 @@ class DriveFileSyncService
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual const char* GetServiceName() const OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
+  virtual void SetConflictResolutionPolicy(
+      ConflictResolutionPolicy resolution) OVERRIDE;
+  virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
@@ -449,6 +452,8 @@ class DriveFileSyncService
 
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;
+
+  ConflictResolutionPolicy conflict_resolution_;
 
   // Use WeakPtrFactory instead of SupportsWeakPtr to revoke the weak pointer
   // in |token_|.

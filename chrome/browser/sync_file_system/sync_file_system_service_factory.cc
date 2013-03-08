@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -12,6 +13,10 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 
 namespace sync_file_system {
+
+namespace {
+const char kEnableLastWriteWin[] = "enable-syncfs-last-write-win";
+}
 
 // static
 SyncFileSystemService* SyncFileSystemServiceFactory::GetForProfile(
@@ -50,6 +55,11 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     remote_file_service = mock_remote_file_service_.Pass();
   else
     remote_file_service.reset(new DriveFileSyncService(profile));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableLastWriteWin)) {
+    remote_file_service->SetConflictResolutionPolicy(
+        CONFLICT_RESOLUTION_LAST_WRITE_WIN);
+  }
 
   service->Initialize(local_file_service.Pass(),
                       remote_file_service.Pass());
