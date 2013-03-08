@@ -17,9 +17,11 @@ class RectF;
 namespace cc {
 
 class CC_EXPORT LayerPainter {
-public:
-    virtual ~LayerPainter() { }
-    virtual void paint(SkCanvas*, gfx::Rect contentRect, gfx::RectF& opaque) = 0;
+ public:
+  virtual ~LayerPainter() {}
+  virtual void Paint(SkCanvas* canvas,
+                     gfx::Rect content_rect,
+                     gfx::RectF* opaque) = 0;
 };
 
 }  // namespace cc

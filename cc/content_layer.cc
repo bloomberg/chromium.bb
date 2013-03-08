@@ -25,10 +25,10 @@ scoped_ptr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerClient* 
     return make_scoped_ptr(new ContentLayerPainter(client));
 }
 
-void ContentLayerPainter::paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF& opaque)
+void ContentLayerPainter::Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF* opaque)
 {
     base::TimeTicks paintStart = base::TimeTicks::HighResNow();
-    m_client->paintContents(canvas, contentRect, opaque);
+    m_client->paintContents(canvas, contentRect, *opaque);
     base::TimeTicks paintEnd = base::TimeTicks::HighResNow();
     double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart).InSecondsF();
     UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS",

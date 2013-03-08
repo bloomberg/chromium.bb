@@ -140,7 +140,7 @@ public:
         return make_scoped_ptr(new ScrollbarBackgroundPainter(scrollbar, painter, geometry, trackPart));
     }
 
-    virtual void paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF&) OVERRIDE
+    virtual void Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF* opaque) OVERRIDE
     {
         // The following is a simplification of ScrollbarThemeComposite::paint.
         m_painter->PaintScrollbarBackground(canvas, contentRect);
@@ -196,7 +196,7 @@ public:
         return make_scoped_ptr(new ScrollbarThumbPainter(scrollbar, painter, geometry));
     }
 
-    virtual void paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF& opaque) OVERRIDE
+    virtual void Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF* opaque) OVERRIDE
     {
         // Consider the thumb to be at the origin when painting.
         gfx::Rect thumbRect = m_geometry->thumbRect(m_scrollbar);
