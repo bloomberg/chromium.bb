@@ -26,7 +26,9 @@ class FaviconHandlerDelegate {
   virtual int StartDownload(const GURL& url, int image_size) = 0;
 
   // Notifies the delegate that the favicon for the active entry was updated.
-  virtual void NotifyFaviconUpdated() = 0;
+  // |icon_url_changed| is true if a favicon with a different icon URL has
+  // been selected since the previous call to NotifyFaviconUpdated().
+  virtual void NotifyFaviconUpdated(bool icon_url_changed) = 0;
 };
 
 #endif  // CHROME_BROWSER_FAVICON_FAVICON_HANDLER_DELEGATE_H_

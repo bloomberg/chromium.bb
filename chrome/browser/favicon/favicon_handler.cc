@@ -270,10 +270,8 @@ void FaviconHandler::SetFavicon(
 
   if (UrlMatches(url, url_) && icon_type == history::FAVICON) {
     NavigationEntry* entry = GetEntry();
-    if (entry) {
-      entry->GetFavicon().url = icon_url;
-      UpdateFavicon(entry, &image);
-    }
+    if (entry)
+      UpdateFavicon(entry, icon_url, image);
   }
 }
 
@@ -283,20 +281,27 @@ void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
       favicon_bitmap_results,
       FaviconUtil::GetFaviconScaleFactors(),
       preferred_icon_size());
-  if (!resized_image.IsEmpty())
-    UpdateFavicon(entry, &resized_image);
+  // The history service sends back results for a single icon URL, so it does
+  // not matter which result we get the |icon_url| from.
+  const GURL icon_url = favicon_bitmap_results.empty() ?
+      GURL() : favicon_bitmap_results[0].icon_url;
+  UpdateFavicon(entry, icon_url, resized_image);
 }
 
 void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
-                                   const gfx::Image* image) {
+                                   const GURL& icon_url,
+                                   const gfx::Image& image) {
   // No matter what happens, we need to mark the favicon as being set.
   entry->GetFavicon().valid = true;
 
-  if (!image)
+  bool icon_url_changed = (entry->GetFavicon().url != icon_url);
+  entry->GetFavicon().url = icon_url;
+
+  if (image.IsEmpty())
     return;
 
-  entry->GetFavicon().image = *image;
-  delegate_->NotifyFaviconUpdated();
+  entry->GetFavicon().image = image;
+  delegate_->NotifyFaviconUpdated(icon_url_changed);
 }
 
 void FaviconHandler::OnUpdateFaviconURL(
@@ -335,8 +340,6 @@ void FaviconHandler::ProcessCurrentUrl() {
         DoUrlAndIconMatch(*current_candidate(), entry->GetFavicon().url,
                           history::FAVICON))
       return;
-
-    entry->GetFavicon().url = current_candidate()->icon_url;
   } else if (!favicon_expired_or_incomplete_ && got_favicon_from_history_ &&
              HasValidResult(history_results_) &&
              DoUrlsAndIconsMatch(*current_candidate(), history_results_)) {
@@ -481,17 +484,18 @@ void FaviconHandler::OnFaviconDataForInitialURL(
       !entry->GetFavicon().valid &&
       (!current_candidate() ||
        DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results))) {
-    // The db knows the favicon (although it may be out of date) and the entry
-    // doesn't have an icon. Set the favicon now, and if the favicon turns out
-    // to be expired (or the wrong url) we'll fetch later on. This way the
-    // user doesn't see a flash of the default favicon.
-
-    // The history service sends back results for a single icon URL, so it does
-    // not matter which result we get the |icon_url| from.
-    entry->GetFavicon().url = favicon_bitmap_results[0].icon_url;
-    if (HasValidResult(favicon_bitmap_results))
+    if (HasValidResult(favicon_bitmap_results)) {
+      // The db knows the favicon (although it may be out of date) and the entry
+      // doesn't have an icon. Set the favicon now, and if the favicon turns out
+      // to be expired (or the wrong url) we'll fetch later on. This way the
+      // user doesn't see a flash of the default favicon.
       UpdateFavicon(entry, favicon_bitmap_results);
-    entry->GetFavicon().valid = true;
+    } else {
+      // If |favicon_bitmap_results| does not have any valid results, treat the
+      // favicon as if it's expired.
+      // TODO(pkotwicz): Do something better.
+      favicon_expired_or_incomplete_ = true;
+    }
   }
 
   if (has_results && !favicon_expired_or_incomplete_) {
@@ -556,8 +560,6 @@ void FaviconHandler::OnFaviconData(
   bool has_expired_or_incomplete_result = HasExpiredOrIncompleteResult(
       preferred_icon_size(), favicon_bitmap_results);
 
-  // No need to update the favicon url. By the time we get here
-  // UpdateFaviconURL will have set the favicon url.
   if (has_results && icon_types_ == history::FAVICON) {
     if (HasValidResult(favicon_bitmap_results)) {
       // There is a favicon, set it now. If expired we'll download the current

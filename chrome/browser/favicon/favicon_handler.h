@@ -223,13 +223,13 @@ class FaviconHandler {
                   const gfx::Image& image,
                   history::IconType icon_type);
 
-  // Converts the FAVICON's image data to an SkBitmap and sets it on the
-  // NavigationEntry.
-  // If the WebContents has a delegate, it is notified of the new favicon
-  // (INVALIDATE_FAVICON).
+  // Sets the favicon's data on the NavigationEntry.
+  // If the WebContents has a delegate, it is invalidated (INVALIDATE_TYPE_TAB).
   void UpdateFavicon(content::NavigationEntry* entry,
       const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results);
-  void UpdateFavicon(content::NavigationEntry* entry, const gfx::Image* image);
+  void UpdateFavicon(content::NavigationEntry* entry,
+                     const GURL& icon_url,
+                     const gfx::Image& image);
 
   void FetchFaviconInternal();
 

@@ -314,7 +314,11 @@ enum NotificationType {
   NOTIFICATION_FAVICON_CHANGED,
 
   // Sent by FaviconTabHelper when a tab's favicon has been successfully
-  // updated.
+  // updated. The details are a bool indicating whether the
+  // NavigationEntry's favicon URL has changed since the previous
+  // NOTIFICATION_FAVICON_UPDATED notification. The details are true if
+  // there was no previous NOTIFICATION_FAVICON_UPDATED notification for the
+  // current NavigationEntry.
   NOTIFICATION_FAVICON_UPDATED,
 
   // Profiles -----------------------------------------------------------------

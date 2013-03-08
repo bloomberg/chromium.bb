@@ -70,7 +70,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // FaviconHandlerDelegate methods.
   virtual content::NavigationEntry* GetActiveEntry() OVERRIDE;
   virtual int StartDownload(const GURL& url, int image_size) OVERRIDE;
-  virtual void NotifyFaviconUpdated() OVERRIDE;
+  virtual void NotifyFaviconUpdated(bool icon_url_changed) OVERRIDE;
 
  private:
   explicit FaviconTabHelper(content::WebContents* web_contents);
