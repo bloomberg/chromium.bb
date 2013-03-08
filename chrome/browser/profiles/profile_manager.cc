@@ -127,6 +127,10 @@ void ProfileSizeTask(const base::FilePath& path, int extension_count) {
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.ExtensionSize", size_MB);
 
+  size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("Policy"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.PolicySize", size_MB);
+
   // Count number of extensions in this profile, if we know.
   if (extension_count != -1)
     UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", extension_count);
