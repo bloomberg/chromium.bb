@@ -293,14 +293,14 @@ void LayerTreeHostImpl::startPageScaleAnimation(gfx::Vector2d targetOffset, bool
     gfx::SizeF viewportSize = gfx::ScaleSize(m_deviceViewportSize, 1 / m_deviceScaleFactor);
 
     double startTimeSeconds = (startTime - base::TimeTicks()).InSecondsF();
-    m_pageScaleAnimation = PageScaleAnimation::create(scrollTotal, activeTree()->total_page_scale_factor(), viewportSize, scaledScrollableSize, startTimeSeconds);
+    m_pageScaleAnimation = PageScaleAnimation::Create(scrollTotal, activeTree()->total_page_scale_factor(), viewportSize, scaledScrollableSize, startTimeSeconds);
 
     if (anchorPoint) {
         gfx::Vector2dF anchor(targetOffset);
-        m_pageScaleAnimation->zoomWithAnchor(anchor, pageScale, duration.InSecondsF());
+        m_pageScaleAnimation->ZoomWithAnchor(anchor, pageScale, duration.InSecondsF());
     } else {
         gfx::Vector2dF scaledTargetOffset = targetOffset;
-        m_pageScaleAnimation->zoomTo(scaledTargetOffset, pageScale, duration.InSecondsF());
+        m_pageScaleAnimation->ZoomTo(scaledTargetOffset, pageScale, duration.InSecondsF());
     }
 
     m_client->setNeedsRedrawOnImplThread();
@@ -1475,13 +1475,13 @@ void LayerTreeHostImpl::animatePageScale(base::TimeTicks time)
     double monotonicTime = (time - base::TimeTicks()).InSecondsF();
     gfx::Vector2dF scrollTotal = rootScrollLayer()->scrollOffset() + rootScrollLayer()->scrollDelta();
 
-    activeTree()->SetPageScaleDelta(m_pageScaleAnimation->pageScaleFactorAtTime(monotonicTime) / activeTree()->page_scale_factor());
-    gfx::Vector2dF nextScroll = m_pageScaleAnimation->scrollOffsetAtTime(monotonicTime);
+    activeTree()->SetPageScaleDelta(m_pageScaleAnimation->PageScaleFactorAtTime(monotonicTime) / activeTree()->page_scale_factor());
+    gfx::Vector2dF nextScroll = m_pageScaleAnimation->ScrollOffsetAtTime(monotonicTime);
 
     rootScrollLayer()->scrollBy(nextScroll - scrollTotal);
     m_client->setNeedsRedrawOnImplThread();
 
-    if (m_pageScaleAnimation->isAnimationCompleteAtTime(monotonicTime)) {
+    if (m_pageScaleAnimation->IsAnimationCompleteAtTime(monotonicTime)) {
         m_pageScaleAnimation.reset();
         m_client->setNeedsCommitOnImplThread();
         m_client->renewTreePriority();

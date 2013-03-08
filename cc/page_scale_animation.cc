@@ -15,195 +15,211 @@ namespace {
 
 // This takes a viewport-relative vector and returns a vector whose values are
 // between 0 and 1, representing the percentage position within the viewport.
-gfx::Vector2dF normalizeFromViewport(const gfx::Vector2dF& denormalized, const gfx::SizeF& viewportSize)
-{
-    return gfx::ScaleVector2d(denormalized, 1 / viewportSize.width(), 1 / viewportSize.height());
+gfx::Vector2dF NormalizeFromViewport(gfx::Vector2dF denormalized,
+                                     gfx::SizeF viewport_size) {
+  return gfx::ScaleVector2d(denormalized,
+                            1.f / viewport_size.width(),
+                            1.f / viewport_size.height());
 }
 
-gfx::Vector2dF denormalizeToViewport(const gfx::Vector2dF& normalized, const gfx::SizeF& viewportSize)
-{
-    return gfx::ScaleVector2d(normalized, viewportSize.width(), viewportSize.height());
+gfx::Vector2dF DenormalizeToViewport(gfx::Vector2dF normalized,
+                                     gfx::SizeF viewport_size) {
+  return gfx::ScaleVector2d(normalized,
+                            viewport_size.width(),
+                            viewport_size.height());
 }
 
-gfx::Vector2dF interpolateBetween(const gfx::Vector2dF& start, const gfx::Vector2dF end, float interp)
-{
-    return start + gfx::ScaleVector2d(end - start, interp);
+gfx::Vector2dF InterpolateBetween(gfx::Vector2dF start,
+                                  gfx::Vector2dF end,
+                                  float interp) {
+  return start + gfx::ScaleVector2d(end - start, interp);
 }
 
 }
 
 namespace cc {
 
-scoped_ptr<PageScaleAnimation> PageScaleAnimation::create(const gfx::Vector2dF& startScrollOffset, float startPageScaleFactor, const gfx::SizeF& viewportSize, const gfx::SizeF& rootLayerSize, double startTime)
-{
-    return make_scoped_ptr(new PageScaleAnimation(startScrollOffset, startPageScaleFactor, viewportSize, rootLayerSize, startTime));
+scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
+    gfx::Vector2dF start_scroll_offset,
+    float start_page_scale_factor,
+    gfx::SizeF viewport_size,
+    gfx::SizeF root_layer_size,
+    double start_time) {
+  return make_scoped_ptr(new PageScaleAnimation(start_scroll_offset,
+                                                start_page_scale_factor,
+                                                viewport_size,
+                                                root_layer_size,
+                                                start_time));
 }
 
-PageScaleAnimation::PageScaleAnimation(const gfx::Vector2dF& startScrollOffset, float startPageScaleFactor, const gfx::SizeF& viewportSize, const gfx::SizeF& rootLayerSize, double startTime)
-    : m_startPageScaleFactor(startPageScaleFactor)
-    , m_targetPageScaleFactor(0)
-    , m_startScrollOffset(startScrollOffset)
-    , m_startAnchor()
-    , m_targetAnchor()
-    , m_viewportSize(viewportSize)
-    , m_rootLayerSize(rootLayerSize)
-    , m_startTime(startTime)
-    , m_duration(0)
-{
+PageScaleAnimation::PageScaleAnimation(gfx::Vector2dF start_scroll_offset,
+                                       float start_page_scale_factor,
+                                       gfx::SizeF viewport_size,
+                                       gfx::SizeF root_layer_size,
+                                       double start_time)
+    : start_page_scale_factor_(start_page_scale_factor),
+      target_page_scale_factor_(0.f),
+      start_scroll_offset_(start_scroll_offset),
+      start_anchor_(),
+      target_anchor_(),
+      viewport_size_(viewport_size),
+      root_layer_size_(root_layer_size),
+      start_time_(start_time),
+      duration_(0.0) {}
+
+PageScaleAnimation::~PageScaleAnimation() {}
+
+void PageScaleAnimation::ZoomTo(gfx::Vector2dF target_scroll_offset,
+                                float target_page_scale_factor,
+                                double duration) {
+  target_page_scale_factor_ = target_page_scale_factor;
+  target_scroll_offset_ = target_scroll_offset;
+  ClampTargetScrollOffset();
+  duration_ = duration;
+
+  if (start_page_scale_factor_ == target_page_scale_factor) {
+    start_anchor_ = start_scroll_offset_;
+    target_anchor_ = target_scroll_offset;
+    return;
+  }
+
+  // For uniform-looking zooming, infer an anchor from the start and target
+  // viewport rects.
+  InferTargetAnchorFromScrollOffsets();
+  start_anchor_ = target_anchor_;
 }
 
-PageScaleAnimation::~PageScaleAnimation()
-{
+void PageScaleAnimation::ZoomWithAnchor(gfx::Vector2dF anchor,
+                                        float target_page_scale_factor,
+                                        double duration) {
+  start_anchor_ = anchor;
+  target_page_scale_factor_ = target_page_scale_factor;
+  duration_ = duration;
+
+  // We start zooming out from the anchor tapped by the user. But if
+  // the target scale is impossible to attain without hitting the root layer
+  // edges, then infer an anchor that doesn't collide with the edges.
+  // We will interpolate between the two anchors during the animation.
+  InferTargetScrollOffsetFromStartAnchor();
+  ClampTargetScrollOffset();
+
+  if (start_page_scale_factor_ == target_page_scale_factor_) {
+    target_anchor_ = start_anchor_;
+    return;
+  }
+  InferTargetAnchorFromScrollOffsets();
 }
 
-void PageScaleAnimation::zoomTo(const gfx::Vector2dF& targetScrollOffset, float targetPageScaleFactor, double duration)
-{
-    m_targetPageScaleFactor = targetPageScaleFactor;
-    m_targetScrollOffset = targetScrollOffset;
-    clampTargetScrollOffset();
-    m_duration = duration;
-
-    if (m_startPageScaleFactor == targetPageScaleFactor) {
-        m_startAnchor = m_startScrollOffset;
-        m_targetAnchor = targetScrollOffset;
-        return;
-    }
-
-    // For uniform-looking zooming, infer an anchor from the start and target
-    // viewport rects.
-    inferTargetAnchorFromScrollOffsets();
-    m_startAnchor = m_targetAnchor;
+void PageScaleAnimation::InferTargetScrollOffsetFromStartAnchor() {
+  gfx::Vector2dF normalized = NormalizeFromViewport(
+      start_anchor_ - start_scroll_offset_, StartViewportSize());
+  target_scroll_offset_ =
+      start_anchor_ - DenormalizeToViewport(normalized, TargetViewportSize());
 }
 
-void PageScaleAnimation::zoomWithAnchor(const gfx::Vector2dF& anchor, float targetPageScaleFactor, double duration)
-{
-    m_startAnchor = anchor;
-    m_targetPageScaleFactor = targetPageScaleFactor;
-    m_duration = duration;
-
-    // We start zooming out from the anchor tapped by the user. But if
-    // the target scale is impossible to attain without hitting the root layer
-    // edges, then infer an anchor that doesn't collide with the edges.
-    // We will interpolate between the two anchors during the animation.
-    inferTargetScrollOffsetFromStartAnchor();
-    clampTargetScrollOffset();
-
-    if (m_startPageScaleFactor == m_targetPageScaleFactor) {
-        m_targetAnchor = m_startAnchor;
-        return;
-    }
-    inferTargetAnchorFromScrollOffsets();
+void PageScaleAnimation::InferTargetAnchorFromScrollOffsets() {
+  // The anchor is the point which is at the same normalized relative position
+  // within both start viewport rect and target viewport rect. For example, a
+  // zoom-in double-tap to a perfectly centered rect will have normalized
+  // anchor (0.5, 0.5), while one to a rect touching the bottom-right of the
+  // screen will have normalized anchor (1.0, 1.0). In other words, it obeys
+  // the equations:
+  // anchor = start_size * normalized + start_offset
+  // anchor = target_size * normalized + target_offset
+  // where both anchor and normalized begin as unknowns. Solving
+  // for the normalized, we get the following:
+  float width_scale =
+      1.f / (TargetViewportSize().width() - StartViewportSize().width());
+  float height_scale =
+      1.f / (TargetViewportSize().height() - StartViewportSize().height());
+  gfx::Vector2dF normalized = gfx::ScaleVector2d(
+      start_scroll_offset_ - target_scroll_offset_, width_scale, height_scale);
+  target_anchor_ =
+      target_scroll_offset_ + DenormalizeToViewport(normalized,
+                                                    TargetViewportSize());
 }
 
-void PageScaleAnimation::inferTargetScrollOffsetFromStartAnchor()
-{
-    gfx::Vector2dF normalized = normalizeFromViewport(m_startAnchor - m_startScrollOffset, startViewportSize());
-    m_targetScrollOffset = m_startAnchor - denormalizeToViewport(normalized, targetViewportSize());
+void PageScaleAnimation::ClampTargetScrollOffset() {
+  gfx::Vector2dF max_scroll_offset =
+      gfx::RectF(root_layer_size_).bottom_right() -
+      gfx::RectF(TargetViewportSize()).bottom_right();
+  target_scroll_offset_.ClampToMin(gfx::Vector2dF());
+  target_scroll_offset_.ClampToMax(max_scroll_offset);
 }
 
-void PageScaleAnimation::inferTargetAnchorFromScrollOffsets()
-{
-    // The anchor is the point which is at the same normalized relative position
-    // within both start viewport rect and target viewport rect. For example, a
-    // zoom-in double-tap to a perfectly centered rect will have normalized
-    // anchor (0.5, 0.5), while one to a rect touching the bottom-right of the
-    // screen will have normalized anchor (1.0, 1.0). In other words, it obeys
-    // the equations:
-    // anchor = start_size * normalized + start_offset
-    // anchor = target_size * normalized + target_offset
-    // where both anchor and normalized begin as unknowns. Solving
-    // for the normalized, we get the following:
-    float widthScale = 1 / (targetViewportSize().width() - startViewportSize().width());
-    float heightScale = 1 / (targetViewportSize().height() - startViewportSize().height());
-    gfx::Vector2dF normalized = gfx::ScaleVector2d(m_startScrollOffset - m_targetScrollOffset, widthScale, heightScale);
-    m_targetAnchor = m_targetScrollOffset + denormalizeToViewport(normalized, targetViewportSize());
+gfx::SizeF PageScaleAnimation::StartViewportSize() const {
+  return gfx::ScaleSize(viewport_size_, 1.f / start_page_scale_factor_);
 }
 
-void PageScaleAnimation::clampTargetScrollOffset()
-{
-    gfx::Vector2dF maxScrollOffset = gfx::RectF(m_rootLayerSize).bottom_right() - gfx::RectF(targetViewportSize()).bottom_right();
-    m_targetScrollOffset.ClampToMin(gfx::Vector2dF());
-    m_targetScrollOffset.ClampToMax(maxScrollOffset);
+gfx::SizeF PageScaleAnimation::TargetViewportSize() const {
+  return gfx::ScaleSize(viewport_size_, 1.f / target_page_scale_factor_);
 }
 
-gfx::SizeF PageScaleAnimation::startViewportSize() const
-{
-    return gfx::ScaleSize(m_viewportSize, 1 / m_startPageScaleFactor);
+gfx::SizeF PageScaleAnimation::ViewportSizeAt(float interp) const {
+  return gfx::ScaleSize(viewport_size_, 1.f / PageScaleFactorAt(interp));
 }
 
-gfx::SizeF PageScaleAnimation::targetViewportSize() const
-{
-    return gfx::ScaleSize(m_viewportSize, 1 / m_targetPageScaleFactor);
+gfx::Vector2dF PageScaleAnimation::ScrollOffsetAtTime(double time) const {
+  return ScrollOffsetAt(InterpAtTime(time));
 }
 
-gfx::SizeF PageScaleAnimation::viewportSizeAt(float interp) const
-{
-    return gfx::ScaleSize(m_viewportSize, 1 / pageScaleFactorAt(interp));
+float PageScaleAnimation::PageScaleFactorAtTime(double time) const {
+  return PageScaleFactorAt(InterpAtTime(time));
 }
 
-gfx::Vector2dF PageScaleAnimation::scrollOffsetAtTime(double time) const
-{
-    return scrollOffsetAt(interpAtTime(time));
+bool PageScaleAnimation::IsAnimationCompleteAtTime(double time) const {
+  return time >= end_time();
 }
 
-float PageScaleAnimation::pageScaleFactorAtTime(double time) const
-{
-    return pageScaleFactorAt(interpAtTime(time));
+float PageScaleAnimation::InterpAtTime(double time) const {
+  DCHECK_GE(time, start_time_);
+  if (IsAnimationCompleteAtTime(time))
+    return 1.f;
+
+  return (time - start_time_) / duration_;
 }
 
-bool PageScaleAnimation::isAnimationCompleteAtTime(double time) const
-{
-    return time >= endTime();
+gfx::Vector2dF PageScaleAnimation::ScrollOffsetAt(float interp) const {
+  if (interp <= 0.f)
+    return start_scroll_offset_;
+  if (interp >= 1.f)
+    return target_scroll_offset_;
+
+  return AnchorAt(interp) - ViewportRelativeAnchorAt(interp);
 }
 
-float PageScaleAnimation::interpAtTime(double time) const
-{
-    DCHECK_GE(time, m_startTime);
-    if (isAnimationCompleteAtTime(time))
-        return 1;
-
-    return (time - m_startTime) / m_duration;
+gfx::Vector2dF PageScaleAnimation::AnchorAt(float interp) const {
+  // Interpolate from start to target anchor in absolute space.
+  return InterpolateBetween(start_anchor_, target_anchor_, interp);
 }
 
-gfx::Vector2dF PageScaleAnimation::scrollOffsetAt(float interp) const
-{
-    if (interp <= 0)
-        return m_startScrollOffset;
-    if (interp >= 1)
-        return m_targetScrollOffset;
+gfx::Vector2dF PageScaleAnimation::ViewportRelativeAnchorAt(
+    float interp) const {
+  // Interpolate from start to target anchor in normalized space.
+  gfx::Vector2dF start_normalized =
+      NormalizeFromViewport(start_anchor_ - start_scroll_offset_,
+                            StartViewportSize());
+  gfx::Vector2dF target_normalized =
+      NormalizeFromViewport(target_anchor_ - target_scroll_offset_,
+                            TargetViewportSize());
+  gfx::Vector2dF interp_normalized =
+      InterpolateBetween(start_normalized, target_normalized, interp);
 
-    return anchorAt(interp) - viewportRelativeAnchorAt(interp);
+  return DenormalizeToViewport(interp_normalized, ViewportSizeAt(interp));
 }
 
-gfx::Vector2dF PageScaleAnimation::anchorAt(float interp) const
-{
-    // Interpolate from start to target anchor in absolute space.
-    return interpolateBetween(m_startAnchor, m_targetAnchor, interp);
-}
+float PageScaleAnimation::PageScaleFactorAt(float interp) const {
+  if (interp <= 0.f)
+    return start_page_scale_factor_;
+  if (interp >= 1.f)
+    return target_page_scale_factor_;
 
-gfx::Vector2dF PageScaleAnimation::viewportRelativeAnchorAt(float interp) const
-{
-    // Interpolate from start to target anchor in normalized space.
-    gfx::Vector2dF startNormalized = normalizeFromViewport(m_startAnchor - m_startScrollOffset, startViewportSize());
-    gfx::Vector2dF targetNormalized = normalizeFromViewport(m_targetAnchor - m_targetScrollOffset, targetViewportSize());
-    gfx::Vector2dF interpNormalized = interpolateBetween(startNormalized, targetNormalized, interp);
-
-    return denormalizeToViewport(interpNormalized, viewportSizeAt(interp));
-}
-
-float PageScaleAnimation::pageScaleFactorAt(float interp) const
-{
-    if (interp <= 0)
-        return m_startPageScaleFactor;
-    if (interp >= 1)
-        return m_targetPageScaleFactor;
-
-    // Linearly interpolate the magnitude in log scale.
-    float diff = m_targetPageScaleFactor / m_startPageScaleFactor;
-    float logDiff = log(diff);
-    logDiff *= interp;
-    diff = exp(logDiff);
-    return m_startPageScaleFactor * diff;
+  // Linearly interpolate the magnitude in log scale.
+  float diff = target_page_scale_factor_ / start_page_scale_factor_;
+  float log_diff = log(diff);
+  log_diff *= interp;
+  diff = exp(log_diff);
+  return start_page_scale_factor_ * diff;
 }
 
 }  // namespace cc

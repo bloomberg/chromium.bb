@@ -5,6 +5,7 @@
 #ifndef CC_PAGE_SCALE_ANIMATION_H_
 #define CC_PAGE_SCALE_ANIMATION_H_
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d_f.h"
@@ -19,68 +20,83 @@ namespace cc {
 // All sizes and vectors in this class's public methods are in the root scroll
 // layer's coordinate space.
 class PageScaleAnimation {
-public:
-    // Construct with the state at the beginning of the animation.
-    static scoped_ptr<PageScaleAnimation> create(const gfx::Vector2dF& startScrollOffset, float startPageScaleFactor, const gfx::SizeF& viewportSize, const gfx::SizeF& rootLayerSize, double startTime);
+ public:
+  // Construct with the state at the beginning of the animation.
+  static scoped_ptr<PageScaleAnimation> Create(
+      gfx::Vector2dF start_scroll_offset,
+      float start_page_scale_factor,
+      gfx::SizeF viewport_size,
+      gfx::SizeF root_layer_size,
+      double start_time);
 
-    ~PageScaleAnimation();
+  ~PageScaleAnimation();
 
-    // The following methods initialize the animation. Call one of them
-    // immediately after construction to set the final scroll and page scale.
+  // The following methods initialize the animation. Call one of them
+  // immediately after construction to set the final scroll and page scale.
 
-    // Zoom while explicitly specifying the top-left scroll position.
-    void zoomTo(const gfx::Vector2dF& targetScrollOffset, float targetPageScaleFactor, double duration);
+  // Zoom while explicitly specifying the top-left scroll position.
+  void ZoomTo(gfx::Vector2dF target_scroll_offset,
+              float target_page_scale_factor,
+              double duration);
 
-    // Zoom based on a specified anchor. The animator will attempt to keep it
-    // at the same position on the physical display throughout the animation,
-    // unless the edges of the root layer are hit. The anchor is specified
-    // as an offset from the content layer.
-    void zoomWithAnchor(const gfx::Vector2dF& anchor, float targetPageScaleFactor, double duration);
+  // Zoom based on a specified anchor. The animator will attempt to keep it
+  // at the same position on the physical display throughout the animation,
+  // unless the edges of the root layer are hit. The anchor is specified
+  // as an offset from the content layer.
+  void ZoomWithAnchor(gfx::Vector2dF anchor,
+                      float target_page_scale_factor,
+                      double duration);
 
-    // Call these functions while the animation is in progress to output the
-    // current state.
-    gfx::Vector2dF scrollOffsetAtTime(double time) const;
-    float pageScaleFactorAtTime(double time) const;
-    bool isAnimationCompleteAtTime(double time) const;
+  // Call these functions while the animation is in progress to output the
+  // current state.
+  gfx::Vector2dF ScrollOffsetAtTime(double time) const;
+  float PageScaleFactorAtTime(double time) const;
+  bool IsAnimationCompleteAtTime(double time) const;
 
-    // The following methods return state which is invariant throughout the
-    // course of the animation.
-    double startTime() const { return m_startTime; }
-    double duration() const { return m_duration; }
-    double endTime() const { return m_startTime + m_duration; }
-    const gfx::Vector2dF& targetScrollOffset() const { return m_targetScrollOffset; }
-    float targetPageScaleFactor() const { return m_targetPageScaleFactor; }
+  // The following methods return state which is invariant throughout the
+  // course of the animation.
+  double start_time() const { return start_time_; }
+  double duration() const { return duration_; }
+  double end_time() const { return start_time_ + duration_; }
+  gfx::Vector2dF target_scroll_offset() const { return target_scroll_offset_; }
+  float target_page_scale_factor() const { return target_page_scale_factor_; }
 
-protected:
-    PageScaleAnimation(const gfx::Vector2dF& startScrollOffset, float startPageScaleFactor, const gfx::SizeF& viewportSize, const gfx::SizeF& rootLayerSize, double startTime);
+ protected:
+  PageScaleAnimation(gfx::Vector2dF start_scroll_offset,
+                     float start_page_scale_factor,
+                     gfx::SizeF viewport_size,
+                     gfx::SizeF root_layer_size,
+                     double start_time);
 
-private:
-    void clampTargetScrollOffset();
-    void inferTargetScrollOffsetFromStartAnchor();
-    void inferTargetAnchorFromScrollOffsets();
+ private:
+  void ClampTargetScrollOffset();
+  void InferTargetScrollOffsetFromStartAnchor();
+  void InferTargetAnchorFromScrollOffsets();
 
-    gfx::SizeF startViewportSize() const;
-    gfx::SizeF targetViewportSize() const;
-    float interpAtTime(double time) const;
-    gfx::SizeF viewportSizeAt(float interp) const;
-    gfx::Vector2dF scrollOffsetAt(float interp) const;
-    gfx::Vector2dF anchorAt(float interp) const;
-    gfx::Vector2dF viewportRelativeAnchorAt(float interp) const;
-    float pageScaleFactorAt(float interp) const;
+  gfx::SizeF StartViewportSize() const;
+  gfx::SizeF TargetViewportSize() const;
+  float InterpAtTime(double time) const;
+  gfx::SizeF ViewportSizeAt(float interp) const;
+  gfx::Vector2dF ScrollOffsetAt(float interp) const;
+  gfx::Vector2dF AnchorAt(float interp) const;
+  gfx::Vector2dF ViewportRelativeAnchorAt(float interp) const;
+  float PageScaleFactorAt(float interp) const;
 
-    float m_startPageScaleFactor;
-    float m_targetPageScaleFactor;
-    gfx::Vector2dF m_startScrollOffset;
-    gfx::Vector2dF m_targetScrollOffset;
+  float start_page_scale_factor_;
+  float target_page_scale_factor_;
+  gfx::Vector2dF start_scroll_offset_;
+  gfx::Vector2dF target_scroll_offset_;
 
-    gfx::Vector2dF m_startAnchor;
-    gfx::Vector2dF m_targetAnchor;
+  gfx::Vector2dF start_anchor_;
+  gfx::Vector2dF target_anchor_;
 
-    gfx::SizeF m_viewportSize;
-    gfx::SizeF m_rootLayerSize;
+  gfx::SizeF viewport_size_;
+  gfx::SizeF root_layer_size_;
 
-    double m_startTime;
-    double m_duration;
+  double start_time_;
+  double duration_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageScaleAnimation);
 };
 
 }  // namespace cc
