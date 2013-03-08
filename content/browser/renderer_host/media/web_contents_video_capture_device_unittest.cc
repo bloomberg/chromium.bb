@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -20,6 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_util.h"
+#include "media/base/yuv_convert.h"
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,14 +33,14 @@ const int kTestWidth = 1280;
 const int kTestHeight = 720;
 const int kBytesPerPixel = 4;
 const int kTestFramesPerSecond = 20;
-const base::TimeDelta kWaitTimeout = base::TimeDelta::FromMilliseconds(2000);
+const base::TimeDelta kWaitTimeout = base::TimeDelta::FromMilliseconds(10000);
 const SkColor kNothingYet = 0xdeadbeef;
 const SkColor kNotInterested = ~kNothingYet;
 
 void DeadlineExceeded(base::Closure quit_closure) {
   if (!base::debug::BeingDebugged()) {
-    FAIL() << "Deadline exceeded while waiting, quitting";
     quit_closure.Run();
+    FAIL() << "Deadline exceeded while waiting, quitting";
   } else {
     LOG(WARNING) << "Deadline exceeded; test would fail if debugger weren't "
                  << "attached.";
@@ -51,6 +53,13 @@ void RunCurrentLoopWithDeadline() {
       &DeadlineExceeded, MessageLoop::current()->QuitClosure()));
   MessageLoop::current()->Run();
   deadline.Stop();
+}
+
+SkColor ConvertRgbToYuv(SkColor rgb) {
+  uint8 yuv[3];
+  media::ConvertRGB32ToYUV(reinterpret_cast<uint8*>(&rgb),
+                           yuv, yuv + 1, yuv + 2, 1, 1, 1, 1, 1);
+  return SkColorSetRGB(yuv[0], yuv[1], yuv[2]);
 }
 
 // Thread-safe class that controls the source pattern to be captured by the
@@ -157,7 +166,7 @@ class CaptureTestView : public TestRenderWidgetHostView {
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) OVERRIDE {
-    SkColor c = controller_->GetSolidColor();
+    SkColor c = ConvertRgbToYuv(controller_->GetSolidColor());
     media::FillYUV(target, SkColorGetR(c), SkColorGetG(c), SkColorGetB(c));
     callback.Run(true);
     controller_->SignalBackingStoreCopy();
@@ -260,20 +269,26 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
 // WebContentsVideoCaptureDevice.
 class StubConsumer : public media::VideoCaptureDevice::EventHandler {
  public:
-  StubConsumer() : error_encountered_(false), wait_color_(0xcafe1950) {}
+  StubConsumer()
+      : error_encountered_(false),
+        wait_color_yuv_(0xcafe1950) {
+    buffer_pool_ = new VideoCaptureBufferPool(
+        gfx::Size(kTestWidth, kTestHeight), 2);
+    EXPECT_TRUE(buffer_pool_->Allocate());
+  }
   virtual ~StubConsumer() {}
 
   void QuitIfConditionMet(SkColor color) {
     base::AutoLock guard(lock_);
 
-    if (wait_color_ == color || error_encountered_)
+    if (wait_color_yuv_ == color || error_encountered_)
       MessageLoop::current()->Quit();
   }
 
   void WaitForNextColor(SkColor expected_color) {
     {
       base::AutoLock guard(lock_);
-      wait_color_ = expected_color;
+      wait_color_yuv_ = ConvertRgbToYuv(expected_color);
       error_encountered_ = false;
     }
     RunCurrentLoopWithDeadline();
@@ -286,7 +301,7 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
   void WaitForError() {
     {
       base::AutoLock guard(lock_);
-      wait_color_ = kNotInterested;
+      wait_color_yuv_ = kNotInterested;
       error_encountered_ = false;
     }
     RunCurrentLoopWithDeadline();
@@ -297,8 +312,7 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
   }
 
   virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer() OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
+    return buffer_pool_->ReserveForProducer(0);
   }
 
   virtual void OnIncomingCapturedFrame(
@@ -308,21 +322,7 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
       int rotation,
       bool flip_vert,
       bool flip_horiz) OVERRIDE {
-    DCHECK(data);
-    static const int kNumPixels = kTestWidth * kTestHeight;
-    EXPECT_EQ(kNumPixels * kBytesPerPixel, length);
-    const uint32* p = reinterpret_cast<const uint32*>(data);
-    const uint32* const p_end = p + kNumPixels;
-    const SkColor color = *p;
-    bool all_pixels_are_the_same_color = true;
-    for (++p; p < p_end; ++p) {
-      if (*p != color) {
-        all_pixels_are_the_same_color = false;
-        break;
-      }
-    }
-    EXPECT_TRUE(all_pixels_are_the_same_color);
-    PostColorOrError(color);
+    FAIL();
   }
 
   virtual void OnIncomingCapturedVideoFrame(
@@ -330,6 +330,7 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
       base::Time timestamp) OVERRIDE {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
     EXPECT_EQ(media::VideoFrame::YV12, frame->format());
+    EXPECT_NE(0, buffer_pool_->RecognizeReservedBuffer(frame));
     uint8 yuv[3] = {0};
     for (int plane = 0; plane < 3; ++plane) {
       yuv[plane] = frame->data(plane)[0];
@@ -363,7 +364,8 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
  private:
   base::Lock lock_;
   bool error_encountered_;
-  SkColor wait_color_;
+  SkColor wait_color_yuv_;
+  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(StubConsumer);
 };
@@ -488,7 +490,7 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
 
   bool use_video_frames = false;
   for (int i = 0; i < 4; i++, use_video_frames = !use_video_frames) {
-    SCOPED_TRACE(StringPrintf("Using %s path, iteration #%d",
+    SCOPED_TRACE(StringPrintf("Using %s copy path, iteration #%d",
                               use_video_frames ? "VideoFrame" : "SkBitmap", i));
     source()->SetCanCopyToVideoFrame(use_video_frames);
     source()->SetSolidColor(SK_ColorRED);
