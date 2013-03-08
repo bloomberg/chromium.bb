@@ -460,7 +460,7 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
     READ_BOOL_OR_RETURN(&seq_scaling_list_present_flag);
 
     if (seq_scaling_list_present_flag) {
-      res = ParseScalingList(sizeof(sps->scaling_list4x4[i]),
+      res = ParseScalingList(arraysize(sps->scaling_list4x4[i]),
                              sps->scaling_list4x4[i], &use_default);
       if (res != kOk)
         return res;
@@ -479,7 +479,7 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
     READ_BOOL_OR_RETURN(&seq_scaling_list_present_flag);
 
     if (seq_scaling_list_present_flag) {
-      res = ParseScalingList(sizeof(sps->scaling_list8x8[i]),
+      res = ParseScalingList(arraysize(sps->scaling_list8x8[i]),
                              sps->scaling_list8x8[i], &use_default);
       if (res != kOk)
         return res;
@@ -507,7 +507,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
     READ_BOOL_OR_RETURN(&pic_scaling_list_present_flag);
 
     if (pic_scaling_list_present_flag) {
-      res = ParseScalingList(sizeof(pps->scaling_list4x4[i]),
+      res = ParseScalingList(arraysize(pps->scaling_list4x4[i]),
                              pps->scaling_list4x4[i], &use_default);
       if (res != kOk)
         return res;
@@ -533,7 +533,7 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
       READ_BOOL_OR_RETURN(&pic_scaling_list_present_flag);
 
       if (pic_scaling_list_present_flag) {
-        res = ParseScalingList(sizeof(pps->scaling_list8x8[i]),
+        res = ParseScalingList(arraysize(pps->scaling_list8x8[i]),
                                pps->scaling_list8x8[i], &use_default);
         if (res != kOk)
           return res;
