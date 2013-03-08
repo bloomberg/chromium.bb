@@ -12,7 +12,7 @@ namespace cc {
 
 class FakeWebScrollbar : public WebKit::WebScrollbar {
  public:
-  static scoped_ptr<FakeWebScrollbar> create() {
+  static scoped_ptr<FakeWebScrollbar> Create() {
     return make_scoped_ptr(new FakeWebScrollbar());
   }
 

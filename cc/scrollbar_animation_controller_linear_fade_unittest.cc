@@ -26,7 +26,7 @@ protected:
     {
         m_scrollLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
         scoped_ptr<ScrollbarGeometryFixedThumb> geometry(ScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometry::create(false)));
-        m_scrollbarLayer = ScrollbarLayerImpl::create(m_hostImpl.activeTree(), 2, geometry.Pass());
+        m_scrollbarLayer = ScrollbarLayerImpl::Create(m_hostImpl.activeTree(), 2, geometry.Pass());
 
         m_scrollLayer->setMaxScrollOffset(gfx::Vector2d(50, 50));
         m_scrollLayer->setBounds(gfx::Size(50, 50));

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef CC_SCROLLBAR_LAYER_H_
 #define CC_SCROLLBAR_LAYER_H_
 
@@ -20,71 +19,79 @@ class Scrollbar;
 class ScrollbarThemeComposite;
 
 class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
-public:
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+ public:
+  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
 
-    static scoped_refptr<ScrollbarLayer> create(
-        scoped_ptr<WebKit::WebScrollbar>,
-        scoped_ptr<ScrollbarThemePainter>,
-        scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
-        int scrollLayerId);
+  static scoped_refptr<ScrollbarLayer> Create(
+      scoped_ptr<WebKit::WebScrollbar>,
+      scoped_ptr<ScrollbarThemePainter>,
+      scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
+      int scrollLayerId);
 
-    int scrollLayerId() const { return m_scrollLayerId; }
-    void setScrollLayerId(int id);
+  int scroll_layer_id() const { return scroll_layer_id_; }
+  void SetScrollLayerId(int id);
 
-    WebKit::WebScrollbar::Orientation orientation() const;
+  WebKit::WebScrollbar::Orientation Orientation() const;
 
-    // Layer interface
-    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
-    virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
-    virtual void calculateContentsScale(
-        float idealContentsScale,
-        bool animatingTransformToScreen,
-        float* contentsScaleX,
-        float* contentsScaleY,
-        gfx::Size* contentBounds) OVERRIDE;
+  // Layer interface
+  virtual void setTexturePriorities(const PriorityCalculator& priority_calc)
+      OVERRIDE;
+  virtual void update(ResourceUpdateQueue& queue,
+                      const OcclusionTracker* occlusion,
+                      RenderingStats* stats) OVERRIDE;
+  virtual void setLayerTreeHost(LayerTreeHost* host) OVERRIDE;
+  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void calculateContentsScale(float ideal_contents_scale,
+                                      bool animating_transform_to_screen,
+                                      float* contents_scale_x,
+                                      float* contents_scale_y,
+                                      gfx::Size* contentBounds) OVERRIDE;
 
-    virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
+  virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
 
-protected:
-    ScrollbarLayer(
-        scoped_ptr<WebKit::WebScrollbar>,
-        scoped_ptr<ScrollbarThemePainter>,
-        scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
-        int scrollLayerId);
-    virtual ~ScrollbarLayer();
+ protected:
+  ScrollbarLayer(
+      scoped_ptr<WebKit::WebScrollbar>,
+      scoped_ptr<ScrollbarThemePainter>,
+      scoped_ptr<WebKit::WebScrollbarThemeGeometry>,
+      int scrollLayerId);
+  virtual ~ScrollbarLayer();
 
-private:
-    void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const gfx::Rect&, ResourceUpdateQueue&, RenderingStats*);
-    void createUpdaterIfNeeded();
-    gfx::Rect scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const;
+ private:
+  void UpdatePart(CachingBitmapContentLayerUpdater* painter,
+                  LayerUpdater::Resource* resource,
+                  gfx::Rect rect,
+                  ResourceUpdateQueue* queue,
+                  RenderingStats* stats);
+  void CreateUpdaterIfNeeded();
+  gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;
 
-    bool isDirty() const { return !m_dirtyRect.IsEmpty(); }
+  bool is_dirty() const { return !dirty_rect_.IsEmpty(); }
 
-    int maxTextureSize();
-    float clampScaleToMaxTextureSize(float scale);
+  int MaxTextureSize();
+  float ClampScaleToMaxTextureSize(float scale);
 
-    scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
-    scoped_ptr<ScrollbarThemePainter> m_painter;
-    scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
-    gfx::Size m_thumbSize;
-    int m_scrollLayerId;
+  scoped_ptr<WebKit::WebScrollbar> scrollbar_;
+  scoped_ptr<ScrollbarThemePainter> painter_;
+  scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry_;
+  gfx::Size thumb_size_;
+  int scroll_layer_id_;
 
-    unsigned m_textureFormat;
+  unsigned texture_format_;
 
-    gfx::RectF m_dirtyRect;
+  gfx::RectF dirty_rect_;
 
-    scoped_refptr<CachingBitmapContentLayerUpdater> m_backTrackUpdater;
-    scoped_refptr<CachingBitmapContentLayerUpdater> m_foreTrackUpdater;
-    scoped_refptr<CachingBitmapContentLayerUpdater> m_thumbUpdater;
+  scoped_refptr<CachingBitmapContentLayerUpdater> back_track_updater_;
+  scoped_refptr<CachingBitmapContentLayerUpdater> fore_track_updater_;
+  scoped_refptr<CachingBitmapContentLayerUpdater> thumb_updater_;
 
-    // All the parts of the scrollbar except the thumb
-    scoped_ptr<LayerUpdater::Resource> m_backTrack;
-    scoped_ptr<LayerUpdater::Resource> m_foreTrack;
-    scoped_ptr<LayerUpdater::Resource> m_thumb;
+  // All the parts of the scrollbar except the thumb
+  scoped_ptr<LayerUpdater::Resource> back_track_;
+  scoped_ptr<LayerUpdater::Resource> fore_track_;
+  scoped_ptr<LayerUpdater::Resource> thumb_;
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_SCROLLBAR_LAYER_H_

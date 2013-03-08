@@ -959,8 +959,8 @@ class LayerTreeHostContextTestDontUseLostResources :
 
     bool paint_scrollbar = true;
     bool has_thumb = true;
-    scoped_refptr<ScrollbarLayer> scrollbar_ = ScrollbarLayer::create(
-        FakeWebScrollbar::create().PassAs<WebKit::WebScrollbar>(),
+    scoped_refptr<ScrollbarLayer> scrollbar_ = ScrollbarLayer::Create(
+        FakeWebScrollbar::Create().PassAs<WebKit::WebScrollbar>(),
         FakeScrollbarThemePainter::Create(paint_scrollbar)
         .PassAs<ScrollbarThemePainter>(),
         FakeWebScrollbarThemeGeometry::create(has_thumb)

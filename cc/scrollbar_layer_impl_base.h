@@ -12,19 +12,19 @@
 namespace cc {
 
 class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
-public:
-    virtual ~ScrollbarLayerImplBase() { }
+ public:
+  virtual ~ScrollbarLayerImplBase() {}
 
-    virtual float currentPos() const = 0;
-    virtual int totalSize() const = 0;
-    virtual int maximum() const = 0;
-    virtual WebKit::WebScrollbar::Orientation orientation() const = 0;
+  virtual float CurrentPos() const = 0;
+  virtual int TotalSize() const = 0;
+  virtual int Maximum() const = 0;
+  virtual WebKit::WebScrollbar::Orientation Orientation() const = 0;
 
-protected:
-    ScrollbarLayerImplBase(LayerTreeImpl* treeImpl, int id)
-        : LayerImpl(treeImpl, id) { }
-
+ protected:
+  ScrollbarLayerImplBase(LayerTreeImpl* tree_impl, int id)
+      : LayerImpl(tree_impl, id) {}
 };
 
 } // namespace cc
+
 #endif // CC_SCROLLBAR_LAYER_IMPL_BASE_H_

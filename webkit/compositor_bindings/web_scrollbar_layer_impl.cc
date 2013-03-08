@@ -17,7 +17,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     WebScrollbar* scrollbar,
     WebScrollbarThemePainter painter,
     WebScrollbarThemeGeometry* geometry)
-    : layer_(new WebLayerImpl(ScrollbarLayer::create(
+    : layer_(new WebLayerImpl(ScrollbarLayer::Create(
           make_scoped_ptr(scrollbar),
           WebToCCScrollbarThemePainterAdapter::Create(
               make_scoped_ptr(new WebScrollbarThemePainter(painter)))
@@ -31,7 +31,7 @@ WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
 
 void WebScrollbarLayerImpl::setScrollLayer(WebLayer* layer) {
   int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
-  static_cast<ScrollbarLayer*>(layer_->layer())->setScrollLayerId(id);
+  static_cast<ScrollbarLayer*>(layer_->layer())->SetScrollLayerId(id);
 }
 
 }  // namespace WebKit

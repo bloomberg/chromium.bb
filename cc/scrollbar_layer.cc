@@ -17,18 +17,24 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl(LayerTreeImpl* treeImpl)
-{
-    return ScrollbarLayerImpl::create(treeImpl, id(), ScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone()))).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl(
+    LayerTreeImpl* tree_impl) {
+  return ScrollbarLayerImpl::Create(
+      tree_impl,
+      id(),
+      ScrollbarGeometryFixedThumb::create(make_scoped_ptr(geometry_->clone())))
+      .PassAs<LayerImpl>();
 }
 
-scoped_refptr<ScrollbarLayer> ScrollbarLayer::create(
+scoped_refptr<ScrollbarLayer> ScrollbarLayer::Create(
     scoped_ptr<WebKit::WebScrollbar> scrollbar,
     scoped_ptr<ScrollbarThemePainter> painter,
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
-    int scrollLayerId)
-{
-    return make_scoped_refptr(new ScrollbarLayer(scrollbar.Pass(), painter.Pass(), geometry.Pass(), scrollLayerId));
+    int scrollLayerId) {
+  return make_scoped_refptr(new ScrollbarLayer(scrollbar.Pass(),
+                                               painter.Pass(),
+                                               geometry.Pass(),
+                                               scrollLayerId));
 }
 
 ScrollbarLayer::ScrollbarLayer(
@@ -36,320 +42,390 @@ ScrollbarLayer::ScrollbarLayer(
     scoped_ptr<ScrollbarThemePainter> painter,
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry,
     int scrollLayerId)
-    : m_scrollbar(scrollbar.Pass())
-    , m_painter(painter.Pass())
-    , m_geometry(geometry.Pass())
-    , m_scrollLayerId(scrollLayerId)
-    , m_textureFormat(GL_INVALID_ENUM)
-{
-    if (!m_scrollbar->isOverlay())
-        setShouldScrollOnMainThread(true);
+    : scrollbar_(scrollbar.Pass()),
+      painter_(painter.Pass()),
+      geometry_(geometry.Pass()),
+      scroll_layer_id_(scrollLayerId),
+      texture_format_(GL_INVALID_ENUM) {
+  if (!scrollbar_->isOverlay())
+    setShouldScrollOnMainThread(true);
 }
 
-ScrollbarLayer::~ScrollbarLayer()
-{
+ScrollbarLayer::~ScrollbarLayer() {}
+
+void ScrollbarLayer::SetScrollLayerId(int id) {
+  if (id == scroll_layer_id_)
+    return;
+
+  scroll_layer_id_ = id;
+  setNeedsFullTreeSync();
 }
 
-void ScrollbarLayer::setScrollLayerId(int id)
-{
-    if (id == m_scrollLayerId)
-        return;
-
-    m_scrollLayerId = id;
-    setNeedsFullTreeSync();
+WebKit::WebScrollbar::Orientation ScrollbarLayer::Orientation() const {
+  return scrollbar_->orientation();
 }
 
-WebKit::WebScrollbar::Orientation ScrollbarLayer::orientation() const
-{
-    return m_scrollbar->orientation();
+int ScrollbarLayer::MaxTextureSize() {
+  DCHECK(layerTreeHost());
+  return layerTreeHost()->rendererCapabilities().maxTextureSize;
 }
 
-int ScrollbarLayer::maxTextureSize() {
-    DCHECK(layerTreeHost());
-    return layerTreeHost()->rendererCapabilities().maxTextureSize;
-}
-
-float ScrollbarLayer::clampScaleToMaxTextureSize(float scale) {
-    if (layerTreeHost()->settings().solidColorScrollbars)
-        return scale;
-
-    // If the scaled contentBounds() is bigger than the max texture size of the
-    // device, we need to clamp it by rescaling, since contentBounds() is used
-    // below to set the texture size.
-    gfx::Size scaledBounds = computeContentBoundsForScale(scale, scale);
-    if (scaledBounds.width() > maxTextureSize() || scaledBounds.height() > maxTextureSize()) {
-         if (scaledBounds.width() > scaledBounds.height())
-             return (maxTextureSize() - 1) / static_cast<float>(bounds().width());
-         else
-             return (maxTextureSize() - 1) / static_cast<float>(bounds().height());
-   }
+float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
+  if (layerTreeHost()->settings().solidColorScrollbars)
     return scale;
+
+  // If the scaled contentBounds() is bigger than the max texture size of the
+  // device, we need to clamp it by rescaling, since contentBounds() is used
+  // below to set the texture size.
+  gfx::Size scaled_bounds = computeContentBoundsForScale(scale, scale);
+  if (scaled_bounds.width() > MaxTextureSize() ||
+      scaled_bounds.height() > MaxTextureSize()) {
+    if (scaled_bounds.width() > scaled_bounds.height())
+      return (MaxTextureSize() - 1) / static_cast<float>(bounds().width());
+    else
+      return (MaxTextureSize() - 1) / static_cast<float>(bounds().height());
+  }
+  return scale;
 }
 
-void ScrollbarLayer::calculateContentsScale(
-  float idealContentsScale,
-  bool animatingTransformToScreen,
-  float* contentsScaleX,
-  float* contentsScaleY,
-  gfx::Size* contentBounds)
-{
-    ContentsScalingLayer::calculateContentsScale(
-        clampScaleToMaxTextureSize(idealContentsScale),
-        animatingTransformToScreen,
-        contentsScaleX,
-        contentsScaleY,
-        contentBounds);
-    DCHECK_LE(contentBounds->width(), maxTextureSize());
-    DCHECK_LE(contentBounds->height(), maxTextureSize());
+void ScrollbarLayer::calculateContentsScale(float ideal_contents_scale,
+                                            bool animating_transform_to_screen,
+                                            float* contents_scale_x,
+                                            float* contents_scale_y,
+                                            gfx::Size* contentBounds) {
+  ContentsScalingLayer::calculateContentsScale(
+      ClampScaleToMaxTextureSize(ideal_contents_scale),
+      animating_transform_to_screen,
+      contents_scale_x,
+      contents_scale_y,
+      contentBounds);
+  DCHECK_LE(contentBounds->width(), MaxTextureSize());
+  DCHECK_LE(contentBounds->height(), MaxTextureSize());
 }
 
-void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)
-{
-    ContentsScalingLayer::pushPropertiesTo(layer);
+void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer) {
+  ContentsScalingLayer::pushPropertiesTo(layer);
 
-    ScrollbarLayerImpl* scrollbarLayer = static_cast<ScrollbarLayerImpl*>(layer);
+  ScrollbarLayerImpl* scrollbar_layer = static_cast<ScrollbarLayerImpl*>(layer);
 
-    scrollbarLayer->setScrollbarData(m_scrollbar.get());
-    scrollbarLayer->setThumbSize(m_thumbSize);
+  scrollbar_layer->SetScrollbarData(scrollbar_.get());
+  scrollbar_layer->SetThumbSize(thumb_size_);
 
-    if (m_backTrack && m_backTrack->texture()->haveBackingTexture())
-        scrollbarLayer->setBackTrackResourceId(m_backTrack->texture()->resourceId());
-    else
-        scrollbarLayer->setBackTrackResourceId(0);
+  if (back_track_ && back_track_->texture()->haveBackingTexture()) {
+    scrollbar_layer->set_back_track_resource_id(
+        back_track_->texture()->resourceId());
+  } else {
+    scrollbar_layer->set_back_track_resource_id(0);
+  }
 
-    if (m_foreTrack && m_foreTrack->texture()->haveBackingTexture())
-        scrollbarLayer->setForeTrackResourceId(m_foreTrack->texture()->resourceId());
-    else
-        scrollbarLayer->setForeTrackResourceId(0);
+  if (fore_track_ && fore_track_->texture()->haveBackingTexture()) {
+    scrollbar_layer->set_fore_track_resource_id(
+        fore_track_->texture()->resourceId());
+  } else {
+    scrollbar_layer->set_fore_track_resource_id(0);
+  }
 
-    if (m_thumb && m_thumb->texture()->haveBackingTexture())
-        scrollbarLayer->setThumbResourceId(m_thumb->texture()->resourceId());
-    else
-        scrollbarLayer->setThumbResourceId(0);
+  if (thumb_ && thumb_->texture()->haveBackingTexture())
+    scrollbar_layer->set_thumb_resource_id(thumb_->texture()->resourceId());
+  else
+    scrollbar_layer->set_thumb_resource_id(0);
 }
 
-ScrollbarLayer* ScrollbarLayer::toScrollbarLayer()
-{
-    return this;
+ScrollbarLayer* ScrollbarLayer::toScrollbarLayer() {
+  return this;
 }
 
 class ScrollbarBackgroundPainter : public LayerPainter {
-public:
-    static scoped_ptr<ScrollbarBackgroundPainter> create(WebKit::WebScrollbar* scrollbar, ScrollbarThemePainter *painter, WebKit::WebScrollbarThemeGeometry* geometry, WebKit::WebScrollbar::ScrollbarPart trackPart)
-    {
-        return make_scoped_ptr(new ScrollbarBackgroundPainter(scrollbar, painter, geometry, trackPart));
+ public:
+  static scoped_ptr<ScrollbarBackgroundPainter> Create(
+      WebKit::WebScrollbar* scrollbar,
+      ScrollbarThemePainter *painter,
+      WebKit::WebScrollbarThemeGeometry* geometry,
+      WebKit::WebScrollbar::ScrollbarPart trackPart) {
+    return make_scoped_ptr(new ScrollbarBackgroundPainter(scrollbar,
+                                                          painter,
+                                                          geometry,
+                                                          trackPart));
+  }
+
+  virtual void Paint(SkCanvas* canvas,
+                     gfx::Rect content_rect,
+                     gfx::RectF* opaque) OVERRIDE {
+    // The following is a simplification of ScrollbarThemeComposite::paint.
+    painter_->PaintScrollbarBackground(canvas, content_rect);
+
+    if (geometry_->hasButtons(scrollbar_)) {
+      gfx::Rect back_button_start_paint_rect =
+          geometry_->backButtonStartRect(scrollbar_);
+      painter_->PaintBackButtonStart(canvas, back_button_start_paint_rect);
+
+      gfx::Rect back_button_end_paint_rect =
+          geometry_->backButtonEndRect(scrollbar_);
+      painter_->PaintBackButtonEnd(canvas, back_button_end_paint_rect);
+
+      gfx::Rect forward_button_start_paint_rect =
+          geometry_->forwardButtonStartRect(scrollbar_);
+      painter_->PaintForwardButtonStart(canvas,
+                                        forward_button_start_paint_rect);
+
+      gfx::Rect forward_button_end_paint_rect =
+          geometry_->forwardButtonEndRect(scrollbar_);
+      painter_->PaintForwardButtonEnd(canvas, forward_button_end_paint_rect);
     }
 
-    virtual void Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF* opaque) OVERRIDE
-    {
-        // The following is a simplification of ScrollbarThemeComposite::paint.
-        m_painter->PaintScrollbarBackground(canvas, contentRect);
+    gfx::Rect track_paint_rect = geometry_->trackRect(scrollbar_);
+    painter_->PaintTrackBackground(canvas, track_paint_rect);
 
-        if (m_geometry->hasButtons(m_scrollbar)) {
-            gfx::Rect backButtonStartPaintRect = m_geometry->backButtonStartRect(m_scrollbar);
-            m_painter->PaintBackButtonStart(canvas, backButtonStartPaintRect);
-
-            gfx::Rect backButtonEndPaintRect = m_geometry->backButtonEndRect(m_scrollbar);
-            m_painter->PaintBackButtonEnd(canvas, backButtonEndPaintRect);
-
-            gfx::Rect forwardButtonStartPaintRect = m_geometry->forwardButtonStartRect(m_scrollbar);
-            m_painter->PaintForwardButtonStart(canvas, forwardButtonStartPaintRect);
-
-            gfx::Rect forwardButtonEndPaintRect = m_geometry->forwardButtonEndRect(m_scrollbar);
-            m_painter->PaintForwardButtonEnd(canvas, forwardButtonEndPaintRect);
-        }
-
-        gfx::Rect trackPaintRect = m_geometry->trackRect(m_scrollbar);
-        m_painter->PaintTrackBackground(canvas, trackPaintRect);
-
-        bool thumbPresent = m_geometry->hasThumb(m_scrollbar);
-        if (thumbPresent) {
-            if (m_trackPart == WebKit::WebScrollbar::ForwardTrackPart)
-                m_painter->PaintForwardTrackPart(canvas, trackPaintRect);
-            else
-                m_painter->PaintBackTrackPart(canvas, trackPaintRect);
-        }
-
-        m_painter->PaintTickmarks(canvas, trackPaintRect);
-    }
-private:
-    ScrollbarBackgroundPainter(WebKit::WebScrollbar* scrollbar, ScrollbarThemePainter *painter, WebKit::WebScrollbarThemeGeometry* geometry, WebKit::WebScrollbar::ScrollbarPart trackPart)
-        : m_scrollbar(scrollbar)
-        , m_painter(painter)
-        , m_geometry(geometry)
-        , m_trackPart(trackPart)
-    {
+    bool thumb_present = geometry_->hasThumb(scrollbar_);
+    if (thumb_present) {
+      if (track_part_ == WebKit::WebScrollbar::ForwardTrackPart)
+        painter_->PaintForwardTrackPart(canvas, track_paint_rect);
+      else
+        painter_->PaintBackTrackPart(canvas, track_paint_rect);
     }
 
-    WebKit::WebScrollbar* m_scrollbar;
-    ScrollbarThemePainter* m_painter;
-    WebKit::WebScrollbarThemeGeometry* m_geometry;
-    WebKit::WebScrollbar::ScrollbarPart m_trackPart;
+    painter_->PaintTickmarks(canvas, track_paint_rect);
+  }
+ private:
+  ScrollbarBackgroundPainter(WebKit::WebScrollbar* scrollbar,
+                             ScrollbarThemePainter *painter,
+                             WebKit::WebScrollbarThemeGeometry* geometry,
+                             WebKit::WebScrollbar::ScrollbarPart trackPart)
+      : scrollbar_(scrollbar),
+        painter_(painter),
+        geometry_(geometry),
+        track_part_(trackPart) {}
 
-    DISALLOW_COPY_AND_ASSIGN(ScrollbarBackgroundPainter);
+  WebKit::WebScrollbar* scrollbar_;
+  ScrollbarThemePainter* painter_;
+  WebKit::WebScrollbarThemeGeometry* geometry_;
+  WebKit::WebScrollbar::ScrollbarPart track_part_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarBackgroundPainter);
 };
 
 class ScrollbarThumbPainter : public LayerPainter {
-public:
-    static scoped_ptr<ScrollbarThumbPainter> create(WebKit::WebScrollbar* scrollbar, ScrollbarThemePainter* painter, WebKit::WebScrollbarThemeGeometry* geometry)
-    {
-        return make_scoped_ptr(new ScrollbarThumbPainter(scrollbar, painter, geometry));
-    }
+ public:
+  static scoped_ptr<ScrollbarThumbPainter> Create(
+      WebKit::WebScrollbar* scrollbar,
+      ScrollbarThemePainter* painter,
+      WebKit::WebScrollbarThemeGeometry* geometry) {
+    return make_scoped_ptr(new ScrollbarThumbPainter(scrollbar,
+                                                     painter,
+                                                     geometry));
+  }
 
-    virtual void Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::RectF* opaque) OVERRIDE
-    {
-        // Consider the thumb to be at the origin when painting.
-        gfx::Rect thumbRect = m_geometry->thumbRect(m_scrollbar);
-        m_painter->PaintThumb(canvas, gfx::Rect(thumbRect.size()));
-    }
+  virtual void Paint(SkCanvas* canvas,
+                     gfx::Rect content_rect,
+                     gfx::RectF* opaque) OVERRIDE {
+    // Consider the thumb to be at the origin when painting.
+    gfx::Rect thumb_rect = geometry_->thumbRect(scrollbar_);
+    painter_->PaintThumb(canvas, gfx::Rect(thumb_rect.size()));
+  }
 
-private:
-    ScrollbarThumbPainter(WebKit::WebScrollbar* scrollbar, ScrollbarThemePainter* painter, WebKit::WebScrollbarThemeGeometry* geometry)
-        : m_scrollbar(scrollbar)
-        , m_painter(painter)
-        , m_geometry(geometry)
-    {
-    }
+ private:
+  ScrollbarThumbPainter(WebKit::WebScrollbar* scrollbar,
+                        ScrollbarThemePainter* painter,
+                        WebKit::WebScrollbarThemeGeometry* geometry)
+      : scrollbar_(scrollbar),
+        painter_(painter),
+        geometry_(geometry) {}
 
-    WebKit::WebScrollbar* m_scrollbar;
-    ScrollbarThemePainter* m_painter;
-    WebKit::WebScrollbarThemeGeometry* m_geometry;
+  WebKit::WebScrollbar* scrollbar_;
+  ScrollbarThemePainter* painter_;
+  WebKit::WebScrollbarThemeGeometry* geometry_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScrollbarThumbPainter);
+  DISALLOW_COPY_AND_ASSIGN(ScrollbarThumbPainter);
 };
 
-void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host)
-{
-    if (!host || host != layerTreeHost()) {
-        m_backTrackUpdater = NULL;
-        m_backTrack.reset();
-        m_thumbUpdater = NULL;
-        m_thumb.reset();
-    }
+void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host) {
+  if (!host || host != layerTreeHost()) {
+    back_track_updater_ = NULL;
+    back_track_.reset();
+    thumb_updater_ = NULL;
+    thumb_.reset();
+  }
 
-    ContentsScalingLayer::setLayerTreeHost(host);
+  ContentsScalingLayer::setLayerTreeHost(host);
 }
 
-void ScrollbarLayer::createUpdaterIfNeeded()
-{
-    if (layerTreeHost()->settings().solidColorScrollbars)
-        return;
+void ScrollbarLayer::CreateUpdaterIfNeeded() {
+  if (layerTreeHost()->settings().solidColorScrollbars)
+    return;
 
-    m_textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
+  texture_format_ = layerTreeHost()->rendererCapabilities().bestTextureFormat;
 
-    if (!m_backTrackUpdater)
-        m_backTrackUpdater = CachingBitmapContentLayerUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter.get(), m_geometry.get(), WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
-    if (!m_backTrack)
-        m_backTrack = m_backTrackUpdater->createResource(layerTreeHost()->contentsTextureManager());
+  if (!back_track_updater_) {
+    back_track_updater_ = CachingBitmapContentLayerUpdater::Create(
+        ScrollbarBackgroundPainter::Create(
+            scrollbar_.get(),
+            painter_.get(),
+            geometry_.get(),
+            WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
+  }
+  if (!back_track_) {
+    back_track_ = back_track_updater_->createResource(
+        layerTreeHost()->contentsTextureManager());
+  }
 
-    // Only create two-part track if we think the two parts could be different in appearance.
-    if (m_scrollbar->isCustomScrollbar()) {
-        if (!m_foreTrackUpdater)
-            m_foreTrackUpdater = CachingBitmapContentLayerUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter.get(), m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
-        if (!m_foreTrack)
-            m_foreTrack = m_foreTrackUpdater->createResource(layerTreeHost()->contentsTextureManager());
+  // Only create two-part track if we think the two parts could be different in
+  // appearance.
+  if (scrollbar_->isCustomScrollbar()) {
+    if (!fore_track_updater_) {
+      fore_track_updater_ = CachingBitmapContentLayerUpdater::Create(
+          ScrollbarBackgroundPainter::Create(
+              scrollbar_.get(),
+              painter_.get(),
+              geometry_.get(),
+              WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
     }
+    if (!fore_track_) {
+      fore_track_ = fore_track_updater_->createResource(
+          layerTreeHost()->contentsTextureManager());
+    }
+  }
 
-    if (!m_thumbUpdater)
-        m_thumbUpdater = CachingBitmapContentLayerUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter.get(), m_geometry.get()).PassAs<LayerPainter>());
-    if (!m_thumb)
-        m_thumb = m_thumbUpdater->createResource(layerTreeHost()->contentsTextureManager());
+  if (!thumb_updater_) {
+    thumb_updater_ = CachingBitmapContentLayerUpdater::Create(
+        ScrollbarThumbPainter::Create(scrollbar_.get(),
+                                      painter_.get(),
+                                      geometry_.get()).PassAs<LayerPainter>());
+  }
+  if (!thumb_) {
+    thumb_ = thumb_updater_->createResource(
+        layerTreeHost()->contentsTextureManager());
+  }
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* resource, const gfx::Rect& rect, ResourceUpdateQueue& queue, RenderingStats* stats)
-{
-    if (layerTreeHost()->settings().solidColorScrollbars)
-        return;
+void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
+                                LayerUpdater::Resource* resource,
+                                gfx::Rect rect,
+                                ResourceUpdateQueue* queue,
+                                RenderingStats* stats) {
+  if (layerTreeHost()->settings().solidColorScrollbars)
+    return;
 
-    // Skip painting and uploading if there are no invalidations and
-    // we already have valid texture data.
-    if (resource->texture()->haveBackingTexture() &&
-        resource->texture()->size() == rect.size() &&
-        !isDirty())
-        return;
+  // Skip painting and uploading if there are no invalidations and
+  // we already have valid texture data.
+  if (resource->texture()->haveBackingTexture() &&
+      resource->texture()->size() == rect.size() &&
+      !is_dirty())
+    return;
 
-    // We should always have enough memory for UI.
-    DCHECK(resource->texture()->canAcquireBackingTexture());
-    if (!resource->texture()->canAcquireBackingTexture())
-        return;
+  // We should always have enough memory for UI.
+  DCHECK(resource->texture()->canAcquireBackingTexture());
+  if (!resource->texture()->canAcquireBackingTexture())
+    return;
 
-    // Paint and upload the entire part.
-    gfx::Rect paintedOpaqueRect;
-    painter->prepareToUpdate(rect, rect.size(), contentsScaleX(), contentsScaleY(), paintedOpaqueRect, stats);
-    if (!painter->pixelsDidChange() && resource->texture()->haveBackingTexture()) {
-        TRACE_EVENT_INSTANT0("cc","ScrollbarLayer::updatePart no texture upload needed");
-        return;
-    }
+  // Paint and upload the entire part.
+  gfx::Rect painted_opaque_rect;
+  painter->prepareToUpdate(rect,
+                           rect.size(),
+                           contentsScaleX(),
+                           contentsScaleY(),
+                           painted_opaque_rect,
+                           stats);
+  if (!painter->pixelsDidChange() &&
+      resource->texture()->haveBackingTexture()) {
+    TRACE_EVENT_INSTANT0("cc",
+                         "ScrollbarLayer::updatePart no texture upload needed");
+    return;
+  }
 
-    bool partialUpdatesAllowed = layerTreeHost()->settings().maxPartialTextureUpdates > 0;
-    if (!partialUpdatesAllowed)
-        resource->texture()->returnBackingTexture();
+  bool partial_updates_allowed =
+      layerTreeHost()->settings().maxPartialTextureUpdates > 0;
+  if (!partial_updates_allowed)
+    resource->texture()->returnBackingTexture();
 
-    gfx::Vector2d destOffset(0, 0);
-    resource->update(queue, rect, destOffset, partialUpdatesAllowed, stats);
+  gfx::Vector2d dest_offset(0, 0);
+  resource->update(*queue, rect, dest_offset, partial_updates_allowed, stats);
 }
 
-gfx::Rect ScrollbarLayer::scrollbarLayerRectToContentRect(const gfx::Rect& layerRect) const
-{
-    // Don't intersect with the bounds as in layerRectToContentRect() because
-    // layerRect here might be in coordinates of the containing layer.
-    gfx::RectF contentRect = gfx::ScaleRect(layerRect, contentsScaleX(), contentsScaleY());
-    return gfx::ToEnclosingRect(contentRect);
+gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
+    gfx::Rect layer_rect) const {
+  // Don't intersect with the bounds as in layerRectToContentRect() because
+  // layer_rect here might be in coordinates of the containing layer.
+  gfx::RectF content_rect = gfx::ScaleRect(layer_rect,
+                                           contentsScaleY(),
+                                           contentsScaleY());
+  return gfx::ToEnclosingRect(content_rect);
 }
 
-void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
-{
-    if (layerTreeHost()->settings().solidColorScrollbars)
-        return;
+void ScrollbarLayer::setTexturePriorities(
+    const PriorityCalculator& priority_calc) {
+  if (layerTreeHost()->settings().solidColorScrollbars)
+    return;
 
-    if (contentBounds().IsEmpty())
-        return;
-    DCHECK_LE(contentBounds().width(), maxTextureSize());
-    DCHECK_LE(contentBounds().height(), maxTextureSize());
+  if (contentBounds().IsEmpty())
+    return;
+  DCHECK_LE(contentBounds().width(), MaxTextureSize());
+  DCHECK_LE(contentBounds().height(), MaxTextureSize());
 
-    createUpdaterIfNeeded();
+  CreateUpdaterIfNeeded();
 
-    bool drawsToRoot = !renderTarget()->parent();
-    if (m_backTrack) {
-        m_backTrack->texture()->setDimensions(contentBounds(), m_textureFormat);
-        m_backTrack->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
-    }
-    if (m_foreTrack) {
-        m_foreTrack->texture()->setDimensions(contentBounds(), m_textureFormat);
-        m_foreTrack->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
-    }
-    if (m_thumb) {
-        gfx::Size thumbSize = scrollbarLayerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
-        m_thumb->texture()->setDimensions(thumbSize, m_textureFormat);
-        m_thumb->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
-    }
+  bool draws_to_root = !renderTarget()->parent();
+  if (back_track_) {
+    back_track_->texture()->setDimensions(contentBounds(), texture_format_);
+    back_track_->texture()->setRequestPriority(
+        PriorityCalculator::uiPriority(draws_to_root));
+  }
+  if (fore_track_) {
+    fore_track_->texture()->setDimensions(contentBounds(), texture_format_);
+    fore_track_->texture()->setRequestPriority(
+        PriorityCalculator::uiPriority(draws_to_root));
+  }
+  if (thumb_) {
+    gfx::Rect thumb_layer_rect = geometry_->thumbRect(scrollbar_.get());
+    gfx::Size thumb_size =
+        ScrollbarLayerRectToContentRect(thumb_layer_rect).size();
+    thumb_->texture()->setDimensions(thumb_size, texture_format_);
+    thumb_->texture()->setRequestPriority(
+        PriorityCalculator::uiPriority(draws_to_root));
+  }
 }
 
-void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats)
-{
-    ContentsScalingLayer::update(queue, occlusion, stats);
+void ScrollbarLayer::update(ResourceUpdateQueue& queue,
+                            const OcclusionTracker* occlusion,
+                            RenderingStats* stats) {
+  ContentsScalingLayer::update(queue, occlusion, stats);
 
-    m_dirtyRect.Union(m_updateRect);
-    if (contentBounds().IsEmpty())
-        return;
-    if (visibleContentRect().IsEmpty())
-        return;
+  dirty_rect_.Union(m_updateRect);
+  if (contentBounds().IsEmpty())
+    return;
+  if (visibleContentRect().IsEmpty())
+    return;
 
-    createUpdaterIfNeeded();
+  CreateUpdaterIfNeeded();
 
-    gfx::Rect contentRect = scrollbarLayerRectToContentRect(gfx::Rect(m_scrollbar->location(), bounds()));
-    updatePart(m_backTrackUpdater.get(), m_backTrack.get(), contentRect, queue, stats);
-    if (m_foreTrack && m_foreTrackUpdater)
-        updatePart(m_foreTrackUpdater.get(), m_foreTrack.get(), contentRect, queue, stats);
+  gfx::Rect content_rect = ScrollbarLayerRectToContentRect(
+      gfx::Rect(scrollbar_->location(), bounds()));
+  UpdatePart(back_track_updater_.get(),
+             back_track_.get(),
+             content_rect,
+             &queue,
+             stats);
+  if (fore_track_ && fore_track_updater_) {
+    UpdatePart(fore_track_updater_.get(),
+               fore_track_.get(),
+               content_rect,
+               &queue,
+               stats);
+  }
 
-    // Consider the thumb to be at the origin when painting.
-    gfx::Rect thumbRect = m_geometry->thumbRect(m_scrollbar.get());
-    m_thumbSize = thumbRect.size();
-    gfx::Rect originThumbRect = scrollbarLayerRectToContentRect(gfx::Rect(thumbRect.size()));
-    if (!originThumbRect.IsEmpty())
-        updatePart(m_thumbUpdater.get(), m_thumb.get(), originThumbRect, queue, stats);
+  // Consider the thumb to be at the origin when painting.
+  gfx::Rect thumb_rect = geometry_->thumbRect(scrollbar_.get());
+  thumb_size_ = thumb_rect.size();
+  gfx::Rect origin_thumb_rect =
+      ScrollbarLayerRectToContentRect(gfx::Rect(thumb_rect.size()));
+  if (!origin_thumb_rect.IsEmpty()) {
+    UpdatePart(thumb_updater_.get(),
+               thumb_.get(),
+               origin_thumb_rect,
+               &queue,
+               stats);
+  }
 
-    m_dirtyRect = gfx::RectF();
+  dirty_rect_ = gfx::RectF();
 }
 
 }  // namespace cc

@@ -120,13 +120,13 @@ void updateScrollbarLayerPointersRecursiveInternal(const RawPtrLayerImplMap& new
 
     RawPtrLayerImplMap::const_iterator iter = newLayers.find(scrollbarLayer->id());
     ScrollbarLayerImpl* scrollbarLayerImpl = iter != newLayers.end() ? static_cast<ScrollbarLayerImpl*>(iter->second) : NULL;
-    iter = newLayers.find(scrollbarLayer->scrollLayerId());
+    iter = newLayers.find(scrollbarLayer->scroll_layer_id());
     LayerImpl* scrollLayerImpl = iter != newLayers.end() ? iter->second : NULL;
 
     DCHECK(scrollbarLayerImpl);
     DCHECK(scrollLayerImpl);
 
-    if (scrollbarLayer->orientation() == WebKit::WebScrollbar::Horizontal)
+    if (scrollbarLayer->Orientation() == WebKit::WebScrollbar::Horizontal)
         scrollLayerImpl->setHorizontalScrollbarLayer(scrollbarLayerImpl);
     else
         scrollLayerImpl->setVerticalScrollbarLayer(scrollbarLayerImpl);

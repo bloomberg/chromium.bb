@@ -827,14 +827,14 @@ void LayerImpl::updateScrollbarPositions()
     gfx::Vector2dF currentOffset = m_scrollOffset + m_scrollDelta;
 
     if (m_horizontalScrollbarLayer) {
-        m_horizontalScrollbarLayer->setCurrentPos(currentOffset.x());
-        m_horizontalScrollbarLayer->setTotalSize(m_bounds.width());
-        m_horizontalScrollbarLayer->setMaximum(m_maxScrollOffset.x());
+        m_horizontalScrollbarLayer->SetCurrentPos(currentOffset.x());
+        m_horizontalScrollbarLayer->SetTotalSize(m_bounds.width());
+        m_horizontalScrollbarLayer->SetMaximum(m_maxScrollOffset.x());
     }
     if (m_verticalScrollbarLayer) {
-        m_verticalScrollbarLayer->setCurrentPos(currentOffset.y());
-        m_verticalScrollbarLayer->setTotalSize(m_bounds.height());
-        m_verticalScrollbarLayer->setMaximum(m_maxScrollOffset.y());
+        m_verticalScrollbarLayer->SetCurrentPos(currentOffset.y());
+        m_verticalScrollbarLayer->SetTotalSize(m_bounds.height());
+        m_verticalScrollbarLayer->SetMaximum(m_maxScrollOffset.y());
     }
 
     if (currentOffset == m_lastScrollOffset)
@@ -959,14 +959,14 @@ void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
     m_horizontalScrollbarLayer = scrollbarLayer;
     if (m_horizontalScrollbarLayer)
-        m_horizontalScrollbarLayer->setScrollLayerId(id());
+        m_horizontalScrollbarLayer->set_scroll_layer_id(id());
 }
 
 void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
     m_verticalScrollbarLayer = scrollbarLayer;
     if (m_verticalScrollbarLayer)
-        m_verticalScrollbarLayer->setScrollLayerId(id());
+        m_verticalScrollbarLayer->set_scroll_layer_id(id());
 }
 
 void LayerImpl::AsValueInto(base::DictionaryValue* dict) const
