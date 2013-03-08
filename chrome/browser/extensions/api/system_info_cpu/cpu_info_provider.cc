@@ -49,8 +49,7 @@ void CpuInfoProvider::StartSampling(const SamplingCallback& callback) {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&CpuInfoProvider::StartSamplingOnFileThread,
-                 base::Unretained(this), callback));
+      base::Bind(&CpuInfoProvider::StartSamplingOnFileThread, this, callback));
 }
 
 void CpuInfoProvider::StopSampling() {
@@ -58,8 +57,7 @@ void CpuInfoProvider::StopSampling() {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&CpuInfoProvider::StopSamplingOnFileThread,
-                 base::Unretained(this)));
+      base::Bind(&CpuInfoProvider::StopSamplingOnFileThread, this));
 }
 
 // static

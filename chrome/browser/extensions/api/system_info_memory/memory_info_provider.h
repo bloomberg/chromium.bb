@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_MEMORY_MEMORY_INFO_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_MEMORY_MEMORY_INFO_PROVIDER_H_
 
-#include "chrome/browser/extensions/system_info_provider.h"
+#include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/common/extensions/api/experimental_system_info_memory.h"
 
 namespace extensions {

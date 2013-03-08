@@ -4,11 +4,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_CPU_CPU_INFO_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_CPU_CPU_INFO_PROVIDER_H_
 
-#include "chrome/browser/extensions/system_info_provider.h"
-
 #include <vector>
 
 #include "base/timer.h"
+#include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/common/extensions/api/experimental_system_info_cpu.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

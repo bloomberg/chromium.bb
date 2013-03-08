@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
-#include "chrome/browser/extensions/system_info_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -237,9 +236,6 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
 
-  if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
-    SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
-
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,
                                             ExtensionService::INCLUDE_ENABLED);
@@ -265,9 +261,6 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyEventListenerRemovedOnIOThread,
                  profile_, listener->extension_id, event_name));
-
-  if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
-    SystemInfoEventRouter::GetInstance()->RemoveEventListener(event_name);
 
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetExtensionById(listener->extension_id,

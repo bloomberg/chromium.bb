@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/system_info_event_router.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 

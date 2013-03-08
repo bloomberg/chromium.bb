@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_EXTENSIONS_SYSTEM_INFO_PROVIDER_H_
-#define CHROME_BROWSER_EXTENSIONS_SYSTEM_INFO_PROVIDER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_SYSTEM_INFO_PROVIDER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_SYSTEM_INFO_PROVIDER_H_
 
 #include <queue>
 
@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -147,4 +146,4 @@ typename base::LazyInstance<scoped_refptr<SystemInfoProvider<T> > >
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SYSTEM_INFO_PROVIDER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_SYSTEM_INFO_PROVIDER_H_
