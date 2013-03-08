@@ -597,7 +597,8 @@ class VMTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.bot_id = 'x86-generic-full'
     self.build_config = config.config[self.bot_id].copy()
     for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
-                'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile'):
+                'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile',
+                'RunDevModeTest'):
       self.StartPatcher(mock.patch.object(commands, cmd, autospec=True))
     self.StartPatcher(ArchiveStageMock())
 
