@@ -103,9 +103,8 @@ void ContextState::RestoreAttribute(GLuint attrib) const {
   const VertexAttrib* info =
       vertex_attrib_manager->GetVertexAttrib(attrib);
   const void* ptr = reinterpret_cast<const void*>(info->offset());
-  Buffer* buffer_info = info->buffer();
-  glBindBuffer(
-      GL_ARRAY_BUFFER, buffer_info ? buffer_info->service_id() : 0);
+  Buffer* buffer = info->buffer();
+  glBindBuffer(GL_ARRAY_BUFFER, buffer ? buffer->service_id() : 0);
   glVertexAttribPointer(
       attrib, info->size(), info->type(), info->normalized(),
       info->gl_stride(), ptr);

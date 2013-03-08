@@ -22,7 +22,7 @@ BufferManager::BufferManager(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
       feature_info_(feature_info),
       allow_buffers_on_multiple_targets_(false),
-      buffer_info_count_(0),
+      buffer_count_(0),
       have_context_(true),
       use_client_side_arrays_for_stream_buffers_(
           feature_info ? feature_info->workarounds(
@@ -30,45 +30,45 @@ BufferManager::BufferManager(
 }
 
 BufferManager::~BufferManager() {
-  DCHECK(buffer_infos_.empty());
-  CHECK_EQ(buffer_info_count_, 0u);
+  DCHECK(buffers_.empty());
+  CHECK_EQ(buffer_count_, 0u);
 }
 
 void BufferManager::Destroy(bool have_context) {
   have_context_ = have_context;
-  buffer_infos_.clear();
+  buffers_.clear();
   DCHECK_EQ(0u, memory_tracker_->GetMemRepresented());
 }
 
 void BufferManager::CreateBuffer(GLuint client_id, GLuint service_id) {
   scoped_refptr<Buffer> buffer(new Buffer(this, service_id));
-  std::pair<BufferInfoMap::iterator, bool> result =
-      buffer_infos_.insert(std::make_pair(client_id, buffer));
+  std::pair<BufferMap::iterator, bool> result =
+      buffers_.insert(std::make_pair(client_id, buffer));
   DCHECK(result.second);
 }
 
 Buffer* BufferManager::GetBuffer(
     GLuint client_id) {
-  BufferInfoMap::iterator it = buffer_infos_.find(client_id);
-  return it != buffer_infos_.end() ? it->second : NULL;
+  BufferMap::iterator it = buffers_.find(client_id);
+  return it != buffers_.end() ? it->second : NULL;
 }
 
 void BufferManager::RemoveBuffer(GLuint client_id) {
-  BufferInfoMap::iterator it = buffer_infos_.find(client_id);
-  if (it != buffer_infos_.end()) {
+  BufferMap::iterator it = buffers_.find(client_id);
+  if (it != buffers_.end()) {
     Buffer* buffer = it->second;
     buffer->MarkAsDeleted();
-    buffer_infos_.erase(it);
+    buffers_.erase(it);
   }
 }
 
 void BufferManager::StartTracking(Buffer* /* buffer */) {
-  ++buffer_info_count_;
+  ++buffer_count_;
 }
 
 void BufferManager::StopTracking(Buffer* buffer) {
   memory_tracker_->TrackMemFree(buffer->size());
-  --buffer_info_count_;
+  --buffer_count_;
 }
 
 Buffer::Buffer(BufferManager* manager, GLuint service_id)
@@ -226,8 +226,8 @@ bool Buffer::GetMaxValueForRange(
 
 bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
-  for (BufferInfoMap::const_iterator it = buffer_infos_.begin();
-       it != buffer_infos_.end(); ++it) {
+  for (BufferMap::const_iterator it = buffers_.begin();
+       it != buffers_.end(); ++it) {
     if (it->second->service_id() == service_id) {
       *client_id = it->first;
       return true;
@@ -241,15 +241,15 @@ bool BufferManager::IsUsageClientSideArray(GLenum usage) {
 }
 
 void BufferManager::SetInfo(
-    Buffer* info, GLsizeiptr size, GLenum usage, const GLvoid* data) {
-  DCHECK(info);
-  memory_tracker_->TrackMemFree(info->size());
+    Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data) {
+  DCHECK(buffer);
+  memory_tracker_->TrackMemFree(buffer->size());
   bool is_client_side_array = IsUsageClientSideArray(usage);
-  bool shadow = info->target() == GL_ELEMENT_ARRAY_BUFFER ||
+  bool shadow = buffer->target() == GL_ELEMENT_ARRAY_BUFFER ||
                 allow_buffers_on_multiple_targets_ ||
                 is_client_side_array;
-  info->SetInfo(size, usage, shadow, data, is_client_side_array);
-  memory_tracker_->TrackMemAlloc(info->size());
+  buffer->SetInfo(size, usage, shadow, data, is_client_side_array);
+  memory_tracker_->TrackMemAlloc(buffer->size());
 }
 
 void BufferManager::DoBufferData(
@@ -296,14 +296,14 @@ void BufferManager::DoBufferSubData(
   }
 }
 
-bool BufferManager::SetTarget(Buffer* info, GLenum target) {
+bool BufferManager::SetTarget(Buffer* buffer, GLenum target) {
   // Check that we are not trying to bind it to a different target.
-  if (info->target() != 0 && info->target() != target &&
+  if (buffer->target() != 0 && buffer->target() != target &&
       !allow_buffers_on_multiple_targets_) {
     return false;
   }
-  if (info->target() == 0) {
-    info->set_target(target);
+  if (buffer->target() == 0) {
+    buffer->set_target(target);
   }
   return true;
 }

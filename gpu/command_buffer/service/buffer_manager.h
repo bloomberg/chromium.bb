@@ -209,7 +209,7 @@ class GPU_EXPORT BufferManager {
       const GLvoid* data);
 
   // Sets the target of a buffer. Returns false if the target can not be set.
-  bool SetTarget(Buffer* info, GLenum target);
+  bool SetTarget(Buffer* buffer, GLenum target);
 
   void set_allow_buffers_on_multiple_targets(bool allow) {
     allow_buffers_on_multiple_targets_ = allow;
@@ -224,26 +224,27 @@ class GPU_EXPORT BufferManager {
 
  private:
   friend class Buffer;
-  void StartTracking(Buffer* info);
-  void StopTracking(Buffer* info);
+  void StartTracking(Buffer* buffer);
+  void StopTracking(Buffer* buffer);
 
   // Sets the size, usage and initial data of a buffer.
   // If data is NULL buffer will be initialized to 0 if shadowed.
-  void SetInfo(Buffer* info, GLsizeiptr size, GLenum usage, const GLvoid* data);
+  void SetInfo(
+      Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data);
 
   scoped_ptr<MemoryTypeTracker> memory_tracker_;
   scoped_refptr<FeatureInfo> feature_info_;
 
   // Info for each buffer in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Buffer> > BufferInfoMap;
-  BufferInfoMap buffer_infos_;
+  typedef base::hash_map<GLuint, scoped_refptr<Buffer> > BufferMap;
+  BufferMap buffers_;
 
   // Whether or not buffers can be bound to multiple targets.
   bool allow_buffers_on_multiple_targets_;
 
   // Counts the number of Buffer allocated with 'this' as its manager.
   // Allows to check no Buffer will outlive this.
-  unsigned int buffer_info_count_;
+  unsigned int buffer_count_;
 
   bool have_context_;
   bool use_client_side_arrays_for_stream_buffers_;

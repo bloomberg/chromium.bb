@@ -4751,10 +4751,9 @@ TEST_F(GLES2DecoderTest, BufferDataGLError) {
   GLsizeiptr size = 4;
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   BufferManager* manager = group().buffer_manager();
-  Buffer* info =
-      manager->GetBuffer(client_buffer_id_);
-  ASSERT_TRUE(info != NULL);
-  EXPECT_EQ(0, info->size());
+  Buffer* buffer = manager->GetBuffer(client_buffer_id_);
+  ASSERT_TRUE(buffer != NULL);
+  EXPECT_EQ(0, buffer->size());
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -4766,7 +4765,7 @@ TEST_F(GLES2DecoderTest, BufferDataGLError) {
   cmd.Init(target, size, 0, 0, GL_STREAM_DRAW);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_EQ(0, info->size());
+  EXPECT_EQ(0, buffer->size());
 }
 
 TEST_F(GLES2DecoderTest, CopyTexImage2DGLError) {
