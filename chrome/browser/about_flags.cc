@@ -1052,13 +1052,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-webaudio-input",
-    IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_NAME,
-    IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableWebAudioInput),
-  },
-  {
     "enable-contacts",
     IDS_FLAGS_ENABLE_CONTACTS_NAME,
     IDS_FLAGS_ENABLE_CONTACTS_DESCRIPTION,
