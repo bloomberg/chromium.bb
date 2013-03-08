@@ -13,8 +13,10 @@
         'sources': [
           'file_descriptor_set_posix.cc',
           'file_descriptor_set_posix.h',
-          'ipc_channel.h',
           'ipc_channel.cc',
+          'ipc_channel.h',
+          'ipc_channel_factory.cc',
+          'ipc_channel_factory.h',
           'ipc_channel_handle.h',
           'ipc_channel_nacl.cc',
           'ipc_channel_nacl.h',
@@ -57,6 +59,8 @@
           'param_traits_write_macros.h',
           'struct_constructor_macros.h',
           'struct_destructor_macros.h',
+          'unix_domain_socket_util.cc',
+          'unix_domain_socket_util.h',
         ],
         'defines': [
           'IPC_IMPLEMENTATION',
@@ -68,7 +72,15 @@
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
               'ipc_channel.cc',
+              'ipc_channel_factory.cc',
               'ipc_channel_posix.cc',
+              'unix_domain_socket_util.cc',
+            ],
+          }],
+          ['OS == "win" or OS == "ios"', {
+            'sources!': [
+              'ipc_channel_factory.cc',
+              'unix_domain_socket_util.cc',
             ],
           }],
         ],

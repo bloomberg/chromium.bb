@@ -63,7 +63,7 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   void CloseClientFileDescriptor();
   bool AcceptsConnections() const;
   bool HasAcceptedConnection() const;
-  bool GetClientEuid(uid_t* client_euid) const;
+  bool GetPeerEuid(uid_t* peer_euid) const;
   void ResetToAcceptingConnectionState();
   base::ProcessId peer_pid() const { return peer_pid_; }
   static bool IsNamedServerInitialized(const std::string& channel_id);
@@ -193,12 +193,6 @@ class Channel::ChannelImpl : public internal::ChannelReader,
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelImpl);
 };
-
-// The maximum length of the name of a pipe for MODE_NAMED_SERVER or
-// MODE_NAMED_CLIENT if you want to pass in your own socket.
-// The standard size on linux is 108, mac is 104. To maintain consistency
-// across platforms we standardize on the smaller value.
-static const size_t kMaxPipeNameLength = 104;
 
 }  // namespace IPC
 
