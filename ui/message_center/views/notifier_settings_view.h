@@ -45,13 +45,13 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   NotifierSettingsView(NotifierSettingsViewDelegate* delegate);
   virtual ~NotifierSettingsView();
 
-  // views::WidgetDelegate overrides:
+  // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  // views::ButtonListener overrides:
+  // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 

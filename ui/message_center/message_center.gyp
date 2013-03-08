@@ -40,6 +40,7 @@
         'message_center_util.h',
         'notification.cc',
         'notification.h',
+        'notification_change_observer.h',
         'notification_list.cc',
         'notification_list.h',
         'notification_types.cc',

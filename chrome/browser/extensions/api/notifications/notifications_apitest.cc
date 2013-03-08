@@ -283,18 +283,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestByUser) {
         true);
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
-
-  {
-    ResultCatcher catcher;
-    g_browser_process->message_center()->SendRemoveAllNotifications(false);
-    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  }
-
-  {
-    ResultCatcher catcher;
-    g_browser_process->message_center()->SendRemoveAllNotifications(true);
-    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  }
 }
 
 #endif

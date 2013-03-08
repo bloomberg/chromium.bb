@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/notification_change_observer.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_view.h"
@@ -21,7 +22,7 @@ namespace message_center {
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {
  public:
-  explicit PopupBubbleContentsView(NotificationList::Delegate* list_delegate);
+  explicit PopupBubbleContentsView(NotificationChangeObserver* observer);
 
   void Update(const NotificationList::PopupNotifications& popup_notifications);
 
@@ -30,15 +31,15 @@ class PopupBubbleContentsView : public views::View {
   }
 
  private:
-  NotificationList::Delegate* list_delegate_;
+  NotificationChangeObserver* observer_; // Weak reference.
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
 };
 
 PopupBubbleContentsView::PopupBubbleContentsView(
-    NotificationList::Delegate* list_delegate)
-    : list_delegate_(list_delegate) {
+    NotificationChangeObserver* observer)
+    : observer_(observer) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
   content_ = new views::View;
@@ -59,7 +60,11 @@ void PopupBubbleContentsView::Update(
   for (NotificationList::PopupNotifications::const_iterator iter =
            popup_notifications.begin();
        iter != popup_notifications.end(); ++iter) {
-    content_->AddChildView(NotificationView::Create(*(*iter), list_delegate_));
+    // NotificationViews are expanded by default here because MessagePopupBubble
+    // hasn't been tested yet with changing subview sizes, and such changes
+    // could come if those subviews were initially collapsed and allowed to be
+    // expanded by users. TODO(dharcourt): Fix.
+    content_->AddChildView(NotificationView::Create(*(*iter), observer_, true));
   }
   content_->SizeToPreferredSize();
   content_->InvalidateLayout();
@@ -113,8 +118,8 @@ void MessagePopupBubble::AutocloseTimer::Suspend() {
 }
 
 // MessagePopupBubble
-MessagePopupBubble::MessagePopupBubble(NotificationList::Delegate* delegate)
-    : MessageBubbleBase(delegate),
+MessagePopupBubble::MessagePopupBubble(MessageCenter* message_center)
+    : MessageBubbleBase(message_center),
       contents_view_(NULL) {
 }
 
@@ -135,7 +140,7 @@ views::TrayBubbleView::InitParams MessagePopupBubble::GetInitParams(
 void MessagePopupBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);
-  contents_view_ = new PopupBubbleContentsView(list_delegate());
+  contents_view_ = new PopupBubbleContentsView(message_center());
   bubble_view()->AddChildView(contents_view_);
   UpdateBubbleView();
 }
@@ -146,7 +151,7 @@ void MessagePopupBubble::OnBubbleViewDestroyed() {
 
 void MessagePopupBubble::UpdateBubbleView() {
   NotificationList::PopupNotifications popups =
-      list_delegate()->GetNotificationList()->GetPopupNotifications();
+      message_center()->notification_list()->GetPopupNotifications();
 
   if (popups.size() == 0) {
     if (bubble_view())
@@ -200,7 +205,7 @@ void MessagePopupBubble::OnMouseExitedView() {
 
 void MessagePopupBubble::OnAutoClose(const std::string& id) {
   DeleteTimer(id);
-  list_delegate()->GetNotificationList()->MarkSinglePopupAsShown(id, false);
+  message_center()->notification_list()->MarkSinglePopupAsShown(id, false);
   UpdateBubbleView();
 }
 

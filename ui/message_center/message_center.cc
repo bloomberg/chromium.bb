@@ -36,6 +36,12 @@ void MessageCenter::Shutdown() {
 }
 
 //------------------------------------------------------------------------------
+
+MessageCenter::Delegate::~Delegate() {
+}
+
+//------------------------------------------------------------------------------
+
 MessageCenter::MessageCenter()
     : delegate_(NULL) {
   notification_list_.reset(new NotificationList(this));
@@ -126,15 +132,14 @@ void MessageCenter::SetNotificationButtonIcon(
 }
 
 //------------------------------------------------------------------------------
-// Overridden from NotificationList::Delegate.
+// Overridden from NotificationChangeObserver:
 
-void MessageCenter::SendRemoveNotification(const std::string& id,
-                                           bool by_user) {
+void MessageCenter::OnRemoveNotification(const std::string& id, bool by_user) {
   if (delegate_)
     delegate_->NotificationRemoved(id, by_user);
 }
 
-void MessageCenter::SendRemoveAllNotifications(bool by_user) {
+void MessageCenter::OnRemoveAllNotifications(bool by_user) {
   if (delegate_) {
     const NotificationList::Notifications& notifications =
         notification_list_->GetNotifications();
@@ -149,7 +154,7 @@ void MessageCenter::SendRemoveAllNotifications(bool by_user) {
   }
 }
 
-void MessageCenter::DisableNotificationByExtension(
+void MessageCenter::OnDisableNotificationsByExtension(
     const std::string& id) {
   if (delegate_)
     delegate_->DisableExtension(id);
@@ -158,33 +163,33 @@ void MessageCenter::DisableNotificationByExtension(
   notification_list_->SendRemoveNotificationsByExtension(id);
 }
 
-void MessageCenter::DisableNotificationByUrl(const std::string& id) {
+void MessageCenter::OnDisableNotificationsByUrl(const std::string& id) {
   if (delegate_)
     delegate_->DisableNotificationsFromSource(id);
   notification_list_->SendRemoveNotificationsBySource(id);
 }
 
-void MessageCenter::ShowNotificationSettings(const std::string& id) {
+void MessageCenter::OnShowNotificationSettings(const std::string& id) {
   if (delegate_)
     delegate_->ShowSettings(id);
 }
 
-void MessageCenter::ShowNotificationSettingsDialog(gfx::NativeView context) {
+void MessageCenter::OnShowNotificationSettingsDialog(gfx::NativeView context) {
   if (delegate_)
     delegate_->ShowSettingsDialog(context);
 }
 
-void MessageCenter::OnNotificationClicked(const std::string& id) {
+void MessageCenter::OnExpanded(const std::string& id) {
+  notification_list_->MarkNotificationAsExpanded(id);
+}
+
+void MessageCenter::OnClicked(const std::string& id) {
   if (delegate_)
     delegate_->OnClicked(id);
   if (HasPopupNotifications()) {
     notification_list_->MarkSinglePopupAsShown(id, true);
     NotifyMessageCenterChanged(false);
   }
-}
-
-void MessageCenter::OnQuietModeChanged(bool quiet_mode) {
-  NotifyMessageCenterChanged(true);
 }
 
 void MessageCenter::OnButtonClicked(const std::string& id, int button_index) {
@@ -196,12 +201,17 @@ void MessageCenter::OnButtonClicked(const std::string& id, int button_index) {
   }
 }
 
-NotificationList* MessageCenter::GetNotificationList() {
-  return notification_list_.get();
+//------------------------------------------------------------------------------
+// Overridden from NotificationList::Delegate:
+
+void MessageCenter::SendRemoveNotification(const std::string& id,
+                                           bool by_user) {
+  if (delegate_)
+    delegate_->NotificationRemoved(id, by_user);
 }
 
-void MessageCenter::Delegate::OnButtonClicked(const std::string& id,
-                                              int button_index) {
+void MessageCenter::OnQuietModeChanged(bool quiet_mode) {
+  NotifyMessageCenterChanged(true);
 }
 
 //------------------------------------------------------------------------------

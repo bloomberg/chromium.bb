@@ -7,17 +7,18 @@
 
 #include "ui/gfx/insets.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notification_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slide_out_view.h"
-#include "ui/views/view.h"
 
 namespace views {
 class ImageButton;
+class ImageView;
 class ScrollView;
 }
 
 namespace message_center {
+
+class NotificationChangeObserver;
 
 // Individual notifications constants.
 const int kPaddingBetweenItems = 10;
@@ -30,25 +31,28 @@ const int kWebNotificationWidth = 300;
 class MessageView : public views::SlideOutView,
                     public views::ButtonListener {
  public:
-  MessageView(NotificationList::Delegate* list_delegate,
-              const Notification& notification);
-
+  MessageView(const Notification& notification,
+              NotificationChangeObserver* observer,
+              bool expanded);
   virtual ~MessageView();
 
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
 
-  void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
+  // Adjust to any change in notification data or expanded status.
+  virtual void Update(const Notification& notification);
 
-  // Overridden from views::View.
+  // Overridden from views::View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
-  // Overridden from ui::EventHandler.
+  // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  // Overridden from ButtonListener.
+  // Overridden from ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+  void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
  protected:
   MessageView();
@@ -56,25 +60,29 @@ class MessageView : public views::SlideOutView,
   // Shows the menu for the notification.
   void ShowMenu(gfx::Point screen_location);
 
-  // Overridden from views::SlideOutView.
+  // Overridden from views::SlideOutView:
   virtual void OnSlideOut() OVERRIDE;
 
-  NotificationList::Delegate* list_delegate() { return list_delegate_; }
+  NotificationChangeObserver* observer() { return observer_; }
   const std::string& notification_id() { return notification_id_; }
   const string16& display_source() const { return display_source_; }
   const std::string& extension_id() const { return extension_id_; }
   views::ImageButton* close_button() { return close_button_.get(); }
+  views::ImageButton* expand_button() { return expand_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
+  const bool is_expanded() { return is_expanded_; }
 
  private:
-  NotificationList::Delegate* list_delegate_; // Weak, global (MessageCenter).
+  NotificationChangeObserver* observer_;  // Weak reference.
   std::string notification_id_;
   string16 display_source_;
   std::string extension_id_;
 
   scoped_ptr<views::ImageButton> close_button_;
-
+  scoped_ptr<views::ImageButton> expand_button_;
   views::ScrollView* scroller_;
+
+  bool is_expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };

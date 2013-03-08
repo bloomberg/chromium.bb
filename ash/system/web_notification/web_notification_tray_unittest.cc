@@ -74,6 +74,10 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
   virtual void OnClicked(const std::string& notifcation_id) OVERRIDE {
   }
 
+  virtual void OnButtonClicked(const std::string& id,
+                               int button_index) OVERRIDE {
+  }
+
   void AddNotification(WebNotificationTray* tray, const std::string& id) {
     notification_ids_.insert(id);
     get_message_center()->AddNotification(
@@ -222,10 +226,8 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   EXPECT_EQ(notifications_to_add,
             get_message_center()->NotificationCount());
   if (message_center::IsRichNotificationEnabled()) {
-    NotificationList::Delegate* list_delegate =
-        tray->popup_collection_.get()->list_delegate_;
     NotificationList::PopupNotifications popups =
-        list_delegate->GetNotificationList()->GetPopupNotifications();
+        get_message_center()->notification_list()->GetPopupNotifications();
     EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
   } else {
     EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications,

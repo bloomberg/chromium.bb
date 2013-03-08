@@ -11,7 +11,6 @@
 
 #include "base/timer.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/message_bubble_base.h"
 
 namespace message_center {
@@ -21,11 +20,11 @@ class PopupBubbleContentsView;
 // Bubble for popup notifications.
 class MESSAGE_CENTER_EXPORT MessagePopupBubble : public MessageBubbleBase {
  public:
-  explicit MessagePopupBubble(NotificationList::Delegate* delegate);
+  explicit MessagePopupBubble(MessageCenter* message_center);
 
   virtual ~MessagePopupBubble();
 
-  // Overridden from MessageBubbleBase.
+  // Overridden from MessageBubbleBase:
   virtual views::TrayBubbleView::InitParams GetInitParams(
       views::TrayBubbleView::AnchorAlignment anchor_alignment) OVERRIDE;
   virtual void InitializeContents(views::TrayBubbleView* bubble_view) OVERRIDE;

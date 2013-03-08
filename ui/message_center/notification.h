@@ -57,8 +57,8 @@ class MESSAGE_CENTER_EXPORT Notification {
   // End unpacked values.
 
   // Images fetched asynchronously.
-  const gfx::Image& primary_icon() const { return primary_icon_; }
-  void set_primary_icon(const gfx::Image& icon) { primary_icon_ = icon; }
+  const gfx::Image& icon() const { return icon_; }
+  void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
   const gfx::Image& image() const { return image_; }
   void set_image(const gfx::Image& image) { image_ = image; }
@@ -67,14 +67,18 @@ class MESSAGE_CENTER_EXPORT Notification {
   const std::vector<ButtonInfo>& buttons() const { return buttons_; }
   bool SetButtonIcon(size_t index, const gfx::Image& icon);
 
-  // Status in MessageCenter.
-  bool is_read() const { return is_read_; }
-  void set_is_read(bool is_read) { is_read_ = is_read; }
-
   bool shown_as_popup() const { return shown_as_popup_; }
   void set_shown_as_popup(bool shown_as_popup) {
     shown_as_popup_ = shown_as_popup;
   }
+
+  // Read status in the message center.
+  bool is_read() const { return is_read_; }
+  void set_is_read(bool read) { is_read_ = read; }
+
+  // Expanded status in the message center (not the popups).
+  bool is_expanded() const { return is_expanded_; }
+  void set_is_expanded(bool expanded) { is_expanded_ = expanded; }
 
   // Used to keep the order of notifications with the same timestamp.
   // The notification with lesser serial_number is considered 'older'.
@@ -96,11 +100,12 @@ class MESSAGE_CENTER_EXPORT Notification {
   unsigned serial_number_;
   string16 expanded_message_;
   std::vector<NotificationItem> items_;
-  gfx::Image primary_icon_;
+  gfx::Image icon_;
   gfx::Image image_;
   std::vector<ButtonInfo> buttons_;
+  bool shown_as_popup_;  // True if this has been shown as a popup.
   bool is_read_;  // True if this has been seen in the message center.
-  bool shown_as_popup_;  // True if this has been shown as a popup notification.
+  bool is_expanded_;  // True if this has been expanded in the message center.
 
   DISALLOW_COPY_AND_ASSIGN(Notification);
 };

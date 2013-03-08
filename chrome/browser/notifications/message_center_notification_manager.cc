@@ -141,7 +141,7 @@ bool MessageCenterNotificationManager::UpdateNotification(
         old_notification->profile()->IsSameProfile(profile)) {
       std::string old_id =
           old_notification->notification().notification_id();
-      DCHECK(message_center_->GetNotificationList()->HasNotification(old_id));
+      DCHECK(message_center_->notification_list()->HasNotification(old_id));
 
       // Add/remove notification in the local list but just update the same
       // one in MessageCenter.

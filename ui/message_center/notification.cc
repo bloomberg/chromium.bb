@@ -39,8 +39,9 @@ Notification::Notification(NotificationType type,
    priority_(DEFAULT_PRIORITY),
    timestamp_(base::Time::Now()),
    serial_number_(g_next_serial_number_++),
+   shown_as_popup_(false),
    is_read_(false),
-   shown_as_popup_(false) {
+   is_expanded_(false) {
   // This can override some data members initialized to deafule values above.
   ApplyOptionalFields(optional_fields);
 }

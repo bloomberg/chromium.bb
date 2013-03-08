@@ -38,6 +38,9 @@ bool CompareTimestampSerial::operator()(Notification* n1, Notification* n2) {
 const size_t NotificationList::kMaxVisibleMessageCenterNotifications = 100;
 const size_t NotificationList::kMaxVisiblePopupNotifications = 2;
 
+NotificationList::Delegate::~Delegate() {
+}
+
 NotificationList::NotificationList(Delegate* delegate)
     : delegate_(delegate),
       message_center_visible_(false),
@@ -157,7 +160,7 @@ bool NotificationList::SetNotificationIcon(const std::string& notification_id,
   Notifications::iterator iter = GetNotification(notification_id);
   if (iter == notifications_.end())
     return false;
-  (*iter)->set_primary_icon(image);
+  (*iter)->set_icon(image);
   return true;
 }
 
@@ -245,6 +248,12 @@ void NotificationList::MarkSinglePopupAsShown(
     --unread_count_;
     (*iter)->set_is_read(true);
   }
+}
+
+void NotificationList::MarkNotificationAsExpanded(const std::string& id) {
+  Notifications::iterator iter = GetNotification(id);
+  if (iter != notifications_.end())
+    (*iter)->set_is_expanded(true);
 }
 
 void NotificationList::SetQuietMode(bool quiet_mode) {

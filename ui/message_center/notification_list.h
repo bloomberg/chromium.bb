@@ -45,37 +45,14 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   class MESSAGE_CENTER_EXPORT Delegate {
    public:
-    Delegate() {}
-    virtual ~Delegate() {}
+    virtual ~Delegate();
 
     // Removes notifications
     virtual void SendRemoveNotification(const std::string& id,
                                         bool by_user) = 0;
-    virtual void SendRemoveAllNotifications(bool by_user) = 0;
-
-    // Disables notifications
-    virtual void DisableNotificationByExtension(const std::string& id) = 0;
-    virtual void DisableNotificationByUrl(const std::string& id) = 0;
-
-    // Requests the Delegate to show the settings page.
-    virtual void ShowNotificationSettings(const std::string& id) = 0;
-
-    // Requests the Delegate to show the settings dialog.
-    virtual void ShowNotificationSettingsDialog(gfx::NativeView context) = 0;
-
-    // Called when a notification is clicked on.
-    virtual void OnNotificationClicked(const std::string& id) = 0;
 
     // Called when the quiet mode status has been changed.
     virtual void OnQuietModeChanged(bool quiet_mode) = 0;
-
-    // Called when a button in a notification is clicked. |button_index|
-    // indicates which button was clicked, zero-indexed (button one is 0,
-    // button two is 1).
-    virtual void OnButtonClicked(const std::string& id, int button_index) = 0;
-
-    // Returns the list of notifications to display.
-    virtual NotificationList* GetNotificationList() = 0;
   };
 
   explicit NotificationList(Delegate* delegate);
@@ -138,6 +115,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // true in case marking the notification as read too.
   void MarkSinglePopupAsShown(const std::string& id,
                               bool mark_notification_as_read);
+
+  // Marks the specified notification as expanded in the notification center.
+  void MarkNotificationAsExpanded(const std::string& id);
 
   bool quiet_mode() const { return quiet_mode_; }
 

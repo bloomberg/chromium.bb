@@ -60,7 +60,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   }
   message_center::MessageCenter* message_center() { return message_center_; }
 
-  // Overridden from message_center::MessageCenter::Observer.
+  // Overridden from message_center::MessageCenter::Observer:
   virtual void OnMessageCenterChanged(bool new_notification) OVERRIDE;
 
   // Overridden from SimpleMenuModel::Delegate.

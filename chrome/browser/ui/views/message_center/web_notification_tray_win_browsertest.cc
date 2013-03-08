@@ -52,9 +52,10 @@ class TestDelegate : public message_center::MessageCenter::Delegate {
 
   virtual void DisableExtension(const std::string& notification_id) OVERRIDE { }
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE { }
-  virtual void OnClicked(const std::string& notification_id) OVERRIDE { }
   virtual void ShowSettingsDialog(gfx::NativeView context) OVERRIDE { }
-
+  virtual void OnClicked(const std::string& notification_id) OVERRIDE { }
+  virtual void OnButtonClicked(const std::string& id,
+                               int button_index) OVERRIDE {}
 
   void AddNotification(const std::string& id) {
     notification_ids_.insert(id);

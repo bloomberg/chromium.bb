@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/timer.h"
 #include "ui/gfx/screen.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
@@ -18,6 +19,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
 
@@ -85,7 +87,7 @@ class ToastContentsView : public views::WidgetDelegateView {
                             base::Unretained(GetWidget())));
   }
 
-  // views::WidgetDelegate overrides:
+  // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
@@ -99,7 +101,7 @@ class ToastContentsView : public views::WidgetDelegateView {
     return false;
   }
 
-  // views::View overrides:
+  // Overridden from views::View:
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
     collection_->OnMouseEntered();
   }
@@ -117,12 +119,11 @@ class ToastContentsView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ToastContentsView);
 };
 
-MessagePopupCollection::MessagePopupCollection(
-    gfx::NativeView context,
-    NotificationList::Delegate* list_delegate)
+MessagePopupCollection::MessagePopupCollection(gfx::NativeView context,
+                                               MessageCenter* message_center)
     : context_(context),
-      list_delegate_(list_delegate) {
-  DCHECK(list_delegate_);
+      message_center_(message_center) {
+  DCHECK(message_center_);
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
@@ -131,7 +132,7 @@ MessagePopupCollection::~MessagePopupCollection() {
 
 void MessagePopupCollection::UpdatePopups() {
   NotificationList::PopupNotifications popups =
-      list_delegate_->GetNotificationList()->GetPopupNotifications();
+      message_center_->notification_list()->GetPopupNotifications();
 
   if (popups.empty()) {
     CloseAllWidgets();
@@ -153,7 +154,12 @@ void MessagePopupCollection::UpdatePopups() {
            popups.begin(); iter != popups.end(); ++iter) {
     ToastContainer::iterator toast_iter = toasts_.find((*iter)->id());
     views::Widget* widget = NULL;
-    MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
+    // NotificationViews are expanded by default here because
+    // MessagePopupCollection hasn't been tested yet with changing subview
+    // sizes, and such changes could come if those subviews were initially
+    // collapsed and allowed to be expanded by users. TODO(dharcourt): Fix.
+    MessageView* view = NotificationView::Create(*(*iter), message_center_,
+                                                 true);
     if (toast_iter != toasts_.end()) {
       widget = toast_iter->second->GetWidget();
       old_toast_ids.erase((*iter)->id());
@@ -240,7 +246,7 @@ void MessagePopupCollection::OnWidgetDestroying(views::Widget* widget) {
   for (ToastContainer::iterator iter = toasts_.begin();
        iter != toasts_.end(); ++iter) {
     if (iter->second->GetWidget() == widget) {
-      list_delegate_->GetNotificationList()->MarkSinglePopupAsShown(
+      message_center_->notification_list()->MarkSinglePopupAsShown(
           iter->first, false);
       toasts_.erase(iter);
       break;

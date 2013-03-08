@@ -26,8 +26,8 @@ const SkColor MessageBubbleBase::kHeaderBackgroundColorLight =
 const SkColor MessageBubbleBase::kHeaderBackgroundColorDark =
     SkColorSetRGB(0xe7, 0xe7, 0xe7);
 
-MessageBubbleBase::MessageBubbleBase(NotificationList::Delegate* list_delegate)
-    : list_delegate_(list_delegate),
+MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center)
+    : message_center_(message_center),
       bubble_view_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       max_height_(kMessageBubbleBaseDefaultMaxHeight) {

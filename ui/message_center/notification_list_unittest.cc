@@ -27,40 +27,13 @@ class MockNotificationListDelegate : public NotificationList::Delegate {
   }
 
  private:
-  // NotificationList::Delegate overrides:
+  // Overridden from NotificationList::Delegate:
   virtual void SendRemoveNotification(const std::string& id,
                                       bool by_user) OVERRIDE {
     send_remove_count_++;
   }
 
-  virtual void SendRemoveAllNotifications(bool by_user) OVERRIDE {
-  }
-
-  virtual void DisableNotificationByExtension(const std::string& id) OVERRIDE {
-  }
-
-  virtual void DisableNotificationByUrl(const std::string& id) OVERRIDE {
-  }
-
-  virtual void ShowNotificationSettings(const std::string& id) OVERRIDE {
-  }
-
-  virtual void ShowNotificationSettingsDialog(
-      gfx::NativeView context) OVERRIDE {
-  }
-
-  virtual void OnNotificationClicked(const std::string& id) OVERRIDE {
-  }
-
   virtual void OnQuietModeChanged(bool quiet_mode) OVERRIDE {
-  }
-
-  virtual void OnButtonClicked(const std::string& id,
-                               int button_index) OVERRIDE {
-  }
-
-  virtual NotificationList* GetNotificationList() OVERRIDE {
-    return NULL;
   }
 
   size_t send_remove_count_;

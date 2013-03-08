@@ -4,6 +4,8 @@
 
 #include "ui/message_center/views/message_center_bubble.h"
 
+#include <map>
+
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,8 +51,8 @@ const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
 
 class WebNotificationButtonViewBase : public views::View {
  public:
-  WebNotificationButtonViewBase(NotificationList::Delegate* list_delegate)
-      : list_delegate_(list_delegate),
+  WebNotificationButtonViewBase(NotificationChangeObserver* observer)
+      : observer_(observer),
         close_all_button_(NULL) {}
 
   void SetCloseAllVisible(bool visible) {
@@ -63,11 +65,11 @@ class WebNotificationButtonViewBase : public views::View {
   }
 
  protected:
-  NotificationList::Delegate* list_delegate() { return list_delegate_; }
+  NotificationChangeObserver* observer() { return observer_; }
   views::Button* close_all_button() { return close_all_button_; }
 
  private:
-  NotificationList::Delegate* list_delegate_;
+  NotificationChangeObserver* observer_;  // Weak reference.
   views::Button* close_all_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonViewBase);
@@ -77,8 +79,8 @@ class WebNotificationButtonViewBase : public views::View {
 class WebNotificationButtonView : public WebNotificationButtonViewBase,
                                   public views::ButtonListener {
  public:
-  explicit WebNotificationButtonView(NotificationList::Delegate* list_delegate)
-      : WebNotificationButtonViewBase(list_delegate) {
+  explicit WebNotificationButtonView(NotificationChangeObserver* observer)
+      : WebNotificationButtonViewBase(observer) {
     set_background(views::Background::CreateBackgroundPainter(
         true,
         views::Painter::CreateVerticalGradient(
@@ -111,11 +113,11 @@ class WebNotificationButtonView : public WebNotificationButtonViewBase,
 
   virtual ~WebNotificationButtonView() {}
 
-  // Overridden from ButtonListener.
+  // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_all_button())
-      list_delegate()->SendRemoveAllNotifications(true);  // Action by user.
+      observer()->OnRemoveAllNotifications(true);  // Action by user.
   }
 
  private:
@@ -134,7 +136,7 @@ class WebNotificationButton : public views::TextButton {
   }
 
  protected:
-  // views::View overrides:
+  // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     // Returns an empty size when invisible, to trim its space in the parent's
     // GridLayout.
@@ -164,8 +166,8 @@ class WebNotificationButton : public views::TextButton {
 class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
                                    public views::ButtonListener {
  public:
-  explicit WebNotificationButtonView2(NotificationList::Delegate* list_delegate)
-      : WebNotificationButtonViewBase(list_delegate) {
+  explicit WebNotificationButtonView2(NotificationChangeObserver* observer)
+      : WebNotificationButtonViewBase(observer) {
     set_background(views::Background::CreateSolidBackground(
         kMessageCenterBackgroundColor));
     set_border(views::Border::CreateSolidSidedBorder(
@@ -206,13 +208,13 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
   }
 
  private:
-  // views::ButtonListener overrides:
+  // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_all_button())
-      list_delegate()->SendRemoveAllNotifications(true);  // Action by user.
+      observer()->OnRemoveAllNotifications(true);  // Action by user.
     else if (sender == settings_button_)
-      list_delegate()->ShowNotificationSettingsDialog(
+      observer()->OnShowNotificationSettingsDialog(
           GetWidget()->GetNativeView());
     else
       NOTREACHED();
@@ -224,10 +226,13 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView2);
 };
 
-// A custom scroll-view that has a specified size.
-class FixedSizedScrollView : public views::ScrollView {
+// A custom scroll view whose height has a minimum and maximum value and whose
+// scroll bar disappears when not needed.
+class BoundedScrollView : public views::ScrollView {
  public:
-  FixedSizedScrollView() {
+  BoundedScrollView(int min_height, int max_height)
+      : min_height_(min_height),
+        max_height_(max_height) {
     set_notify_enter_exit_on_child(true);
     if (IsRichNotificationEnabled()) {
       set_background(views::Background::CreateSolidBackground(
@@ -235,53 +240,51 @@ class FixedSizedScrollView : public views::ScrollView {
     }
   }
 
-  virtual ~FixedSizedScrollView() {}
+  virtual ~BoundedScrollView() {}
 
-  void SetFixedSize(const gfx::Size& size) {
-    if (fixed_size_ == size)
-      return;
-    fixed_size_ = size;
-    PreferredSizeChanged();
-  }
-
-  // views::View overrides.
+  // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    gfx::Size size = fixed_size_.IsEmpty() ?
-        contents()->GetPreferredSize() : fixed_size_;
+    gfx::Size size = contents()->GetPreferredSize();
+    size.ClampToMin(gfx::Size(size.width(), min_height_));
+    size.ClampToMax(gfx::Size(size.width(), max_height_));
     gfx::Insets insets = GetInsets();
     size.Enlarge(insets.width(), insets.height());
     return size;
   }
 
   virtual void Layout() OVERRIDE {
-    gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
-    bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
-    contents()->SetBoundsRect(bounds);
-
+    // Lay out the view as if it will have a scroll bar.
+    gfx::Rect content_bounds = gfx::Rect(contents()->GetPreferredSize());
+    content_bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+    contents()->SetBoundsRect(content_bounds);
     views::ScrollView::Layout();
+
+    // But use the scroll bar space if no scroll bar is needed.
     if (!vertical_scroll_bar()->visible()) {
-      gfx::Rect bounds = contents()->bounds();
-      bounds.set_width(bounds.width() + GetScrollBarWidth());
-      contents()->SetBoundsRect(bounds);
+      content_bounds = contents()->bounds();
+      content_bounds.set_width(content_bounds.width() + GetScrollBarWidth());
+      contents()->SetBoundsRect(content_bounds);
     }
   }
 
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
-    gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
-    bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
-    contents()->SetBoundsRect(bounds);
+    // Make sure any content resizing takes into account the scroll bar.
+    gfx::Rect content_bounds = gfx::Rect(contents()->GetPreferredSize());
+    content_bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+    contents()->SetBoundsRect(content_bounds);
   }
 
  private:
-  gfx::Size fixed_size_;
+  int min_height_;
+  int max_height_;
 
-  DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
+  DISALLOW_COPY_AND_ASSIGN(BoundedScrollView);
 };
 
-// Container for the messages.
-class ScrollContentView : public views::View {
+// Displays a list of messages.
+class MessageListView : public views::View {
  public:
-  ScrollContentView() {
+  MessageListView() {
     if (IsRichNotificationEnabled()) {
       // Set the margin to 0 for the layout. BoxLayout assumes the same margin
       // for top and bottom, but the bottom margin here should be smaller
@@ -308,39 +311,33 @@ class ScrollContentView : public views::View {
     }
   }
 
-  virtual ~ScrollContentView() {
+  virtual ~MessageListView() {
   }
-
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    if (!preferred_size_.IsEmpty())
-      return preferred_size_;
-    return views::View::GetPreferredSize();
-  }
-
-  void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
 
  private:
-  gfx::Size preferred_size_;
-  DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
+  DISALLOW_COPY_AND_ASSIGN(MessageListView);
 };
 
 }  // namespace
 
-// Message Center contents.
-class MessageCenterContentsView : public views::View {
+// View that displays the whole message center.
+class MessageCenterView : public views::View {
  public:
-  explicit MessageCenterContentsView(MessageCenterBubble* bubble,
-                                     NotificationList::Delegate* list_delegate)
-      : list_delegate_(list_delegate),
-        bubble_(bubble) {
+  MessageCenterView(MessageCenterBubble* bubble) : bubble_(bubble) {
     int between_child = IsRichNotificationEnabled() ? 0 : 1;
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
 
-    scroll_content_ = new ScrollContentView;
-    scroller_ = new FixedSizedScrollView;
-    scroller_->SetContents(scroll_content_);
-    AddChildView(scroller_);
+
+    if (IsRichNotificationEnabled())
+      button_view_ = new WebNotificationButtonView2(bubble_);
+    else
+      button_view_ = new WebNotificationButtonView(bubble_);
+
+    const int button_height = button_view_->GetPreferredSize().height();
+    const int min_height = kMessageBubbleBaseMinHeight - button_height;
+    const int max_height = bubble_->max_height() - button_height;
+    scroller_ = new BoundedScrollView(min_height, max_height);
 
     if (get_use_acceleration_when_possible()) {
       scroller_->SetPaintToLayer(true);
@@ -348,31 +345,28 @@ class MessageCenterContentsView : public views::View {
       scroller_->layer()->SetMasksToBounds(true);
     }
 
-    if (IsRichNotificationEnabled())
-      button_view_ = new WebNotificationButtonView2(list_delegate);
-    else
-      button_view_ = new WebNotificationButtonView(list_delegate);
+    message_list_view_ = new MessageListView();
+    scroller_->SetContents(message_list_view_);
+
+    AddChildView(scroller_);
     AddChildView(button_view_);
   }
 
   void FocusContents() {
   }
 
-  void Update(const NotificationList::Notifications& notifications)  {
-    scroll_content_->RemoveAllChildViews(true);
-    scroll_content_->set_preferred_size(gfx::Size());
-    size_t num_children = 0;
+  void UpdateAllNotifications(
+      const NotificationList::Notifications& notifications)  {
+    RemoveAllNotifications();
     for (NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
-      MessageView* view = NotificationView::Create(*(*iter), list_delegate_);
-      view->set_scroller(scroller_);
-      scroll_content_->AddChildView(view);
-      if (++num_children >=
+      AddNotification(*(*iter));
+      if (message_views_.size() >=
           NotificationList::kMaxVisibleMessageCenterNotifications) {
         break;
       }
     }
-    if (num_children == 0) {
+    if (message_views_.empty()) {
       views::Label* label = new views::Label(l10n_util::GetStringUTF16(
           IDS_MESSAGE_CENTER_NO_MESSAGES));
       label->SetFont(label->font().DeriveFont(1));
@@ -380,53 +374,70 @@ class MessageCenterContentsView : public views::View {
       // Set transparent background to ensure that subpixel rendering
       // is disabled. See crbug.com/169056
       label->SetBackgroundColor(kTransparentColor);
-      scroll_content_->AddChildView(label);
+      message_list_view_->AddChildView(label);
       button_view_->SetCloseAllVisible(false);
       scroller_->set_focusable(false);
     } else {
       button_view_->SetCloseAllVisible(true);
       scroller_->set_focusable(true);
     }
-    SizeScrollContent();
     Layout();
-    if (GetWidget())
-      GetWidget()->GetRootView()->SchedulePaint();
+  }
+
+  void UpdateOneNotification(const Notification& notification) {
+    // Update the corresponding message view if there is one and explicitly
+    // update this view's layout as this is not automatic in spite of the
+    // updated view's likely size change because ScrollView's Viewport breaks
+    // the ChildPreferredSizeChange() chain.
+    MessageView* view = message_views_[notification.id()];
+    if (view) {
+      view->Update(notification);
+      Layout();
+    }
   }
 
   size_t NumMessageViews() const {
-    return scroll_content_->child_count();
+    return message_list_view_->child_count();
+  }
+
+ protected:
+  // Overridden from views::View:
+  virtual void Layout() OVERRIDE {
+      scroller_->SizeToPreferredSize();
+    views::View::Layout();
+    if (GetWidget())
+      GetWidget()->GetRootView()->SchedulePaint();
+    bubble_->bubble_view()->UpdateBubble();
   }
 
  private:
-  void SizeScrollContent() {
-    gfx::Size scroll_size = scroll_content_->GetPreferredSize();
-    const int button_height = button_view_->GetPreferredSize().height();
-    const int min_height = kMessageBubbleBaseMinHeight - button_height;
-    const int max_height = bubble_->max_height() - button_height;
-    int scroll_height = std::min(std::max(
-        scroll_size.height(), min_height), max_height);
-    scroll_size.set_height(scroll_height);
-    if (scroll_height == min_height)
-      scroll_content_->set_preferred_size(scroll_size);
-    else
-      scroll_content_->set_preferred_size(gfx::Size());
-    scroller_->SetFixedSize(scroll_size);
-    scroller_->SizeToPreferredSize();
-    scroll_content_->InvalidateLayout();
+
+  void RemoveAllNotifications() {
+    message_views_.clear();
+    message_list_view_->RemoveAllChildViews(true);
   }
 
-  NotificationList::Delegate* list_delegate_;
-  FixedSizedScrollView* scroller_;
-  ScrollContentView* scroll_content_;
-  WebNotificationButtonViewBase* button_view_;
-  MessageCenterBubble* bubble_;
+  void AddNotification(const Notification& notification) {
+    // Always expand the first (topmost) notification.
+    bool expand = (notification.is_expanded() || message_views_.empty());
+    MessageView* view = NotificationView::Create(notification, bubble_, expand);
+    view->set_scroller(scroller_);
+    message_views_[notification.id()] = view;
+    message_list_view_->AddChildView(view);
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterContentsView);
+  MessageCenterBubble* bubble_;  // Weak reference.
+  std::map<std::string,MessageView*> message_views_;
+  BoundedScrollView* scroller_;
+  MessageListView* message_list_view_;
+  WebNotificationButtonViewBase* button_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageCenterView);
 };
 
 // Message Center Bubble.
-MessageCenterBubble::MessageCenterBubble(NotificationList::Delegate* delegate)
-    : MessageBubbleBase(delegate),
+MessageCenterBubble::MessageCenterBubble(MessageCenter* message_center)
+    : MessageBubbleBase(message_center),
       contents_view_(NULL) {
 }
 
@@ -448,7 +459,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
 void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);
-  contents_view_ = new MessageCenterContentsView(this, list_delegate());
+  contents_view_ = new MessageCenterView(this);
   bubble_view()->AddChildView(contents_view_);
   // Resize the content of the bubble view to the given bubble size. This is
   // necessary in case of the bubble border forcing a bigger size then the
@@ -466,8 +477,8 @@ void MessageCenterBubble::UpdateBubbleView() {
   if (!bubble_view())
     return;  // Could get called after view is closed
   const NotificationList::Notifications& notifications =
-      list_delegate()->GetNotificationList()->GetNotifications();
-  contents_view_->Update(notifications);
+      message_center()->notification_list()->GetNotifications();
+  contents_view_->UpdateAllNotifications(notifications);
   bubble_view()->Show();
   bubble_view()->UpdateBubble();
 }
@@ -476,6 +487,57 @@ void MessageCenterBubble::OnMouseEnteredView() {
 }
 
 void MessageCenterBubble::OnMouseExitedView() {
+}
+
+void MessageCenterBubble::OnRemoveNotification(const std::string& id,
+                                             bool by_user) {
+  message_center()->OnRemoveNotification(id, by_user);
+}
+
+void MessageCenterBubble::OnRemoveAllNotifications(bool by_user) {
+  message_center()->OnRemoveAllNotifications(by_user);
+}
+
+void MessageCenterBubble::OnDisableNotificationsByExtension(
+    const std::string& id) {
+  message_center()->OnDisableNotificationsByExtension(id);
+}
+
+void MessageCenterBubble::OnDisableNotificationsByUrl(const std::string& id) {
+  message_center()->OnDisableNotificationsByUrl(id);
+}
+
+void MessageCenterBubble::OnShowNotificationSettings(const std::string& id) {
+  message_center()->OnShowNotificationSettings(id);
+}
+
+void MessageCenterBubble::OnShowNotificationSettingsDialog(
+    gfx::NativeView context) {
+  message_center()->OnShowNotificationSettingsDialog(context);
+}
+
+void MessageCenterBubble::OnClicked(const std::string& id) {
+  message_center()->OnClicked(id);
+}
+
+void MessageCenterBubble::OnButtonClicked(const std::string& id,
+                                          int button_index) {
+  message_center()->OnButtonClicked(id, button_index);
+}
+
+void MessageCenterBubble::OnExpanded(const std::string& id) {
+  message_center()->OnExpanded(id);
+
+  // Update the view corresponding to this notification.
+  const NotificationList::Notifications& notifications =
+      message_center()->notification_list()->GetNotifications();
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    if ((*iter)->id() == id) {
+      contents_view_->UpdateOneNotification(*(*iter));
+      break;
+    }
+  }
 }
 
 size_t MessageCenterBubble::NumMessageViewsForTest() const {

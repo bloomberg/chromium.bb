@@ -6,15 +6,15 @@
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_BUBBLE_BASE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification_list.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace message_center {
 
 class MESSAGE_CENTER_EXPORT MessageBubbleBase {
  public:
-  explicit MessageBubbleBase(NotificationList::Delegate* list_delegate);
+  explicit MessageBubbleBase(MessageCenter* message_center);
 
   virtual ~MessageBubbleBase();
 
@@ -61,13 +61,13 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
  protected:
   views::TrayBubbleView::InitParams GetDefaultInitParams(
       views::TrayBubbleView::AnchorAlignment anchor_alignment);
-  NotificationList::Delegate* list_delegate() { return list_delegate_; }
+  MessageCenter* message_center() { return message_center_; }
   void set_bubble_view(views::TrayBubbleView* bubble_view) {
     bubble_view_ = bubble_view;
   }
 
  private:
-  NotificationList::Delegate* list_delegate_;
+  MessageCenter* message_center_;
   views::TrayBubbleView* bubble_view_;
   base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
   int max_height_;
