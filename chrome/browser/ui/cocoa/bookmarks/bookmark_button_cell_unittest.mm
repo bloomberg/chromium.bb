@@ -7,7 +7,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "grit/ui_resources.h"
@@ -92,7 +91,7 @@ TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
   // Setting the menu should have no affect since we either share or
   // dynamically compose the menu given a node.
-  [cell setMenu:[[[BookmarkMenu alloc] initWithTitle:@"foo"] autorelease]];
+  [cell setMenu:[[[NSMenu alloc] initWithTitle:@"foo"] autorelease]];
   EXPECT_FALSE([cell menu]);
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
@@ -100,11 +99,9 @@ TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
   [cell setEmpty:NO];
   [cell setBookmarkNode:node];
   EXPECT_TRUE([cell showsBorderOnlyWhileMouseInside]);
-  EXPECT_TRUE([cell menu]);
 
   [cell setEmpty:YES];
   EXPECT_FALSE([cell.get() showsBorderOnlyWhileMouseInside]);
-  EXPECT_FALSE([cell menu]);
 }
 
 TEST_F(BookmarkButtonCellTest, BookmarkNode) {
@@ -164,7 +161,7 @@ TEST_F(BookmarkButtonCellTest, FolderArrow) {
                                            GURL("http://www.google.com"));
   scoped_nsobject<BookmarkButtonCell> cell(
     [[BookmarkButtonCell alloc] initForNode:node
-                                contextMenu:nil
+                              menuController:nil
                                    cellText:@"small"
                                   cellImage:nil]);
   EXPECT_TRUE(cell.get());
@@ -191,7 +188,7 @@ TEST_F(BookmarkButtonCellTest, VerticalTextOffset) {
       [[GradientButtonCell alloc] initTextCell:@"Testing"]);
   scoped_nsobject<BookmarkButtonCell> bookmark_cell(
       [[BookmarkButtonCell alloc] initForNode:node
-                                  contextMenu:nil
+                               menuController:nil
                                      cellText:@"small"
                                     cellImage:nil]);
 

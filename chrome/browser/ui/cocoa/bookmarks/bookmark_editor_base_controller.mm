@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "grit/generated_resources.h"
@@ -63,14 +64,36 @@
 
 // static; implemented for each platform.  Update this function for new
 // classes derived from BookmarkEditorBaseController.
-void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
+void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                           Profile* profile,
                           const EditDetails& details,
                           Configuration configuration) {
+  if (details.type == EditDetails::EXISTING_NODE &&
+      details.existing_node->is_folder()) {
+    BookmarkNameFolderController* controller =
+        [[BookmarkNameFolderController alloc]
+            initWithParentWindow:parent_window
+                         profile:profile
+                            node:details.existing_node];
+    [controller runAsModalSheet];
+    return;
+  }
+
+  if (details.type == EditDetails::NEW_FOLDER && details.urls.empty()) {
+    BookmarkNameFolderController* controller =
+        [[BookmarkNameFolderController alloc]
+             initWithParentWindow:parent_window
+                          profile:profile
+                           parent:details.parent_node
+                         newIndex:details.index];
+     [controller runAsModalSheet];
+     return;
+  }
+
   BookmarkEditorBaseController* controller = nil;
   if (details.type == EditDetails::NEW_FOLDER) {
     controller = [[BookmarkAllTabsController alloc]
-                  initWithParentWindow:parent_hwnd
+                  initWithParentWindow:parent_window
                                profile:profile
                                 parent:details.parent_node
                                    url:details.url
@@ -78,7 +101,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                          configuration:configuration];
   } else {
     controller = [[BookmarkEditorController alloc]
-                  initWithParentWindow:parent_hwnd
+                  initWithParentWindow:parent_window
                                profile:profile
                                 parent:details.parent_node
                                   node:details.existing_node

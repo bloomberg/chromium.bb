@@ -1280,7 +1280,6 @@
         'browser/ui/cocoa/bookmarks/bookmark_folder_target_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_menu_bridge_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller_unittest.mm',
-        'browser/ui/cocoa/bookmarks/bookmark_menu_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller_unittest.mm',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell_unittest.mm',

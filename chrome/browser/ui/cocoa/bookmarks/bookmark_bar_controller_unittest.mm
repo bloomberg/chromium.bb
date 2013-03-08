@@ -23,7 +23,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/test/base/model_test_utils.h"
@@ -334,8 +333,6 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
 
 class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
  public:
-  scoped_nsobject<BookmarkMenu> menu_;
-  scoped_nsobject<NSMenuItem> menu_item_;
   scoped_nsobject<NSButtonCell> cell_;
   scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
 
@@ -351,31 +348,6 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
            resizeDelegate:resizeDelegate_.get()]);
 
     InstallAndToggleBar(bar_.get());
-
-    // Create a menu/item to act like a sender
-    menu_.reset([[BookmarkMenu alloc] initWithTitle:@"I_dont_care"]);
-    menu_item_.reset([[NSMenuItem alloc]
-                       initWithTitle:@"still_dont_care"
-                              action:NULL
-                       keyEquivalent:@""]);
-    cell_.reset([[NSButtonCell alloc] init]);
-    [menu_item_ setMenu:menu_.get()];
-  }
-
-  // Return a menu item that points to the given URL.
-  NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-    const BookmarkNode* parent = model->bookmark_bar_node();
-    const BookmarkNode* node = model->AddURL(parent, parent->child_count(),
-                                             ASCIIToUTF16("A title"), gurl);
-    [menu_ setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
-    return menu_item_;
-  }
-
-  // Does NOT take ownership of node.
-  NSMenuItem* ItemForBookmarkBarMenu(const BookmarkNode* node) {
-    [menu_ setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
-    return menu_item_;
   }
 
   BookmarkBarControllerNoOpen* noOpenBar() {
@@ -765,28 +737,6 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   EXPECT_EQ(noOpenBar()->dispositions_[0], CURRENT_TAB);
 }
 
-// Confirm opening of bookmarks works from the menus (different
-// dispositions than clicking on the button).
-TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
-  const char* urls[] = { "http://walla.walla.ding.dong.com",
-                         "http://i_dont_know.com",
-                         "http://cee.enn.enn.dot.com" };
-  SEL selectors[] = { @selector(openBookmarkInNewForegroundTab:),
-                      @selector(openBookmarkInNewWindow:),
-                      @selector(openBookmarkInIncognitoWindow:) };
-  WindowOpenDisposition dispositions[] = { NEW_FOREGROUND_TAB,
-                                           NEW_WINDOW,
-                                           OFF_THE_RECORD };
-  for (unsigned int i = 0; i < arraysize(dispositions); i++) {
-    GURL gurl(urls[i]);
-    [bar_ performSelector:selectors[i]
-               withObject:ItemForBookmarkBarMenu(gurl)];
-    EXPECT_EQ(noOpenBar()->urls_[0], gurl);
-    EXPECT_EQ(noOpenBar()->dispositions_[0], dispositions[i]);
-    [bar_ clear];
-  }
-}
-
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   NSView* buttonView = [bar_ buttonView];
@@ -937,9 +887,9 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
   }
   EXPECT_EQ(3, parent->child_count());
   const BookmarkNode* middle_node = parent->GetChild(1);
+  model->Remove(middle_node->parent(),
+                middle_node->parent()->GetIndexOf(middle_node));
 
-  NSMenuItem* item = ItemForBookmarkBarMenu(middle_node);
-  [bar_ deleteBookmark:item];
   EXPECT_EQ(2, parent->child_count());
   EXPECT_EQ(parent->GetChild(0)->url(), GURL(urls[0]));
   // node 2 moved into spot 1
@@ -1071,63 +1021,6 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
     }
     EXPECT_EQ(parent->GetChild(i)->GetTitle(), ASCIIToUTF16(titles[i]));
   }
-}
-
-TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  GURL gurl1("http://www.google.com");
-  string16 title1(ASCIIToUTF16("x"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
-
-  GURL gurl2("http://www.google.com/gurl_power");
-  string16 title2(ASCIIToUTF16("gurl power"));
-  bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
-
-  NSButton* first = [[bar_ buttons] objectAtIndex:0];
-  NSButton* second = [[bar_ buttons] objectAtIndex:1];
-  EXPECT_TRUE(first && second);
-
-  NSMenuItem* menuItem = [[[first cell] menu] itemAtIndex:0];
-  const BookmarkNode* node = [bar_ nodeFromMenuItem:menuItem];
-  EXPECT_TRUE(node);
-  EXPECT_EQ(node, model->bookmark_bar_node()->GetChild(0));
-
-  menuItem = [[[second cell] menu] itemAtIndex:0];
-  node = [bar_ nodeFromMenuItem:menuItem];
-  EXPECT_TRUE(node);
-  EXPECT_EQ(node, model->bookmark_bar_node()->GetChild(1));
-
-  menuItem = [[[bar_ view] menu] itemAtIndex:0];
-  node = [bar_ nodeFromMenuItem:menuItem];
-  EXPECT_TRUE(node);
-  EXPECT_EQ(node, model->bookmark_bar_node());
-}
-
-TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  const BookmarkNode* parent = model->bookmark_bar_node();
-  const BookmarkNode* folder = model->AddFolder(parent,
-                                                parent->child_count(),
-                                                ASCIIToUTF16("folder"));
-  NSButton* button = [[bar_ buttons] objectAtIndex:0];
-  EXPECT_TRUE(button);
-
-  // Confirm the menu knows which node it is talking about
-  BookmarkMenu* menu = static_cast<BookmarkMenu*>([[button cell] menu]);
-  EXPECT_TRUE(menu);
-  EXPECT_TRUE([menu isKindOfClass:[BookmarkMenu class]]);
-  EXPECT_EQ(folder->id(), [menu id]);
-
-  // Make sure "Open All" is disabled (nothing to open -- no children!)
-  // (Assumes "Open All" is the 1st item)
-  NSMenuItem* item = [menu itemAtIndex:0];
-  EXPECT_FALSE([bar_ validateUserInterfaceItem:item]);
-
-  // Now add a child and make sure the item would be enabled.
-  model->AddURL(folder, folder->child_count(),
-                ASCIIToUTF16("super duper wide title"),
-                GURL("http://superfriends.hall-of-justice.edu"));
-  EXPECT_TRUE([bar_ validateUserInterfaceItem:item]);
 }
 
 TEST_F(BookmarkBarControllerTest, TestDragButton) {
@@ -1517,71 +1410,6 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
   }
 }
 
-TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  [bar_ loaded:model];
-
-  const BookmarkNode* parent = model->bookmark_bar_node();
-  const BookmarkNode* initialNode = model->AddURL(
-      parent, parent->child_count(),
-      ASCIIToUTF16("initial"),
-      GURL("http://www.google.com"));
-
-  NSMenuItem* item = ItemForBookmarkBarMenu(initialNode);
-  EXPECT_EQ(0U, noOpenBar()->urls_.size());
-
-  // Basic check of the menu item and an IBOutlet it can call.
-  EXPECT_EQ(initialNode, [bar_ nodeFromMenuItem:item]);
-  [bar_ openBookmarkInNewWindow:item];
-  EXPECT_EQ(1U, noOpenBar()->urls_.size());
-  [bar_ clear];
-
-  // Now delete the node and make sure things are happy (no crash,
-  // NULL node caught).
-  model->Remove(parent, parent->GetIndexOf(initialNode));
-  EXPECT_EQ(nil, [bar_ nodeFromMenuItem:item]);
-  // Should not crash by referencing a deleted node.
-  [bar_ openBookmarkInNewWindow:item];
-  // Confirm the above did nothing in case it somehow didn't crash.
-  EXPECT_EQ(0U, noOpenBar()->urls_.size());
-
-  // Confirm some more non-crashes.
-  [bar_ openBookmarkInNewForegroundTab:item];
-  [bar_ openBookmarkInIncognitoWindow:item];
-  [bar_ editBookmark:item];
-  [bar_ copyBookmark:item];
-  [bar_ deleteBookmark:item];
-  [bar_ openAllBookmarks:item];
-  [bar_ openAllBookmarksNewWindow:item];
-  [bar_ openAllBookmarksIncognitoWindow:item];
-}
-
-TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  [bar_ loaded:model];
-
-  const BookmarkNode* parent = model->bookmark_bar_node();
-  const BookmarkNode* folder = model->AddFolder(parent,
-                                                parent->child_count(),
-                                                ASCIIToUTF16("folder"));
-  const BookmarkNode* framma = model->AddURL(folder, folder->child_count(),
-                                             ASCIIToUTF16("f1"),
-                                             GURL("http://framma-lamma.com"));
-
-  // Mock in a menu
-  id origMenu = [bar_ buttonContextMenu];
-  id fakeMenu = [OCMockObject partialMockForObject:origMenu];
-  [[fakeMenu expect] cancelTracking];
-  [bar_ setButtonContextMenu:fakeMenu];
-
-  // Force a delete which should cancelTracking on the menu.
-  model->Remove(framma->parent(), framma->parent()->GetIndexOf(framma));
-
-  // Restore, then confirm cancelTracking was called.
-  [bar_ setButtonContextMenu:origMenu];
-  EXPECT_OCMOCK_VERIFY(fakeMenu);
-}
-
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ setStateAnimationsEnabled:YES];
@@ -1750,45 +1578,6 @@ public:
   const BookmarkNode* parent_;  // Weak
   const BookmarkNode* folder_;  // Weak
 };
-
-TEST_F(BookmarkBarControllerOpenAllTest, OpenAllBookmarks) {
-  // Our first OpenAll... is from the bar itself.
-  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(parent_)];
-  BookmarkBarControllerOpenAllPong* specialBar =
-      (BookmarkBarControllerOpenAllPong*)bar_.get();
-  EXPECT_EQ([specialBar dispositionDetected], NEW_FOREGROUND_TAB);
-
-  // Now try an OpenAll... from a folder node.
-  [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
-  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(folder_)];
-  EXPECT_EQ([specialBar dispositionDetected], NEW_FOREGROUND_TAB);
-}
-
-TEST_F(BookmarkBarControllerOpenAllTest, OpenAllNewWindow) {
-  // Our first OpenAll... is from the bar itself.
-  [bar_ openAllBookmarksNewWindow:ItemForBookmarkBarMenu(parent_)];
-  BookmarkBarControllerOpenAllPong* specialBar =
-      (BookmarkBarControllerOpenAllPong*)bar_.get();
-  EXPECT_EQ([specialBar dispositionDetected], NEW_WINDOW);
-
-  // Now try an OpenAll... from a folder node.
-  [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
-  [bar_ openAllBookmarksNewWindow:ItemForBookmarkBarMenu(folder_)];
-  EXPECT_EQ([specialBar dispositionDetected], NEW_WINDOW);
-}
-
-TEST_F(BookmarkBarControllerOpenAllTest, OpenAllIncognito) {
-  // Our first OpenAll... is from the bar itself.
-  [bar_ openAllBookmarksIncognitoWindow:ItemForBookmarkBarMenu(parent_)];
-  BookmarkBarControllerOpenAllPong* specialBar =
-  (BookmarkBarControllerOpenAllPong*)bar_.get();
-  EXPECT_EQ([specialBar dispositionDetected], OFF_THE_RECORD);
-
-  // Now try an OpenAll... from a folder node.
-  [specialBar setDispositionDetected:IGNORE_ACTION]; // Reset
-  [bar_ openAllBookmarksIncognitoWindow:ItemForBookmarkBarMenu(folder_)];
-  EXPECT_EQ([specialBar dispositionDetected], OFF_THE_RECORD);
-}
 
 // Command-click on a folder should open all the bookmarks in it.
 TEST_F(BookmarkBarControllerOpenAllTest, CommandClickOnFolder) {

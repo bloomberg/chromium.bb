@@ -32,9 +32,9 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -217,7 +217,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)addNonBookmarkButtonsToView;
 - (void)addButtonsToView;
 - (void)centerNoItemsLabel;
-- (void)setNodeForBarMenu;
 - (void)watchForExitEvent:(BOOL)watch;
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
 
@@ -275,6 +274,14 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [[self animatableView] setResizeDelegate:resizeDelegate];
   }
   return self;
+}
+
+- (Browser*)browser {
+  return browser_;
+}
+
+- (BookmarkContextMenuCocoaController*)menuController {
+  return contextMenuController_.get();
 }
 
 - (void)pulseBookmarkNotification:(NSNotification*)notification {
@@ -367,10 +374,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   // child of the button view.
   [offTheSideButton_ removeFromSuperview];
   [buttonView_ addSubview:offTheSideButton_];
-
-  // Copy the bar menu so we know if it's from the bar or a folder.
-  // Then we set its represented item to be the bookmark bar.
-  buttonFolderContextMenu_.reset([[[self view] menu] copy]);
 
   // When resized we may need to add new buttons, or remove them (if
   // no longer visible), or add/remove the "off the side" menu.
@@ -678,183 +681,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [self openBookmarkFolder:sender];
 }
 
-- (IBAction)openBookmarkInNewForegroundTab:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node)
-    [self openURL:node->url() disposition:NEW_FOREGROUND_TAB];
-  [self closeAllBookmarkFolders];
-}
-
-- (IBAction)openBookmarkInNewWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    [self openURL:node->url() disposition:NEW_WINDOW];
-    [self unhighlightBookmark:node];
-  }
-}
-
-- (IBAction)openBookmarkInIncognitoWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    [self openURL:node->url() disposition:OFF_THE_RECORD];
-    [self unhighlightBookmark:node];
-  }
-}
-
-- (IBAction)editBookmark:(id)sender {
-  [self closeFolderAndStopTrackingMenus];
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (!node)
-    return;
-
-  [self unhighlightBookmark:node];
-
-  if (node->is_folder()) {
-    BookmarkNameFolderController* controller =
-        [[BookmarkNameFolderController alloc]
-          initWithParentWindow:[[self view] window]
-                       profile:browser_->profile()
-                          node:node];
-    [controller runAsModalSheet];
-    return;
-  }
-
-  // This jumps to a platform-common routine at this point (which may just
-  // jump back to objc or may use the WebUI dialog).
-  //
-  // TODO(jrg): identify when we NO_TREE.  I can see it in the code
-  // for the other platforms but can't find a way to trigger it in the
-  // UI.
-  BookmarkEditor::Show([[self view] window],
-                       browser_->profile(),
-                       BookmarkEditor::EditDetails::EditNode(node),
-                       BookmarkEditor::SHOW_TREE);
-}
-
-- (IBAction)cutBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    std::vector<const BookmarkNode*> nodes;
-    nodes.push_back(node);
-    bookmark_utils::CopyToClipboard(bookmarkModel_, nodes, true);
-  }
-}
-
-- (IBAction)copyBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    std::vector<const BookmarkNode*> nodes;
-    nodes.push_back(node);
-    bookmark_utils::CopyToClipboard(bookmarkModel_, nodes, false);
-  }
-}
-
-// Paste the copied node immediately after the node for which the context
-// menu has been presented if the node is a non-folder bookmark, otherwise
-// past at the end of the folder node.
-- (IBAction)pasteBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    int index = -1;
-    if (node != bookmarkModel_->bookmark_bar_node() && !node->is_folder()) {
-      const BookmarkNode* parent = node->parent();
-      index = parent->GetIndexOf(node) + 1;
-      if (index > parent->child_count())
-        index = -1;
-      node = parent;
-    }
-    bookmark_utils::PasteFromClipboard(bookmarkModel_, node, index);
-  }
-}
-
-- (IBAction)deleteBookmark:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    bookmarkModel_->Remove(node->parent(),
-                           node->parent()->GetIndexOf(node));
-  }
-}
-
-- (IBAction)openAllBookmarks:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    [self openAll:node disposition:NEW_FOREGROUND_TAB];
-    content::RecordAction(UserMetricsAction("OpenAllBookmarks"));
-  }
-}
-
-- (IBAction)openAllBookmarksNewWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    [self openAll:node disposition:NEW_WINDOW];
-    content::RecordAction(UserMetricsAction("OpenAllBookmarksNewWindow"));
-    [self unhighlightBookmark:node];
-  }
-}
-
-- (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
-  const BookmarkNode* node = [self nodeFromMenuItem:sender];
-  if (node) {
-    [self openAll:node disposition:OFF_THE_RECORD];
-    content::RecordAction(
-        UserMetricsAction("OpenAllBookmarksIncognitoWindow"));
-
-    [self unhighlightBookmark:node];
-  }
-}
-
-// May be called from the bar or from a folder button.
-// If called from a button, that button becomes the parent.
-- (IBAction)addPage:(id)sender {
-  const BookmarkNode* parent = [self nodeFromMenuItem:sender];
-  if (!parent)
-    parent = bookmarkModel_->bookmark_bar_node();
-  GURL url;
-  string16 title;
-  chrome::GetURLAndTitleToBookmark(
-      browser_->tab_strip_model()->GetActiveWebContents(),
-      &url, &title);
-  BookmarkEditor::Show([[self view] window],
-                       browser_->profile(),
-                       BookmarkEditor::EditDetails::AddNodeInFolder(
-                           parent, -1, url, title),
-                       BookmarkEditor::SHOW_TREE);
-
-  [self unhighlightBookmark:parent];
-}
-
-// Might be called from the context menu over the bar OR over a
-// button.  If called from a button, that button becomes a sibling of
-// the new node.  If called from the bar, add to the end of the bar.
-- (IBAction)addFolder:(id)sender {
-  const BookmarkNode* senderNode = [self nodeFromMenuItem:sender];
-  const BookmarkNode* parent = NULL;
-  int newIndex = 0;
-  // If triggered from the bar, folder or "others" folder - add as a child to
-  // the end.
-  // If triggered from a bookmark, add as next sibling.
-  BookmarkNode::Type type = senderNode->type();
-  if (type == BookmarkNode::BOOKMARK_BAR ||
-      type == BookmarkNode::OTHER_NODE ||
-      type == BookmarkNode::MOBILE ||
-      type == BookmarkNode::FOLDER) {
-    parent = senderNode;
-    newIndex = parent->child_count();
-  } else {
-    parent = senderNode->parent();
-    newIndex = parent->GetIndexOf(senderNode) + 1;
-  }
-  BookmarkNameFolderController* controller =
-      [[BookmarkNameFolderController alloc]
-        initWithParentWindow:[[self view] window]
-                     profile:browser_->profile()
-                      parent:parent
-                    newIndex:newIndex];
-  [controller runAsModalSheet];
-
-  [self unhighlightBookmark:senderNode];
-}
-
 - (IBAction)importBookmarks:(id)sender {
   chrome::ShowImportDialog(browser_);
 }
@@ -1064,96 +890,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
   }
 
-  return YES;
-}
-
-// Enable or disable items.  We are the menu delegate for both the bar
-// and for bookmark folder buttons.
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)anItem {
-  // NSUserInterfaceValidations says that the passed-in object has type
-  // |id<NSValidatedUserInterfaceItem>|, but this function needs to call the
-  // NSObject method -isKindOfClass: on the parameter. In theory, this is not
-  // correct, but this is probably a bug in the method signature.
-  NSMenuItem* item = static_cast<NSMenuItem*>(anItem);
-  // Yes for everything we don't explicitly deny.
-  if (![item isKindOfClass:[NSMenuItem class]])
-    return YES;
-
-  // Yes if we're not a special BookmarkMenu.
-  if (![[item menu] isKindOfClass:[BookmarkMenu class]])
-    return YES;
-
-  // No if we think it's a special BookmarkMenu but have trouble.
-  const BookmarkNode* node = [self nodeFromMenuItem:item];
-  if (!node)
-    return NO;
-
-  // If this is the bar menu, we only have things to do if there are
-  // buttons.  If this is a folder button menu, we only have things to
-  // do if the folder has items.
-  NSMenu* menu = [item menu];
-  BOOL thingsToDo = NO;
-  if (menu == [[self view] menu]) {
-    thingsToDo = [buttons_ count] ? YES : NO;
-  } else {
-    if (node && node->is_folder() && !node->empty()) {
-      thingsToDo = YES;
-    }
-  }
-
-  // Disable openAll* if we have nothing to do.
-  SEL action = [item action];
-  if ((!thingsToDo) &&
-      ((action == @selector(openAllBookmarks:)) ||
-       (action == @selector(openAllBookmarksNewWindow:)) ||
-       (action == @selector(openAllBookmarksIncognitoWindow:)))) {
-    return NO;
-  }
-
-  bool can_edit = [self canEditBookmarks];
-  if ((action == @selector(editBookmark:)) ||
-      (action == @selector(deleteBookmark:)) ||
-      (action == @selector(cutBookmark:)) ||
-      (action == @selector(copyBookmark:))) {
-    if (![self canEditBookmark:node])
-      return NO;
-    if (action != @selector(copyBookmark:) && !can_edit)
-      return NO;
-  }
-
-  if (action == @selector(pasteBookmark:) &&
-      (!bookmark_utils::CanPasteFromClipboard(node) || !can_edit)) {
-      return NO;
-  }
-
-  if ((!can_edit) &&
-      ((action == @selector(addPage:)) ||
-       (action == @selector(addFolder:)))) {
-    return NO;
-  }
-
-  Profile* profile = browser_->profile();
-  // If this is an incognito window, don't allow "open in incognito".
-  if ((action == @selector(openBookmarkInIncognitoWindow:)) ||
-      (action == @selector(openAllBookmarksIncognitoWindow:))) {
-    if (profile->IsOffTheRecord() ||
-        IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-            IncognitoModePrefs::DISABLED) {
-      return NO;
-    }
-  }
-
-  // If Incognito mode is forced, do not let open bookmarks in normal window.
-  if ((action == @selector(openBookmark:)) ||
-      (action == @selector(openAllBookmarksNewWindow:)) ||
-      (action == @selector(openAllBookmarks:))) {
-    if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-            IncognitoModePrefs::FORCED) {
-      return NO;
-    }
-  }
-
-  // Enabled by default.
   return YES;
 }
 
@@ -1429,23 +1165,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   [self positionOffTheSideButton];
 }
 
-// Now that the model is loaded, set the bookmark bar root as the node
-// represented by the bookmark bar (default, background) menu.
-- (void)setNodeForBarMenu {
-  const BookmarkNode* node = bookmarkModel_->bookmark_bar_node();
-  BookmarkMenu* menu = static_cast<BookmarkMenu*>([[self view] menu]);
-
-  // Make sure types are compatible
-  DCHECK(sizeof(long long) == sizeof(int64));
-  [menu setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
-}
-
 // To avoid problems with sync, changes that may impact the current
 // bookmark (e.g. deletion) make sure context menus are closed.  This
 // prevents deleting a node which no longer exists.
 - (void)cancelMenuTracking {
-  [buttonContextMenu_ cancelTracking];
-  [buttonFolderContextMenu_ cancelTracking];
+  [contextMenuController_ cancelTracking];
 }
 
 - (void)moveToState:(BookmarkBar::State)nextState
@@ -1774,12 +1498,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node {
   NSImage* image = node ? [self faviconForNode:node] : nil;
-  NSMenu* menu = node && node->is_folder() ? buttonFolderContextMenu_ :
-      buttonContextMenu_;
-  BookmarkButtonCell* cell = [BookmarkButtonCell buttonCellForNode:node
-                                                       contextMenu:menu
-                                                          cellText:nil
-                                                         cellImage:image];
+  BookmarkButtonCell* cell =
+      [BookmarkButtonCell buttonCellForNode:node
+                             menuController:contextMenuController_
+                                   cellText:nil
+                                  cellImage:image];
   [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
 
   // Note: a quirk of setting a cell's text color is that it won't work
@@ -1853,20 +1576,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   int tag = seedId_++;
   menuTagMap_[tag] = menuid;
   return tag;
-}
-
-// Return the BookmarkNode associated with the given NSMenuItem.  Can
-// return NULL which means "do nothing".  One case where it would
-// return NULL is if the bookmark model gets modified while you have a
-// context menu open.
-- (const BookmarkNode*)nodeFromMenuItem:(id)sender {
-  const BookmarkNode* node = NULL;
-  BookmarkMenu* menu = (BookmarkMenu*)[sender menu];
-  if ([menu isKindOfClass:[BookmarkMenu class]]) {
-    int64 id = [menu id];
-    node = bookmarkModel_->GetNodeByID(id);
-  }
-  return node;
 }
 
 // Adapt appearance of buttons to the current theme. Called after
@@ -2174,6 +1883,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (!model->IsLoaded())
     return;
 
+  contextMenuController_.reset(
+      [[BookmarkContextMenuCocoaController alloc]
+          initWithBookmarkBarController:self
+                          bookmarkModel:bookmarkModel_]);
   // If this is a rebuild request while we have a folder open, close it.
   // TODO(mrossetti): Eliminate the need for this because it causes the folder
   // menu to disappear after a cut/copy/paste/delete change.
@@ -2192,7 +1905,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self addNonBookmarkButtonsToView];
   [self addButtonsToView];
   [self configureOffTheSideButtonContentsAndVisibility];
-  [self setNodeForBarMenu];
   [self reconfigureBookmarkBar];
 }
 
@@ -2835,18 +2547,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (bookmarkModel_->bookmark_bar_node() == node)
     return self;
   return [folderController_ controllerForNode:node];
-}
-
-#pragma mark TestingAPI Only
-
-- (NSMenu*)buttonContextMenu {
-  return buttonContextMenu_;
-}
-
-// Intentionally ignores ownership issues; used for testing and we try
-// to minimize touching the object passed in (likely a mock).
-- (void)setButtonContextMenu:(id)menu {
-  buttonContextMenu_ = menu;
 }
 
 @end

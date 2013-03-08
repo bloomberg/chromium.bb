@@ -13,17 +13,16 @@
 
 @class BookmarkBarController;
 @class BookmarkBarFolderView;
-@class BookmarkFolderTarget;
 @class BookmarkBarFolderHoverState;
 @class BookmarkBarFolderWindow;
 @class BookmarkBarFolderWindowContentView;
+@class BookmarkFolderTarget;
 
 // A controller for the pop-up windows from bookmark folder buttons
 // which look sort of like menus.
 @interface BookmarkBarFolderController :
     NSWindowController<BookmarkButtonDelegate,
-                       BookmarkButtonControllerProtocol,
-                       NSUserInterfaceValidations> {
+                       BookmarkButtonControllerProtocol> {
  @private
   // The button whose click opened us.
   scoped_nsobject<BookmarkButton> parentButton_;
@@ -97,12 +96,6 @@
   // Weak; we keep track to work around a
   // setShowsBorderOnlyWhileMouseInside bug.
   BookmarkButton* buttonThatMouseIsIn_;
-
-  // The context menu for a bookmark button which represents an URL.
-  IBOutlet NSMenu* buttonMenu_;
-
-  // The context menu for a bookmark button which represents a folder.
-  IBOutlet NSMenu* folderMenu_;
 
   // We model hover state as a state machine with specific allowable
   // transitions.  |hoverState_| is the state of this machine at any
@@ -180,29 +173,10 @@
 // and altering the contents of the off-the-side folder.
 - (void)reconfigureMenu;
 
-// Actions from a context menu over a button or folder.
-- (IBAction)cutBookmark:(id)sender;
-- (IBAction)copyBookmark:(id)sender;
-- (IBAction)pasteBookmark:(id)sender;
-- (IBAction)deleteBookmark:(id)sender;
-
 // Passed up by a child view to tell us of a desire to scroll.
 - (void)scrollWheel:(NSEvent *)theEvent;
 
 - (void)mouseDragged:(NSEvent*)theEvent;
-
-
-// Forwarded to the associated BookmarkBarController.
-- (IBAction)addFolder:(id)sender;
-- (IBAction)addPage:(id)sender;
-- (IBAction)editBookmark:(id)sender;
-- (IBAction)openBookmark:(id)sender;
-- (IBAction)openAllBookmarks:(id)sender;
-- (IBAction)openAllBookmarksIncognitoWindow:(id)sender;
-- (IBAction)openAllBookmarksNewWindow:(id)sender;
-- (IBAction)openBookmarkInIncognitoWindow:(id)sender;
-- (IBAction)openBookmarkInNewForegroundTab:(id)sender;
-- (IBAction)openBookmarkInNewWindow:(id)sender;
 
 @property(assign, nonatomic) BOOL subFolderGrowthToRight;
 

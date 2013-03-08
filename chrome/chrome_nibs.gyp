@@ -73,8 +73,6 @@
         'browser/ui/cocoa/bookmarks/bookmark_button_cell.mm',
         'browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.mm',
-        'browser/ui/cocoa/bookmarks/bookmark_menu.h',
-        'browser/ui/cocoa/bookmarks/bookmark_menu.mm',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.mm',
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller.h',

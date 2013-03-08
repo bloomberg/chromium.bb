@@ -305,8 +305,6 @@ struct LayoutMetrics {
     [button setTarget:nil];
     [button setAction:nil];
   }
-  [buttonMenu_ setDelegate:nil];
-  [folderMenu_ setDelegate:nil];
 
   // Note: we don't need to
   //   [NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -360,10 +358,11 @@ struct LayoutMetrics {
 
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)child {
   NSImage* image = child ? [barController_ faviconForNode:child] : nil;
-  NSMenu* menu = child ? child->is_folder() ? folderMenu_ : buttonMenu_ : nil;
+  BookmarkContextMenuCocoaController* menuController =
+      [barController_ menuController];
   BookmarkBarFolderButtonCell* cell =
       [BookmarkBarFolderButtonCell buttonCellForNode:child
-                                         contextMenu:menu
+                                      menuController:menuController
                                             cellText:nil
                                            cellImage:image];
   [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
@@ -1133,70 +1132,6 @@ struct LayoutMetrics {
   }
 }
 
-#pragma mark Actions Forwarded to Parent BookmarkBarController
-
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  return [barController_ validateUserInterfaceItem:item];
-}
-
-- (IBAction)openBookmark:(id)sender {
-  [barController_ openBookmark:sender];
-}
-
-- (IBAction)openBookmarkInNewForegroundTab:(id)sender {
-  [barController_ openBookmarkInNewForegroundTab:sender];
-}
-
-- (IBAction)openBookmarkInNewWindow:(id)sender {
-  [barController_ openBookmarkInNewWindow:sender];
-}
-
-- (IBAction)openBookmarkInIncognitoWindow:(id)sender {
-  [barController_ openBookmarkInIncognitoWindow:sender];
-}
-
-- (IBAction)editBookmark:(id)sender {
-  [barController_ editBookmark:sender];
-}
-
-- (IBAction)cutBookmark:(id)sender {
-  [self closeBookmarkFolder:self];
-  [barController_ cutBookmark:sender];
-}
-
-- (IBAction)copyBookmark:(id)sender {
-  [barController_ copyBookmark:sender];
-}
-
-- (IBAction)pasteBookmark:(id)sender {
-  [barController_ pasteBookmark:sender];
-}
-
-- (IBAction)deleteBookmark:(id)sender {
-  [self closeBookmarkFolder:self];
-  [barController_ deleteBookmark:sender];
-}
-
-- (IBAction)openAllBookmarks:(id)sender {
-  [barController_ openAllBookmarks:sender];
-}
-
-- (IBAction)openAllBookmarksNewWindow:(id)sender {
-  [barController_ openAllBookmarksNewWindow:sender];
-}
-
-- (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
-  [barController_ openAllBookmarksIncognitoWindow:sender];
-}
-
-- (IBAction)addPage:(id)sender {
-  [barController_ addPage:sender];
-}
-
-- (IBAction)addFolder:(id)sender {
-  [barController_ addFolder:sender];
-}
-
 #pragma mark Drag & Drop
 
 // Find something like std::is_between<T>?  I can't believe one doesn't exist.
@@ -1663,7 +1598,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       case NSCarriageReturnCharacter:
       case NSEnterCharacter:
         if (selectedIndex_ >= 0 && selectedIndex_ < [self buttonCount]) {
-          [self openBookmark:[buttons_ objectAtIndex:selectedIndex_]];
+          [barController_ openBookmark:[buttons_ objectAtIndex:selectedIndex_]];
           return NO; // NO because the selection-handling code will close later.
         } else {
           return YES; // Triggering with no selection closes the menu.

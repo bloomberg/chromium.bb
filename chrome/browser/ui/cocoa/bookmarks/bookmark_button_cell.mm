@@ -8,7 +8,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -31,12 +31,12 @@ const int kHierarchyButtonXMargin = 4;
 @synthesize drawFolderArrow = drawFolderArrow_;
 
 + (id)buttonCellForNode:(const BookmarkNode*)node
-            contextMenu:(NSMenu*)contextMenu
+         menuController:(BookmarkContextMenuCocoaController*)menuController
                cellText:(NSString*)cellText
               cellImage:(NSImage*)cellImage {
   id buttonCell =
       [[[BookmarkButtonCell alloc] initForNode:node
-                                   contextMenu:contextMenu
+                                menuController:menuController
                                       cellText:cellText
                                      cellImage:cellImage]
        autorelease];
@@ -44,10 +44,11 @@ const int kHierarchyButtonXMargin = 4;
 }
 
 - (id)initForNode:(const BookmarkNode*)node
-      contextMenu:(NSMenu*)contextMenu
+   menuController:(BookmarkContextMenuCocoaController*)menuController
          cellText:(NSString*)cellText
         cellImage:(NSImage*)cellImage {
   if ((self = [super initTextCell:cellText])) {
+    menuController_ = menuController;
     [self configureBookmarkButtonCell];
     [self setTextColor:[NSColor blackColor]];
     [self setBookmarkNode:node];
@@ -55,7 +56,6 @@ const int kHierarchyButtonXMargin = 4;
     if (node) {
       NSString* title = base::SysUTF16ToNSString(node->GetTitle());
       [self setBookmarkCellText:title image:cellImage];
-      [self setMenu:contextMenu];
     } else {
       [self setEmpty:YES];
       [self setBookmarkCellText:l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU)
@@ -67,7 +67,10 @@ const int kHierarchyButtonXMargin = 4;
 }
 
 - (id)initTextCell:(NSString*)string {
-  return [self initForNode:nil contextMenu:nil cellText:string cellImage:nil];
+  return [self initForNode:nil
+            menuController:nil
+                  cellText:string
+                 cellImage:nil];
 }
 
 // Used by the off-the-side menu, the only case where a
@@ -154,25 +157,17 @@ const int kHierarchyButtonXMargin = 4;
                                             pointerValue]);
 }
 
-// We share the context menu among all bookmark buttons.  To allow us
-// to disambiguate when needed (e.g. "open bookmark"), we set the
-// menu's associated bookmark node ID to be our represented object.
 - (NSMenu*)menu {
   if (empty_)
     return nil;
-  BookmarkMenu* menu = (BookmarkMenu*)[super menu];
-  const BookmarkNode* node =
-      static_cast<const BookmarkNode*>([[self representedObject] pointerValue]);
 
+  const BookmarkNode* node = [self bookmarkNode];
   if (node->parent() && node->parent()->type() == BookmarkNode::FOLDER) {
     content::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
   } else {
     content::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));
   }
-
-  [menu setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
-
-  return menu;
+  return [menuController_ menuForBookmarkNode:node];
 }
 
 - (void)setTitle:(NSString*)title {

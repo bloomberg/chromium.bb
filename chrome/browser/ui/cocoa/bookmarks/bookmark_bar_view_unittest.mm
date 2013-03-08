@@ -223,7 +223,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
 
   scoped_nsobject<BookmarkButtonCell> button_cell(
       [[BookmarkButtonCell buttonCellForNode:node
-                                 contextMenu:nil
+                              menuController:nil
                                     cellText:nil
                                    cellImage:nil] retain]);
   scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);
@@ -263,7 +263,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
 
   scoped_nsobject<BookmarkButtonCell> button_cell(
       [[BookmarkButtonCell buttonCellForNode:node
-                                 contextMenu:nil
+                              menuController:nil
                                     cellText:nil
                                    cellImage:nil] retain]);
   scoped_nsobject<BookmarkButton> dragged_button([[BookmarkButton alloc] init]);

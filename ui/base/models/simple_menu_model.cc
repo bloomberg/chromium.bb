@@ -103,8 +103,7 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
   AddRadioItem(command_id, l10n_util::GetStringUTF16(string_id), group_id);
 }
 
-void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type)
-{
+void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
   if (items_.empty()) {
     if (separator_type == NORMAL_SEPARATOR) {
       return;

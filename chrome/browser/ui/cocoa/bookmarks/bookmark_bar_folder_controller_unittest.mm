@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +20,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+
+namespace {
+
+const int kLotsOfNodesCount = 150;
+
+// Deletes the bookmark corresponding to |button|.
+void DeleteBookmark(BookmarkButton* button, Profile* profile) {
+  const BookmarkNode* node = [button bookmarkNode];
+  if (node) {
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+    model->Remove(node->parent(), node->parent()->GetIndexOf(node));
+  }
+}
+
+}  // namespace
 
 // Add a redirect to make testing easier.
 @interface BookmarkBarFolderController(MakeTestingEasier)
@@ -93,10 +107,6 @@
 }
 
 @end
-
-namespace {
-const int kLotsOfNodesCount = 150;
-};
 
 // Redirect certain calls so they can be seen by tests.
 
@@ -559,7 +569,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   // not moved. Pick a button which is near the top and visible.
   CGFloat oldTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
   BookmarkButton* button = [buttons objectAtIndex:3];
-  [folder deleteBookmark:button];
+  DeleteBookmark(button, profile());
   CGFloat newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
   EXPECT_CGFLOAT_EQ(oldTop, newTop);
 
@@ -581,7 +591,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   EXPECT_NE(oldTop, newTop);
   oldTop = newTop;
   button = [buttons objectAtIndex:buttonCounter + 3];
-  [folder deleteBookmark:button];
+  DeleteBookmark(button, profile());
   newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
   EXPECT_CGFLOAT_EQ(oldTop, newTop);
 
@@ -593,7 +603,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
     --buttonCounter;
   }
   button = [buttons objectAtIndex:buttonCounter + 3];
-  [folder deleteBookmark:button];
+  DeleteBookmark(button, profile());
   newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
   EXPECT_CGFLOAT_EQ(oldTop - bookmarks::kScrollWindowVerticalMargin, newTop);
 }
@@ -1567,7 +1577,7 @@ TEST_F(BookmarkBarFolderControllerClosingTest, DeleteClosesFolder) {
 
   // Delete the folder node and verify the window closed down by looking
   // for its controller again.
-  [folder deleteBookmark:folder];
+  DeleteBookmark([folder parentButton], profile());
   EXPECT_FALSE([folder folderController]);
 }
 

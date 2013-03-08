@@ -7,6 +7,7 @@
 
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
+@class BookmarkContextMenuCocoaController;
 class BookmarkNode;
 
 // A button cell that handles drawing/highlighting of buttons in the
@@ -15,6 +16,10 @@ class BookmarkNode;
 // (e.g. hover-over to open) can be implemented.
 @interface BookmarkButtonCell : GradientButtonCell<NSMenuDelegate> {
  @private
+  // Controller for showing the context menu. Weak, owned by
+  // BookmarkBarController.
+  BookmarkContextMenuCocoaController* menuController_;
+
   BOOL empty_;  // is this an "empty" button placeholder button cell?
 
   // Starting index of bookmarkFolder children that we care to use.
@@ -37,14 +42,14 @@ class BookmarkNode;
 
 // Create a button cell which draws with a theme.
 + (id)buttonCellForNode:(const BookmarkNode*)node
-            contextMenu:(NSMenu*)contextMenu
+         menuController:(BookmarkContextMenuCocoaController*)menuController
                cellText:(NSString*)cellText
               cellImage:(NSImage*)cellImage;
 
 // Initialize a button cell which draws with a theme.
 // Designated initializer.
 - (id)initForNode:(const BookmarkNode*)node
-      contextMenu:(NSMenu*)contextMenu
+   menuController:(BookmarkContextMenuCocoaController*)menuController
          cellText:(NSString*)cellText
         cellImage:(NSImage*)cellImage;
 
