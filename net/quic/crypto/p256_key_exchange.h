@@ -1,0 +1,81 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef NET_QUIC_CRYPTO_P256_KEY_EXCHANGE_H_
+#define NET_QUIC_CRYPTO_P256_KEY_EXCHANGE_H_
+
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
+#include "net/quic/crypto/key_exchange.h"
+
+#if defined(USE_OPENSSL)
+#include "crypto/openssl_util.h"
+// Forward declaration for openssl/*.h
+typedef struct ec_key_st EC_KEY;
+extern "C" void EC_KEY_free(EC_KEY* key);
+#else
+#include "crypto/ec_private_key.h"
+#include "crypto/scoped_nss_types.h"
+#endif
+
+namespace net {
+
+// P256KeyExchange implements a KeyExchange using elliptic-curve
+// Diffie-Hellman on NIST P-256.
+class P256KeyExchange : public KeyExchange {
+ public:
+  virtual ~P256KeyExchange();
+
+  // New creates a new key exchange object from a private key. If
+  // |private_key| is invalid, NULL is returned.
+  static P256KeyExchange* New(base::StringPiece private_key);
+
+  // |NewPrivateKey| returns a private key, suitable for passing to |New|.
+  // If |NewPrivateKey| can't generate a private key, it returns an empty
+  // string.
+  static std::string NewPrivateKey();
+
+  // KeyExchange interface.
+  virtual bool CalculateSharedKey(const base::StringPiece& peer_public_value,
+                                  std::string* shared_key) const OVERRIDE;
+  virtual base::StringPiece public_value() const OVERRIDE;
+  virtual CryptoTag tag() const OVERRIDE;
+
+ private:
+  enum {
+    // A P-256 field element consists of 32 bytes.
+    kP256FieldBytes = 32,
+    // A P-256 point in uncompressed form consists of 0x04 (to denote
+    // that the point is uncompressed) followed by two, 32-byte field
+    // elements.
+    kUncompressedP256PointBytes = 1 + 2 * kP256FieldBytes,
+    // The first byte in an uncompressed P-256 point.
+    kUncompressedECPointForm = 0x04,
+  };
+
+#if defined(USE_OPENSSL)
+  // P256KeyExchange takes ownership of |private_key|.
+  P256KeyExchange(EC_KEY* private_key, uint8* public_key);
+
+  crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> private_key_;
+  uint8 public_key_[kUncompressedP256PointBytes];
+#else
+  // Password used by |NewPrivateKey| to encrypt exported EC private keys.
+  // This is not used to provide any security, but to workaround NSS being
+  // unable to export unencrypted EC keys. Note that SPDY and ChannelID
+  // use the same approach.
+  static const char kExportPassword[];
+
+  // P256KeyExchange takes ownership of |key_pair|.
+  explicit P256KeyExchange(crypto::ECPrivateKey* key_pair);
+
+  scoped_ptr<crypto::ECPrivateKey> key_pair_;
+#endif
+};
+
+}  // namespace net
+#endif  // NET_QUIC_CRYPTO_P256_KEY_EXCHANGE_H_
+
