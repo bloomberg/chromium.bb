@@ -396,6 +396,11 @@ IOThread::IOThread(
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state, NULL));
 
+  base::Value* dns_client_enabled_default = new base::FundamentalValue(
+      chrome_browser_net::ConfigureAsyncDnsFieldTrial());
+  local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
+                                   dns_client_enabled_default);
+
   dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
                            local_state,
                            base::Bind(&IOThread::UpdateDnsClientEnabled,
@@ -734,8 +739,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthSchemes,
                                "basic,digest,ntlm,negotiate,"
                                "spdyproxy");
-  registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup,
-                                false);
+  registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup, false);
   registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
   registry->RegisterStringPref(prefs::kAuthServerWhitelist, "");
   registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
@@ -744,9 +748,7 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
-  registry->RegisterBooleanPref(
-      prefs::kBuiltInDnsClientEnabled,
-      chrome_browser_net::ConfigureAsyncDnsFieldTrial());
+  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
