@@ -76,18 +76,18 @@ protected:
     bool getFramebufferTexture(ScopedResource*, const gfx::Rect& deviceRect);
     void releaseRenderPassTextures();
 
-    virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedResource*, const gfx::Rect& framebufferRect) OVERRIDE;
-    virtual void setDrawViewportSize(const gfx::Size&) OVERRIDE;
-    virtual void setScissorTestRect(const gfx::Rect& scissorRect) OVERRIDE;
-    virtual void clearFramebuffer(DrawingFrame&) OVERRIDE;
-    virtual void drawQuad(DrawingFrame&, const DrawQuad*) OVERRIDE;
-    virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;
-    virtual void finishDrawingFrame(DrawingFrame&) OVERRIDE;
-    virtual bool flippedFramebuffer() const OVERRIDE;
-    virtual void ensureScissorTestEnabled() OVERRIDE;
-    virtual void ensureScissorTestDisabled() OVERRIDE;
-    virtual void finishDrawingQuadList() OVERRIDE;
+    virtual void BindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
+    virtual bool BindFramebufferToTexture(DrawingFrame&, const ScopedResource*, gfx::Rect framebufferRect) OVERRIDE;
+    virtual void SetDrawViewportSize(gfx::Size viewportSize) OVERRIDE;
+    virtual void SetScissorTestRect(gfx::Rect scissorRect) OVERRIDE;
+    virtual void ClearFramebuffer(DrawingFrame&) OVERRIDE;
+    virtual void DoDrawQuad(DrawingFrame&, const class DrawQuad*) OVERRIDE;
+    virtual void BeginDrawingFrame(DrawingFrame&) OVERRIDE;
+    virtual void FinishDrawingFrame(DrawingFrame&) OVERRIDE;
+    virtual bool FlippedFramebuffer() const OVERRIDE;
+    virtual void EnsureScissorTestEnabled() OVERRIDE;
+    virtual void EnsureScissorTestDisabled() OVERRIDE;
+    virtual void FinishDrawingQuadList() OVERRIDE;
 
 private:
     static void toGLMatrix(float*, const gfx::Transform&);

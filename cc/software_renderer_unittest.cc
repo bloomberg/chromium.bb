@@ -33,11 +33,11 @@ public:
 
     void initializeRenderer() {
         m_outputSurface = FakeOutputSurface::CreateSoftware(make_scoped_ptr(new SoftwareOutputDevice));
-        m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
+        resource_provider_ = ResourceProvider::Create(m_outputSurface.get());
         m_renderer = SoftwareRenderer::create(this, m_outputSurface.get(), resourceProvider());
     }
 
-    ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
+    ResourceProvider* resourceProvider() const { return resource_provider_.get(); }
     SoftwareRenderer* renderer() const { return m_renderer.get(); }
     void setViewportSize(const gfx::Size& viewportSize) { m_viewportSize = viewportSize; }
     void setShouldClearRootRenderPass(bool clearRootRenderPass) { m_shouldClearRootRenderPass = clearRootRenderPass; }
@@ -57,7 +57,7 @@ public:
 
 protected:
     scoped_ptr<FakeOutputSurface> m_outputSurface;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
+    scoped_ptr<ResourceProvider> resource_provider_;
     scoped_ptr<SoftwareRenderer> m_renderer;
     gfx::Size m_viewportSize;
     LayerTreeSettings m_settings;
@@ -77,18 +77,18 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::Create();
     sharedQuadState->SetAll(gfx::Transform(), outerSize, outerRect, outerRect, false, 1.0);
-    RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::Create();
-    rootRenderPass->SetNew(rootRenderPassId, outerRect, outerRect, gfx::Transform());
+    RenderPass::Id root_render_passId = RenderPass::Id(1, 1);
+    scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
+    root_render_pass->SetNew(root_render_passId, outerRect, outerRect, gfx::Transform());
     scoped_ptr<SolidColorDrawQuad> outerQuad = SolidColorDrawQuad::Create();
     outerQuad->SetNew(sharedQuadState.get(), outerRect, SK_ColorYELLOW);
     scoped_ptr<SolidColorDrawQuad> innerQuad = SolidColorDrawQuad::Create();
     innerQuad->SetNew(sharedQuadState.get(), innerRect, SK_ColorCYAN);
-    rootRenderPass->AppendQuad(innerQuad.PassAs<DrawQuad>());
-    rootRenderPass->AppendQuad(outerQuad.PassAs<DrawQuad>());
+    root_render_pass->AppendQuad(innerQuad.PassAs<DrawQuad>());
+    root_render_pass->AppendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
-    list.push_back(rootRenderPass.PassAs<RenderPass>());
+    list.push_back(root_render_pass.PassAs<RenderPass>());
     renderer()->DrawFrame(list);
 
     scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() * DeviceViewportSize().height()]);
@@ -136,18 +136,18 @@ TEST_F(SoftwareRendererTest, tileQuad)
 
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::Create();
     sharedQuadState->SetAll(gfx::Transform(), outerSize, outerRect, outerRect, false, 1.0);
-    RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::Create();
-    rootRenderPass->SetNew(rootRenderPassId, rootRect, rootRect, gfx::Transform());
+    RenderPass::Id root_render_passId = RenderPass::Id(1, 1);
+    scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
+    root_render_pass->SetNew(root_render_passId, rootRect, rootRect, gfx::Transform());
     scoped_ptr<TileDrawQuad> outerQuad = TileDrawQuad::Create();
     outerQuad->SetNew(sharedQuadState.get(), outerRect, outerRect, resourceYellow, gfx::RectF(outerSize), outerSize, false);
     scoped_ptr<TileDrawQuad> innerQuad = TileDrawQuad::Create();
     innerQuad->SetNew(sharedQuadState.get(), innerRect, innerRect, resourceCyan, gfx::RectF(innerSize), innerSize, false);
-    rootRenderPass->AppendQuad(innerQuad.PassAs<DrawQuad>());
-    rootRenderPass->AppendQuad(outerQuad.PassAs<DrawQuad>());
+    root_render_pass->AppendQuad(innerQuad.PassAs<DrawQuad>());
+    root_render_pass->AppendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
-    list.push_back(rootRenderPass.PassAs<RenderPass>());
+    list.push_back(root_render_pass.PassAs<RenderPass>());
     renderer()->DrawFrame(list);
 
     scoped_array<SkColor> pixels(new SkColor[DeviceViewportSize().width() * DeviceViewportSize().height()]);

@@ -145,8 +145,8 @@ bool GLRenderer::initialize()
 
     m_capabilities.usingEglImage = extensions.count("GL_OES_EGL_image_external");
 
-    m_capabilities.maxTextureSize = m_resourceProvider->max_texture_size();
-    m_capabilities.bestTextureFormat = m_resourceProvider->best_texture_format();
+    m_capabilities.maxTextureSize = resource_provider_->max_texture_size();
+    m_capabilities.bestTextureFormat = resource_provider_->best_texture_format();
 
     // The updater can access textures while the GLRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
@@ -222,7 +222,7 @@ void GLRenderer::SendManagedMemoryStats(size_t bytesVisible, size_t bytesVisible
 
 void GLRenderer::releaseRenderPassTextures()
 {
-    m_renderPassTextures.clear();
+    render_pass_textures_.clear();
 }
 
 void GLRenderer::ViewportChanged()
@@ -230,21 +230,21 @@ void GLRenderer::ViewportChanged()
     m_isViewportChanged = true;
 }
 
-void GLRenderer::clearFramebuffer(DrawingFrame& frame)
+void GLRenderer::ClearFramebuffer(DrawingFrame& frame)
 {
     // On DEBUG builds, opaque render passes are cleared to blue to easily see regions that were not drawn on the screen.
-    if (frame.currentRenderPass->has_transparent_background)
+    if (frame.current_render_pass->has_transparent_background)
         GLC(m_context, m_context->clearColor(0, 0, 0, 0));
     else
         GLC(m_context, m_context->clearColor(0, 0, 1, 1));
 
 #ifdef NDEBUG
-    if (frame.currentRenderPass->has_transparent_background)
+    if (frame.current_render_pass->has_transparent_background)
 #endif
         m_context->clear(GL_COLOR_BUFFER_BIT);
 }
 
-void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
+void GLRenderer::BeginDrawingFrame(DrawingFrame& frame)
 {
     // FIXME: Remove this once backbuffer is automatically recreated on first use
     ensureBackbuffer();
@@ -281,7 +281,7 @@ void GLRenderer::DoNoOp()
     GLC(m_context, m_context->flush());
 }
 
-void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
+void GLRenderer::DoDrawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     DCHECK(quad->rect.Contains(quad->visible_rect));
     if (quad->material != DrawQuad::TEXTURE_CONTENT) {
@@ -363,7 +363,7 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     gfx::Transform renderMatrix = quad->quadTransform();
     renderMatrix.Translate(0.5f * layerRect.width() + layerRect.x(), 0.5f * layerRect.height() + layerRect.y());
     renderMatrix.Scale(layerRect.width(), layerRect.height());
-    GLRenderer::toGLMatrix(&glMatrix[0], frame.projectionMatrix * renderMatrix);
+    GLRenderer::toGLMatrix(&glMatrix[0], frame.projection_matrix * renderMatrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().matrixLocation(), 1, false, &glMatrix[0]));
 
     SkColor color = quad->color;
@@ -382,16 +382,16 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     if (filters.isEmpty())
         return SkBitmap();
 
-    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreen_context_provider();
+    cc::ContextProvider* offscreenContexts = renderer->resource_provider()->offscreen_context_provider();
     if (!offscreenContexts || !offscreenContexts->Context3d() || !offscreenContexts->GrContext())
         return SkBitmap();
 
-    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTextureResource->id());
+    ResourceProvider::ScopedWriteLockGL lock(renderer->resource_provider(), sourceTextureResource->id());
 
     // Flush the compositor context to ensure that textures there are available
     // in the shared context.  Do this after locking/creating the compositor
     // texture.
-    renderer->resourceProvider()->Flush();
+    renderer->resource_provider()->Flush();
 
     // Make sure skia uses the correct GL context.
     offscreenContexts->Context3d()->makeContextCurrent();
@@ -407,7 +407,7 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     offscreenContexts->Context3d()->flush();
 
     // Use the compositor's GL context again.
-    renderer->resourceProvider()->GraphicsContext3D()->makeContextCurrent();
+    renderer->resource_provider()->GraphicsContext3D()->makeContextCurrent();
     return source;
 }
 
@@ -416,16 +416,16 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     if (!filter)
         return SkBitmap();
 
-    cc::ContextProvider* offscreenContexts = renderer->resourceProvider()->offscreen_context_provider();
+    cc::ContextProvider* offscreenContexts = renderer->resource_provider()->offscreen_context_provider();
     if (!offscreenContexts || !offscreenContexts->Context3d() || !offscreenContexts->GrContext())
         return SkBitmap();
 
-    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTextureResource->id());
+    ResourceProvider::ScopedWriteLockGL lock(renderer->resource_provider(), sourceTextureResource->id());
 
     // Flush the compositor context to ensure that textures there are available
     // in the shared context.  Do this after locking/creating the compositor
     // texture.
-    renderer->resourceProvider()->Flush();
+    renderer->resource_provider()->Flush();
 
     // Make sure skia uses the correct GL context.
     offscreenContexts->Context3d()->makeContextCurrent();
@@ -475,7 +475,7 @@ static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, Sc
     offscreenContexts->Context3d()->flush();
 
     // Use the compositor's GL context again.
-    renderer->resourceProvider()->GraphicsContext3D()->makeContextCurrent();
+    renderer->resource_provider()->GraphicsContext3D()->makeContextCurrent();
 
     return device.accessBitmap(false);
 }
@@ -507,9 +507,9 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
 
     // FIXME: We only allow background filters on an opaque render surface because other surfaces may contain
     // translucent pixels, and the contents behind those translucent pixels wouldn't have the filter applied.
-    if (frame.currentRenderPass->has_transparent_background)
+    if (frame.current_render_pass->has_transparent_background)
         return scoped_ptr<ScopedResource>();
-    DCHECK(!frame.currentTexture);
+    DCHECK(!frame.current_texture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
     gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().BoundingBox()));
@@ -518,9 +518,9 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     filters.getOutsets(top, right, bottom, left);
     deviceRect.Inset(-left, -top, -right, -bottom);
 
-    deviceRect.Intersect(frame.currentRenderPass->output_rect);
+    deviceRect.Intersect(frame.current_render_pass->output_rect);
 
-    scoped_ptr<ScopedResource> deviceBackgroundTexture = ScopedResource::create(m_resourceProvider);
+    scoped_ptr<ScopedResource> deviceBackgroundTexture = ScopedResource::create(resource_provider_);
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
         return scoped_ptr<ScopedResource>();
 
@@ -531,11 +531,11 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
     GrTexture* texture = reinterpret_cast<GrTexture*>(filteredDeviceBackground.getTexture());
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
-    scoped_ptr<ScopedResource> backgroundTexture = ScopedResource::create(m_resourceProvider);
+    scoped_ptr<ScopedResource> backgroundTexture = ScopedResource::create(resource_provider_);
     if (!backgroundTexture->Allocate(quad->rect.size(), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
         return scoped_ptr<ScopedResource>();
 
-    const RenderPass* targetRenderPass = frame.currentRenderPass;
+    const RenderPass* targetRenderPass = frame.current_render_pass;
     bool usingBackgroundTexture = useScopedTexture(frame, backgroundTexture.get(), quad->rect);
 
     if (usingBackgroundTexture) {
@@ -547,7 +547,7 @@ scoped_ptr<ScopedResource> GLRenderer::drawBackgroundFilters(
         copyTextureToFramebuffer(frame, filteredDeviceBackgroundTextureId, deviceRect, deviceToFramebufferTransform);
     }
 
-    useRenderPass(frame, targetRenderPass);
+    UseRenderPass(frame, targetRenderPass);
 
     if (!usingBackgroundTexture)
         return scoped_ptr<ScopedResource>();
@@ -558,13 +558,13 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 {
     setBlendEnabled(quad->ShouldDrawWithBlending());
 
-    CachedResource* contentsTexture = m_renderPassTextures.get(quad->render_pass_id);
+    CachedResource* contentsTexture = render_pass_textures_.get(quad->render_pass_id);
     if (!contentsTexture || !contentsTexture->id())
         return;
 
     gfx::Transform quadRectMatrix;
-    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
-    gfx::Transform contentsDeviceTransform = frame.windowMatrix * frame.projectionMatrix * quadRectMatrix;
+    QuadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
+    gfx::Transform contentsDeviceTransform = frame.window_matrix * frame.projection_matrix * quadRectMatrix;
     contentsDeviceTransform.FlattenTo2d();
 
     // Can only draw surface if device matrix is invertible.
@@ -587,7 +587,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     // Draw the background texture if there is one.
     if (backgroundTexture) {
         DCHECK(backgroundTexture->size() == quad->rect.size());
-        ResourceProvider::ScopedReadLockGL lock(m_resourceProvider, backgroundTexture->id());
+        ResourceProvider::ScopedReadLockGL lock(resource_provider_, backgroundTexture->id());
         copyTextureToFramebuffer(frame, lock.texture_id(), quad->rect, quad->quadTransform());
     }
 
@@ -607,7 +607,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
     scoped_ptr<ResourceProvider::ScopedReadLockGL> maskResourceLock;
     unsigned maskTextureId = 0;
     if (quad->mask_resource_id) {
-        maskResourceLock.reset(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->mask_resource_id));
+        maskResourceLock.reset(new ResourceProvider::ScopedReadLockGL(resource_provider_, quad->mask_resource_id));
         maskTextureId = maskResourceLock->texture_id();
     }
 
@@ -618,7 +618,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         GrTexture* texture = reinterpret_cast<GrTexture*>(filterBitmap.getTexture());
         context()->bindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
     } else
-        contentsResourceLock = make_scoped_ptr(new ResourceProvider::ScopedSamplerGL(m_resourceProvider, contentsTexture->id(),
+        contentsResourceLock = make_scoped_ptr(new ResourceProvider::ScopedSamplerGL(resource_provider_, contentsTexture->id(),
                                                                                      GL_TEXTURE_2D, GL_LINEAR));
 
     int shaderQuadLocation = -1;
@@ -700,7 +700,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
                                             quad->mask_uv_rect.x(), quad->mask_uv_rect.y()));
         GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation,
                                             quad->mask_uv_rect.width() / tex_scale_x, quad->mask_uv_rect.height() / tex_scale_y));
-        m_resourceProvider->BindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
+        resource_provider_->BindForSampling(quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
         GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }
 
@@ -817,7 +817,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     float fragmentTexScaleY = clampTexRect.height() / textureSize.height();
 
     gfx::QuadF localQuad;
-    gfx::Transform deviceTransform = frame.windowMatrix * frame.projectionMatrix * quad->quadTransform();
+    gfx::Transform deviceTransform = frame.window_matrix * frame.projection_matrix * quad->quadTransform();
     deviceTransform.FlattenTo2d();
     if (!deviceTransform.IsInvertible())
         return;
@@ -856,7 +856,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
     bool scaled = (texToGeomScaleX != 1 || texToGeomScaleY != 1);
     GLenum filter = (useAA || scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation()) ? GL_LINEAR : GL_NEAREST;
-    ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, filter);
+    ResourceProvider::ScopedSamplerGL quadResourceLock(resource_provider_, quad->resource_id, GL_TEXTURE_2D, filter);
 
     if (useAA) {
         LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
@@ -969,11 +969,11 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
     const VideoLayerImpl::FramePlane& vPlane = quad->v_plane;
 
     GLC(context(), context()->activeTexture(GL_TEXTURE1));
-    ResourceProvider::ScopedSamplerGL yPlaneLock(m_resourceProvider, yPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
+    ResourceProvider::ScopedSamplerGL yPlaneLock(resource_provider_, yPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
     GLC(context(), context()->activeTexture(GL_TEXTURE2));
-    ResourceProvider::ScopedSamplerGL uPlaneLock(m_resourceProvider, uPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
+    ResourceProvider::ScopedSamplerGL uPlaneLock(resource_provider_, uPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
     GLC(context(), context()->activeTexture(GL_TEXTURE3));
-    ResourceProvider::ScopedSamplerGL vPlaneLock(m_resourceProvider, vPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
+    ResourceProvider::ScopedSamplerGL vPlaneLock(resource_provider_, vPlane.resourceId, GL_TEXTURE_2D, GL_LINEAR);
 
     setUseProgram(program->program());
 
@@ -1077,7 +1077,7 @@ void GLRenderer::flushTextureQuadCache()
     GLC(context(), context()->uniform1i(m_drawCache.sampler_location, 0));
 
     // Assume the current active textures is 0.
-    ResourceProvider::ScopedReadLockGL lockedQuad(m_resourceProvider, m_drawCache.resource_id);
+    ResourceProvider::ScopedReadLockGL lockedQuad(resource_provider_, m_drawCache.resource_id);
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, lockedQuad.texture_id()));
 
     // set up premultiplied alpha.
@@ -1158,8 +1158,8 @@ void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDraw
 
     // Generate the transform matrix
     gfx::Transform quadRectMatrix;
-    quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
-    quadRectMatrix = frame.projectionMatrix * quadRectMatrix;
+    QuadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
+    quadRectMatrix = frame.projection_matrix * quadRectMatrix;
 
     Float16 m;
     quadRectMatrix.matrix().asColMajorf(m.data);
@@ -1181,7 +1181,7 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
 
     GLC(context(), context()->uniform1fv(binding.vertexOpacityLocation, 4, quad->vertex_opacity));
 
-    ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, GL_LINEAR);
+    ResourceProvider::ScopedSamplerGL quadResourceLock(resource_provider_, quad->resource_id, GL_TEXTURE_2D, GL_LINEAR);
 
     if (!quad->premultiplied_alpha) {
         // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
@@ -1225,10 +1225,10 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));
 }
 
-void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
+void GLRenderer::FinishDrawingFrame(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
-    m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
+    m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.root_damage_rect));
 
     GLC(m_context, m_context->disable(GL_BLEND));
     m_blendShadow = false;
@@ -1240,17 +1240,17 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
     }
 }
 
-void GLRenderer::finishDrawingQuadList()
+void GLRenderer::FinishDrawingQuadList()
 {
     flushTextureQuadCache();
 }
 
-bool GLRenderer::flippedFramebuffer() const
+bool GLRenderer::FlippedFramebuffer() const
 {
     return true;
 }
 
-void GLRenderer::ensureScissorTestEnabled()
+void GLRenderer::EnsureScissorTestEnabled()
 {
     if (m_isScissorEnabled)
         return;
@@ -1260,7 +1260,7 @@ void GLRenderer::ensureScissorTestEnabled()
     m_isScissorEnabled = true;
 }
 
-void GLRenderer::ensureScissorTestDisabled()
+void GLRenderer::EnsureScissorTestDisabled()
 {
     if (!m_isScissorEnabled)
         return;
@@ -1321,9 +1321,9 @@ void GLRenderer::setUseProgram(unsigned program)
 void GLRenderer::drawQuadGeometry(const DrawingFrame& frame, const gfx::Transform& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
 {
     gfx::Transform quadRectMatrix;
-    quadRectTransform(&quadRectMatrix, drawTransform, quadRect);
+    QuadRectTransform(&quadRectMatrix, drawTransform, quadRect);
     static float glMatrix[16];
-    toGLMatrix(&glMatrix[0], frame.projectionMatrix * quadRectMatrix);
+    toGLMatrix(&glMatrix[0], frame.projection_matrix * quadRectMatrix);
     GLC(m_context, m_context->uniformMatrix4fv(matrixLocation, 1, false, &glMatrix[0]));
 
     GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
@@ -1360,8 +1360,8 @@ bool GLRenderer::SwapBuffers()
     if (m_capabilities.usingPartialSwap) {
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)
         m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), ViewportSize()));
-        int flippedYPosOfRectBottom = ViewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
-        m_outputSurface->PostSubBuffer(gfx::Rect(m_swapBufferRect.x(), flippedYPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height()));
+        int flipped_yPosOfRectBottom = ViewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
+        m_outputSurface->PostSubBuffer(gfx::Rect(m_swapBufferRect.x(), flipped_yPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height()));
     } else {
         m_outputSurface->SwapBuffers();
     }
@@ -1373,8 +1373,8 @@ bool GLRenderer::SwapBuffers()
     // written to after one full frame has past since it was last read.
     if (m_lastSwapFence)
         static_cast<SimpleSwapFence*>(m_lastSwapFence.get())->setHasPassed();
-    m_lastSwapFence = m_resourceProvider->GetReadLockFence();
-    m_resourceProvider->SetReadLockFence(new SimpleSwapFence());
+    m_lastSwapFence = resource_provider_->GetReadLockFence();
+    resource_provider_->SetReadLockFence(new SimpleSwapFence());
 
     return true;
 }
@@ -1437,7 +1437,7 @@ void GLRenderer::enforceMemoryPolicy()
         releaseRenderPassTextures();
         if (m_discardBackbufferWhenNotVisible)
             discardBackbuffer();
-        m_resourceProvider->ReleaseCachedData();
+        resource_provider_->ReleaseCachedData();
         GLC(m_context, m_context->flush());
     }
 }
@@ -1545,7 +1545,7 @@ bool GLRenderer::getFramebufferTexture(ScopedResource* texture, const gfx::Rect&
     if (!texture->id() && !texture->Allocate(deviceRect.size(), GL_RGB, ResourceProvider::TextureUsageAny))
         return false;
 
-    ResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_, texture->id());
     GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
     GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, texture->format(),
                                              deviceRect.x(), deviceRect.y(), deviceRect.width(), deviceRect.height(), 0));
@@ -1555,38 +1555,38 @@ bool GLRenderer::getFramebufferTexture(ScopedResource* texture, const gfx::Rect&
 bool GLRenderer::useScopedTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& viewportRect)
 {
     DCHECK(texture->id());
-    frame.currentRenderPass = 0;
-    frame.currentTexture = texture;
+    frame.current_render_pass = 0;
+    frame.current_texture = texture;
 
-    return bindFramebufferToTexture(frame, texture, viewportRect);
+    return BindFramebufferToTexture(frame, texture, viewportRect);
 }
 
-void GLRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
+void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
     m_outputSurface->BindFramebuffer();
 }
 
-bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, const gfx::Rect& framebufferRect)
+bool GLRenderer::BindFramebufferToTexture(DrawingFrame& frame, const ScopedResource* texture, gfx::Rect framebufferRect)
 {
     DCHECK(texture->id());
 
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_offscreenFramebufferId));
-    m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
+    m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockGL(resource_provider_, texture->id()));
     unsigned textureId = m_currentFramebufferLock->texture_id();
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0));
 
     DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE || IsContextLost());
 
-    initializeMatrices(frame, framebufferRect, false);
-    setDrawViewportSize(framebufferRect.size());
+    InitializeMatrices(frame, framebufferRect, false);
+    SetDrawViewportSize(framebufferRect.size());
 
     return true;
 }
 
-void GLRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
+void GLRenderer::SetScissorTestRect(gfx::Rect scissorRect)
 {
-    ensureScissorTestEnabled();
+    EnsureScissorTestEnabled();
 
     // Don't unnecessarily ask the context to change the scissor, because it
     // may cause undesired GPU pipeline flushes.
@@ -1598,7 +1598,7 @@ void GLRenderer::setScissorTestRect(const gfx::Rect& scissorRect)
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
 }
 
-void GLRenderer::setDrawViewportSize(const gfx::Size& viewportSize)
+void GLRenderer::SetDrawViewportSize(gfx::Size viewportSize)
 {
     GLC(m_context, m_context->viewport(0, 0, viewportSize.width(), viewportSize.height()));
 }
@@ -1618,7 +1618,7 @@ bool GLRenderer::initializeSharedObjects()
 
     // We will always need these programs to render, so create the programs eagerly so that the shader compilation can
     // start while we do other work. Other programs are created lazily on first access.
-    m_sharedGeometry = make_scoped_ptr(new GeometryBinding(m_context, quadVertexRect()));
+    m_sharedGeometry = make_scoped_ptr(new GeometryBinding(m_context, QuadVertexRect()));
     m_renderPassProgram = make_scoped_ptr(new RenderPassProgram(m_context));
     m_tileProgram = make_scoped_ptr(new TileProgram(m_context));
     m_tileProgramOpaque = make_scoped_ptr(new TileProgramOpaque(m_context));

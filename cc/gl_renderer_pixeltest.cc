@@ -190,7 +190,7 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   pass_list.push_back(child_pass.Pass());
   pass_list.push_back(root_pass.Pass());
 
-  renderer_->setEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);
   renderer_->DrawFrame(pass_list);
 

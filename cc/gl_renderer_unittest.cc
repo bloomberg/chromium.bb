@@ -72,9 +72,9 @@ public:
     {
         m_rootLayer->createRenderSurface();
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
-        scoped_ptr<RenderPass> rootRenderPass = RenderPass::Create();
-        rootRenderPass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
-        m_renderPassesInDrawOrder.push_back(rootRenderPass.Pass());
+        scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
+        root_render_pass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
+        m_renderPassesInDrawOrder.push_back(root_render_pass.Pass());
     }
 
     // RendererClient methods.
@@ -94,7 +94,7 @@ public:
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
     void setLastCallWasSetVisibilityPointer(bool* lastCallWasSetVisibility) { m_lastCallWasSetVisibility = lastCallWasSetVisibility; }
 
-    RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
+    RenderPass* root_render_pass() { return m_renderPassesInDrawOrder.back(); }
     RenderPassList& renderPassesInDrawOrder() { return m_renderPassesInDrawOrder; }
 
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
@@ -118,9 +118,9 @@ public:
     // Changing visibility to public.
     using GLRenderer::initialize;
     using GLRenderer::isBackbufferDiscarded;
-    using GLRenderer::drawQuad;
-    using GLRenderer::beginDrawingFrame;
-    using GLRenderer::finishDrawingQuadList;
+    using GLRenderer::DoDrawQuad;
+    using GLRenderer::BeginDrawingFrame;
+    using GLRenderer::FinishDrawingQuadList;
 };
 
 class GLRendererTest : public testing::Test {
@@ -129,8 +129,8 @@ protected:
         : m_suggestHaveBackbufferYes(1, true)
         , m_suggestHaveBackbufferNo(1, false)
         , m_outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FrameCountingMemoryAllocationSettingContext())))
-        , m_resourceProvider(ResourceProvider::Create(m_outputSurface.get()))
-        , m_renderer(&m_mockClient, m_outputSurface.get(), m_resourceProvider.get())
+        , resource_provider_(ResourceProvider::Create(m_outputSurface.get()))
+        , m_renderer(&m_mockClient, m_outputSurface.get(), resource_provider_.get())
     {
     }
 
@@ -151,7 +151,7 @@ protected:
 
     scoped_ptr<OutputSurface> m_outputSurface;
     FakeRendererClient m_mockClient;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
+    scoped_ptr<ResourceProvider> resource_provider_;
     FakeRendererGL m_renderer;
 };
 
@@ -407,7 +407,7 @@ TEST(GLRendererTest2, opaqueBackground)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
-    mockClient.rootRenderPass()->has_transparent_background = false;
+    mockClient.root_render_pass()->has_transparent_background = false;
 
     EXPECT_TRUE(renderer.initialize());
 
@@ -430,7 +430,7 @@ TEST(GLRendererTest2, transparentBackground)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
-    mockClient.rootRenderPass()->has_transparent_background = true;
+    mockClient.root_render_pass()->has_transparent_background = true;
 
     EXPECT_TRUE(renderer.initialize());
 
@@ -569,14 +569,14 @@ TEST(GLRendererTest2, activeTextureState)
     }
 
     cc::DirectRenderer::DrawingFrame drawingFrame;
-    renderer.beginDrawingFrame(drawingFrame);
+    renderer.BeginDrawingFrame(drawingFrame);
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
 
     for (cc::QuadList::backToFrontIterator it = pass->quad_list.backToFrontBegin();
          it != pass->quad_list.backToFrontEnd(); ++it) {
-        renderer.drawQuad(drawingFrame, *it);
+        renderer.DoDrawQuad(drawingFrame, *it);
     }
-    renderer.finishDrawingQuadList();
+    renderer.FinishDrawingQuadList();
     EXPECT_EQ(context->activeTexture(), GL_TEXTURE0);
     Mock::VerifyAndClearExpectations(context);
 }
@@ -735,8 +735,8 @@ class MockOutputSurfaceTest : public testing::Test,
                               public FakeRendererClient {
 protected:
     MockOutputSurfaceTest()
-        : m_resourceProvider(ResourceProvider::Create(&m_outputSurface))
-        , m_renderer(this, &m_outputSurface, m_resourceProvider.get())
+        : resource_provider_(ResourceProvider::Create(&m_outputSurface))
+        , m_renderer(this, &m_outputSurface, resource_provider_.get())
     {
     }
 
@@ -779,7 +779,7 @@ protected:
     OutputSurfaceMockContext* context() { return static_cast<OutputSurfaceMockContext*>(m_outputSurface.context3d()); }
 
     StrictMock<MockOutputSurface> m_outputSurface;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
+    scoped_ptr<ResourceProvider> resource_provider_;
     FakeRendererGL m_renderer;
 };
 
