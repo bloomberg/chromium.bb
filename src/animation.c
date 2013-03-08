@@ -116,7 +116,7 @@ weston_surface_animation_destroy(struct weston_surface_animation *animation)
 	wl_list_remove(&animation->animation.link);
 	wl_list_remove(&animation->listener.link);
 	wl_list_remove(&animation->transform.link);
-	animation->surface->geometry.dirty = 1;
+	weston_surface_geometry_dirty(animation->surface);
 	if (animation->done)
 		animation->done(animation, animation->data);
 	free(animation);
@@ -153,7 +153,7 @@ weston_surface_animation_frame(struct weston_animation *base,
 	if (animation->frame)
 		animation->frame(animation);
 
-	animation->surface->geometry.dirty = 1;
+	weston_surface_geometry_dirty(animation->surface);
 	weston_compositor_schedule_repaint(animation->surface->compositor);
 }
 

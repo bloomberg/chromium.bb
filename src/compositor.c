@@ -304,7 +304,7 @@ weston_surface_create(struct weston_compositor *compositor)
 		       &surface->transform.position.link);
 	weston_matrix_init(&surface->transform.position.matrix);
 	pixman_region32_init(&surface->transform.boundingbox);
-	surface->geometry.dirty = 1;
+	surface->transform.dirty = 1;
 
 	surface->pending.buffer_destroy_listener.notify =
 		surface_handle_pending_buffer_destroy;
@@ -657,10 +657,10 @@ weston_surface_update_transform_enable(struct weston_surface *surface)
 WL_EXPORT void
 weston_surface_update_transform(struct weston_surface *surface)
 {
-	if (!surface->geometry.dirty)
+	if (!surface->transform.dirty)
 		return;
 
-	surface->geometry.dirty = 0;
+	surface->transform.dirty = 0;
 
 	weston_surface_damage_below(surface);
 
@@ -682,6 +682,12 @@ weston_surface_update_transform(struct weston_surface *surface)
 	weston_surface_damage_below(surface);
 
 	weston_surface_assign_output(surface);
+}
+
+WL_EXPORT void
+weston_surface_geometry_dirty(struct weston_surface *surface)
+{
+	surface->transform.dirty = 1;
 }
 
 WL_EXPORT void
@@ -779,7 +785,7 @@ weston_surface_configure(struct weston_surface *surface,
 	surface->geometry.y = y;
 	surface->geometry.width = width;
 	surface->geometry.height = height;
-	surface->geometry.dirty = 1;
+	weston_surface_geometry_dirty(surface);
 }
 
 WL_EXPORT void
@@ -788,7 +794,7 @@ weston_surface_set_position(struct weston_surface *surface,
 {
 	surface->geometry.x = x;
 	surface->geometry.y = y;
-	surface->geometry.dirty = 1;
+	weston_surface_geometry_dirty(surface);
 }
 
 WL_EXPORT int
@@ -1441,7 +1447,7 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 
 	if (!pixman_region32_equal(&opaque, &surface->opaque)) {
 		pixman_region32_copy(&surface->opaque, &opaque);
-		surface->geometry.dirty = 1;
+		weston_surface_geometry_dirty(surface);
 	}
 
 	pixman_region32_fini(&opaque);
