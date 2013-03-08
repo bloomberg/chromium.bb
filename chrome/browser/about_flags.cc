@@ -928,11 +928,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_ASH)
   {
-    "show-launcher-alignment-menu",
-    IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_NAME,
-    IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION,
+    "hide-launcher-alignment-menu",
+    IDS_FLAGS_HIDE_LAUNCHER_ALIGNMENT_MENU_NAME,
+    IDS_FLAGS_HIDE_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kShowLauncherAlignmentMenu)
+    SINGLE_VALUE_TYPE(switches::kHideLauncherAlignmentMenu)
   },
   {
     "show-touch-hud",

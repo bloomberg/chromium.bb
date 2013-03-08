@@ -36,7 +36,6 @@ class ASH_EXPORT LauncherAlignmentMenu : public ui::SimpleMenuModel,
     MENU_ALIGN_LEFT = 500,
     MENU_ALIGN_RIGHT,
     MENU_ALIGN_BOTTOM,
-    MENU_ALIGN_TOP,
   };
 
   aura::RootWindow* root_window_;

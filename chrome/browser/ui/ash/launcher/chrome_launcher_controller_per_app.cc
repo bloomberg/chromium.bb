@@ -1356,8 +1356,8 @@ void ChromeLauncherControllerPerApp::SetShelfAutoHideBehaviorFromPrefs() {
 }
 
 void ChromeLauncherControllerPerApp::SetShelfAlignmentFromPrefs() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowLauncherAlignmentMenu))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kHideLauncherAlignmentMenu))
     return;
 
   ash::Shell::RootWindowList root_windows;
