@@ -223,7 +223,8 @@ class CONTENT_EXPORT RenderViewImpl
       bool swapped_out,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
-      AccessibilityMode accessibility_mode);
+      AccessibilityMode accessibility_mode,
+      bool allow_partial_swap);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.
@@ -830,6 +831,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void InstrumentDidBeginFrame() OVERRIDE;
   virtual void InstrumentDidCancelFrame() OVERRIDE;
   virtual void InstrumentWillComposite() OVERRIDE;
+  virtual bool AllowPartialSwap() const OVERRIDE;
 
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
@@ -1549,6 +1551,8 @@ class CONTENT_EXPORT RenderViewImpl
   typedef std::map<int, WindowSnapshotCallback>
       PendingSnapshotMap;
   PendingSnapshotMap pending_snapshots_;
+
+  bool allow_partial_swap_;
 
   // Plugins -------------------------------------------------------------------
 

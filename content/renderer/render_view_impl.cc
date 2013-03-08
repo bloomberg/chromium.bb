@@ -659,6 +659,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       decrement_shared_popup_at_destruction_(false),
       handling_select_range_(false),
       next_snapshot_id_(0),
+      allow_partial_swap_(params->allow_partial_swap),
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
@@ -892,7 +893,8 @@ RenderViewImpl* RenderViewImpl::Create(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    AccessibilityMode accessibility_mode) {
+    AccessibilityMode accessibility_mode,
+    bool allow_partial_swap) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   RenderViewImplParams params(
       opener_id,
@@ -907,7 +909,8 @@ RenderViewImpl* RenderViewImpl::Create(
       swapped_out,
       next_page_id,
       screen_info,
-      accessibility_mode);
+      accessibility_mode,
+      allow_partial_swap);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(&params);
@@ -1963,7 +1966,8 @@ WebView* RenderViewImpl::createView(
       false,
       1,
       screen_info_,
-      accessibility_mode_);
+      accessibility_mode_,
+      allow_partial_swap_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -6221,6 +6225,10 @@ void RenderViewImpl::InstrumentWillComposite() {
   if (!webview()->devToolsAgent())
     return;
   webview()->devToolsAgent()->willComposite();
+}
+
+bool RenderViewImpl::AllowPartialSwap() const {
+  return allow_partial_swap_;
 }
 
 #if defined(OS_WIN)

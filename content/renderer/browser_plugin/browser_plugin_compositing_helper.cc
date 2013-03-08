@@ -220,6 +220,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   }
   texture_layer_->setTextureMailbox(cc::TextureMailbox(mailbox_name,
                                                        callback));
+  texture_layer_->setNeedsDisplay();
   last_mailbox_valid_ = current_mailbox_valid;
 }
 

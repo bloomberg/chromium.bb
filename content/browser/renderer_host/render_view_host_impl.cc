@@ -269,6 +269,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   params.accessibility_mode =
       BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+  params.allow_partial_swap = !GetProcess()->IsGuest();
 
   Send(new ViewMsg_New(params));
 

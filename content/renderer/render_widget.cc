@@ -277,6 +277,10 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
+bool RenderWidget::AllowPartialSwap() const {
+  return true;
+}
+
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)

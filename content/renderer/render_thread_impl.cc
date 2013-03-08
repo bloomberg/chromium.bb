@@ -1131,7 +1131,8 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.swapped_out,
       params.next_page_id,
       params.screen_info,
-      params.accessibility_mode);
+      params.accessibility_mode,
+      params.allow_partial_swap);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(

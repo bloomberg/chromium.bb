@@ -38,7 +38,8 @@ struct CONTENT_EXPORT RenderViewImplParams {
                        bool swapped_out,
                        int32 next_page_id,
                        const WebKit::WebScreenInfo& screen_info,
-                       AccessibilityMode accessibility_mode);
+                       AccessibilityMode accessibility_mode,
+                       bool allow_partial_swap);
   ~RenderViewImplParams();
 
   int32 opener_id;
@@ -54,6 +55,7 @@ struct CONTENT_EXPORT RenderViewImplParams {
   int32 next_page_id;
   const WebKit::WebScreenInfo& screen_info;
   AccessibilityMode accessibility_mode;
+  bool allow_partial_swap;
 };
 
 }  // namespace content

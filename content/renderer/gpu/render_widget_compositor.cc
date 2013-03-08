@@ -171,7 +171,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         settings.topControlsHideThreshold = hide_threshold;
   }
 
-  settings.partialSwapEnabled =
+  settings.partialSwapEnabled = widget->AllowPartialSwap() &&
       cmd->HasSwitch(cc::switches::kEnablePartialSwap);
   settings.backgroundColorInsteadOfCheckerboard =
       cmd->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
