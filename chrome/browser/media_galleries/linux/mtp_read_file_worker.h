@@ -7,115 +7,83 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner_helpers.h"
-#include "base/synchronization/cancellation_flag.h"
-#include "chrome/browser/media_galleries/linux/mtp_device_operations_utils.h"
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 
 namespace base {
-class SequencedTaskRunner;
-class WaitableEvent;
+class FilePath;
 }
 
 namespace chrome {
 
-typedef struct WorkerDeleter<class MTPReadFileWorker> MTPReadFileWorkerDeleter;
+class SnapshotFileDetails;
+struct SnapshotRequestInfo;
 
-// Worker class to read media device file data given a file |path|.
-class MTPReadFileWorker
-    : public base::RefCountedThreadSafe<MTPReadFileWorker,
-                                        MTPReadFileWorkerDeleter> {
+// Worker class to copy the contents of the media transfer protocol(MTP) device
+// file to the given snapshot file.
+class MTPReadFileWorker {
  public:
-  // Constructed on |media_task_runner_| thread.
-  MTPReadFileWorker(const std::string& handle,
-                    const std::string& src_path,
-                    uint32 total_size,
-                    const base::FilePath& dest_path,
-                    base::SequencedTaskRunner* task_runner,
-                    base::WaitableEvent* task_completed_event,
-                    base::WaitableEvent* shutdown_event);
+  explicit MTPReadFileWorker(const std::string& device_handle);
+  ~MTPReadFileWorker();
 
-  // This function is invoked on |media_task_runner_| to post the task on UI
-  // thread. This blocks the |media_task_runner_| until the task is complete.
-  void Run();
-
-  bool Succeeded() const;
-
-  // Returns the |media_task_runner_| associated with this worker object.
-  // This function is exposed for WorkerDeleter struct to access the
-  // |media_task_runner_|.
-  base::SequencedTaskRunner* media_task_runner() const {
-    return media_task_runner_.get();
-  }
+  // Dispatches the request to MediaTransferProtocolManager to get the media
+  // file contents.
+  //
+  // |request_info| specifies the snapshot file request params.
+  // |snapshot_file_info| specifies the metadata of the snapshot file.
+  void WriteDataIntoSnapshotFile(
+      const SnapshotRequestInfo& request_info,
+      const base::PlatformFileInfo& snapshot_file_info);
 
  private:
-  friend struct WorkerDeleter<MTPReadFileWorker>;
-  friend class base::DeleteHelper<MTPReadFileWorker>;
-  friend class base::RefCountedThreadSafe<MTPReadFileWorker,
-                                          MTPReadFileWorkerDeleter>;
+  // Called when WriteDataIntoSnapshotFile() completes.
+  //
+  // |snapshot_file_details| contains the current state of the snapshot file
+  // (such as how many bytes written to the snapshot file, media device file
+  // path, snapshot file path, bytes remaining, etc).
+  //
+  // If there is an error, |snapshot_file_details.error_callback| is invoked on
+  // the IO thread to notify the caller about the failure.
+  //
+  // If there is no error, |snapshot_file_details.success_callback| is invoked
+  // on the IO thread to notify the caller about the success.
+  void OnDidWriteIntoSnapshotFile(
+      scoped_ptr<SnapshotFileDetails> snapshot_file_details);
 
-  // Destructed via MTPReadFileWorkerDeleter.
-  virtual ~MTPReadFileWorker();
+  // Dispatches the request to MediaTransferProtocolManager to get the device
+  // media file data chunk based on the parameters in |snapshot_file_details|.
+  void ReadDataChunkFromDeviceFile(
+      scoped_ptr<SnapshotFileDetails> snapshot_file_details);
 
-  // Dispatches a request to MediaTransferProtocolManager to get the media file
-  // contents.
-  void DoWorkOnUIThread();
+  // Called when ReadDataChunkFromDeviceFile() completes.
+  //
+  // If there is no error, |data| will contain the data chunk and |error| is
+  // set to false.
+  //
+  // If there is an error, |data| is empty and |error| is set to true.
+  void OnDidReadDataChunkFromDeviceFile(
+      scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+      const std::string& data,
+      bool error);
 
-  // Query callback for DoWorkOnUIThread(). On success, |data| has the media
-  // file contents. On failure, |error| is set to true. This function signals
-  // to unblock |media_task_runner_|.
-  void OnDidWorkOnUIThread(const std::string& data, bool error);
-
-  uint32 BytesToRead() const;
+  // Called when the data chunk is written to the
+  // |snapshot_file_details_.snapshot_file_path|.
+  //
+  // If the write operation succeeds, |bytes_written| is set to a non-zero
+  // value.
+  //
+  // If the write operation fails, |bytes_written| is set to zero.
+  void OnDidWriteDataChunkIntoSnapshotFile(
+      scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+      uint32 bytes_written);
 
   // The device unique identifier to query the device.
   const std::string device_handle_;
 
-  // The media device file path.
-  const std::string src_path_;
-
-  // Number of bytes to read.
-  const uint32 total_bytes_;
-
-  // Where to write the data read from the device.
-  const base::FilePath dest_path_;
-
-  /****************************************************************************
-   * The variables below are accessed on both |media_task_runner_| and the UI
-   * thread. However, there's no concurrent access because the UI thread is in a
-   * blocked state when access occurs on |media_task_runner_|.
-   */
-
-  // Number of bytes read from the device.
-  uint32 bytes_read_;
-
-  // Temporary data storage.
-  std::string data_;
-
-  // Whether an error occurred during file transfer.
-  bool error_occurred_;
-
-  /***************************************************************************/
-
-  // A reference to |media_task_runner_| to destruct this object on the correct
-  // thread.
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
-
-  // |media_task_runner_| can wait on this event until the required operation
-  // is complete.
-  // TODO(kmadhusu): Remove this WaitableEvent after modifying the
-  // DeviceMediaFileUtil functions as asynchronous functions.
-  base::WaitableEvent* on_task_completed_event_;
-
-  // Stores a reference to waitable event associated with the shut down message.
-  base::WaitableEvent* on_shutdown_event_;
-
-  // Set to ignore the request results. This will be set when
-  // MTPDeviceDelegateImplLinux object is about to be deleted.
-  // |on_task_completed_event_| and |on_shutdown_event_| should not be
-  // dereferenced when this is set.
-  base::CancellationFlag cancel_tasks_flag_;
+  // For callbacks that may run after destruction.
+  base::WeakPtrFactory<MTPReadFileWorker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPReadFileWorker);
 };

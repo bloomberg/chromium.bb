@@ -4,111 +4,140 @@
 
 #include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
 
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/files/file_path.h"
+#include "base/safe_numerics.h"
+#include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
-#include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
 
 namespace chrome {
 
-MTPReadFileWorker::MTPReadFileWorker(const std::string& handle,
-                                     const std::string& src_path,
-                                     uint32 total_size,
-                                     const base::FilePath& dest_path,
-                                     base::SequencedTaskRunner* task_runner,
-                                     base::WaitableEvent* task_completed_event,
-                                     base::WaitableEvent* shutdown_event)
-    : device_handle_(handle),
-      src_path_(src_path),
-      total_bytes_(total_size),
-      dest_path_(dest_path),
-      bytes_read_(0),
-      error_occurred_(false),
-      media_task_runner_(task_runner),
-      on_task_completed_event_(task_completed_event),
-      on_shutdown_event_(shutdown_event) {
-  DCHECK(on_task_completed_event_);
-  DCHECK(on_shutdown_event_);
+namespace {
+
+// Appends |data| to the snapshot file specified by the |snapshot_file_path| on
+// the file thread.
+// Returns the number of bytes written to the snapshot file. In case of failure,
+// returns zero.
+uint32 WriteDataChunkIntoSnapshotFileOnFileThread(
+    const base::FilePath& snapshot_file_path,
+    const std::string& data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  int bytes_written =
+      file_util::AppendToFile(snapshot_file_path, data.data(),
+                              base::checked_numeric_cast<int>(data.size()));
+  return (static_cast<int>(data.size()) == bytes_written) ?
+      base::checked_numeric_cast<uint32>(bytes_written) : 0;
 }
 
-void MTPReadFileWorker::Run() {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
+}  // namespace
 
-  if (on_shutdown_event_->IsSignaled()) {
-    // Process is in shutdown mode.
-    // Do not post any task on |media_task_runner_|.
-    return;
-  }
-
-  int dest_fd = open(dest_path_.value().c_str(), O_WRONLY);
-  if (dest_fd < 0)
-    return;
-  file_util::ScopedFD dest_fd_scoper(&dest_fd);
-
-  while (bytes_read_ < total_bytes_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&MTPReadFileWorker::DoWorkOnUIThread,
-                                       this));
-    on_task_completed_event_->Wait();
-    if (error_occurred_)
-      break;
-    if (on_shutdown_event_->IsSignaled()) {
-      cancel_tasks_flag_.Set();
-      break;
-    }
-
-    int bytes_written =
-        file_util::WriteFileDescriptor(dest_fd, data_.data(), data_.size());
-    if (static_cast<int>(data_.size()) != bytes_written)
-      break;
-
-    bytes_read_ += data_.size();
-  }
-}
-
-bool MTPReadFileWorker::Succeeded() const {
-  return (!error_occurred_ && (bytes_read_ == total_bytes_));
+MTPReadFileWorker::MTPReadFileWorker(const std::string& device_handle)
+    : device_handle_(device_handle),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!device_handle_.empty());
 }
 
 MTPReadFileWorker::~MTPReadFileWorker() {
-  DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
 }
 
-void MTPReadFileWorker::DoWorkOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cancel_tasks_flag_.IsSet())
+void MTPReadFileWorker::WriteDataIntoSnapshotFile(
+    const SnapshotRequestInfo& request_info,
+    const base::PlatformFileInfo& snapshot_file_info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ReadDataChunkFromDeviceFile(
+      make_scoped_ptr(new SnapshotFileDetails(request_info,
+                                              snapshot_file_info)));
+}
+
+void MTPReadFileWorker::ReadDataChunkFromDeviceFile(
+    scoped_ptr<SnapshotFileDetails> snapshot_file_details) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(snapshot_file_details.get());
+
+  // To avoid calling |snapshot_file_details| methods and passing ownership of
+  // |snapshot_file_details| in the same_line.
+  SnapshotFileDetails* snapshot_file_details_ptr = snapshot_file_details.get();
+
+  device::MediaTransferProtocolManager* mtp_device_mgr =
+      device::MediaTransferProtocolManager::GetInstance();
+  mtp_device_mgr->ReadFileChunkByPath(
+      device_handle_,
+      snapshot_file_details_ptr->device_file_path(),
+      snapshot_file_details_ptr->bytes_written(),
+      snapshot_file_details_ptr->BytesToRead(),
+      base::Bind(&MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&snapshot_file_details)));
+}
+
+void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
+    scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+    const std::string& data,
+    bool error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(snapshot_file_details.get());
+  snapshot_file_details->set_error_occurred(
+      error || (data.size() != snapshot_file_details->BytesToRead()));
+  if (snapshot_file_details->error_occurred()) {
+    OnDidWriteIntoSnapshotFile(snapshot_file_details.Pass());
     return;
+  }
 
-  GetMediaTransferProtocolManager()->ReadFileChunkByPath(
-      device_handle_, src_path_, bytes_read_, BytesToRead(),
-      base::Bind(&MTPReadFileWorker::OnDidWorkOnUIThread, this));
+  // To avoid calling |snapshot_file_details| methods and passing ownership of
+  // |snapshot_file_details| in the same_line.
+  SnapshotFileDetails* snapshot_file_details_ptr = snapshot_file_details.get();
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&WriteDataChunkIntoSnapshotFileOnFileThread,
+                 snapshot_file_details_ptr->snapshot_file_path(),
+                 data),
+      base::Bind(&MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&snapshot_file_details)));
 }
 
-void MTPReadFileWorker::OnDidWorkOnUIThread(const std::string& data,
-                                            bool error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (cancel_tasks_flag_.IsSet())
+void MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile(
+    scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+    uint32 bytes_written) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(snapshot_file_details.get());
+  if (snapshot_file_details->AddBytesWritten(bytes_written)) {
+    if (!snapshot_file_details->IsSnapshotFileWriteComplete()) {
+      ReadDataChunkFromDeviceFile(snapshot_file_details.Pass());
+      return;
+    }
+  } else {
+    snapshot_file_details->set_error_occurred(true);
+  }
+  OnDidWriteIntoSnapshotFile(snapshot_file_details.Pass());
+}
+
+void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(
+    scoped_ptr<SnapshotFileDetails> snapshot_file_details) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(snapshot_file_details.get());
+
+  if (snapshot_file_details->error_occurred()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(snapshot_file_details->error_callback(),
+                   base::PLATFORM_FILE_ERROR_FAILED));
     return;
-  error_occurred_ = error || (data.size() != BytesToRead());
-  if (!error_occurred_)
-    data_ = data;
-  on_task_completed_event_->Signal();
-}
-
-uint32 MTPReadFileWorker::BytesToRead() const {
-  // Read data in 1 MB chunks.
-  static const uint32 kReadChunkSize = 1024 * 1024;
-  return std::min(kReadChunkSize, total_bytes_ - bytes_read_);
+  }
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(snapshot_file_details->success_callback(),
+                 snapshot_file_details->file_info(),
+                 snapshot_file_details->snapshot_file_path()));
 }
 
 }  // namespace chrome

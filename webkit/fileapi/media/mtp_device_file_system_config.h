@@ -16,7 +16,8 @@
 
 // Use asynchronous MTP device delegate API.
 // TODO(kmadhusu): remove this define and make this default.
-#if defined(OS_WIN)
+// Note that OS_LINUX implies OS_CHROMEOS
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define USE_MTP_DEVICE_ASYNC_DELEGATE
 #endif
 
