@@ -15,6 +15,7 @@ from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
+from chromite.lib import namespaces
 from chromite.lib import osutils
 from chromite.lib import toolchain
 
@@ -30,7 +31,7 @@ ENTER_CHROOT = [os.path.join(constants.SOURCE_ROOT,
                              'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
-NEEDED_TOOLS = ('curl', 'xz', 'unshare')
+NEEDED_TOOLS = ('curl', 'xz')
 
 
 def GetArchStageTarballs(version):
@@ -190,16 +191,12 @@ def _ReExecuteIfNeeded(argv):
   Also unshare the mount namespace so as to ensure that processes outside
   the chroot can't mess with our mounts.
   """
-  MAGIC_VAR = '%CROS_SDK_MOUNT_NS'
   if os.geteuid() != 0:
     cmd = _SudoCommand() + ['--'] + argv
     os.execvp(cmd[0], cmd)
-  elif os.environ.get(MAGIC_VAR, '0') == '0':
-    cgroups.Cgroup.InitSystem()
-    os.environ[MAGIC_VAR] = '1'
-    os.execvp('unshare', ['unshare', '-m', '--'] + argv)
   else:
-    os.environ.pop(MAGIC_VAR)
+    cgroups.Cgroup.InitSystem()
+    namespaces.Unshare(namespaces.CLONE_NEWNS)
 
 
 def main(argv):
