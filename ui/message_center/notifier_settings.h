@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_DELEGATE_H_
-#define UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_DELEGATE_H_
+#ifndef UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_H_
+#define UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_H_
 
 #include <string>
 
@@ -13,6 +13,16 @@
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
+
+class NotifierSettingsDelegate;
+class NotifierSettingsProvider;
+
+// Brings up the settings dialog and returns a weak reference to the delegate,
+// which is typically the view. If the dialog already exists, it is brought to
+// the front, otherwise it is created.
+MESSAGE_CENTER_EXPORT NotifierSettingsDelegate* ShowSettings(
+    NotifierSettingsProvider* provider,
+    gfx::NativeView context);
 
 // The struct to hold the information of notifiers. The information will be
 // used by NotifierSettingsView.
@@ -53,8 +63,9 @@ struct MESSAGE_CENTER_EXPORT Notifier {
   DISALLOW_COPY_AND_ASSIGN(Notifier);
 };
 
-// The delegate class for NotifierSettingsView.
-class MESSAGE_CENTER_EXPORT NotifierSettingsViewDelegate {
+// A class used by NotifierSettingsView to integrate with a setting system
+// for the clients of this module.
+class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
  public:
   // Collects the current notifier list and fills to |notifiers|. Caller takes
   // the ownership of the elements of |notifiers|.
@@ -68,6 +79,18 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsViewDelegate {
   virtual void OnNotifierSettingsClosing() = 0;
 };
 
+// A delegate class implemented by the view of the NotifierSettings to get
+// notified when the controller has changed data.
+class MESSAGE_CENTER_EXPORT NotifierSettingsDelegate {
+ public:
+  // Called when an icon in the controller has been updated.
+  virtual void UpdateIconImage(const std::string& id,
+                               const gfx::Image& icon) = 0;
+
+  // Called when the controller detects that a favicon has changed.
+  virtual void UpdateFavicon(const GURL& url, const gfx::Image& icon) = 0;
+};
+
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_DELEGATE_H_
+#endif  // UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_H_

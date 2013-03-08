@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/notifier_settings_view_delegate.h"
+#include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
+
+#if !defined(TOOLKIT_VIEWS)
+NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
+                                       gfx::NativeView context) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+#endif
 
 Notifier::Notifier(const std::string& id,
                    const string16& name,

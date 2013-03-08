@@ -11,18 +11,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/history/history_types.h"
-#include "ui/message_center/notifier_settings_view_delegate.h"
+#include "ui/message_center/notifier_settings.h"
 
 class CancelableTaskTracker;
-
-namespace message_center {
-class NotifierSettingsView;
-}
 
 // The class to bridge between the settings UI of notifiers and the preference
 // storage.
 class MessageCenterSettingsController
-    : public message_center::NotifierSettingsViewDelegate,
+    : public message_center::NotifierSettingsProvider,
       public extensions::AppIconLoader::Delegate {
  public:
   MessageCenterSettingsController();
@@ -52,7 +48,7 @@ class MessageCenterSettingsController
 
   // The view displaying notifier settings. NULL if the settings are not
   // visible.
-  message_center::NotifierSettingsView* settings_view_;
+  message_center::NotifierSettingsDelegate* delegate_;
 
   // The task tracker for loading favicons.
   scoped_ptr<CancelableTaskTracker> favicon_tracker_;

@@ -16,28 +16,17 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_constants.h"
-#include "ui/message_center/views/notifier_settings_view.h"
-#include "ui/views/widget/widget.h"
 
 MessageCenterSettingsController::MessageCenterSettingsController()
-    : settings_view_(NULL) {
+    : delegate_(NULL) {
 }
 
 MessageCenterSettingsController::~MessageCenterSettingsController() {
-  if (settings_view_) {
-    settings_view_->set_delegate(NULL);
-    settings_view_->GetWidget()->Close();
-    settings_view_ = NULL;
-  }
 }
 
 void MessageCenterSettingsController::ShowSettingsDialog(
     gfx::NativeView context) {
-  if (settings_view_)
-    settings_view_->GetWidget()->StackAtTop();
-  else
-    settings_view_ =
-        message_center::NotifierSettingsView::Create(this, context);
+  delegate_ = message_center::ShowSettings(this, context);
 }
 
 void MessageCenterSettingsController::GetNotifierList(
@@ -142,7 +131,7 @@ void MessageCenterSettingsController::SetNotifierEnabled(
 }
 
 void MessageCenterSettingsController::OnNotifierSettingsClosing() {
-  settings_view_ = NULL;
+  delegate_ = NULL;
   DCHECK(favicon_tracker_.get());
   favicon_tracker_->TryCancelAll();
 }
@@ -150,15 +139,15 @@ void MessageCenterSettingsController::OnNotifierSettingsClosing() {
 void MessageCenterSettingsController::OnFaviconLoaded(
     const GURL& url,
     const history::FaviconImageResult& favicon_result) {
-  if (!settings_view_)
+  if (!delegate_)
     return;
-  settings_view_->UpdateFavicon(url, favicon_result.image);
+  delegate_->UpdateFavicon(url, favicon_result.image);
 }
 
 
 void MessageCenterSettingsController::SetAppImage(const std::string& id,
                                                   const gfx::ImageSkia& image) {
-  if (!settings_view_)
+  if (!delegate_)
     return;
-  settings_view_->UpdateIconImage(id, image);
+  delegate_->UpdateIconImage(id, gfx::Image(image) );
 }

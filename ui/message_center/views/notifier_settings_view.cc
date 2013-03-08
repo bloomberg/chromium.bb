@@ -10,7 +10,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
-#include "ui/message_center/notifier_settings_view_delegate.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -30,7 +29,17 @@ namespace {
 const int kSpaceInButtonComponents = 16;
 const int kMarginWidth = 16;
 
+NotifierSettingsView* settings_view_ = NULL;
+
 }  // namespace
+
+NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
+                                       gfx::NativeView context) {
+  if (!settings_view_) {
+    settings_view_ = NotifierSettingsView::Create(provider, context);
+  }
+  return settings_view_;
+}
 
 // We do not use views::Checkbox class directly because it doesn't support
 // showing 'icon'.
@@ -103,7 +112,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
 
 // static
 NotifierSettingsView* NotifierSettingsView::Create(
-    NotifierSettingsViewDelegate* delegate,
+    NotifierSettingsProvider* delegate,
     gfx::NativeView context) {
   NotifierSettingsView* view = new NotifierSettingsView(delegate);
   views::Widget* widget = new views::Widget;
@@ -117,11 +126,11 @@ NotifierSettingsView* NotifierSettingsView::Create(
 }
 
 void NotifierSettingsView::UpdateIconImage(const std::string& id,
-                                           const gfx::ImageSkia& icon) {
+                                           const gfx::Image& icon) {
   for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
        iter != buttons_.end(); ++iter) {
     if ((*iter)->notifier().id == id) {
-      (*iter)->UpdateIconImage(gfx::Image(icon));
+      (*iter)->UpdateIconImage(icon);
       return;
     }
   }
@@ -139,7 +148,7 @@ void NotifierSettingsView::UpdateFavicon(const GURL& url,
 }
 
 NotifierSettingsView::NotifierSettingsView(
-    NotifierSettingsViewDelegate* delegate)
+    NotifierSettingsProvider* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 
@@ -168,6 +177,7 @@ NotifierSettingsView::NotifierSettingsView(
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
+  settings_view_ = NULL;
 }
 
 bool NotifierSettingsView::CanResize() const {
