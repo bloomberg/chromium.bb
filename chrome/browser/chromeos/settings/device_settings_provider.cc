@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 using google::protobuf::RepeatedPtrField;
@@ -63,6 +65,7 @@ const char* kKnownSettings[] = {
   kStartUpUrls,
   kStatsReportingPref,
   kSystemTimezonePolicy,
+  kStartUpFlags,
 };
 
 // Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
@@ -274,12 +277,14 @@ void DeviceSettingsProvider::SetInPolicy() {
     em::UserWhitelistProto* whitelist_proto =
         device_settings_.mutable_user_whitelist();
     whitelist_proto->clear_user_whitelist();
-    base::ListValue& users = static_cast<base::ListValue&>(*value);
-    for (base::ListValue::const_iterator i = users.begin();
-         i != users.end(); ++i) {
-      std::string email;
-      if ((*i)->GetAsString(&email))
-        whitelist_proto->add_user_whitelist(email.c_str());
+    const base::ListValue* users;
+    if (value->GetAsList(&users)) {
+      for (base::ListValue::const_iterator i = users->begin();
+           i != users->end(); ++i) {
+        std::string email;
+        if ((*i)->GetAsString(&email))
+          whitelist_proto->add_user_whitelist(email);
+      }
     }
   } else if (prop == kAccountsPrefEphemeralUsersEnabled) {
     em::EphemeralUsersEnabledProto* ephemeral_users_enabled =
@@ -300,6 +305,19 @@ void DeviceSettingsProvider::SetInPolicy() {
           allow_redeem_offers_value);
     } else {
       NOTREACHED();
+    }
+  } else if (prop == kStartUpFlags) {
+    em::StartUpFlagsProto* flags_proto =
+        device_settings_.mutable_start_up_flags();
+    flags_proto->Clear();
+    const base::ListValue* flags;
+    if (value->GetAsList(&flags)) {
+      for (base::ListValue::const_iterator i = flags->begin();
+           i != flags->end(); ++i) {
+        std::string flag;
+        if ((*i)->GetAsString(&flag))
+          flags_proto->add_flags(flag);
+      }
     }
   } else {
     // The remaining settings don't support Set(), since they are not
@@ -406,6 +424,17 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
     }
   }
   new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts, account_list);
+
+  if (policy.has_start_up_flags()) {
+    base::ListValue* list = new base::ListValue();
+    const em::StartUpFlagsProto& flags_proto = policy.start_up_flags();
+    const RepeatedPtrField<std::string>& flags = flags_proto.flags();
+    for (RepeatedPtrField<std::string>::const_iterator it = flags.begin();
+         it != flags.end(); ++it) {
+      list->Append(new base::StringValue(*it));
+    }
+    new_values_cache->SetValue(kStartUpFlags, list);
+  }
 }
 
 void DeviceSettingsProvider::DecodeKioskPolicies(
@@ -604,6 +633,7 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
   // TODO(pastarmovj): Remove this once migration is not needed anymore.
   // If the value is not set we should try to migrate legacy consent file.
   if (use_file) {
+    UMA_HISTOGRAM_COUNTS("DeviceSettings.MetricsMigrated", 1);
     new_value = HasOldMetricsFile();
     // Make sure the values will get eventually written to the policy file.
     migration_values_.SetValue(kStatsReportingPref,
@@ -642,6 +672,24 @@ void DeviceSettingsProvider::ApplySideEffects(
     ApplyMetricsSetting(false, settings.metrics_enabled().metrics_enabled());
   else
     ApplyMetricsSetting(true, false);
+
+  // TODO(pastarmovj): Remove this after we don't need it anymore.
+  // See: http://crosbug.com/39553
+  // Migrate flags to device settings.
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state->HasPrefPath(prefs::kEnabledLabsExperiments)) {
+    if (!settings.has_start_up_flags()) {
+      const base::ListValue* flags =
+          local_state->GetList(prefs::kEnabledLabsExperiments);
+      migration_values_.SetValue(kStartUpFlags, flags->DeepCopy());
+      AttemptMigration();
+    } else {
+      // Either it has been properly migrated or the user already specified new
+      // flags in the device policy.
+      UMA_HISTOGRAM_COUNTS("DeviceSettings.FlagsMigrated", 1);
+      local_state->ClearPref(prefs::kEnabledLabsExperiments);
+    }
+  }
 
   // Next set the roaming setting as needed.
   ApplyRoamingSetting(

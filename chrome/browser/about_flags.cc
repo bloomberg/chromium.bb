@@ -43,6 +43,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -1302,9 +1304,58 @@ class FlagsState {
   DISALLOW_COPY_AND_ASSIGN(FlagsState);
 };
 
+#if defined(OS_CHROMEOS)
+// Extracts the list of enabled lab experiments from device settings and stores
+// them in a set.
+void GetEnabledFlagsFromDeviceSettings(std::set<std::string>* result) {
+  const ListValue* enabled_experiments;
+  if (!chromeos::CrosSettings::Get()->GetList(chromeos::kStartUpFlags,
+                                              &enabled_experiments)) {
+    return;
+  }
+
+  for (ListValue::const_iterator it = enabled_experiments->begin();
+       it != enabled_experiments->end();
+       ++it) {
+    std::string experiment_name;
+    if (!(*it)->GetAsString(&experiment_name)) {
+      LOG(WARNING) << "Invalid entry in " << chromeos::kStartUpFlags;
+      continue;
+    }
+    result->insert(experiment_name);
+  }
+}
+
+// Takes a set of enabled lab experiments and saves it into the device settings
+// storage on ChromeOS.
+void SetEnabledFlagsToDeviceSettings(
+    const std::set<std::string>& enabled_experiments) {
+  scoped_ptr<base::ListValue> experiments_list(new base::ListValue());
+
+  for (std::set<std::string>::const_iterator it = enabled_experiments.begin();
+       it != enabled_experiments.end();
+       ++it) {
+    experiments_list->Append(new StringValue(*it));
+  }
+  chromeos::CrosSettings::Get()->Set(chromeos::kStartUpFlags,
+                                     *experiments_list);
+}
+#endif
+
 // Extracts the list of enabled lab experiments from preferences and stores them
-// in a set.
+// in a set. On ChromeOS |prefs| can be NULL when reading machine level flags.
 void GetEnabledFlags(const PrefService* prefs, std::set<std::string>* result) {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS flags are stored in the device settings blob.
+  if (!prefs) {
+    GetEnabledFlagsFromDeviceSettings(result);
+    return;
+  }
+#else
+  // Never allow |prefs| to be NULL on other platforms.
+  CHECK(prefs);
+#endif
+
   const ListValue* enabled_experiments = prefs->GetList(
       prefs::kEnabledLabsExperiments);
   if (!enabled_experiments)
@@ -1322,9 +1373,21 @@ void GetEnabledFlags(const PrefService* prefs, std::set<std::string>* result) {
   }
 }
 
-// Takes a set of enabled lab experiments
+// Takes a set of enabled lab experiments. On ChromeOS |prefs| can be NULL when
+// setting machine level flags.
 void SetEnabledFlags(
     PrefService* prefs, const std::set<std::string>& enabled_experiments) {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS flags are stored in the device settings blob.
+  if (!prefs) {
+    SetEnabledFlagsToDeviceSettings(enabled_experiments);
+    return;
+  }
+#else
+  // Never allow |prefs| to be NULL on other platforms.
+  CHECK(prefs);
+#endif
+
   ListPrefUpdate update(prefs, prefs::kEnabledLabsExperiments);
   ListValue* experiments_list = update.Get();
 

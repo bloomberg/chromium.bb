@@ -219,8 +219,7 @@ void FlagsUI::FinishInitialization(
   if (!current_user_is_owner) {
     web_ui()->AddMessageHandler(new FlagsDOMHandler(profile->GetPrefs()));
   } else {
-    web_ui()->AddMessageHandler(
-        new FlagsDOMHandler(g_browser_process->local_state()));
+    web_ui()->AddMessageHandler(new FlagsDOMHandler(NULL));
     // If the owner managed to set the flags pref on his own profile clear it
     // because it will never be accessible anymore.
     if (profile->GetPrefs()->HasPrefPath(prefs::kEnabledLabsExperiments))

@@ -1815,6 +1815,9 @@
   "DeviceAllowRedeemChromeOsRegistrationOffers": {
   },
 
+  "DeviceStartUpFlags": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

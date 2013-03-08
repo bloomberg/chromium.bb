@@ -425,6 +425,23 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                         container.allow_redeem_offers()));
     }
   }
+
+  if (policy.has_start_up_flags()) {
+    const em::StartUpFlagsProto& container(policy.start_up_flags());
+    if (container.flags_size()) {
+      ListValue* flags = new ListValue();
+      RepeatedPtrField<std::string>::const_iterator entry;
+      for (entry = container.flags().begin();
+           entry != container.flags().end();
+           ++entry) {
+        flags->Append(Value::CreateStringValue(*entry));
+      }
+      policies->Set(key::kDeviceStartUpFlags,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    flags);
+    }
+  }
 }
 
 }  // namespace
