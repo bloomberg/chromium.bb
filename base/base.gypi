@@ -392,7 +392,6 @@
           'stl_util.h',
           'string_piece.cc',
           'string_piece.h',
-          'string_split.h',
           'string_util.cc',
           'string_util.h',
           'string_util_posix.h',

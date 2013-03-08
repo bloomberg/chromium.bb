@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/status.h"
