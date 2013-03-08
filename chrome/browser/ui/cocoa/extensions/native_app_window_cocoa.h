@@ -143,6 +143,7 @@ class NativeAppWindowCocoa : public NativeAppWindow {
 
   gfx::Size min_size_;
   gfx::Size max_size_;
+  bool resizable_;
 
   scoped_nsobject<NativeAppWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention

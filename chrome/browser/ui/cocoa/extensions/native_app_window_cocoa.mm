@@ -207,9 +207,12 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
         floor((NSHeight(main_screen_rect) - NSHeight(cocoa_bounds)) / 2);
   }
 
+  resizable_ = params.resizable;
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                          NSMiniaturizableWindowMask | NSResizableWindowMask |
+                          NSMiniaturizableWindowMask |
                           NSTexturedBackgroundWindowMask;
+  if (resizable_)
+    style_mask |= NSResizableWindowMask;
   scoped_nsobject<NSWindow> window;
   if (has_frame_) {
     window.reset([[ShellNSWindow alloc]
@@ -359,8 +362,10 @@ void NativeAppWindowCocoa::SetFullscreen(bool fullscreen) {
   } else {
     base::mac::ReleaseFullScreen(base::mac::kFullScreenModeAutoHideAll);
     NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                            NSMiniaturizableWindowMask | NSResizableWindowMask |
+                            NSMiniaturizableWindowMask |
                             NSTexturedBackgroundWindowMask;
+    if (resizable_)
+      style_mask |= NSResizableWindowMask;
     [window() setStyleMask:style_mask];
     [window() setFrame:restored_bounds_ display:YES];
   }
