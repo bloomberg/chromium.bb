@@ -1151,6 +1151,10 @@ AutofillDialogView* AutofillDialogControllerImpl::CreateView() {
   return AutofillDialogView::Create(this);
 }
 
+PersonalDataManager* AutofillDialogControllerImpl::GetManager() {
+  return PersonalDataManagerFactory::GetForProfile(profile_);
+}
+
 bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
   return account_chooser_model_.WalletIsSelected();
 }
@@ -1401,10 +1405,6 @@ DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
 
   DCHECK_EQ(&model, &suggested_shipping_);
   return SECTION_SHIPPING;
-}
-
-PersonalDataManager* AutofillDialogControllerImpl::GetManager() {
-  return PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
 DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(

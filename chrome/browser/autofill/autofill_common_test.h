@@ -21,6 +21,9 @@ void CreateTestFormField(const char* label,
                          const char* type,
                          FormFieldData* field);
 
+// Returns a profile full of dummy info.
+AutofillProfile GetFullProfile();
+
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
 // c-strings.

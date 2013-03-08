@@ -2,21 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/test_extension_environment.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
 
 namespace {
+
+using content::BrowserThread;
 
 class TestAutofillDialogView : public AutofillDialogView {
  public:
@@ -40,12 +46,32 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
   virtual void HideSignIn() OVERRIDE {}
   virtual void UpdateProgressBar(double value) OVERRIDE {}
-  virtual void ModelChanged() OVERRIDE {}
   virtual void SubmitForTesting() OVERRIDE {}
   virtual void CancelForTesting() OVERRIDE {}
 
+  MOCK_METHOD0(ModelChanged, void());
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
+};
+
+class TestPersonalDataManager : public PersonalDataManager {
+ public:
+  TestPersonalDataManager() {}
+  virtual ~TestPersonalDataManager() {}
+
+  void AddTestingProfile(AutofillProfile* profile) {
+    profiles_.push_back(profile);
+    FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
+                      OnPersonalDataChanged());
+  }
+
+  virtual const std::vector<AutofillProfile*>& GetProfiles() OVERRIDE {
+    return profiles_;
+  }
+
+ private:
+  std::vector<AutofillProfile*> profiles_;
 };
 
 class TestAutofillDialogController : public AutofillDialogControllerImpl {
@@ -71,13 +97,37 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return new TestAutofillDialogView();
   }
 
+  TestAutofillDialogView* GetView() {
+    return static_cast<TestAutofillDialogView*>(view());
+  }
+
+  TestPersonalDataManager* GetTestingManager() {
+    return &test_manager_;
+  }
+
+ protected:
+  virtual PersonalDataManager* GetManager() OVERRIDE {
+    return &test_manager_;
+  }
+
  private:
+  TestPersonalDataManager test_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
 
 class AutofillDialogControllerTest : public testing::Test {
  public:
-  AutofillDialogControllerTest() {}
+  AutofillDialogControllerTest()
+    : ui_thread_(BrowserThread::UI, &loop_),
+      file_thread_(BrowserThread::FILE),
+      file_blocking_thread_(BrowserThread::FILE_USER_BLOCKING),
+      io_thread_(BrowserThread::IO) {
+    file_thread_.Start();
+    file_blocking_thread_.Start();
+    io_thread_.StartIOThread();
+  }
+
   virtual ~AutofillDialogControllerTest() {}
 
   // testing::Test implementation:
@@ -88,7 +138,7 @@ class AutofillDialogControllerTest : public testing::Test {
     form_data.fields.push_back(field);
 
     profile()->GetPrefs()->SetBoolean(
-        prefs::kAutofillDialogPayWithoutWallet, false);
+        prefs::kAutofillDialogPayWithoutWallet, true);
     profile()->CreateRequestContext();
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
@@ -111,14 +161,19 @@ class AutofillDialogControllerTest : public testing::Test {
   }
 
  protected:
-  AutofillDialogController* controller() { return controller_; }
+  TestAutofillDialogController* controller() { return controller_; }
+
+  TestingProfile* profile() { return &profile_; }
 
  private:
-  TestingProfile* profile() { return environment_.profile(); }
-
-  // This sets up a bunch of threads which are necessary for classes like
-  // TestWebContents and URLRequestContextGetter not to fall over.
-  extensions::TestExtensionEnvironment environment_;
+  // A bunch of threads are necessary for classes like TestWebContents and
+  // URLRequestContextGetter not to fall over.
+  MessageLoopForUI loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread file_blocking_thread_;
+  content::TestBrowserThread io_thread_;
+  TestingProfile profile_;
 
   // The controller owns itself.
   TestAutofillDialogController* controller_;
@@ -150,6 +205,29 @@ TEST_F(AutofillDialogControllerTest, ValidityCheck) {
       controller()->InputIsValid(iter->type, string16());
     }
   }
+}
+
+TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  // Since the PersonalDataManager is empty, this should only have the
+  // "add new" menu item.
+  EXPECT_EQ(1, shipping_model->GetItemCount());
+
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
+
+  // Empty profiles are ignored.
+  AutofillProfile empty_profile(base::GenerateGUID());
+  empty_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
+  controller()->GetTestingManager()->AddTestingProfile(&empty_profile);
+  shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  EXPECT_EQ(1, shipping_model->GetItemCount());
+
+  // A full profile should be picked up.
+  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  EXPECT_EQ(2, shipping_model->GetItemCount());
 }
 
 }  // namespace autofill

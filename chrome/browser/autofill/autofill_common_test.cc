@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/autofill_common_test.h"
 
+#include "base/guid.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -31,6 +32,23 @@ inline void check_and_set(
     FormGroup* profile, AutofillFieldType type, const char* value) {
   if (value)
     profile->SetRawInfo(type, UTF8ToUTF16(value));
+}
+
+AutofillProfile GetFullProfile() {
+  AutofillProfile profile(base::GenerateGUID());
+  SetProfileInfo(&profile,
+                 "John",
+                 "H.",
+                 "Doe",
+                 "johndoe@hades.com",
+                 "Underworld",
+                 "666 Erebus St.",
+                 "Apt 8",
+                 "Elysium", "CA",
+                 "91111",
+                 "US",
+                 "16502111111");
+  return profile;
 }
 
 void SetProfileInfo(AutofillProfile* profile,

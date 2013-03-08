@@ -193,6 +193,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   AutofillDialogView* view() { return view_.get(); }
   virtual AutofillDialogView* CreateView();
 
+  // Returns the PersonalDataManager for |profile_|.
+  virtual PersonalDataManager* GetManager();
+
  private:
   // Returns whether Wallet is the current data source.
   bool IsPayingWithWallet() const;
@@ -267,9 +270,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       std::vector<string16>* popup_values,
       std::vector<string16>* popup_labels,
       std::vector<string16>* popup_icons);
-
-  // Returns the PersonalDataManager for |profile_|.
-  PersonalDataManager* GetManager();
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
