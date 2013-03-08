@@ -605,6 +605,17 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
                                        false);
+
+  // Adding a launcher item at the end (i.e. a panel)  canels drag and respects
+  // the order.
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
+  new_id = AddPanel();
+  id_map.insert(id_map.begin() + kExpectedAppIndex + 6,
+                std::make_pair(new_id, GetButtonByID(new_id)));
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
 }
 
 // Check that 2nd drag from the other pointer would be ignored.

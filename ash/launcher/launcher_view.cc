@@ -962,10 +962,17 @@ int LauncherView::CancelDrag(int modified_index) {
     return modified_index;
 
   // Restore previous position, tracking the position of the modified view.
-  views::View* removed_view =
-      (modified_index >= 0) ? view_model_->view_at(modified_index) : NULL;
+  bool at_end = modified_index == view_model_->view_size();
+  views::View* modified_view =
+      (modified_index >= 0 && !at_end) ?
+      view_model_->view_at(modified_index) : NULL;
   model_->Move(drag_view_index, start_drag_index_);
-  return removed_view ? view_model_->GetIndexOfView(removed_view) : -1;
+
+  // If the modified view will be at the end of the list, return the new end of
+  // the list.
+  if (at_end)
+    return view_model_->view_size();
+  return modified_view ? view_model_->GetIndexOfView(modified_view) : -1;
 }
 
 gfx::Size LauncherView::GetPreferredSize() {
