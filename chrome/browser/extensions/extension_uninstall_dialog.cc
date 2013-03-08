@@ -58,7 +58,7 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
       ui_loop_(MessageLoop::current()) {
   if (browser) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_BROWSER_CLOSING,
+                   chrome::NOTIFICATION_BROWSER_CLOSED,
                    content::Source<Browser>(browser));
   }
 }
@@ -119,7 +119,7 @@ void ExtensionUninstallDialog::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSING);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
 
   browser_ = NULL;
   // If the browser is closed while waiting for the image, we need to send a
