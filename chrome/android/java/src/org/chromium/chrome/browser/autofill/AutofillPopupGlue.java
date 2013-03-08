@@ -30,8 +30,8 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     }
 
     @Override
-    public void dismissed() {
-        nativeDismissed(mNativeAutofillPopup);
+    public void requestHide() {
+        nativeRequestHide(mNativeAutofillPopup);
     }
 
     @Override
@@ -40,12 +40,11 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     }
 
     /**
-     * Dismisses the Autofill Popup, removes its anchor from the ContainerView and calls back
-     * to AutofillPopupDelegate.dismiss().
+     * Hides the Autofill Popup and removes its anchor from the ContainerView.
      */
     @CalledByNative
-    public void dismiss() {
-        mAutofillPopup.dismiss();
+    private void hide() {
+        mAutofillPopup.hide();
     }
 
     /**
@@ -53,7 +52,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
      * @param suggestions Autofill suggestions to be displayed.
      */
     @CalledByNative
-    public void show(AutofillSuggestion[] suggestions) {
+    private void show(AutofillSuggestion[] suggestions) {
         mAutofillPopup.show(suggestions);
     }
 
@@ -65,7 +64,7 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
      * @param height The height of the anchor.
      */
     @CalledByNative
-    public void setAnchorRect(float x, float y, float width, float height) {
+    private void setAnchorRect(float x, float y, float width, float height) {
         mAutofillPopup.setAnchorRect(x, y, width, height);
     }
 
@@ -77,12 +76,12 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
      * @return The AutofillSuggestion object with the specified data.
      */
     @CalledByNative
-    public static AutofillSuggestion createAutofillSuggestion(String name, String label,
+    private static AutofillSuggestion createAutofillSuggestion(String name, String label,
             int uniqueId) {
         return new AutofillSuggestion(name, label, uniqueId);
     }
 
-    private native void nativeDismissed(int nativeAutofillPopupViewAndroid);
+    private native void nativeRequestHide(int nativeAutofillPopupViewAndroid);
     private native void nativeSuggestionSelected(int nativeAutofillPopupViewAndroid,
             int listIndex);
 

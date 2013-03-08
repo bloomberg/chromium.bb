@@ -94,7 +94,7 @@ public class AutofillTest extends ChromiumTestShellTestBase {
         }
 
         @Override
-        public void dismissed() {
+        public void requestHide() {
         }
     }
 
