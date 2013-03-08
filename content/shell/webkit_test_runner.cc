@@ -29,6 +29,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
@@ -66,6 +67,7 @@ using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
 using WebKit::WebHistoryItem;
+using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
@@ -515,6 +517,14 @@ void WebKitTestRunner::Reset() {
   routing_ids_.clear();
   session_histories_.clear();
   current_entry_indexes_.clear();
+
+  render_view()->ClearEditCommands();
+  render_view()->GetWebView()->mainFrame()->setName(WebString());
+  render_view()->GetWebView()->mainFrame()->clearOpener();
+  render_view()->GetWebView()->setPageScaleFactor(1, WebPoint(0, 0));
+  render_view()->GetWebView()->enableFixedLayoutMode(false);
+  render_view()->GetWebView()->setFixedLayoutSize(WebSize(0, 0));
+
   // Resetting the internals object also overrides the WebPreferences, so we
   // have to sync them to WebKit again.
   WebTestingSupport::resetInternalsObject(
