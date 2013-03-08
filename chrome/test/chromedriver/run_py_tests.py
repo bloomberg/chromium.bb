@@ -26,6 +26,10 @@ from common import chrome_paths
 from common import unittest_util
 
 
+def Skip(func):
+  pass
+
+
 class ChromeDriverBaseTest(unittest.TestCase):
   """Base class for testing chromedriver functionalities."""
 
@@ -343,9 +347,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.MouseDoubleClick()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  # TODO(kkania): This test is flaky since it uses setTimeout.
+  # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
+  @Skip
   def testAlert(self):
     self.assertFalse(self._driver.IsAlertOpen())
-    # TODO(kkania): Don't use setTimeout once crbug.com/177511 is fixed.
     div = self._driver.ExecuteScript(
         'window.setTimeout('
         '    function() { window.confirmed = confirm(\'HI\'); },'
