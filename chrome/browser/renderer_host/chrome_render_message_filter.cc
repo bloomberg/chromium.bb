@@ -514,15 +514,16 @@ void ChromeRenderMessageFilter::OnExtensionRemoveFilteredListener(
                                   lazy);
 }
 
-void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id,
-                                                        bool connection_error) {
+void ChromeRenderMessageFilter::OnExtensionCloseChannel(
+    int port_id,
+    const std::string& error_message) {
   if (!content::RenderProcessHost::FromID(render_process_id_))
     return;  // To guard against crash in browser_tests shutdown.
 
   extensions::MessageService* message_service =
       extensions::ExtensionSystem::Get(profile_)->message_service();
   if (message_service)
-    message_service->CloseChannel(port_id, connection_error);
+    message_service->CloseChannel(port_id, error_message);
 }
 
 void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(

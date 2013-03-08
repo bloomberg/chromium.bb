@@ -47,7 +47,8 @@ class NativeMessageProcessHost
     // Called on the UI thread.
     virtual void PostMessageFromNativeProcess(int port_id,
                                               const std::string& message) = 0;
-    virtual void CloseChannel(int port_id, bool error) = 0;
+    virtual void CloseChannel(int port_id,
+                              const std::string& error_message) = 0;
   };
 
   virtual ~NativeMessageProcessHost();
@@ -106,12 +107,8 @@ class NativeMessageProcessHost
   void HandleWriteResult(int result);
   void OnWritten(int result);
 
-  // Called when we've failed to start the native host or failed to read or
-  // write to/from it. Closes IO pipes and schedules CloseChannel() call.
-  void OnError();
-
   // Closes the connection. Called from OnError() and destructor.
-  void Close();
+  void Close(const std::string& error_message);
 
   // The Client messages will be posted to. Should only be accessed from the
   // UI thread.

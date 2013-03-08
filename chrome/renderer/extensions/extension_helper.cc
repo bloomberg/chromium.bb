@@ -345,11 +345,12 @@ void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                         render_view());
 }
 
-void ExtensionHelper::OnExtensionDispatchOnDisconnect(int port_id,
-                                                      bool connection_error) {
+void ExtensionHelper::OnExtensionDispatchOnDisconnect(
+    int port_id,
+    const std::string& error_message) {
   MiscellaneousBindings::DispatchOnDisconnect(
       dispatcher_->v8_context_set().GetAll(),
-      port_id, connection_error,
+      port_id, error_message,
       render_view());
 }
 

@@ -91,7 +91,8 @@ class ExtensionHelper
                                     const std::string& target_extension_id);
   void OnExtensionDeliverMessage(int target_port_id,
                                  const std::string& message);
-  void OnExtensionDispatchOnDisconnect(int port_id, bool connection_error);
+  void OnExtensionDispatchOnDisconnect(int port_id,
+                                       const std::string& error_message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(chrome::ViewType view_type);

@@ -146,7 +146,7 @@ class Dispatcher : public content::RenderProcessObserver {
                            const std::string& source_extension_id,
                            const std::string& target_extension_id);
   void OnDeliverMessage(int target_port_id, const std::string& message);
-  void OnDispatchOnDisconnect(int port_id, bool connection_error);
+  void OnDispatchOnDisconnect(int port_id, const std::string& error_message);
   void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnLoaded(
       const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);

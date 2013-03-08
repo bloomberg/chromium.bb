@@ -128,7 +128,8 @@ class NativeMessagingTest : public ::testing::Test,
       read_message_run_loop_->Quit();
   }
 
-  virtual void CloseChannel(int port_id, bool error) OVERRIDE {
+  virtual void CloseChannel(int port_id,
+                            const std::string& error_message) OVERRIDE {
   }
 
  protected:

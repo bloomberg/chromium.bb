@@ -482,10 +482,11 @@ void Dispatcher::OnDeliverMessage(int target_port_id,
       NULL);  // All render views.
 }
 
-void Dispatcher::OnDispatchOnDisconnect(int port_id, bool connection_error) {
+void Dispatcher::OnDispatchOnDisconnect(int port_id,
+                                        const std::string& error_message) {
   MiscellaneousBindings::DispatchOnDisconnect(
       v8_context_set_.GetAll(),
-      port_id, connection_error,
+      port_id, error_message,
       NULL);  // All render views.
 }
 

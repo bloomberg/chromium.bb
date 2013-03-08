@@ -34,6 +34,10 @@ const size_t kMessageHeaderSize = 4;
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
 
+const char kFailedToStartError[] = "Failed to start native messaging host.";
+const char kHostInputOuputError[] =
+    "Error when communicating with the native messaging host.";
+
 }  // namespace
 
 namespace extensions {
@@ -64,7 +68,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  Close();
+  Close(std::string());
 }
 
 // static
@@ -120,7 +124,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (!result) {
-    OnError();
+    Close(kFailedToStartError);
     return;
   }
 
@@ -229,7 +233,7 @@ void NativeMessageProcessHost::HandleReadResult(int result) {
     read_pending_ = true;
   } else {
     LOG(ERROR) << "Error when reading from Native Messaging host: " << result;
-    OnError();
+    Close(kHostInputOuputError);
   }
 }
 
@@ -286,7 +290,7 @@ void NativeMessageProcessHost::HandleWriteResult(int result) {
       write_pending_ = true;
     } else {
       LOG(ERROR) << "Error when writing to Native Messaging host: " << result;
-      OnError();
+      Close(kHostInputOuputError);
     }
     return;
   }
@@ -304,21 +308,17 @@ void NativeMessageProcessHost::OnWritten(int result) {
   DoWrite();
 }
 
-void NativeMessageProcessHost::OnError() {
+void NativeMessageProcessHost::Close(const std::string& error_message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  Close();
-}
-
-void NativeMessageProcessHost::Close() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-  closed_ = true;
-  read_stream_.reset();
-  write_stream_.reset();
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&Client::CloseChannel, weak_client_ui_,
-          destination_port_, true));
+  if (!closed_) {
+    closed_ = true;
+    read_stream_.reset();
+    write_stream_.reset();
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&Client::CloseChannel, weak_client_ui_,
+                   destination_port_, error_message));
+  }
 }
 
 }  // namespace extensions

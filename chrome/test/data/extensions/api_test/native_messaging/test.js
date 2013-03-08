@@ -6,6 +6,14 @@ var appName = 'com.google.chrome.test.echo';
 
 chrome.test.getConfig(function(config) {
     chrome.test.runTests([
+      function invalidHostName() {
+        var message = {"text": "Hello!"};
+        chrome.runtime.sendNativeMessage(
+            'not.installed.app', message,
+            chrome.test.callback(function(response) {
+              chrome.test.assertEq(typeof response, "undefined");
+            }, "Failed to start native messaging host."));
+      },
 
       function sendMessageWithCallback() {
         var message = {"text": "Hi there!", "number": 3};
@@ -43,7 +51,7 @@ chrome.test.getConfig(function(config) {
           currentMessage++;
 
           if (currentMessage == messagesToSend.length)
-            chrome.test.notifyPass();
+            chrome.test.succeed();
           else
             port.postMessage(messagesToSend[currentMessage]);
         });

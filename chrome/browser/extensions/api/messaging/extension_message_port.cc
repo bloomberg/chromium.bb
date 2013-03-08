@@ -34,10 +34,11 @@ void ExtensionMessagePort::DispatchOnConnect(
       tab_json, source_extension_id, target_extension_id));
 }
 
-void ExtensionMessagePort::DispatchOnDisconnect(int source_port_id,
-                                                bool connection_error) {
+void ExtensionMessagePort::DispatchOnDisconnect(
+    int source_port_id,
+    const std::string& error_message) {
   process_->Send(new ExtensionMsg_DispatchOnDisconnect(
-      routing_id_, source_port_id, connection_error));
+      routing_id_, source_port_id, error_message));
 }
 
 void ExtensionMessagePort::DispatchOnMessage(const std::string& message,

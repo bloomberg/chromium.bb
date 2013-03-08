@@ -143,7 +143,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                          const std::string& event_name,
                                          const base::DictionaryValue& filter,
                                          bool lazy);
-  void OnExtensionCloseChannel(int port_id, bool connection_error);
+  void OnExtensionCloseChannel(int port_id, const std::string& error_message);
   void OnExtensionRequestForIOThread(
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);

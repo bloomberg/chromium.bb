@@ -67,9 +67,10 @@ class MessageService : public content::NotificationObserver,
                                    const std::string& source_extension_id,
                                    const std::string& target_extension_id) {}
 
-    // Notify the port that the channel has been closed.
+    // Notify the port that the channel has been closed. If |error_message| is
+    // non-empty, it indicates an error occurred while opening the connection.
     virtual void DispatchOnDisconnect(int source_port_id,
-                                      bool connection_error) {}
+                                      const std::string& error_message) {}
 
     // Dispatch a message to this end of the communication.
     virtual void DispatchOnMessage(const std::string& message,
@@ -123,7 +124,8 @@ class MessageService : public content::NotificationObserver,
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
-  virtual void CloseChannel(int port_id, bool connection_error) OVERRIDE;
+  virtual void CloseChannel(int port_id,
+                            const std::string& error_message) OVERRIDE;
 
   // Sends a message to the given port.
   void PostMessage(int port_id, const std::string& message);
@@ -150,7 +152,8 @@ class MessageService : public content::NotificationObserver,
   bool OpenChannelImpl(scoped_ptr<OpenChannelParams> params);
 
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
-                        int port_id, bool connection_error,
+                        int port_id,
+                        const std::string& error_message,
                         bool notify_other_port);
 
   // Have MessageService take ownership of |channel|, and remove any pending
@@ -178,10 +181,10 @@ class MessageService : public content::NotificationObserver,
                           int source_process_id,
                           extensions::ExtensionHost* host);
   void PendingCloseChannel(int port_id,
-                           bool connection_error,
+                           const std::string& error_message,
                            extensions::ExtensionHost* host) {
     if (host)
-      CloseChannel(port_id, connection_error);
+      CloseChannel(port_id, error_message);
   }
   void PendingPostMessage(int port_id,
                           const std::string& message,

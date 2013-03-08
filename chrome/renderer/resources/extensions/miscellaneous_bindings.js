@@ -225,16 +225,14 @@
 
   // Called by native code when a channel has been closed.
   chromeHidden.Port.dispatchOnDisconnect = function(
-      portId, connectionInvalid) {
+      portId, errorMessage) {
     var port = ports[portId];
     if (port) {
       // Update the renderer's port bookkeeping, without notifying the browser.
       CloseChannel(portId, false);
-      if (connectionInvalid) {
-        var errorMsg =
-            "Could not establish connection. Receiving end does not exist.";
-        lastError.set(errorMsg);
-        console.error("Port error: " + errorMsg);
+      if (errorMessage) {
+        lastError.set(errorMessage);
+        console.error("Port error: " + errorMessage);
       }
       try {
         port.onDisconnect.dispatch(port);

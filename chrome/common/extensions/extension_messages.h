@@ -404,7 +404,7 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
 // Dispatch the Port.onDisconnect event for message channels.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
                     int /* port_id */,
-                    bool /* connection_error */)
+                    std::string /* error_message */)
 
 // Informs the renderer what channel (dev, beta, stable, etc) is running.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetChannel,
@@ -516,7 +516,7 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_PostMessage,
 // by ViewHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_CloseChannel,
                      int /* port_id */,
-                     bool /* connection_error */)
+                     std::string /* error_message */)
 
 // Used to get the extension message bundle.
 IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,

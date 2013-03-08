@@ -62,6 +62,8 @@ static void ClearPortData(int port_id) {
 }
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
+const char kReceivingEndDoesntExistError[] =
+    "Could not establish connection. Receiving end does not exist.";
 
 class ExtensionImpl : public extensions::ChromeV8Extension {
  public:
@@ -106,7 +108,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
       bool notify_browser = args[1]->BooleanValue();
       if (notify_browser)
         content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_CloseChannel(port_id, false));
+            new ExtensionHostMsg_CloseChannel(port_id, std::string()));
       ClearPortData(port_id);
     }
     return v8::Undefined();
@@ -131,7 +133,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
       if (HasPortData(port_id) && --GetPortData(port_id).ref_count == 0) {
         // Send via the RenderThread because the RenderView might be closing.
         content::RenderThread::Get()->Send(
-            new ExtensionHostMsg_CloseChannel(port_id, false));
+            new ExtensionHostMsg_CloseChannel(port_id, std::string()));
         ClearPortData(port_id);
       }
     }
@@ -239,7 +241,8 @@ void MiscellaneousBindings::DispatchOnConnect(
   // as a disconnect).
   if (!port_created) {
     content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_CloseChannel(target_port_id, true));
+        new ExtensionHostMsg_CloseChannel(
+            target_port_id, kReceivingEndDoesntExistError));
   }
 }
 
@@ -291,7 +294,7 @@ void MiscellaneousBindings::DeliverMessage(
 void MiscellaneousBindings::DispatchOnDisconnect(
     const ChromeV8ContextSet::ContextSet& contexts,
     int port_id,
-    bool connection_error,
+    const std::string& error_message,
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
@@ -304,7 +307,11 @@ void MiscellaneousBindings::DispatchOnDisconnect(
 
     std::vector<v8::Handle<v8::Value> > arguments;
     arguments.push_back(v8::Integer::New(port_id));
-    arguments.push_back(v8::Boolean::New(connection_error));
+    if (!error_message.empty()) {
+      arguments.push_back(v8::String::New(error_message.c_str()));
+    } else {
+      arguments.push_back(v8::Null());
+    }
     (*it)->CallChromeHiddenMethod("Port.dispatchOnDisconnect",
                                   arguments.size(), &arguments[0],
                                   NULL);

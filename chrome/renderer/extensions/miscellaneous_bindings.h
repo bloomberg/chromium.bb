@@ -58,7 +58,7 @@ class MiscellaneousBindings {
   static void DispatchOnDisconnect(
       const ChromeV8ContextSet::ContextSet& context_set,
       int port_id,
-      bool connection_error,
+      const std::string& error_message,
       content::RenderView* restrict_to_render_view);
 };
 

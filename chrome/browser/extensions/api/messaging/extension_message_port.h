@@ -26,7 +26,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
       const std::string& source_extension_id,
       const std::string& target_extension_id) OVERRIDE;
   virtual void DispatchOnDisconnect(int source_port_id,
-                                    bool connection_error) OVERRIDE;
+                                    const std::string& error_message) OVERRIDE;
   virtual void DispatchOnMessage(const std::string& message,
                                  int target_port_id) OVERRIDE;
   virtual void IncrementLazyKeepaliveCount() OVERRIDE;
