@@ -54,18 +54,10 @@ class StorageMonitorCros
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
 
  private:
-  struct StorageObjectInfo {
-    // Basic details {storage device name, location and identifier}.
-    chrome::StorageInfo storage_info;
-
-    // Device storage size.
-    uint64 storage_size_in_bytes;
-  };
-
   friend class base::RefCountedThreadSafe<StorageMonitorCros>;
 
   // Mapping of mount path to removable mass storage info.
-  typedef std::map<std::string, StorageObjectInfo> MountMap;
+  typedef std::map<std::string, chrome::StorageInfo> MountMap;
 
   // Private to avoid code deleting the object.
   virtual ~StorageMonitorCros();

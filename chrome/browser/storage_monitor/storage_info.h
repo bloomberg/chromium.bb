@@ -12,9 +12,17 @@ namespace chrome {
 
 struct StorageInfo {
   StorageInfo();
+  // TODO(gbillock): Deprecate and remove this constructor.
   StorageInfo(const std::string& id,
               const string16& device_name,
               const base::FilePath::StringType& device_location);
+  StorageInfo(const std::string& id,
+              const string16& device_name,
+              const base::FilePath::StringType& device_location,
+              const string16& label,
+              const string16& vendor,
+              const string16& model,
+              uint64 size_in_bytes);
   ~StorageInfo();
 
   // Unique device id - persists between device attachments.

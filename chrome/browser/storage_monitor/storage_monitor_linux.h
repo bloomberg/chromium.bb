@@ -29,13 +29,17 @@ namespace base {
 class FilePath;
 }
 
-// Gets device information given a |device_path|. On success, fills in
-// |unique_id|, |name|, |removable| and |partition_size_in_bytes|.
+// Gets device information given a |device_path| and |mount_point|.
+// On success, fills in metadata fields.
 typedef void (*GetDeviceInfoFunc)(const base::FilePath& device_path,
-                                  std::string* unique_id,
+                                  const base::FilePath& mount_point,
+                                  std::string* device_id,
                                   string16* name,
                                   bool* removable,
-                                  uint64* partition_size_in_bytes);
+                                  uint64* partition_size_in_bytes,
+                                  string16* volume_label,
+                                  string16* vendor_name,
+                                  string16* model_name);
 
 namespace chrome {
 
@@ -82,12 +86,8 @@ class StorageMonitorLinux
   // Structure to save mounted device information such as device path, unique
   // identifier, device name and partition size.
   struct MountPointInfo {
-    MountPointInfo();
-
     base::FilePath mount_device;
-    std::string device_id;
-    string16 device_name;
-    uint64 partition_size_in_bytes;
+    StorageInfo storage_info;
   };
 
   // Mapping of mount points to MountPointInfo.

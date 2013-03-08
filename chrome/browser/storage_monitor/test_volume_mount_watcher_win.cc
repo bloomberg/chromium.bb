@@ -57,7 +57,7 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
     *total_size_in_bytes = 1000000;
   if (unique_id) {
     *unique_id = "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
-    (*unique_id)[11] = path.value()[0];
+    (*unique_id)[11] = device_path.value()[0];
   }
   if (name)
     *name = path.Append(L" Drive").LossyDisplayName();

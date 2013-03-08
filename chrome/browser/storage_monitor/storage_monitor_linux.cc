@@ -135,8 +135,20 @@ uint64 GetDeviceStorageSize(const base::FilePath& device_path,
 
 // Constructs the device name from the device properties. If the device details
 // are unavailable, returns an empty string.
-string16 GetDeviceName(struct udev_device* device) {
+string16 GetDeviceName(struct udev_device* device,
+                       string16* out_volume_label,
+                       string16* out_vendor_name,
+                       string16* out_model_name) {
   std::string device_label = GetUdevDevicePropertyValue(device, kLabel);
+  std::string vendor_name = GetUdevDevicePropertyValue(device, kVendor);
+  std::string model_name = GetUdevDevicePropertyValue(device, kModel);
+  if (out_volume_label)
+    *out_volume_label = UTF8ToUTF16(device_label);
+  if (out_vendor_name)
+    *out_vendor_name = UTF8ToUTF16(vendor_name);
+  if (out_model_name)
+    *out_model_name = UTF8ToUTF16(model_name);
+
   if (!device_label.empty() && IsStringUTF8(device_label))
     return UTF8ToUTF16(device_label);
 
@@ -146,9 +158,7 @@ string16 GetDeviceName(struct udev_device* device) {
       "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
       !device_label.empty());
 
-  const string16 name = GetFullProductName(
-      GetUdevDevicePropertyValue(device, kVendor),
-      GetUdevDevicePropertyValue(device, kModel));
+  const string16 name = GetFullProductName(vendor_name, model_name);
 
   const string16 device_label_utf16 =
       (!device_label.empty() && IsStringUTF8(device_label)) ?
@@ -162,10 +172,14 @@ string16 GetDeviceName(struct udev_device* device) {
 // On success, returns true and fill in |unique_id|, |name|, |removable| and
 // |partition_size_in_bytes|.
 void GetDeviceInfo(const base::FilePath& device_path,
-                   std::string* unique_id,
+                   const base::FilePath& mount_point,
+                   std::string* device_id,
                    string16* name,
                    bool* removable,
-                   uint64* partition_size_in_bytes) {
+                   uint64* partition_size_in_bytes,
+                   string16* out_volume_label,
+                   string16* out_vendor_name,
+                   string16* out_model_name) {
   DCHECK(!device_path.empty());
   ScopedUdevObject udev_obj(udev_new());
   if (!udev_obj.get()) {
@@ -196,25 +210,42 @@ void GetDeviceInfo(const base::FilePath& device_path,
     return;
   }
 
+  string16 volume_label;
+  string16 vendor_name;
+  string16 model_name;
+  string16 device_name = GetDeviceName(device, &volume_label,
+                                       &vendor_name, &model_name);
   if (name)
-    *name = GetDeviceName(device);
+    *name = device_name;
 
-  if (unique_id)
-    *unique_id = MakeDeviceUniqueId(device);
+  std::string unique_id = MakeDeviceUniqueId(device);
+  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, device_name);
 
+  const char* value = udev_device_get_sysattr_value(device,
+                                                    kRemovableSysAttr);
+  if (!value) {
+    // |parent_device| is owned by |device| and does not need to be cleaned
+    // up.
+    struct udev_device* parent_device =
+        udev_device_get_parent_with_subsystem_devtype(device,
+                                                      kBlockSubsystemKey,
+                                                      kDiskDeviceTypeKey);
+    value = udev_device_get_sysattr_value(parent_device, kRemovableSysAttr);
+  }
+  bool is_removable = (value && atoi(value) == 1);
   if (removable) {
-    const char* value = udev_device_get_sysattr_value(device,
-                                                      kRemovableSysAttr);
-    if (!value) {
-      // |parent_device| is owned by |device| and does not need to be cleaned
-      // up.
-      struct udev_device* parent_device =
-          udev_device_get_parent_with_subsystem_devtype(device,
-                                                        kBlockSubsystemKey,
-                                                        kDiskDeviceTypeKey);
-      value = udev_device_get_sysattr_value(parent_device, kRemovableSysAttr);
+    *removable = is_removable;
+  }
+
+  if (device_id) {
+    MediaStorageUtil::Type type = MediaStorageUtil::FIXED_MASS_STORAGE;
+    if (is_removable) {
+      if (IsMediaDevice(mount_point.value()))
+        type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+      else
+        type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
     }
-    *removable = (value && atoi(value) == 1);
+    *device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
   }
 
   if (partition_size_in_bytes)
@@ -266,12 +297,8 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
   MountMap::const_iterator mount_info = mount_info_map_.find(current);
   if (mount_info == mount_info_map_.end())
     return false;
-
-  if (device_info) {
-    device_info->device_id = mount_info->second.device_id;
-    device_info->name = mount_info->second.device_name;
-    device_info->location = current.value();
-  }
+  if (device_info)
+    *device_info = mount_info->second.storage_info;
   return true;
 }
 
@@ -279,7 +306,7 @@ uint64 StorageMonitorLinux::GetStorageSize(const std::string& location) const {
   MountMap::const_iterator mount_info = mount_info_map_.find(
       base::FilePath(location));
   return (mount_info != mount_info_map_.end()) ?
-      mount_info->second.partition_size_in_bytes : 0;
+      mount_info->second.storage_info.total_size_in_bytes : 0;
 }
 
 void StorageMonitorLinux::OnFilePathChanged(const base::FilePath& path,
@@ -296,10 +323,6 @@ void StorageMonitorLinux::OnFilePathChanged(const base::FilePath& path,
   }
 
   UpdateMtab();
-}
-
-StorageMonitorLinux::MountPointInfo::MountPointInfo()
-    : partition_size_in_bytes(0) {
 }
 
 void StorageMonitorLinux::InitOnFileThread() {
@@ -345,10 +368,11 @@ void StorageMonitorLinux::UpdateMtab() {
       DCHECK(priority != mount_priority_map_.end());
       ReferencedMountPoint::const_iterator has_priority =
           priority->second.find(mount_point);
-      if (MediaStorageUtil::IsRemovableDevice(old_iter->second.device_id)) {
+      if (MediaStorageUtil::IsRemovableDevice(
+              old_iter->second.storage_info.device_id)) {
         DCHECK(has_priority != priority->second.end());
         if (has_priority->second) {
-          receiver()->ProcessDetach(old_iter->second.device_id);
+          receiver()->ProcessDetach(old_iter->second.storage_info.device_id);
         }
         if (priority->second.size() > 1)
           multiple_mounted_devices_needing_reattachment.push_back(mount_device);
@@ -382,11 +406,10 @@ void StorageMonitorLinux::UpdateMtab() {
     const base::FilePath& mount_point = first_mount_point_info->first;
     first_mount_point_info->second = true;
 
-    const MountPointInfo& mount_info =
-        mount_info_map_.find(mount_point)->second;
+    const StorageInfo& mount_info =
+        mount_info_map_.find(mount_point)->second.storage_info;
     DCHECK(MediaStorageUtil::IsRemovableDevice(mount_info.device_id));
-    receiver()->ProcessAttach(StorageInfo(
-        mount_info.device_id, mount_info.device_name, mount_point.value()));
+    receiver()->ProcessAttach(mount_info);
   }
 
   // Check new mtab entries against existing ones.
@@ -416,37 +439,26 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
     return;
   }
 
-  std::string unique_id;
+  std::string device_id;
   string16 name;
   bool removable;
   uint64 partition_size_in_bytes;
-  get_device_info_func_(mount_device, &unique_id, &name, &removable,
-                        &partition_size_in_bytes);
+  string16 volume_label;
+  string16 vendor_name;
+  string16 model_name;
+  get_device_info_func_(mount_device, mount_point, &device_id, &name,
+                        &removable, &partition_size_in_bytes,
+                        &volume_label, &vendor_name, &model_name);
 
   // Keep track of device info details to see how often we get invalid values.
-  MediaStorageUtil::RecordDeviceInfoHistogram(true, unique_id, name);
-  if (unique_id.empty() || name.empty())
+  if (device_id.empty() || name.empty())
     return;
-
-  bool has_dcim = IsMediaDevice(mount_point.value());
-  MediaStorageUtil::Type type;
-  if (removable) {
-    if (has_dcim) {
-      type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-    } else {
-      type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-    }
-  } else {
-    type = MediaStorageUtil::FIXED_MASS_STORAGE;
-  }
-  std::string device_id = MediaStorageUtil::MakeDeviceId(type, unique_id);
 
   MountPointInfo mount_point_info;
   mount_point_info.mount_device = mount_device;
-  mount_point_info.device_id = device_id;
-  mount_point_info.device_name = name;
-  mount_point_info.partition_size_in_bytes = partition_size_in_bytes;
-
+  mount_point_info.storage_info = StorageInfo(
+      device_id, name, mount_point.value(), volume_label,
+      vendor_name, model_name, partition_size_in_bytes);
   mount_info_map_[mount_point] = mount_point_info;
   mount_priority_map_[mount_device][mount_point] = removable;
 

@@ -23,7 +23,10 @@ namespace {
 
 // Constructs a device name using label or manufacturer (vendor and product)
 // name details.
-string16 GetDeviceName(const disks::DiskMountManager::Disk& disk) {
+string16 GetDeviceName(const disks::DiskMountManager::Disk& disk,
+                       string16* storage_label,
+                       string16* vendor_name,
+                       string16* model_name) {
   if (disk.device_type() == DEVICE_TYPE_SD) {
     // Mount path of an SD card will be one of the following:
     // (1) /media/removable/<volume_label>
@@ -36,8 +39,17 @@ string16 GetDeviceName(const disks::DiskMountManager::Disk& disk) {
   }
 
   const std::string& device_label = disk.device_label();
+
+  if (storage_label)
+    *storage_label = UTF8ToUTF16(device_label);
+  if (vendor_name)
+    *vendor_name = UTF8ToUTF16(disk.vendor_name());
+  if (model_name)
+    *model_name = UTF8ToUTF16(disk.product_name());
+
   if (!device_label.empty() && IsStringUTF8(device_label))
     return UTF8ToUTF16(device_label);
+
   return chrome::GetFullProductName(disk.vendor_name(), disk.product_name());
 }
 
@@ -65,7 +77,10 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
 bool GetDeviceInfo(const std::string& source_path,
                    std::string* unique_id,
                    string16* device_label,
-                   uint64* storage_size_in_bytes) {
+                   uint64* storage_size_in_bytes,
+                   string16* storage_label,
+                   string16* vendor_name,
+                   string16* model_name) {
   const disks::DiskMountManager::Disk* disk =
       disks::DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
   if (!disk || disk->device_type() == DEVICE_TYPE_UNKNOWN)
@@ -75,7 +90,8 @@ bool GetDeviceInfo(const std::string& source_path,
     *unique_id = MakeDeviceUniqueId(*disk);
 
   if (device_label)
-    *device_label = GetDeviceName(*disk);
+    *device_label = GetDeviceName(*disk, storage_label,
+                                  vendor_name, model_name);
 
   if (storage_size_in_bytes)
     *storage_size_in_bytes = disk->total_size_in_bytes();
@@ -154,7 +170,7 @@ void StorageMonitorCros::OnMountEvent(
       MountMap::iterator it = mount_map_.find(mount_info.mount_path);
       if (it == mount_map_.end())
         return;
-      receiver()->ProcessDetach(it->second.storage_info.device_id);
+      receiver()->ProcessDetach(it->second.device_id);
       mount_map_.erase(it);
       break;
     }
@@ -184,7 +200,7 @@ bool StorageMonitorCros::GetStorageInfoForPath(
     return false;
 
   if (device_info)
-    *device_info = info_it->second.storage_info;
+    *device_info = info_it->second;
   return true;
 }
 
@@ -192,7 +208,7 @@ uint64 StorageMonitorCros::GetStorageSize(
     const std::string& device_location) const {
   MountMap::const_iterator info_it = mount_map_.find(device_location);
   return (info_it != mount_map_.end()) ?
-      info_it->second.storage_size_in_bytes : 0;
+      info_it->second.total_size_in_bytes : 0;
 }
 
 void StorageMonitorCros::CheckMountedPathOnFileThread(
@@ -221,9 +237,13 @@ void StorageMonitorCros::AddMountedPathOnUIThread(
   // Get the media device uuid and label if exists.
   std::string unique_id;
   string16 device_label;
+  string16 storage_label;
+  string16 vendor_name;
+  string16 model_name;
   uint64 storage_size_in_bytes;
   if (!GetDeviceInfo(mount_info.source_path, &unique_id, &device_label,
-                     &storage_size_in_bytes))
+                     &storage_size_in_bytes, &storage_label,
+                     &vendor_name, &model_name))
     return;
 
   // Keep track of device uuid and label, to see how often we receive empty
@@ -239,15 +259,18 @@ void StorageMonitorCros::AddMountedPathOnUIThread(
 
   std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
                                                                  unique_id);
-  StorageObjectInfo object_info = {
-      chrome::StorageInfo(device_id, device_label, mount_info.mount_path),
-      storage_size_in_bytes
-  };
-  mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
-  receiver()->ProcessAttach(chrome::StorageInfo(
+  chrome::StorageInfo object_info(
       device_id,
       chrome::GetDisplayNameForDevice(storage_size_in_bytes, device_label),
-      mount_info.mount_path));
+      mount_info.mount_path,
+      storage_label,
+      vendor_name,
+      model_name,
+      storage_size_in_bytes);
+
+  mount_map_.insert(std::make_pair(mount_info.mount_path, object_info));
+
+  receiver()->ProcessAttach(object_info);
 }
 
 }  // namespace chromeos
