@@ -7,6 +7,7 @@
 If you change this, please run and update the tests."""
 
 import collections
+import errno
 import optparse
 import os
 import re
@@ -949,8 +950,11 @@ def ExtractJarInputFile(jar_file, input_file, out_dir):
   jar_file = zipfile.ZipFile(jar_file)
 
   out_dir = os.path.join(out_dir, os.path.dirname(input_file))
-  if not os.path.exists(out_dir):
+  try:
     os.makedirs(out_dir)
+  except OSError as e:
+    if e.errno != errno.EEXIST:
+      raise
   extracted_file_name = os.path.join(out_dir, os.path.basename(input_file))
   with open(extracted_file_name, 'w') as outfile:
     outfile.write(jar_file.read(input_file))
