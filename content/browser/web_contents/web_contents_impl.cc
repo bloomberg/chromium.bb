@@ -1405,6 +1405,7 @@ void WebContentsImpl::CreateNewWindow(
   CreateParams create_params(GetBrowserContext(), site_instance);
   create_params.routing_id = route_id;
   create_params.initial_size = view_->GetContainerSize();
+  create_params.context = view_->GetNativeView();
   new_contents->Init(create_params);
 
   new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());

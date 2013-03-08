@@ -1210,7 +1210,8 @@ void WebContentsViewAura::CreateView(
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
-  if (context) {
+  aura::RootWindow* root_window = context ? context->GetRootWindow() : NULL;
+  if (root_window) {
     // There are places where there is no context currently because object
     // hierarchies are built before they're attached to a Widget. (See
     // views::WebView as an example; GetWidget() returns NULL at the point
@@ -1219,9 +1220,10 @@ void WebContentsViewAura::CreateView(
     // It should be OK to not set a default parent since such users will
     // explicitly add this WebContentsViewAura to their tree after they create
     // us.
-    aura::RootWindow* root_window = context->GetRootWindow();
-    window_->SetDefaultParentByRootWindow(
-        root_window, root_window->GetBoundsInScreen());
+    if (root_window) {
+      window_->SetDefaultParentByRootWindow(
+          root_window, root_window->GetBoundsInScreen());
+    }
   }
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
