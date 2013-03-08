@@ -15,6 +15,48 @@
 
 namespace gfx {
 
+namespace {
+
+// Used to render into an already current context+surface,
+// that we do not have ownership of (draw callback).
+class GLNonOwnedContext : public GLContext {
+ public:
+  GLNonOwnedContext();
+
+  // Implement GLContext.
+  virtual bool Initialize(GLSurface* compatible_surface,
+                          GpuPreference gpu_preference) OVERRIDE {
+    return true;
+  }
+  virtual void Destroy() OVERRIDE {}
+  virtual bool MakeCurrent(GLSurface* surface) OVERRIDE;
+  virtual void ReleaseCurrent(GLSurface* surface) OVERRIDE {}
+  virtual bool IsCurrent(GLSurface* surface) OVERRIDE { return true; }
+  virtual void* GetHandle() OVERRIDE { return NULL; }
+  virtual void SetSwapInterval(int interval) OVERRIDE {}
+  virtual std::string GetExtensions() OVERRIDE;
+
+ protected:
+  virtual ~GLNonOwnedContext() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLNonOwnedContext);
+};
+
+GLNonOwnedContext::GLNonOwnedContext() : GLContext(NULL) {}
+
+bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
+  SetCurrent(this, surface);
+  SetRealGLApi();
+  return true;
+}
+
+std::string GLNonOwnedContext::GetExtensions() {
+  return GLContext::GetExtensions();
+}
+
+}  // anonymous namespace
+
 // static
 scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLShareGroup* share_group,
@@ -27,7 +69,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   if (compatible_surface->GetHandle())
     context = new GLContextEGL(share_group);
   else
-    context = new GLContextStub();
+    context = new GLNonOwnedContext();
   if (!context->Initialize(compatible_surface, gpu_preference))
     return NULL;
   return context;
