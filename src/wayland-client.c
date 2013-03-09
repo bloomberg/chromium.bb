@@ -836,8 +836,8 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 		if (wl_debug)
 			wl_closure_print(closure, &proxy->object, false);
 
-		wl_closure_invoke(closure, WL_CLOSURE_INVOKE_CLIENT, &proxy->object,
-				  proxy->object.implementation[opcode],
+		wl_closure_invoke(closure, WL_CLOSURE_INVOKE_CLIENT,
+				  &proxy->object, opcode,
 				  proxy->user_data);
 	}
 

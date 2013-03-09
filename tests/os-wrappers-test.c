@@ -233,7 +233,7 @@ marshal_demarshal(struct marshal_data *data,
 	static struct wl_object sender = { NULL, NULL, 1234 };
 	struct wl_message message = { "test", format, NULL };
 	struct wl_map objects;
-	struct wl_object object;
+	struct wl_object object = { NULL, &func, 1234 };
 	va_list ap;
 	uint32_t msg[1] = { 1234 };
 
@@ -252,7 +252,7 @@ marshal_demarshal(struct marshal_data *data,
 	object.id = msg[0];
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
-	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, func, data);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, 0, data);
 	wl_closure_destroy(closure);
 }
 

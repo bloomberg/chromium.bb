@@ -327,7 +327,7 @@ demarshal(struct marshal_data *data, const char *format,
 	struct wl_message message = { "test", format, NULL };
 	struct wl_closure *closure;
 	struct wl_map objects;
-	struct wl_object object;
+	struct wl_object object = { NULL, &func, 0 };
 	int size = msg[1];
 
 	assert(write(data->s[1], msg, size) == size);
@@ -338,7 +338,7 @@ demarshal(struct marshal_data *data, const char *format,
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
 	assert(closure);
-	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, func, data);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, 0, data);
 	wl_closure_destroy(closure);
 }
 
@@ -399,7 +399,7 @@ marshal_demarshal(struct marshal_data *data,
 	static struct wl_object sender = { NULL, NULL, 1234 };
 	struct wl_message message = { "test", format, NULL };
 	struct wl_map objects;
-	struct wl_object object;
+	struct wl_object object = { NULL, &func, 0 };
 	va_list ap;
 	uint32_t msg[1] = { 1234 };
 
@@ -418,7 +418,7 @@ marshal_demarshal(struct marshal_data *data,
 	object.id = msg[0];
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
-	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, func, data);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, 0, data);
 	wl_closure_destroy(closure);
 }
 
@@ -493,7 +493,8 @@ static void
 marshal_helper(const char *format, void *handler, ...)
 {
 	struct wl_closure *closure;
-	static struct wl_object sender = { NULL, NULL, 1234 }, object;
+	static struct wl_object sender = { NULL, NULL, 1234 };
+	struct wl_object object = { NULL, &handler, 0 };
 	static const int opcode = 4444;
 	struct wl_message message = { "test", format, NULL };
 	va_list ap;
@@ -505,7 +506,7 @@ marshal_helper(const char *format, void *handler, ...)
 
 	assert(closure);
 	done = 0;
-	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, handler, &done);
+	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, 0, &done);
 	wl_closure_destroy(closure);
 	assert(done);
 }

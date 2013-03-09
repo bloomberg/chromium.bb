@@ -136,7 +136,7 @@ enum wl_closure_invoke_flag {
 
 void
 wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
-		  struct wl_object *target, void (*func)(void), void *data);
+		  struct wl_object *target, uint32_t opcode, void *data);
 int
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection);
 int
