@@ -332,8 +332,7 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool isAcceleratedCompositingActive() const {
-    return widget_->context() && widget_->plugin() &&
-        (widget_->plugin()->GetBackingTextureId() != 0);
+    return widget_->plugin() && widget_->plugin()->GetBackingTextureId();
   }
 
  private:
@@ -450,16 +449,22 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
 
 webkit::ppapi::PluginDelegate::PlatformContext3D*
 RenderWidgetFullscreenPepper::CreateContext3D() {
-#ifdef ENABLE_GPU
-  return new PlatformContext3DImpl(this);
-#else
-  return NULL;
-#endif
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableFlashFullscreen3d))
+    return NULL;
+  return new PlatformContext3DImpl;
 }
 
 void RenderWidgetFullscreenPepper::ReparentContext(
     webkit::ppapi::PluginDelegate::PlatformContext3D* context) {
-  static_cast<PlatformContext3DImpl*>(context)->SetParentContext(this);
+  PlatformContext3DImpl* context_impl =
+      static_cast<PlatformContext3DImpl*>(context);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableFlashFullscreen3d))
+    context_impl->DestroyParentContextProviderAndBackingTexture();
+  else
+    context_impl->SetParentAndCreateBackingTextureIfNeeded();
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
@@ -558,14 +563,11 @@ void RenderWidgetFullscreenPepper::Composite() {
 
 void RenderWidgetFullscreenPepper::CreateContext() {
   DCHECK(!context_);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableFlashFullscreen3d))
-    return;
   WebKit::WebGraphicsContext3D::Attributes attributes;
   attributes.depth = false;
   attributes.stencil = false;
   attributes.antialias = false;
-  attributes.shareResources = false;
+  attributes.shareResources = true;
   attributes.preferDiscreteGPU = true;
   context_ = WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
       RenderThreadImpl::current(),
@@ -684,13 +686,28 @@ bool RenderWidgetFullscreenPepper::InitContext() {
 }
 
 bool RenderWidgetFullscreenPepper::CheckCompositing() {
-  bool compositing =
-      webwidget_ && webwidget_->isAcceleratedCompositingActive();
+  bool compositing = webwidget_ && webwidget_->isAcceleratedCompositingActive();
+  if (compositing) {
+    if (context_ && context_->isContextLost()) {
+      DestroyContext(context_, program_, buffer_);
+      context_ = NULL;
+    }
+    if (!context_)
+      CreateContext();
+    if (!context_)
+      compositing = false;
+  }
+
   if (compositing != is_accelerated_compositing_active_) {
-    if (compositing)
+    if (compositing) {
       didActivateCompositor(-1);
-    else
+    } else {
+      if (context_) {
+        DestroyContext(context_, program_, buffer_);
+        context_ = NULL;
+      }
       didDeactivateCompositor();
+    }
   }
   return compositing;
 }
@@ -702,16 +719,6 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
   // The compositor isn't actually active in this path, but pretend it is for
   // scheduling purposes.
   didCommitAndDrawCompositorFrame();
-}
-
-WebGraphicsContext3DCommandBufferImpl*
-RenderWidgetFullscreenPepper::GetParentContextForPlatformContext3D() {
-  if (!context_) {
-    CreateContext();
-  }
-  if (!context_)
-    return NULL;
-  return context_;
 }
 
 }  // namespace content

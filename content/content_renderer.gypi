@@ -194,8 +194,6 @@
     'renderer/pepper/pepper_in_process_resource_creation.h',
     'renderer/pepper/pepper_in_process_router.cc',
     'renderer/pepper/pepper_in_process_router.h',
-    'renderer/pepper/pepper_parent_context_provider.cc',
-    'renderer/pepper/pepper_parent_context_provider.h',
     'renderer/pepper/pepper_platform_audio_input_impl.cc',
     'renderer/pepper/pepper_platform_audio_input_impl.h',
     'renderer/pepper/pepper_platform_audio_output_impl.cc',

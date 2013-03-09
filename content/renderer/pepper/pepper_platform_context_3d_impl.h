@@ -20,15 +20,13 @@ class CommandBuffer;
 }  // namespace gpu
 
 namespace content {
+class ContextProviderCommandBuffer;
 class GpuChannelHost;
-
-class PepperParentContextProvider;
 
 class PlatformContext3DImpl
     : public webkit::ppapi::PluginDelegate::PlatformContext3D {
  public:
-  explicit PlatformContext3DImpl(
-      PepperParentContextProvider* parent_context_provider);
+  explicit PlatformContext3DImpl();
   virtual ~PlatformContext3DImpl();
 
   virtual bool Init(const int32* attrib_list,
@@ -43,17 +41,15 @@ class PlatformContext3DImpl
       const ConsoleMessageCallback& callback) OVERRIDE;
   virtual bool Echo(const base::Closure& task) OVERRIDE;
 
-  virtual void SetParentContext(
-      PepperParentContextProvider* parent_context_provider);
+  bool SetParentAndCreateBackingTextureIfNeeded();
+  void DestroyParentContextProviderAndBackingTexture();
 
  private:
   bool InitRaw();
   void OnContextLost();
   void OnConsoleMessage(const std::string& msg, int id);
 
-  // Implicitly weak pointer; must outlive this instance.
-  PepperParentContextProvider* parent_context_provider_;
-  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> parent_context_;
+  scoped_refptr<ContextProviderCommandBuffer> parent_context_provider_;
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;
   bool has_alpha_;

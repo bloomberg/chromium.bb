@@ -5,9 +5,9 @@
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 
 #include "base/bind.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -20,24 +20,15 @@
 
 namespace content {
 
-PlatformContext3DImpl::PlatformContext3DImpl(
-    PepperParentContextProvider* parent_context_provider)
-      : parent_context_provider_(parent_context_provider),
-        parent_texture_id_(0),
-        has_alpha_(false),
-        command_buffer_(NULL),
-        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+PlatformContext3DImpl::PlatformContext3DImpl()
+    : parent_texture_id_(0),
+      has_alpha_(false),
+      command_buffer_(NULL),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PlatformContext3DImpl::~PlatformContext3DImpl() {
-  if (parent_context_.get() && parent_texture_id_ != 0) {
-    // Flush any remaining commands in the parent context to make sure the
-    // texture id accounting stays consistent.
-    gpu::gles2::GLES2Implementation* parent_gles2 =
-        parent_context_->GetImplementation();
-    parent_gles2->helper()->CommandBufferHelper::Finish();
-    parent_gles2->FreeTextureId(parent_texture_id_);
-  }
+  DestroyParentContextProviderAndBackingTexture();
 
   if (command_buffer_) {
     DCHECK(channel_.get());
@@ -53,9 +44,6 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
   // Ignore initializing more than once.
   if (command_buffer_)
     return true;
-
-  if (!parent_context_provider_)
-    return false;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)
@@ -126,61 +114,53 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
       base::Bind(&PlatformContext3DImpl::OnConsoleMessage,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  // Fetch the parent context now, after any potential shutdown of the
-  // channel due to GPU switching, and creation of the Pepper 3D
-  // context with the discrete GPU preference.
-  WebGraphicsContext3DCommandBufferImpl* parent_context =
-      parent_context_provider_->GetParentContextForPlatformContext3D();
-  if (!parent_context)
-    return false;
+  return SetParentAndCreateBackingTextureIfNeeded();
+}
 
-  parent_context_provider_ = NULL;
-  parent_context_ = parent_context->AsWeakPtr();
+bool PlatformContext3DImpl::SetParentAndCreateBackingTextureIfNeeded() {
+  if (parent_context_provider_ &&
+      !parent_context_provider_->DestroyedOnMainThread() &&
+      parent_texture_id_)
+    return true;
+
+  parent_context_provider_ =
+      RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
+  if (!parent_context_provider_->InitializeOnMainThread() ||
+      !parent_context_provider_->BindToCurrentThread()) {
+    DestroyParentContextProviderAndBackingTexture();
+    return false;
+  }
 
   // Flush any remaining commands in the parent context to make sure the
   // texture id accounting stays consistent.
   gpu::gles2::GLES2Implementation* parent_gles2 =
-      parent_context_->GetImplementation();
+      parent_context_provider_->Context3d()->GetImplementation();
   parent_gles2->helper()->CommandBufferHelper::Finish();
   parent_texture_id_ = parent_gles2->MakeTextureId();
 
   CommandBufferProxyImpl* parent_command_buffer =
-      parent_context_->GetCommandBufferProxy();
+      parent_context_provider_->Context3d()->GetCommandBufferProxy();
   if (!command_buffer_->SetParent(parent_command_buffer, parent_texture_id_))
     return false;
 
   return true;
 }
 
-void PlatformContext3DImpl::SetParentContext(
-    PepperParentContextProvider* parent_context_provider) {
-  if (parent_context_.get() && parent_texture_id_ != 0) {
+void PlatformContext3DImpl::DestroyParentContextProviderAndBackingTexture() {
+  if (!parent_context_provider_)
+    return;
+
+  if (parent_texture_id_) {
     // Flush any remaining commands in the parent context to make sure the
     // texture id accounting stays consistent.
     gpu::gles2::GLES2Implementation* parent_gles2 =
-        parent_context_->GetImplementation();
-    parent_gles2->helper()->CommandBufferHelper::Flush();
+        parent_context_provider_->Context3d()->GetImplementation();
+    parent_gles2->helper()->CommandBufferHelper::Finish();
     parent_gles2->FreeTextureId(parent_texture_id_);
-    parent_context_.reset();
     parent_texture_id_ = 0;
   }
 
-  WebGraphicsContext3DCommandBufferImpl* parent_context =
-      parent_context_provider->GetParentContextForPlatformContext3D();
-  if (!parent_context)
-    return;
-
-  parent_context_ = parent_context->AsWeakPtr();
-  // Flush any remaining commands in the parent context to make sure the
-  // texture id accounting stays consistent.
-  gpu::gles2::GLES2Implementation* parent_gles2 =
-      parent_context_->GetImplementation();
-  parent_gles2->helper()->CommandBufferHelper::Flush();
-  parent_texture_id_ = parent_gles2->MakeTextureId();
-
-  CommandBufferProxyImpl* parent_command_buffer =
-      parent_context_->GetCommandBufferProxy();
-  command_buffer_->SetParent(parent_command_buffer, parent_texture_id_);
+  parent_context_provider_ = NULL;
 }
 
 unsigned PlatformContext3DImpl::GetBackingTextureId() {
@@ -189,7 +169,9 @@ unsigned PlatformContext3DImpl::GetBackingTextureId() {
 }
 
 WebKit::WebGraphicsContext3D* PlatformContext3DImpl::GetParentContext() {
-  return parent_context_.get();
+  if (!parent_context_provider_)
+    return NULL;
+  return parent_context_provider_->Context3d();
 }
 
 bool PlatformContext3DImpl::IsOpaque() {

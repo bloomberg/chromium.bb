@@ -832,7 +832,7 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
   const webkit_glue::WebPreferences& prefs = render_view_->webkit_preferences();
   if (!prefs.accelerated_compositing_for_plugins_enabled)
     return NULL;
-  return new PlatformContext3DImpl(this);
+  return new PlatformContext3DImpl;
 #else
   return NULL;
 #endif
@@ -840,7 +840,8 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 
 void PepperPluginDelegateImpl::ReparentContext(
     webkit::ppapi::PluginDelegate::PlatformContext3D* context) {
-  static_cast<PlatformContext3DImpl*>(context)->SetParentContext(this);
+  static_cast<PlatformContext3DImpl*>(context)->
+      SetParentAndCreateBackingTextureIfNeeded();
 }
 
 webkit::ppapi::PluginDelegate::PlatformVideoCapture*
@@ -1571,21 +1572,6 @@ int PepperPluginDelegateImpl::GetSessionID(PP_DeviceType_Dev type,
 #else
   return 0;
 #endif
-}
-
-WebGraphicsContext3DCommandBufferImpl*
-PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
-  if (!offscreen_context3d_ || offscreen_context3d_->DestroyedOnMainThread()) {
-    offscreen_context3d_ =
-        RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
-
-    if (!offscreen_context3d_->InitializeOnMainThread() ||
-        !offscreen_context3d_->BindToCurrentThread()) {
-      offscreen_context3d_ = NULL;
-      return NULL;
-    }
-  }
-  return offscreen_context3d_->Context3d();
 }
 
 MouseLockDispatcher::LockTarget*

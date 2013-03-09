@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
-#include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
@@ -32,7 +31,6 @@ class WebGraphicsContext3DCommandBufferImpl;
 class RenderWidgetFullscreenPepper :
     public RenderWidgetFullscreen,
     public webkit::ppapi::FullscreenContainer,
-    public PepperParentContextProvider,
     public WebGraphicsContext3DSwapBuffersClient {
  public:
   static RenderWidgetFullscreenPepper* Create(
@@ -110,10 +108,6 @@ class RenderWidgetFullscreenPepper :
   // Checks (and returns) whether accelerated compositing should be on or off,
   // and notify the browser.
   bool CheckCompositing();
-
-  // Implementation of PepperParentContextProvider.
-  virtual WebGraphicsContext3DCommandBufferImpl*
-      GetParentContextForPlatformContext3D() OVERRIDE;
 
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;
