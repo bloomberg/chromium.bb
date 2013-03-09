@@ -186,8 +186,11 @@ void SessionStartupPref::MigrateMacDefaultPrefIfNecessary(PrefService* prefs) {
   // The default startup pref used to be LAST, now it is DEFAULT. Don't change
   // the setting for existing profiles (even if the user has never changed it),
   // but make new profiles default to DEFAULT.
-  bool old_profile_version = Version(prefs->GetString(
-      prefs::kProfileCreatedByVersion)).IsOlderThan("21.0.1180.0");
+  bool old_profile_version =
+      !prefs->FindPreference(
+          prefs::kProfileCreatedByVersion)->IsDefaultValue() &&
+      Version(prefs->GetString(prefs::kProfileCreatedByVersion)).IsOlderThan(
+          "21.0.1180.0");
   if (old_profile_version && TypeIsDefault(prefs))
     prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueLast);
 #endif

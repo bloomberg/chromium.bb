@@ -251,6 +251,31 @@ void RecordAppLaunches(Profile* profile,
   }
 }
 
+bool IsNewTabURL(Profile* profile, const GURL& url) {
+  GURL ntp_url(chrome::kChromeUINewTabURL);
+  return url == ntp_url ||
+         (url.is_empty() && profile->GetHomePage() == ntp_url);
+}
+
+void AddSyncPromoTab(Profile* profile, StartupTabs* tabs) {
+  SyncPromoUI::DidShowSyncPromoAtStartup(profile);
+
+  StartupTab sync_promo_tab;
+  GURL continue_url;
+  if (!SyncPromoUI::UseWebBasedSigninFlow())
+    continue_url = GURL(chrome::kChromeUINewTabURL);
+  sync_promo_tab.url = SyncPromoUI::GetSyncPromoURL(
+      continue_url, SyncPromoUI::SOURCE_START_PAGE, false);
+  sync_promo_tab.is_pinned = false;
+  tabs->insert(tabs->begin(), sync_promo_tab);
+
+  // If the next URL is the NTP then remove it, effectively replacing the NTP
+  // with the sync promo. This behavior is desired because completing or
+  // skipping the sync promo causes a redirect to the NTP.
+  if (tabs->size() > 1 && IsNewTabURL(profile, tabs->at(1).url))
+    tabs->erase(tabs->begin() + 1);
+}
+
 class WebContentsCloseObserver : public content::NotificationObserver {
  public:
   WebContentsCloseObserver() : contents_(NULL) {}
@@ -706,6 +731,11 @@ Browser* StartupBrowserCreatorImpl::ProcessSpecifiedURLs(
     NOTREACHED() << "SessionStartupPref has deprecated type HOMEPAGE";
   }
 
+  if (pref.type != SessionStartupPref::LAST &&
+      SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
+    AddSyncPromoTab(profile_, &tabs);
+  }
+
   if (tabs.empty())
     return NULL;
 
@@ -909,31 +939,6 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
       prefs->SetString(prefs::kManagedModeLocalPassphrase, "");
       prefs->SetString(prefs::kManagedModeLocalSalt, "");
     }
-  } else if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_,
-                                                       is_first_run_)) {
-    // If the sync promo page is going to be displayed then insert it at the
-    // front of the list.
-    GURL continue_url;
-    if (!SyncPromoUI::UseWebBasedSigninFlow()) {
-      continue_url = GURL(chrome::kChromeUINewTabURL);
-    }
-
-    SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
-    GURL old_url = (*startup_urls)[0];
-    (*startup_urls)[0] =
-        SyncPromoUI::GetSyncPromoURL(continue_url,
-                                     SyncPromoUI::SOURCE_START_PAGE,
-                                     false);
-
-    // An empty URL means to go to the home page.
-    if (old_url.is_empty() &&
-        profile_->GetHomePage() == GURL(chrome::kChromeUINewTabURL)) {
-      old_url = GURL(chrome::kChromeUINewTabURL);
-    }
-
-    // If the old URL is not the NTP then insert it right after the sync promo.
-    if (old_url != GURL(chrome::kChromeUINewTabURL))
-      startup_urls->insert(startup_urls->begin() + 1, old_url);
   }
 }
 

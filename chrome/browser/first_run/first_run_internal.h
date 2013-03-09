@@ -59,11 +59,6 @@ void SetupMasterPrefsFromInstallPrefs(
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 
-// Returns true if first run ui should be skipped, which is the case that
-// skip_first_run_ui setting is set to true. In the case the setting is
-// not found or specified, it returns false by default.
-bool SkipFirstRunUI(installer::MasterPreferences* install_prefs);
-
 // Sets ping_delay.
 void SetRLZPref(first_run::MasterPrefs* out_prefs,
                 installer::MasterPreferences* install_prefs);
