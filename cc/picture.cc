@@ -130,17 +130,6 @@ void Picture::Raster(
   canvas->restore();
 }
 
-void Picture::AnalyzeInRect(skia::AnalysisCanvas* canvas,
-                            const gfx::Rect& content_rect,
-                            float contents_scale) {
-  canvas->save();
-  canvas->clipRect(gfx::RectToSkRect(content_rect));
-  canvas->scale(contents_scale, contents_scale);
-  canvas->translate(layer_rect_.x(), layer_rect_.y());
-  canvas->drawPicture(*picture_);
-  canvas->restore();
-}
-
 void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
                               std::list<skia::LazyPixelRef*>& pixel_ref_list) {
   DCHECK(picture_);

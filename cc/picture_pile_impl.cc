@@ -217,7 +217,6 @@ void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
                                     float contents_scale,
                                     PicturePileImpl::Analysis* analysis) {
   DCHECK(analysis);
-
   TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
 
   gfx::Rect layer_rect = gfx::ToEnclosingRect(
@@ -229,40 +228,8 @@ void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
   skia::AnalysisDevice device(emptyBitmap);
   skia::AnalysisCanvas canvas(&device);
 
-  canvas.translate(-content_rect.x(), -content_rect.y());
-  canvas.clipRect(gfx::RectToSkRect(content_rect));
-
-  // The loop here is similar to the raster loop.
-  Region unclipped(content_rect);
-  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
-       tile_iter; ++tile_iter) {
-    PictureListMap::iterator map_iter =
-        picture_list_map_.find(tile_iter.index());
-    if (map_iter == picture_list_map_.end())
-      continue;
-    PictureList& pic_list = map_iter->second;
-    if (pic_list.empty())
-      continue;
-
-    for (PictureList::reverse_iterator i = pic_list.rbegin();
-         i != pic_list.rend(); ++i) {
-      gfx::Rect content_clip = gfx::ToEnclosedRect(
-          gfx::ScaleRect((*i)->LayerRect(), contents_scale));
-      DCHECK(!content_clip.IsEmpty());
-      if (!unclipped.Intersects(content_clip))
-        continue;
-
-      (*i)->AnalyzeInRect(&canvas,
-                          content_rect,
-                          contents_scale);
-
-      canvas.clipRect(
-          gfx::RectToSkRect(content_clip),
-          SkRegion::kDifference_Op);
-      unclipped.Subtract(content_clip);
-
-    }
-  }
+  int64 total_pixels_rasterized = 0;
+  Raster(&canvas, content_rect, contents_scale, &total_pixels_rasterized);
 
   analysis->is_transparent = canvas.isTransparent();
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
