@@ -34,7 +34,7 @@ const int kHopSpacing = 2;
 const int kIconPad = 8;
 const int kHopUpMS = 0;
 const int kHopDownMS = 200;
-const int kAttentionThrobDurationMS = 1000;
+const int kAttentionThrobDurationMS = 800;
 
 bool ShouldHop(int state) {
   return state & ash::internal::LauncherButton::STATE_HOVERED ||
@@ -54,7 +54,9 @@ namespace internal {
 class LauncherButton::BarView : public views::ImageView,
                                 public ui::AnimationDelegate {
  public:
-  BarView() : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
+  BarView(LauncherButton* host)
+      : host_(host),
+        ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
     animation_.SetThrobDuration(kAttentionThrobDurationMS);
     animation_.SetTweenType(ui::Tween::SMOOTH_IN_OUT);
   }
@@ -78,7 +80,13 @@ class LauncherButton::BarView : public views::ImageView,
 
   // ui::AnimationDelegate overrides.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    UpdateBounds();
     SchedulePaint();
+  }
+
+  void SetBarBoundsRect(const gfx::Rect& bounds) {
+    base_bounds_ = bounds;
+    UpdateBounds();
   }
 
   void ShowAttention(bool show) {
@@ -89,10 +97,34 @@ class LauncherButton::BarView : public views::ImageView,
     } else {
       animation_.Reset(0.0);
     }
+    UpdateBounds();
   }
 
  private:
+  void UpdateBounds() {
+    gfx::Rect bounds = base_bounds_;
+    if (animation_.is_animating()) {
+      // Scale from .35 to 1.0 of the total width (which is wider than the
+      // visible width of the image, so the animation "rests" briefly at full
+      // visible width.
+      double scale = (.35 + .65 * animation_.GetCurrentValue());
+      if (host_->shelf_layout_manager()->GetAlignment() ==
+          SHELF_ALIGNMENT_BOTTOM) {
+        bounds.set_width(base_bounds_.width() * scale);
+        int x_offset = (base_bounds_.width() - bounds.width()) / 2;
+        bounds.set_x(base_bounds_.x() + x_offset);
+      } else {
+        bounds.set_height(base_bounds_.height() * scale);
+        int y_offset = (base_bounds_.height() - bounds.height()) / 2;
+        bounds.set_y(base_bounds_.y() + y_offset);
+      }
+    }
+    SetBoundsRect(bounds);
+  }
+
+  LauncherButton* host_;
   ui::ThrobAnimation animation_;
+  gfx::Rect base_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(BarView);
 };
@@ -130,7 +162,7 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
     : CustomButton(listener),
       host_(host),
       icon_view_(NULL),
-      bar_(new BarView),
+      bar_(new BarView(this)),
       state_(STATE_NORMAL),
       shelf_layout_manager_(shelf_layout_manager) {
   set_accessibility_focusable(true);
@@ -295,7 +327,7 @@ void LauncherButton::Layout() {
 
   icon_bounds.Offset(x_offset, y_offset);
   icon_view_->SetBoundsRect(icon_bounds);
-  bar_->SetBoundsRect(GetContentsBounds());
+  bar_->SetBarBoundsRect(GetContentsBounds());
 }
 
 void LauncherButton::ChildPreferredSizeChanged(views::View* child) {
@@ -363,9 +395,9 @@ void LauncherButton::UpdateState() {
     bar_->SetVisible(false);
   } else {
     int bar_id;
-    if (state_ & STATE_ACTIVE) {
+    if (state_ & (STATE_ACTIVE | STATE_ATTENTION)) {
       bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
-    } else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION)) {
+    } else if (state_ & (STATE_HOVERED | STATE_FOCUSED)) {
       bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
     } else {
       bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
