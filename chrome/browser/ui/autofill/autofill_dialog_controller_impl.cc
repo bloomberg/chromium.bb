@@ -565,7 +565,7 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
 
     AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
     DCHECK(profile);
-    wrapper.reset(new AutofillDataModelWrapper(profile, variant));
+    wrapper.reset(new AutofillProfileWrapper(profile, variant));
   }
 
   return wrapper.Pass();
@@ -582,20 +582,9 @@ gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
 
 void AutofillDialogControllerImpl::EditClickedForSection(
     DialogSection section) {
-  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-
-  if (section == SECTION_EMAIL) {
-    // TODO(estade): shouldn't need to make this check.
-    if (inputs->empty())
-      return;
-
-    (*inputs)[0].autofilled_value = model->GetLabelAt(model->checked_item());
-  } else {
-    scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
-    model->FillInputs(inputs);
-  }
-
+  scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+  model->FillInputs(inputs);
   section_editing_state_[section] = true;
   view_->UpdateSection(section);
 }

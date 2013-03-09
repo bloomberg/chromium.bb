@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
+#include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -48,40 +49,49 @@ void DataModelWrapper::FillFormStructure(
   }
 }
 
-// AutofillDataModelWrapper
+// AutofillFormGroupWrapper
 
-AutofillDataModelWrapper::AutofillDataModelWrapper(const FormGroup* form_group,
+AutofillFormGroupWrapper::AutofillFormGroupWrapper(const FormGroup* form_group,
                                                    size_t variant)
     : form_group_(form_group),
       variant_(variant) {}
 
-AutofillDataModelWrapper::~AutofillDataModelWrapper() {}
+AutofillFormGroupWrapper::~AutofillFormGroupWrapper() {}
 
-string16 AutofillDataModelWrapper::GetInfo(AutofillFieldType type) {
+string16 AutofillFormGroupWrapper::GetInfo(AutofillFieldType type) {
   return form_group_->GetInfo(type, AutofillCountry::ApplicationLocale());
 }
 
-gfx::Image AutofillDataModelWrapper::GetIcon() {
+gfx::Image AutofillFormGroupWrapper::GetIcon() {
   return gfx::Image();
 }
 
-void AutofillDataModelWrapper::FillInputs(DetailInputs* inputs) {
-  // TODO(estade): use |variant_|?
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-  for (size_t j = 0; j < inputs->size(); ++j) {
-    (*inputs)[j].autofilled_value =
-        form_group_->GetInfo((*inputs)[j].type, app_locale);
-  }
+void AutofillFormGroupWrapper::FillFormField(AutofillField* field) {
+  form_group_->FillFormField(*field, variant_, field);
 }
 
-void AutofillDataModelWrapper::FillFormField(AutofillField* field) {
-  form_group_->FillFormField(*field, variant_, field);
+// AutofillProfileWrapper
+
+AutofillProfileWrapper::AutofillProfileWrapper(
+    const AutofillProfile* profile, size_t variant)
+    : AutofillFormGroupWrapper(profile, variant),
+      profile_(profile) {}
+
+AutofillProfileWrapper::~AutofillProfileWrapper() {}
+
+void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  for (size_t j = 0; j < inputs->size(); ++j) {
+    std::vector<string16> values;
+    profile_->GetMultiInfo((*inputs)[j].type, app_locale, &values);
+    (*inputs)[j].autofilled_value = values[variant()];
+  }
 }
 
 // AutofillCreditCardWrapper
 
 AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
-    : AutofillDataModelWrapper(card, 0),
+    : AutofillFormGroupWrapper(card, 0),
       card_(card) {}
 
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
@@ -89,6 +99,14 @@ AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 gfx::Image AutofillCreditCardWrapper::GetIcon() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetImageNamed(card_->IconResourceId());
+}
+
+void AutofillCreditCardWrapper::FillInputs(DetailInputs* inputs) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  for (size_t j = 0; j < inputs->size(); ++j) {
+    (*inputs)[j].autofilled_value =
+        card_->GetInfo((*inputs)[j].type, app_locale);
+  }
 }
 
 string16 AutofillCreditCardWrapper::GetDisplayText() {
@@ -105,7 +123,7 @@ void AutofillCreditCardWrapper::FillFormField(AutofillField* field) {
     field->set_heuristic_type(CREDIT_CARD_NAME);
   }
 
-  AutofillDataModelWrapper::FillFormField(field);
+  AutofillFormGroupWrapper::FillFormField(field);
 
   field->set_heuristic_type(field_type);
 }

@@ -259,6 +259,11 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_EQ(kEmail1, controller()->SuggestionTextForSection(SECTION_EMAIL));
   email_model->ActivatedAt(1);
   EXPECT_EQ(kEmail2, controller()->SuggestionTextForSection(SECTION_EMAIL));
+
+  controller()->EditClickedForSection(SECTION_EMAIL);
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_EMAIL);
+  EXPECT_EQ(kEmail2, inputs[0].autofilled_value);
 }
 
 }  // namespace autofill

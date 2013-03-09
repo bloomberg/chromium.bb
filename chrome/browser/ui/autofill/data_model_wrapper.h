@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
+class AutofillProfile;
 class CreditCard;
 class FormGroup;
 class FormStructure;
@@ -60,30 +61,44 @@ class DataModelWrapper {
 };
 
 // A DataModelWrapper for Autofill data.
-class AutofillDataModelWrapper : public DataModelWrapper {
+class AutofillFormGroupWrapper : public DataModelWrapper {
  public:
-  AutofillDataModelWrapper(const FormGroup* form_group, size_t variant);
-  virtual ~AutofillDataModelWrapper();
+  AutofillFormGroupWrapper(const FormGroup* form_group, size_t variant);
+  virtual ~AutofillFormGroupWrapper();
 
   virtual string16 GetInfo(AutofillFieldType type) OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
-  virtual void FillInputs(DetailInputs* inputs) OVERRIDE;
 
  protected:
   virtual void FillFormField(AutofillField* field) OVERRIDE;
+
+  size_t variant() const { return variant_; }
 
  private:
   const FormGroup* form_group_;
   const size_t variant_;
 };
 
+// A DataModelWrapper for Autofill profiles.
+class AutofillProfileWrapper : public AutofillFormGroupWrapper {
+ public:
+  AutofillProfileWrapper(const AutofillProfile* profile, size_t variant);
+  virtual ~AutofillProfileWrapper();
+
+  virtual void FillInputs(DetailInputs* inputs) OVERRIDE;
+
+ private:
+  const AutofillProfile* profile_;
+};
+
 // A DataModelWrapper specifically for Autofill CreditCard data.
-class AutofillCreditCardWrapper : public AutofillDataModelWrapper {
+class AutofillCreditCardWrapper : public AutofillFormGroupWrapper {
  public:
   explicit AutofillCreditCardWrapper(const CreditCard* card);
   virtual ~AutofillCreditCardWrapper();
 
   virtual gfx::Image GetIcon() OVERRIDE;
+  virtual void FillInputs(DetailInputs* inputs) OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
  protected:
