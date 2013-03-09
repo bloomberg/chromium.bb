@@ -431,6 +431,9 @@ need to be translated for each locale.-->
       </message>
 
       <!-- Message center -->
+      <message name="IDS_MESSAGE_CENTER_ACCESSIBLE_NAME" desc="The button label to enter quiet mode in one day.">
+        Notification Center
+      </message>
       <message name="IDS_MESSAGE_CENTER_EXTENSIONS_DISABLE" desc="The menu entry for disabling extensions from a notification.">
         Disable extension
       </message>

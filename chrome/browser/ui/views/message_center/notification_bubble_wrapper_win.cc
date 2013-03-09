@@ -6,6 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/views/message_center/web_notification_tray_win.h"
+#include "grit/ui_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/views/message_bubble_base.h"
 #include "ui/message_center/views/message_center_bubble.h"
@@ -14,12 +16,6 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-
-namespace {
-
-const char kAccessibleNameForBubble[] = "Windows Notification Center";
-
-}
 
 namespace message_center {
 
@@ -91,8 +87,7 @@ void NotificationBubbleWrapperWin::OnMouseExitedView() {
 }
 
 string16 NotificationBubbleWrapperWin::GetAccessibleNameForBubble() {
-  // TODO(dewittj): Get a string resource.
-  return ASCIIToUTF16(kAccessibleNameForBubble);
+  return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_ACCESSIBLE_NAME);
 }
 
 gfx::Rect NotificationBubbleWrapperWin::GetAnchorRect(
