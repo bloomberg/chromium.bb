@@ -615,6 +615,7 @@
 
         ['target_arch=="mipsel"', {
           'sysroot%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/sysroot',
+          'CXX%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/bin/mipsel-linux-gnu-gcc',
         }],
       ],
 
@@ -1051,6 +1052,7 @@
             'linux_use_tcmalloc%': 0,
             'linux_breakpad%': 0,
             'sysroot%': '<(sysroot)',
+            'CXX%': '<(CXX)',
           }],
           # All Chrome builds have breakpad symbols, but only process the
           # symbols from official builds.
