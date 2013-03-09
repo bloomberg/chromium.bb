@@ -34,6 +34,9 @@ class WebMediaPlayerAndroid
  public:
   // Resource loading.
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
+  virtual void load(const WebKit::WebURL& url,
+                    WebKit::WebMediaSource* media_source,
+                    CORSMode cors_mode);
   virtual void cancelLoad();
 
   // Playback controls.

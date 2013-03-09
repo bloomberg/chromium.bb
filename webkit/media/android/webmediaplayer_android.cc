@@ -18,6 +18,7 @@
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
 using WebKit::WebMediaPlayer;
+using WebKit::WebMediaSource;
 using WebKit::WebSize;
 using WebKit::WebTimeRanges;
 using WebKit::WebURL;
@@ -73,6 +74,12 @@ void WebMediaPlayerAndroid::load(const WebURL& url, CORSMode cors_mode) {
   url_ = url;
 
   InitializeMediaPlayer(url_);
+}
+
+void WebMediaPlayerAndroid::load(const WebURL& url,
+                                 WebMediaSource* media_source,
+                                 CORSMode cors_mode) {
+  NOTIMPLEMENTED();
 }
 
 void WebMediaPlayerAndroid::cancelLoad() {
