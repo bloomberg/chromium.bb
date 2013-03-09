@@ -73,4 +73,12 @@ specific_include_rules = {
     "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
     "!chrome/browser/api/infobars/infobar_service.h",
   ],
+
+  # Android uses Chrome's personal data manager (i.e. the
+  # PersonalDataManagerService) and doesn't need to restrict itself to the
+  # autofill component.
+  'personal_data_manager_android\.cc': [
+    "!chrome/browser/browser_process.h",
+    "!chrome/browser/profiles/profile_manager.h",
+  ],
 }
