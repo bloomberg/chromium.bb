@@ -554,7 +554,7 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     wrapper.reset(new AutofillCreditCardWrapper(card));
   } else {
     // Calculate the variant by looking at how many items come from the same
-    // FormGroup. TODO(estade): add a test for this.
+    // FormGroup.
     size_t variant = 0;
     for (int i = model->checked_item() - 1; i >= 0; --i) {
       if (model->GetItemKeyAt(i) == item_key)

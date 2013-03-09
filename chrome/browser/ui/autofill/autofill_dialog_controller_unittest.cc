@@ -230,4 +230,35 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   EXPECT_EQ(2, shipping_model->GetItemCount());
 }
 
+TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+
+  // Set up some variant data.
+  AutofillProfile full_profile(autofill_test::GetFullProfile());
+  std::vector<string16> names;
+  names.push_back(ASCIIToUTF16("John Doe"));
+  names.push_back(ASCIIToUTF16("Jane Doe"));
+  full_profile.SetRawMultiInfo(EMAIL_ADDRESS, names);
+  const string16 kEmail1 = ASCIIToUTF16("user@example.com");
+  const string16 kEmail2 = ASCIIToUTF16("admin@example.com");
+  std::vector<string16> emails;
+  emails.push_back(kEmail1);
+  emails.push_back(kEmail2);
+  full_profile.SetRawMultiInfo(EMAIL_ADDRESS, emails);
+
+  // Respect variants for the email address field only.
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  ui::MenuModel* shipping_model =
+      controller()->MenuModelForSection(SECTION_SHIPPING);
+  EXPECT_EQ(2, shipping_model->GetItemCount());
+  ui::MenuModel* email_model =
+      controller()->MenuModelForSection(SECTION_EMAIL);
+  EXPECT_EQ(3, email_model->GetItemCount());
+
+  email_model->ActivatedAt(0);
+  EXPECT_EQ(kEmail1, controller()->SuggestionTextForSection(SECTION_EMAIL));
+  email_model->ActivatedAt(1);
+  EXPECT_EQ(kEmail2, controller()->SuggestionTextForSection(SECTION_EMAIL));
+}
+
 }  // namespace autofill
