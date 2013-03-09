@@ -125,9 +125,7 @@ cr.define('options', function() {
     updateStartupPages_: function(pages) {
       var model = new ArrayDataModel(pages);
       // Add a "new page" row.
-      model.push({
-        'modelIndex': '-1'
-      });
+      model.push({modelIndex: -1});
       $('startupPagesList').dataModel = model;
     },
 

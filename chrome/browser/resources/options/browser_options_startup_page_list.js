@@ -45,7 +45,7 @@ cr.define('options.browser_options', function() {
 
       var pageInfo = this.pageInfo_;
 
-      if (pageInfo.modelIndex == '-1') {
+      if (pageInfo.modelIndex == -1) {
         this.isPlaceholder = true;
         pageInfo.title = loadTimeData.getString('startupAddLabel');
         pageInfo.url = '';
@@ -149,7 +149,7 @@ cr.define('options.browser_options', function() {
 
     /** @override */
     deleteItemAtIndex: function(index) {
-      chrome.send('removeStartupPages', [String(index)]);
+      chrome.send('removeStartupPages', [index]);
     },
 
     /**
@@ -233,6 +233,12 @@ cr.define('options.browser_options', function() {
      */
     handleDrop_: function(e) {
       var dropTarget = this.getTargetFromDropEvent_(e);
+
+      if (!(dropTarget instanceof StartupPageListItem) ||
+          dropTarget.pageInfo_.modelIndex == -1) {
+        return;
+      }
+
       this.hideDropMarker_();
 
       // Insert the selection at the new position.
@@ -240,13 +246,8 @@ cr.define('options.browser_options', function() {
       if (this.dropPos == 'below')
         newIndex += 1;
 
-      var selected = this.selectionModel.selectedIndexes;
-      var stringized_selected = [];
-      for (var j = 0; j < selected.length; j++)
-        stringized_selected.push(String(selected[j]));
-
       chrome.send('dragDropStartupPage',
-          [String(newIndex), stringized_selected]);
+                  [newIndex, this.selectionModel.selectedIndexes]);
     },
 
     /**

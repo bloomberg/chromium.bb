@@ -96,11 +96,8 @@ void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
  */
 void CustomHomePagesTableModel::MoveURLs(int insert_before,
                                          const std::vector<int>& index_list) {
-  // Was causing crashes when just a DCHECK(), see http://crbug.com/136576.
-  if (index_list.empty() || insert_before < 0 || insert_before > RowCount()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(!index_list.empty());
+  DCHECK(insert_before >= 0 && insert_before <= RowCount());
 
   // The range of elements that needs to be reshuffled is [ |first|, |last| ).
   int first = std::min(insert_before, index_list.front());
