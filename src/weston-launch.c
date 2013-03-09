@@ -209,6 +209,7 @@ setup_launcher_socket(struct weston_launch *wl)
 static int
 setup_signals(struct weston_launch *wl)
 {
+	int ret;
 	sigset_t mask;
 	struct sigaction sa;
 	struct epoll_event ev;
@@ -216,13 +217,16 @@ setup_signals(struct weston_launch *wl)
 	memset(&sa, 0, sizeof sa);
 	sa.sa_handler = SIG_DFL;
 	sa.sa_flags = SA_NOCLDSTOP | SA_RESTART;
-	assert(sigaction(SIGCHLD, &sa, NULL) == 0);
+	ret = sigaction(SIGCHLD, &sa, NULL);
+	assert(ret == 0);
 
-	assert(sigemptyset(&mask) == 0);
+	ret = sigemptyset(&mask);
+	assert(ret == 0);
 	sigaddset(&mask, SIGCHLD);
 	sigaddset(&mask, SIGINT);
 	sigaddset(&mask, SIGTERM);
-	assert(sigprocmask(SIG_BLOCK, &mask, NULL) == 0);
+	ret = sigprocmask(SIG_BLOCK, &mask, NULL);
+	assert(ret == 0);
 
 	wl->signalfd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
 	if (wl->signalfd < 0)
