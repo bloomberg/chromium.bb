@@ -112,10 +112,6 @@ const BookmarkNode* CreateNewNode(BookmarkModel* model,
   return node;
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
-bool g_bookmark_bar_view_animations_disabled = false;
-#endif
-
 }  // namespace
 
 namespace bookmark_utils {
@@ -530,15 +526,5 @@ void RecordAppsPageOpen(BookmarkLaunchLocation location) {
         UserMetricsAction("ClickedBookmarkBarAppsShortcutButton"));
   }
 }
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
-void DisableBookmarkBarViewAnimationsForTesting(bool disabled) {
-  g_bookmark_bar_view_animations_disabled = disabled;
-}
-
-bool IsBookmarkBarViewAnimationsDisabled() {
-  return g_bookmark_bar_view_animations_disabled;
-}
-#endif
 
 }  // namespace bookmark_utils

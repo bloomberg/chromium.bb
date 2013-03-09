@@ -14,7 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/test/base/testing_profile.h"
@@ -56,11 +55,7 @@ class BookmarkContextMenuTest : public testing::Test {
         model_(NULL) {
   }
 
-  virtual void SetUp() {
-#if defined(OS_WIN)
-    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(true);
-#endif
-
+  virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -70,11 +65,7 @@ class BookmarkContextMenuTest : public testing::Test {
     AddTestData();
   }
 
-  virtual void TearDown() {
-#if defined(OS_WIN)
-    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(false);
-#endif
-
+  virtual void TearDown() OVERRIDE {
     ui::Clipboard::DestroyClipboardForCurrentThread();
 
     BrowserThread::GetBlockingPool()->FlushForTesting();

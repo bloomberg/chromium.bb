@@ -16,7 +16,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class Browser;
 class PrefRegistrySyncable;
 class Profile;
 
@@ -222,11 +221,6 @@ void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
 
 // Records the user opening the apps page for UMA purposes.
 void RecordAppsPageOpen(BookmarkLaunchLocation location);
-
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
-void DisableBookmarkBarViewAnimationsForTesting(bool disabled);
-bool IsBookmarkBarViewAnimationsDisabled();
-#endif
 
 }  // namespace bookmark_utils
 

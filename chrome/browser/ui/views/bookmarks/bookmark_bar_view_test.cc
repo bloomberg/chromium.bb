@@ -11,7 +11,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -109,8 +108,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {
   }
 
-  virtual void SetUp() {
-    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(true);
+  virtual void SetUp() OVERRIDE {
+    BookmarkBarView::DisableAnimationsForTesting(true);
 
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
@@ -173,7 +172,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     MessageLoop::current()->Run();
 
     ViewEventTestBase::TearDown();
-    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(false);
+    BookmarkBarView::DisableAnimationsForTesting(false);
     views::ViewsDelegate::views_delegate = NULL;
   }
 

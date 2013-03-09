@@ -79,6 +79,8 @@ class BookmarkBarView : public DetachableToolbarView,
   BookmarkBarView(Browser* browser, BrowserView* browser_view);
   virtual ~BookmarkBarView();
 
+  static void DisableAnimationsForTesting(bool disabled);
+
   // Returns the current browser.
   Browser* browser() const { return browser_; }
 
