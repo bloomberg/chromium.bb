@@ -1,11 +1,11 @@
 include_rules = [
-  # Bookmarks is being made into a Browser Component, so we have these
-  # two basic rules followed by temporary exceptions.  Please don't
-  # add to the list of exceptions!
+  # Bookmarks is being made into a component (it will end up at
+  # //components/bookmarks and not depend on //chrome), so we have these basic
+  # rules followed by temporary exceptions.  Please don't add to the list of
+  # exceptions!
   "-chrome/browser",
   "+chrome/browser/api",
   "+chrome/browser/bookmarks",
-  "+chrome/browser/common",
 
   # TODO(kaiwang): Bring this list to zero.
   # Do not add to the list of temporarily-allowed dependencies below,
