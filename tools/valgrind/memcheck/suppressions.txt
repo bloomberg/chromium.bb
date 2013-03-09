@@ -4304,7 +4304,8 @@
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
    fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EE8toStringIN3WTF12AtomicStringEEET_v
    fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE0EEcvN3WTF12AtomicStringEEv
-   fun:_ZN7WebCore24XMLHttpRequestV8InternalL2*HeaderCallbackERKN2v89ArgumentsE
+   ...
+   fun:_ZN7WebCore24XMLHttpRequestV8Internal*
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
@@ -5203,8 +5204,9 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore21toWebCoreAtomicStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN7WebCore*V8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
+   fun:_ZN7WebCore*V8StringResourceILNS_20V8StringResourceMode*
+   ...
+   fun:_ZN7WebCore23WorkerContextV8InternalL22addEventListenerMethodERKN2v89ArgumentsE
 }
 {
    bug_138712
