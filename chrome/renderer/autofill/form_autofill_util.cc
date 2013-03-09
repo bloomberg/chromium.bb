@@ -461,6 +461,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
                               const WebElement& initiating_element,
                               const FormData& data,
                               bool only_focusable_elements,
+                              bool force_override,
                               Callback callback) {
   std::vector<WebFormControlElement> control_elements;
   ExtractAutofillableElements(form_element, autofill::REQUIRE_AUTOCOMPLETE,
@@ -496,8 +497,8 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
     // Only autofill empty fields and the field that initiated the filling,
     // i.e. the field the user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
-    if (IsTextInput(input_element) && !is_initiating_element &&
-        !input_element->value().isEmpty())
+    if (!force_override && IsTextInput(input_element) &&
+        !is_initiating_element && !input_element->value().isEmpty())
       continue;
 
     if (!element->isEnabled() || element->isReadOnly() ||
@@ -930,6 +931,7 @@ void FillForm(const FormData& form, const WebInputElement& element) {
                            element,
                            form,
                            true, /* only_focusable_elements */
+                           false, /* dont force override */
                            &FillFormField);
 }
 
@@ -942,6 +944,7 @@ void FillFormIncludingNonFocusableElements(const FormData& form_data,
                            WebInputElement(),
                            form_data,
                            false, /* only_focusable_elements */
+                           true, /* force override */
                            &FillFormField);
 }
 
@@ -954,6 +957,7 @@ void PreviewForm(const FormData& form, const WebInputElement& element) {
                            element,
                            form,
                            true, /* only_focusable_elements */
+                           false, /* dont force override */
                            &PreviewFormField);
 }
 
