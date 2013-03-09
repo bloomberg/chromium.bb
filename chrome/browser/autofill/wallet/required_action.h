@@ -17,6 +17,7 @@ namespace wallet {
 // backing card.
 enum RequiredAction {
   UNKNOWN_TYPE = 0,  // Catch all type.
+  CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS,
   SETUP_WALLET,
   ACCEPT_TOS,
   GAIA_AUTH,

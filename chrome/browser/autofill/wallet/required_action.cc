@@ -12,9 +12,8 @@ namespace wallet {
 
 bool ActionAppliesToFullWallet(RequiredAction action) {
   return action == UPDATE_EXPIRATION_DATE ||
-         action == UPGRADE_MIN_ADDRESS ||
-         action == INVALID_FORM_FIELD ||
          action == VERIFY_CVV ||
+         action == CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS ||
          action == REQUIRE_PHONE_NUMBER;
 }
 
@@ -27,8 +26,9 @@ bool ActionAppliesToWalletItems(RequiredAction action) {
   return action == SETUP_WALLET ||
          action == ACCEPT_TOS ||
          action == GAIA_AUTH ||
-         action == INVALID_FORM_FIELD ||
          action == REQUIRE_PHONE_NUMBER ||
+         action == UPDATE_EXPIRATION_DATE ||
+         action == UPGRADE_MIN_ADDRESS ||
          action == PASSIVE_GAIA_AUTH;
 }
 
@@ -54,6 +54,8 @@ RequiredAction ParseRequiredActionFromString(const std::string& str) {
     return PASSIVE_GAIA_AUTH;
   else if (str_lower == "require_phone_number")
     return REQUIRE_PHONE_NUMBER;
+  else if (str_lower == "choose_another_instrument_or_address")
+    return CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS;
 
   DLOG(ERROR) << "Failed to parse: \"" << str << "\" as a required action";
   return UNKNOWN_TYPE;

@@ -276,9 +276,8 @@ const char kFullWalletWithRequiredActions[] =
     "{"
     "  \"required_action\":"
     "  ["
-    "    \"UPGRADE_MIN_ADDRESS\","
+    "    \"CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS\","
     "    \"update_EXPIRATION_date\","
-    "    \"INVALID_form_field\","
     "    \"verify_CVV\","
     "    \" REQuIrE_PHONE_NumBER\t\n\r \""
     "  ]"
@@ -290,6 +289,8 @@ const char kFullWalletWithInvalidRequiredActions[] =
     "  ["
     "    \"  setup_wallet\","
     "    \"AcCePt_ToS  \","
+    "    \"UPGRADE_MIN_ADDRESS\","
+    "    \"INVALID_form_field\","
     "    \"   \\tGAIA_auth   \\n\\r\","
     "    \"PASSIVE_GAIA_AUTH\","
     "    \" 忍者の正体 \""
@@ -392,9 +393,8 @@ TEST_F(FullWalletTest, CreateFullWalletWithRequiredActions) {
   SetUpDictionary(kFullWalletWithRequiredActions);
 
   std::vector<RequiredAction> required_actions;
-  required_actions.push_back(UPGRADE_MIN_ADDRESS);
+  required_actions.push_back(CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS);
   required_actions.push_back(UPDATE_EXPIRATION_DATE);
-  required_actions.push_back(INVALID_FORM_FIELD);
   required_actions.push_back(VERIFY_CVV);
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
 

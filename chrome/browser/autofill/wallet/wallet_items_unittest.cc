@@ -203,7 +203,8 @@ const char kWalletItemsWithRequiredActions[] =
     "    \"  setup_wallet\","
     "    \"AcCePt_ToS  \","
     "    \"  \\tGAIA_auth   \\n\\r\","
-    "    \"INVALID_form_field\","
+    "    \"UPDATE_expiration_date\","
+    "    \"UPGRADE_min_ADDRESS   \","
     "    \" pAsSiVe_GAIA_auth \","
     "    \" REQUIRE_PHONE_NUMBER\\t \""
     "  ]"
@@ -215,8 +216,7 @@ const char kWalletItemsWithInvalidRequiredActions[] =
     "  \"required_action\":"
     "  ["
     "    \"verify_CVV\","
-    "    \"UPGRADE_MIN_ADDRESS\","
-    "    \"update_EXPIRATION_date\","
+    "    \"invalid_FORM_FIELD\","
     "    \" 忍者の正体 \""
     "  ]"
     "}";
@@ -456,7 +456,8 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
   required_actions.push_back(SETUP_WALLET);
   required_actions.push_back(ACCEPT_TOS);
   required_actions.push_back(GAIA_AUTH);
-  required_actions.push_back(INVALID_FORM_FIELD);
+  required_actions.push_back(UPDATE_EXPIRATION_DATE);
+  required_actions.push_back(UPGRADE_MIN_ADDRESS);
   required_actions.push_back(PASSIVE_GAIA_AUTH);
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
 
