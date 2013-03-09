@@ -22,8 +22,7 @@ namespace extensions {
 ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
                            SourceMap* source_map)
     : NativeHandler(context->GetIsolate()),
-      context_(v8::Persistent<v8::Context>::New(context->GetIsolate(),
-                                                context)),
+      context_(context),
       source_map_(source_map),
       natives_enabled_(0) {
   RouteFunction("require",
@@ -42,7 +41,6 @@ ModuleSystem::~ModuleSystem() {
   // Deleting this value here prevents future lazy field accesses from
   // referencing ModuleSystem after it has been freed.
   context_->Global()->DeleteHiddenValue(v8::String::New(kModuleSystem));
-  context_.Dispose(context_->GetIsolate());
 }
 
 ModuleSystem::NativesEnabledScope::NativesEnabledScope(

@@ -17,6 +17,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -141,8 +142,15 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   }
 
   struct GCCallbackArgs {
-    v8::Persistent<v8::Object> object;
-    v8::Persistent<v8::Function> callback;
+    GCCallbackArgs(v8::Handle<v8::Object> object,
+                   v8::Handle<v8::Function> callback)
+        : object(object), callback(callback) {}
+
+    extensions::ScopedPersistent<v8::Object> object;
+    extensions::ScopedPersistent<v8::Function> callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(GCCallbackArgs);
   };
 
   static void GCCallback(v8::Isolate* isolate,
@@ -152,23 +160,16 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     GCCallbackArgs* args = reinterpret_cast<GCCallbackArgs*>(parameter);
     WebKit::WebScopedMicrotaskSuppression suppression;
     args->callback->Call(args->callback->CreationContext()->Global(), 0, NULL);
-    args->callback.Dispose(isolate);
-    args->object.Dispose(isolate);
     delete args;
   }
 
   // Binds a callback to be invoked when the given object is garbage collected.
   static v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
     if (args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction()) {
-      v8::Isolate* isolate = args.GetIsolate();
-      GCCallbackArgs* context = new GCCallbackArgs;
-      context->callback = v8::Persistent<v8::Function>::New(
-          isolate,
+      GCCallbackArgs* context = new GCCallbackArgs(
+          v8::Handle<v8::Object>::Cast(args[0]),
           v8::Handle<v8::Function>::Cast(args[1]));
-      context->object = v8::Persistent<v8::Object>::New(
-          isolate,
-          v8::Handle<v8::Object>::Cast(args[0]));
-      context->object.MakeWeak(isolate, context, GCCallback);
+      context->object.MakeWeak(context, GCCallback);
     } else {
       NOTREACHED();
     }

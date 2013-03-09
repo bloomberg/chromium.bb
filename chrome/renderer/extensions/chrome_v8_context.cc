@@ -33,8 +33,7 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
                                  const Extension* extension,
                                  Feature::Context context_type)
-    : v8_context_(v8::Persistent<v8::Context>::New(v8_context->GetIsolate(),
-                                                   v8_context)),
+    : v8_context_(v8_context),
       web_frame_(web_frame),
       extension_(extension),
       context_type_(context_type) {
@@ -47,7 +46,6 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
 ChromeV8Context::~ChromeV8Context() {
   VLOG(1) << "Destroyed context for extension\n"
           << "  extension id: " << GetExtensionID();
-  v8_context_.Dispose(v8_context_->GetIsolate());
 }
 
 std::string ChromeV8Context::GetExtensionID() {
@@ -97,7 +95,7 @@ bool ChromeV8Context::CallChromeHiddenMethod(
     int argc,
     v8::Handle<v8::Value>* argv,
     v8::Handle<v8::Value>* result) const {
-  v8::Context::Scope context_scope(v8_context_);
+  v8::Context::Scope context_scope(v8_context_.get());
 
   // ChromeV8ContextSet calls clear_web_frame() and then schedules a task to
   // delete this object. This check prevents a race from attempting to execute

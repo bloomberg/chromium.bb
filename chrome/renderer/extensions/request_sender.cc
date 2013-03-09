@@ -9,6 +9,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/dispatcher.h"
+#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -23,16 +24,13 @@ namespace extensions {
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public :
-  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name,
+  PendingRequest(v8::Handle<v8::Context> context,
+                 const std::string& name,
                  const std::string& extension_id)
       : context(context), name(name), extension_id(extension_id) {
   }
 
-  ~PendingRequest() {
-    context.Dispose(context->GetIsolate());
-  }
-
-  v8::Persistent<v8::Context> context;
+  ScopedPersistent<v8::Context> context;
   std::string name;
   std::string extension_id;
 };
@@ -94,14 +92,9 @@ void RequestSender::StartRequest(const std::string& name,
     source_origin = webframe->document().securityOrigin();
   }
 
-  v8::Local<v8::Context> ctx = v8::Context::GetCurrent();
-  v8::Persistent<v8::Context> v8_context =
-      v8::Persistent<v8::Context>::New(ctx->GetIsolate(), ctx);
-  DCHECK(!v8_context.IsEmpty());
-
   std::string extension_id = current_context->GetExtensionID();
   InsertRequest(request_id, new PendingRequest(
-      v8_context, name, extension_id));
+      v8::Context::GetCurrent(), name, extension_id));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -135,7 +128,8 @@ void RequestSender::HandleResponse(int request_id,
     return;
   }
 
-  ChromeV8Context* v8_context = context_set_->GetByV8Context(request->context);
+  ChromeV8Context* v8_context =
+      context_set_->GetByV8Context(request->context.get());
   if (!v8_context)
     return;  // The frame went away.
 

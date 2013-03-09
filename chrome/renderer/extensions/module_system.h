@@ -9,6 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/extensions/native_handler.h"
+#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 
 #include <map>
@@ -148,7 +149,7 @@ class ModuleSystem : public NativeHandler {
   v8::Handle<v8::Value> ThrowException(const std::string& message);
 
   // The context that this ModuleSystem is for.
-  v8::Persistent<v8::Context> context_;
+  ScopedPersistent<v8::Context> context_;
 
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
