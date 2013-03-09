@@ -322,6 +322,9 @@ class CONTENT_EXPORT RenderWidget
   void OnShowImeIfNeeded();
 #endif
 
+  // Notify the compositor about a change in viewport size. This should be
+  // used only with auto resize mode WebWidgets, as normal WebWidgets should
+  // go through OnResize.
   void AutoResizeCompositor();
 
   virtual void SetDeviceScaleFactor(float device_scale_factor);
@@ -525,6 +528,10 @@ class CONTENT_EXPORT RenderWidget
   // True if we are expecting an UpdateRect_ACK message (i.e., that a
   // UpdateRect message has been sent).
   bool update_reply_pending_;
+
+  // Whether the WebWidget is in auto resize mode, which is used for example
+  // by extension popups.
+  bool auto_resize_mode_;
 
   // True if we need to send an UpdateRect message to notify the browser about
   // an already-completed auto-resize.

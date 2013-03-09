@@ -614,7 +614,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
-      auto_resize_mode_(false),
       is_loading_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
@@ -6136,8 +6135,7 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
     webview()->settings()->setAcceleratedCompositingForFixedPositionEnabled(
         ShouldUseFixedPositionCompositing(device_scale_factor_));
   }
-  if (auto_resize_mode_)
-    AutoResizeCompositor();
+  AutoResizeCompositor();
 }
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {

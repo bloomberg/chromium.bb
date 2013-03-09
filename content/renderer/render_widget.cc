@@ -137,6 +137,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
       update_reply_pending_(false),
+      auto_resize_mode_(false),
       need_update_rect_for_auto_resize_(false),
       using_asynchronous_swapbuffers_(false),
       num_swapbuffers_complete_pending_(0),
@@ -1319,6 +1320,9 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 }
 
 void RenderWidget::AutoResizeCompositor() {
+  if (!auto_resize_mode_)
+    return;
+
   physical_backing_size_ = gfx::ToCeiledSize(gfx::ScaleSize(size_,
       device_scale_factor_));
   if (compositor_)
