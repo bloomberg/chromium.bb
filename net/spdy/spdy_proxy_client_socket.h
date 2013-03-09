@@ -40,7 +40,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // Create a socket on top of the |spdy_stream| by sending a SYN_STREAM
   // CONNECT frame for |endpoint|.  After the SYN_REPLY is received,
   // any data read/written to the socket will be transferred in data
-  // frames.
+  // frames. This object will set itself as |spdy_stream|'s delegate.
   SpdyProxyClientSocket(SpdyStream* spdy_stream,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,

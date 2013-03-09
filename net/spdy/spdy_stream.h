@@ -83,7 +83,9 @@ class NET_EXPORT_PRIVATE SpdyStream
     // Called when data is sent.
     virtual void OnDataSent(int length) = 0;
 
-    // Called when SpdyStream is closed.
+    // Called when SpdyStream is closed. No other delegate functions
+    // will be called after this is called, and the delegate must not
+    // access the stream after this is called.
     virtual void OnClose(int status) = 0;
 
    protected:

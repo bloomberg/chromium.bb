@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
@@ -92,6 +93,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
 
   void OnSpdyStreamCreated(int status);
 
+  base::WeakPtrFactory<SpdyWebSocketStream> weak_ptr_factory_;
   SpdyStreamRequest stream_request_;
   scoped_refptr<SpdyStream> stream_;
   scoped_refptr<SpdySession> spdy_session_;

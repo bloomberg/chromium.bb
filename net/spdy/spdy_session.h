@@ -129,7 +129,8 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
   // Transfers the created stream (guaranteed to not be NULL) to the
   // caller. Must be called at most once after StartRequest() returns
-  // OK or |callback| is called with OK.
+  // OK or |callback| is called with OK. The caller must immediately
+  // set a delegate for the returned stream (except for test code).
   scoped_refptr<SpdyStream> ReleaseStream();
 
  private:
@@ -227,11 +228,13 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     return host_port_proxy_pair_;
   }
 
-  // Get a pushed stream for a given |url|.
-  // If the server initiates a stream, it might already exist for a given path.
-  // The server might also not have initiated the stream yet, but indicated it
-  // will via X-Associated-Content.  Writes the stream out to |spdy_stream|.
-  // Returns a net error code.
+  // Get a pushed stream for a given |url|.  If the server initiates a
+  // stream, it might already exist for a given path.  The server
+  // might also not have initiated the stream yet, but indicated it
+  // will via X-Associated-Content.  Returns OK if a stream was found
+  // and put into |spdy_stream|, or if one was not found but it is
+  // okay to create a new stream.  Returns an error (not
+  // ERR_IO_PENDING) otherwise.
   int GetPushStream(
       const GURL& url,
       scoped_refptr<SpdyStream>* spdy_stream,

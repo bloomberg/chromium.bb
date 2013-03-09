@@ -507,9 +507,8 @@ int SpdySession::GetPushStream(
   if (stream->get()) {
     DCHECK(streams_pushed_and_claimed_count_ < streams_pushed_count_);
     streams_pushed_and_claimed_count_++;
-    return OK;
   }
-  return 0;
+  return OK;
 }
 
 int SpdySession::TryCreateStream(SpdyStreamRequest* request,
@@ -819,6 +818,7 @@ void SpdySession::CloseStream(SpdyStreamId stream_id, int status) {
 void SpdySession::CloseCreatedStream(SpdyStream* stream, int status) {
   DCHECK_EQ(0u, stream->stream_id());
   created_streams_.erase(scoped_refptr<SpdyStream>(stream));
+  stream->OnClose(status);
   ProcessPendingStreamRequests();
 }
 

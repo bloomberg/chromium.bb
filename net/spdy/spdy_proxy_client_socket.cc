@@ -137,10 +137,12 @@ void SpdyProxyClientSocket::Disconnect() {
 
   next_state_ = STATE_DISCONNECTED;
 
-  if (spdy_stream_)
+  if (spdy_stream_) {
     // This will cause OnClose to be invoked, which takes care of
     // cleaning up all the internal state.
     spdy_stream_->Cancel();
+    DCHECK(!spdy_stream_.get());
+  }
 }
 
 bool SpdyProxyClientSocket::IsConnected() const {
@@ -371,7 +373,8 @@ int SpdyProxyClientSocket::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
   return auth_->MaybeGenerateAuthToken(
       &request_,
-      base::Bind(&SpdyProxyClientSocket::OnIOComplete, base::Unretained(this)),
+      base::Bind(&SpdyProxyClientSocket::OnIOComplete,
+                 weak_factory_.GetWeakPtr()),
       net_log_);
 }
 

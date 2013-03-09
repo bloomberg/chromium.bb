@@ -28,17 +28,19 @@ namespace net {
 SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session,
                                bool direct)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      stream_(NULL),
       spdy_session_(spdy_session),
+      stream_closed_(false),
+      closed_stream_pushed_(false),
+      closed_stream_status_(ERR_FAILED),
+      closed_stream_id_(0),
       request_info_(NULL),
       has_upload_data_(false),
       response_info_(NULL),
-      download_finished_(false),
       response_headers_received_(false),
       user_buffer_len_(0),
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
-      direct_(direct) { }
+      direct_(direct) {}
 
 void SpdyHttpStream::InitializeWithExistingStream(SpdyStream* spdy_stream) {
   stream_ = spdy_stream;
@@ -64,10 +66,13 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                              stream_net_log);
     if (error != OK)
       return error;
-  }
 
-  if (stream_.get())
-    return OK;
+    // |stream_| may be NULL even if OK was returned.
+    if (stream_) {
+      stream_->SetDelegate(this);
+      return OK;
+    }
+  }
 
   int rv = stream_request_.StartRequest(
       spdy_session_, request_info_->url, request_info_->priority,
@@ -75,8 +80,10 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       base::Bind(&SpdyHttpStream::OnStreamCreated,
                  weak_factory_.GetWeakPtr(), callback));
 
-  if (rv == OK)
+  if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();
+    stream_->SetDelegate(this);
+  }
 
   return rv;
 }
@@ -95,10 +102,13 @@ UploadProgress SpdyHttpStream::GetUploadProgress() const {
 
 int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   CHECK(!callback.is_null());
-  CHECK(!stream_->cancelled());
+  if (stream_)
+    CHECK(!stream_->cancelled());
 
-  if (stream_->closed())
-    return stream_->response_status();
+  if (stream_closed_)
+    return closed_stream_status_;
+
+  CHECK(stream_);
 
   // Check if we already have the response headers. If so, return synchronously.
   if(stream_->response_received()) {
@@ -114,7 +124,10 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
 int SpdyHttpStream::ReadResponseBody(
     IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
-  CHECK(stream_->is_idle());
+  if (stream_) {
+    CHECK(stream_->is_idle());
+    CHECK(!stream_->closed());
+  }
   CHECK(buf);
   CHECK(buf_len);
   CHECK(!callback.is_null());
@@ -139,10 +152,11 @@ int SpdyHttpStream::ReadResponseBody(
       }
       bytes_read += bytes_to_copy;
     }
-    stream_->IncreaseRecvWindowSize(bytes_read);
+    if (stream_)
+      stream_->IncreaseRecvWindowSize(bytes_read);
     return bytes_read;
-  } else if (stream_->closed()) {
-    return stream_->response_status();
+  } else if (stream_closed_) {
+    return closed_stream_status_;
   }
 
   CHECK(callback_.is_null());
@@ -159,6 +173,7 @@ void SpdyHttpStream::Close(bool not_reusable) {
   // Note: the not_reusable flag has no meaning for SPDY streams.
 
   Cancel();
+  DCHECK(!stream_.get());
 }
 
 HttpStream* SpdyHttpStream::RenewStreamForAuth() {
@@ -166,9 +181,7 @@ HttpStream* SpdyHttpStream::RenewStreamForAuth() {
 }
 
 bool SpdyHttpStream::IsResponseBodyComplete() const {
-  if (!stream_)
-    return false;
-  return stream_->closed();
+  return stream_closed_;
 }
 
 bool SpdyHttpStream::CanFindEndOfResponse() const {
@@ -197,19 +210,29 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // The reused flag can only be correctly set once a stream has an ID.  Streams
   // get their IDs once the request has been successfully sent, so this does not
   // behave that differently from other stream types.
-  if (!spdy_session_ || !stream_ || stream_->stream_id() == 0)
+  if (!spdy_session_ || (!stream_ && !stream_closed_))
     return false;
-  return spdy_session_->GetLoadTimingInfo(stream_->stream_id(),
-                                          load_timing_info);
+
+  SpdyStreamId stream_id =
+      stream_closed_ ? closed_stream_id_ : stream_->stream_id();
+  if (stream_id == 0)
+    return false;
+
+  return spdy_session_->GetLoadTimingInfo(stream_id, load_timing_info);
 }
 
 int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
                                 const CompletionCallback& callback) {
+  if (stream_closed_) {
+    if (stream_->pushed())
+      return closed_stream_status_;
+
+    return (closed_stream_status_ == OK) ? ERR_FAILED : closed_stream_status_;
+  }
+
   base::Time request_time = base::Time::Now();
   CHECK(stream_.get());
-
-  stream_->SetDelegate(this);
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
@@ -242,13 +265,6 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   CHECK(!callback.is_null());
   CHECK(!stream_->cancelled());
   CHECK(response);
-
-  if (!stream_->pushed() && stream_->closed()) {
-    if (stream_->response_status() == OK)
-      return ERR_FAILED;
-    else
-      return stream_->response_status();
-  }
 
   // SendRequest can be called in two cases.
   //
@@ -284,13 +300,16 @@ void SpdyHttpStream::Cancel() {
   callback_.Reset();
   if (stream_)
     stream_->Cancel();
+  DCHECK(!stream_.get());
 }
 
 void SpdyHttpStream::OnStreamCreated(
     const CompletionCallback& callback,
     int rv) {
-  if (rv == OK)
+  if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();
+    stream_->SetDelegate(this);
+  }
   callback.Run(rv);
 }
 
@@ -417,6 +436,7 @@ int SpdyHttpStream::OnDataReceived(const char* data, int length) {
   // Note that data may be received for a SpdyStream prior to the user calling
   // ReadResponseBody(), therefore user_buffer_ may be NULL.  This may often
   // happen for server initiated streams.
+  DCHECK(stream_.get());
   DCHECK(!stream_->closed() || stream_->pushed());
   if (length > 0) {
     // Save the received data.
@@ -440,6 +460,13 @@ void SpdyHttpStream::OnDataSent(int length) {
 }
 
 void SpdyHttpStream::OnClose(int status) {
+  if (stream_) {
+    stream_closed_ = true;
+    closed_stream_pushed_ = stream_->pushed();
+    closed_stream_status_ = status;
+    closed_stream_id_ = stream_->stream_id();
+  }
+  stream_ = NULL;
   bool invoked_callback = false;
   if (status == net::OK) {
     // We need to complete any pending buffered read now.
@@ -471,7 +498,7 @@ void SpdyHttpStream::ScheduleBufferedReadCallback() {
 // the caller.  Returns true if we should wait, false otherwise.
 bool SpdyHttpStream::ShouldWaitForMoreBufferedData() const {
   // If the response is complete, there is no point in waiting.
-  if (stream_->closed())
+  if (stream_closed_)
     return false;
 
   int bytes_buffered = 0;
@@ -485,13 +512,20 @@ bool SpdyHttpStream::ShouldWaitForMoreBufferedData() const {
 }
 
 bool SpdyHttpStream::DoBufferedReadCallback() {
-  weak_factory_.InvalidateWeakPtrs();
   buffered_read_callback_pending_ = false;
 
   // If the transaction is cancelled or errored out, we don't need to complete
   // the read.
-  if (!stream_ || stream_->response_status() != OK || stream_->cancelled())
+  if (!stream_ && !stream_closed_)
     return false;
+
+  int stream_status =
+      stream_closed_ ? closed_stream_status_ : stream_->response_status();
+  if (stream_status != OK)
+    return false;
+
+  if (stream_)
+    DCHECK(!stream_->cancelled());
 
   // When more_read_data_pending_ is true, it means that more data has
   // arrived since we started waiting.  Wait a little longer and continue

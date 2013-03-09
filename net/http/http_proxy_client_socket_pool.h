@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
@@ -150,6 +151,7 @@ class HttpProxyConnectJob : public ConnectJob {
   // a standard net error code will be returned.
   virtual int ConnectInternal() OVERRIDE;
 
+  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_;
   scoped_refptr<HttpProxySocketParams> params_;
   TransportClientSocketPool* const transport_pool_;
   SSLClientSocketPool* const ssl_pool_;

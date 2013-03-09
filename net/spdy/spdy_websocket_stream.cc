@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
@@ -18,7 +19,8 @@ namespace net {
 
 SpdyWebSocketStream::SpdyWebSocketStream(
     SpdySession* spdy_session, Delegate* delegate)
-    : stream_(NULL),
+    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      stream_(NULL),
       spdy_session_(spdy_session),
       delegate_(delegate) {
   DCHECK(spdy_session_);
@@ -33,6 +35,9 @@ SpdyWebSocketStream::~SpdyWebSocketStream() {
     // For safe, we should eliminate |delegate_| for OnClose() calback.
     delegate_ = NULL;
     stream_->Close();
+    // The call to Close() should call into OnClose(), which should
+    // set |stream_| to NULL.
+    DCHECK(!stream_.get());
   }
 }
 
@@ -45,7 +50,7 @@ int SpdyWebSocketStream::InitializeStream(const GURL& url,
   int rv = stream_request_.StartRequest(
       spdy_session_, url, request_priority, net_log,
       base::Bind(&SpdyWebSocketStream::OnSpdyStreamCreated,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();

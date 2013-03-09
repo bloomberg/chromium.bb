@@ -2046,9 +2046,9 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
       ConstructSpdyBodyFrame(1, content->c_str(), content->size(), true));
 
   MockWrite writes[] = {
-    CreateMockWrite(*req),
-    CreateMockWrite(*body),
-    CreateMockWrite(*body_end),
+    CreateMockWrite(*req, 0),
+    CreateMockWrite(*body, 1),
+    CreateMockWrite(*body_end, 2),
   };
 
   static const int32 kDeltaWindowSize = 0xff;
@@ -2059,20 +2059,20 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
       ConstructSpdyWindowUpdate(2, kDeltaWindowSize));
   scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-    CreateMockRead(*window_update_dummy),
-    CreateMockRead(*window_update_dummy),
-    CreateMockRead(*window_update_dummy),
-    CreateMockRead(*window_update),     // Four updates, therefore window
-    CreateMockRead(*window_update),     // size should increase by
-    CreateMockRead(*window_update),     // kDeltaWindowSize * 4
-    CreateMockRead(*window_update),
-    CreateMockRead(*resp),
-    CreateMockRead(*body_end),
-    MockRead(ASYNC, 0, 0)  // EOF
+    CreateMockRead(*window_update_dummy, 3),
+    CreateMockRead(*window_update_dummy, 4),
+    CreateMockRead(*window_update_dummy, 5),
+    CreateMockRead(*window_update, 6),     // Four updates, therefore window
+    CreateMockRead(*window_update, 7),     // size should increase by
+    CreateMockRead(*window_update, 8),     // kDeltaWindowSize * 4
+    CreateMockRead(*window_update, 9),
+    CreateMockRead(*resp, 10),
+    CreateMockRead(*body_end, 11),
+    MockRead(ASYNC, 0, 0, 12)  // EOF
   };
 
-  DelayedSocketData data(0, reads, arraysize(reads),
-                         writes, arraysize(writes));
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
 
   ScopedVector<UploadElementReader> element_readers;
   for (int i = 0; i < kFrameCount; ++i) {
@@ -2088,7 +2088,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
   request.upload_data_stream = &upload_data_stream;
 
   NormalSpdyTransactionHelper helper(request, BoundNetLog(), GetParam(), NULL);
-  helper.AddData(&data);
+  helper.SetDeterministic();
+  helper.AddDeterministicData(&data);
   helper.RunPreTestSetup();
 
   HttpNetworkTransaction* trans = helper.trans();
@@ -2097,8 +2098,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
   int rv = trans->Start(&helper.request(), callback.callback(), BoundNetLog());
 
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+
+  data.RunFor(11);
 
   SpdyHttpStream* stream = static_cast<SpdyHttpStream*>(trans->stream_.get());
   ASSERT_TRUE(stream != NULL);
@@ -2107,6 +2108,12 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, WindowUpdateReceived) {
             kDeltaWindowSize * kDeltaCount -
             kMaxSpdyFrameChunkSize * kFrameCount,
             stream->stream()->send_window_size());
+
+  data.RunFor(1);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
   helper.VerifyDataConsumed();
 }
 
@@ -2465,7 +2472,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, FlowControlStallResumeAfterSettings) {
   data.ForceNextRead();   // Read in SETTINGS frame to unstall.
   rv = callback.WaitForResult();
   helper.VerifyDataConsumed();
-  EXPECT_FALSE(stream->stream()->stalled_by_flow_control());
+  // If stream is NULL, that means it was unstalled and closed.
+  EXPECT_TRUE(stream->stream() == NULL);
 }
 
 // Test we correctly handle the case where the SETTINGS frame results in a
