@@ -19,7 +19,7 @@ template <typename LayerType, typename RenderSurfaceType>
 OcclusionTrackerBase<LayerType, RenderSurfaceType>::OcclusionTrackerBase(
     gfx::Rect screen_space_clip_rect, bool record_metrics_for_frame)
     : screen_space_clip_rect_(screen_space_clip_rect),
-      overdraw_metrics_(OverdrawMetrics::create(record_metrics_for_frame)),
+      overdraw_metrics_(OverdrawMetrics::Create(record_metrics_for_frame)),
       occluding_screen_space_rects_(NULL),
       non_occluding_screen_space_rects_(NULL) {}
 

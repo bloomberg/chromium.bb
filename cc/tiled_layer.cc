@@ -323,7 +323,7 @@ bool TiledLayer::updateTiles(int left, int top, int right, int bottom, ResourceU
     gfx::Rect paintRect = markTilesForUpdate(left, top, right, bottom, ignoreOcclusions);
 
     if (occlusion)
-        occlusion->OverdrawMetrics().didPaint(paintRect);
+        occlusion->OverdrawMetrics().DidPaint(paintRect);
 
     if (paintRect.IsEmpty())
         return true;
@@ -364,7 +364,7 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
     if (!succeeded)
         return;
     if (occlusion)
-        occlusion->OverdrawMetrics().didCullTilesForUpload(occludedTileCount);
+        occlusion->OverdrawMetrics().DidCullTilesForUpload(occludedTileCount);
 }
 
 bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions)
@@ -498,7 +498,7 @@ void TiledLayer::updateTileTextures(const gfx::Rect& paintRect, int left, int to
 
             tile->updaterResource()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)
-                occlusion->OverdrawMetrics().didUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
+                occlusion->OverdrawMetrics().DidUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
 
         }
     }

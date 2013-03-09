@@ -546,7 +546,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     }
 
     if (drawFrame)
-        occlusionTracker.OverdrawMetrics().recordMetrics(this);
+        occlusionTracker.OverdrawMetrics().RecordMetrics(this);
 
     removeRenderPasses(CullRenderPassesWithNoQuads(), frame);
     m_renderer->DecideRenderPassAllocationsForFrame(frame.renderPasses);

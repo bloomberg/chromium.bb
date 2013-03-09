@@ -124,9 +124,9 @@ TEST_F(QuadCullerTest, verifyNoCulling)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 13u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 40000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 40000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullChildLinesUpTopLeft)
@@ -141,9 +141,9 @@ TEST_F(QuadCullerTest, verifyCullChildLinesUpTopLeft)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 9u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 40000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 40000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullWhenChildOpacityNotOne)
@@ -158,9 +158,9 @@ TEST_F(QuadCullerTest, verifyCullWhenChildOpacityNotOne)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 13u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 40000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 40000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullWhenChildOpaqueFlagFalse)
@@ -175,9 +175,9 @@ TEST_F(QuadCullerTest, verifyCullWhenChildOpaqueFlagFalse)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 13u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 40000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 40000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullCenterTileOnly)
@@ -210,9 +210,9 @@ TEST_F(QuadCullerTest, verifyCullCenterTileOnly)
     EXPECT_EQ(quadVisibleRect6.height(), 50);
     EXPECT_EQ(quadVisibleRect6.y(), 250);
 
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 100000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 30000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 100000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 30000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullCenterTileNonIntegralSize1)
@@ -238,9 +238,9 @@ TEST_F(QuadCullerTest, verifyCullCenterTileNonIntegralSize1)
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 2u);
 
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 20363, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 20363, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullCenterTileNonIntegralSize2)
@@ -266,9 +266,9 @@ TEST_F(QuadCullerTest, verifyCullCenterTileNonIntegralSize2)
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 2u);
 
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 19643, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 19643, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullChildLinesUpBottomRight)
@@ -285,9 +285,9 @@ TEST_F(QuadCullerTest, verifyCullChildLinesUpBottomRight)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 9u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 40000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 40000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullSubRegion)
@@ -305,9 +305,9 @@ TEST_F(QuadCullerTest, verifyCullSubRegion)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 12u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 30000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 10000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 30000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 10000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullSubRegion2)
@@ -325,9 +325,9 @@ TEST_F(QuadCullerTest, verifyCullSubRegion2)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 12u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 25000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 15000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 25000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 15000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullSubRegionCheckOvercull)
@@ -345,9 +345,9 @@ TEST_F(QuadCullerTest, verifyCullSubRegionCheckOvercull)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 13u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 90000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 30000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 10000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 30000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 10000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyNonAxisAlignedQuadsDontOcclude)
@@ -365,9 +365,9 @@ TEST_F(QuadCullerTest, verifyNonAxisAlignedQuadsDontOcclude)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 13u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 130000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 130000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 // This test requires some explanation: here we are rotating the quads to be culled.
@@ -391,9 +391,9 @@ TEST_F(QuadCullerTest, verifyNonAxisAlignedQuadsSafelyCulled)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 12u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 100600, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 29400, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 100600, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 29400, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullOutsideScissorOverTile)
@@ -408,9 +408,9 @@ TEST_F(QuadCullerTest, verifyCullOutsideScissorOverTile)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 1u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 10000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 120000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 10000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 120000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullOutsideScissorOverCulledTile)
@@ -425,9 +425,9 @@ TEST_F(QuadCullerTest, verifyCullOutsideScissorOverCulledTile)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 1u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 10000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 120000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 10000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 120000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullOutsideScissorOverPartialTiles)
@@ -442,9 +442,9 @@ TEST_F(QuadCullerTest, verifyCullOutsideScissorOverPartialTiles)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 9u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 40000, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 90000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 40000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 90000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyCullOutsideScissorOverNoTiles)
@@ -459,9 +459,9 @@ TEST_F(QuadCullerTest, verifyCullOutsideScissorOverNoTiles)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 0u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 130000, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 130000, 1);
 }
 
 TEST_F(QuadCullerTest, verifyWithoutMetrics)
@@ -476,9 +476,9 @@ TEST_F(QuadCullerTest, verifyWithoutMetrics)
     appendQuads(quadList, sharedStateList, childLayer.get(), it, occlusionTracker);
     appendQuads(quadList, sharedStateList, rootLayer.get(), it, occlusionTracker);
     EXPECT_EQ(quadList.size(), 9u);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnOpaque(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsDrawnTranslucent(), 0, 1);
-    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixelsCulledForDrawing(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_opaque(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_drawn_translucent(), 0, 1);
+    EXPECT_NEAR(occlusionTracker.OverdrawMetrics().pixels_culled_for_drawing(), 0, 1);
 }
 
 }  // namespace

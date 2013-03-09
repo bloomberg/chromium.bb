@@ -671,8 +671,8 @@ void LayerTreeHost::prioritizeTextures(const LayerList& renderSurfaceLayerList, 
     setPrioritiesForLayers(renderSurfaceLayerList);
     setPrioritiesForSurfaces(memoryForRenderSurfacesMetric);
 
-    metrics.didUseContentsTextureMemoryBytes(m_contentsTextureManager->memoryAboveCutoffBytes());
-    metrics.didUseRenderSurfaceTextureMemoryBytes(memoryForRenderSurfacesMetric);
+    metrics.DidUseContentsTextureMemoryBytes(m_contentsTextureManager->memoryAboveCutoffBytes());
+    metrics.DidUseRenderSurfaceTextureMemoryBytes(memoryForRenderSurfacesMetric);
 
     m_contentsTextureManager->prioritizeTextures();
 }
@@ -755,7 +755,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
         occlusionTracker.LeaveLayer(it);
     }
 
-    occlusionTracker.OverdrawMetrics().recordMetrics(this);
+    occlusionTracker.OverdrawMetrics().RecordMetrics(this);
 
     return needMoreUpdates;
 }
