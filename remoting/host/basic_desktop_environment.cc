@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/desktop_resizer.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/resizing_host_observer.h"
 
 namespace remoting {
 
@@ -32,6 +34,15 @@ scoped_ptr<EventExecutor> BasicDesktopEnvironment::CreateEventExecutor(
   DCHECK(CalledOnValidThread());
 
   return EventExecutor::Create(input_task_runner, ui_task_runner);
+}
+
+scoped_ptr<SessionController>
+BasicDesktopEnvironment::CreateSessionController() {
+  DCHECK(CalledOnValidThread());
+
+  scoped_ptr<SessionController> session_controller(
+      new ResizingHostObserver(DesktopResizer::Create()));
+  return session_controller.Pass();
 }
 
 scoped_ptr<media::ScreenCapturer> BasicDesktopEnvironment::CreateVideoCapturer(

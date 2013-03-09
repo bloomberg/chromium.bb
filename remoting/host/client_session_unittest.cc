@@ -77,6 +77,10 @@ class ClientSessionTest : public testing::Test {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
+  // Creates a dummy SessionController, to mock
+  // DesktopEnvironment::CreateSessionController().
+  SessionController* CreateSessionController();
+
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   media::ScreenCapturer* CreateVideoCapturer(
@@ -195,6 +199,8 @@ DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
       .Times(0);
   EXPECT_CALL(*desktop_environment, CreateEventExecutorPtr(_, _))
       .WillOnce(Invoke(this, &ClientSessionTest::CreateEventExecutor));
+  EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
+      .WillOnce(Invoke(this, &ClientSessionTest::CreateSessionController));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
       .WillOnce(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
 
@@ -206,6 +212,10 @@ EventExecutor* ClientSessionTest::CreateEventExecutor(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   EXPECT_TRUE(event_executor_);
   return event_executor_.release();
+}
+
+SessionController* ClientSessionTest::CreateSessionController() {
+  return new MockSessionController();
 }
 
 media::ScreenCapturer* ClientSessionTest::CreateVideoCapturer(

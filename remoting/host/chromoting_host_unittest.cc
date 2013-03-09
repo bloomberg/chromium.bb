@@ -294,6 +294,10 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(*desktop_environment, CreateEventExecutorPtr(_, _))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateEventExecutor));
+    EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
+        .Times(AnyNumber())
+        .WillRepeatedly(Invoke(this,
+                               &ChromotingHostTest::CreateSessionController));
     EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &ChromotingHostTest::CreateVideoCapturer));
@@ -309,6 +313,12 @@ class ChromotingHostTest : public testing::Test {
     MockEventExecutor* event_executor = new MockEventExecutor();
     EXPECT_CALL(*event_executor, StartPtr(_));
     return event_executor;
+  }
+
+  // Creates a dummy SessionController, to mock
+  // DesktopEnvironment::CreateSessionController().
+  SessionController* CreateSessionController() {
+    return new MockSessionController();
   }
 
   // Creates a fake media::ScreenCapturer, to mock

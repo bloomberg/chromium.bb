@@ -34,6 +34,11 @@ scoped_ptr<EventExecutor> MockDesktopEnvironment::CreateEventExecutor(
                                                           ui_task_runner));
 }
 
+scoped_ptr<SessionController>
+MockDesktopEnvironment::CreateSessionController() {
+  return scoped_ptr<SessionController>(CreateSessionControllerPtr());
+}
+
 scoped_ptr<media::ScreenCapturer> MockDesktopEnvironment::CreateVideoCapturer(
     scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) {
@@ -88,5 +93,9 @@ MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
 MockHostStatusObserver::MockHostStatusObserver() {}
 
 MockHostStatusObserver::~MockHostStatusObserver() {}
+
+MockSessionController::MockSessionController() {}
+
+MockSessionController::~MockSessionController() {}
 
 }  // namespace remoting

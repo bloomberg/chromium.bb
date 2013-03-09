@@ -24,6 +24,7 @@ namespace remoting {
 
 class AudioCapturer;
 class EventExecutor;
+class SessionController;
 
 // Provides factory methods for creation of audio/video capturers and event
 // executor for a given desktop environment.
@@ -31,13 +32,14 @@ class DesktopEnvironment {
  public:
   virtual ~DesktopEnvironment() {}
 
-  // Factory methods used to create audio/video capturers and event executor for
-  // a particular desktop environment.
+  // Factory methods used to create audio/video capturers, event executor, and
+  // session controller for a particular desktop environment.
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) = 0;
   virtual scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) = 0;
+  virtual scoped_ptr<SessionController> CreateSessionController() = 0;
   virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) = 0;

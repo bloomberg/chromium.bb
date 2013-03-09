@@ -38,6 +38,7 @@ struct ClientSessionTraits;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class EventExecutor;
+class SessionController;
 class VideoEncoder;
 class VideoScheduler;
 
@@ -77,12 +78,6 @@ class ClientSession
         ClientSession* client,
         const std::string& channel_name,
         const protocol::TransportRoute& route) = 0;
-
-    // Called when the initial client resolution is received, and when it
-    // changes.
-    virtual void OnClientResolutionChanged(ClientSession* client,
-                                           const SkISize& size,
-                                           const SkIPoint& dpi) = 0;
 
    protected:
     virtual ~EventHandler() {}
@@ -229,6 +224,8 @@ class ClientSession
   scoped_refptr<VideoScheduler> video_scheduler_;
 
   scoped_ptr<EventExecutor> event_executor_;
+
+  scoped_ptr<SessionController> session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

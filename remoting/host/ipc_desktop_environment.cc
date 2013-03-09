@@ -18,6 +18,7 @@
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/session_controller.h"
 
 namespace remoting {
 
@@ -57,6 +58,12 @@ scoped_ptr<EventExecutor> IpcDesktopEnvironment::CreateEventExecutor(
 
   return desktop_session_proxy_->CreateEventExecutor(input_task_runner,
                                                      ui_task_runner);
+}
+
+scoped_ptr<SessionController> IpcDesktopEnvironment::CreateSessionController() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  return desktop_session_proxy_->CreateSessionController();
 }
 
 scoped_ptr<media::ScreenCapturer> IpcDesktopEnvironment::CreateVideoCapturer(

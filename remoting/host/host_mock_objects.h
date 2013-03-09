@@ -14,6 +14,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/local_input_monitor.h"
+#include "remoting/host/session_controller.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -33,6 +34,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD2(CreateEventExecutorPtr,
                EventExecutor*(scoped_refptr<base::SingleThreadTaskRunner>,
                               scoped_refptr<base::SingleThreadTaskRunner>));
+  MOCK_METHOD0(CreateSessionControllerPtr, SessionController*());
   MOCK_METHOD2(
       CreateVideoCapturerPtr,
       media::ScreenCapturer*(scoped_refptr<base::SingleThreadTaskRunner>,
@@ -44,6 +46,7 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
+  virtual scoped_ptr<SessionController> CreateSessionController() OVERRIDE;
   virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
@@ -94,9 +97,6 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
       ClientSession* client,
       const std::string& channel_name,
       const protocol::TransportRoute& route));
-  MOCK_METHOD3(OnClientResolutionChanged, void(ClientSession* client,
-                                               const SkISize& size,
-                                               const SkIPoint& dpi));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);
@@ -151,6 +151,18 @@ class MockHostStatusObserver : public HostStatusObserver {
                     const protocol::TransportRoute& route));
   MOCK_METHOD1(OnStart, void(const std::string& xmpp_login));
   MOCK_METHOD0(OnShutdown, void());
+};
+
+class MockSessionController : public SessionController {
+ public:
+  MockSessionController();
+  virtual ~MockSessionController();
+
+  MOCK_METHOD2(OnClientResolutionChanged,
+               void(const SkIPoint&, const SkISize&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSessionController);
 };
 
 }  // namespace remoting

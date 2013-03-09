@@ -267,15 +267,6 @@ void ChromotingHost::OnSessionRouteChange(
                                         route));
 }
 
-void ChromotingHost::OnClientResolutionChanged(ClientSession* session,
-                                               const SkISize& size,
-                                               const SkIPoint& dpi) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientResolutionChanged(session->client_jid(),
-                                              size, dpi));
-}
-
 void ChromotingHost::OnSessionManagerReady() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Don't need to do anything here, just wait for incoming

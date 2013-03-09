@@ -5,40 +5,34 @@
 #ifndef REMOTING_HOST_RESIZING_HOST_OBSERVER_H_
 #define REMOTING_HOST_RESIZING_HOST_OBSERVER_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
-#include "remoting/host/host_status_observer.h"
+#include "base/memory/scoped_ptr.h"
+#include "remoting/host/session_controller.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
 
 class DesktopResizer;
-class HostStatusMonitor;
+
+// TODO(alexeypa): Rename this class to reflect that it is not
+// HostStatusObserver any more.
 
 // Use the specified DesktopResizer to match host desktop size to the client
 // view size as closely as is possible. When the connection closes, restore
 // the original desktop size.
-class ResizingHostObserver : public HostStatusObserver {
+class ResizingHostObserver : public SessionController {
  public:
-  ResizingHostObserver(DesktopResizer* desktop_resizer,
-                       base::WeakPtr<HostStatusMonitor> monitor);
+  explicit ResizingHostObserver(scoped_ptr<DesktopResizer> desktop_resizer);
   virtual ~ResizingHostObserver();
 
-  // HostStatusObserver interface
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnClientResolutionChanged(const std::string& jid,
-                                         const SkISize& size,
-                                         const SkIPoint& dpi) OVERRIDE;
+  // SessionController interface.
+  virtual void OnClientResolutionChanged(const SkIPoint& client_dpi,
+                                         const SkISize& client_size) OVERRIDE;
 
  private:
-  DesktopResizer* const desktop_resizer_;
-  base::WeakPtr<HostStatusMonitor> monitor_;
+  scoped_ptr<DesktopResizer> desktop_resizer_;
   SkISize original_size_;
-  std::string client_jid_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizingHostObserver);
 };

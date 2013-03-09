@@ -46,11 +46,6 @@ class HostStatusObserver {
                                    const std::string& channel_name,
                                    const protocol::TransportRoute& route) {}
 
-  // Called when the client view size or pixel density change.
-  virtual void OnClientResolutionChanged(const std::string& jid,
-                                         const SkISize& size,
-                                         const SkIPoint& dpi) {}
-
   // Called when hosting is started for an account.
   virtual void OnStart(const std::string& xmpp_login) {}
 

@@ -19,6 +19,7 @@
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/session_controller.h"
 #include "remoting/host/video_scheduler.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -94,10 +95,9 @@ void ClientSession::NotifyClientResolution(
     VLOG(1) << "Received ClientResolution (dips_width="
             << resolution.dips_width() << ", dips_height="
             << resolution.dips_height() << ")";
-    event_handler_->OnClientResolutionChanged(
-        this,
-        SkISize::Make(resolution.dips_width(), resolution.dips_height()),
-        SkIPoint::Make(kDefaultDPI, kDefaultDPI));
+    session_controller_->OnClientResolutionChanged(
+        SkIPoint::Make(kDefaultDPI, kDefaultDPI),
+        SkISize::Make(resolution.dips_width(), resolution.dips_height()));
   }
 }
 
@@ -146,7 +146,11 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK_EQ(connection_.get(), connection);
   DCHECK(!audio_scheduler_);
   DCHECK(!event_executor_);
+  DCHECK(!session_controller_);
   DCHECK(!video_scheduler_);
+
+  // Create the session controller.
+  session_controller_ = desktop_environment_->CreateSessionController();
 
   // Create and start the event executor.
   event_executor_ = desktop_environment_->CreateEventExecutor(
@@ -225,6 +229,7 @@ void ClientSession::OnConnectionClosed(
 
   client_clipboard_factory_.InvalidateWeakPtrs();
   event_executor_.reset();
+  session_controller_.reset();
 
   // Notify the ChromotingHost that this client is disconnected.
   // TODO(sergeyu): Log failure reason?
@@ -266,6 +271,7 @@ void ClientSession::Stop() {
   DCHECK(CalledOnValidThread());
   DCHECK(!audio_scheduler_);
   DCHECK(!event_executor_);
+  DCHECK(!session_controller_);
   DCHECK(!video_scheduler_);
 
   connection_.reset();
@@ -290,6 +296,7 @@ ClientSession::~ClientSession() {
   DCHECK(CalledOnValidThread());
   DCHECK(!audio_scheduler_);
   DCHECK(!event_executor_);
+  DCHECK(!session_controller_);
   DCHECK(!video_scheduler_);
 }
 

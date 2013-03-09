@@ -17,7 +17,9 @@
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/ipc_audio_capturer.h"
 #include "remoting/host/ipc_event_executor.h"
+#include "remoting/host/ipc_session_controller.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
+#include "remoting/host/session_controller.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -59,6 +61,10 @@ scoped_ptr<EventExecutor> DesktopSessionProxy::CreateEventExecutor(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return scoped_ptr<EventExecutor>(new IpcEventExecutor(this));
+}
+
+scoped_ptr<SessionController> DesktopSessionProxy::CreateSessionController() {
+  return scoped_ptr<SessionController>(new IpcSessionController(this));
 }
 
 scoped_ptr<media::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer(

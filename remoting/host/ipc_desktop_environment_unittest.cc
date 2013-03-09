@@ -129,6 +129,10 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // DesktopEnvironment::CreateEventExecutor().
   EventExecutor* CreateEventExecutor();
 
+  // Creates a dummy SessionController, to mock
+  // DesktopEnvironment::CreateSessionController().
+  SessionController* CreateSessionController();
+
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   media::ScreenCapturer* CreateVideoCapturer();
@@ -285,6 +289,10 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
       .WillRepeatedly(
           InvokeWithoutArgs(this,
                             &IpcDesktopEnvironmentTest::CreateEventExecutor));
+  EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
+      .Times(AnyNumber())
+      .WillRepeatedly(InvokeWithoutArgs(
+          this, &IpcDesktopEnvironmentTest::CreateSessionController));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
       .Times(AnyNumber())
       .WillRepeatedly(
@@ -303,6 +311,10 @@ EventExecutor* IpcDesktopEnvironmentTest::CreateEventExecutor() {
 
   EXPECT_CALL(*remote_event_executor_, StartPtr(_));
   return remote_event_executor_;
+}
+
+SessionController* IpcDesktopEnvironmentTest::CreateSessionController() {
+  return new MockSessionController();
 }
 
 media::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {

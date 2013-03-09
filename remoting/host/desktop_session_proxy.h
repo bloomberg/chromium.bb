@@ -43,6 +43,7 @@ struct DesktopSessionParams;
 struct DesktopSessionProxyTraits;
 class IpcAudioCapturer;
 class IpcVideoFrameCapturer;
+class SessionController;
 
 // DesktopSessionProxy is created by an owning DesktopEnvironment to route
 // requests from stubs to the DesktopSessionAgent instance through
@@ -75,6 +76,7 @@ class DesktopSessionProxy
   scoped_ptr<EventExecutor> CreateEventExecutor(
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  scoped_ptr<SessionController> CreateSessionController();
   scoped_ptr<media::ScreenCapturer> CreateVideoCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner);

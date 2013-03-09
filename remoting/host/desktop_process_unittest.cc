@@ -111,6 +111,10 @@ class DesktopProcessTest : public testing::Test {
   // DesktopEnvironment::CreateEventExecutor().
   EventExecutor* CreateEventExecutor();
 
+  // Creates a dummy SessionController, to mock
+  // DesktopEnvironment::CreateSessionController().
+  SessionController* CreateSessionController();
+
   // Creates a fake media::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   media::ScreenCapturer* CreateVideoCapturer();
@@ -200,6 +204,11 @@ DesktopEnvironment* DesktopProcessTest::CreateDesktopEnvironment() {
       .Times(AnyNumber())
       .WillRepeatedly(
           InvokeWithoutArgs(this, &DesktopProcessTest::CreateEventExecutor));
+  EXPECT_CALL(*desktop_environment, CreateSessionControllerPtr())
+      .Times(AnyNumber())
+      .WillRepeatedly(
+          InvokeWithoutArgs(this,
+                            &DesktopProcessTest::CreateSessionController));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr(_, _))
       .Times(AnyNumber())
       .WillRepeatedly(
@@ -214,6 +223,10 @@ EventExecutor* DesktopProcessTest::CreateEventExecutor() {
   MockEventExecutor* event_executor = new MockEventExecutor();
   EXPECT_CALL(*event_executor, StartPtr(_));
   return event_executor;
+}
+
+SessionController* DesktopProcessTest::CreateSessionController() {
+  return new MockSessionController();
 }
 
 media::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {

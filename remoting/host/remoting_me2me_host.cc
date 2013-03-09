@@ -43,7 +43,6 @@
 #include "remoting/host/curtain_mode.h"
 #include "remoting/host/curtaining_host_observer.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/desktop_resizer.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
@@ -62,7 +61,6 @@
 #include "remoting/host/logging.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
-#include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/service_urls.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
@@ -301,8 +299,6 @@ class HostProcess
   scoped_ptr<CurtainingHostObserver> curtaining_host_observer_;
   bool curtain_required_;
 
-  scoped_ptr<DesktopResizer> desktop_resizer_;
-  scoped_ptr<ResizingHostObserver> resizing_host_observer_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
@@ -331,7 +327,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       state_(HOST_INITIALIZING),
       allow_nat_traversal_(true),
       curtain_required_(false),
-      desktop_resizer_(DesktopResizer::Create()),
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(NULL),
 #endif  // defined(REMOTING_MULTI_PROCESS)
@@ -970,9 +965,6 @@ void HostProcess::StartHost() {
       HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-  resizing_host_observer_.reset(
-      new ResizingHostObserver(desktop_resizer_.get(), host_->AsWeakPtr()));
-
 #if defined(REMOTING_RDP_SESSION)
   // TODO(alexeypa): do not create |curtain_| in this case.
   CurtainMode* curtain = static_cast<IpcDesktopEnvironmentFactory*>(
@@ -1073,7 +1065,6 @@ void HostProcess::ShutdownOnNetworkThread() {
   host_change_notification_listener_.reset();
   signaling_connector_.reset();
   signal_strategy_.reset();
-  resizing_host_observer_.reset();
 
   if (state_ == HOST_STOPPING_TO_RESTART) {
     StartHost();

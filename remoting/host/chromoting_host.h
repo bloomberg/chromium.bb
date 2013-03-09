@@ -126,9 +126,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       ClientSession* session,
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
-  virtual void OnClientResolutionChanged(ClientSession* session,
-                                         const SkISize& size,
-                                         const SkIPoint& dpi) OVERRIDE;
 
   // SessionManager::Listener implementation.
   virtual void OnSessionManagerReady() OVERRIDE;
