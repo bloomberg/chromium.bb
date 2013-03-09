@@ -48,29 +48,6 @@ HANDLE CreateDIB(HDC dc, int width, int height, int color_depth) {
   return dib;
 }
 
-void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
-                       int src_x, int src_y, int src_w, int src_h, void* pixels,
-                       const BITMAPINFO* bitmap_info) {
-  // When blitting a rectangle that touches the bottom, left corner of the
-  // bitmap, StretchDIBits looks at it top-down!  For more details, see
-  // http://wiki.allegro.cc/index.php?title=StretchDIBits.
-  int rv;
-  int bitmap_h = -bitmap_info->bmiHeader.biHeight;
-  int bottom_up_src_y = bitmap_h - src_y - src_h;
-  if (bottom_up_src_y == 0 && src_x == 0 && src_h != bitmap_h) {
-    rv = StretchDIBits(hdc,
-                       dest_x, dest_h + dest_y - 1, dest_w, -dest_h,
-                       src_x, bitmap_h - src_y + 1, src_w, -src_h,
-                       pixels, bitmap_info, DIB_RGB_COLORS, SRCCOPY);
-  } else {
-    rv = StretchDIBits(hdc,
-                       dest_x, dest_y, dest_w, dest_h,
-                       src_x, bottom_up_src_y, src_w, src_h,
-                       pixels, bitmap_info, DIB_RGB_COLORS, SRCCOPY);
-  }
-  DCHECK(rv != GDI_ERROR);
-}
-
 }  // namespace
 
 BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget,
@@ -149,9 +126,11 @@ void BackingStoreWin::PaintToBackingStore(
   gfx::Rect pixel_bitmap_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(bitmap_rect, scale_factor));
 
-  BITMAPINFOHEADER hdr;
+  BITMAPINFO bitmap_info;
+  memset(&bitmap_info, 0, sizeof(bitmap_info));
   gfx::CreateBitmapHeader(pixel_bitmap_rect.width(),
-                          pixel_bitmap_rect.height(), &hdr);
+                          pixel_bitmap_rect.height(),
+                          &bitmap_info.bmiHeader);
   // Account for a bitmap_rect that exceeds the bounds of our view.
   gfx::Rect view_rect(size());
 
@@ -160,17 +139,17 @@ void BackingStoreWin::PaintToBackingStore(
     gfx::Rect pixel_copy_rect = gfx::ToEnclosingRect(
         gfx::ScaleRect(paint_rect, scale_factor));
     gfx::Rect target_rect = pixel_copy_rect;
-    CallStretchDIBits(hdc_,
-                      target_rect.x(),
-                      target_rect.y(),
-                      target_rect.width(),
-                      target_rect.height(),
-                      pixel_copy_rect.x() - pixel_bitmap_rect.x(),
-                      pixel_copy_rect.y() - pixel_bitmap_rect.y(),
-                      pixel_copy_rect.width(),
-                      pixel_copy_rect.height(),
-                      dib->memory(),
-                      reinterpret_cast<BITMAPINFO*>(&hdr));
+    gfx::StretchDIBits(hdc_,
+                       target_rect.x(),
+                       target_rect.y(),
+                       target_rect.width(),
+                       target_rect.height(),
+                       pixel_copy_rect.x() - pixel_bitmap_rect.x(),
+                       pixel_copy_rect.y() - pixel_bitmap_rect.y(),
+                       pixel_copy_rect.width(),
+                       pixel_copy_rect.height(),
+                       dib->memory(),
+                       &bitmap_info);
   }
 }
 

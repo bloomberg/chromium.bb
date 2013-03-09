@@ -28,6 +28,7 @@ typedef struct _XDisplay Display;
 typedef unsigned long Cursor;
 typedef struct _XcursorImage XcursorImage;
 typedef struct _XImage XImage;
+typedef struct _XGC *GC;
 
 #if defined(TOOLKIT_GTK)
 typedef struct _GdkDrawable GdkWindow;

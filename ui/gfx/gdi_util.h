@@ -43,6 +43,11 @@ UI_EXPORT double CalculatePageScale(HDC dc, int page_width, int page_height);
 // Apply scaling to the DC.
 UI_EXPORT bool ScaleDC(HDC dc, double scale_factor);
 
+UI_EXPORT void StretchDIBits(HDC hdc,
+                             int dest_x, int dest_y, int dest_w, int dest_h,
+                             int src_x, int src_y, int src_w, int src_h,
+                             void* pixels, const BITMAPINFO* bitmap_info);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_GDI_UTIL_H_

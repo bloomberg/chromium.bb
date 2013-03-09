@@ -33,12 +33,16 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
 #if defined(OS_WIN)
+#include "content/browser/renderer_host/software_output_device_win.h"
 #include "ui/surface/accelerated_surface_win.h"
+#elif defined(USE_X11)
+#include "content/browser/renderer_host/software_output_device_linux.h"
 #endif
 
 namespace content {
@@ -669,6 +673,26 @@ WebKit::WebGraphicsContext3D* CreateTestContext() {
   return test_context;
 }
 
+class SoftwareTransportFactory : public DefaultTransportFactory {
+ public:
+  cc::OutputSurface* CreateOutputSurface(ui::Compositor* compositor) {
+#if defined(OS_WIN)
+    scoped_ptr<SoftwareOutputDeviceWin> software_device(
+        new SoftwareOutputDeviceWin(compositor));
+    return new cc::OutputSurface(
+        software_device.PassAs<cc::SoftwareOutputDevice>());
+#elif defined(USE_X11)
+    scoped_ptr<SoftwareOutputDeviceLinux> software_device(
+        new SoftwareOutputDeviceLinux(compositor));
+    return new cc::OutputSurface(
+        software_device.PassAs<cc::SoftwareOutputDevice>());
+#else
+    NOTIMPLEMENTED();
+    return NULL;
+#endif
+  }
+};
+
 }  // anonymous namespace
 
 // static
@@ -677,10 +701,13 @@ void ImageTransportFactory::Initialize() {
   if (command_line->HasSwitch(switches::kTestCompositor)) {
     ui::SetupTestCompositor();
   }
-  if (ui::IsTestCompositorEnabled())
-    g_factory = new DefaultTransportFactory();
-  else
-    g_factory = new GpuProcessTransportFactory();
+  if (ui::IsTestCompositorEnabled()) {
+    g_factory = new DefaultTransportFactory;
+  } else if (command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
+    g_factory = new SoftwareTransportFactory;
+  } else {
+    g_factory = new GpuProcessTransportFactory;
+  }
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }
 
