@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -34,11 +35,13 @@ BookmarkNodeMenuModel::BookmarkNodeMenuModel(
     ui::SimpleMenuModel::Delegate* delegate,
     BookmarkModel* model,
     const BookmarkNode* node,
-    PageNavigator* page_navigator)
+    PageNavigator* page_navigator,
+    Profile* profile)
     : SimpleMenuModel(delegate),
       model_(model),
       node_(node),
-      page_navigator_(page_navigator) {
+      page_navigator_(page_navigator),
+      profile_(profile) {
   DCHECK(page_navigator_);
 }
 
@@ -82,9 +85,9 @@ void BookmarkNodeMenuModel::PopulateMenu() {
           bookmark_utils::BuildMenuLabelFor(child)));
       // No command id. We override ActivatedAt below to handle activations.
       AddItem(kBookmarkItemCommandId, label);
-      const gfx::Image& node_icon = model_->GetFavicon(child);
-      if (!node_icon.IsEmpty())
-        SetIcon(GetItemCount() - 1, node_icon);
+      GdkPixbuf* node_icon = bookmark_utils::GetPixbufForNode(child, model_,
+          GtkThemeService::GetFrom(profile_)->UsingNativeTheme());
+      SetIcon(GetItemCount() - 1, gfx::Image(node_icon));
       // TODO(mdm): set up an observer to watch for icon load events and set
       // the icons in response.
     }
@@ -100,7 +103,7 @@ void BookmarkNodeMenuModel::AddSubMenuForNode(const BookmarkNode* node) {
       bookmark_utils::BuildMenuLabelFor(node)));
   // Don't pass in the delegate, if any. Bookmark submenus don't need one.
   BookmarkNodeMenuModel* submenu =
-      new BookmarkNodeMenuModel(NULL, model_, node, page_navigator_);
+      new BookmarkNodeMenuModel(NULL, model_, node, page_navigator_, profile_);
   // No command id. Nothing happens if you click on the submenu itself.
   AddSubMenu(kBookmarkItemCommandId, label, submenu);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -123,7 +126,7 @@ void BookmarkNodeMenuModel::NavigateToMenuItem(
 BookmarkSubMenuModel::BookmarkSubMenuModel(
     ui::SimpleMenuModel::Delegate* delegate,
     Browser* browser)
-    : BookmarkNodeMenuModel(delegate, NULL, NULL, browser),
+    : BookmarkNodeMenuModel(delegate, NULL, NULL, browser, browser->profile()),
       browser_(browser),
       fixed_items_(0),
       bookmark_end_(0),
