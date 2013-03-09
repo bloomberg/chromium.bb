@@ -370,6 +370,7 @@ AppListController::AppListController()
       profile_(NULL),
       can_close_app_list_(true),
       app_list_is_showing_(false),
+      regain_first_lost_focus_(false),
       profile_load_sequence_id_(0),
       pending_profile_loads_(0),
       preserving_focus_for_taskbar_menu_(false),
