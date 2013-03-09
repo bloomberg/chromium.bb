@@ -249,6 +249,9 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   int raster_state_count_[NUM_STATES][NUM_TREES][NUM_BINS];
   bool prediction_benchmarking_;
 
+  size_t pending_tasks_;
+  size_t max_pending_tasks_;
+
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 

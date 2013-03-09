@@ -39,6 +39,16 @@ const int kMaxPendingUploadBytes = 100 * 1024 * 1024;
 const int kMaxPendingUploads = 1000;
 #endif
 
+#if defined(OS_ANDROID)
+const int kMaxNumPendingTasksPerThread = 8;
+#else
+const int kMaxNumPendingTasksPerThread = 40;
+#endif
+
+// Limit for time spent running cheap tasks during a single frame.
+// TODO(skyostil): Determine this limit more dynamically.
+const int kRunCheapTasksTimeMs = 6;
+
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
 inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
@@ -198,7 +208,9 @@ TileManager::TileManager(
       use_color_estimator_(use_color_estimator),
       allow_cheap_tasks_(true),
       did_schedule_cheap_tasks_(false),
-      prediction_benchmarking_(prediction_benchmarking) {
+      prediction_benchmarking_(prediction_benchmarking),
+      pending_tasks_(0),
+      max_pending_tasks_(kMaxNumPendingTasksPerThread * num_raster_threads) {
   for (int i = 0; i < NUM_STATES; ++i) {
     for (int j = 0; j < NUM_TREES; ++j) {
       for (int k = 0; k < NUM_BINS; ++k)
@@ -667,7 +679,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 }
 
 bool TileManager::CanDispatchRasterTask(Tile* tile) const {
-  if (raster_worker_pool_->IsBusy())
+  if (pending_tasks_ >= max_pending_tasks_)
     return false;
   size_t new_bytes_pending = bytes_pending_upload_;
   new_bytes_pending += tile->bytes_consumed_if_allocated();
@@ -778,7 +790,7 @@ void TileManager::DispatchImageDecodeTasksForTile(Tile* tile) {
       rendering_stats_.totalDeferredImageCacheHitCount++;
       pending_pixel_refs.erase(it++);
     } else {
-      if (raster_worker_pool_->IsBusy())
+      if (pending_tasks_ >= max_pending_tasks_)
         return;
       DispatchOneImageDecodeTask(tile, *it);
       ++it;
@@ -800,12 +812,14 @@ void TileManager::DispatchOneImageDecodeTask(
                  base::Unretained(this),
                  tile,
                  pixel_ref_id));
+  pending_tasks_++;
 }
 
 void TileManager::OnImageDecodeTaskCompleted(
     scoped_refptr<Tile> tile, uint32_t pixel_ref_id) {
   TRACE_EVENT0("cc", "TileManager::OnImageDecodeTaskCompleted");
   pending_decode_tasks_.erase(pixel_ref_id);
+  pending_tasks_--;
 
   for (TileList::iterator it = tiles_with_image_decoding_tasks_.begin();
       it != tiles_with_image_decoding_tasks_.end(); ++it) {
@@ -859,7 +873,14 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                  tile,
                  base::Passed(&resource),
                  manage_tiles_call_count_));
-  did_schedule_cheap_tasks_ |= (allow_cheap_tasks_ && is_cheap_to_raster);
+  if ((allow_cheap_tasks_ && is_cheap_to_raster) &&
+      !did_schedule_cheap_tasks_) {
+    raster_worker_pool_->SetRunCheapTasksTimeLimit(
+        base::TimeTicks::Now() +
+        base::TimeDelta::FromMilliseconds(kRunCheapTasksTimeMs));
+    did_schedule_cheap_tasks_ = true;
+  }
+  pending_tasks_++;
 }
 
 TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
@@ -879,6 +900,8 @@ void TileManager::OnRasterTaskCompleted(
     scoped_ptr<ResourcePool::Resource> resource,
     int manage_tiles_call_count_when_dispatched) {
   TRACE_EVENT0("cc", "TileManager::OnRasterTaskCompleted");
+
+  pending_tasks_--;
 
   // Release raster resources.
   resource_pool_->resource_provider()->UnmapPixelBuffer(resource->id());

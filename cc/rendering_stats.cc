@@ -52,4 +52,27 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
                           totalImageGatheringTime.InSecondsF());
 }
 
+void RenderingStats::Add(const RenderingStats& other) {
+  numAnimationFrames += other.numAnimationFrames;
+  numFramesSentToScreen += other.numFramesSentToScreen;
+  droppedFrameCount += other.droppedFrameCount;
+  totalPaintTime += other.totalPaintTime;
+  totalRasterizeTime += other.totalRasterizeTime;
+  totalRasterizeTimeForNowBinsOnPendingTree +=
+      other.totalRasterizeTimeForNowBinsOnPendingTree;
+  totalCommitTime += other.totalCommitTime;
+  totalCommitCount += other.totalCommitCount;
+  totalPixelsPainted += other.totalPixelsPainted;
+  totalPixelsRasterized += other.totalPixelsRasterized;
+  numImplThreadScrolls += other.numImplThreadScrolls;
+  numMainThreadScrolls += other.numMainThreadScrolls;
+  numLayersDrawn += other.numLayersDrawn;
+  numMissingTiles += other.numMissingTiles;
+  totalDeferredImageDecodeCount += other.totalDeferredImageDecodeCount;
+  totalDeferredImageCacheHitCount += other.totalDeferredImageCacheHitCount;
+  totalImageGatheringCount += other.totalImageGatheringCount;
+  totalDeferredImageDecodeTime += other.totalDeferredImageDecodeTime;
+  totalImageGatheringTime += other.totalImageGatheringTime;
+}
+
 }  // namespace cc

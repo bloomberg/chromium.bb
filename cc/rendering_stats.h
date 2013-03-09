@@ -32,8 +32,8 @@ struct CC_EXPORT RenderingStats {
     int64 totalImageGatheringCount;
     base::TimeDelta totalDeferredImageDecodeTime;
     base::TimeDelta totalImageGatheringTime;
-    // Note: when adding new members, please remember to update enumerateFields
-    // in rendering_stats.cc.
+    // Note: when adding new members, please remember to update EnumerateFields
+    // and Add in rendering_stats.cc.
 
     RenderingStats();
 
@@ -55,6 +55,9 @@ struct CC_EXPORT RenderingStats {
 
     // Outputs the fields in this structure to the provided enumerator.
     void EnumerateFields(Enumerator* enumerator) const;
+
+    // Add fields of |other| to the fields in this structure.
+    void Add(const RenderingStats& other);
 };
 
 }  // namespace cc

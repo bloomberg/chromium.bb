@@ -13,13 +13,17 @@ namespace {
 class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
   RasterWorkerPoolTaskImpl(PicturePileImpl* picture_pile,
+                           bool is_cheap,
                            const RasterWorkerPool::RasterCallback& task,
                            const base::Closure& reply)
       : internal::WorkerPoolTask(reply),
         picture_pile_(picture_pile),
+        is_cheap_(is_cheap),
         task_(task) {
     DCHECK(picture_pile_);
   }
+
+  virtual bool IsCheap() OVERRIDE { return is_cheap_; }
 
   virtual void WillRunOnThread(unsigned thread_index) OVERRIDE {
     picture_pile_ = picture_pile_->GetCloneForDrawingOnThread(thread_index);
@@ -27,19 +31,26 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(picture_pile_.get(), rendering_stats);
-    base::subtle::Release_Store(&completed_, 1);
   }
 
  private:
   scoped_refptr<PicturePileImpl> picture_pile_;
+  bool is_cheap_;
   RasterWorkerPool::RasterCallback task_;
 };
+
+const char* kWorkerThreadNamePrefix = "CompositorRaster";
+
+const int kCheckForCompletedTasksDelayMs = 6;
 
 }  // namespace
 
 RasterWorkerPool::RasterWorkerPool(
-    WorkerPoolClient* client, size_t num_threads)
-    : WorkerPool(client, num_threads) {
+    WorkerPoolClient* client, size_t num_threads) : WorkerPool(
+        client,
+        num_threads,
+        base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs),
+        kWorkerThreadNamePrefix) {
 }
 
 RasterWorkerPool::~RasterWorkerPool() {
@@ -49,12 +60,11 @@ void RasterWorkerPool::PostRasterTaskAndReply(PicturePileImpl* picture_pile,
                                               bool is_cheap,
                                               const RasterCallback& task,
                                               const base::Closure& reply) {
-  PostTask(
-      make_scoped_ptr(new RasterWorkerPoolTaskImpl(
-                          picture_pile,
-                          task,
-                          reply)).PassAs<internal::WorkerPoolTask>(),
-                      is_cheap);
+  PostTask(make_scoped_ptr(new RasterWorkerPoolTaskImpl(
+                               picture_pile,
+                               is_cheap,
+                               task,
+                               reply)).PassAs<internal::WorkerPoolTask>());
 }
 
 }  // namespace cc

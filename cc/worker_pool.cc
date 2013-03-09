@@ -4,12 +4,12 @@
 
 #include "cc/worker_pool.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/threading/simple_thread.h"
+#include "cc/rendering_stats.h"
 
 #if defined(OS_ANDROID)
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
@@ -27,379 +27,581 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
       : internal::WorkerPoolTask(reply),
         task_(task) {}
 
+  virtual bool IsCheap() OVERRIDE { return false; }
+
   virtual void WillRunOnThread(unsigned thread_index) OVERRIDE {}
 
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(rendering_stats);
-    base::subtle::Release_Store(&completed_, 1);
   }
 
  private:
   WorkerPool::Callback task_;
 };
 
-const char* kWorkerThreadNamePrefix = "Compositor";
-
-#if defined(OS_ANDROID)
-const int kNumPendingTasksPerWorker = 8;
-#else
-const int kNumPendingTasksPerWorker = 40;
-#endif
-
-const int kCheckForCompletedTasksDelayMs = 6;
-
-// Limits for the total number of cheap tasks we are allowed to perform
-// during a single frame and the time spent running those tasks.
-// TODO(skyostil): Determine these limits more dynamically.
-const int kMaxCheapTaskCount = 6;
-const int kMaxCheapTaskMs = kCheckForCompletedTasksDelayMs;
-
 }  // namespace
 
 namespace internal {
 
 WorkerPoolTask::WorkerPoolTask(const base::Closure& reply) : reply_(reply) {
-  base::subtle::Acquire_Store(&completed_, 0);
 }
 
 WorkerPoolTask::~WorkerPoolTask() {
 }
 
-bool WorkerPoolTask::HasCompleted() {
-  return base::subtle::Acquire_Load(&completed_) == 1;
-}
-
 void WorkerPoolTask::DidComplete() {
-  DCHECK_EQ(base::subtle::Acquire_Load(&completed_), 1);
   reply_.Run();
 }
 
 }  // namespace internal
 
-WorkerPool::Worker::Worker(
-    WorkerPool* worker_pool, const std::string name, unsigned index)
-    : base::Thread(name.c_str()),
-      worker_pool_(worker_pool),
-      rendering_stats_(make_scoped_ptr(new RenderingStats)),
-      record_rendering_stats_(false),
-      index_(index) {
-  Start();
-  DCHECK(IsRunning());
+// Internal to the worker pool. Any data or logic that needs to be
+// shared between threads lives in this class. All members are guarded
+// by |lock_|.
+class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
+ public:
+  Inner(WorkerPool* worker_pool,
+        size_t num_threads,
+        const std::string& thread_name_prefix,
+        bool need_on_task_completed_callback);
+  ~Inner();
+
+  void Shutdown();
+
+  void SetRecordRenderingStats(bool record_rendering_stats);
+
+  void GetRenderingStats(RenderingStats* stats);
+
+  void PostTask(scoped_ptr<internal::WorkerPoolTask> task);
+
+  // Appends all completed tasks to worker pool's completed tasks queue
+  // and returns true if idle.
+  bool CollectCompletedTasks();
+
+  // Runs cheap tasks on caller thread until |time_limit| is reached
+  // and returns true if idle.
+  bool RunCheapTasksUntilTimeLimit(base::TimeTicks time_limit);
+
+ private:
+  // Appends all completed tasks to |completed_tasks|. Lock must
+  // already be acquired before calling this function.
+  bool AppendCompletedTasksWithLockAcquired(
+      ScopedPtrDeque<internal::WorkerPoolTask>* completed_tasks);
+
+  // Schedule a OnTaskCompletedOnOriginThread callback if not already
+  // pending. Lock must already be acquired before calling this function.
+  void ScheduleOnTaskCompletedWithLockAcquired();
+  void OnTaskCompletedOnOriginThread();
+
+  // Schedule an OnIdleOnOriginThread callback if not already pending.
+  // Lock must already be acquired before calling this function.
+  void ScheduleOnIdleWithLockAcquired();
+  void OnIdleOnOriginThread();
+
+  // Overridden from base::DelegateSimpleThread:
+  virtual void Run() OVERRIDE;
+
+  // Pointer to worker pool. Can only be used on origin thread.
+  // Not guarded by |lock_|.
+  WorkerPool* worker_pool_on_origin_thread_;
+
+  // This lock protects all members of this class except
+  // |worker_pool_on_origin_thread_|. Do not read or modify anything
+  // without holding this lock. Do not block while holding this lock.
+  mutable base::Lock lock_;
+
+  // Condition variable that is waited on by worker threads until new
+  // tasks are posted or shutdown starts.
+  base::ConditionVariable has_pending_tasks_cv_;
+
+  // Target message loop used for posting callbacks.
+  scoped_refptr<base::MessageLoopProxy> origin_loop_;
+
+  base::WeakPtrFactory<Inner> weak_ptr_factory_;
+
+  // Set to true when worker pool requires a callback for each
+  // completed task.
+  bool need_on_task_completed_callback_;
+
+  const base::Closure on_task_completed_callback_;
+  // Set when a OnTaskCompletedOnOriginThread() callback is pending.
+  bool on_task_completed_pending_;
+
+  const base::Closure on_idle_callback_;
+  // Set when a OnIdleOnOriginThread() callback is pending.
+  bool on_idle_pending_;
+
+  // Provides each running thread loop with a unique index. First thread
+  // loop index is 0.
+  unsigned next_thread_index_;
+
+  // Number of tasks currently running.
+  unsigned running_task_count_;
+
+  // Set during shutdown. Tells workers to exit when no more tasks
+  // are pending.
+  bool shutdown_;
+
+  typedef ScopedPtrDeque<internal::WorkerPoolTask> TaskDeque;
+  TaskDeque pending_tasks_;
+  TaskDeque completed_tasks_;
+
+  scoped_ptr<RenderingStats> rendering_stats_;
+
+  ScopedPtrDeque<base::DelegateSimpleThread> workers_;
+
+  DISALLOW_COPY_AND_ASSIGN(Inner);
+};
+
+WorkerPool::Inner::Inner(WorkerPool* worker_pool,
+                         size_t num_threads,
+                         const std::string& thread_name_prefix,
+                         bool need_on_task_completed_callback)
+    : worker_pool_on_origin_thread_(worker_pool),
+      lock_(),
+      has_pending_tasks_cv_(&lock_),
+      origin_loop_(base::MessageLoopProxy::current()),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      need_on_task_completed_callback_(need_on_task_completed_callback),
+      on_task_completed_callback_(
+          base::Bind(&WorkerPool::Inner::OnTaskCompletedOnOriginThread,
+                     weak_ptr_factory_.GetWeakPtr())),
+      on_task_completed_pending_(false),
+      on_idle_callback_(base::Bind(&WorkerPool::Inner::OnIdleOnOriginThread,
+                                   weak_ptr_factory_.GetWeakPtr())),
+      on_idle_pending_(false),
+      next_thread_index_(0),
+      running_task_count_(0),
+      shutdown_(false) {
+  base::AutoLock lock(lock_);
+
+  while (workers_.size() < num_threads) {
+    scoped_ptr<base::DelegateSimpleThread> worker = make_scoped_ptr(
+        new base::DelegateSimpleThread(
+          this,
+          thread_name_prefix +
+          StringPrintf("Worker%lu", workers_.size() + 1).c_str()));
+    worker->Start();
+    workers_.push_back(worker.Pass());
+  }
 }
 
-WorkerPool::Worker::~Worker() {
-  DCHECK(!IsRunning());
+WorkerPool::Inner::~Inner() {
+  base::AutoLock lock(lock_);
+
+  DCHECK(shutdown_);
+
+  // Cancel all pending callbacks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   DCHECK_EQ(pending_tasks_.size(), 0);
+  DCHECK_EQ(completed_tasks_.size(), 0);
+  DCHECK_EQ(running_task_count_, 0);
 }
 
-void WorkerPool::Worker::StopAfterCompletingAllPendingTasks() {
-  // Signals the thread to exit and returns once all pending tasks have run.
-  Stop();
+void WorkerPool::Inner::Shutdown() {
+  {
+    base::AutoLock lock(lock_);
 
-  // Complete all pending tasks. The Stop() call above guarantees that
-  // all tasks have finished running.
-  while (!pending_tasks_.empty())
-    OnTaskCompleted();
+    DCHECK(!shutdown_);
+    shutdown_ = true;
+
+    // Wake up a worker so it knows it should exit. This will cause all workers
+    // to exit as each will wake up another worker before exiting.
+    has_pending_tasks_cv_.Signal();
+  }
+
+  while (workers_.size()) {
+    scoped_ptr<base::DelegateSimpleThread> worker = workers_.take_front();
+    worker->Join();
+  }
 }
 
-void WorkerPool::Worker::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
-  RenderingStats* stats =
-      record_rendering_stats_ ? rendering_stats_.get() : NULL;
+void WorkerPool::Inner::SetRecordRenderingStats(bool record_rendering_stats) {
+  base::AutoLock lock(lock_);
 
-  task->WillRunOnThread(index_);
+  if (record_rendering_stats)
+    rendering_stats_.reset(new RenderingStats);
+  else
+    rendering_stats_.reset();
+}
 
-  message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&Worker::RunTask,
-                 base::Unretained(task.get()),
-                 base::Unretained(worker_pool_),
-                 base::Unretained(stats)));
+void WorkerPool::Inner::GetRenderingStats(RenderingStats* stats) {
+  base::AutoLock lock(lock_);
+
+  if (rendering_stats_)
+    stats->Add(*rendering_stats_);
+}
+
+void WorkerPool::Inner::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
+  base::AutoLock lock(lock_);
 
   pending_tasks_.push_back(task.Pass());
+
+  // There is more work available, so wake up worker thread.
+  has_pending_tasks_cv_.Signal();
 }
 
-void WorkerPool::Worker::Init() {
+bool WorkerPool::Inner::CollectCompletedTasks() {
+  base::AutoLock lock(lock_);
+
+  return AppendCompletedTasksWithLockAcquired(
+      &worker_pool_on_origin_thread_->completed_tasks_);
+}
+
+bool WorkerPool::Inner::RunCheapTasksUntilTimeLimit(
+    base::TimeTicks time_limit) {
+  base::AutoLock lock(lock_);
+
+  while (base::TimeTicks::Now() < time_limit) {
+    scoped_ptr<internal::WorkerPoolTask> task;
+
+    // Find next cheap task.
+    for (TaskDeque::iterator iter = pending_tasks_.begin();
+         iter != pending_tasks_.end(); ++iter) {
+      if ((*iter)->IsCheap()) {
+        task = pending_tasks_.take(iter);
+        break;
+      }
+    }
+
+    if (!task) {
+      // Schedule an idle callback if requested and not pending.
+      if (!running_task_count_ && pending_tasks_.empty())
+        ScheduleOnIdleWithLockAcquired();
+
+      // Exit when no more cheap tasks are pending.
+      break;
+    }
+
+    scoped_ptr<RenderingStats> rendering_stats;
+    // Collect rendering stats if |rendering_stats_| is set.
+    if (rendering_stats_)
+      rendering_stats = make_scoped_ptr(new RenderingStats);
+
+    // Increment |running_task_count_| before starting to run task.
+    running_task_count_++;
+
+    {
+      base::AutoUnlock unlock(lock_);
+
+      task->Run(rendering_stats.get());
+
+      // Append tasks directly to worker pool's completed tasks queue.
+      worker_pool_on_origin_thread_->completed_tasks_.push_back(task.Pass());
+      if (need_on_task_completed_callback_)
+        worker_pool_on_origin_thread_->OnTaskCompleted();
+    }
+
+    // Add rendering stat results to |rendering_stats_|.
+    if (rendering_stats && rendering_stats_)
+      rendering_stats_->Add(*rendering_stats);
+
+    // Decrement |running_task_count_| now that we are done running task.
+    running_task_count_--;
+  }
+
+  // Append any other completed tasks before releasing lock.
+  return AppendCompletedTasksWithLockAcquired(
+      &worker_pool_on_origin_thread_->completed_tasks_);
+}
+
+bool WorkerPool::Inner::AppendCompletedTasksWithLockAcquired(
+    ScopedPtrDeque<internal::WorkerPoolTask>* completed_tasks) {
+  lock_.AssertAcquired();
+
+  while (completed_tasks_.size())
+    completed_tasks->push_back(completed_tasks_.take_front().Pass());
+
+  return !running_task_count_ && pending_tasks_.empty();
+}
+
+void WorkerPool::Inner::ScheduleOnTaskCompletedWithLockAcquired() {
+  lock_.AssertAcquired();
+
+  if (on_task_completed_pending_ || !need_on_task_completed_callback_)
+    return;
+  origin_loop_->PostTask(FROM_HERE, on_task_completed_callback_);
+  on_task_completed_pending_ = true;
+}
+
+void WorkerPool::Inner::OnTaskCompletedOnOriginThread() {
+  {
+    base::AutoLock lock(lock_);
+
+    DCHECK(on_task_completed_pending_);
+    on_task_completed_pending_ = false;
+
+    AppendCompletedTasksWithLockAcquired(
+        &worker_pool_on_origin_thread_->completed_tasks_);
+  }
+
+  worker_pool_on_origin_thread_->OnTaskCompleted();
+}
+
+void WorkerPool::Inner::ScheduleOnIdleWithLockAcquired() {
+  lock_.AssertAcquired();
+
+  if (on_idle_pending_)
+    return;
+  origin_loop_->PostTask(FROM_HERE, on_idle_callback_);
+  on_idle_pending_ = true;
+}
+
+void WorkerPool::Inner::OnIdleOnOriginThread() {
+  {
+    base::AutoLock lock(lock_);
+
+    DCHECK(on_idle_pending_);
+    on_idle_pending_ = false;
+
+    // Early out if no longer idle.
+    if (running_task_count_ || !pending_tasks_.empty())
+      return;
+
+    AppendCompletedTasksWithLockAcquired(
+        &worker_pool_on_origin_thread_->completed_tasks_);
+  }
+
+  worker_pool_on_origin_thread_->OnIdle();
+}
+
+void WorkerPool::Inner::Run() {
 #if defined(OS_ANDROID)
   // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
   int nice_value = 10; // Idle priority.
   setpriority(PRIO_PROCESS, base::PlatformThread::CurrentId(), nice_value);
 #endif
-}
 
-// static
-void WorkerPool::Worker::RunTask(
-    internal::WorkerPoolTask* task,
-    WorkerPool* worker_pool,
-    RenderingStats* rendering_stats) {
-  task->Run(rendering_stats);
-  worker_pool->OnWorkCompletedOnWorkerThread();
-}
+  {
+    base::AutoLock lock(lock_);
 
-void WorkerPool::Worker::OnTaskCompleted() {
-  CHECK(!pending_tasks_.empty());
+    // Get a unique thread index.
+    int thread_index = next_thread_index_++;
 
-  scoped_ptr<internal::WorkerPoolTask> task = pending_tasks_.take_front();
+    while (true) {
+      if (pending_tasks_.empty()) {
+        // Exit when shutdown is set and no more tasks are pending.
+        if (shutdown_)
+          break;
 
-  // Notify worker pool of task completion.
-  worker_pool_->OnTaskCompleted();
+        // Schedule an idle callback if requested and not pending.
+        if (!running_task_count_)
+          ScheduleOnIdleWithLockAcquired();
 
-  task->DidComplete();
-}
+        // Wait for new pending tasks.
+        has_pending_tasks_cv_.Wait();
+        continue;
+      }
 
-void WorkerPool::Worker::CheckForCompletedTasks() {
-  while (!pending_tasks_.empty()) {
-    if (!pending_tasks_.front()->HasCompleted())
-      return;
+      // Get next task.
+      scoped_ptr<internal::WorkerPoolTask> task = pending_tasks_.take_front();
 
-    OnTaskCompleted();
+      scoped_ptr<RenderingStats> rendering_stats;
+      // Collect rendering stats if |rendering_stats_| is set.
+      if (rendering_stats_)
+        rendering_stats = make_scoped_ptr(new RenderingStats);
+
+      // Increment |running_task_count_| before starting to run task.
+      running_task_count_++;
+
+      // There may be more work available, so wake up another
+      // worker thread.
+      has_pending_tasks_cv_.Signal();
+
+      {
+        base::AutoUnlock unlock(lock_);
+
+        task->WillRunOnThread(thread_index);
+        task->Run(rendering_stats.get());
+      }
+
+      completed_tasks_.push_back(task.Pass());
+
+      // Add rendering stat results to |rendering_stats_|.
+      if (rendering_stats && rendering_stats_)
+        rendering_stats_->Add(*rendering_stats);
+
+      // Decrement |running_task_count_| now that we are done running task.
+      running_task_count_--;
+
+      // Schedule a task completed callback if requested and not pending.
+      ScheduleOnTaskCompletedWithLockAcquired();
+    }
+
+    // We noticed we should exit. Wake up the next worker so it knows it should
+    // exit as well (because the Shutdown() code only signals once).
+    has_pending_tasks_cv_.Signal();
   }
 }
 
-WorkerPool::WorkerPool(WorkerPoolClient* client, size_t num_threads)
+WorkerPool::WorkerPool(WorkerPoolClient* client,
+                       size_t num_threads,
+                       base::TimeDelta check_for_completed_tasks_delay,
+                       const std::string& thread_name_prefix)
     : client_(client),
       origin_loop_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      workers_need_sorting_(false),
-      pending_task_count_(0),
-      shutdown_(false),
-      idle_callback_(
-          base::Bind(&WorkerPool::OnIdle, weak_ptr_factory_.GetWeakPtr())),
-      cheap_task_callback_(
+      check_for_completed_tasks_delay_(check_for_completed_tasks_delay),
+      check_for_completed_tasks_pending_(false),
+      run_cheap_tasks_callback_(
           base::Bind(&WorkerPool::RunCheapTasks,
                      weak_ptr_factory_.GetWeakPtr())),
-      run_cheap_tasks_pending_(false) {
-  const std::string thread_name_prefix = kWorkerThreadNamePrefix;
-  while (workers_.size() < num_threads) {
-    unsigned thread_index = workers_.size();
-    workers_.push_back(
-        new Worker(this,
-                   thread_name_prefix +
-                   StringPrintf("Worker%d", thread_index + 1).c_str(),
-                   thread_index));
-  }
-  base::subtle::Acquire_Store(&pending_task_count_, 0);
+      run_cheap_tasks_pending_(false),
+      inner_(make_scoped_ptr(
+                 new Inner(
+                     this,
+                     num_threads,
+                     thread_name_prefix,
+                     // Request OnTaskCompleted() callback when check
+                     // for completed tasks delay is 0.
+                     check_for_completed_tasks_delay == base::TimeDelta()))) {
 }
 
 WorkerPool::~WorkerPool() {
   Shutdown();
-  STLDeleteElements(&workers_);
+
   // Cancel all pending callbacks.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  DCHECK_EQ(base::subtle::Acquire_Load(&pending_task_count_), 0);
+
+  DCHECK_EQ(completed_tasks_.size(), 0);
 }
 
 void WorkerPool::Shutdown() {
-  DCHECK(!shutdown_);
-  shutdown_ = true;
-
-  if (run_cheap_tasks_pending_)
-    RunCheapTasks();
-
-  for (WorkerVector::iterator it = workers_.begin();
-       it != workers_.end(); it++) {
-    Worker* worker = *it;
-    worker->StopAfterCompletingAllPendingTasks();
-  }
+  inner_->Shutdown();
+  DispatchCompletionCallbacks();
 }
 
 void WorkerPool::PostTaskAndReply(
     const Callback& task, const base::Closure& reply) {
-  PostTask(
-      make_scoped_ptr(new WorkerPoolTaskImpl(
-                          task,
-                          reply)).PassAs<internal::WorkerPoolTask>(),
-                      false);
+  PostTask(make_scoped_ptr(new WorkerPoolTaskImpl(
+                               task,
+                               reply)).PassAs<internal::WorkerPoolTask>());
 }
 
-bool WorkerPool::IsBusy() {
-  Worker* worker = GetWorkerForNextTask();
-
-  return worker->num_pending_tasks() >= kNumPendingTasksPerWorker;
+void WorkerPool::SetRunCheapTasksTimeLimit(
+    base::TimeTicks run_cheap_tasks_time_limit) {
+  run_cheap_tasks_time_limit_ = run_cheap_tasks_time_limit;
+  ScheduleRunCheapTasks();
 }
 
 void WorkerPool::SetRecordRenderingStats(bool record_rendering_stats) {
-  if (record_rendering_stats)
-    cheap_rendering_stats_.reset(new RenderingStats);
-  else
-    cheap_rendering_stats_.reset();
-
-  for (WorkerVector::iterator it = workers_.begin();
-       it != workers_.end(); ++it) {
-    Worker* worker = *it;
-    worker->set_record_rendering_stats(record_rendering_stats);
-  }
+  inner_->SetRecordRenderingStats(record_rendering_stats);
 }
 
 void WorkerPool::GetRenderingStats(RenderingStats* stats) {
-  stats->totalRasterizeTime = base::TimeDelta();
-  stats->totalRasterizeTimeForNowBinsOnPendingTree = base::TimeDelta();
-  stats->totalPixelsRasterized = 0;
-  stats->totalDeferredImageDecodeCount = 0;
-  stats->totalDeferredImageDecodeTime = base::TimeDelta();
-  if (cheap_rendering_stats_) {
-    stats->totalRasterizeTime +=
-        cheap_rendering_stats_->totalRasterizeTime;
-    stats->totalPixelsRasterized +=
-        cheap_rendering_stats_->totalPixelsRasterized;
-    stats->totalDeferredImageDecodeCount +=
-        cheap_rendering_stats_->totalDeferredImageDecodeCount;
-    stats->totalDeferredImageDecodeTime +=
-        cheap_rendering_stats_->totalDeferredImageDecodeTime;
-  }
-  for (WorkerVector::iterator it = workers_.begin();
-       it != workers_.end(); ++it) {
-    Worker* worker = *it;
-    CHECK(worker->rendering_stats());
-    stats->totalRasterizeTime +=
-        worker->rendering_stats()->totalRasterizeTime;
-    stats->totalRasterizeTimeForNowBinsOnPendingTree +=
-        worker->rendering_stats()->totalRasterizeTimeForNowBinsOnPendingTree;
-    stats->totalPixelsRasterized +=
-        worker->rendering_stats()->totalPixelsRasterized;
-    stats->totalDeferredImageDecodeCount +=
-        worker->rendering_stats()->totalDeferredImageDecodeCount;
-    stats->totalDeferredImageDecodeTime +=
-        worker->rendering_stats()->totalDeferredImageDecodeTime;
-  }
-}
-
-WorkerPool::Worker* WorkerPool::GetWorkerForNextTask() {
-  CHECK(!shutdown_);
-  SortWorkersIfNeeded();
-  return workers_.front();
-}
-
-void WorkerPool::ScheduleCheckForCompletedTasks() {
-  if (!check_for_completed_tasks_deadline_.is_null())
-    return;
-
-  check_for_completed_tasks_callback_.Reset(
-      base::Bind(&WorkerPool::CheckForCompletedTasks,
-                 weak_ptr_factory_.GetWeakPtr()));
-  base::TimeDelta delay =
-      base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs);
-  check_for_completed_tasks_deadline_ = base::TimeTicks::Now() + delay;
-  origin_loop_->PostDelayedTask(
-      FROM_HERE,
-      check_for_completed_tasks_callback_.callback(),
-      delay);
-}
-
-void WorkerPool::OnWorkCompletedOnWorkerThread() {
-  // Post idle handler task when pool work count reaches 0.
-  if (base::subtle::Barrier_AtomicIncrement(&pending_task_count_, -1) == 0) {
-    origin_loop_->PostTask(FROM_HERE, idle_callback_);
-  }
+  inner_->GetRenderingStats(stats);
 }
 
 void WorkerPool::OnIdle() {
-  if (base::subtle::Acquire_Load(&pending_task_count_) == 0 &&
-      pending_cheap_tasks_.empty()) {
-    check_for_completed_tasks_callback_.Cancel();
-    CheckForCompletedTasks();
-  }
+  TRACE_EVENT0("cc", "WorkerPool::OnIdle");
+
+  DispatchCompletionCallbacks();
+}
+
+void WorkerPool::OnTaskCompleted() {
+  TRACE_EVENT0("cc", "WorkerPool::OnTaskCompleted");
+
+  DispatchCompletionCallbacks();
+}
+
+void WorkerPool::ScheduleCheckForCompletedTasks() {
+  if (check_for_completed_tasks_pending_ ||
+      check_for_completed_tasks_delay_ == base::TimeDelta())
+    return;
+  check_for_completed_tasks_callback_.Reset(
+    base::Bind(&WorkerPool::CheckForCompletedTasks,
+               weak_ptr_factory_.GetWeakPtr()));
+  check_for_completed_tasks_time_ = base::TimeTicks::Now() +
+      check_for_completed_tasks_delay_;
+  origin_loop_->PostDelayedTask(
+      FROM_HERE,
+      check_for_completed_tasks_callback_.callback(),
+      check_for_completed_tasks_delay_);
+  check_for_completed_tasks_pending_ = true;
 }
 
 void WorkerPool::CheckForCompletedTasks() {
   TRACE_EVENT0("cc", "WorkerPool::CheckForCompletedTasks");
-  check_for_completed_tasks_deadline_ = base::TimeTicks();
+  DCHECK(check_for_completed_tasks_pending_);
+  check_for_completed_tasks_pending_ = false;
 
-  while (completed_cheap_tasks_.size()) {
-    scoped_ptr<internal::WorkerPoolTask> task =
-        completed_cheap_tasks_.take_front();
+  // Schedule another check for completed tasks if not idle.
+  if (!inner_->CollectCompletedTasks())
+    ScheduleCheckForCompletedTasks();
+
+  DispatchCompletionCallbacks();
+}
+
+void WorkerPool::CancelCheckForCompletedTasks() {
+  if (!check_for_completed_tasks_pending_)
+    return;
+
+  check_for_completed_tasks_callback_.Cancel();
+  check_for_completed_tasks_pending_ = false;
+}
+
+void WorkerPool::DispatchCompletionCallbacks() {
+  TRACE_EVENT0("cc", "WorkerPool::DispatchCompletionCallbacks");
+
+  if (completed_tasks_.empty())
+    return;
+
+  while (completed_tasks_.size()) {
+    scoped_ptr<internal::WorkerPoolTask> task = completed_tasks_.take_front();
     task->DidComplete();
   }
 
-  for (WorkerVector::iterator it = workers_.begin();
-       it != workers_.end(); it++) {
-    Worker* worker = *it;
-    worker->CheckForCompletedTasks();
-  }
-
   client_->DidFinishDispatchingWorkerPoolCompletionCallbacks();
-
-  for (WorkerVector::iterator it = workers_.begin();
-       it != workers_.end(); it++) {
-    Worker* worker = *it;
-    if (worker->num_pending_tasks()) {
-      ScheduleCheckForCompletedTasks();
-      break;
-    }
-  }
 }
 
-void WorkerPool::OnTaskCompleted() {
-  workers_need_sorting_ = true;
-}
-
-void WorkerPool::SortWorkersIfNeeded() {
-  if (!workers_need_sorting_)
-    return;
-
-  std::sort(workers_.begin(), workers_.end(), NumPendingTasksComparator());
-  workers_need_sorting_ = false;
-}
-
-void WorkerPool::PostTask(
-    scoped_ptr<internal::WorkerPoolTask> task, bool is_cheap) {
-  if (is_cheap && CanPostCheapTask()) {
-    pending_cheap_tasks_.push_back(task.Pass());
+void WorkerPool::PostTask(scoped_ptr<internal::WorkerPoolTask> task) {
+  if (task->IsCheap())
     ScheduleRunCheapTasks();
-  } else {
-    base::subtle::Barrier_AtomicIncrement(&pending_task_count_, 1);
-    workers_need_sorting_ = true;
 
-    Worker* worker = GetWorkerForNextTask();
-    worker->PostTask(task.Pass());
-  }
+  // Schedule check for completed tasks if not pending.
   ScheduleCheckForCompletedTasks();
-}
 
-bool WorkerPool::CanPostCheapTask() const {
-  return pending_cheap_tasks_.size() < kMaxCheapTaskCount;
+  inner_->PostTask(task.Pass());
 }
 
 void WorkerPool::ScheduleRunCheapTasks() {
   if (run_cheap_tasks_pending_)
     return;
-  origin_loop_->PostTask(FROM_HERE, cheap_task_callback_);
+  origin_loop_->PostTask(FROM_HERE, run_cheap_tasks_callback_);
   run_cheap_tasks_pending_ = true;
 }
 
 void WorkerPool::RunCheapTasks() {
   TRACE_EVENT0("cc", "WorkerPool::RunCheapTasks");
   DCHECK(run_cheap_tasks_pending_);
+  run_cheap_tasks_pending_ = false;
 
-  // Run as many cheap tasks as we can within the time limit.
-  base::TimeTicks deadline = base::TimeTicks::Now() +
-      base::TimeDelta::FromMilliseconds(kMaxCheapTaskMs);
-  while (pending_cheap_tasks_.size()) {
-    scoped_ptr<internal::WorkerPoolTask> task =
-        pending_cheap_tasks_.take_front();
-    task->Run(cheap_rendering_stats_.get());
-    completed_cheap_tasks_.push_back(task.Pass());
+  while (true) {
+    base::TimeTicks time_limit = run_cheap_tasks_time_limit_;
 
-    if (!check_for_completed_tasks_deadline_.is_null() &&
-        base::TimeTicks::Now() >= check_for_completed_tasks_deadline_) {
-      TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks check deadline");
-      CheckForCompletedTasks();
-    }
-    if (base::TimeTicks::Now() >= deadline) {
+    if (!check_for_completed_tasks_time_.is_null())
+      time_limit = std::min(time_limit, check_for_completed_tasks_time_);
+
+    bool is_idle = inner_->RunCheapTasksUntilTimeLimit(time_limit);
+
+    if (base::TimeTicks::Now() >= run_cheap_tasks_time_limit_) {
       TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks out of time");
       break;
     }
-  }
 
-  // Defer remaining tasks to worker threads.
-  while (pending_cheap_tasks_.size()) {
-    scoped_ptr<internal::WorkerPoolTask> task =
-        pending_cheap_tasks_.take_front();
-    PostTask(task.Pass(), false);
-  }
+    // We must be out of cheap tasks if this happens.
+    if (check_for_completed_tasks_time_.is_null() ||
+        base::TimeTicks::Now() < run_cheap_tasks_time_limit_)
+      break;
 
-  run_cheap_tasks_pending_ = false;
-  if (base::subtle::Acquire_Load(&pending_task_count_) == 0)
-    OnIdle();
+    TRACE_EVENT_INSTANT0("cc", "WorkerPool::RunCheapTasks check time");
+    CancelCheckForCompletedTasks();
+    DispatchCompletionCallbacks();
+    // Schedule another check for completed tasks if not idle.
+    if (!is_idle)
+      ScheduleCheckForCompletedTasks();
+  }
 }
 
 }  // namespace cc
