@@ -4,8 +4,13 @@
 
 #include "net/quic/crypto/curve25519_key_exchange.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/string_piece.h"
 #include "net/quic/crypto/quic_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::StringPiece;
+using std::string;
 
 namespace net {
 namespace test {
@@ -13,8 +18,6 @@ namespace test {
 // SharedKey just tests that the basic key exchange identity holds: that both
 // parties end up with the same key.
 TEST(Curve25519KeyExchange, SharedKey) {
-// TODO(rtenneti): Add support for curve25519.
-#if 0
   QuicRandom* const rand = QuicRandom::GetInstance();
 
   for (int i = 0; i < 5; i++) {
@@ -34,7 +37,6 @@ TEST(Curve25519KeyExchange, SharedKey) {
     ASSERT_TRUE(bob->CalculateSharedKey(alice_public, &bob_shared));
     ASSERT_EQ(alice_shared, bob_shared);
   }
-#endif
 }
 
 }  // namespace test

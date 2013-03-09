@@ -4,14 +4,9 @@
 
 #include "net/quic/crypto/curve25519_key_exchange.h"
 
-#include <string.h>
-
 #include "base/logging.h"
+#include "crypto/curve25519.h"
 #include "net/quic/crypto/quic_random.h"
-
-// TODO(rtenneti): Remove the following line after support for curve25519 is
-// added.
-#define crypto_scalarmult_curve25519_SCALARBYTES 32
 
 using base::StringPiece;
 using std::string;
@@ -27,39 +22,31 @@ Curve25519KeyExchange::~Curve25519KeyExchange() {
 // static
 Curve25519KeyExchange* Curve25519KeyExchange::New(
     const StringPiece& private_key) {
-// TODO(rtenneti): Add support for curve25519.
-#if 0
-  crypto_scalarmult_curve25519_base(ka->public_key_, ka->private_key_);
   Curve25519KeyExchange* ka;
-
   // We don't want to #include the NaCl headers in the public header file, so
   // we use literals for the sizes of private_key_ and public_key_. Here we
   // assert that those values are equal to the values from the NaCl header.
   COMPILE_ASSERT(
-      sizeof(ka->private_key_) == crypto_scalarmult_curve25519_SCALARBYTES,
+      sizeof(ka->private_key_) == crypto::curve25519::kScalarBytes,
       header_out_of_sync);
   COMPILE_ASSERT(
-      sizeof(ka->public_key_) == crypto_scalarmult_curve25519_BYTES,
+      sizeof(ka->public_key_) == crypto::curve25519::kBytes,
       header_out_of_sync);
 
-  if (private_key.size() != crypto_scalarmult_curve25519_SCALARBYTES) {
+  if (private_key.size() != crypto::curve25519::kScalarBytes) {
     return NULL;
   }
 
   ka = new Curve25519KeyExchange();
   memcpy(ka->private_key_, private_key.data(),
-         crypto_scalarmult_curve25519_SCALARBYTES);
+         crypto::curve25519::kScalarBytes);
+  crypto::curve25519::ScalarBaseMult(ka->private_key_, ka->public_key_);
   return ka;
-#else
-  Curve25519KeyExchange* ka =  new Curve25519KeyExchange();
-  memset(ka->public_key_, 0, arraysize(ka->public_key_));
-  return ka;
-#endif
 }
 
 // static
 string Curve25519KeyExchange::NewPrivateKey(QuicRandom* rand) {
-  uint8 private_key[crypto_scalarmult_curve25519_SCALARBYTES];
+  uint8 private_key[crypto::curve25519::kScalarBytes];
   rand->RandBytes(private_key, sizeof(private_key));
 
   // This makes |private_key| a valid scalar, as specified on
@@ -73,23 +60,18 @@ string Curve25519KeyExchange::NewPrivateKey(QuicRandom* rand) {
 bool Curve25519KeyExchange::CalculateSharedKey(
     const StringPiece& peer_public_value,
     string* out_result) const {
-// TODO(rtenneti): Add support for curve25519.
-#if 0
-  if (peer_public_value.size() != crypto_scalarmult_curve25519_BYTES) {
+  if (peer_public_value.size() != crypto::curve25519::kBytes) {
     return false;
   }
 
-  uint8 result[crypto_scalarmult_curve25519_BYTES];
-  crypto_scalarmult_curve25519(
-      result, private_key_,
-      reinterpret_cast<const uint8*>(peer_public_value.data()));
+  uint8 result[crypto::curve25519::kBytes];
+  crypto::curve25519::ScalarMult(
+      private_key_,
+      reinterpret_cast<const uint8*>(peer_public_value.data()),
+      result);
   out_result->assign(reinterpret_cast<char*>(result), sizeof(result));
 
   return true;
-#else
-  out_result->assign("01234567", 8);
-  return true;
-#endif
 }
 
 StringPiece Curve25519KeyExchange::public_value() const {

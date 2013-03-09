@@ -39,10 +39,7 @@ class NET_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
  private:
   Curve25519KeyExchange();
 
-// TODO(rtenneti): Add support for curve25519.
-#if 0
   uint8 private_key_[32];
-#endif
   uint8 public_key_[32];
 };
 
