@@ -25,14 +25,11 @@
 const int kButtonPadding = 8;
 const int kIconAndTextPadding = 5;
 
-// 'Glint' is a speck of light that moves across the titlebar to attract a bit
-// more attention using movement in addition to color of the titlebar.
-// It initially moves fast, then starts to slow down to avoid being annoying
-// if the user chooses not to react on it.
-const double kGlintAnimationDuration = 0.6;
-const double kStartGlintRepeatIntervalSeconds = 0.1;
-const double kFinalGlintRepeatIntervalSeconds = 2.0;
-const double kGlintRepeatIntervalIncreaseFactor = 1.5;
+// 'Glint' is a glowing light animation on the titlebar to attract user's
+// attention. Numbers are arbitrary, based on several tries.
+const double kGlintAnimationDuration = 1.5;
+const double kGlintRepeatIntervalSeconds = 1.0;
+const int kNumberOfGlintRepeats = 4;  // 5 total, including initial flash.
 
 // Used to implement TestingAPI
 static NSEvent* MakeMouseEvent(NSEventType type,
@@ -152,26 +149,15 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
     if ([glintAnimation_ isAnimating]) {
       scoped_nsobject<NSGradient> glint([NSGradient alloc]);
-      NSColor* gold =
-          [NSColor colorWithCalibratedRed:0.8 green:0.8 blue:0.0 alpha:1.0];
-      [glint initWithColorsAndLocations:gold, 0.0,
-           [NSColor colorWithCalibratedWhite:1.0 alpha:0.4], 0.3,
-           [NSColor colorWithCalibratedWhite:1.0 alpha:0.0], 1.0,
-           nil];
+      float currentAlpha = 0.8 * [glintAnimation_ currentValue];
+      NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0
+                                                        alpha:currentAlpha];
+      NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0
+                                                      alpha:0.0];
+      [glint initWithColorsAndLocations:
+           startColor, 0.0, startColor, 0.3, endColor, 1.0, nil];
       NSRect bounds = [self bounds];
-      NSPoint point = bounds.origin;
-      // The size and position values are experimentally choosen to create
-      // a "speck of light attached to the top edge" effect.
-      int gradientRadius = NSHeight(bounds) * 2;
-      point.y += gradientRadius / 2;
-      double rangeOfMotion = NSWidth(bounds) + 4 * gradientRadius;
-      double startPoint = - 2 * gradientRadius;
-      point.x = startPoint + rangeOfMotion * [glintAnimation_ currentValue];
-      [glint drawFromCenter:point
-                     radius:0.0
-                   toCenter:point
-                     radius:gradientRadius
-                    options:NSGradientDrawsBeforeStartingLocation];
+      [glint drawInRect:bounds relativeCenterPosition:NSZeroPoint];
     }
   } else {
     BOOL isActive = [[self window] isMainWindow];
@@ -473,7 +459,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)startGlintAnimation {
-  glintInterval_ = kStartGlintRepeatIntervalSeconds;
+  glintCounter_ = 0;
   [self restartGlintAnimation:nil];
 }
 
@@ -496,19 +482,32 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [glintAnimation_ startAnimation];
 }
 
+// NSAnimationDelegate method.
 - (void)animationDidEnd:(NSAnimation*)animation {
-  if (animation == glintAnimation_.get()) {  // Restart after a timeout.
-    glintAnimationTimer_.reset([[NSTimer
-        scheduledTimerWithTimeInterval:glintInterval_
-                                target:self
-                              selector:@selector(restartGlintAnimation:)
-                              userInfo:nil
-                               repeats:NO] retain]);
-    // Gradually reduce the frequency of repeating the animation,
-    // calming it down if user decides not to act upon it.
-    if (glintInterval_ < kFinalGlintRepeatIntervalSeconds)
-      glintInterval_ *= kGlintRepeatIntervalIncreaseFactor;
-  }
+  if (animation != glintAnimation_.get())
+    return;
+  if (glintCounter_ >= kNumberOfGlintRepeats)
+    return;
+  glintCounter_++;
+  // Restart after a timeout.
+  glintAnimationTimer_.reset([[NSTimer
+      scheduledTimerWithTimeInterval:kGlintRepeatIntervalSeconds
+                              target:self
+                            selector:@selector(restartGlintAnimation:)
+                            userInfo:nil
+                             repeats:NO] retain]);
+}
+
+// NSAnimationDelegate method.
+- (float)animation:(NSAnimation *)animation
+  valueForProgress:(NSAnimationProgress)progress {
+  if (animation != glintAnimation_.get())
+    return progress;
+
+  // Converts 0..1 progression into a sharper raise/fall.
+  float result = progress < 0.5 ? progress : 1.0 - progress;
+  result = 4.0 * result * result;
+  return result;
 }
 
 // (Private/TestingAPI)

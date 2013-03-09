@@ -64,7 +64,7 @@
   // "Glint" animation is used in "Draw Attention" mode.
   scoped_nsobject<RepaintAnimation> glintAnimation_;
   scoped_nsobject<NSTimer> glintAnimationTimer_;
-  double glintInterval_;
+  int glintCounter_;
 
   // Drag support.
   scoped_nsobject<MouseDragController> dragController_;
