@@ -397,12 +397,26 @@ class SpawningServer(object):
     self.server.serve_forever()
 
   def Start(self):
+    """Starts the test server spawner."""
     listener_thread = threading.Thread(target=self._Listen)
     listener_thread.setDaemon(True)
     listener_thread.start()
     time.sleep(1)
 
   def Stop(self):
+    """Stops the test server spawner.
+
+    Also cleans the server state.
+    """
+    self.CleanupState()
+    self.server.shutdown()
+
+  def CleanupState(self):
+    """Cleans up the spawning server state.
+
+    This should be called if the test server spawner is reused,
+    to avoid sharing the test server instance.
+    """
     if self.server.test_server_instance:
       self.server.test_server_instance.Stop()
-    self.server.shutdown()
+      self.server.test_server_instance = None

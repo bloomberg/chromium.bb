@@ -263,6 +263,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       logging.warning(e)
       if android_commands.IsDeviceAttached(self.device):
         raise
+    finally:
+      self.CleanupSpawningServerState()
     # Calculate unknown test results.
     # TODO(frankf): Do not break TestResults encapsulation.
     all_tests = set(test.split(':'))

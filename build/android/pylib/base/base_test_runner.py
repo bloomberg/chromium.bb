@@ -166,6 +166,15 @@ class BaseTestRunner(object):
       self._spawning_server.Stop()
     self.flags.Restore()
 
+  def CleanupSpawningServerState(self):
+    """Tells the spawning server to clean up any state.
+
+    If the spawning server is reused for multiple tests, this should be called
+    after each test to prevent tests affecting each other.
+    """
+    if self._spawning_server:
+      self._spawning_server.CleanupState()
+
   def LaunchChromeTestServerSpawner(self):
     """Launches test server spawner."""
     server_ready = False
