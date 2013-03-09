@@ -143,6 +143,8 @@ def get_landmines(target):
     add('Fix findbugs errors on android trybots.')
   if platform() == 'win' and builder() == 'ninja':
     add('Compile on cc_unittests fails due to symbols removed in r185063.')
+  if platform() == 'linux' and builder() == 'ninja':
+    add('Builders switching from make to ninja will clobber on this.')
 
   return landmines
 
