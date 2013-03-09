@@ -211,7 +211,8 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::setDeviceScaleFactor(float factor) {
-  host_->setDeviceScaleFactor(factor);
+  if (host_)
+    host_->setDeviceScaleFactor(factor);
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
