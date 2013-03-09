@@ -98,13 +98,9 @@ wl_data_source_send_offer(struct wl_data_source *source,
 	if (offer == NULL)
 		return NULL;
 
+	wl_resource_init(&offer->resource, &wl_data_offer_interface,
+			 &data_offer_interface, 0, offer);
 	offer->resource.destroy = destroy_data_offer;
-	offer->resource.object.id = 0;
-	offer->resource.object.interface = &wl_data_offer_interface;
-	offer->resource.object.implementation =
-		(void (**)(void)) &data_offer_interface;
-	offer->resource.data = offer;
-	wl_signal_init(&offer->resource.destroy_signal);
 
 	offer->source = source;
 	offer->source_destroy_listener.notify = destroy_offer_data_source;
@@ -459,13 +455,9 @@ create_data_source(struct wl_client *client,
 		return;
 	}
 
+	wl_resource_init(&source->resource, &wl_data_source_interface,
+			 &data_source_interface, id, source);
 	source->resource.destroy = destroy_data_source;
-	source->resource.object.id = id;
-	source->resource.object.interface = &wl_data_source_interface;
-	source->resource.object.implementation =
-		(void (**)(void)) &data_source_interface;
-	source->resource.data = source;
-	wl_signal_init(&source->resource.destroy_signal);
 
 	source->accept = client_source_accept;
 	source->send = client_source_send;

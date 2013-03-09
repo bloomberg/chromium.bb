@@ -1396,13 +1396,9 @@ wl_client_add_object(struct wl_client *client,
 		return NULL;
 	}
 
-	resource->object.interface = interface;
-	resource->object.implementation = implementation;
-	resource->object.id = id;
+	wl_resource_init(resource, interface, implementation, id, data);
 	resource->client = client;
-	resource->data = data;
 	resource->destroy = (void *) free;
-	wl_signal_init(&resource->destroy_signal);
 
 	if (wl_map_insert_at(&client->objects, resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,

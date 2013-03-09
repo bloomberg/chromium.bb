@@ -128,12 +128,8 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	buffer->pool = pool;
 	pool->refcount++;
 
-	buffer->buffer.resource.object.id = id;
-	buffer->buffer.resource.object.interface = &wl_buffer_interface;
-	buffer->buffer.resource.object.implementation = (void (**)(void))
-		&shm_buffer_interface;
-
-	buffer->buffer.resource.data = buffer;
+	wl_resource_init(&buffer->buffer.resource, &wl_buffer_interface,
+			 &shm_buffer_interface, id, buffer);
 	buffer->buffer.resource.client = resource->client;
 	buffer->buffer.resource.destroy = destroy_buffer;
 
@@ -211,12 +207,8 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	}
 	close(fd);
 
-	pool->resource.object.id = id;
-	pool->resource.object.interface = &wl_shm_pool_interface;
-	pool->resource.object.implementation =
-		(void (**)(void)) &shm_pool_interface;
-
-	pool->resource.data = pool;
+	wl_resource_init(&pool->resource, &wl_shm_pool_interface,
+			 &shm_pool_interface, id, pool);
 	pool->resource.client = client;
 	pool->resource.destroy = destroy_pool;
 
@@ -283,12 +275,8 @@ wl_shm_buffer_create(struct wl_client *client,
 	buffer->offset = 0;
 	buffer->pool = NULL;
 
-	buffer->buffer.resource.object.id = id;
-	buffer->buffer.resource.object.interface = &wl_buffer_interface;
-	buffer->buffer.resource.object.implementation = (void (**)(void))
-		&shm_buffer_interface;
-
-	buffer->buffer.resource.data = buffer;
+	wl_resource_init(&buffer->buffer.resource, &wl_buffer_interface,
+			 &shm_buffer_interface, id, buffer);
 	buffer->buffer.resource.client = client;
 	buffer->buffer.resource.destroy = destroy_buffer;
 

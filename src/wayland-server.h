@@ -190,6 +190,22 @@ struct wl_resource {
 	void *data;
 };
 
+static inline void
+wl_resource_init(struct wl_resource *resource,
+		 const struct wl_interface *interface,
+		 const void *implementation, uint32_t id, void *data)
+{
+	resource->object.id = id;
+	resource->object.interface = interface;
+	resource->object.implementation = implementation;
+
+	wl_signal_init(&resource->destroy_signal);
+
+	resource->destroy = NULL;
+	resource->client = NULL;
+	resource->data = data;
+}
+
 struct wl_buffer {
 	struct wl_resource resource;
 	int32_t width, height;
