@@ -31,17 +31,6 @@ function consentRequired_(authContinue) {
 }
 
 /**
- * @enum {string} The start-up mode of the web-app
- */
-remoting.TabType = {
-  REGULAR: 'REGULAR',
-  PINNED: 'PINNED',
-  WINDOWED: 'WINDOWED',
-  FULLSCREEN: 'FULLSCREEN',
-  UNKNOWN: 'UNKNOWN'
-};
-
-/**
  * Entry point for app initialization.
  */
 remoting.init = function() {
@@ -109,14 +98,15 @@ remoting.init = function() {
   remoting.hostList.load(onLoad);
 
   // Show the tab-type warnings if necessary.
-  /** @param {remoting.TabType} tabType */
-  var onTabTypeKnown = function(tabType) {
-    if (tabType != remoting.TabType.WINDOWED) {
+  /** @param {boolean} windowed */
+  var onIsWindowed = function(isWindowed) {
+    if (!isWindowed &&
+        navigator.platform.indexOf('Mac') == -1) {
       document.getElementById('startup-mode-box-me2me').hidden = false;
       document.getElementById('startup-mode-box-it2me').hidden = false;
     }
   };
-  getTabType_(onTabTypeKnown);
+  isWindowed_(onIsWindowed);
 };
 
 /**
@@ -332,35 +322,19 @@ remoting.showErrorMessage = function(error) {
 };
 
 /**
- * Get the start-up mode of the application.
- * @param {function(remoting.TabType):void} callback Callback to receive the
- *     type start-up mode of the application (the type of the current tab).
+ * Determine whether or not the app is running in a window.
+ * @param {function(boolean):void} callback Callback to receive whether or not
+ *     the current tab is running in windowed mode.
  */
-function getTabType_(callback) {
+function isWindowed_(callback) {
   /** @param {chrome.Window} win The current window. */
   var windowCallback = function(win) {
-    switch (win.state) {
-      case 'fullscreen':
-        callback(remoting.TabType.FULLSCREEN);
-        return;
-      case 'normal':
-        switch (win.type) {
-          case 'normal':
-            callback(remoting.TabType.REGULAR);
-            return;
-          case 'popup':
-          case 'app':
-            callback(remoting.TabType.WINDOWED);
-            return;
-        }
-    }
-    // TODO(jamiewalch): Decide what to do about "panel".
-    callback(remoting.TabType.UNKNOWN);
+    callback(win.type == 'popup');
   };
   /** @param {chrome.Tab} tab The current tab. */
   var tabCallback = function(tab) {
     if (tab.pinned) {
-      callback(remoting.TabType.PINNED);
+      callback(false);
     } else {
       chrome.windows.get(tab.windowId, null, windowCallback);
     }
