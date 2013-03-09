@@ -4,9 +4,9 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/page_click_listener.h"
-#include "chrome/renderer/page_click_tracker.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "components/autofill/renderer/page_click_listener.h"
+#include "components/autofill/renderer/page_click_tracker.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"

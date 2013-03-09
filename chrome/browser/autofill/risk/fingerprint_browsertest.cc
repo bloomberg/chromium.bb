@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/risk/fingerprint.h"
+#include "components/autofill/browser/risk/fingerprint.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/port.h"
-#include "chrome/browser/autofill/risk/proto/fingerprint.pb.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/browser/risk/proto/fingerprint.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScreenInfo.h"

@@ -3,6 +3,38 @@
 # found in the LICENSE file.
 
 {
+  'targets': [
+    {
+      'target_name': 'autofill_regexes',
+      'type': 'none',
+      'actions': [{
+        'action_name': 'autofill_regexes',
+        'inputs': [
+          '<(DEPTH)/build/escape_unicode.py',
+          'autofill/browser/autofill_regex_constants.cc.utf8',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/autofill_regex_constants.cc',
+        ],
+        'action': ['python', '<(DEPTH)/build/escape_unicode.py',
+                   '-o', '<(SHARED_INTERMEDIATE_DIR)',
+                   'autofill/browser/autofill_regex_constants.cc.utf8'],
+      }],
+    },
+    {
+      # Protobuf compiler / generate rule for Autofill's risk integration.
+      'target_name': 'autofill_risk_proto',
+      'type': 'static_library',
+      'sources': [
+        'autofill/browser/risk/proto/fingerprint.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'autofill/browser/risk/proto',
+        'proto_out_dir': 'components/autofill/browser/risk/proto',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+  ],
   'conditions': [
     ['OS != "ios"', {
       'targets': [

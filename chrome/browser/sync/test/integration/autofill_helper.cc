@@ -4,12 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 
-#include "chrome/browser/autofill/autofill_common_test.h"
-#include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/autofill/autofill_type.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -22,6 +17,11 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"
+#include "components/autofill/browser/autofill_common_test.h"
+#include "components/autofill/browser/autofill_profile.h"
+#include "components/autofill/browser/autofill_type.h"
+#include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/browser/personal_data_manager_observer.h"
 #include "components/autofill/common/form_field_data.h"
 
 using base::WaitableEvent;

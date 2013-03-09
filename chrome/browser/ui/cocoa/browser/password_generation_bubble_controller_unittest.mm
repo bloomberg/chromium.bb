@@ -9,8 +9,8 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "components/autofill/browser/password_generator.h"
 #include "content/public/common/password_form.h"
 #include "testing/gtest_mac.h"
 

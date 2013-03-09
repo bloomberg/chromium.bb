@@ -6,10 +6,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "components/autofill/browser/personal_data_manager.h"
 
 namespace {
 

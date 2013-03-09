@@ -4,8 +4,8 @@
 
 #include "chrome/browser/webdata/autofill_change.h"
 
-#include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/browser/autofill/credit_card.h"
+#include "components/autofill/browser/autofill_profile.h"
+#include "components/autofill/browser/credit_card.h"
 
 AutofillChange::AutofillChange(Type type, const AutofillKey& key)
     : GenericAutofillChange<AutofillKey>(type, key) {

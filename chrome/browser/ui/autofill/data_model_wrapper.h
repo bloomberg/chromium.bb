@@ -7,9 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "components/autofill/browser/field_types.h"
+#include "components/autofill/browser/wallet/wallet_items.h"
 
 class AutofillProfile;
 class CreditCard;

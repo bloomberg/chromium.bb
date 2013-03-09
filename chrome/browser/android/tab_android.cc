@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/autofill/autofill_external_delegate.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -28,6 +26,8 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/browser/view_type_utils.h"
+#include "components/autofill/browser/autofill_external_delegate.h"
+#include "components/autofill/browser/autofill_manager.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 

@@ -7,8 +7,8 @@
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/autofill/personal_data_manager_observer.h"
+#include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/browser/personal_data_manager_observer.h"
 
 // Android wrapper of the PersonalDataManager which provides access from the
 // Java layer. Note that on Android, there's only a single profile, and

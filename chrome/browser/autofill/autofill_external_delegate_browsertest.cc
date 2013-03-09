@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/autofill/test_autofill_external_delegate.h"
-#include "chrome/browser/autofill/test_autofill_manager_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
+#include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/test_autofill_external_delegate.h"
+#include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"

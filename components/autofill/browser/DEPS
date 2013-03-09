@@ -1,0 +1,60 @@
+include_rules = [
+  "+content/public/browser",
+  "+crypto/random.h",
+  "+google_apis/google_api_keys.h",
+  "+net",
+  "+third_party/libjingle",
+  "+third_party/libphonenumber",  # For phone number i18n.
+  "+webkit/plugins/webplugininfo.h",
+
+  # TODO(joi): This is "ok" temporarily (it's just a header file with
+  # a large enum, and doesn't bring in any other dependencies on
+  # //chrome). The plan of record to get rid of this is to change
+  # Autofill and WebData to not use NotificationService, and instead
+  # use typed callback interfaces or allow registering base::Callback
+  # callbacks for each event.
+  "!chrome/common/chrome_notification_types.h",
+
+  # TODO(joi, kaiwang): Bring this list to zero.
+  "!chrome/browser/api/webdata",
+
+  # TODO(akalin): Remove this dependency.
+  "!sync/util/data_encryption_win.h",
+]
+
+specific_include_rules = {
+  '.*_[a-z]*test\.cc': [
+    "+content/public/test",
+
+    # TODO(joi, kaiwang): Bring this list to zero.
+    #
+    # Do not add to the list of temporarily-allowed dependencies below,
+    # and please do not introduce more #includes of these files.
+    "!chrome/browser/autofill/autofill_cc_infobar_delegate.h",
+    "!chrome/browser/autofill/personal_data_manager_factory.h",
+    "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
+    "!chrome/browser/api/infobars/infobar_service.h",
+    "!chrome/browser/password_manager/encryptor.h",
+    "!chrome/browser/password_manager/password_manager.h",
+    "!chrome/browser/password_manager/password_manager_delegate_impl.h",
+    "!chrome/browser/profiles/profile.h",
+    "!chrome/browser/sync/profile_sync_service.h",
+    "!chrome/browser/sync/profile_sync_service_factory.h",
+    "!chrome/browser/translate/translate_infobar_delegate.h",
+    "!chrome/browser/translate/translate_manager.h",
+    "!chrome/browser/webdata/autofill_web_data_service_impl.h",
+    "!chrome/browser/webdata/web_data_service.h",
+    "!chrome/browser/webdata/web_data_service_factory.h",
+    "!chrome/browser/ui/autofill/tab_autofill_manager_delegate.h",
+    "!chrome/browser/ui/browser.h",
+    "!chrome/browser/ui/browser_tabstrip.h",
+    "!chrome/browser/ui/browser_window.h",
+    "!chrome/browser/ui/tabs/tab_strip_model.h",
+    "!chrome/common/chrome_constants.h",
+    "!chrome/common/chrome_paths.h",
+    "!chrome/common/pref_names.h",
+    "!chrome/common/render_messages.h",
+    "!chrome/common/url_constants.h",
+    "!chrome/test/base",
+  ],
+}

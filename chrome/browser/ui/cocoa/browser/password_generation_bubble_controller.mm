@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/common/password_generation_util.h"
+#include "components/autofill/browser/password_generator.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/password_form.h"

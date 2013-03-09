@@ -1,0 +1,28 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_AUTOFILL_BROWSER_VALIDATION_H_
+#define COMPONENTS_AUTOFILL_BROWSER_VALIDATION_H_
+
+#include "base/string16.h"
+
+namespace autofill {
+
+// Returns true if |text| looks like a valid credit card number.
+// Uses the Luhn formula to validate the number.
+bool IsValidCreditCardNumber(const string16& text);
+
+// Returns true if |text| looks like a valid credit card security code.
+bool IsValidCreditCardSecurityCode(const string16& text);
+
+// Returns true if |text| looks like a valid e-mail address.
+bool IsValidEmailAddress(const string16& text);
+
+// Returns true if |text| looks like a valid zip code.
+// Valid for US zip codes only.
+bool IsValidZip(const string16& text);
+
+}  // namespace autofill
+
+#endif  // COMPONENTS_AUTOFILL_BROWSER_VALIDATION_H_

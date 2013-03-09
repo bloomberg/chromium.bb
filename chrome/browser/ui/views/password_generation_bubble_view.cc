@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/password_generation_util.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/browser/password_generator.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"

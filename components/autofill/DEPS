@@ -1,4 +1,9 @@
 include_rules = [
-  "+third_party/WebKit/Source/WebKit/chromium/public",
+  "+google_apis/gaia/gaia_urls.h",
+  "+grit",  # For generated headers
+  "+net",
+  # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/Source/Platform/chromium",
+  "+third_party/WebKit/Source/WebKit/chromium",
   "+ui",
 ]

@@ -10,10 +10,10 @@
 #include "chrome/browser/api/webdata/web_data_results.h"
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 // TODO(caitkp): Remove this autofill dependency.
-#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/webdata/web_data_request_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "components/autofill/browser/autofill_country.h"
 
 using base::Bind;
 using base::FilePath;

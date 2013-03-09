@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "chrome/renderer/autofill/autofill_agent.h"
-#include "chrome/renderer/chrome_mock_render_thread.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/renderer/chrome_mock_render_thread.h"
+#include "components/autofill/renderer/autofill_agent.h"
 #include "content/public/test/render_view_test.h"
 
 namespace autofill {

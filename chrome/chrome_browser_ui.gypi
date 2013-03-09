@@ -2216,12 +2216,12 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
-            'autofill_regexes',
             'browser_extensions',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'common/extensions/api/api.gyp:api',
             'debugger',
             'installer_util',
+            '../components/components.gyp:autofill_regexes',
             '../device/device.gyp:device_bluetooth',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',

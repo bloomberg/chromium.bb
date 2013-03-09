@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
+#include "components/autofill/browser/personal_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

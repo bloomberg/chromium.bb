@@ -7,13 +7,13 @@
 #include "base/files/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/autofill/data_driven_test.h"
-#include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/data_driven_test.h"
+#include "components/autofill/browser/form_structure.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

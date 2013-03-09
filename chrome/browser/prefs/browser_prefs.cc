@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -89,6 +88,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/browser/autofill_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
 

@@ -6,8 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/autofill/autofill_external_delegate.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -47,6 +45,8 @@
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/autofill/browser/autofill_external_delegate.h"
+#include "components/autofill/browser/autofill_manager.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_AUTOMATION)

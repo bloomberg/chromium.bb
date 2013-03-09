@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/autofill/browser/personal_data_manager_observer.h"
 
 class PersonalDataManager;
 

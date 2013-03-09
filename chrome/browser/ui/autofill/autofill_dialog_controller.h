@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "components/autofill/browser/field_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"

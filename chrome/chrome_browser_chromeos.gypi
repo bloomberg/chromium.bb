@@ -23,7 +23,6 @@
       'dependencies': [
         # TODO(tbarzic): Cleanup this list.
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'autofill_regexes',
         'browser_extensions',
         'browser/chromeos/input_method/input_method.gyp:gencode',
         'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
@@ -47,6 +46,7 @@
         '../build/linux/system.gyp:dbus',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chromeos/chromeos.gyp:chromeos',
+        '../components/components.gyp:autofill_regexes',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',

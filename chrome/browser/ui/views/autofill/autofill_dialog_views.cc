@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
+#include "components/autofill/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"

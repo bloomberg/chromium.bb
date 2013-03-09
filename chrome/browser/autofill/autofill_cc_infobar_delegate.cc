@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/autofill/personal_data_manager.h"
+#include "components/autofill/browser/credit_card.h"
+#include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/common/autofill_constants.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"

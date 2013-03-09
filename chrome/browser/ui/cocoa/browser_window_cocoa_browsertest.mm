@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <objc/runtime.h>
 #import <Cocoa/Cocoa.h>
+#import <objc/runtime.h>
 
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 
 #include "base/logging.h"
-#include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/browser/password_generator.h"
 #include "content/public/common/password_form.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
 
 typedef InProcessBrowserTest BrowserWindowCocoaBrowsertest;
 
