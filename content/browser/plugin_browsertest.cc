@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_AlertInWindowMessage) {
   WaitForAppModalDialog(shell());
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, VerifyNPObjectLifetimeTest) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(VerifyNPObjectLifetimeTest)) {
   LoadAndWait(GetURL("npobject_lifetime_test.html"));
 }
 
