@@ -315,11 +315,7 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   }
 
   // TODO(crogers): support more than stereo input.
-  // TODO(henrika): remove flag once we properly handle input device selection.
-  // https://code.google.com/p/chromium/issues/detail?id=147327
-  if (params.input_channels() == 2 &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebAudioInput)) {
+  if (params.input_channels() == 2) {
     if (WASAPIUnifiedStream::HasUnifiedDefaultIO()) {
       DVLOG(1) << "WASAPIUnifiedStream is created.";
       return new WASAPIUnifiedStream(this, params);
