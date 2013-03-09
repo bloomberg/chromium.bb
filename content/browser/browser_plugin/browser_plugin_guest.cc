@@ -25,6 +25,7 @@
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/geolocation_permission_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -50,7 +51,7 @@ namespace content {
 BrowserPluginHostFactory* BrowserPluginGuest::factory_ = NULL;
 
 namespace {
-const size_t kNumMaxOutstandingMediaRequests = 1024;
+const size_t kNumMaxOutstandingPermissionRequests = 1024;
 }
 
 BrowserPluginGuest::BrowserPluginGuest(
@@ -58,6 +59,7 @@ BrowserPluginGuest::BrowserPluginGuest(
     WebContentsImpl* web_contents,
     const BrowserPluginHostMsg_CreateGuest_Params& params)
     : WebContentsObserver(web_contents),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
       damage_buffer_sequence_id_(0),
@@ -374,6 +376,45 @@ void BrowserPluginGuest::LoadRedirect(
                                         old_url,
                                         new_url,
                                         is_top_level));
+}
+
+void BrowserPluginGuest::AskEmbedderForGeolocationPermission(
+    int bridge_id,
+    const GURL& requesting_frame,
+    GeolocationCallback callback) {
+  if (geolocation_request_callback_map_.size() >=
+          kNumMaxOutstandingPermissionRequests) {
+    // Deny the geolocation request.
+    callback.Run(false);
+    return;
+  }
+  int request_id = next_permission_request_id_++;
+  geolocation_request_callback_map_[request_id] = callback;
+
+  base::DictionaryValue request_info;
+  request_info.Set(browser_plugin::kURL,
+                   base::Value::CreateStringValue(requesting_frame.spec()));
+
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_RequestPermission(instance_id(),
+          BrowserPluginPermissionTypeGeolocation, request_id, request_info));
+}
+
+void BrowserPluginGuest::CancelGeolocationRequest(int bridge_id) {
+  GeolocationRequestsMap::iterator callback_iter =
+      geolocation_request_callback_map_.find(bridge_id);
+  if (callback_iter != geolocation_request_callback_map_.end())
+    geolocation_request_callback_map_.erase(callback_iter);
+}
+
+void BrowserPluginGuest::SetGeolocationPermission(int request_id,
+                                                  bool allowed) {
+  GeolocationRequestsMap::iterator callback_iter =
+      geolocation_request_callback_map_.find(request_id);
+  if (callback_iter != geolocation_request_callback_map_.end()) {
+    callback_iter->second.Run(allowed);
+    geolocation_request_callback_map_.erase(callback_iter);
+  }
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
@@ -697,11 +738,14 @@ void BrowserPluginGuest::OnStop(int instance_id) {
 }
 
 void BrowserPluginGuest::OnRespondPermission(
-    int /*instance_id*/,
+    int instance_id,
     BrowserPluginPermissionType permission_type,
     int request_id,
     bool should_allow) {
   switch (permission_type) {
+    case BrowserPluginPermissionTypeGeolocation:
+      OnRespondPermissionGeolocation(request_id, should_allow);
+      break;
     case BrowserPluginPermissionTypeMedia:
       OnRespondPermissionMedia(request_id, should_allow);
       break;
@@ -842,7 +886,7 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  if (media_requests_map_.size() >= kNumMaxOutstandingMediaRequests) {
+  if (media_requests_map_.size() >= kNumMaxOutstandingPermissionRequests) {
     // Deny the media request.
     callback.Run(content::MediaStreamDevices());
     return;
@@ -915,6 +959,38 @@ void BrowserPluginGuest::OnUpdateRect(
 
   SendMessageToEmbedder(
       new BrowserPluginMsg_UpdateRect(instance_id(), relay_params));
+}
+
+void BrowserPluginGuest::OnRespondPermissionGeolocation(
+    int request_id, bool should_allow) {
+  if (should_allow && embedder_web_contents_) {
+    // If renderer side embedder decides to allow gelocation, we need to check
+    // if the app/embedder itself has geolocation access.
+    BrowserContext* browser_context =
+        embedder_web_contents_->GetBrowserContext();
+    if (browser_context) {
+      GeolocationPermissionContext* geolocation_context =
+          browser_context->GetGeolocationPermissionContext();
+      if (geolocation_context) {
+        base::Callback<void(bool)> geolocation_callback = base::Bind(
+            &BrowserPluginGuest::SetGeolocationPermission,
+            weak_ptr_factory_.GetWeakPtr(),
+            request_id);
+        geolocation_context->RequestGeolocationPermission(
+            embedder_web_contents_->GetRenderProcessHost()->GetID(),
+            embedder_routing_id(),
+            // The geolocation permission request here is not initiated through
+            // WebGeolocationPermissionRequest. We are only interested in the
+            // fact whether the embedder/app has geolocation permission.
+            // Therefore we use an invalid |bridge_id|.
+            -1 /* bridge_id */,
+            embedder_web_contents_->GetURL(),
+            geolocation_callback);
+        return;
+      }
+    }
+  }
+  SetGeolocationPermission(request_id, false);
 }
 
 void BrowserPluginGuest::OnRespondPermissionMedia(

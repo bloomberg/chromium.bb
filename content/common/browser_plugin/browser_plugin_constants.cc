@@ -56,6 +56,7 @@ const char kOldURL[] = "oldUrl";
 const char kOldHeight[] = "oldHeight";
 const char kOldWidth[] = "oldWidth";
 const char kPermission[] = "permission";
+const char kPermissionTypeGeolocation[] = "geolocation";
 const char kPermissionTypeMedia[] = "media";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";

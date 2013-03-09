@@ -25,6 +25,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
@@ -72,6 +73,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                                           public WebContentsDelegate,
                                           public WebContentsObserver {
  public:
+  typedef base::Callback<void(bool)> GeolocationCallback;
   virtual ~BrowserPluginGuest();
 
   static BrowserPluginGuest* Create(
@@ -172,6 +174,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Overridden in test implementation since we want to intercept certain
   // messages for testing.
   virtual void SendMessageToEmbedder(IPC::Message* msg);
+
+  // Requests geolocation permission through embedder js api.
+  void AskEmbedderForGeolocationPermission(int bridge_id,
+                                           const GURL& requesting_frame,
+                                           GeolocationCallback callback);
+  // Cancels pending geolocation request.
+  void CancelGeolocationRequest(int bridge_id);
+  // Embedder sets permission to allow or deny geolocation request.
+  void SetGeolocationPermission(int request_id, bool allowed);
 
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
@@ -330,13 +341,20 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
   // Helpers for |OnRespondPermission|.
+  void OnRespondPermissionGeolocation(int request_id, bool should_allow);
   void OnRespondPermissionMedia(int request_id, bool should_allow);
+
+  // Weak pointer used to ask GeolocationPermissionContext about geolocation
+  // permission.
+  base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_;
 
   // Static factory instance (always NULL for non-test).
   static content::BrowserPluginHostFactory* factory_;
 
   NotificationRegistrar notification_registrar_;
   WebContentsImpl* embedder_web_contents_;
+  typedef std::map<int, GeolocationCallback> GeolocationRequestsMap;
+  GeolocationRequestsMap geolocation_request_callback_map_;
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
   int instance_id_;

@@ -57,6 +57,7 @@ extern const char kOldURL[];
 extern const char kOldHeight[];
 extern const char kOldWidth[];
 extern const char kPermission[];
+extern const char kPermissionTypeGeolocation[];
 extern const char kPermissionTypeMedia[];
 extern const char kPersistPrefix[];
 extern const char kProcessId[];

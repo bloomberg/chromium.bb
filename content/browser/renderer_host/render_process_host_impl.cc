@@ -41,6 +41,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browser_plugin/browser_plugin_geolocation_permission_context.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/device_orientation/orientation_message_filter.h"
@@ -537,8 +538,13 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       new IndexedDBDispatcherHost(
           GetID(),
           storage_partition_impl_->GetIndexedDBContext()));
-  channel_->AddFilter(GeolocationDispatcherHost::New(
-      GetID(), browser_context->GetGeolocationPermissionContext()));
+  if (IsGuest()) {
+    channel_->AddFilter(GeolocationDispatcherHost::New(
+        GetID(), new BrowserPluginGeolocationPermissionContext()));
+  } else {
+    channel_->AddFilter(GeolocationDispatcherHost::New(
+        GetID(), browser_context->GetGeolocationPermissionContext()));
+  }
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)

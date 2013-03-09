@@ -1,0 +1,55 @@
+<!--
+ * Copyright 2013 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+  <head>
+    <script type="text/javascript">
+      // A guest that requests geolocation.
+      // Notifies the embedder about the result of the request (success/fail)
+      // via post message. Note that the embedder has to initiate a postMessage
+      // first so that guest has a reference to the embedder's window.
+
+      // The window reference of the embedder to send post message reply.
+      var embedderWindowChannel = null;
+
+      var notifyEmbedder = function(msg_array) {
+        embedderWindowChannel.postMessage(JSON.stringify(msg_array), '*');
+      };
+
+      var onGeolocationSuccess = function(testName, position) {
+        window.console.log('onGeolocationSuccess callback.');
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        notifyEmbedder([testName, 'access-granted', latitude, longitude]);
+      };
+
+      var onGeolocationFailure = function(testName, err) {
+        window.console.log('onGeolocationFailure callback.');
+        notifyEmbedder([testName, 'access-denied']);
+      };
+
+      var startTest = function(testName) {
+        navigator.geolocation.getCurrentPosition(
+            onGeolocationSuccess.bind(this, testName),
+            onGeolocationFailure.bind(this, testName));
+      };
+
+      var onPostMessageReceived = function(e) {
+        var data = JSON.parse(e.data);
+        if (data[0] == 'check-geolocation-permission') {
+          var testName = data[1];
+          embedderWindowChannel = e.source;
+          // Start the test once we have |embedderWindowChannel|.
+          startTest(testName);
+        }
+      };
+
+      window.addEventListener('message', onPostMessageReceived, false);
+    </script>
+  </head>
+  <body>
+    <div>This is a guest that requests geolocation.</div>
+  </body>
+</html>

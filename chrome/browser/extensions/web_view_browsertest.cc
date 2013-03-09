@@ -97,6 +97,16 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::TearDown();
   }
 
+  virtual void SetUpOnMainThread() OVERRIDE {
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    // Mock out geolocation for geolocation specific tests.
+    if (!strncmp(test_info->name(), "GeolocationAPI",
+            strlen("GeolocationAPI"))) {
+      ui_test_utils::OverrideGeolocation(10, 20);
+    }
+  }
+
   // This method is responsible for initializing a packaged app, which contains
   // multiple webview tags. The tags have different partition identifiers and
   // their WebContent objects are returned as output. The method also verifies
@@ -816,4 +826,23 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
   ExtensionTestMessageListener second_loaded_listener("guest-loaded", false);
   LoadAndLaunchPlatformApp("web_view/teardown");
   ASSERT_TRUE(second_loaded_listener.WaitUntilSatisfied());
+}
+
+// Embedder does not have geolocation permission for this test.
+// No matter what the API does, geolocation permission would be denied.
+// Note that the test name prefix must be "GeolocationAPI".
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccess) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/web_view/geolocation/embedder_has_no_permission"))
+          << message_;
+}
+
+// Embedder has geolocation permission for this test.
+// Note that the test name prefix must be "GeolocationAPI".
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccess) {
+  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest(
+      "platform_apps/web_view/geolocation/embedder_has_permission"))
+          << message_;
 }

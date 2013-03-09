@@ -11,6 +11,9 @@ enum BrowserPluginPermissionType {
 
   // Media access (audio/video) permission request type.
   BrowserPluginPermissionTypeMedia,
+
+  // Geolocation.
+  BrowserPluginPermissionTypeGeolocation,
 };
 
 #endif  // CONTENT_COMMON_BROWSER_PLUGIN_BROWSER_PLUGIN_MESSAGE_ENUMS_H_

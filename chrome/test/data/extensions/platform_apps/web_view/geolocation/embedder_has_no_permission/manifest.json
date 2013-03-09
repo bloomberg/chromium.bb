@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: <webview> geolocation",
+  "description": "Loads a guest which requests geolocation",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

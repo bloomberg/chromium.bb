@@ -75,8 +75,11 @@ static std::string GetInternalEventName(const char* event_name) {
 
 static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
   switch (type) {
+    case BrowserPluginPermissionTypeGeolocation:
+      return browser_plugin::kPermissionTypeGeolocation;
     case BrowserPluginPermissionTypeMedia:
       return browser_plugin::kPermissionTypeMedia;
+    case BrowserPluginPermissionTypeUnknown:
     default:
       NOTREACHED();
       break;
@@ -419,7 +422,7 @@ void BrowserPlugin::OnBuffersSwapped(int instance_id,
 }
 
 void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
-                                            int content_window_routing_id) {
+                                              int content_window_routing_id) {
   DCHECK(content_window_routing_id != MSG_ROUTING_NONE);
   content_window_routing_id_ = content_window_routing_id;
 }
@@ -538,15 +541,14 @@ void BrowserPlugin::OnLockMouse(int instance_id,
 }
 
 void BrowserPlugin::OnRequestPermission(
-    int /*instance_id*/,
+    int instance_id,
     BrowserPluginPermissionType permission_type,
     int request_id,
     const base::DictionaryValue& request_info) {
   if (!HasEventListeners(browser_plugin::kEventRequestPermission)) {
     // Automatically deny the request if there are no event listeners for
     // permissionrequest.
-    RespondPermission(
-        permission_type, request_id, false /* allow */);
+    RespondPermission(permission_type, request_id, false /* allow */);
     return;
   }
   DCHECK(!pending_permission_requests_.count(request_id));

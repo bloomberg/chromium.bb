@@ -14,7 +14,7 @@
 var WebView = require('webview').WebView;
 
 /** @type {Array.<string>} */
-var PERMISSION_TYPES = ['media'];
+var PERMISSION_TYPES = ['media', 'geolocation'];
 
 /** @type {string} */
 var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
