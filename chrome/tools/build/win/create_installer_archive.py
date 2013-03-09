@@ -428,11 +428,10 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   dlls = glob.glob(os.path.join(build_dir, '*.dll'))
   dll_names = []
   for dll in dlls:
-    # remoting_*.dll's don't belong to us (we don't depend on them in gyp),
-    # which causes a build race when creating the installer archive in
-    # component mode. See: crbug.com/180996
+    # remoting_*.dll's don't belong in the archive (it doesn't depend on them
+    # in gyp). Trying to copy them causes a build race when creating the
+    # installer archive in component mode. See: crbug.com/180996
     if os.path.basename(dll).startswith('remoting_'):
-      print >> sys.stderr, "Skipping dll: %s" % dll
       continue
     shutil.copy(dll, version_dir)
     dll_names.append(os.path.splitext(os.path.basename(dll))[0])
