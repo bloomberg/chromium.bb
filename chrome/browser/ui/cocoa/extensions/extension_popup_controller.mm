@@ -199,9 +199,10 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 - (void)windowWillClose:(NSNotification *)notification {
   [super windowWillClose:notification];
   gPopup = nil;
-  if (host_->view())
+  if (host_->view()) {
     host_->view()->set_container(NULL);
-  host_.reset();
+    host_.reset();
+  }
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
