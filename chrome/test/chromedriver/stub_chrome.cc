@@ -32,6 +32,10 @@ Status StubChrome::HandleJavaScriptDialog(
   return Status(kOk);
 }
 
+std::string StubChrome::GetOperatingSystemName() {
+  return "";
+}
+
 Status StubChrome::Quit() {
   return Status(kOk);
 }

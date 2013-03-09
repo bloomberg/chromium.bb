@@ -35,6 +35,13 @@ Status ExecuteSessionCommand(
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id);
 
+// Gets the capabilities of a particular session.
+Status ExecuteGetSessionCapabilities(
+    SessionMap* session_map,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Quits a particular session.
 Status ExecuteQuit(
     SessionMap* session_map,

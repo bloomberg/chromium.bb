@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/zip.h"
@@ -78,6 +79,10 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
     return status;
   }
   return Status(kOk);
+}
+
+std::string ChromeDesktopImpl::GetOperatingSystemName() {
+  return base::SysInfo::OperatingSystemName();
 }
 
 Status ChromeDesktopImpl::Quit() {

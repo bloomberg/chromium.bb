@@ -180,6 +180,8 @@ void CommandExecutorImpl::Init() {
     session_command_map[it->first] =
         base::Bind(&ExecuteWindowCommand, it->second);
   }
+  session_command_map[CommandNames::kGetSessionCapabilities] =
+      base::Bind(&ExecuteGetSessionCapabilities, &session_map_);
   session_command_map[CommandNames::kQuit] =
       base::Bind(&ExecuteQuit, &session_map_);
   session_command_map[CommandNames::kGetCurrentWindowHandle] =

@@ -30,6 +30,9 @@ class Chrome {
   virtual Status HandleJavaScriptDialog(bool accept,
                                         const std::string& prompt_text) = 0;
 
+  // Get the operation system where Chrome is running.
+  virtual std::string GetOperatingSystemName() = 0;
+
   // Quits Chrome.
   virtual Status Quit() = 0;
 };

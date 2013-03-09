@@ -56,6 +56,10 @@ Status ChromeAndroidImpl::Launch(const std::string& package_name) {
   return Status(kOk);
 }
 
+std::string ChromeAndroidImpl::GetOperatingSystemName() {
+  return "ANDROID";
+}
+
 Status ChromeAndroidImpl::Quit() {
   // NOOP.
   return Status(kOk);

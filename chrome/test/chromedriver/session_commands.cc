@@ -59,6 +59,15 @@ Status ExecuteSessionCommand(
   return status;
 }
 
+Status ExecuteGetSessionCapabilities(
+    SessionMap* session_map,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  value->reset(session->capabilities->DeepCopy());
+  return Status(kOk);
+}
+
 Status ExecuteQuit(
     SessionMap* session_map,
     Session* session,

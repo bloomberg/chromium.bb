@@ -31,6 +31,9 @@ class ChromeDesktopImpl : public ChromeImpl {
                         const base::ListValue* chrome_args,
                         const base::ListValue* chrome_extensions);
 
+  // Overriden from Chrome:
+  virtual std::string GetOperatingSystemName() OVERRIDE;
+
   // Overridden from ChromeImpl:
   virtual Status Quit() OVERRIDE;
 

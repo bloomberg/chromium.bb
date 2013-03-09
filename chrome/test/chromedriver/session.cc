@@ -6,7 +6,6 @@
 
 #include <list>
 
-#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/status.h"
@@ -57,7 +56,7 @@ scoped_ptr<base::DictionaryValue> Session::CreateCapabilities() {
   caps->SetString("browserName", "chrome");
   caps->SetString("version", chrome->GetVersion());
   caps->SetString("driverVersion", kChromeDriverVersion);
-  caps->SetString("platform", base::SysInfo::OperatingSystemName());
+  caps->SetString("platform", chrome->GetOperatingSystemName());
   caps->SetBoolean("javascriptEnabled", true);
   caps->SetBoolean("takesScreenshot", true);
   caps->SetBoolean("handlesAlerts", true);
