@@ -90,7 +90,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_) {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     cache_ = new ResourceCache(temp_dir_.path());
     ASSERT_TRUE(cache_->IsOpen());
@@ -113,6 +113,12 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     // Connect() is called before the store was loaded.
     request_context_ =
         new TestURLRequestContextGetter(loop_.message_loop_proxy());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // The service cleans up its backend on the FILE thread.
+    service_.reset();
+    RunUntilIdle();
   }
 
   void RunUntilIdle() {
