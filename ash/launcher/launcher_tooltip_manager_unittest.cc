@@ -5,10 +5,11 @@
 #include "ash/launcher/launcher_tooltip_manager.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -42,8 +43,8 @@ class LauncherTooltipManagerTest : public AshTestBase {
     internal::RootWindowController* controller =
         Shell::GetPrimaryRootWindowController();
     tooltip_manager_.reset(new internal::LauncherTooltipManager(
-        controller->shelf(),
-        controller->launcher()->GetLauncherViewForTest()));
+        controller->GetShelfLayoutManager(),
+        controller->shelf()->launcher()->GetLauncherViewForTest()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -93,7 +94,7 @@ class LauncherTooltipManagerTest : public AshTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(),
-        ash::internal::kShellWindowId_LauncherContainer);
+        ash::internal::kShellWindowId_ShelfContainer);
 
     widget_->Init(params);
     widget_->SetContentsView(dummy_anchor_.get());
@@ -129,7 +130,8 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
   // Once the shelf is hidden, the tooltip should be invisible.
   ASSERT_EQ(
       SHELF_HIDDEN,
-      Shell::GetPrimaryRootWindowController()->shelf()->visibility_state());
+      Shell::GetPrimaryRootWindowController()->
+          GetShelfLayoutManager()->visibility_state());
   EXPECT_FALSE(TooltipIsVisible());
 
   // Do not show the view if the shelf is hidden.
@@ -154,7 +156,7 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsAutoHide) {
   ASSERT_TRUE(TooltipIsVisible());
 
   internal::ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->shelf();
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf->UpdateAutoHideState();
   ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());

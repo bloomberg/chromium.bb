@@ -6,7 +6,8 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/panels/panel_layout_manager.h"
@@ -102,8 +103,8 @@ PanelWindowResizer::PanelWindowResizer(const Details& details)
 bool PanelWindowResizer::AttachToLauncher(gfx::Rect* bounds) {
   bool should_attach = false;
   if (panel_layout_manager_) {
-    gfx::Rect launcher_bounds = panel_layout_manager_->launcher()->widget()->
-        GetWindowBoundsInScreen();
+    gfx::Rect launcher_bounds = panel_layout_manager_->launcher()->
+        shelf_widget()->GetWindowBoundsInScreen();
     switch (panel_layout_manager_->launcher()->alignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
         if (bounds->bottom() >= (launcher_bounds.y() -

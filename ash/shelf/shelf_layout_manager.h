@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SHELF_LAYOUT_MANAGER_H_
-#define ASH_WM_SHELF_LAYOUT_MANAGER_H_
+#ifndef ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
+#define ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/background_animator.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
+#include "ash/system/status_area_widget.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -29,6 +31,7 @@ class GestureEvent;
 
 namespace ash {
 class ScreenAsh;
+class ShelfWidget;
 namespace internal {
 
 class ShelfLayoutManagerTest;
@@ -65,7 +68,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // Size of the shelf when auto-hidden.
   static const int kAutoHideSize;
 
-  explicit ShelfLayoutManager(StatusAreaWidget* status);
+  explicit ShelfLayoutManager(ShelfWidget* shelf);
   virtual ~ShelfLayoutManager();
 
   // Sets the ShelfAutoHideBehavior. See enum description for details.
@@ -83,23 +86,11 @@ class ASH_EXPORT ShelfLayoutManager :
     workspace_controller_ = controller;
   }
 
-  views::Widget* launcher_widget() {
-    return launcher_ ? launcher_->widget() : NULL;
-  }
-  const views::Widget* launcher_widget() const {
-    return launcher_ ? launcher_->widget() : NULL;
-  }
-  StatusAreaWidget* status_area_widget() { return status_area_widget_; }
-
   bool in_layout() const { return in_layout_; }
 
   // Returns whether the shelf and its contents (launcher, status) are visible
   // on the screen.
   bool IsVisible() const;
-
-  // The launcher is typically created after the layout manager.
-  void SetLauncher(Launcher* launcher);
-  Launcher* launcher() { return launcher_; }
 
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds();
@@ -126,6 +117,8 @@ class ASH_EXPORT ShelfLayoutManager :
     return state_.visibility_state;
   }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
+
+  ShelfWidget* shelf_widget() { return shelf_; }
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
@@ -205,10 +198,12 @@ class ASH_EXPORT ShelfLayoutManager :
 
   struct TargetBounds {
     TargetBounds();
+    ~TargetBounds();
 
     float opacity;
-    gfx::Rect launcher_bounds_in_root;
-    gfx::Rect status_bounds_in_root;
+    gfx::Rect shelf_bounds_in_root;
+    gfx::Rect launcher_bounds_in_shelf;
+    gfx::Rect status_bounds_in_shelf;
     gfx::Insets work_area_insets;
   };
 
@@ -292,8 +287,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // Current state.
   State state_;
 
-  Launcher* launcher_;
-  StatusAreaWidget* status_area_widget_;
+  ShelfWidget* shelf_;
 
   WorkspaceController* workspace_controller_;
 
@@ -335,4 +329,4 @@ class ASH_EXPORT ShelfLayoutManager :
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_SHELF_LAYOUT_MANAGER_H_
+#endif  // ASH_SHELF_SHELF_LAYOUT_MANAGER_H_

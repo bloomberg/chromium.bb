@@ -127,7 +127,7 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   // launcher button. Put the phantom in the same window as the launcher so that
   // the phantom is visible.
   params.parent = Shell::GetContainer(wm::GetRootWindowMatching(bounds),
-                                      kShellWindowId_LauncherContainer);
+                                      kShellWindowId_ShelfContainer);
   params.can_activate = false;
   params.keep_on_top = true;
   phantom_widget_->set_focus_on_creation(false);

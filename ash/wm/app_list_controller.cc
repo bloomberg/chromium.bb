@@ -6,11 +6,11 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -109,7 +109,8 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  Shell::GetPrimaryRootWindowController()->shelf()->UpdateAutoHideState();
+  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
+      UpdateAutoHideState();
 
   if (view_) {
     ScheduleAnimation();

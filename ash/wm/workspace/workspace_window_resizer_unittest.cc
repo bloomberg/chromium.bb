@@ -7,11 +7,11 @@
 #include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -146,7 +146,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   }
 
   internal::ShelfLayoutManager* shelf_layout_manager() {
-    return Shell::GetPrimaryRootWindowController()->shelf();
+    return Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   }
 
   TestWindowDelegate delegate_;
@@ -802,8 +802,8 @@ TEST_F(WorkspaceWindowResizerTest,
 
 // Verifies snapping to edges works.
 TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
-  Shell::GetPrimaryRootWindowController()->
-      SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
+      SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTCAPTION, empty_windows()));

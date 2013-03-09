@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
@@ -26,8 +27,8 @@ namespace test {
 namespace {
 
 SystemTray* GetSystemTray() {
-  return Shell::GetPrimaryRootWindowController()->status_area_widget()->
-      system_tray();
+  return Shell::GetPrimaryRootWindowController()->shelf()->
+      status_area_widget()->system_tray();
 }
 
 // Trivial item implementation that tracks its views for testing.
@@ -288,7 +289,7 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
 // tray extends to the correct edge of the screen.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   internal::StatusAreaWidget* widget =
-      Shell::GetPrimaryRootWindowController()->status_area_widget();
+      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
   SystemTray* tray = widget->system_tray();
 
   // Test in bottom alignment. Bottom and right edges of the view should be

@@ -5,6 +5,8 @@
 #include "ash/system/tray_update.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
@@ -13,7 +15,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "grit/ash_resources.h"
@@ -110,7 +111,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 
   virtual ~UpdateNagger() {
     internal::StatusAreaWidget* status_area =
-        Shell::GetPrimaryRootWindowController()->status_area_widget();
+        Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
     if (status_area) {
       status_area->system_tray()->GetWidget()->GetNativeView()->layer()->
           GetAnimator()->RemoveObserver(this);

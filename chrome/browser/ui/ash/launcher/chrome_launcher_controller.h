@@ -9,7 +9,7 @@
 
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_types.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"

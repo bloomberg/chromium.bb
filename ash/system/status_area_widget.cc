@@ -5,6 +5,8 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -13,7 +15,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/web_notification/web_notification_tray.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/aura/window.h"
@@ -106,15 +107,6 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   if (web_notification_tray_)
     web_notification_tray_->SetShelfAlignment(alignment);
   status_area_widget_delegate_->UpdateLayout();
-}
-
-void StatusAreaWidget::SetPaintsBackground(
-    bool value,
-    internal::BackgroundAnimator::ChangeType change_type) {
-  if (system_tray_)
-    system_tray_->SetPaintsBackground(value, change_type);
-  if (web_notification_tray_)
-    web_notification_tray_->SetPaintsBackground(value, change_type);
 }
 
 void StatusAreaWidget::SetHideWebNotifications(bool hide) {

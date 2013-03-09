@@ -6,8 +6,8 @@
 #define ASH_LAUNCHER_LAUNCHER_TOOLTIP_MANAGER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf_types.h"
-#include "ash/wm/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "ui/base/events/event_handler.h"

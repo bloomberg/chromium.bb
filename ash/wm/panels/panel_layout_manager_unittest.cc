@@ -9,8 +9,10 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -119,7 +121,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     ASSERT_FALSE(icon_bounds.IsEmpty());
 
     gfx::Rect window_bounds = panel->GetBoundsInRootWindow();
-    gfx::Rect launcher_bounds = launcher->widget()->GetWindowBoundsInScreen();
+    gfx::Rect launcher_bounds = launcher->shelf_widget()->
+        GetWindowBoundsInScreen();
     ShelfAlignment alignment = GetAlignment();
 
     if (IsHorizontal(alignment)) {

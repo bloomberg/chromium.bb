@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
@@ -30,7 +31,7 @@ class AshActivationControllerTest : public test::AshTestBase {
     ash_activation_controller_.reset(new internal::AshActivationController());
     launcher_ = Launcher::ForPrimaryDisplay();
     ASSERT_TRUE(launcher_);
-    launcher_widget_ = launcher_->widget();
+    launcher_widget_ = launcher_->shelf_widget();
     ASSERT_TRUE(launcher_widget_);
     launcher_window_ = launcher_widget_->GetNativeWindow();
     ASSERT_TRUE(launcher_window_);

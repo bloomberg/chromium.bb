@@ -8,6 +8,7 @@
 #include "ash/host/root_window_host_factory.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/magnifier/magnifier_constants.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"

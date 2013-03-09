@@ -5,6 +5,7 @@
 #include "ash/system/tray/system_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell_window_ids.h"
@@ -32,7 +33,6 @@
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/timer.h"

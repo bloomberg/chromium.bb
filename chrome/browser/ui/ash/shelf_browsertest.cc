@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,7 +18,7 @@ typedef InProcessBrowserTest ShelfBrowserTest;
 IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
   ash::internal::ShelfLayoutManager* shelf =
       ash::internal::RootWindowController::ForLauncher(
-          browser()->window()->GetNativeWindow())->shelf();
+          browser()->window()->GetNativeWindow())->GetShelfLayoutManager();
   EXPECT_TRUE(shelf->IsVisible());
 
   // Ensure that the browser abuts the shelf.

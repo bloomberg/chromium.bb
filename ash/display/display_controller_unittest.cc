@@ -7,6 +7,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
@@ -249,7 +250,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
   EXPECT_NE(primary_root, secondary_root);
   aura::Window* launcher_window =
-      Launcher::ForPrimaryDisplay()->widget()->GetNativeView();
+      Launcher::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
   EXPECT_TRUE(primary_root->Contains(launcher_window));
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
   EXPECT_EQ(primary_display.id(),
@@ -340,7 +341,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   aura::RootWindow* secondary_root =
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
   aura::Window* launcher_window =
-      Launcher::ForPrimaryDisplay()->widget()->GetNativeView();
+      Launcher::ForPrimaryDisplay()->shelf_widget()->GetNativeView();
   EXPECT_TRUE(primary_root->Contains(launcher_window));
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
   EXPECT_NE(primary_root, secondary_root);

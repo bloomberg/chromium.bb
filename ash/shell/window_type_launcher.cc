@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/screensaver/screensaver_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/panel_window.h"
@@ -358,8 +359,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                             base::TimeDelta::FromSeconds(5));
 
   } else if (sender == show_web_notification_) {
-    ash::Shell::GetPrimaryRootWindowController()->status_area_widget()->
-        web_notification_tray()->message_center()->AddNotification(
+    ash::Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget()
+        ->web_notification_tray()->message_center()->AddNotification(
             message_center::NOTIFICATION_TYPE_SIMPLE,
             "id0",
             ASCIIToUTF16("Test Shell Web Notification"),

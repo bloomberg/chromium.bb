@@ -4,8 +4,9 @@
 
 #include "ash/wm/status_area_layout_manager.h"
 
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
@@ -16,7 +17,7 @@ namespace internal {
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, public:
 
-StatusAreaLayoutManager::StatusAreaLayoutManager(ShelfLayoutManager* shelf)
+StatusAreaLayoutManager::StatusAreaLayoutManager(ShelfWidget* shelf)
     : in_layout_(false),
       shelf_(shelf) {
 }
@@ -69,11 +70,11 @@ void StatusAreaLayoutManager::SetChildBounds(
 
 void StatusAreaLayoutManager::LayoutStatusArea() {
   // Shelf layout manager may be already doing layout.
-  if (shelf_->in_layout())
+  if (shelf_->shelf_layout_manager()->in_layout())
     return;
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
-  shelf_->LayoutShelf();
+  shelf_->shelf_layout_manager()->LayoutShelf();
 }
 
 }  // namespace internal

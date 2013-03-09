@@ -25,6 +25,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
 #include "ash/screenshot_delegate.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -614,7 +615,7 @@ bool AcceleratorController::PerformAction(int action,
       break;
     case FOCUS_LAUNCHER:
       return shell->focus_cycler()->FocusWidget(
-          Launcher::ForPrimaryDisplay()->widget());
+          Launcher::ForPrimaryDisplay()->shelf_widget());
       break;
     case FOCUS_NEXT_PANE:
       return HandleRotatePaneFocus(Shell::FORWARD);
@@ -645,7 +646,7 @@ bool AcceleratorController::PerformAction(int action,
           internal::RootWindowController::ForActiveRootWindow() :
           Shell::GetPrimaryRootWindowController();
       internal::StatusAreaWidget* status_area_widget =
-          controller->status_area_widget();
+          controller->shelf()->status_area_widget();
       if (status_area_widget) {
         WebNotificationTray* notification_tray =
             status_area_widget->web_notification_tray();

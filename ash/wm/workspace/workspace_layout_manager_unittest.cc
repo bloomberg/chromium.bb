@@ -5,10 +5,11 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -57,8 +58,8 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
       aura::Window* w = window_;
       window_ = NULL;
 
-      gfx::Rect shelf_bounds(
-          Shell::GetPrimaryRootWindowController()->shelf()->GetIdealBounds());
+      gfx::Rect shelf_bounds(Shell::GetPrimaryRootWindowController()->
+                             GetShelfLayoutManager()->GetIdealBounds());
       const gfx::Rect& window_bounds(w->bounds());
       w->SetBounds(gfx::Rect(window_bounds.x(), shelf_bounds.y() - 1,
                              window_bounds.width(), window_bounds.height()));

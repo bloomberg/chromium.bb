@@ -466,7 +466,7 @@ void SessionStateAnimator::GetContainers(int container_mask,
   if (container_mask & LAUNCHER) {
     containers->push_back(Shell::GetContainer(
         root_window,
-        internal::kShellWindowId_LauncherContainer));
+        internal::kShellWindowId_ShelfContainer));
   }
   if (container_mask & NON_LOCK_SCREEN_CONTAINERS) {
     // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
@@ -479,7 +479,7 @@ void SessionStateAnimator::GetContainers(int container_mask,
     for (aura::Window::Windows::const_iterator it = children.begin();
          it != children.end(); ++it) {
       aura::Window* window = *it;
-      if (window->id() == internal::kShellWindowId_LauncherContainer)
+      if (window->id() == internal::kShellWindowId_ShelfContainer)
         continue;
       containers->push_back(window);
     }

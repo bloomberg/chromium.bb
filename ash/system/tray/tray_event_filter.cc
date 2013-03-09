@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_event_filter.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -12,7 +13,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

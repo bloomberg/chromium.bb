@@ -53,8 +53,8 @@ const int kShellWindowId_AlwaysOnTopContainer = 7;
 // The container for panel windows.
 const int kShellWindowId_PanelContainer = 8;
 
-// The container for the launcher.
-const int kShellWindowId_LauncherContainer = 9;
+// The container for the shelf.
+const int kShellWindowId_ShelfContainer = 9;
 
 // The container for the app list.
 const int kShellWindowId_AppListContainer = 10;

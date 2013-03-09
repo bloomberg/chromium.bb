@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/activation_controller.h"
@@ -94,24 +95,16 @@ aura::Window* AshActivationController::PrepareToActivateLauncher() {
   // Fallback to a launcher only when Spoken feedback is enabled.
   if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
     return NULL;
-  Launcher* launcher;
-  if (Shell::IsLauncherPerDisplayEnabled()) {
-    launcher = GetRootWindowController(
-        Shell::GetActiveRootWindow())->launcher();
-  } else {
-    launcher = Launcher::ForPrimaryDisplay();
-  }
-  // Launcher is not always available, eg. not in the login screen.
-  if (!launcher)
-    return NULL;
-  views::Widget* launcher_widget = launcher->widget();
+  ShelfWidget* shelf = GetRootWindowController(
+      Shell::IsLauncherPerDisplayEnabled() ?
+          Shell::GetActiveRootWindow() :
+          Shell::GetPrimaryRootWindow())->shelf();
   // Launcher's window may be already destroyed in shutting down process.
-  if (!launcher_widget)
+  if (!shelf)
     return NULL;
-  aura::Window* launcher_window = launcher_widget->GetNativeWindow();
   // Notify launcher to allow activation via CanActivate().
-  launcher->WillActivateAsFallback();
-  return launcher_window;
+  shelf->WillActivateAsFallback();
+  return shelf->GetNativeWindow();
 }
 
 }  // namespace internal

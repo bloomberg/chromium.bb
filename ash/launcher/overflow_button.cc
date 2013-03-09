@@ -4,7 +4,7 @@
 
 #include "ash/launcher/overflow_button.h"
 
-#include "ash/wm/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkPaint.h"

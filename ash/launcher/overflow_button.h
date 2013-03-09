@@ -5,7 +5,7 @@
 #ifndef ASH_LAUNCHER_OVERFLOW_BUTTON_H_
 #define ASH_LAUNCHER_OVERFLOW_BUTTON_H_
 
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/views/controls/button/custom_button.h"

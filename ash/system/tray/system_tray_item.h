@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_ITEM_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

@@ -12,7 +12,7 @@
 
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"

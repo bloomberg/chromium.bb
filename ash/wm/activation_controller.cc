@@ -43,7 +43,7 @@ const int kWindowContainerIds[] = {
     // containers even though these layers are higher. The user expects their
     // windows to be focused before these elements.
     kShellWindowId_PanelContainer,
-    kShellWindowId_LauncherContainer,
+    kShellWindowId_ShelfContainer,
     kShellWindowId_StatusContainer,
 };
 

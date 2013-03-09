@@ -6,6 +6,8 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -22,8 +24,8 @@ typedef test::AshTestBase ScreenAshTest;
 
 TEST_F(ScreenAshTest, Bounds) {
   UpdateDisplay("600x600,500x500");
-  Shell::GetPrimaryRootWindowController()->SetShelfAutoHideBehavior(
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
+      SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));

@@ -5,6 +5,7 @@
 #include "ash/root_window_controller.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -129,7 +130,10 @@ TEST_F(RootWindowControllerTest, MAYBE_MoveWindows_Basic) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   internal::RootWindowController* controller =
       Shell::GetPrimaryRootWindowController();
-  controller->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  internal::ShelfLayoutManager* shelf_layout_manager =
+      controller->GetShelfLayoutManager();
+  shelf_layout_manager->SetAutoHideBehavior(
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], normal->GetNativeView()->GetRootWindow());

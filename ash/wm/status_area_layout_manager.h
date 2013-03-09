@@ -10,16 +10,15 @@
 #include "ui/aura/layout_manager.h"
 
 namespace ash {
+class ShelfWidget;
 namespace internal {
-
-class ShelfLayoutManager;
 
 // StatusAreaLayoutManager is a layout manager responsible for the status area.
 // In any case when status area needs relayout it redirects this call to
 // ShelfLayoutManager.
 class StatusAreaLayoutManager : public aura::LayoutManager {
  public:
-  explicit StatusAreaLayoutManager(ShelfLayoutManager* shelf);
+  explicit StatusAreaLayoutManager(ShelfWidget* shelf);
   virtual ~StatusAreaLayoutManager();
 
   // Overridden from aura::LayoutManager:
@@ -41,7 +40,7 @@ class StatusAreaLayoutManager : public aura::LayoutManager {
   // Used to prevent calling itself again from SetChildBounds().
   bool in_layout_;
 
-  ShelfLayoutManager* shelf_;
+  ShelfWidget* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaLayoutManager);
 };

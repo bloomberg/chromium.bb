@@ -5,9 +5,9 @@
 #include "ash/launcher/launcher_tooltip_manager.h"
 
 #include "ash/launcher/launcher_view.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "base/bind.h"
 #include "base/message_loop.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SHELL_CONTEXT_MENU_H_
-#define ASH_WM_SHELL_CONTEXT_MENU_H_
+#ifndef ASH_SHELL_CONTEXT_MENU_H_
+#define ASH_SHELL_CONTEXT_MENU_H_
 
 #include "ash/launcher/launcher_alignment_menu.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -48,4 +48,4 @@ class ContextMenu : public ui::SimpleMenuModel,
 }  // namespace shell
 }  // namespace ash
 
-#endif  // ASH_WM_SHELL_CONTEXT_MENU_H_
+#endif  // ASH_SHELL_CONTEXT_MENU_H_

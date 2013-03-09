@@ -10,9 +10,10 @@
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace/colored_window_controller.h"
 #include "ash/wm/workspace/workspace.h"
@@ -671,16 +672,15 @@ void WorkspaceCyclerAnimator::CreateLauncherBackground() {
   if (screen_bounds_ == maximized_bounds_)
     return;
 
-  aura::Window* random_workspace_window = workspaces_[0]->window();
-  ash::Launcher* launcher = ash::Launcher::ForWindow(random_workspace_window);
-  aura::Window* launcher_window = launcher->widget()->GetNativeWindow();
-
   // TODO(pkotwicz): Figure out what to do when the launcher visible state is
   // SHELF_AUTO_HIDE.
   ShelfLayoutManager* shelf_layout_manager =
-      ShelfLayoutManager::ForLauncher(launcher_window);
+      ShelfLayoutManager::ForLauncher(workspaces_[0]->window());
   if (!shelf_layout_manager->IsVisible())
     return;
+
+  aura::Window* launcher_window = shelf_layout_manager->shelf_widget()->
+      GetNativeWindow();
 
   gfx::Rect shelf_bounds = shelf_layout_manager->GetIdealBounds();
 

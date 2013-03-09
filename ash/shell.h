@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/basictypes.h"
@@ -440,6 +440,13 @@ class ASH_EXPORT Shell
     return root_window_host_factory_.get();
   }
 
+  LauncherModel* launcher_model() {
+    return launcher_model_.get();
+  }
+
+  // Returns the launcher delegate, creating if necesary.
+  LauncherDelegate* GetLauncherDelegate();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -454,13 +461,6 @@ class ASH_EXPORT Shell
   virtual ~Shell();
 
   void Init();
-
-  LauncherModel* launcher_model() {
-    return launcher_model_.get();
-  }
-
-  // Returns the launcher delegate, creating if necesary.
-  LauncherDelegate* GetLauncherDelegate();
 
   // Initializes the root window and root window controller so that it
   // can host browser windows.

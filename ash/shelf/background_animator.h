@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_BACKGROUND_ANIMATOR_H_
-#define ASH_LAUNCHER_BACKGROUND_ANIMATOR_H_
+#ifndef ASH_SHELF_BACKGROUND_ANIMATOR_H_
+#define ASH_SHELF_BACKGROUND_ANIMATOR_H_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -22,8 +22,7 @@ class ASH_EXPORT BackgroundAnimatorDelegate {
   virtual ~BackgroundAnimatorDelegate() {}
 };
 
-// BackgroundAnimator is used by the launcher and system tray to animate the
-// background (alpha).
+// BackgroundAnimator is used by the shelf to animate the background (alpha).
 class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
  public:
   // How the background can be changed.
@@ -69,4 +68,4 @@ class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_BACKGROUND_ANIMATOR_H_
+#endif  // ASH_SHELF_BACKGROUND_ANIMATOR_H_

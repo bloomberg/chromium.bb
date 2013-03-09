@@ -16,9 +16,9 @@
 
 #if defined(USE_ASH)
 #include "ash/root_window_controller.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #endif
 
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
 
   // Shelf is visible when the test starts.
   ash::internal::ShelfLayoutManager* shelf =
-      ash::Shell::GetPrimaryRootWindowController()->shelf();
+      ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
 
   // Turning immersive mode on sets the shelf to auto-hide.

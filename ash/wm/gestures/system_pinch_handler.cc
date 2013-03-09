@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
@@ -131,7 +132,7 @@ gfx::Rect SystemPinchHandler::GetPhantomWindowScreenBounds(
     Launcher* launcher = Launcher::ForWindow(window);
     gfx::Rect rect = launcher->GetScreenBoundsOfItemIconForWindow(target_);
     if (rect.IsEmpty())
-      rect = launcher->widget()->GetWindowBoundsInScreen();
+      rect = launcher->shelf_widget()->GetWindowBoundsInScreen();
     else
       rect.Inset(-8, -8);
     phantom_state_ = PHANTOM_WINDOW_MINIMIZED;

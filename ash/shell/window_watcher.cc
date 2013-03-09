@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ui/aura/root_window.h"
@@ -39,7 +40,8 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
         internal::kShellWindowId_PanelContainer);
     panel_container->AddObserver(watcher_);
 
-    aura::Window* container = Launcher::ForWindow(root)->window_container();
+    aura::Window* container =
+        Launcher::ForWindow(root)->shelf_widget()->window_container();
     container->AddObserver(this);
     for (size_t i = 0; i < container->children().size(); ++i)
       container->children()[i]->AddObserver(watcher_);
@@ -51,7 +53,8 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
         internal::kShellWindowId_PanelContainer);
     panel_container->RemoveObserver(watcher_);
 
-    aura::Window* container = Launcher::ForWindow(root)->window_container();
+    aura::Window* container =
+        Launcher::ForWindow(root)->shelf_widget()->window_container();
     container->RemoveObserver(this);
     for (size_t i = 0; i < container->children().size(); ++i)
       container->children()[i]->RemoveObserver(watcher_);

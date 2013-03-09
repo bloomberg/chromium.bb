@@ -5,7 +5,9 @@
 #include "ash/wm/panels/panel_window_resizer.h"
 
 #include "ash/launcher/launcher.h"
-#include "ash/shelf_types.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -34,7 +36,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
 
     panel_layout_manager_ = static_cast<internal::PanelLayoutManager*>(
         GetPanelContainer()->layout_manager());
-    launcher_bounds_ = panel_layout_manager_->launcher()->widget()->
+    launcher_bounds_ = panel_layout_manager_->launcher()->shelf_widget()->
         GetWindowBoundsInScreen();
   }
 

@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/maximize_bubble_controller.h"
@@ -471,7 +472,7 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
         item_rect.Inset(-8, -8);
         return item_rect;
       }
-      return launcher->widget()->GetWindowBoundsInScreen();
+      return launcher->shelf_widget()->GetWindowBoundsInScreen();
     }
     case SNAP_RESTORE: {
       const gfx::Rect* restore = GetRestoreBoundsInScreen(window);

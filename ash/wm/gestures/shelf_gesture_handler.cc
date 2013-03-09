@@ -5,12 +5,13 @@
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 
 #include "ash/root_window_controller.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/gestures/tray_gesture_handler.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -45,10 +46,10 @@ class ShelfResetHandler : public ui::EventHandler,
 
   bool ShelfIsEventTarget(const ui::Event& event) {
     aura::Window* target = static_cast<aura::Window*>(event.target());
-    views::Widget* widget = shelf_->launcher_widget();
+    views::Widget* widget = shelf_->shelf_widget();
     if (widget && widget->GetNativeWindow() == target)
       return true;
-    widget = shelf_->status_area_widget();
+    widget = shelf_->shelf_widget()->status_area_widget();
     if (widget && widget->GetNativeWindow() == target)
       return true;
     return false;
@@ -57,13 +58,13 @@ class ShelfResetHandler : public ui::EventHandler,
   void DecideShelfVisibility(const gfx::Point& location) {
     // For the rest of the mouse events, ignore if the event happens inside the
     // shelf.
-    views::Widget* widget = shelf_->launcher_widget();
+    views::Widget* widget = shelf_->shelf_widget();
     if (widget &&
         widget->GetWindowBoundsInScreen().Contains(location)) {
       return;
     }
 
-    widget = shelf_->status_area_widget();
+    widget = shelf_->shelf_widget()->status_area_widget();
     if (widget &&
         widget->GetWindowBoundsInScreen().Contains(location)) {
       return;
@@ -132,7 +133,8 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
     return false;
 
   // TODO(oshima): Find the root window controller from event's location.
-  ShelfLayoutManager* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  ShelfLayoutManager* shelf =
+      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     drag_in_progress_ = true;
     shelf->StartGestureDrag(event);

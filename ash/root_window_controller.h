@@ -6,7 +6,7 @@
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,8 +31,8 @@ class RootWindowEventFilter;
 }
 
 namespace ash {
-class Launcher;
 class StackingController;
+class ShelfWidget;
 class SystemTray;
 class ToplevelWindowEventHandler;
 
@@ -80,13 +80,13 @@ class ASH_EXPORT RootWindowController {
 
   ScreenDimmer* screen_dimmer() { return screen_dimmer_.get(); }
 
-  Launcher* launcher() { return launcher_.get(); }
+  // Access the shelf associated with this root window controller,
+  // NULL if no such shelf exists.
+  ShelfWidget* shelf() { return shelf_.get(); }
 
-  ShelfLayoutManager* shelf() const { return shelf_; }
-
-  StatusAreaWidget* status_area_widget() {
-    return status_area_widget_;
-  }
+  // Access the shelf layout manager associated with this root
+  // window controller, NULL if no such shelf exists.
+  ShelfLayoutManager* GetShelfLayoutManager();
 
   // Returns the system tray on this root window. Note that
   // calling this on the root window that doesn't have a launcher will
@@ -120,11 +120,11 @@ class ASH_EXPORT RootWindowController {
   // |is_first_run_after_boot| determines the background's initial color.
   void CreateSystemBackground(bool is_first_run_after_boot);
 
-  // Initializes |launcher_|.  Does nothing if it's already initialized.
-  void CreateLauncher();
-
   // Show launcher view if it was created hidden (before session has started).
   void ShowLauncher();
+
+  // Called when the launcher associated with this root window is created.
+  void OnLauncherCreated();
 
   // Called when the user logs in.
   void OnLoginStateChanged(user::LoginStatus status);
@@ -157,14 +157,6 @@ class ASH_EXPORT RootWindowController {
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
-  // Sets/gets the shelf auto-hide behavior.
-  void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior);
-  ShelfAutoHideBehavior GetShelfAutoHideBehavior() const;
-
-  // Sets/gets the shelf alignemnt.
-  bool SetShelfAlignment(ShelfAlignment alignment);
-  ShelfAlignment GetShelfAlignment();
-
   // Returns true if the active workspace is in immersive mode. Exposed here
   // so clients of Ash don't need to know the details of workspace management.
   bool IsImmersiveMode() const;
@@ -179,18 +171,11 @@ class ASH_EXPORT RootWindowController {
 
   scoped_ptr<StackingController> stacking_controller_;
 
-  // Widget containing system tray.
-  StatusAreaWidget* status_area_widget_;
-
   // The shelf for managing the launcher and the status widget.
-  // RootWindowController does not own the shelf. Instead, it is owned
-  // by container of the status area.
-  ShelfLayoutManager* shelf_;
+  scoped_ptr<ShelfWidget> shelf_;
 
   // Manages layout of panels. Owned by PanelContainer.
   PanelLayoutManager* panel_layout_manager_;
-
-  scoped_ptr<Launcher> launcher_;
 
   scoped_ptr<SystemBackgroundController> system_background_;
   scoped_ptr<BootSplashScreen> boot_splash_screen_;

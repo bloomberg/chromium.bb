@@ -4,9 +4,9 @@
 
 #include "ash/system/tray/tray_background_view.h"
 
-#include "ash/launcher/background_animator.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
@@ -14,7 +14,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -28,7 +27,6 @@
 
 namespace {
 
-const SkColor kTrayBackgroundAlpha = 100;
 const SkColor kTrayBackgroundHoverAlpha = 150;
 
 // Adjust the size of TrayContainer with additional padding.
@@ -72,7 +70,7 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 
 class TrayBackground : public views::Background {
  public:
-  TrayBackground() : alpha_(kTrayBackgroundAlpha) {}
+  TrayBackground() : alpha_(0) {}
   virtual ~TrayBackground() {}
 
   void set_alpha(int alpha) { alpha_ = alpha; }
@@ -167,16 +165,13 @@ TrayBackgroundView::TrayBackgroundView(
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
-          this, 0, kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
-          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)),
+          this, 0, kTrayBackgroundHoverAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(widget_observer_(
           new TrayWidgetObserver(this))) {
   set_notify_enter_exit_on_child(true);
 
   // Initially we want to paint the background, but without the hover effect.
-  SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_IMMEDIATE);
 
@@ -235,8 +230,7 @@ bool TrayBackgroundView::PerformAction(const ui::Event& event) {
 
 void TrayBackgroundView::UpdateBackground(int alpha) {
   if (background_) {
-    background_->set_alpha(hide_background_animator_.alpha() +
-                           hover_background_animator_.alpha());
+    background_->set_alpha(hover_background_animator_.alpha());
   }
   SchedulePaint();
 }
@@ -251,15 +245,8 @@ void TrayBackgroundView::SetContentsBackground() {
   tray_container_->set_background(background_);
 }
 
-void TrayBackgroundView::SetPaintsBackground(
-      bool value,
-      internal::BackgroundAnimator::ChangeType change_type) {
-  hide_background_animator_.SetPaintsBackground(value, change_type);
-}
-
 ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
-  return
-      RootWindowController::ForLauncher(GetWidget()->GetNativeView())->shelf();
+  return ShelfLayoutManager::ForLauncher(GetWidget()->GetNativeView());
 }
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
@@ -387,7 +374,7 @@ void TrayBackgroundView::UpdateBubbleViewArrow(
   aura::RootWindow* root_window =
       bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
   ash::internal::ShelfLayoutManager* shelf =
-      ash::GetRootWindowController(root_window)->shelf();
+      ShelfLayoutManager::ForLauncher(root_window);
   bubble_view->SetArrowPaintType(
       shelf->IsVisible() ? views::BubbleBorder::PAINT_NORMAL :
                            views::BubbleBorder::PAINT_TRANSPARENT);

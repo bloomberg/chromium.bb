@@ -9,7 +9,8 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
-#include "ash/shelf_types.h"
+#include "ash/shelf/shelf_types.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/property_util.h"
@@ -218,8 +219,6 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
 
 PanelLayoutManager::~PanelLayoutManager() {
   Shutdown();
-  if (launcher_)
-    launcher_->RemoveIconObserver(this);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
@@ -231,6 +230,9 @@ void PanelLayoutManager::Shutdown() {
     delete iter->callout_widget;
   }
   panel_windows_.clear();
+  if (launcher_)
+    launcher_->RemoveIconObserver(this);
+  launcher_ = NULL;
 }
 
 void PanelLayoutManager::StartDragging(aura::Window* panel) {
@@ -414,17 +416,18 @@ void PanelLayoutManager::RestorePanel(aura::Window* panel) {
 }
 
 void PanelLayoutManager::Relayout() {
-  if (!launcher_ || !launcher_->widget())
+  if (!launcher_ || !launcher_->shelf_widget())
     return;
 
   if (in_layout_)
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  ShelfAlignment alignment = launcher_->alignment();
+  ShelfAlignment alignment = launcher_->shelf_widget()->GetAlignment();
   bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
                     alignment == SHELF_ALIGNMENT_BOTTOM;
-  gfx::Rect launcher_bounds = launcher_->widget()->GetWindowBoundsInScreen();
+  gfx::Rect launcher_bounds = launcher_->shelf_widget()->
+      GetWindowBoundsInScreen();
   int panel_start_bounds = kPanelIdealSpacing;
   int panel_end_bounds = horizontal ?
       panel_container_->bounds().width() - kPanelIdealSpacing :

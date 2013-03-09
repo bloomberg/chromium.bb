@@ -7,10 +7,11 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -39,7 +40,7 @@ gfx::Display ScreenAsh::FindDisplayContainingPoint(const gfx::Point& point) {
 
 // static
 gfx::Rect ScreenAsh::GetMaximizedWindowBoundsInParent(aura::Window* window) {
-  if (GetRootWindowController(window->GetRootWindow())->launcher())
+  if (GetRootWindowController(window->GetRootWindow())->shelf()->launcher())
     return GetDisplayWorkAreaBoundsInParent(window);
   else
     return GetDisplayBoundsInParent(window);

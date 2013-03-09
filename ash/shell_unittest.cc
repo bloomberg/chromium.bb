@@ -11,11 +11,12 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_layout_manager.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
@@ -55,7 +56,7 @@ void ExpectAllContainers() {
   EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_PanelContainer));
   EXPECT_TRUE(Shell::GetContainer(
-      root_window, internal::kShellWindowId_LauncherContainer));
+      root_window, internal::kShellWindowId_ShelfContainer));
   EXPECT_TRUE(Shell::GetContainer(
       root_window, internal::kShellWindowId_SystemModalContainer));
   EXPECT_TRUE(Shell::GetContainer(
@@ -282,7 +283,7 @@ TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
   // We start with the usual window containers.
   ExpectAllContainers();
   // Launcher is visible.
-  views::Widget* launcher_widget = Launcher::ForPrimaryDisplay()->widget();
+  ShelfWidget* launcher_widget = Launcher::ForPrimaryDisplay()->shelf_widget();
   EXPECT_TRUE(launcher_widget->IsVisible());
   // Launcher is at bottom-left of screen.
   EXPECT_EQ(0, launcher_widget->GetWindowBoundsInScreen().x());
@@ -323,19 +324,22 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   // Shelf defaults to visible.
   EXPECT_EQ(
       SHELF_VISIBLE,
-      Shell::GetPrimaryRootWindowController()->shelf()->visibility_state());
+      Shell::GetPrimaryRootWindowController()->
+          GetShelfLayoutManager()->visibility_state());
 
   // Fullscreen window hides it.
   widget->SetFullscreen(true);
   EXPECT_EQ(
       SHELF_HIDDEN,
-      Shell::GetPrimaryRootWindowController()->shelf()->visibility_state());
+      Shell::GetPrimaryRootWindowController()->
+          GetShelfLayoutManager()->visibility_state());
 
   // Restoring the window restores it.
   widget->Restore();
   EXPECT_EQ(
       SHELF_VISIBLE,
-      Shell::GetPrimaryRootWindowController()->shelf()->visibility_state());
+      Shell::GetPrimaryRootWindowController()->
+          GetShelfLayoutManager()->visibility_state());
 
   // Clean up.
   widget->Close();

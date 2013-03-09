@@ -7,6 +7,7 @@
 
 #include "ash/display/display_manager.h"
 #include "ash/launcher/launcher.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_properties.h"
@@ -63,7 +64,7 @@ TEST_F(DIPTest, WorkArea) {
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   EXPECT_EQ(
       display_2x.bounds().InsetsFrom(work_area).height(),
-      launcher->widget()->GetNativeView()->layer()->bounds().height());
+      launcher->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
 
 }  // namespace ash

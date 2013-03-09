@@ -6,12 +6,12 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/drag_window_controller.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -98,7 +98,7 @@ class DragWindowResizerTest : public test::AshTestBase {
   }
 
   internal::ShelfLayoutManager* shelf_layout_manager() {
-    return Shell::GetPrimaryRootWindowController()->shelf();
+    return Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   }
 
   static DragWindowResizer* CreateDragWindowResizer(
