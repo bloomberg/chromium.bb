@@ -36,14 +36,14 @@ def CompileSSHConnectSettings(ConnectTimeout=30, ConnectionAttempts=4):
           '-o', 'ServerAliveInterval=10',
           '-o', 'ServerAliveCountMax=3',
           '-o', 'StrictHostKeyChecking=no',
-          '-o', 'UserKnownHostsFile=/dev/null',]
+          '-o', 'UserKnownHostsFile=/dev/null', ]
 
 
 class RemoteAccess(object):
   """Provides access to a remote test machine."""
 
   def __init__(self, remote_host, tempdir, port=DEFAULT_SSH_PORT,
-               debug_level=logging.DEBUG):
+               debug_level=logging.DEBUG, interactive=True):
     """Construct the object.
 
     Arguments:
@@ -53,12 +53,14 @@ class RemoteAccess(object):
                It's the responsibility of the caller to remove it.
       port: The ssh port of the test machine to connect to.
       debug_level: Logging level to use for all RunCommand invocations.
+      interactive: If set to False, pass /dev/null into stdin for the sh cmd.
     """
     self.tempdir = tempdir
     self.remote_host = remote_host
     self.port = port
     self.debug_level = debug_level
     self.private_key = os.path.join(tempdir, os.path.basename(TEST_PRIVATE_KEY))
+    self.interactive = interactive
     shutil.copyfile(TEST_PRIVATE_KEY, self.private_key)
     os.chmod(self.private_key, stat.S_IRUSR)
 
@@ -70,16 +72,20 @@ class RemoteAccess(object):
     if connect_settings is None:
       connect_settings = CompileSSHConnectSettings()
 
-    return (['ssh', '-p', str(self.port)] +
-             connect_settings +
-             ['-i', self.private_key, ])
+    cmd = (['ssh', '-p', str(self.port)] +
+           connect_settings +
+           ['-i', self.private_key])
+    if not self.interactive:
+      cmd.append('-n')
+
+    return cmd
 
   def RemoteSh(self, cmd, connect_settings=None, error_code_ok=False,
                ssh_error_ok=False, debug_level=None):
     """Run a sh command on the remote device through ssh.
 
     Arguments:
-      cmd: The command string to run. *not a list!*
+      cmd: The command string or list to run.
       connect_settings: The SSH connect settings to use.
       error_code_ok: Does not throw an exception when the command exits with a
                      non-zero returncode.  This does not cover the case where
@@ -99,8 +105,13 @@ class RemoteAccess(object):
     """
     if not debug_level:
       debug_level = self.debug_level
+
     ssh_cmd = self._GetSSHCmd(connect_settings)
-    ssh_cmd += [self.target_ssh_url, cmd]
+    if isinstance(cmd, basestring):
+      ssh_cmd += [self.target_ssh_url, '--', cmd]
+    else:
+      ssh_cmd += [self.target_ssh_url, '--'] + cmd
+
     try:
       result = cros_build_lib.RunCommandCaptureOutput(
           ssh_cmd, debug_level=debug_level)
