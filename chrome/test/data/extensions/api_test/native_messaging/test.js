@@ -34,6 +34,18 @@ chrome.test.getConfig(function(config) {
         chrome.test.succeed(); // Mission Complete
       },
 
+      function bigMessage() {
+        // Create a special message for which the test host must try sending a
+        // message that is bigger than the limit.
+        var message = { "bigMessageTest": true };
+        chrome.runtime.sendNativeMessage(
+            appName, message,
+            chrome.test.callback(function(response) {
+              chrome.test.assertEq(typeof response, "undefined");
+            },
+            "Error when communicating with the native messaging host."));
+      },
+
       function connect() {
         var messagesToSend = [{"text": "foo"},
                               {"text": "bar", "funCount": 9001},

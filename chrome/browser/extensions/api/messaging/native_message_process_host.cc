@@ -25,8 +25,10 @@
 
 namespace {
 
-const int kExitTimeoutMS = 5000;
-const uint32 kMaxMessageDataLength = 10 * 1024 * 1024;
+// Maximum message size in bytes for messages received from Native Messaging
+// hosts. Message size is limited mainly to prevent Chrome from crashing when
+// native application misbehaves (e.g. starts writing garbage to the pipe).
+const size_t kMaximumMessageSize = 1024 * 1024;
 
 // Message header contains 4-byte integer size of the message.
 const size_t kMessageHeaderSize = 4;
@@ -266,6 +268,13 @@ void NativeMessageProcessHost::ProcessIncomingData(
 
     size_t message_size =
         *reinterpret_cast<const uint32*>(incoming_data_.data());
+
+    if (message_size > kMaximumMessageSize) {
+      LOG(ERROR) << "Native Messaging host tried sending a message that is "
+                 << message_size << " bytes long.";
+      Close(kHostInputOuputError);
+      return;
+    }
 
     if (incoming_data_.size() < message_size + kMessageHeaderSize)
       return;

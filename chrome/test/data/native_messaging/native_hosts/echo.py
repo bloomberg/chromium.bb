@@ -30,6 +30,12 @@ def Main():
     # Read the text (JSON object) of the message.
     text = sys.stdin.read(text_length).decode('utf-8')
 
+    # bigMessage() test sends a special message that is sent to verify that
+    # chrome rejects messages that are too big. Try sending a message bigger
+    # than 1MB after receiving a message that contains 'bigMessageTest'.
+    if 'bigMessageTest' in text:
+      text = '{"key": "' + ("x" * 1024 * 1024) + '"}'
+
     message_number += 1
 
     response = '{{"id": {0}, "echo": {1}, "caller_url": "{2}"}}'.format(
