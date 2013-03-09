@@ -422,7 +422,7 @@ struct LayoutMetrics {
       [button setAction:@selector(openBookmarkFolderFromButton:)];
     } else {
       // Make the button do something.
-      [button setTarget:self];
+      [button setTarget:barController_];
       [button setAction:@selector(openBookmark:)];
       // Add a tooltip.
       [button setToolTip:[BookmarkMenuCocoaController tooltipForNode:node]];
@@ -1573,7 +1573,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self setSelectedButtonByIndex:newIndex];
 }
 
-- (void) selectNext {
+- (void)selectNext {
   if (selectedIndex_ + 1 < [self buttonCount])
     [self setSelectedButtonByIndex:selectedIndex_ + 1];
 }
