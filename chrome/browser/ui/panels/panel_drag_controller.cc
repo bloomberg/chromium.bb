@@ -725,12 +725,15 @@ Panel* PanelDragController::FindPanelToGlue(
       }
     } else {
       DCHECK_EQ(STACK, action);
+      StackedPanelCollection* stack = panel->stack();
 
       // Can |dragging_panel_| or the bottom panel in |dragging_panel_|'s stack
-      // stack to top edge of |panel|?
+      // stack to top edge of |panel|? If |panel| is in a stack and not top
+      // panel, its top edge is interior edge and thus cannot be aligned with.
       distance = GetVerticalDistance(potential_bottom_bounds, panel_bounds);
       overlap = GetHorizontalOverlap(panel_bounds, potential_bottom_bounds);
-      if (distance < kGluePanelsDistanceThreshold &&
+      if ((!stack || panel == stack->top_panel()) &&
+          distance < kGluePanelsDistanceThreshold &&
           overlap > kGluePanelsOverlapThreshold &&
           distance < best_distance) {
         best_distance = distance;
@@ -744,10 +747,13 @@ Panel* PanelDragController::FindPanelToGlue(
             potential_dragging_bounds.height());
       }
 
-      // Can |dragging_panel_| stack to bottom edge of |panel|?
+      // Can |dragging_panel_| stack to bottom edge of |panel|? If |panel| is
+      // in a stack and not bottom panel, its bottom edge is interior edge and
+      // thus cannot be aligned with.
       distance = GetVerticalDistance(panel_bounds, potential_dragging_bounds);
       overlap = GetHorizontalOverlap(panel_bounds, potential_dragging_bounds);
-      if (distance < kGluePanelsDistanceThreshold &&
+      if ((!stack || panel == stack->bottom_panel()) &&
+          distance < kGluePanelsDistanceThreshold &&
           overlap > kGluePanelsOverlapThreshold &&
           distance < best_distance) {
         best_distance = distance;
