@@ -1377,6 +1377,8 @@
         'browser/policy/cloud_policy_store.h',
         'browser/policy/cloud_policy_validator.cc',
         'browser/policy/cloud_policy_validator.h',
+        'browser/policy/component_cloud_policy_service.cc',
+        'browser/policy/component_cloud_policy_service.h',
         'browser/policy/component_cloud_policy_store.cc',
         'browser/policy/component_cloud_policy_store.h',
         'browser/policy/component_cloud_policy_updater.cc',

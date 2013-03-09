@@ -49,6 +49,7 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   using CloudPolicyClient::last_policy_timestamp_;
   using CloudPolicyClient::public_key_version_;
   using CloudPolicyClient::public_key_version_valid_;
+  using CloudPolicyClient::namespaces_to_fetch_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyClient);

@@ -964,6 +964,7 @@
         'browser/policy/cloud_policy_refresh_scheduler_unittest.cc',
         'browser/policy/cloud_policy_service_unittest.cc',
         'browser/policy/cloud_policy_validator_unittest.cc',
+        'browser/policy/component_cloud_policy_service_unittest.cc',
         'browser/policy/component_cloud_policy_store_unittest.cc',
         'browser/policy/component_cloud_policy_updater_unittest.cc',
         'browser/policy/config_dir_policy_loader_unittest.cc',
