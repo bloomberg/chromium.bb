@@ -200,15 +200,15 @@ class TextureAttachment
 
 FramebufferManager::FramebufferManager()
     : framebuffer_state_change_count_(1),
-      framebuffer_info_count_(0),
+      framebuffer_count_(0),
       have_context_(true) {
 }
 
 FramebufferManager::~FramebufferManager() {
-  DCHECK(framebuffer_infos_.empty());
+  DCHECK(framebuffers_.empty());
   // If this triggers, that means something is keeping a reference to a
   // Framebuffer belonging to this.
-  CHECK_EQ(framebuffer_info_count_, 0u);
+  CHECK_EQ(framebuffer_count_, 0u);
 }
 
 void Framebuffer::MarkAsDeleted() {
@@ -222,23 +222,23 @@ void Framebuffer::MarkAsDeleted() {
 
 void FramebufferManager::Destroy(bool have_context) {
   have_context_ = have_context;
-  framebuffer_infos_.clear();
+  framebuffers_.clear();
 }
 
 void FramebufferManager::StartTracking(
     Framebuffer* /* framebuffer */) {
-  ++framebuffer_info_count_;
+  ++framebuffer_count_;
 }
 
 void FramebufferManager::StopTracking(
     Framebuffer* /* framebuffer */) {
-  --framebuffer_info_count_;
+  --framebuffer_count_;
 }
 
 void FramebufferManager::CreateFramebuffer(
     GLuint client_id, GLuint service_id) {
-  std::pair<FramebufferInfoMap::iterator, bool> result =
-      framebuffer_infos_.insert(
+  std::pair<FramebufferMap::iterator, bool> result =
+      framebuffers_.insert(
           std::make_pair(
               client_id,
               scoped_refptr<Framebuffer>(
@@ -442,15 +442,15 @@ void Framebuffer::UnbindTexture(
 
 Framebuffer* FramebufferManager::GetFramebuffer(
     GLuint client_id) {
-  FramebufferInfoMap::iterator it = framebuffer_infos_.find(client_id);
-  return it != framebuffer_infos_.end() ? it->second : NULL;
+  FramebufferMap::iterator it = framebuffers_.find(client_id);
+  return it != framebuffers_.end() ? it->second : NULL;
 }
 
 void FramebufferManager::RemoveFramebuffer(GLuint client_id) {
-  FramebufferInfoMap::iterator it = framebuffer_infos_.find(client_id);
-  if (it != framebuffer_infos_.end()) {
+  FramebufferMap::iterator it = framebuffers_.find(client_id);
+  if (it != framebuffers_.end()) {
     it->second->MarkAsDeleted();
-    framebuffer_infos_.erase(it);
+    framebuffers_.erase(it);
   }
 }
 
@@ -505,8 +505,8 @@ const Framebuffer::Attachment*
 bool FramebufferManager::GetClientId(
     GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
-  for (FramebufferInfoMap::const_iterator it = framebuffer_infos_.begin();
-       it != framebuffer_infos_.end(); ++it) {
+  for (FramebufferMap::const_iterator it = framebuffers_.begin();
+       it != framebuffers_.end(); ++it) {
     if (it->second->service_id() == service_id) {
       *client_id = it->first;
       return true;

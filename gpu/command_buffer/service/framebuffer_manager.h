@@ -203,13 +203,13 @@ class GPU_EXPORT FramebufferManager {
  private:
   friend class Framebuffer;
 
-  void StartTracking(Framebuffer* info);
-  void StopTracking(Framebuffer* info);
+  void StartTracking(Framebuffer* framebuffer);
+  void StopTracking(Framebuffer* framebuffer);
 
   // Info for each framebuffer in the system.
   typedef base::hash_map<GLuint, scoped_refptr<Framebuffer> >
-      FramebufferInfoMap;
-  FramebufferInfoMap framebuffer_infos_;
+      FramebufferMap;
+  FramebufferMap framebuffers_;
 
   // Incremented anytime anything changes that might effect framebuffer
   // state.
@@ -217,7 +217,7 @@ class GPU_EXPORT FramebufferManager {
 
   // Counts the number of Framebuffer allocated with 'this' as its manager.
   // Allows to check no Framebuffer will outlive this.
-  unsigned int framebuffer_info_count_;
+  unsigned int framebuffer_count_;
 
   bool have_context_;
 
