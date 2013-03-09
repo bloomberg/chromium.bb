@@ -12,7 +12,8 @@ namespace extensions {
 // Implements custom bindings for the webRequest API.
 class WebRequestCustomBindings : public ChromeV8Extension {
  public:
-  WebRequestCustomBindings();
+  WebRequestCustomBindings(Dispatcher* dispatcher,
+                           v8::Handle<v8::Context> v8_context);
 
  private:
   static v8::Handle<v8::Value> GetUniqueSubEventName(const v8::Arguments& args);

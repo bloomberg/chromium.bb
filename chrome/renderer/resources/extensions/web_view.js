@@ -7,7 +7,9 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var watchForTag = require("tagWatcher").watchForTag;
+var watchForTag = require('tagWatcher').watchForTag;
+
+var chrome = requireNative('chrome').GetChrome();
 
 var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
     'minwidth', 'maxheight', 'maxwidth'];

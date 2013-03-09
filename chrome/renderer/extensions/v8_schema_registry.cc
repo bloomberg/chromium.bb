@@ -21,12 +21,11 @@ V8SchemaRegistry::~V8SchemaRegistry() {
       i != schema_cache_.end(); ++i) {
     i->second.Dispose(isolate);
   }
-  context_.Dispose(isolate);
 }
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
     const std::set<std::string>& apis) {
-  v8::Context::Scope context_scope(context_);
+  v8::Context::Scope context_scope(context_.get());
   v8::Handle<v8::Array> v8_apis(v8::Array::New(apis.size()));
   size_t api_index = 0;
   for (std::set<std::string>::const_iterator i = apis.begin(); i != apis.end();
@@ -50,7 +49,7 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
       v8::Persistent<v8::Object>::New(
           context_->GetIsolate(),
           v8::Handle<v8::Object>::Cast(
-              v8_value_converter->ToV8Value(schema, context_)));
+              v8_value_converter->ToV8Value(schema, context_.get())));
   CHECK(!v8_schema.IsEmpty());
   schema_cache_[api] = v8_schema;
   return v8_schema;

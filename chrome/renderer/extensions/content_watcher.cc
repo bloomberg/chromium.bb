@@ -16,11 +16,13 @@
 namespace extensions {
 
 namespace {
+
 class MutationHandler : public ChromeV8Extension {
  public:
   explicit MutationHandler(Dispatcher* dispatcher,
+                           v8::Handle<v8::Context> v8_context,
                            base::WeakPtr<ContentWatcher> content_watcher)
-      : ChromeV8Extension(dispatcher),
+      : ChromeV8Extension(dispatcher, v8_context),
         content_watcher_(content_watcher) {
     RouteFunction("FrameMutated",
                   base::Bind(&MutationHandler::FrameMutated,
@@ -31,7 +33,7 @@ class MutationHandler : public ChromeV8Extension {
   v8::Handle<v8::Value> FrameMutated(const v8::Arguments& args) {
     if (content_watcher_) {
       content_watcher_->ScanAndNotify(
-          WebKit::WebFrame::frameForCurrentContext());
+          WebKit::WebFrame::frameForContext(v8_context()));
     }
     return v8::Undefined();
   }
@@ -46,9 +48,10 @@ ContentWatcher::ContentWatcher(Dispatcher* dispatcher)
       dispatcher_(dispatcher) {}
 ContentWatcher::~ContentWatcher() {}
 
-scoped_ptr<NativeHandler> ContentWatcher::MakeNatives() {
-  return scoped_ptr<NativeHandler>(
-      new MutationHandler(dispatcher_, weak_ptr_factory_.GetWeakPtr()));
+scoped_ptr<NativeHandler> ContentWatcher::MakeNatives(
+    v8::Handle<v8::Context> v8_context) {
+  return scoped_ptr<NativeHandler>(new MutationHandler(
+      dispatcher_, v8_context, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ContentWatcher::OnWatchPages(

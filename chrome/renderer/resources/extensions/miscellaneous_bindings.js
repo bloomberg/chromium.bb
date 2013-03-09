@@ -8,10 +8,10 @@
 // content scripts only.
 
   require('json_schema');
-  require('event_bindings');
   var json = require('json');
   var lastError = require('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
+  var chrome = requireNative('chrome').GetChrome();
   var CloseChannel = miscNatives.CloseChannel;
   var PortAddRef = miscNatives.PortAddRef;
   var PortRelease = miscNatives.PortRelease;
@@ -121,7 +121,7 @@
     if (sourceExtensionId != targetExtensionId)
       errorMsg += " for extension " + targetExtensionId;
     errorMsg += ").";
-    lastError.set(errorMsg);
+    lastError.set(errorMsg, chrome);
     console.error("Could not send response: " + errorMsg);
   }
 
@@ -231,14 +231,14 @@
       // Update the renderer's port bookkeeping, without notifying the browser.
       CloseChannel(portId, false);
       if (errorMessage) {
-        lastError.set(errorMessage);
+        lastError.set(errorMessage, chrome);
         console.error("Port error: " + errorMessage);
       }
       try {
         port.onDisconnect.dispatch(port);
       } finally {
         port.destroy_();
-        lastError.clear();
+        lastError.clear(chrome);
       }
     }
   };

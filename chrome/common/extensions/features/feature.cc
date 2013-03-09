@@ -55,6 +55,12 @@ chrome::VersionInfo::Channel Feature::GetDefaultChannel() {
   return kDefaultChannel;
 }
 
+// static
+Feature::Availability Feature::CreateAvailability(AvailabilityResult result,
+                                                  const std::string& message) {
+  return Availability(result, message);
+}
+
 Feature::~Feature() {}
 
 }  // namespace extensions

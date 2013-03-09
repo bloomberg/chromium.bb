@@ -57,9 +57,8 @@ const char* kInvalidCallbackIdError = "Invalid callbackId";
 
 }  // namespace
 
-AppBindings::AppBindings(Dispatcher* dispatcher,
-                         ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher),
+AppBindings::AppBindings(Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context->v8_context()),
       ChromeV8ExtensionHandler(context) {
   RouteFunction("GetIsInstalled",
       base::Bind(&AppBindings::GetIsInstalled, base::Unretained(this)));

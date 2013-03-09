@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Custom bindings for the notifications API.
+var binding = require('binding').Binding.create('notifications');
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var imageUtil = require('imageUtil');
 var lastError = require('lastError');
@@ -109,8 +109,8 @@ function genHandle(failure_function) {
             that.definition.parameters);
         return;
       }
-      lastError.set('Unable to download all specified images.');
-      failure_function(callback, id);
+      lastError.run('Unable to download all specified images.',
+                    failure_function, [callback, id])
     });
   };
 }
@@ -124,4 +124,6 @@ var notificationsCustomHook = function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest('update', handleCreate);
 };
 
-chromeHidden.registerCustomHook('notifications', notificationsCustomHook);
+binding.registerCustomHook(notificationsCustomHook);
+
+exports.binding = binding.generate();

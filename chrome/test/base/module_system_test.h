@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 
 #include "chrome/renderer/extensions/module_system.h"
+#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,7 +51,7 @@ class ModuleSystemTest : public testing::Test {
   // Create an empty object in the global scope with name |name|.
   v8::Handle<v8::Object> CreateGlobal(const std::string& name);
 
-  v8::Persistent<v8::Context> context_;
+  extensions::ScopedPersistent<v8::Context> context_;
   v8::HandleScope handle_scope_;
   AssertNatives* assert_natives_;
   scoped_ptr<StringSourceMap> source_map_;

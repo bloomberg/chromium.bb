@@ -36,7 +36,7 @@ class ContentWatcher {
   ~ContentWatcher();
 
   // Returns the callback to call on a frame change.
-  scoped_ptr<NativeHandler> MakeNatives();
+  scoped_ptr<NativeHandler> MakeNatives(v8::Handle<v8::Context> v8_context);
 
   // Handler for ExtensionMsg_WatchPages.
   void OnWatchPages(const std::vector<std::string>& css_selectors);

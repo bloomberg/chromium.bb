@@ -75,7 +75,7 @@ void ChromeV8ContextSet::Add(ChromeV8Context* context) {
 
 void ChromeV8ContextSet::Remove(ChromeV8Context* context) {
   if (contexts_.erase(context)) {
-    context->clear_web_frame();
+    context->Invalidate();
     MessageLoop::current()->DeleteSoon(FROM_HERE, context);
   }
 }

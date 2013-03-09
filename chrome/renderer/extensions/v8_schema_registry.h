@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -24,16 +25,16 @@ class V8SchemaRegistry {
   // Returns a v8::Array with all the schemas for the APIs in |apis|.
   v8::Handle<v8::Array> GetSchemas(const std::set<std::string>& apis);
 
- private:
   // Returns a v8::Object for the schema for |api|, possibly from the cache.
   v8::Handle<v8::Object> GetSchema(const std::string& api);
 
+ private:
   // Cache of schemas.
   typedef std::map<std::string, v8::Persistent<v8::Object> > SchemaCache;
   SchemaCache schema_cache_;
 
   // Single per-instance v8::Context to create v8::Values.
-  v8::Persistent<v8::Context> context_;
+  ScopedPersistent<v8::Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SchemaRegistry);
 };
