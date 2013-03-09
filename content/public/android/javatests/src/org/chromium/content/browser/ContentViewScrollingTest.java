@@ -34,54 +34,101 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         }));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView"})
-    public void testFling() throws Throwable {
+    private void assertWaitForScroll(final boolean hugLeft, final boolean hugTop)
+            throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                // Scrolling and flinging don't result in exact coordinates.
+                final int MIN_THRESHOLD = 5;
+                final int MAX_THRESHOLD = 100;
+
+                boolean xCorrect = hugLeft ?
+                        getContentViewCore().getNativeScrollXForTest() < MIN_THRESHOLD :
+                        getContentViewCore().getNativeScrollXForTest() > MAX_THRESHOLD;
+                boolean yCorrect = hugTop ?
+                        getContentViewCore().getNativeScrollYForTest() < MIN_THRESHOLD :
+                        getContentViewCore().getNativeScrollYForTest() > MAX_THRESHOLD;
+                return xCorrect && yCorrect;
+            }
+        }));
+    }
+
+    private void fling(final int vx, final int vy) throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentView().fling(System.currentTimeMillis(), 0, 0, vx, vy);
+            }
+        });
+    }
+
+    private void scrollTo(final int x, final int y) throws Throwable {
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentView().scrollTo(x, y);
+            }
+        });
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
         launchContentShellWithUrl(LARGE_PAGE);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
         assertWaitForPageScaleFactor(1.0f);
 
-        final ContentView view = getActivity().getActiveContentView();
+        assertEquals(0, getContentViewCore().getNativeScrollXForTest());
+        assertEquals(0, getContentViewCore().getNativeScrollYForTest());
+    }
 
-        assertEquals(0, view.getContentViewCore().getNativeScrollXForTest());
-        assertEquals(0, view.getContentViewCore().getNativeScrollYForTest());
+    @SmallTest
+    @Feature({"Main"})
+    public void testFling() throws Throwable {
+        // Vertical fling to lower-left.
+        fling(0, -1000);
+        assertWaitForScroll(true, false);
 
-        // Vertical fling
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                view.fling(System.currentTimeMillis(), 0, 0, 0, -1000);
-            }
-        });
+        // Horizontal fling to lower-right.
+        fling(-1000, 0);
+        assertWaitForScroll(false, false);
 
-        // There's no end-of-fling notification so we need to busy-wait.
-        for (int i = 0; i < 500; ++i) {
-          if (view.getContentViewCore().getNativeScrollYForTest() > 100) {
-            break;
-          }
-          Thread.sleep(10);
-        }
+        // Vertical fling to upper-right.
+        fling(0, 1000);
+        assertWaitForScroll(false, true);
 
-        assertEquals(0, view.getContentViewCore().getNativeScrollXForTest());
-        assertTrue(view.getContentViewCore().getNativeScrollYForTest() > 100);
+        // Horizontal fling to top-left.
+        fling(1000, 0);
+        assertWaitForScroll(true, true);
 
-        // Horizontal fling
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                view.fling(System.currentTimeMillis(), 0, 0, -1000, 0);
-            }
-        });
+        // Diagonal fling to bottom-right.
+        fling(-1000, -1000);
+        assertWaitForScroll(false, false);
+    }
 
-        // There's no end-of-fling notification so we need to busy-wait.
-        for (int i = 0; i < 500; ++i) {
-          if (view.getContentViewCore().getNativeScrollXForTest() > 100) {
-            break;
-          }
-          Thread.sleep(10);
-        }
+    @SmallTest
+    @Feature({"Main"})
+    public void testScroll() throws Throwable {
+        // Vertical scroll to lower-left.
+        scrollTo(0, 2500);
+        assertWaitForScroll(true, false);
 
-        assertTrue(view.getContentViewCore().getNativeScrollXForTest() > 100);
-        assertTrue(view.getContentViewCore().getNativeScrollYForTest() > 100);
+        // Horizontal scroll to lower-right.
+        scrollTo(2500, 2500);
+        assertWaitForScroll(false, false);
+
+        // Vertical scroll to upper-right.
+        scrollTo(2500, 0);
+        assertWaitForScroll(false, true);
+
+        // Horizontal scroll to top-left.
+        scrollTo(0, 0);
+        assertWaitForScroll(true, true);
+
+        // Diagonal scroll to bottom-right.
+        scrollTo(2500, 2500);
+        assertWaitForScroll(false, false);
     }
 }
