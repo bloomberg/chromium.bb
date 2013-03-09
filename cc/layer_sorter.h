@@ -15,101 +15,98 @@
 #include "ui/gfx/vector3d_f.h"
 
 #if defined(COMPILER_GCC)
-namespace cc
-{
-    struct GraphEdge;
-};
+namespace cc { struct GraphEdge; }
 
 namespace BASE_HASH_NAMESPACE {
-template<>
+template <>
 struct hash<cc::GraphEdge*> {
   size_t operator()(cc::GraphEdge* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
-} // namespace BASE_HASH_NAMESPACE
-#endif // COMPILER
+}  // namespace BASE_HASH_NAMESPACE
+#endif  // COMPILER
 
 namespace gfx {
 class Transform;
 }
 
 namespace cc {
-
 struct GraphEdge;
 
 // Holds various useful properties derived from a layer's 3D outline.
 struct CC_EXPORT LayerShape {
-    LayerShape();
-    LayerShape(float width, float height, const gfx::Transform& drawTransform);
-    ~LayerShape();
+  LayerShape();
+  LayerShape(float width, float height, const gfx::Transform& draw_transform);
+  ~LayerShape();
 
-    float layerZFromProjectedPoint(const gfx::PointF&) const;
+  float LayerZFromProjectedPoint(gfx::PointF p) const;
 
-    gfx::Vector3dF layerNormal;
-    gfx::Point3F transformOrigin;
-    gfx::QuadF projectedQuad;
-    gfx::RectF projectedBounds;
+  gfx::Vector3dF layer_normal;
+  gfx::Point3F transform_origin;
+  gfx::QuadF projected_quad;
+  gfx::RectF projected_bounds;
 };
 
 struct GraphNode {
-    explicit GraphNode(LayerImpl* layerImpl);
-    ~GraphNode();
+  explicit GraphNode(LayerImpl* layer_impl);
+  ~GraphNode();
 
-    LayerImpl* layer;
-    LayerShape shape;
-    std::vector<GraphEdge*> incoming;
-    std::vector<GraphEdge*> outgoing;
-    float incomingEdgeWeight;
+  LayerImpl* layer;
+  LayerShape shape;
+  std::vector<GraphEdge*> incoming;
+  std::vector<GraphEdge*> outgoing;
+  float incoming_edge_weight;
 };
 
 struct GraphEdge {
-    GraphEdge(GraphNode* fromNode, GraphNode* toNode, float weight)
-        : from(fromNode)
-        , to(toNode)
-        , weight(weight)
-    {
-    }
+  GraphEdge(GraphNode* from_node, GraphNode* to_node, float weight)
+      : from(from_node),
+        to(to_node),
+        weight(weight) {}
 
-    GraphNode* from;
-    GraphNode* to;
-    float weight;
+  GraphNode* from;
+  GraphNode* to;
+  float weight;
 };
 
 
 
 class CC_EXPORT LayerSorter {
-public:
-    LayerSorter();
-    ~LayerSorter();
+ public:
+  LayerSorter();
+  ~LayerSorter();
 
-    typedef std::vector<LayerImpl*> LayerList;
+  typedef std::vector<LayerImpl*> LayerList;
 
-    void sort(LayerList::iterator first, LayerList::iterator last);
+  void Sort(LayerList::iterator first, LayerList::iterator last);
 
-    enum ABCompareResult {
-        ABeforeB,
-        BBeforeA,
-        None
-    };
+  enum ABCompareResult {
+    ABeforeB,
+    BBeforeA,
+    None
+  };
 
-    static ABCompareResult checkOverlap(LayerShape*, LayerShape*, float zThreshold, float& weight);
+  static ABCompareResult CheckOverlap(LayerShape* a,
+                                      LayerShape* b,
+                                      float z_threshold,
+                                      float* weight);
 
-private:
-    typedef std::vector<GraphNode> NodeList;
-    typedef std::vector<GraphEdge> EdgeList;
-    NodeList m_nodes;
-    EdgeList m_edges;
-    float m_zRange;
+ private:
+  typedef std::vector<GraphNode> NodeList;
+  typedef std::vector<GraphEdge> EdgeList;
+  NodeList nodes_;
+  EdgeList edges_;
+  float z_range_;
 
-    typedef base::hash_map<GraphEdge*, GraphEdge*> EdgeMap;
-    EdgeMap m_activeEdges;
+  typedef base::hash_map<GraphEdge*, GraphEdge*> EdgeMap;
+  EdgeMap active_edges_;
 
-    void createGraphNodes(LayerList::iterator first, LayerList::iterator last);
-    void createGraphEdges();
-    void removeEdgeFromList(GraphEdge*, std::vector<GraphEdge*>&);
+  void CreateGraphNodes(LayerList::iterator first, LayerList::iterator last);
+  void CreateGraphEdges();
+  void RemoveEdgeFromList(GraphEdge* graph, std::vector<GraphEdge*>* list);
 
-    DISALLOW_COPY_AND_ASSIGN(LayerSorter);
+  DISALLOW_COPY_AND_ASSIGN(LayerSorter);
 };
 
 }

@@ -39,7 +39,7 @@ static void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<Laye
 {
     DCHECK(layerSorter);
     TRACE_EVENT0("cc", "layer_tree_host_common::sortLayers");
-    layerSorter->sort(first, end);
+    layerSorter->Sort(first, end);
 }
 
 inline gfx::Rect calculateVisibleRectWithCachedLayerRect(const gfx::Rect& targetSurfaceRect, const gfx::Rect& layerBoundRect, const gfx::Rect& layerRectInTargetSpace, const gfx::Transform& transform)
