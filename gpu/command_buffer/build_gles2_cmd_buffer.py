@@ -1177,6 +1177,9 @@ _PEPPER_INTERFACES = [
 # pepper_interface: The pepper interface that is used for this extension
 # invalid_test: False if no invalid test needed.
 # shadowed:     True = the value is shadowed so no glGetXXX call will be made.
+# first_element_only: For PUT types, True if only the first element of an
+#               array is used and we end up calling the single value
+#               corresponding function. eg. TexParameteriv -> TexParameteri
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -1892,6 +1895,7 @@ _FUNCTION_INFO = {
   },
   'TexParameterf': {
     'decoder_func': 'DoTexParameterf',
+    'gl_test_func': 'glTexParameteri',
     'valid_args': {
       '2': 'GL_NEAREST'
     },
@@ -1908,6 +1912,8 @@ _FUNCTION_INFO = {
     'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameterfv',
+    'gl_test_func': 'glTexParameteri',
+    'first_element_only': True,
   },
   'TexParameteriv': {
     'type': 'PUT',
@@ -1915,6 +1921,8 @@ _FUNCTION_INFO = {
     'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameteriv',
+    'gl_test_func': 'glTexParameteri',
+    'first_element_only': True,
   },
   'TexSubImage2D': {
     'type': 'Manual',
@@ -2760,6 +2768,10 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       'gl_args': ", ".join(gl_arg_strings),
     }
     vars.update(extra)
+    old_test = ""
+    while (old_test != test):
+      old_test = test
+      test = test % vars
     file.Write(test % vars)
 
   def WriteInvalidUnitTest(self, func, file, test, extra = {}):
@@ -4524,13 +4536,21 @@ class PUTHandler(TypeHandler):
 
   def WriteServiceUnitTest(self, func, file):
     """Writes the service unit test for a command."""
+    expected_call = "EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));"
+    if func.GetInfo("first_element_only"):
+      gl_arg_strings = []
+      for count, arg in enumerate(func.GetOriginalArgs()):
+        gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
+      gl_arg_strings[-1] = "*" + gl_arg_strings[-1]
+      expected_call = ("EXPECT_CALL(*gl_, %%(gl_func_name)s(%s));" %
+          ", ".join(gl_arg_strings))
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
-  EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   GetSharedMemoryAs<%(data_type)s*>()[0] = %(data_value)s;
+  %(expected_call)s
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -4538,6 +4558,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
     extra = {
       'data_type': func.GetInfo('data_type'),
       'data_value': func.GetInfo('data_value') or '0',
+      'expected_call': expected_call,
     }
     self.WriteValidUnitTest(func, file, valid_test, extra)
 
@@ -4558,13 +4579,13 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     valid_test = """
 TEST_F(%(test_name)s, %(name)sValidArgs) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
-  EXPECT_CALL(
-      *gl_,
-      %(gl_func_name)s(%(gl_args)s,
-          reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::%(name)s, 0>(true);
   %(data_type)s temp[%(data_count)s] = { %(data_value)s, };
   cmd.Init(%(gl_args)s, &temp[0]);
+  EXPECT_CALL(
+      *gl_,
+      %(gl_func_name)s(%(gl_args)s, %(data_ref)sreinterpret_cast<
+          %(data_type)s*>(ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -4576,6 +4597,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
       gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
       gl_any_strings.append("_")
     extra = {
+      'data_ref': ("*" if func.GetInfo('first_element_only') else ""),
       'data_type': func.GetInfo('data_type'),
       'data_count': func.GetInfo('count'),
       'data_value': func.GetInfo('data_value') or '0',

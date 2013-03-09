@@ -430,13 +430,13 @@ class GPU_EXPORT TextureManager {
   // Parameters:
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
   //   max_levels: The maximum levels this type of target can have.
-  void SetInfoTarget(
-      Texture* info,
+  void SetTarget(
+      Texture* texture,
       GLenum target);
 
   // Set the info for a particular level in a TexureInfo.
   void SetLevelInfo(
-      Texture* info,
+      Texture* texture,
       GLenum target,
       GLint level,
       GLenum internal_format,
@@ -449,32 +449,36 @@ class GPU_EXPORT TextureManager {
       bool cleared);
 
   // Save the texture definition and leave it undefined.
-  TextureDefinition* Save(Texture* info);
+  TextureDefinition* Save(Texture* texture);
 
   // Redefine all the levels from the texture definition.
-  bool Restore(Texture* info,
-               TextureDefinition* definition);
+  bool Restore(
+      const char* function_name,
+      GLES2Decoder* decoder,
+      Texture* texture,
+      TextureDefinition* definition);
 
   // Sets a mip as cleared.
-  void SetLevelCleared(Texture* info, GLenum target,
+  void SetLevelCleared(Texture* texture, GLenum target,
                        GLint level, bool cleared);
 
   // Sets a texture parameter of a Texture
   // Returns GL_NO_ERROR on success. Otherwise the error to generate.
   // TODO(gman): Expand to SetParameteri,f,iv,fv
-  GLenum SetParameter(
-      Texture* info, GLenum pname, GLint param);
+  void SetParameter(
+      const char* function_name, GLES2Decoder* decoder,
+      Texture* texture, GLenum pname, GLint param);
 
   // Makes each of the mip levels as though they were generated.
   // Returns false if that's not allowed for the given texture.
-  bool MarkMipmapsGenerated(Texture* info);
+  bool MarkMipmapsGenerated(Texture* texture);
 
   // Clears any uncleared renderable levels.
-  bool ClearRenderableLevels(GLES2Decoder* decoder, Texture* info);
+  bool ClearRenderableLevels(GLES2Decoder* decoder, Texture* texture);
 
   // Clear a specific level.
   bool ClearTextureLevel(
-      GLES2Decoder* decoder,Texture* info, GLenum target, GLint level);
+      GLES2Decoder* decoder,Texture* texture, GLenum target, GLint level);
 
   // Creates a new texture info.
   Texture* CreateTexture(GLuint client_id, GLuint service_id);
@@ -539,13 +543,13 @@ class GPU_EXPORT TextureManager {
   }
 
   void SetLevelImage(
-      Texture* info,
+      Texture* texture,
       GLenum target,
       GLint level,
       gfx::GLImage* image);
 
   void AddToSignature(
-      Texture* info,
+      Texture* texture,
       GLenum target,
       GLint level,
       std::string* signature) const;
@@ -553,7 +557,7 @@ class GPU_EXPORT TextureManager {
   // Transfers added will get their Texture updated at the same time
   // the async transfer is bound to the real texture.
   void AddPendingAsyncPixelTransfer(
-      base::WeakPtr<gfx::AsyncPixelTransferState> state, Texture* info);
+      base::WeakPtr<gfx::AsyncPixelTransferState> state, Texture* texture);
   void BindFinishedAsyncPixelTransfers(bool* texture_dirty,
                                        bool* framebuffer_dirty);
 
@@ -565,8 +569,8 @@ class GPU_EXPORT TextureManager {
       GLenum target,
       GLuint* black_texture);
 
-  void StartTracking(Texture* info);
-  void StopTracking(Texture* info);
+  void StartTracking(Texture* texture);
+  void StopTracking(Texture* texture);
 
   MemoryTypeTracker* GetMemTracker(GLenum texture_pool);
   scoped_ptr<MemoryTypeTracker> memory_tracker_managed_;
@@ -575,8 +579,8 @@ class GPU_EXPORT TextureManager {
   scoped_refptr<FeatureInfo> feature_info_;
 
   // Info for each texture in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Texture> > TextureInfoMap;
-  TextureInfoMap texture_infos_;
+  typedef base::hash_map<GLuint, scoped_refptr<Texture> > TextureMap;
+  TextureMap textures_;
 
   GLsizei max_texture_size_;
   GLsizei max_cube_map_texture_size_;
@@ -587,9 +591,9 @@ class GPU_EXPORT TextureManager {
   int num_unsafe_textures_;
   int num_uncleared_mips_;
 
-  // Counts the number of Texture allocated with 'this' as its manager.
+  // Counts the number of Textures allocated with 'this' as its manager.
   // Allows to check no Texture will outlive this.
-  unsigned int texture_info_count_;
+  unsigned int texture_count_;
 
   bool have_context_;
 

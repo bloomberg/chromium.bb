@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -515,6 +516,28 @@ void TestHelper::DoBufferData(
       .WillOnce(Return(error))
       .RetiresOnSaturation();
   manager->DoBufferData(decoder, buffer, size, usage, data);
+}
+
+void TestHelper::SetTexParameterWithExpectations(
+    ::gfx::MockGLInterface* gl, MockGLES2Decoder* decoder,
+    TextureManager* manager, Texture* texture,
+    GLenum pname, GLint value, GLenum error) {
+  if (error == GL_NO_ERROR) {
+    if (pname != GL_TEXTURE_POOL_CHROMIUM) {
+      EXPECT_CALL(*gl, TexParameteri(texture->target(), pname, value))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+  } else if (error == GL_INVALID_ENUM) {
+    EXPECT_CALL(*decoder, SetGLErrorInvalidEnum(_, value, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*decoder, SetGLErrorInvalidParam(error, _, _, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  manager->SetParameter("", decoder, texture, pname, value);
 }
 
 }  // namespace gles2

@@ -14,6 +14,8 @@ struct DisallowedFeatures;
 class Buffer;
 class BufferManager;
 class MockGLES2Decoder;
+class Texture;
+class TextureManager;
 
 class TestHelper {
  public:
@@ -93,6 +95,11 @@ class TestHelper {
       ::gfx::MockGLInterface* gl, MockGLES2Decoder* decoder,
       BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
       const GLvoid* data, GLenum error);
+
+  static void SetTexParameterWithExpectations(
+      ::gfx::MockGLInterface* gl, MockGLES2Decoder* decoder,
+      TextureManager* manager, Texture* texture,
+      GLenum pname, GLint value, GLenum error);
 
  private:
   static void SetupTextureInitializationExpectations(
