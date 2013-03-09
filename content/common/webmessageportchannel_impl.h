@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_listener.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMessagePortChannel.h"
 
 namespace content {
 

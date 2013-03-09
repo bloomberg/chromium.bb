@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMessagePortChannel.h"
 
 namespace WebKit {
 class WebString;
