@@ -84,6 +84,7 @@ cr.define('options', function() {
       if (typeof this.dataItem.decorateFn == 'function')
         this.dataItem.decorateFn(this);
       this.setAttribute('role', 'option');
+      this.oncontextmenu = function(e) { e.preventDefault(); };
     }
   };
 

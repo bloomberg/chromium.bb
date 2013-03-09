@@ -222,6 +222,10 @@ cr.define('options', function() {
 
         this.updateAccountPicture_();
 
+        $('account-picture-wrapper').oncontextmenu = function(e) {
+          e.preventDefault();
+        };
+
         $('manage-accounts-button').onclick = function(event) {
           OptionsPage.navigateToPage('accounts');
           chrome.send('coreOptionsUserMetricsAction',

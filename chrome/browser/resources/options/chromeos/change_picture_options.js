@@ -51,6 +51,8 @@ cr.define('options', function() {
 
       // Preview image will track the selected item's URL.
       var previewElement = $('user-image-preview');
+      previewElement.oncontextmenu = function(e) { e.preventDefault(); };
+
       imageGrid.previewElement = previewElement;
       imageGrid.selectionType = 'default';
 
