@@ -23,10 +23,10 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
 #include "ui/gl/gl_context_glx.h"
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #elif defined(OS_MACOSX)
@@ -180,7 +180,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
   video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(
       this, make_context_current_));
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda)) {
     video_decode_accelerator_.reset(new ExynosVideoDecodeAccelerator(
         gfx::GLSurfaceEGL::GetHardwareDisplay(),
@@ -194,7 +194,7 @@ void GpuVideoDecodeAccelerator::Initialize(
         this,
         make_context_current_));
   }
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
   GLXContext glx_context_handle =
