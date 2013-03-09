@@ -43,6 +43,40 @@ class Address {
           const string16& phone_number,
           const std::string& object_id);
   ~Address();
+
+  // Returns an empty scoped_ptr if input is invalid or a valid address that is
+  // selectable for Google Wallet use. Does not require "id" in |dictionary|.
+  // IDs are not required for billing addresses.
+  static scoped_ptr<Address> CreateAddress(
+      const base::DictionaryValue& dictionary);
+
+  // Builds an Address from |dictionary|, which must have an "id" field. This
+  // function is designed for use with shipping addresses. The function may fail
+  // and return an empty pointer if its input is invalid.
+  static scoped_ptr<Address> CreateAddressWithID(
+      const base::DictionaryValue& dictionary);
+
+  // Returns an empty scoped_ptr if input in invalid or a valid address that
+  // can only be used for displaying to the user.
+  static scoped_ptr<Address> CreateDisplayAddress(
+      const base::DictionaryValue& dictionary);
+
+  // If an address is being upgraded, it will be sent to the server in a
+  // different format and with a few additional fields set, most importantly
+  // |object_id_|.
+  scoped_ptr<base::DictionaryValue> ToDictionaryWithID() const;
+
+  // Newly created addresses will not have an associated |object_id_| and are
+  // sent to the server in a slightly different format.
+  scoped_ptr<base::DictionaryValue> ToDictionaryWithoutID() const;
+
+  // Returns a string that summarizes this address, suitable for display to
+  // the user.
+  string16 DisplayName() const;
+
+  // Returns data appropriate for |type|.
+  string16 GetInfo(AutofillFieldType type) const;
+
   const std::string& country_name_code() const { return country_name_code_; }
   const string16& recipient_name() const { return recipient_name_; }
   const string16& address_line_1() const { return address_line_1_; }
@@ -82,39 +116,6 @@ class Address {
   void set_object_id(const std::string& object_id) {
     object_id_ = object_id;
   }
-
-  // If an address is being upgraded, it will be sent to the server in a
-  // different format and with a few additional fields set, most importantly
-  // |object_id_|.
-  scoped_ptr<base::DictionaryValue> ToDictionaryWithID() const;
-
-  // Newly created addresses will not have an associated |object_id_| and are
-  // sent to the server in a slightly different format.
-  scoped_ptr<base::DictionaryValue> ToDictionaryWithoutID() const;
-
-  // Returns a string that summarizes this address, suitable for display to
-  // the user.
-  string16 DisplayName() const;
-
-  // Returns data appropriate for |type|.
-  string16 GetInfo(AutofillFieldType type) const;
-
-  // Returns an empty scoped_ptr if input is invalid or a valid address that is
-  // selectable for Google Wallet use. Does not require "id" in |dictionary|.
-  // IDs are not required for billing addresses.
-  static scoped_ptr<Address> CreateAddress(
-      const base::DictionaryValue& dictionary);
-
-  // Returns an empty scoped_ptr if input is invalid or a valid address that is
-  // selectable for Google Wallet use. Requires "id" in |dictionary|. IDs are
-  // required for shipping addresses.
-  static scoped_ptr<Address> CreateAddressWithID(
-      const base::DictionaryValue& dictionary);
-
-  // Returns an empty scoped_ptr if input in invalid or a valid address that
-  // can only be used for displaying to the user.
-  static scoped_ptr<Address> CreateDisplayAddress(
-      const base::DictionaryValue& dictionary);
 
   bool operator==(const Address& other) const;
   bool operator!=(const Address& other) const;
@@ -156,7 +157,7 @@ class Address {
   // Externalized Online Wallet id for this address.
   std::string object_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(Address);
+  DISALLOW_ASSIGN(Address);
 };
 
 }  // namespace wallet

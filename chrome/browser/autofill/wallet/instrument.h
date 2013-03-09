@@ -39,6 +39,7 @@ class Instrument {
              int expiration_year,
              FormOfPayment form_of_payment,
              scoped_ptr<Address> address);
+  Instrument(const Instrument& instrument);
   ~Instrument();
 
   scoped_ptr<base::DictionaryValue> ToDictionary() const;
@@ -60,6 +61,8 @@ class Instrument {
   const string16& last_four_digits() { return last_four_digits_; }
 
  private:
+  void Init();
+
   // |primary_account_number_| is expected to be \d{12-19}.
   string16 primary_account_number_;
 
@@ -81,7 +84,7 @@ class Instrument {
   // The last four digits of |primary_account_number_|.
   string16 last_four_digits_;
 
-  DISALLOW_COPY_AND_ASSIGN(Instrument);
+  DISALLOW_ASSIGN(Instrument);
 };
 
 }  // namespace wallet

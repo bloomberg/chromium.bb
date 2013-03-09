@@ -50,10 +50,17 @@ Instrument::Instrument(const string16& primary_account_number,
       form_of_payment_(form_of_payment),
       address_(address.Pass()) {
   DCHECK(address_);
-  if (primary_account_number_.size() >=4) {
-    last_four_digits_ =
-        primary_account_number_.substr(primary_account_number_.size() - 4);
-  }
+  Init();
+}
+
+Instrument::Instrument(const Instrument& instrument)
+    : primary_account_number_(instrument.primary_account_number()),
+      card_verification_number_(instrument.card_verification_number()),
+      expiration_month_(instrument.expiration_month()),
+      expiration_year_(instrument.expiration_year()),
+      form_of_payment_(instrument.form_of_payment()),
+      address_(new Address(instrument.address())) {
+  Init();
 }
 
 Instrument::~Instrument() {}
@@ -90,6 +97,13 @@ bool Instrument::IsValid() const {
          card_verification_number_valid &&
          exp_month_valid &&
          exp_year_valid;
+}
+
+void Instrument::Init() {
+  if (primary_account_number_.size() >= 4) {
+    last_four_digits_ =
+        primary_account_number_.substr(primary_account_number_.size() - 4);
+  }
 }
 
 }  // namespace wallet

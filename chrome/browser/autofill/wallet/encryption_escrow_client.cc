@@ -40,17 +40,19 @@ namespace autofill {
 namespace wallet {
 
 EncryptionEscrowClient::EncryptionEscrowClient(
-    net::URLRequestContextGetter* context_getter)
+    net::URLRequestContextGetter* context_getter,
+    EncryptionEscrowClientObserver* observer)
     : context_getter_(context_getter),
+      observer_(observer),
       request_type_(NO_PENDING_REQUEST) {
-  DCHECK(context_getter);
+  DCHECK(context_getter_);
+  DCHECK(observer_);
 }
 
 EncryptionEscrowClient::~EncryptionEscrowClient() {}
 
 void EncryptionEscrowClient::EncryptOneTimePad(
-    const std::vector<uint8>& one_time_pad,
-    base::WeakPtr<EncryptionEscrowClientObserver> observer) {
+    const std::vector<uint8>& one_time_pad) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   size_t num_bits = one_time_pad.size() * 8;
   DCHECK_LE(num_bits, kMaxBits);
@@ -63,13 +65,12 @@ void EncryptionEscrowClient::EncryptOneTimePad(
       base::HexEncode(&num_bits, 1).c_str(),
       base::HexEncode(&(one_time_pad[0]), one_time_pad.size()).c_str());
 
-  MakeRequest(GetEncryptionUrl(), post_body, observer);
+  MakeRequest(GetEncryptionUrl(), post_body);
 }
 
 void EncryptionEscrowClient::EscrowInstrumentInformation(
     const Instrument& new_instrument,
-    const std::string& obfuscated_gaia_id,
-    base::WeakPtr<EncryptionEscrowClientObserver> observer) {
+    const std::string& obfuscated_gaia_id) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ESCROW_INSTRUMENT_INFORMATION;
 
@@ -86,13 +87,12 @@ void EncryptionEscrowClient::EscrowInstrumentInformation(
       primary_account_number.c_str(),
       card_verification_number.c_str());
 
-  MakeRequest(GetEscrowUrl(), post_body, observer);
+  MakeRequest(GetEscrowUrl(), post_body);
 }
 
 void EncryptionEscrowClient::EscrowCardVerificationNumber(
     const std::string& card_verification_number,
-    const std::string& obfuscated_gaia_id,
-    base::WeakPtr<EncryptionEscrowClientObserver> observer) {
+    const std::string& obfuscated_gaia_id) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ESCROW_CARD_VERIFICATION_NUMBER;
 
@@ -101,17 +101,12 @@ void EncryptionEscrowClient::EscrowCardVerificationNumber(
       obfuscated_gaia_id.c_str(),
       card_verification_number.c_str());
 
-  MakeRequest(GetEscrowUrl(), post_body, observer);
+  MakeRequest(GetEscrowUrl(), post_body);
 }
 
-void EncryptionEscrowClient::MakeRequest(
-    const GURL& url,
-    const std::string& post_body,
-    base::WeakPtr<EncryptionEscrowClientObserver> observer) {
+void EncryptionEscrowClient::MakeRequest(const GURL& url,
+                                         const std::string& post_body) {
   DCHECK(!request_.get());
-  DCHECK(observer);
-
-  observer_ = observer;
 
   request_.reset(net::URLFetcher::Create(
       1, url, net::URLFetcher::POST, this));
@@ -124,6 +119,7 @@ void EncryptionEscrowClient::MakeRequest(
 // TODO(ahutter): Add manual retry logic if it's necessary.
 void EncryptionEscrowClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  DCHECK(observer_);
   scoped_ptr<net::URLFetcher> old_request = request_.Pass();
   DCHECK_EQ(source, old_request.get());
 
@@ -152,23 +148,19 @@ void EncryptionEscrowClient::OnURLFetchComplete(
       // The response from the server should be formatted as
       // "<session material>|<encrypted one time pad>".
       base::SplitString(data, '|', &splits);
-      if (splits.size() == 2) {
-        if (observer_)
-          observer_->OnDidEncryptOneTimePad(splits[1], splits[0]);
-      } else {
+      if (splits.size() == 2)
+        observer_->OnDidEncryptOneTimePad(splits[1], splits[0]);
+      else
         HandleMalformedResponse(old_request.get());
-      }
       break;
     }
 
     case ESCROW_INSTRUMENT_INFORMATION:
-      if (observer_)
-        observer_->OnDidEscrowInstrumentInformation(data);
+      observer_->OnDidEscrowInstrumentInformation(data);
       break;
 
     case ESCROW_CARD_VERIFICATION_NUMBER:
-      if (observer_)
-        observer_->OnDidEscrowCardVerificationNumber(data);
+      observer_->OnDidEscrowCardVerificationNumber(data);
       break;
 
     case NO_PENDING_REQUEST:
@@ -179,8 +171,7 @@ void EncryptionEscrowClient::OnURLFetchComplete(
 void EncryptionEscrowClient::HandleMalformedResponse(net::URLFetcher* request) {
   // Called to inform exponential backoff logic of the error.
   request->ReceivedContentWasMalformed();
-  if (observer_)
-    observer_->OnMalformedResponse();
+  observer_->OnMalformedResponse();
 }
 
 }  // namespace wallet

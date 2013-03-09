@@ -178,8 +178,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       callback_(callback),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           account_chooser_model_(this, profile_->GetPrefs())),
-      wallet_client_(profile_->GetRequestContext()),
-      refresh_wallet_items_queued_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          wallet_client_(profile_->GetRequestContext(), this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
@@ -305,7 +305,7 @@ void AutofillDialogControllerImpl::Show() {
 
   // Request sugar info after the view is showing to simplify code for now.
   if (IsPayingWithWallet())
-    ScheduleRefreshWalletItems();
+    wallet_client_.GetWalletItems(source_url_);
 }
 
 void AutofillDialogControllerImpl::Hide() {
@@ -1001,7 +1001,7 @@ void AutofillDialogControllerImpl::Observe(
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     EndSignInFlow();
     if (IsPayingWithWallet())
-      ScheduleRefreshWalletItems();
+      wallet_client_.GetWalletItems(source_url_);
   }
 }
 
@@ -1115,7 +1115,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   view_->UpdateNotificationArea();
 
   if (IsPayingWithWallet() && !wallet_items_)
-    ScheduleRefreshWalletItems();
+    wallet_client_.GetWalletItems(source_url_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1159,30 +1159,16 @@ bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
   return account_chooser_model_.WalletIsSelected();
 }
 
-void AutofillDialogControllerImpl::ScheduleRefreshWalletItems() {
-  DCHECK(IsPayingWithWallet());
-
-  if (wallet_client_.HasRequestInProgress()) {
-    refresh_wallet_items_queued_ = true;
-    return;
-  }
-
-  wallet_client_.GetWalletItems(source_url_, weak_ptr_factory_.GetWeakPtr());
-  refresh_wallet_items_queued_ = false;
-}
-
 void AutofillDialogControllerImpl::WalletRequestCompleted(bool success) {
   if (!success) {
+    account_chooser_model_.SetHadWalletError();
+    wallet_client_.CancelPendingRequests();
     wallet_items_.reset();
+
     GenerateSuggestionsModels();
     view_->ModelChanged();
     view_->UpdateNotificationArea();
-    account_chooser_model_.SetHadWalletError();
-    return;
   }
-
-  if (refresh_wallet_items_queued_)
-    ScheduleRefreshWalletItems();
 }
 
 bool AutofillDialogControllerImpl::IsFirstRun() const {

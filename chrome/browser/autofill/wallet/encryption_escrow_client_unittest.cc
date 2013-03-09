@@ -101,10 +101,10 @@ TEST_F(EncryptionEscrowClientTest, NetworkError) {
   net::TestURLFetcherFactory factory;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
   encryption_escrow_client.EscrowInstrumentInformation(*instrument,
-                                                       "obfuscated_gaia_id",
-                                                       observer.AsWeakPtr());
+                                                       "obfuscated_gaia_id");
   VerifyAndFinishRequest(factory,
                          net::HTTP_UNAUTHORIZED,
                          kEscrowInstrumentInformationRequest,
@@ -118,10 +118,10 @@ TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationSuccess) {
   net::TestURLFetcherFactory factory;
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
   encryption_escrow_client.EscrowInstrumentInformation(*instrument,
-                                                       "obfuscated_gaia_id",
-                                                       observer.AsWeakPtr());
+                                                       "obfuscated_gaia_id");
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kEscrowInstrumentInformationRequest,
@@ -134,10 +134,10 @@ TEST_F(EncryptionEscrowClientTest, EscrowInstrumentInformationFailure) {
 
   net::TestURLFetcherFactory factory;
   scoped_ptr<Instrument> instrument = GetTestInstrument();
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
   encryption_escrow_client.EscrowInstrumentInformation(*instrument,
-                                                       "obfuscated_gaia_id",
-                                                       observer.AsWeakPtr());
+                                                       "obfuscated_gaia_id");
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kEscrowInstrumentInformationRequest,
@@ -150,10 +150,10 @@ TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberSuccess) {
 
   net::TestURLFetcherFactory factory;
 
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
   encryption_escrow_client.EscrowCardVerificationNumber("123",
-                                                        "obfuscated_gaia_id",
-                                                        observer.AsWeakPtr());
+                                                        "obfuscated_gaia_id");
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kEscrowCardVerificationNumberRequest,
@@ -165,10 +165,10 @@ TEST_F(EncryptionEscrowClientTest, EscrowCardVerificationNumberFailure) {
   EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
 
   net::TestURLFetcherFactory factory;
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
   encryption_escrow_client.EscrowCardVerificationNumber("123",
-                                                        "obfuscated_gaia_id",
-                                                        observer.AsWeakPtr());
+                                                        "obfuscated_gaia_id");
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kEscrowCardVerificationNumberRequest,
@@ -182,9 +182,9 @@ TEST_F(EncryptionEscrowClientTest, EncryptOneTimePadSuccess) {
                                      "session_material")).Times(1);
 
   net::TestURLFetcherFactory factory;
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
-  encryption_escrow_client.EncryptOneTimePad(MakeOneTimePad(),
-                                             observer.AsWeakPtr());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
+  encryption_escrow_client.EncryptOneTimePad(MakeOneTimePad());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kEncryptOtpRequest,
@@ -196,9 +196,9 @@ TEST_F(EncryptionEscrowClientTest, EncryptOneTimePadFailure) {
   EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
 
   net::TestURLFetcherFactory factory;
-  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext());
-  encryption_escrow_client.EncryptOneTimePad(MakeOneTimePad(),
-                                             observer.AsWeakPtr());
+  EncryptionEscrowClient encryption_escrow_client(profile_.GetRequestContext(),
+                                                  &observer);
+  encryption_escrow_client.EncryptOneTimePad(MakeOneTimePad());
   VerifyAndFinishRequest(factory,
                          net::HTTP_OK,
                          kEncryptOtpRequest,

@@ -313,10 +313,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;
 
-  // Whether another refresh for WalletItems should be started when the current
-  // one is done.
-  bool refresh_wallet_items_queued_;
-
   // The most recently received WalletItems retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;
 

@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_AUTOFILL_WALLET_WALLET_CLIENT_H_
 #define CHROME_BROWSER_AUTOFILL_WALLET_WALLET_CLIENT_H_
 
+#include <queue>
 #include <string>
 #include <vector>
 
+#include "base/callback.h"  // For base::Closure.
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/wallet/encryption_escrow_client.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "components/autofill/common/autocheckout_status.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 
@@ -57,24 +59,26 @@ class WalletItems;
 // 4) If the user initiated Autocheckout, SendAutocheckoutStatus to notify
 //    Online Wallet of the status flow to record various metrics.
 //
-// WalletClient is designed so only one request to Online Wallet can be
-// outgoing at any one time. Implementors of WalletClientObserver should wait
-// for a callback to be called for an outgoing request before making another.
+// WalletClient is designed so only one request to Online Wallet can be outgoing
+// at any one time. If |HasRequestInProgress()| is true while calling e.g.
+// GetWalletItems(), the request will be queued and started later. Queued
+// requests start in the order they were received.
+
 class WalletClient
     : public net::URLFetcherDelegate,
       public EncryptionEscrowClientObserver {
  public:
   // |context_getter| is reference counted so it has no lifetime or ownership
-  // requirements.
-  explicit WalletClient(net::URLRequestContextGetter* context_getter);
+  // requirements. |observer| must outlive |this|.
+  WalletClient(net::URLRequestContextGetter* context_getter,
+               WalletClientObserver* observer);
 
   virtual ~WalletClient();
 
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
   // to the user to be accepted.
-  void GetWalletItems(const GURL& source_url,
-                      base::WeakPtr<WalletClientObserver> observer);
+  void GetWalletItems(const GURL& source_url);
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
@@ -82,8 +86,7 @@ class WalletClient
   // to the GetWalletItems call.
   void AcceptLegalDocuments(const std::vector<std::string>& document_ids,
                             const std::string& google_transaction_id,
-                            const GURL& source_url,
-                            base::WeakPtr<WalletClientObserver> observer);
+                            const GURL& source_url);
 
   // Authenticates that |card_verification_number| is for the backing instrument
   // with |instrument_id|. |obfuscated_gaia_id| is used as a key when escrowing
@@ -91,8 +94,7 @@ class WalletClient
   // complete. Used to respond to Risk challenges.
   void AuthenticateInstrument(const std::string& instrument_id,
                               const std::string& card_verification_number,
-                              const std::string& obfuscated_gaia_id,
-                              base::WeakPtr<WalletClientObserver> observer);
+                              const std::string& obfuscated_gaia_id);
 
   // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
   // |adddress_id| should have been selected by the user in some UI,
@@ -105,26 +107,21 @@ class WalletClient
                      const GURL& source_url,
                      const Cart& cart,
                      const std::string& google_transaction_id,
-                     autofill::DialogType dialog_type,
-                     base::WeakPtr<WalletClientObserver> observer);
+                     autofill::DialogType dialog_type);
 
   // SaveAddress saves a new shipping address.
-  void SaveAddress(const Address& address,
-                   const GURL& source_url,
-                   base::WeakPtr<WalletClientObserver> observer);
+  void SaveAddress(const Address& address, const GURL& source_url);
 
   // SaveInstrument saves a new instrument.
   void SaveInstrument(const Instrument& instrument,
                       const std::string& obfuscated_gaia_id,
-                      const GURL& source_url,
-                      base::WeakPtr<WalletClientObserver> observer);
+                      const GURL& source_url);
 
   // SaveInstrumentAndAddress saves a new instrument and address.
   void SaveInstrumentAndAddress(const Instrument& instrument,
                                 const Address& shipping_address,
                                 const std::string& obfuscated_gaia_id,
-                                const GURL& source_url,
-                                base::WeakPtr<WalletClientObserver> observer);
+                                const GURL& source_url);
 
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
   // flows. |status| is the result of the flow, |merchant_domain| is the domain
@@ -132,8 +129,7 @@ class WalletClient
   // one provided by GetWalletItems.
   void SendAutocheckoutStatus(autofill::AutocheckoutStatus status,
                               const GURL& source_url,
-                              const std::string& google_transaction_id,
-                              base::WeakPtr<WalletClientObserver> observer);
+                              const std::string& google_transaction_id);
 
   // UpdateInstrument changes the instrument with id |instrument_id| with the
   // information in |billing_address|. Its primary use is for upgrading ZIP code
@@ -142,13 +138,18 @@ class WalletClient
   // fail.
   void UpdateInstrument(const std::string& instrument_id,
                         const Address& billing_address,
-                        const GURL& source_url,
-                        base::WeakPtr<WalletClientObserver> observer);
+                        const GURL& source_url);
 
   // Whether there is a currently running request (i.e. |request_| != NULL).
   bool HasRequestInProgress() const;
 
+  // Cancels and clears all |pending_requests_|.
+  void CancelPendingRequests();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(WalletClientTest, PendingRequest);
+  FRIEND_TEST_ALL_PREFIXES(WalletClientTest, CancelPendingRequests);
+
   // TODO(ahutter): Implement this.
   std::string GetRiskParams() { return std::string(); }
 
@@ -167,12 +168,13 @@ class WalletClient
 
   // Posts |post_body| to |url| and notifies |observer| when the request is
   // complete.
-  void MakeWalletRequest(const GURL& url,
-                         const std::string& post_body,
-                         base::WeakPtr<WalletClientObserver> observer);
+  void MakeWalletRequest(const GURL& url, const std::string& post_body);
 
   // Performs bookkeeping tasks for any invalid requests.
-  void HandleMalformedResponse(net::URLFetcher* request);
+  void HandleMalformedResponse();
+
+  // Start the next pending request (if any).
+  void StartNextPendingRequest();
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -194,7 +196,7 @@ class WalletClient
 
   // Observer class that has its various On* methods called based on the results
   // of a request to Online Wallet.
-  base::WeakPtr<WalletClientObserver> observer_;
+  WalletClientObserver* const observer_;  // must outlive |this|.
 
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;
@@ -211,11 +213,12 @@ class WalletClient
   // body is saved here while that those requests are in flight.
   base::DictionaryValue pending_request_body_;
 
+  // Requests that are waiting to be run.
+  std::queue<base::Closure> pending_requests_;
+
   // This client is repsonsible for making encryption and escrow calls to Online
   // Wallet.
   EncryptionEscrowClient encryption_escrow_client_;
-
-  base::WeakPtrFactory<WalletClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletClient);
 };

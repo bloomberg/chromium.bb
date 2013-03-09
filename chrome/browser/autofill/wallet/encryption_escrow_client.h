@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -29,31 +28,26 @@ class Instrument;
 // encryption and escrow backend.
 class EncryptionEscrowClient : public net::URLFetcherDelegate {
  public:
-  explicit EncryptionEscrowClient(net::URLRequestContextGetter* context_getter);
+  // |observer| must outlive |this|.
+  EncryptionEscrowClient(net::URLRequestContextGetter* context_getter,
+                         EncryptionEscrowClientObserver* observer);
   virtual ~EncryptionEscrowClient();
 
   // Sends |one_time_pad|, a vector of cryptographically secure random bytes, to
   // Online Wallet to be encrypted. These bytes must be generated using
-  // crypto/random.h. |observer| is notified when the request is complete.
-  void EncryptOneTimePad(
-      const std::vector<uint8>& one_time_pad,
-      base::WeakPtr<EncryptionEscrowClientObserver> observer);
+  // crypto/random.h.
+  void EncryptOneTimePad(const std::vector<uint8>& one_time_pad);
 
   // Escrows the card verfication number of an existing instrument with Online
-  // Wallet. The escrow is keyed off of |obfuscated_gaia_id|. |observer| is
-  // notified when the request is complete.
-  void EscrowCardVerificationNumber(
-      const std::string& card_verification_number,
-      const std::string& obfuscated_gaia_id,
-      base::WeakPtr<EncryptionEscrowClientObserver> observer);
+  // Wallet. The escrow is keyed off of |obfuscated_gaia_id|.
+  void EscrowCardVerificationNumber(const std::string& card_verification_number,
+                                    const std::string& obfuscated_gaia_id);
 
   // Escrows the primary account number and card verfication number of
   // |new_instrument| with Online Wallet. The escrow is keyed off of
-  // |obfuscated_gaia_id|. |observer| is notified when the request is complete.
-  void EscrowInstrumentInformation(
-      const Instrument& new_instrument,
-      const std::string& obfuscated_gaia_id,
-      base::WeakPtr<EncryptionEscrowClientObserver> observer);
+  // |obfuscated_gaia_id|.
+  void EscrowInstrumentInformation(const Instrument& new_instrument,
+                                   const std::string& obfuscated_gaia_id);
 
  private:
   enum RequestType {
@@ -63,12 +57,9 @@ class EncryptionEscrowClient : public net::URLFetcherDelegate {
     ESCROW_CARD_VERIFICATION_NUMBER,
   };
 
-  // Posts |post_body| to |url|. When the request is complete, the |observer|
-  // is notified of the result.
-  void MakeRequest(
-      const GURL& url,
-      const std::string& post_body,
-      base::WeakPtr<EncryptionEscrowClientObserver> observer);
+  // Posts |post_body| to |url|. When the request is complete, |observer_| is
+  // notified of the result.
+  void MakeRequest(const GURL& url, const std::string& post_body);
 
   // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse(net::URLFetcher* request);
@@ -82,7 +73,7 @@ class EncryptionEscrowClient : public net::URLFetcherDelegate {
 
   // Observer class that has its various On* methods called based on the results
   // of a request to Online Wallet.
-  base::WeakPtr<EncryptionEscrowClientObserver> observer_;
+  EncryptionEscrowClientObserver* const observer_;
 
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;

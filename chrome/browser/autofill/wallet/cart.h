@@ -27,9 +27,11 @@ class Cart {
  public:
   Cart(const std::string& total_price, const std::string& currency_code);
   ~Cart();
+
+  scoped_ptr<base::DictionaryValue> ToDictionary() const;
+
   const std::string& total_price() const { return total_price_; }
   const std::string& currency_code() const { return currency_code_; }
-  scoped_ptr<base::DictionaryValue> ToDictionary() const;
 
  private:
   // |total_price_| must be a formatted as a double with no more than two
@@ -39,7 +41,7 @@ class Cart {
   // |currency_code_| must be one of the ISO 4217 currency codes, e.g. USD.
   std::string currency_code_;
 
-  DISALLOW_COPY_AND_ASSIGN(Cart);
+  DISALLOW_ASSIGN(Cart);
 };
 
 }  // namespace wallet
