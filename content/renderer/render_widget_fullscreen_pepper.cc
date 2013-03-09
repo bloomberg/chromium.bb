@@ -569,16 +569,21 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   attributes.antialias = false;
   attributes.shareResources = true;
   attributes.preferDiscreteGPU = true;
-  context_ = WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
-      RenderThreadImpl::current(),
-      surface_id(),
-      NULL,
+
+  context_ =
+      new WebGraphicsContext3DCommandBufferImpl(
+          surface_id(),
+          active_url_,
+          RenderThreadImpl::current(),
+          AsWeakPtr());
+  if (!context_->Initialize(
       attributes,
-      true /* bind generates resources */,
-      active_url_,
-      CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT);
-  if (!context_)
+      true /* bind_generates_resources */,
+      CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT)) {
+    delete context_;
+    context_ = NULL;
     return;
+  }
 
   if (!InitContext()) {
     DestroyContext(context_, program_, buffer_);
@@ -636,6 +641,8 @@ const float kTexCoords[] = {
 }  // anonymous namespace
 
 bool RenderWidgetFullscreenPepper::InitContext() {
+  if (!context_->makeContextCurrent())
+    return false;
   gfx::Size pixel_size = gfx::ToFlooredSize(
       gfx::ScaleSize(size(), deviceScaleFactor()));
   context_->reshape(pixel_size.width(), pixel_size.height());

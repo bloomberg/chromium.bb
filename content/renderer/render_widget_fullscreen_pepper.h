@@ -31,7 +31,8 @@ class WebGraphicsContext3DCommandBufferImpl;
 class RenderWidgetFullscreenPepper :
     public RenderWidgetFullscreen,
     public webkit::ppapi::FullscreenContainer,
-    public WebGraphicsContext3DSwapBuffersClient {
+    public WebGraphicsContext3DSwapBuffersClient,
+    public base::SupportsWeakPtr<RenderWidgetFullscreenPepper> {
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
