@@ -485,11 +485,13 @@ syllableBreak ()
 	wordEnd--;
 	break;
       }
-  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart, 
+  if (wordEnd == srcmax) wordEnd--;
+/* At this stage wordStart is the 0 based index of the first letter in the word,
+* wordEnd is the 0 based index of the last letter in the word.
+* therefore if we want the complete word its: wordEnd-wordStart+1 */
+  if (!hyphenate (&currentInput[wordStart], wordEnd - wordStart+1, 
   hyphens))
     return 0;
-/* If the number at the beginning of the syllable is odd or all 
-* numbers are even there is no syllable break. Otherwise there is.*/
   for (k = src - wordStart+1; k < (src - wordStart + transCharslen); k++) 
     if (hyphens[k] & 1)
       return 1;
