@@ -577,7 +577,7 @@ rpi_element_dmx_move(struct rpi_element *element,
 		&dst_rect,
 		&src_rect,
 		DISPMANX_NO_HANDLE,
-		DISPMANX_NO_ROTATE);
+		VC_IMAGE_ROT0);
 	DBG("element %p move\n", element);
 }
 
