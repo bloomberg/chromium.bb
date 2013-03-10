@@ -38,6 +38,7 @@ class MockTransportChannel : public cricket::TransportChannel {
   MOCK_METHOD3(SendPacket, int(const char* data, size_t len, int flags));
   MOCK_METHOD2(SetOption, int(talk_base::Socket::Option opt, int value));
   MOCK_METHOD0(GetError, int());
+  MOCK_CONST_METHOD0(GetRole, cricket::TransportRole());
 };
 
 class TransportChannelSocketAdapterTest : public testing::Test {

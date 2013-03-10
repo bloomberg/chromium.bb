@@ -25,9 +25,6 @@
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
-      # TODO(ronghuawu): Remove this once libjingle is updated to use the new
-      # webrtc.
-      'USE_WEBRTC_DEV_BRANCH',
     ],
     'configurations': {
       'Debug': {

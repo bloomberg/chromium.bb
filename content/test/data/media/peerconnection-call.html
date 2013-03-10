@@ -232,7 +232,7 @@
   }
 
   function removeMsidAndBundle(offerSdp) {
-    offerSdp = offerSdp.replace(/a=msid-semantics.*\r\n/g, '');
+    offerSdp = offerSdp.replace(/a=msid-semantic.*\r\n/g, '');
     offerSdp = offerSdp.replace('a=group:BUNDLE audio video\r\n', '');
     offerSdp = offerSdp.replace('a=mid:audio\r\n', '');
     offerSdp = offerSdp.replace('a=mid:video\r\n', '');
