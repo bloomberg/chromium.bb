@@ -14,15 +14,6 @@
     {
       'target_name': 'cloud_print_service_lib',
       'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'defines' : [
-        '_ATL_APARTMENT_THREADED',
-        '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
-        '_ATL_NO_AUTOMATIC_NAMESPACE',
-        '_ATL_NO_EXCEPTIONS',
-        'SECURITY_WIN32',
-        'STRICT',
-      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
@@ -34,16 +25,10 @@
         'service_state.h',
         'service_switches.cc',
         'service_switches.h',
-        'win/cloud_print_service.cc',
-        'win/cloud_print_service.h',
-        'win/cloud_print_service.rc',
         'win/chrome_launcher.cc',
         'win/chrome_launcher.h',
         'win/local_security_policy.cc',
         'win/local_security_policy.h',
-        'win/resource.h',
-        'win/service_controller.cc',
-        'win/service_controller.h',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -63,8 +48,10 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
-        'win/cloud_print_service_main.cc',
+        'win/cloud_print_service.cc',
+        'win/cloud_print_service.h',
         'win/cloud_print_service.rc',
+        'win/resource.h',
       ],
       'dependencies': [
         'cloud_print_service_lib',
