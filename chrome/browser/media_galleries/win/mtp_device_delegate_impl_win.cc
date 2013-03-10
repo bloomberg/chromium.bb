@@ -523,8 +523,7 @@ void MTPDeviceDelegateImplWin::OnInitCompleted(bool succeeded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   init_state_ = succeeded ? INITIALIZED : UNINITIALIZED;
   task_in_progress_ = false;
-  if (succeeded)
-    ProcessNextPendingRequest();
+  ProcessNextPendingRequest();
 }
 
 void MTPDeviceDelegateImplWin::OnGetFileInfo(
