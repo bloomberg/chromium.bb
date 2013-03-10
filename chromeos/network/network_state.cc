@@ -19,6 +19,7 @@ NetworkState::~NetworkState() {
 
 bool NetworkState::PropertyChanged(const std::string& key,
                                    const base::Value& value) {
+  // Keep care that these properties are the same as in |GetProperties|.
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == flimflam::kSignalStrengthProperty) {
@@ -41,6 +42,30 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &guid_);
   }
   return false;
+}
+
+void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
+  // Keep care that these properties are the same as in |PropertyChanged|.
+  dictionary->SetStringWithoutPathExpansion(flimflam::kNameProperty, name());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type());
+  dictionary->SetIntegerWithoutPathExpansion(flimflam::kSignalStrengthProperty,
+                                             signal_strength());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kStateProperty,
+                                            connection_state());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
+                                            error());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kActivationStateProperty,
+                                            activation_state());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kRoamingStateProperty,
+                                            roaming());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
+                                            security());
+  dictionary->SetStringWithoutPathExpansion(
+      flimflam::kNetworkTechnologyProperty,
+      technology());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kDeviceProperty,
+                                            device_path());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid());
 }
 
 bool NetworkState::IsConnectedState() const {

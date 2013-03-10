@@ -64,7 +64,7 @@ void TranslatePropertiesAndRunCallback(
   scoped_ptr<base::DictionaryValue> onc_network(
       onc::TranslateShillServiceToONCPart(
           shill_properties,
-          &onc::kNetworkConfigurationSignature));
+          &onc::kNetworkWithStateSignature));
   callback.Run(service_path, *onc_network);
 }
 
@@ -130,9 +130,8 @@ void ManagedNetworkConfigurationHandler::SetProperties(
   // TODO(pneubeck): Enforce policies.
 
   scoped_ptr<base::DictionaryValue> shill_dictionary(
-      onc::TranslateONCObjectToShill(
-          &onc::kNetworkConfigurationSignature,
-          properties));
+      onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
+                                     properties));
 
   NetworkConfigurationHandler::Get()->SetProperties(service_path,
                                                     *shill_dictionary,

@@ -17,47 +17,29 @@ var verificationProperties = {
 };
 
 var privateHelpers = {
-  connectListener: function(network, done) {
+  // Watches for the states |expectedStates| in reverse order. If all states
+  // were observed in the right order, succeeds and calls |done|. If any
+  // unexpected state is observed, fails.
+  watchForStateChanges: function(network, expectedStates, done) {
     var self = this;
-    var collectProperties = function(transition, properties) {
+    var collectProperties = function(properties) {
       var finishTest = function() {
         chrome.networkingPrivate.onNetworksChanged.removeListener(
           self.watchForConnect);
         done();
       };
-      var startDisconnect = function() {
-        chrome.networkingPrivate.startDisconnect(
-          network,
-          callbackPass(function() {}));
-      };
-      var startConnect = function() {
-        chrome.networkingPrivate.startConnect(
-          network,
-          callbackPass(function() {}));
-      };
-      if (properties.ConnectionState == "NotConnected") {
-        if (transition == "connect")
-          finishTest();
-        else
-          startConnect();
-      }
-      if (properties.ConnectionState == "Connected") {
-        if (transition == "connect")
-          startDisconnect();
-        else
-          finishTest();
-      }
+      var expectedState = expectedStates.pop();
+      assertEq(expectedState, properties.ConnectionState);
+      if (expectedStates.length == 0)
+        finishTest();
     };
-    this.watchForConnect = function(changes) {
+    this.onNetworkChange = function(changes) {
       assertEq([network], changes);
-      chrome.networkingPrivate.getProperties(
-        network, collectProperties.bind(undefined, "connect"));
+      chrome.networkingPrivate.getProperties(network,
+                                             collectProperties.bind(undefined));
     };
-    this.watchForDisconnect = function(changes) {
-      assertEq([network], changes);
-      chrome.networkingPrivate.getProperties(
-        network, collectProperties.bind(undefined, "disconnect"));
-    };
+    chrome.networkingPrivate.onNetworksChanged.addListener(
+      this.onNetworkChange);
   },
   listListener: function(network, expected, done) {
     var self = this;
@@ -70,30 +52,33 @@ var privateHelpers = {
   }
 };
 
-/////////////////////////////////////////////////////
-// Tests
 var availableTests = [
   function startConnect() {
-    chrome.networkingPrivate.startConnect("stub_wifi2",
-      callbackPass(function() {}));
+    chrome.networkingPrivate.startConnect("stub_wifi2", callbackPass());
   },
   function startDisconnect() {
-    chrome.networkingPrivate.startDisconnect("stub_wifi2",
-      callbackPass(function() {}));
+    chrome.networkingPrivate.startDisconnect("stub_wifi2", callbackPass());
   },
   function startConnectNonexistent() {
-    // Make sure we get an error when we try to connect to a nonexistent
-    // network.
     chrome.networkingPrivate.startConnect(
       "nonexistent_path",
-      callbackFail("Error.InvalidService", function() {}));
+      callbackFail("Error.InvalidService"));
+  },
+  function startDisconnectNonexistent() {
+    chrome.networkingPrivate.startDisconnect(
+      "nonexistent_path",
+      callbackFail("Error.InvalidService"));
+  },
+  function startGetPropertiesNonexistent() {
+    chrome.networkingPrivate.getProperties(
+      "nonexistent_path",
+      callbackFail("Error.DBusFailed"));
   },
   function getVisibleNetworks() {
     chrome.networkingPrivate.getVisibleNetworks(
       "All",
       callbackPass(function(result) {
         assertTrue(!!result);
-        assertEq(4, result.length);
         assertEq([{
                     "ConnectionState": "Connected",
                     "GUID": "stub_ethernet",
@@ -106,7 +91,8 @@ var availableTests = [
                     "Name": "wifi1",
                     "Type": "WiFi",
                     "WiFi": {
-                      "SSID": "stub_wifi1",
+                      "Security": "WEP-PSK",
+                      "SignalStrength": 0
                     }
                   },
                   {
@@ -115,18 +101,27 @@ var availableTests = [
                     "Name": "wifi2_PSK",
                     "Type": "WiFi",
                     "WiFi": {
-                      "SSID": "stub_wifi2",
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
                   },
                   {
+                    "Cellular": {
+                      "ActivationState": "not-activated",
+                      "NetworkTechnology": "GSM",
+                      "RoamingState": "home"
+                    },
                     "ConnectionState": "NotConnected",
                     "GUID": "stub_cellular1",
                     "Name": "cellular1",
                     "Type": "Cellular"
-                  }
-                  ], result);
+                  },
+                  {
+                    "ConnectionState": "Connected",
+                    "GUID": "stub_vpn1",
+                    "Name": "vpn1",
+                    "Type": "VPN"
+                  }], result);
       }));
   },
   function getVisibleNetworksWifi() {
@@ -134,14 +129,14 @@ var availableTests = [
       "WiFi",
       callbackPass(function(result) {
         assertTrue(!!result);
-        assertEq(2, result.length);
         assertEq([{
                     "ConnectionState": "Connected",
                     "GUID": "stub_wifi1",
                     "Name": "wifi1",
                     "Type": "WiFi",
                     "WiFi": {
-                      "SSID": "stub_wifi1"
+                      "Security": "WEP-PSK",
+                      "SignalStrength": 0
                     }
                   },
                   {
@@ -150,7 +145,6 @@ var availableTests = [
                     "Name": "wifi2_PSK",
                     "Type": "WiFi",
                     "WiFi": {
-                      "SSID": "stub_wifi2",
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
@@ -163,32 +157,47 @@ var availableTests = [
       "stub_wifi2",
       callbackPass(function(result) {
         assertTrue(!!result);
-        assertEq("wifi2_PSK", result.Name);
-        assertEq("NotConnected", result.ConnectionState);
-        assertEq("WiFi", result.Type);
+        assertEq({
+                   "ConnectionState": "NotConnected",
+                   "GUID": "stub_wifi2",
+                   "Name": "wifi2_PSK",
+                   "Type": "WiFi",
+                   "WiFi": {
+                     "SSID": "stub_wifi2",
+                     "Security": "WPA-PSK",
+                     "SignalStrength": 80
+                   }
+                 }, result);
       }));
   },
-  function onNetworksChangedEvent() {
+  function onNetworksChangedEventConnect() {
     var network = "stub_wifi2";
     var done = chrome.test.callbackAdded();
-    var listener = new privateHelpers.connectListener(network, done);
-    chrome.networkingPrivate.onNetworksChanged.addListener(
-      listener.watchForConnect);
-    chrome.networkingPrivate.startConnect(network,
-      callbackPass(function() {}));
+    var expectedStates = ["Connected", "Connecting"];
+    var listener =
+        new privateHelpers.watchForStateChanges(network, expectedStates, done);
+    chrome.networkingPrivate.startConnect(network, callbackPass());
+  },
+  function onNetworksChangedEventDisconnect() {
+    var network = "stub_wifi1";
+    var done = chrome.test.callbackAdded();
+    var expectedStates = ["NotConnected"];
+    var listener =
+        new privateHelpers.watchForStateChanges(network, expectedStates, done);
+    chrome.networkingPrivate.startDisconnect(network, callbackPass());
   },
   function onNetworkListChangedEvent() {
     var network = "stub_wifi2";
     var expected = ["stub_wifi2",
                     "stub_ethernet",
                     "stub_wifi1",
-                    "stub_cellular1"];
+                    "stub_cellular1",
+                    "stub_vpn1"];
     var done = chrome.test.callbackAdded();
     var listener = new privateHelpers.listListener(network, expected, done);
     chrome.networkingPrivate.onNetworkListChanged.addListener(
       listener.listenForChanges);
-    chrome.networkingPrivate.startConnect(network,
-      callbackPass(function() {}));
+    chrome.networkingPrivate.startConnect(network, callbackPass());
   },
   function verifyDestination() {
     chrome.networkingPrivate.verifyDestination(

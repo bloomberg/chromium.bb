@@ -26,7 +26,7 @@ CHROMEOS_EXPORT extern const char kDisableStubEthernet[];
 CHROMEOS_EXPORT extern const char kEnableExperimentalBluetooth[];
 CHROMEOS_EXPORT extern const char kEnableLocallyManagedUserUIExperiments[];
 CHROMEOS_EXPORT extern const char kEnableNewNetworkChangeNotifier[];
-CHROMEOS_EXPORT extern const char kEnableNewNetworkConfigurationHandlers[];
+CHROMEOS_EXPORT extern const char kUseNewNetworkConfigurationHandlers[];
 CHROMEOS_EXPORT extern const char kEnableScreensaverExtensions[];
 CHROMEOS_EXPORT extern const char kEnableStubInteractive[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];

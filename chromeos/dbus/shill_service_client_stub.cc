@@ -78,7 +78,7 @@ void ShillServiceClientStub::SetProperty(const dbus::ObjectPath& service_path,
   base::DictionaryValue* dict = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(
       service_path.value(), &dict)) {
-    error_callback.Run("StubError", "Service not found");
+    error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
   if (name == flimflam::kStateProperty) {
@@ -111,7 +111,7 @@ void ShillServiceClientStub::ClearProperty(
   base::DictionaryValue* dict = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(
       service_path.value(), &dict)) {
-    error_callback.Run("StubError", "Service not found");
+    error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
   dict->Remove(name, NULL);
@@ -132,7 +132,7 @@ void ShillServiceClientStub::ClearProperties(
   base::DictionaryValue* dict = NULL;
   if (!stub_services_.GetDictionaryWithoutPathExpansion(
       service_path.value(), &dict)) {
-    error_callback.Run("StubError", "Service not found");
+    error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
   }
   scoped_ptr<base::ListValue> results(new base::ListValue);
@@ -189,6 +189,11 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
 void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,
                                         const base::Closure& callback,
                                         const ErrorCallback& error_callback) {
+  base::Value* service;
+  if (!stub_services_.Get(service_path.value(), &service)) {
+    error_callback.Run("Error.InvalidService", "Invalid Service");
+    return;
+  }
   // Set Idle after a delay
   const int kConnectDelaySeconds = 2;
   base::StringValue idle_value(flimflam::kStateIdle);
@@ -312,15 +317,17 @@ void ShillServiceClientStub::SetDefaultProperties() {
              flimflam::kTypeWifi,
              flimflam::kStateOnline,
              add_to_watchlist);
+  SetServiceProperty("stub_wifi1",
+                     flimflam::kSecurityProperty,
+                     base::StringValue(flimflam::kSecurityWep));
 
   AddService("stub_wifi2", "wifi2_PSK",
              flimflam::kTypeWifi,
              flimflam::kStateIdle,
              add_to_watchlist);
-  base::StringValue psk_value(flimflam::kSecurityPsk);
   SetServiceProperty("stub_wifi2",
                      flimflam::kSecurityProperty,
-                     psk_value);
+                     base::StringValue(flimflam::kSecurityPsk));
   base::FundamentalValue strength_value(80);
   SetServiceProperty("stub_wifi2",
                      flimflam::kSignalStrengthProperty,
@@ -334,10 +341,12 @@ void ShillServiceClientStub::SetDefaultProperties() {
   SetServiceProperty("stub_cellular1",
                      flimflam::kNetworkTechnologyProperty,
                      technology_value);
-  base::StringValue activation_value(flimflam::kActivationStateActivated);
   SetServiceProperty("stub_cellular1",
                      flimflam::kActivationStateProperty,
-                     activation_value);
+                     base::StringValue(flimflam::kActivationStateNotActivated));
+  SetServiceProperty("stub_cellular1",
+                     flimflam::kRoamingStateProperty,
+                     base::StringValue(flimflam::kRoamingStateHome));
 
   AddService("stub_vpn1", "vpn1",
              flimflam::kTypeVPN,

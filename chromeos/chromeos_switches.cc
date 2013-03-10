@@ -27,9 +27,10 @@ const char kEnableLocallyManagedUserUIExperiments[] =
 const char kEnableNewNetworkChangeNotifier[] =
     "enable-new-network-change-notifier";
 
-// Enables the new NetworkConfigurationHandler class.
-const char kEnableNewNetworkConfigurationHandlers[] =
-    "enable-new-network-configuration-handlers";
+// Enables usage of the new ManagedNetworkConfigurationHandler and
+// NetworkConfigurationHandler singletons.
+const char kUseNewNetworkConfigurationHandlers[] =
+    "use-new-network-configuration-handlers";
 
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";

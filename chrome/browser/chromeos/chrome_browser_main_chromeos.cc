@@ -283,11 +283,8 @@ class DBusServices {
     chromeos::GeolocationHandler::Initialize();
     chromeos::NetworkStateHandler::Initialize();
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
-      chromeos::NetworkConfigurationHandler::Initialize();
-      chromeos::ManagedNetworkConfigurationHandler::Initialize();
-    }
+    chromeos::NetworkConfigurationHandler::Initialize();
+    chromeos::ManagedNetworkConfigurationHandler::Initialize();
 
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
@@ -325,11 +322,8 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
-      chromeos::ManagedNetworkConfigurationHandler::Shutdown();
-      chromeos::NetworkConfigurationHandler::Shutdown();
-    }
+    chromeos::ManagedNetworkConfigurationHandler::Shutdown();
+    chromeos::NetworkConfigurationHandler::Shutdown();
 
     chromeos::ConnectivityStateHelper::Shutdown();
     chromeos::NetworkStateHandler::Shutdown();

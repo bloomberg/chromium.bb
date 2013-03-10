@@ -30,13 +30,6 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Callback if talking to ShillServiceClient directly.
-  // TODO(pneubeck): Remove once the ManagedNetworkConfigurationHandler is
-  // stable.
-  void ResultCallback(const std::string& service_path,
-                      chromeos::DBusMethodCallStatus call_status,
-                      const base::DictionaryValue& result);
-
   // Callbacks if talking to ManagedNetworkConfigurationHandler.
   void GetPropertiesSuccess(const std::string& service_path,
                             const base::DictionaryValue& result);
@@ -47,7 +40,7 @@ class NetworkingPrivateGetPropertiesFunction : public AsyncExtensionFunction {
 
 // Implements the chrome.networkingPrivate.getVisibleNetworks method.
 class NetworkingPrivateGetVisibleNetworksFunction
-    : public AsyncExtensionFunction {
+    : public SyncExtensionFunction {
  public:
   NetworkingPrivateGetVisibleNetworksFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getVisibleNetworks",
@@ -56,15 +49,10 @@ class NetworkingPrivateGetVisibleNetworksFunction
  protected:
   virtual ~NetworkingPrivateGetVisibleNetworksFunction();
 
-  // AsyncExtensionFunction overrides.
+  // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // Gets called when all the results are in.
-  void SendResultCallback(const std::string& error,
-                          scoped_ptr<base::ListValue> result_list);
-
  private:
-
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetVisibleNetworksFunction);
 };
 
@@ -86,8 +74,9 @@ class NetworkingPrivateStartConnectFunction : public AsyncExtensionFunction {
   // itself succeeded, just that the request did.
   void ConnectionStartSuccess();
 
-  void ConnectionStartFailed(const std::string& error_name,
-                             const std::string& error_message);
+  void ConnectionStartFailed(
+      const std::string& error_name,
+      const scoped_ptr<base::DictionaryValue> error_data);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateStartConnectFunction);
 };
@@ -111,8 +100,9 @@ class NetworkingPrivateStartDisconnectFunction
   // disconnect itself succeeded, just that the request did.
   void DisconnectionStartSuccess();
 
-  void DisconnectionStartFailed(const std::string& error_name,
-                                const std::string& error_message);
+  void DisconnectionStartFailed(
+      const std::string& error_name,
+      const scoped_ptr<base::DictionaryValue> error_data);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateStartDisconnectFunction);
 };

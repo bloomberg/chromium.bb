@@ -7,6 +7,10 @@
 
 #include "chromeos/network/managed_state.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
 // Simple class to provide network state information about a network service.
@@ -20,8 +24,14 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   virtual ~NetworkState();
 
   // ManagedState overrides
+  // If you change this method, update GetProperties too.
   virtual bool PropertyChanged(const std::string& key,
                                const base::Value& value) OVERRIDE;
+
+  // Fills |dictionary| with the state properties. All the properties that are
+  // accepted by PropertyChanged are stored in |dictionary|, no other values are
+  // stored.
+  void GetProperties(base::DictionaryValue* dictionary) const;
 
   // Accessors
   const std::string& security() const { return security_; }

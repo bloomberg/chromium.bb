@@ -746,7 +746,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             ash::switches::kAshDisableNewNetworkStatusArea) &&
         CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkConfigurationHandlers)) {
+            chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
       // If the new network handlers are enabled, this should always trigger
       // displaying the network settings UI.
       if (network)

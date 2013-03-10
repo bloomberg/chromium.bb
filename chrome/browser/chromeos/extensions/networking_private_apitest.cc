@@ -46,32 +46,48 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
     const bool add_to_watchlist = true;
-    service_test->AddService("stub_ethernet",
-                             "eth0",
+    service_test->AddService("stub_ethernet", "eth0",
                              flimflam::kTypeEthernet, flimflam::kStateOnline,
                              add_to_watchlist);
-    service_test->AddService("stub_wifi1",
-                             "wifi1",
+
+    service_test->AddService("stub_wifi1", "wifi1",
                              flimflam::kTypeWifi, flimflam::kStateOnline,
                              add_to_watchlist);
-    service_test->AddService("stub_wifi2",
-                             "wifi2_PSK",
+    service_test->SetServiceProperty("stub_wifi1",
+                                     flimflam::kSecurityProperty,
+                                     base::StringValue(flimflam::kSecurityWep));
+
+    service_test->AddService("stub_wifi2", "wifi2_PSK",
                              flimflam::kTypeWifi, flimflam::kStateIdle,
                              add_to_watchlist);
-    base::StringValue psk_value(flimflam::kSecurityPsk);
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSecurityProperty,
-                                     psk_value);
-    base::FundamentalValue strength_value(80);
+                                     base::StringValue(flimflam::kSecurityPsk));
     service_test->SetServiceProperty("stub_wifi2",
                                      flimflam::kSignalStrengthProperty,
-                                     strength_value);
-    service_test->AddService("stub_cellular1",
-                             "cellular1",
+                                     base::FundamentalValue(80));
+
+    service_test->AddService("stub_cellular1", "cellular1",
                              flimflam::kTypeCellular, flimflam::kStateIdle,
                              add_to_watchlist);
-  }
+    service_test->SetServiceProperty(
+        "stub_cellular1",
+        flimflam::kNetworkTechnologyProperty,
+        base::StringValue(flimflam::kNetworkTechnologyGsm));
+    service_test->SetServiceProperty(
+        "stub_cellular1",
+        flimflam::kActivationStateProperty,
+        base::StringValue(flimflam::kActivationStateNotActivated));
+    service_test->SetServiceProperty(
+        "stub_cellular1",
+        flimflam::kRoamingStateProperty,
+        base::StringValue(flimflam::kRoamingStateHome));
 
+    service_test->AddService("stub_vpn1", "vpn1",
+                             flimflam::kTypeVPN,
+                             flimflam::kStateOnline,
+                             add_to_watchlist);
+  }
 };
 
 // Place each subtest into a separate browser test so that the stub networking
@@ -91,6 +107,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("startConnectNonexistent")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       StartDisconnectNonexistent) {
+  EXPECT_TRUE(RunNetworkingSubtest("startDisconnectNonexistent")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       StartGetPropertiesNonexistent) {
+  EXPECT_TRUE(RunNetworkingSubtest("startGetPropertiesNonexistent"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
 }
@@ -105,8 +132,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
-                       OnNetworksChangedEvent) {
-  EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEvent")) << message_;
+                       OnNetworksChangedEventConnect) {
+  EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventConnect"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       OnNetworksChangedEventDisconnect) {
+  EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEventDisconnect"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
