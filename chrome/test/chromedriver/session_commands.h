@@ -81,6 +81,12 @@ Status ExecuteSetTimeout(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Set the timeout for asynchronous scripts.
+Status ExecuteSetScriptTimeout(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Returns whether an alert is open.
 Status ExecuteGetAlert(
     Session* session,

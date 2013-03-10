@@ -25,6 +25,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "invalid element state";
     case kUnknownError:
       return "unknown error";
+    case kJavaScriptError:
+      return "javascript error";
     case kXPathLookupError:
       return "xpath lookup error";
     case kNoSuchWindow:
@@ -35,6 +37,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "unexpected alert open";
     case kNoAlertOpen:
       return "no alert open";
+    case kScriptTimeout:
+      return "asynchronous script timeout";
     case kInvalidSelector:
       return "invalid selector";
     case kSessionNotCreatedException:

@@ -17,11 +17,15 @@ class StaleElementReference(ChromeDriverException):
   pass
 class UnknownError(ChromeDriverException):
   pass
+class JavaScriptError(ChromeDriverException):
+  pass
 class XPathLookupError(ChromeDriverException):
   pass
 class NoSuchWindow(ChromeDriverException):
   pass
 class InvalidCookieDomain(ChromeDriverException):
+  pass
+class ScriptTimeout(ChromeDriverException):
   pass
 class InvalidSelector(ChromeDriverException):
   pass
@@ -36,9 +40,11 @@ def _ExceptionForResponse(response):
     9: UnknownCommand,
     10: StaleElementReference,
     13: UnknownError,
+    17: JavaScriptError,
     19: XPathLookupError,
     23: NoSuchWindow,
     24: InvalidCookieDomain,
+    28: ScriptTimeout,
     32: InvalidSelector,
     33: SessionNotCreatedException,
     100: NoSuchSession
@@ -154,6 +160,11 @@ class ChromeDriver(object):
     converted_args = list(args)
     return self.ExecuteSessionCommand(
         'executeScript', {'script': script, 'args': converted_args})
+
+  def ExecuteAsyncScript(self, script, *args):
+    converted_args = list(args)
+    return self.ExecuteSessionCommand(
+        'executeAsyncScript', {'script': script, 'args': converted_args})
 
   def SwitchToFrame(self, id_or_name):
     self.ExecuteSessionCommand('switchToFrame', {'id': id_or_name})

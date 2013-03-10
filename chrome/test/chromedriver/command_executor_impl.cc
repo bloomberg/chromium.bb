@@ -102,6 +102,8 @@ void CommandExecutorImpl::Init() {
   window_command_map[CommandNames::kGet] = base::Bind(&ExecuteGet);
   window_command_map[CommandNames::kExecuteScript] =
       base::Bind(&ExecuteExecuteScript);
+  window_command_map[CommandNames::kExecuteAsyncScript] =
+      base::Bind(&ExecuteExecuteAsyncScript);
   window_command_map[CommandNames::kSwitchToFrame] =
       base::Bind(&ExecuteSwitchToFrame);
   window_command_map[CommandNames::kGetTitle] =
@@ -194,6 +196,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteSwitchToWindow);
   session_command_map[CommandNames::kSetTimeout] =
       base::Bind(&ExecuteSetTimeout);
+  session_command_map[CommandNames::kSetScriptTimeout] =
+      base::Bind(&ExecuteSetScriptTimeout);
   session_command_map[CommandNames::kGetAlert] =
       base::Bind(&ExecuteGetAlert);
   session_command_map[CommandNames::kGetAlertText] =

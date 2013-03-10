@@ -147,6 +147,19 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertRaises(chromedriver.ChromeDriverException,
                       self._driver.ExecuteScript, '{{{')
 
+  def testExecuteAsyncScript(self):
+    self._driver.SetTimeout('script', 3000)
+    self.assertRaises(
+        chromedriver.ScriptTimeout,
+        self._driver.ExecuteAsyncScript,
+        'var callback = arguments[0];'
+        'setTimeout(function(){callback(1);}, 10000);')
+    self.assertEquals(
+        2,
+        self._driver.ExecuteAsyncScript(
+            'var callback = arguments[0];'
+            'setTimeout(function(){callback(2);}, 300);'))
+
   def testSwitchToFrame(self):
     self._driver.ExecuteScript(
         'var frame = document.createElement("iframe");'

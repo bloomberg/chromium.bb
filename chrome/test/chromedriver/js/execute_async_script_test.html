@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+<script src='test.js'></script>
+<script src='execute_async_script.js'></script>
+<script>
+
+function resetAsyncScriptInfo() {
+  var info = getAsyncScriptInfo();
+  info.id = 0;
+  info.finished = false;
+  delete info.result;
+}
+
+function testJavascriptError() {
+  resetAsyncScriptInfo();
+
+  try {
+    executeAsyncScript('f(123);', []);
+    assert(false);
+  } catch (error) {
+    assertEquals(17, error.code);
+  }
+}
+
+function testExecuteAsyncScript() {
+  resetAsyncScriptInfo();
+
+  var injectedArgs = null;
+  function captureArguments(args) {
+    injectedArgs = args;
+  }
+  // Pass function captureArguments as the first argument. It is used to capture
+  // the injected arguments to the following script.
+  var script =
+      'var args = arguments; args[0](args); args[args.length - 1](args[1]);';
+  var script_args = [captureArguments, 1];
+  executeAsyncScript(script, script_args);
+
+  assertEquals(3, injectedArgs.length);
+  assertEquals(captureArguments, injectedArgs[0]);
+  assertEquals(1, injectedArgs[1]);
+  var info = getAsyncScriptInfo();
+  assert(info.finished);
+  assertEquals(1, info.result);
+  assertEquals(1, info.id);
+}
+
+function testFirstScriptFinishAfterSecondScriptExecute() {
+  resetAsyncScriptInfo();
+
+  executeAsyncScript(
+      'var f = arguments[0]; setTimeout(function(){ f(1); }, 100000);', []);
+  var info = getAsyncScriptInfo();
+  assert(!info.finished);
+  assert(!info.hasOwnProperty('result'));
+  assertEquals(1, info.id);
+
+  executeAsyncScript('var fn = arguments[0]; fn(2);', []);
+  assert(info.finished);
+  assertEquals(2, info.result);
+  assertEquals(2, info.id);
+}
+
+</script>
+<body>
+</body>
+</html>

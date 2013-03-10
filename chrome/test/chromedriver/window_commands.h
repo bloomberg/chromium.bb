@@ -39,8 +39,15 @@ Status ExecuteGet(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
-// Evaluates a given script with arguments.
+// Evaluates a given synchronous script with arguments.
 Status ExecuteExecuteScript(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Evaluates a given asynchronous script with arguments.
+Status ExecuteExecuteAsyncScript(
     Session* session,
     WebView* web_view,
     const base::DictionaryValue& params,

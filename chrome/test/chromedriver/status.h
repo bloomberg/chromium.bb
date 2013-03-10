@@ -16,11 +16,13 @@ enum StatusCode {
   kElementNotVisible = 11,
   kInvalidElementState = 12,
   kUnknownError = 13,
+  kJavaScriptError = 17,
   kXPathLookupError = 19,
   kNoSuchWindow = 23,
   kInvalidCookieDomain = 24,
   kUnexpectedAlertOpen = 26,
   kNoAlertOpen = 27,
+  kScriptTimeout = 28,
   kInvalidSelector = 32,
   kSessionNotCreatedException = 33,
   // Chrome-specific status codes.
