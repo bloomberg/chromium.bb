@@ -107,6 +107,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_update_engine_client_.get()));
   EXPECT_CALL(*this, GetIBusInputContextClient())
       .WillRepeatedly(ReturnNull());
+  EXPECT_CALL(*this, GetIBusConfigClient())
+      .WillRepeatedly(ReturnNull());
 
   EXPECT_CALL(*this, GetSystemBus())
       .WillRepeatedly(ReturnNull());
