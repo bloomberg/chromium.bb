@@ -420,7 +420,7 @@ static int
 handle_signal(struct weston_launch *wl)
 {
 	struct signalfd_siginfo sig;
-	int pid, status;
+	int pid, status, ret;
 
 	if (read(wl->signalfd, &sig, sizeof sig) != sizeof sig) {
 		error(0, errno, "reading signalfd failed");
@@ -432,7 +432,19 @@ handle_signal(struct weston_launch *wl)
 		pid = waitpid(-1, &status, 0);
 		if (pid == wl->child) {
 			wl->child = 0;
-			quit(wl, WIFEXITED(status) ? WEXITSTATUS(status) : 0);
+			if (WIFEXITED(status))
+				ret = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				/*
+				 * If weston dies because of signal N, we
+				 * return 10+N. This is distinct from
+				 * weston-launch dying because of a signal
+				 * (128+N).
+				 */
+				ret = 10 + WTERMSIG(status);
+			else
+				ret = 0;
+			quit(wl, ret);
 		}
 		break;
 	case SIGTERM:
