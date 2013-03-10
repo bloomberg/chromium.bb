@@ -34,6 +34,8 @@ class NavigationController;
 
 namespace extensions {
 
+class Manifest;
+
 // Downloads and installs extensions from the web store.
 class WebstoreInstaller :public content::NotificationObserver,
                          public content::DownloadItem::Observer,
@@ -88,7 +90,7 @@ class WebstoreInstaller :public content::NotificationObserver,
     Profile* profile;
 
     // The expected manifest, before localization.
-    scoped_ptr<base::DictionaryValue> parsed_manifest;
+    scoped_ptr<Manifest> manifest;
 
     // Whether to use a bubble notification when an app is installed, instead of
     // the default behavior of transitioning to the new tab page.

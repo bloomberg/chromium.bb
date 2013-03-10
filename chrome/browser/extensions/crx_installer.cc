@@ -124,7 +124,7 @@ CrxInstaller::CrxInstaller(
     // Mark the extension as approved, but save the expected manifest and ID
     // so we can check that they match the CRX's.
     approved_ = true;
-    expected_manifest_.reset(approval->parsed_manifest->DeepCopy());
+    expected_manifest_.reset(approval->manifest->DeepCopy());
     expected_id_ = approval->extension_id;
   }
 
@@ -371,7 +371,9 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
   temp_dir_ = temp_dir;
 
   if (original_manifest)
-    original_manifest_.reset(original_manifest->DeepCopy());
+    original_manifest_.reset(new Manifest(
+        Manifest::INVALID_LOCATION,
+        scoped_ptr<DictionaryValue>(original_manifest->DeepCopy())));
 
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.

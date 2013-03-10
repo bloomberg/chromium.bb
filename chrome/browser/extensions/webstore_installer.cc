@@ -169,7 +169,9 @@ WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
   scoped_ptr<Approval> result(new Approval());
   result->extension_id = extension_id;
   result->profile = profile;
-  result->parsed_manifest = parsed_manifest.Pass();
+  result->manifest = scoped_ptr<Manifest>(
+      new Manifest(Manifest::INVALID_LOCATION,
+                   scoped_ptr<DictionaryValue>(parsed_manifest->DeepCopy())));
   result->skip_install_dialog = true;
   return result.Pass();
 }

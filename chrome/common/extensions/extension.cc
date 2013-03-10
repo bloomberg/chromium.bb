@@ -1067,6 +1067,10 @@ void Extension::AddInstallWarnings(
                            new_warnings.begin(), new_warnings.end());
 }
 
+bool Extension::is_app() const {
+  return manifest_->is_app();
+}
+
 bool Extension::is_platform_app() const {
   return manifest_->is_platform_app();
 }

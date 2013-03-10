@@ -113,6 +113,9 @@ class Manifest {
   Type type() const { return type_; }
 
   bool is_theme() const { return type_ == TYPE_THEME; }
+  bool is_app() const {
+    return is_legacy_packaged_app() || is_hosted_app() || is_platform_app();
+  }
   bool is_platform_app() const { return type_ == TYPE_PLATFORM_APP; }
   bool is_hosted_app() const { return type_ == TYPE_HOSTED_APP; }
   bool is_legacy_packaged_app() const {

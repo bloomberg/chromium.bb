@@ -494,9 +494,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
 
   // App-related.
-  bool is_app() const {
-    return is_legacy_packaged_app() || is_hosted_app() || is_platform_app();
-  }
+  bool is_app() const;
   bool is_platform_app() const;
   bool is_hosted_app() const;
   bool is_legacy_packaged_app() const;

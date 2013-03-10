@@ -281,7 +281,7 @@ class CrxInstaller
   // A parsed copy of the expected manifest, before any transformations like
   // localization have taken place. If |approved_| is true, then the
   // extension's manifest must match this for the install to proceed.
-  scoped_ptr<base::DictionaryValue> expected_manifest_;
+  scoped_ptr<Manifest> expected_manifest_;
 
   // If non-NULL, contains the expected version of the extension we're
   // installing.  Important for external sources, where claiming the wrong
@@ -315,7 +315,7 @@ class CrxInstaller
 
   // A parsed copy of the unmodified original manifest, before any
   // transformations like localization have taken place.
-  scoped_ptr<base::DictionaryValue> original_manifest_;
+  scoped_ptr<Manifest> original_manifest_;
 
   // If non-empty, contains the current version of the extension we're
   // installing (for upgrades).
