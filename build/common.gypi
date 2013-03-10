@@ -2536,6 +2536,11 @@
                   '-Wl,--gc-sections',
                 ],
               }],
+              ['OS=="linux" and target_arch=="ia32"', {
+                'ldflags': [
+                  '-Wl,--no-as-needed',
+                ],
+              }],
             ],
           },
           'Release_Base': {
