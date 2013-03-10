@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace chrome {
-namespace browser {
-namespace mac {
 
 // Wraps SecKeychainSetUserInteractionAllowed, restoring the previous setting
 // on destruction.
@@ -229,8 +227,6 @@ SecKeychainItemRef CrSKeychainItemCreateFromContent(
     SecKeychainRef keychain,
     SecAccessRef access);
 
-}  // namespace mac
-}  // namespace browser
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_MAC_SECURITY_WRAPPERS_H_

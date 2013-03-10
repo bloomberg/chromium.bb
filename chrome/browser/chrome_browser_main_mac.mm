@@ -190,8 +190,8 @@ void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
     //
     // This is kicked off by a special stub executable during an automatic
     // update. See chrome/installer/mac/keychain_reauthorize_main.cc.
-    chrome::browser::mac::KeychainReauthorizeIfNeeded(
-        kKeychainReauthorizeAtUpdatePref, kKeychainReauthorizeAtUpdateMaxTries);
+    chrome::KeychainReauthorizeIfNeeded(kKeychainReauthorizeAtUpdatePref,
+                                        kKeychainReauthorizeAtUpdateMaxTries);
 
     exit(0);
   }

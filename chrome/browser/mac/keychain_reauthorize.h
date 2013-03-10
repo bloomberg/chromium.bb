@@ -12,8 +12,6 @@ class NSString;
 #endif
 
 namespace chrome {
-namespace browser {
-namespace mac {
 
 // Reauthorizes all Keychain items that can be found in a standard Keychain
 // search, as long as they are accessible and can be decrypted. This operates
@@ -48,8 +46,6 @@ void KeychainReauthorize();
 // product than it is to any specific profile (--user-data-dir).
 void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries);
 
-}  // namespace mac
-}  // namespace browser
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_MAC_KEYCHAIN_REAUTHORIZE_H_

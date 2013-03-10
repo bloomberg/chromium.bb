@@ -35,8 +35,6 @@ OSStatus SecTrustedApplicationCopyRequirement(
 }  // extern "C"
 
 namespace chrome {
-namespace browser {
-namespace mac {
 
 ScopedSecKeychainSetUserInteractionAllowed::
     ScopedSecKeychainSetUserInteractionAllowed(Boolean allowed) {
@@ -423,6 +421,4 @@ SecKeychainItemRef CrSKeychainItemCreateFromContent(
   return item;
 }
 
-}  // namespace mac
-}  // namespace browser
 }  // namespace chrome

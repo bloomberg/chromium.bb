@@ -21,8 +21,6 @@
 #include "chrome/browser/mac/security_wrappers.h"
 
 namespace chrome {
-namespace browser {
-namespace mac {
 
 namespace {
 
@@ -158,7 +156,7 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
     [user_defaults setInteger:pref_value forKey:pref_key];
     [user_defaults synchronize];
 
-    chrome::browser::mac::KeychainReauthorize();
+    KeychainReauthorize();
 
     [user_defaults setInteger:max_tries forKey:pref_key];
     NSString* success_pref_key = [pref_key stringByAppendingString:@"Success"];
@@ -529,6 +527,4 @@ std::vector<SecKeychainAttribute> KCAttributesWithoutZeroLength(
 
 }  // namespace
 
-}  // namespace mac
-}  // namespace browser
 }  // namespace chrome
