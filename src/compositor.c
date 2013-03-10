@@ -3572,7 +3572,6 @@ int main(int argc, char *argv[])
 	sigaction(SIGSEGV, &segv_action, NULL);
 	segv_compositor = ec;
 
-	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
