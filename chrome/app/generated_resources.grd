@@ -6453,12 +6453,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SYNC_TAB_FAVICONS_DESCRIPTION" desc="Description for the flag to enable syncing tab favicons with tab sync">
         Enable syncing the favicons of open tabs as part of Open Tab sync.
       </message>
-      <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME" desc="Title for the flag to disable syncing the app notifications datatype">
-        Disable syncing app notifications
-      </message>
-      <message name="IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to disable syncing the app notifications datatype">
-        Disable app notifications in the sync settings. This turns off syncing notifications received from your apps to other clients.
-      </message>
       <message name="IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_NAME" desc="Title for the flag to enable sync's keystore encryption options">
         Enable sync keystore encryption.
       </message>
@@ -11445,10 +11439,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
                  desc="Text for the context menu item that takes the user to the app in Web Store. (In sentence case.)">
           View in Web Store
         </message>
-        <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
-                 desc="Text for the context menu item to disable app notifications (In sentence case.)">
-          Disable notifications
-        </message>
         <if expr="is_macosx">
           <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                    desc="Text for the context menu item that creates an app shortcut. (In sentence case.)">
@@ -11491,10 +11481,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_NEW_TAB_APP_DETAILS"
                  desc="Text for the context menu item that takes the user to the app in Web Store. (In title case.)">
           View in Web Store
-        </message>
-        <message name="IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS"
-                 desc="Text for the context menu item to disable app notifications (In title case.)">
-          Disable Notifications
         </message>
         <if expr="is_macosx">
           <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"

@@ -16,7 +16,6 @@
     ]
   },
   "permissions": [
-    "appNotifications",
     "webstorePrivate",
     "management"
   ]

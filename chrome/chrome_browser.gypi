@@ -1880,8 +1880,6 @@
         'browser/sync/glue/android_invalidator_bridge.h',
         'browser/sync/glue/android_invalidator_bridge_proxy.cc',
         'browser/sync/glue/android_invalidator_bridge_proxy.h',
-        'browser/sync/glue/app_notification_data_type_controller.cc',
-        'browser/sync/glue/app_notification_data_type_controller.h',
         'browser/sync/glue/autofill_data_type_controller.cc',
         'browser/sync/glue/autofill_data_type_controller.h',
         'browser/sync/glue/autofill_profile_data_type_controller.cc',

@@ -27,10 +27,6 @@
     "location": "component",
     "whitelist": "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
   },
-  "appNotifications": {
-    "channel": "stable",
-    "extension_types": ["packaged_app", "hosted_app"]
-  },
   "autotestPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

@@ -165,7 +165,6 @@ chrome.test.runTests([
       assertEq('undefined', typeof(chrome.app.getDetailsForFrame));
       assertEq('undefined', typeof(chrome.app.runningState));
     }
-    assertEq('undefined', typeof(chrome.appNotifications));
     assertEq('undefined', typeof(chrome.extension));
     succeed();
   },

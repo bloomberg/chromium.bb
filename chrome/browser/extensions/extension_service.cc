@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
-#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -349,8 +348,6 @@ ExtensionService::ExtensionService(Profile* profile,
       ready_(false),
       toolbar_model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       menu_manager_(profile),
-      app_notification_manager_(
-          new extensions::AppNotificationManager(profile)),
       event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
@@ -407,8 +404,6 @@ ExtensionService::ExtensionService(Profile* profile,
       new extensions::ComponentLoader(this,
                                       profile->GetPrefs(),
                                       g_browser_process->local_state()));
-
-  app_notification_manager_->Init();
 
   if (extensions_enabled_) {
     CHECK(!ProfileManager::IsImportProcess(*command_line));
@@ -1402,8 +1397,6 @@ extensions::AppSyncData ExtensionService::GetAppSyncData(
       extension,
       IsExtensionEnabled(extension.id()),
       IsIncognitoEnabled(extension.id()),
-      extension_prefs_->GetAppNotificationClientId(extension.id()),
-      extension_prefs_->IsAppNotificationDisabled(extension.id()),
       extension_prefs_->extension_sorting()->GetAppLaunchOrdinal(
           extension.id()),
       extension_prefs_->extension_sorting()->GetPageOrdinal(extension.id()));
@@ -1462,8 +1455,6 @@ bool ExtensionService::ProcessExtensionSyncData(
 bool ExtensionService::ProcessAppSyncData(
     const extensions::AppSyncData& app_sync_data) {
   const std::string& id = app_sync_data.id();
-  const Extension* extension = GetInstalledExtension(id);
-  bool extension_installed = (extension != NULL);
 
   if (app_sync_data.app_launch_ordinal().IsValid() &&
       app_sync_data.page_ordinal().IsValid()) {
@@ -1473,14 +1464,6 @@ bool ExtensionService::ProcessAppSyncData(
     extension_prefs_->extension_sorting()->SetPageOrdinal(
         id,
         app_sync_data.page_ordinal());
-  }
-
-  if (extension_installed) {
-    if (app_sync_data.notifications_disabled() !=
-        extension_prefs_->IsAppNotificationDisabled(id)) {
-      extension_prefs_->SetAppNotificationDisabled(
-          id, app_sync_data.notifications_disabled());
-    }
   }
 
   if (!ProcessExtensionSyncDataHelper(app_sync_data.extension_sync_data(),
@@ -1641,38 +1624,6 @@ void ExtensionService::SetIsIncognitoEnabled(
   extension = GetInstalledExtension(id);
   if (extension)
     SyncExtensionChangeIfNeeded(*extension);
-}
-
-void ExtensionService::SetAppNotificationSetupDone(
-    const std::string& extension_id,
-    const std::string& oauth_client_id) {
-  const Extension* extension = GetInstalledExtension(extension_id);
-  // This method is called when the user sets up app notifications.
-  // So it is not expected to be called until the extension is installed.
-  if (!extension) {
-    NOTREACHED();
-    return;
-  }
-  extension_prefs_->SetAppNotificationClientId(extension_id, oauth_client_id);
-  SyncExtensionChangeIfNeeded(*extension);
-}
-
-void ExtensionService::SetAppNotificationDisabled(
-    const std::string& extension_id,
-    bool value) {
-  const Extension* extension = GetInstalledExtension(extension_id);
-  // This method is called when the user enables/disables app notifications.
-  // So it is not expected to be called until the extension is installed.
-  if (!extension) {
-    NOTREACHED();
-    return;
-  }
-  if (value)
-    UMA_HISTOGRAM_COUNTS("Apps.SetAppNotificationsDisabled", 1);
-  else
-    UMA_HISTOGRAM_COUNTS("Apps.SetAppNotificationsEnabled", 1);
-  extension_prefs_->SetAppNotificationDisabled(extension_id, value);
-  SyncExtensionChangeIfNeeded(*extension);
 }
 
 bool ExtensionService::CanCrossIncognito(const Extension* extension) const {

@@ -154,10 +154,6 @@ const char kAppStateReadyToRun[] = "ready_to_run";
 
 const char kMediaFileSystemPathPart[] = "_";
 
-const char kAppNotificationsIncognitoError[] =
-    "This API is not accessible by 'split' mode "
-    "extensions in incognito windows.";
-
 const int kExtensionIconSizes[] = {
   EXTENSION_ICON_GIGANTOR,  // 512
   EXTENSION_ICON_EXTRA_LARGE,  // 256

@@ -54,7 +54,6 @@ class SequencedTaskRunner;
 }
 
 namespace extensions {
-class AppNotificationManager;
 class AppSyncData;
 class BrowserEventRouter;
 class ComponentLoader;
@@ -228,15 +227,6 @@ class ExtensionService
   virtual bool IsIncognitoEnabled(const std::string& extension_id) const;
   virtual void SetIsIncognitoEnabled(const std::string& extension_id,
                                      bool enabled);
-
-  // When app notification setup is done, we call this to save the developer's
-  // oauth client id which we'll need at uninstall time to revoke the oauth
-  // permission grant for sending notifications.
-  virtual void SetAppNotificationSetupDone(const std::string& extension_id,
-                                           const std::string& oauth_client_id);
-
-  virtual void SetAppNotificationDisabled(const std::string& extension_id,
-      bool value);
 
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor. This will
@@ -554,10 +544,6 @@ class ExtensionService
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
   extensions::MenuManager* menu_manager() { return &menu_manager_; }
-
-  extensions::AppNotificationManager* app_notification_manager() {
-    return app_notification_manager_.get();
-  }
 
   extensions::BrowserEventRouter* browser_event_router() {
     return browser_event_router_.get();
@@ -941,9 +927,6 @@ class ExtensionService
 
   // Keeps track of menu items added by extensions.
   extensions::MenuManager menu_manager_;
-
-  // Keeps track of app notifications.
-  scoped_refptr<extensions::AppNotificationManager> app_notification_manager_;
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;

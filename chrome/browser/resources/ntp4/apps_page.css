@@ -92,30 +92,10 @@
   cursor: pointer;
 }
 
-/* Notifications */
-
-.app-notification {
-  -webkit-transition: color 150ms linear;
-  color: #999;
-  display: block;
-  font-size: 0.9em;
-  white-space: nowrap;
-}
-
-.app-notification:hover {
-  text-decoration: underline;
-}
-
 .app-img-container > img:first-child {
   display: block;
 }
 
 .app .invisible {
   visibility: hidden;
-}
-
-/* Move the notification lower on apps pages to account for the 16px of
- * transparency each app icon should have. */
-.apps-page #notification-container {
-  bottom: 15px;
 }

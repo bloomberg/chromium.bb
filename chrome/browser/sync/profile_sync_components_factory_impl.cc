@@ -6,7 +6,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
-#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/sync/glue/app_notification_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
@@ -65,7 +63,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/syncable_service.h"
 
-using browser_sync::AppNotificationDataTypeController;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::BookmarkChangeProcessor;
@@ -219,13 +216,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::APP_SETTINGS, this, profile_, pss));
   }
 
-  // App notifications sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncAppNotifications)) {
-    pss->RegisterDataTypeController(
-        new AppNotificationDataTypeController(this, profile_, pss));
-  }
-
   // Unless it is explicitly disabled, history delete directive sync is
   // enabled whenever full history sync is enabled.
   if (command_line_->HasSwitch(switches::kHistoryEnableFullHistorySync) &&
@@ -317,9 +307,6 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
     case syncer::EXTENSION_SETTINGS:
       return extension_system_->extension_service()->settings_frontend()->
           GetBackendForSync(type)->AsWeakPtr();
-    case syncer::APP_NOTIFICATIONS:
-      return extension_system_->extension_service()->
-          app_notification_manager()->AsWeakPtr();
 #if defined(ENABLE_THEMES)
     case syncer::THEMES:
       return ThemeServiceFactory::GetForProfile(profile_)->

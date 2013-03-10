@@ -233,15 +233,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // reset it. Don't call it unless you mean it!
   bool SetAlertSystemFirstRun();
 
-  // The oauth client id used for app notification setup, if any.
-  std::string GetAppNotificationClientId(const std::string& extension_id) const;
-  void SetAppNotificationClientId(const std::string& extension_id,
-                                  const std::string& oauth_client_id);
-
-  // Whether app notifications are disabled for the given app.
-  bool IsAppNotificationDisabled(const std::string& extension_id) const;
-  void SetAppNotificationDisabled(const std::string& extension_id, bool value);
-
   // Checks if extensions are blacklisted by default, by policy.
   // The ManagementPolicy::Provider methods also take this into account, and
   // should be used instead when the extension ID is known.

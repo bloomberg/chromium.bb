@@ -46,9 +46,6 @@
       <if expr="pp_ifdef('enable_app_list') and not pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="app_list_tab_overlay.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB" file="nub.png" />
-      <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" />
-      <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" />
       <structure type="chrome_scaled_image" name="IDR_ASK_MEDIA" file="ask_media.png" />
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="win/app_window_close.png" />

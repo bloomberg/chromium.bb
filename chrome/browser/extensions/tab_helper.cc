@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
-#include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -237,8 +236,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnInstallApplication)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
                         OnInlineWebstoreInstall)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppNotifyChannel,
-                        OnGetAppNotifyChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
                         OnGetAppInstallState);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
@@ -329,54 +326,6 @@ void TabHelper::OnInlineWebstoreInstall(
   installer->BeginInstall();
 }
 
-void TabHelper::OnGetAppNotifyChannel(const GURL& requestor_url,
-                                      const std::string& client_id,
-                                      int return_route_id,
-                                      int callback_id) {
-  // Check for permission first.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  ProcessMap* process_map = extension_service->process_map();
-  content::RenderProcessHost* process = web_contents()->GetRenderProcessHost();
-  const Extension* extension =
-      extension_service->GetInstalledApp(requestor_url);
-
-  std::string error;
-  if (!extension ||
-      !extension->HasAPIPermission(APIPermission::kAppNotifications) ||
-      !process_map->Contains(extension->id(), process->GetID()))
-    error = kPermissionError;
-
-  // Make sure the extension can cross to the main profile, if called from an
-  // an incognito window.
-  if (profile->IsOffTheRecord() &&
-      !extension_service->CanCrossIncognito(extension))
-    error = extension_misc::kAppNotificationsIncognitoError;
-
-  if (!error.empty()) {
-    Send(new ExtensionMsg_GetAppNotifyChannelResponse(
-        return_route_id, "", error, callback_id));
-    return;
-  }
-
-  AppNotifyChannelUI* ui = AppNotifyChannelUI::Create(
-      profile, web_contents(), extension->name(),
-      AppNotifyChannelUI::NOTIFICATION_INFOBAR);
-
-  scoped_refptr<AppNotifyChannelSetup> channel_setup(
-      new AppNotifyChannelSetup(profile,
-                                extension->id(),
-                                client_id,
-                                requestor_url,
-                                return_route_id,
-                                callback_id,
-                                ui,
-                                this->AsWeakPtr()));
-  channel_setup->Start();
-  // We'll get called back in AppNotifyChannelSetupComplete.
-}
-
 void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
                                      int return_route_id,
                                      int callback_id) {
@@ -397,26 +346,6 @@ void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
 
   Send(new ExtensionMsg_GetAppInstallStateResponse(
       return_route_id, state, callback_id));
-}
-
-void TabHelper::AppNotifyChannelSetupComplete(
-    const std::string& channel_id,
-    const std::string& error,
-    const AppNotifyChannelSetup* setup) {
-  CHECK(setup);
-
-  // If the setup was successful, record that fact in ExtensionService.
-  if (!channel_id.empty() && error.empty()) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    ExtensionService* service = profile->GetExtensionService();
-    if (service->GetExtensionById(setup->extension_id(), true))
-      service->SetAppNotificationSetupDone(setup->extension_id(),
-                                           setup->client_id());
-  }
-
-  Send(new ExtensionMsg_GetAppNotifyChannelResponse(
-      setup->return_route_id(), channel_id, error, setup->callback_id()));
 }
 
 void TabHelper::OnRequest(const ExtensionHostMsg_Request_Params& request) {

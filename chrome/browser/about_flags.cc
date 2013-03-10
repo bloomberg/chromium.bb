@@ -560,13 +560,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kSyncTabFavicons)
   },
   {
-    "sync-app-notifications",
-    IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME,
-    IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableSyncAppNotifications)
-  },
-  {
     "sync-keystore-encryption",
     IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_NAME,
     IDS_FLAGS_SYNC_KEYSTORE_ENCRYPTION_DESCRIPTION,

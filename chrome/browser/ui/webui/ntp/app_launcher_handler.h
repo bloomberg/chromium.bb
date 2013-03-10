@@ -27,10 +27,6 @@ class PrefChangeRegistrar;
 class PrefRegistrySyncable;
 class Profile;
 
-namespace extensions {
-class AppNotification;
-}
-
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler : public content::WebUIMessageHandler,
                            public ExtensionUninstallDialog::Delegate,
@@ -43,7 +39,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(
       const extensions::Extension* extension,
-      const extensions::AppNotification* notification,
       ExtensionService* service,
       base::DictionaryValue* value);
 

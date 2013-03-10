@@ -51,8 +51,6 @@ bool CheckAccessToAppDetails(WebFrame* frame) {
   return true;
 }
 
-const char* kMissingClientIdError = "Missing clientId parameter";
-const char* kInvalidClientIdError = "Invalid clientId";
 const char* kInvalidCallbackIdError = "Invalid callbackId";
 
 }  // namespace
@@ -68,8 +66,6 @@ AppBindings::AppBindings(Dispatcher* dispatcher, ChromeV8Context* context)
       base::Bind(&AppBindings::GetDetails, base::Unretained(this)));
   RouteFunction("GetDetailsForFrame",
       base::Bind(&AppBindings::GetDetailsForFrame, base::Unretained(this)));
-  RouteFunction("GetAppNotifyChannel",
-      base::Bind(&AppBindings::GetAppNotifyChannel, base::Unretained(this)));
   RouteFunction("GetInstallState",
       base::Bind(&AppBindings::GetInstallState, base::Unretained(this)));
   RouteFunction("GetRunningState",
@@ -150,45 +146,6 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
                               frame->mainWorldScriptContext());
 }
 
-v8::Handle<v8::Value> AppBindings::GetAppNotifyChannel(
-    const v8::Arguments& args) {
-  // Read the required 'clientId' value out of the object at args[0].
-  std::string client_id;
-  if (args.Length() < 1 || !args[0]->IsObject()) {
-    v8::ThrowException(v8::String::New(kMissingClientIdError));
-    return v8::Undefined();
-  }
-  v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(args[0]);
-  v8::Local<v8::String> client_id_key = v8::String::New("clientId");
-  if (obj->Has(client_id_key)) {
-    v8::String::Utf8Value id_value(obj->Get(client_id_key));
-    if (id_value.length() > 0)
-      client_id = std::string(*id_value);
-  }
-  if (client_id.empty()) {
-    v8::ThrowException(v8::String::New(kInvalidClientIdError));
-    return v8::Undefined();
-  }
-
-  // Get the callbackId if specified.
-  int callback_id = 0;
-  if (args.Length() > 1) {
-    if (!args[1]->IsInt32()) {
-      v8::ThrowException(v8::String::New(kInvalidCallbackIdError));
-      return v8::Undefined();
-    }
-    callback_id = args[1]->Int32Value();
-  }
-
-  content::RenderView* render_view = context_->GetRenderView();
-  CHECK(render_view);
-
-  Send(new ExtensionHostMsg_GetAppNotifyChannel(
-      render_view->GetRoutingID(), context_->web_frame()->document().url(),
-      client_id, GetRoutingID(), callback_id));
-  return v8::Undefined();
-}
-
 v8::Handle<v8::Value> AppBindings::GetInstallState(const v8::Arguments& args) {
   // Get the callbackId.
   int callback_id = 0;
@@ -246,25 +203,11 @@ v8::Handle<v8::Value> AppBindings::GetRunningState(const v8::Arguments& args) {
 
 bool AppBindings::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AppBindings, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GetAppNotifyChannelResponse,
-                        OnGetAppNotifyChannelResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetAppInstallStateResponse,
                         OnAppInstallStateResponse)
     IPC_MESSAGE_UNHANDLED(CHECK(false) << "Unhandled IPC message")
   IPC_END_MESSAGE_MAP()
   return true;
-}
-
-void AppBindings::OnGetAppNotifyChannelResponse(
-    const std::string& channel_id, const std::string& error, int callback_id) {
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(context_->v8_context());
-  v8::Handle<v8::Value> argv[3];
-  argv[0] = v8::String::New(channel_id.c_str());
-  argv[1] = v8::String::New(error.c_str());
-  argv[2] = v8::Integer::New(callback_id);
-  CHECK(context_->CallChromeHiddenMethod("app.onGetAppNotifyChannelResponse",
-                                         arraysize(argv), argv, NULL));
 }
 
 void AppBindings::OnAppInstallStateResponse(

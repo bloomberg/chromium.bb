@@ -669,15 +669,6 @@ enum NotificationType {
   // found update.
   NOTIFICATION_EXTENSION_UPDATE_FOUND,
 
-  // An installed app changed notification state (added or removed
-  // notifications). The source is a Profile, and the details are a string
-  // with the extension id of the app.
-  NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-
-  // Finished loading app notification manager.
-  // The source is AppNotificationManager, and the details are NoDetails.
-  NOTIFICATION_APP_NOTIFICATION_MANAGER_LOADED,
-
   // Component Updater -------------------------------------------------------
 
   // Sent when the component updater starts doing update checks. If no

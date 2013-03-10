@@ -58,7 +58,7 @@
       "settings": {
          "ahfgeienlihckogmohjhadlkjgocpleb": {
             "active_permissions": {
-               "api": [ "appNotifications", "management", "webstorePrivate" ]
+               "api": [ "management", "webstorePrivate" ]
             },
             "app_launcher_ordinal": "n",
             "page_ordinal": "n"

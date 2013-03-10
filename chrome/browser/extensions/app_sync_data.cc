@@ -11,15 +11,13 @@
 
 namespace extensions {
 
-AppSyncData::AppSyncData() : notifications_disabled_(false) {}
+AppSyncData::AppSyncData() {}
 
-AppSyncData::AppSyncData(const syncer::SyncData& sync_data)
-    : notifications_disabled_(false) {
+AppSyncData::AppSyncData(const syncer::SyncData& sync_data) {
   PopulateFromSyncData(sync_data);
 }
 
-AppSyncData::AppSyncData(const syncer::SyncChange& sync_change)
-    : notifications_disabled_(false) {
+AppSyncData::AppSyncData(const syncer::SyncChange& sync_change) {
   PopulateFromSyncData(sync_change.sync_data());
   extension_sync_data_.set_uninstalled(
       sync_change.change_type() == syncer::SyncChange::ACTION_DELETE);
@@ -28,13 +26,9 @@ AppSyncData::AppSyncData(const syncer::SyncChange& sync_change)
 AppSyncData::AppSyncData(const Extension& extension,
                          bool enabled,
                          bool incognito_enabled,
-                         const std::string& notifications_client_id,
-                         bool notifications_disabled,
                          const syncer::StringOrdinal& app_launch_ordinal,
                          const syncer::StringOrdinal& page_ordinal)
     : extension_sync_data_(extension, enabled, incognito_enabled),
-      notifications_client_id_(notifications_client_id),
-      notifications_disabled_(notifications_disabled),
       app_launch_ordinal_(app_launch_ordinal),
       page_ordinal_(page_ordinal) {
 }
@@ -57,12 +51,6 @@ syncer::SyncChange AppSyncData::GetSyncChange(
 
 void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
   DCHECK(specifics);
-  sync_pb::AppNotificationSettings* notification_settings =
-      specifics->mutable_notification_settings();
-  if (!notifications_client_id_.empty())
-    notification_settings->set_oauth_client_id(notifications_client_id_);
-  notification_settings->set_disabled(notifications_disabled_);
-
   // Only sync the ordinal values if they are valid.
   if (app_launch_ordinal_.IsValid())
     specifics->set_app_launch_ordinal(app_launch_ordinal_.ToInternalValue());
@@ -76,17 +64,6 @@ void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
 void AppSyncData::PopulateFromAppSpecifics(
     const sync_pb::AppSpecifics& specifics) {
   extension_sync_data_.PopulateFromExtensionSpecifics(specifics.extension());
-
-  if (specifics.has_notification_settings() &&
-      specifics.notification_settings().has_oauth_client_id()) {
-    notifications_client_id_ =
-        specifics.notification_settings().oauth_client_id();
-  }
-
-  notifications_disabled_ =
-      specifics.has_notification_settings() &&
-      specifics.notification_settings().has_disabled() &&
-      specifics.notification_settings().disabled();
 
   app_launch_ordinal_ = syncer::StringOrdinal(specifics.app_launch_ordinal());
   page_ordinal_ = syncer::StringOrdinal(specifics.page_ordinal());

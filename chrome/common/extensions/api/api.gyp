@@ -40,7 +40,6 @@
           'downloads_internal.idl',
           'events.json',
           'experimental_accessibility.json',
-          'experimental_app.json',
           'experimental_discovery.idl',
           'experimental_dns.idl',
           'experimental_history.json',

@@ -15,8 +15,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/app_notification.h"
-#include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -89,23 +87,8 @@ AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
 
 AppLauncherHandler::~AppLauncherHandler() {}
 
-// Serializes |notification| into a new DictionaryValue which the caller then
-// owns.
-static DictionaryValue* SerializeNotification(
-    const extensions::AppNotification& notification) {
-  DictionaryValue* dictionary = new DictionaryValue();
-  dictionary->SetString("title", notification.title());
-  dictionary->SetString("body", notification.body());
-  if (!notification.link_url().is_empty()) {
-    dictionary->SetString("linkUrl", notification.link_url().spec());
-    dictionary->SetString("linkText", notification.link_text());
-  }
-  return dictionary;
-}
-
 void AppLauncherHandler::CreateAppInfo(
     const Extension* extension,
-    const extensions::AppNotification* notification,
     ExtensionService* service,
     DictionaryValue* value) {
   value->Clear();
@@ -150,15 +133,6 @@ void AppLauncherHandler::CreateAppInfo(
                     extension->location() == extensions::Manifest::COMPONENT);
   value->SetBoolean("is_webstore",
       extension->id() == extension_misc::kWebStoreAppId);
-
-  if (extension->HasAPIPermission(
-        extensions::APIPermission::kAppNotifications)) {
-    value->SetBoolean("notifications_disabled",
-                      prefs->IsAppNotificationDisabled(extension->id()));
-  }
-
-  if (notification)
-    value->Set("notification", SerializeNotification(*notification));
 
   ExtensionSorting* sorting = prefs->extension_sorting();
   syncer::StringOrdinal page_ordinal = sorting->GetPageOrdinal(extension->id());
@@ -221,12 +195,6 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("recordAppLaunchByURL",
       base::Bind(&AppLauncherHandler::HandleRecordAppLaunchByUrl,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("closeNotification",
-      base::Bind(&AppLauncherHandler::HandleNotificationClose,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setNotificationsDisabled",
-      base::Bind(&AppLauncherHandler::HandleSetNotificationsDisabled,
-                 base::Unretained(this)));
 }
 
 void AppLauncherHandler::Observe(int type,
@@ -243,24 +211,6 @@ void AppLauncherHandler::Observe(int type,
     return;
 
   switch (type) {
-    case chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED: {
-      const std::string& id =
-          *content::Details<const std::string>(details).ptr();
-      const extensions::AppNotification* notification =
-          extension_service_->app_notification_manager()->GetLast(id);
-      base::StringValue id_value(id);
-      if (notification) {
-        scoped_ptr<DictionaryValue> notification_value(
-            SerializeNotification(*notification));
-        web_ui()->CallJavascriptFunction("ntp.appNotificationChanged",
-            id_value, *notification_value.get());
-      } else {
-        web_ui()->CallJavascriptFunction("ntp.appNotificationChanged",
-                                         id_value);
-      }
-      break;
-    }
-
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
@@ -312,7 +262,6 @@ void AppLauncherHandler::Observe(int type,
             extension_service_->GetExtensionById(*id, false);
         DictionaryValue app_info;
         CreateAppInfo(extension,
-                      NULL,
                       extension_service_,
                       &app_info);
         web_ui()->CallJavascriptFunction("ntp.appMoved", app_info);
@@ -391,13 +340,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 }
 
 DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
-  extensions::AppNotificationManager* notification_manager =
-      extension_service_->app_notification_manager();
   DictionaryValue* app_info = new DictionaryValue();
   // CreateAppInfo can change the extension prefs.
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
   CreateAppInfo(extension,
-                notification_manager->GetLast(extension->id()),
                 extension_service_,
                 app_info);
   return app_info;
@@ -453,8 +399,6 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, callback);
     pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
-    registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-        content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -716,36 +660,6 @@ void AppLauncherHandler::HandleRecordAppLaunchByUrl(
   CHECK(source < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
   RecordAppLaunchByUrl(Profile::FromWebUI(web_ui()), url, bucket);
-}
-
-void AppLauncherHandler::HandleNotificationClose(const ListValue* args) {
-  std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
-
-  const Extension* extension = extension_service_->GetExtensionById(
-      extension_id, true);
-  if (!extension)
-    return;
-
-  UMA_HISTOGRAM_COUNTS("AppNotification.NTPNotificationClosed", 1);
-
-  extensions::AppNotificationManager* notification_manager =
-      extension_service_->app_notification_manager();
-  notification_manager->ClearAll(extension_id);
-}
-
-void AppLauncherHandler::HandleSetNotificationsDisabled(
-    const ListValue* args) {
-  std::string extension_id;
-  bool disabled = false;
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetBoolean(1, &disabled));
-
-  const Extension* extension = extension_service_->GetExtensionById(
-      extension_id, true);
-  if (!extension)
-    return;
-  extension_service_->SetAppNotificationDisabled(extension_id, disabled);
 }
 
 void AppLauncherHandler::OnFaviconForApp(

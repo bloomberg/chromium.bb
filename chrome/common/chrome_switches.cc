@@ -72,10 +72,6 @@ const char kAppsDevtool[]                   = "apps-devtool";
 // --app-window-size=w,h
 const char kAppWindowSize[]                 = "app-window-size";
 
-// A URL for the server which assigns channel ids for server pushed app
-// notifications.
-const char kAppNotifyChannelServerURL[]     = "app-notify-channel-server-url";
-
 // Overrides the apps checkout URL, which is used to determine when to expose
 // some private APIs.
 const char kAppsCheckoutURL[]               = "apps-checkout-url";
@@ -361,9 +357,6 @@ const char kDisableSyncAppSettings[]        = "disable-sync-app-settings";
 
 // Disables syncing of apps.
 const char kDisableSyncApps[]               = "disable-sync-apps";
-
-// Disable syncing app notifications.
-const char kDisableSyncAppNotifications[]   = "disable-sync-app-notifications";
 
 // Disables syncing of autofill.
 const char kDisableSyncAutofill[]           = "disable-sync-autofill";

@@ -34,15 +34,11 @@ class AppBindings : public ChromeV8Extension,
   v8::Handle<v8::Value> Install(const v8::Arguments& args);
   v8::Handle<v8::Value> GetDetails(const v8::Arguments& args);
   v8::Handle<v8::Value> GetDetailsForFrame(const v8::Arguments& args);
-  v8::Handle<v8::Value> GetAppNotifyChannel(const v8::Arguments& args);
   v8::Handle<v8::Value> GetInstallState(const v8::Arguments& args);
   v8::Handle<v8::Value> GetRunningState(const v8::Arguments& args);
 
   v8::Handle<v8::Value> GetDetailsForFrameImpl(WebKit::WebFrame* frame);
 
-  void OnGetAppNotifyChannelResponse(const std::string& channel_id,
-                                     const std::string& error,
-                                     int callback_id);
   void OnAppInstallStateResponse(const std::string& state, int callback_id);
 
   DISALLOW_COPY_AND_ASSIGN(AppBindings);

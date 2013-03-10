@@ -368,8 +368,6 @@ void InstallAppBindings(ModuleSystem* module_system,
                         v8::Handle<v8::Object> chrome,
                         v8::Handle<v8::Object> chrome_hidden) {
   module_system->SetLazyField(chrome, "app", "app", "chromeApp");
-  module_system->SetLazyField(chrome, "appNotifications", "app",
-                              "chromeAppNotifications");
   module_system->SetLazyField(chrome_hidden, "app", "app",
                               "chromeHiddenApp");
 }

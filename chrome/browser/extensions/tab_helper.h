@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
-#include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/notification_observer.h"
@@ -43,7 +42,6 @@ class ScriptExecutor;
 // Per-tab extension helper. Also handles non-extension apps.
 class TabHelper : public content::WebContentsObserver,
                   public ExtensionFunctionDispatcher::Delegate,
-                  public AppNotifyChannelSetup::Delegate,
                   public base::SupportsWeakPtr<TabHelper>,
                   public content::NotificationObserver,
                   public content::WebContentsUserData<TabHelper> {
@@ -186,10 +184,6 @@ class TabHelper : public content::WebContentsObserver,
                                int return_route_id,
                                const std::string& webstore_item_id,
                                const GURL& requestor_url);
-  void OnGetAppNotifyChannel(const GURL& requestor_url,
-                             const std::string& client_id,
-                             int return_route_id,
-                             int callback_id);
   void OnGetAppInstallState(const GURL& requestor_url,
                             int return_route_id,
                             int callback_id);
@@ -215,12 +209,6 @@ class TabHelper : public content::WebContentsObserver,
                                        int return_route_id,
                                        bool success,
                                        const std::string& error);
-
-  // AppNotifyChannelSetup::Delegate.
-  virtual void AppNotifyChannelSetupComplete(
-      const std::string& channel_id,
-      const std::string& error,
-      const AppNotifyChannelSetup* setup) OVERRIDE;
 
   // content::NotificationObserver.
   virtual void Observe(int type,

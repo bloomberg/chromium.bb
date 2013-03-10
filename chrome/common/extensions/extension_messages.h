@@ -377,12 +377,6 @@ IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
                     bool /* whether the install was successful */,
                     std::string /* error */)
 
-// Response to the renderer for ExtensionHostMsg_GetAppNotifyChannel.
-IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,
-                    std::string /* channel_id */,
-                    std::string /* error */,
-                    int32 /* callback_id */)
-
 // Response to the renderer for ExtensionHostMsg_GetAppInstallState.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
                     std::string /* state */,
@@ -557,14 +551,6 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_InlineWebstoreInstall,
                     int32 /* return route id */,
                     std::string /* Web Store item ID */,
                     GURL /* requestor URL */)
-
-// Sent by the renderer when an App is requesting permission to send server
-// pushed notifications.
-IPC_MESSAGE_ROUTED4(ExtensionHostMsg_GetAppNotifyChannel,
-                    GURL /* requestor_url */,
-                    std::string /* client_id */,
-                    int32 /* return_route_id */,
-                    int32 /* callback_id */)
 
 // Sent by the renderer when a web page is checking if its app is installed.
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,

@@ -190,9 +190,6 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kUnlimitedStorage, "unlimitedStorage",
       kFlagCannotBeOptional },
 
-    // Register hosted and packaged app permissions.
-    { APIPermission::kAppNotifications, "appNotifications" },
-
     // Register extension permissions.
     { APIPermission::kActiveTab, "activeTab" },
     { APIPermission::kAlarms, "alarms" },
