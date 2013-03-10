@@ -72,11 +72,13 @@ void __asan_report_load16() { }
 void __asan_report_load2() { }
 void __asan_report_load4() { }
 void __asan_report_load8() { }
+void __asan_report_load_n() { }
 void __asan_report_store1() { }
 void __asan_report_store16() { }
 void __asan_report_store2() { }
 void __asan_report_store4() { }
 void __asan_report_store8() { }
+void __asan_report_store_n() { }
 void __asan_set_error_report_callback() { }
 void __asan_unregister_globals() { }
 void __sanitizer_sandbox_on_notify() { }
