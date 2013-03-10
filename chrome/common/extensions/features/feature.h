@@ -75,7 +75,6 @@ class Feature {
 
    private:
     friend class SimpleFeature;
-    friend class Feature;
 
     // Instances should be created via Feature::CreateAvailability.
     Availability(AvailabilityResult result, const std::string& message)
@@ -86,10 +85,6 @@ class Feature {
   };
 
   virtual ~Feature();
-
-  // Used by ChromeV8Context until the feature system is fully functional.
-  static Availability CreateAvailability(AvailabilityResult result,
-                                         const std::string& message);
 
   // Gets the current channel as seen by the Feature system.
   static chrome::VersionInfo::Channel GetCurrentChannel();
