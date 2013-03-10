@@ -50,6 +50,7 @@ extern const char kEventUnresponsive[];
 
 // Parameters/properties on events.
 extern const char kIsTopLevel[];
+extern const char kLastUnlockedBySelf[];
 extern const char kNewURL[];
 extern const char kNewHeight[];
 extern const char kNewWidth[];
@@ -59,11 +60,13 @@ extern const char kOldWidth[];
 extern const char kPermission[];
 extern const char kPermissionTypeGeolocation[];
 extern const char kPermissionTypeMedia[];
+extern const char kPermissionTypePointerLock[];
 extern const char kPersistPrefix[];
 extern const char kProcessId[];
 extern const char kReason[];
 extern const char kRequestId[];
 extern const char kURL[];
+extern const char kUserGesture[];
 
 // Error messages.
 extern const char kErrorAlreadyNavigated[];

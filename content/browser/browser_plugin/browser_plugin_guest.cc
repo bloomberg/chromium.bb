@@ -69,6 +69,7 @@ BrowserPluginGuest::BrowserPluginGuest(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(params.focused),
       mouse_locked_(false),
+      pending_lock_request_(false),
       guest_visible_(params.visible),
       embedder_visible_(true),
       name_(params.name),
@@ -612,16 +613,31 @@ void BrowserPluginGuest::OnHandleInputEvent(
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,
                                      bool last_unlocked_by_target,
                                      bool privileged) {
-  SendMessageToEmbedder(new BrowserPluginMsg_LockMouse(
-      embedder_routing_id(),
-      instance_id(),
-      user_gesture,
-      last_unlocked_by_target,
-      privileged));
+  if (pending_lock_request_) {
+    // Immediately reject the lock because only one pointerLock may be active
+    // at a time.
+    Send(new ViewMsg_LockMouse_ACK(routing_id(), false));
+    return;
+  }
+  pending_lock_request_ = true;
+  int request_id = next_permission_request_id_++;
+  base::DictionaryValue request_info;
+  request_info.Set(browser_plugin::kUserGesture,
+                   base::Value::CreateBooleanValue(user_gesture));
+  request_info.Set(browser_plugin::kLastUnlockedBySelf,
+                   base::Value::CreateBooleanValue(last_unlocked_by_target));
+  request_info.Set(browser_plugin::kURL,
+                   base::Value::CreateStringValue(
+                       web_contents()->GetURL().spec()));
+
+  SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
+      instance_id(), BrowserPluginPermissionTypePointerLock,
+      request_id, request_info));
 }
 
 void BrowserPluginGuest::OnLockMouseAck(int instance_id, bool succeeded) {
   Send(new ViewMsg_LockMouse_ACK(routing_id(), succeeded));
+  pending_lock_request_ = false;
   if (succeeded)
     mouse_locked_ = true;
 }

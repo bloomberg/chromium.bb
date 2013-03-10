@@ -49,6 +49,7 @@ const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
 const char kIsTopLevel[] = "isTopLevel";
+const char kLastUnlockedBySelf[] = "lastUnlockedBySelf";
 const char kNewURL[] = "newUrl";
 const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
@@ -58,11 +59,13 @@ const char kOldWidth[] = "oldWidth";
 const char kPermission[] = "permission";
 const char kPermissionTypeGeolocation[] = "geolocation";
 const char kPermissionTypeMedia[] = "media";
+const char kPermissionTypePointerLock[] = "pointerLock";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
 const char kReason[] = "reason";
 const char kRequestId[] = "requestId";
 const char kURL[] = "url";
+const char kUserGesture[] = "userGesture";
 
 // Error messages.
 const char kErrorAlreadyNavigated[] =

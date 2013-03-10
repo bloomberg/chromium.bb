@@ -369,6 +369,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
   bool mouse_locked_;
+  bool pending_lock_request_;
   bool guest_visible_;
   bool embedder_visible_;
   std::string name_;
@@ -376,7 +377,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
 
-  // A counter to generate unique request id for a permission request.
+  // A counter to generate a unique request id for a permission request.
   // We only need the ids to be unique for a given BrowserPluginGuest.
   int next_permission_request_id_;
   // A map to store WebContents's media request object and callback.

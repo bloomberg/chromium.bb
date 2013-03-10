@@ -116,12 +116,6 @@ class WebViewInteractiveTest
     return corner_;
   }
 
- protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableBrowserPluginPointerLock);
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-  }
-
  private:
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
@@ -139,16 +133,16 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
   SetupTest("web_view/pointer_lock",
             "files/extensions/platform_apps/web_view/pointer_lock/guest.html");
 
-  ExtensionTestMessageListener guest_clicked_listener("clicked", false);
-  // We need to simulate a mouse click in the window or else SendMouseMoveSync
-  // will cause the browser to crash (not sure why exactly...)
-  SimulateMouseClickAt(guest_web_contents(), 0,
-      WebKit::WebMouseEvent::ButtonLeft, gfx::Point(75, 75));
-  ASSERT_TRUE(guest_clicked_listener.WaitUntilSatisfied());
-
   // Move the mouse over the Lock Pointer button.
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
       gfx::Point(corner().x() + 75, corner().y() + 25)));
+
+  // Click the Lock Pointer button. The first two times the button is clicked
+  // the permission API will deny the request (intentional).
+  ExtensionTestMessageListener exception_listener("request exception", false);
+  SendMouseClickWithListener(ui_controls::LEFT, "lock error");
+  ASSERT_TRUE(exception_listener.WaitUntilSatisfied());
+  SendMouseClickWithListener(ui_controls::LEFT, "lock error");
 
   // Click the Lock Pointer button, locking the mouse to lockTarget1.
   SendMouseClickWithListener(ui_controls::LEFT, "locked");

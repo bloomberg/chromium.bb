@@ -14,11 +14,18 @@
 var WebView = require('webView').WebView;
 
 /** @type {Array.<string>} */
-var PERMISSION_TYPES = ['media', 'geolocation'];
+var PERMISSION_TYPES = ['media', 'geolocation', 'pointerLock'];
 
 /** @type {string} */
 var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
     'Permission has already been decided for this "permissionrequest" event.';
+
+var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
+    'lastUnlockedBySelf',
+    'permission',
+    'url',
+    'userGesture'
+];
 
 /**
  * @param {!Object} detail The event details, originated from <object>.
@@ -30,12 +37,13 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {
   this.objectNode_.addEventListener('-internal-permissionrequest', function(e) {
     var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    ['permission', 'url'].forEach(function(attribName) {
-      evt[attribName] = detail[attribName];
+    EXPOSED_PERMISSION_EVENT_ATTRIBS.forEach(function(attribName) {
+      if (detail[attribName] !== 'undefined')
+        evt[attribName] = detail[attribName];
     });
     var requestId = detail.requestId;
 
-    if (detail.requestId !== undefined &&
+    if (detail.requestId !== 'undefined' &&
         PERMISSION_TYPES.indexOf(detail.permission) >= 0) {
       // TODO(lazyboy): Also fill in evt.details (see webview specs).
       // http://crbug.com/141197.

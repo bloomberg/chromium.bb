@@ -284,11 +284,17 @@ class CONTENT_EXPORT BrowserPlugin :
   // browser process.
   void SetInstanceID(int instance_id);
 
+  void AddPermissionRequestToMap(int request_id,
+                                 BrowserPluginPermissionType type);
+
   // Informs the BrowserPlugin that the guest's permission request has been
   // allowed or denied by the embedder.
   void RespondPermission(BrowserPluginPermissionType permission_type,
                          int request_id,
                          bool allow);
+
+  // Handles the response to the pointerLock permission request.
+  void RespondPermissionPointerLock(bool allow);
 
   // If the request with id |request_id| is pending then informs the
   // BrowserPlugin that the guest's permission request has been allowed or
@@ -327,8 +333,6 @@ class CONTENT_EXPORT BrowserPlugin :
                       bool is_top_level);
   void OnLoadStart(int instance_id, const GURL& url, bool is_top_level);
   void OnLoadStop(int instance_id);
-  void OnLockMouse(int instance_id, bool user_gesture,
-      bool last_unlocked_by_target, bool privileged);
   // Requests permission from the embedder.
   void OnRequestPermission(int instance_id,
                            BrowserPluginPermissionType permission_type,
@@ -379,8 +383,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Each permission request item in the map is a pair of request id and
   // permission type.
-  typedef std::map<int, std::pair<int, BrowserPluginPermissionType> >
-      PendingPermissionRequests;
+  typedef std::map<int, BrowserPluginPermissionType> PendingPermissionRequests;
   PendingPermissionRequests pending_permission_requests_;
 
   typedef std::pair<int, base::WeakPtr<BrowserPlugin> >
