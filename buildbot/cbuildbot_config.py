@@ -76,9 +76,12 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
     if remote_trybot:
       my_config['chroot_replace'] = True
 
+    # In trybots, we want to always run VM tests and all unit tests, so that
+    # developers will get better testing for their changes.
     if (my_config['build_type'] == constants.PALADIN_TYPE
         and not my_config['arm']):
       my_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
+      my_config['quick_unit'] = False
 
   return copy_config
 
