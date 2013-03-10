@@ -111,9 +111,6 @@ const CGFloat kProjectingIconWidthAndHeight = 32.0;
 // Throbbing duration on webrtc "this web page is watching you" favicon overlay.
 const int kRecordingDurationMs = 1000;
 
-// Throbbing duration on audio playing animation.
-const int kAudioPlayingDurationMs = 2000;
-
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
 class ScopedNSAnimationContextGroup {
@@ -1608,21 +1605,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
                   throbPosition:kThrobPositionBottomRight] autorelease];
 
           iconView = recordingView;
-        } else if (theme && chrome::IsPlayingAudio(contents)) {
-          NSImage* audioImage =
-              theme->GetNSImageNamed(IDR_AUDIO_ANIMATION, true);
-          NSRect frame =
-              NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
-          ThrobbingImageView* equalizerFaviconView =
-              [[[ThrobbingImageView alloc]
-                  initWithFrame:frame
-                backgroundImage:[imageView image]
-                     throbImage:audioImage
-                     durationMS:kAudioPlayingDurationMs
-                  throbPosition:kThrobPositionOverlay] autorelease];
-          [equalizerFaviconView setTweenType:ui::Tween::LINEAR];
-
-          iconView = equalizerFaviconView;
         } else {
           iconView = imageView;
         }

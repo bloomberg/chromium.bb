@@ -37,9 +37,6 @@ enum ThrobPosition {
          throbImage:(NSImage*)throbImage
          durationMS:(int)durationMS
       throbPosition:(ThrobPosition)throbPosition;
-
-- (void)setTweenType:(ui::Tween::Type)type;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_THROBBING_IMAGE_VIEW_H_
