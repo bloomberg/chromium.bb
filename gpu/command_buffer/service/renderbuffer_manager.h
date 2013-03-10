@@ -143,13 +143,13 @@ class GPU_EXPORT RenderbufferManager {
   // Must call before destruction.
   void Destroy(bool have_context);
 
-  // Creates a Renderbuffer for the given renderbuffer.
+  // Creates a Renderbuffer for the given renderbuffer ids.
   void CreateRenderbuffer(GLuint client_id, GLuint service_id);
 
-  // Gets the renderbuffer info for the given renderbuffer.
+  // Gets the renderbuffer for the given renderbuffer id.
   Renderbuffer* GetRenderbuffer(GLuint client_id);
 
-  // Removes a renderbuffer info for the given renderbuffer.
+  // Removes a renderbuffer for the given renderbuffer id.
   void RemoveRenderbuffer(GLuint client_id);
 
   // Gets a client id for a given service id.
@@ -178,14 +178,13 @@ class GPU_EXPORT RenderbufferManager {
 
   // Counts the number of Renderbuffer allocated with 'this' as its manager.
   // Allows to check no Renderbuffer will outlive this.
-  unsigned renderbuffer_info_count_;
+  unsigned renderbuffer_count_;
 
   bool have_context_;
 
   // Info for each renderbuffer in the system.
-  typedef base::hash_map<GLuint,
-                         scoped_refptr<Renderbuffer> > RenderbufferInfoMap;
-  RenderbufferInfoMap renderbuffer_infos_;
+  typedef base::hash_map<GLuint, scoped_refptr<Renderbuffer> > RenderbufferMap;
+  RenderbufferMap renderbuffers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderbufferManager);
 };

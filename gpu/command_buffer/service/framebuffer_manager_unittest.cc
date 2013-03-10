@@ -211,12 +211,12 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
-  Renderbuffer* rb_info1 =
+  Renderbuffer* renderbuffer1 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(rb_info1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != NULL);
 
   // check adding one attachment
-  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, rb_info1);
+  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, renderbuffer1);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA4),
@@ -229,13 +229,13 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Try a format that's not good for COLOR_ATTACHMENT0.
   renderbuffer_manager_.SetInfo(
-      rb_info1, kSamples1, kBadFormat1, kWidth1, kHeight1);
+      renderbuffer1, kSamples1, kBadFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
   // Try a good format.
   renderbuffer_manager_.SetInfo(
-      rb_info1, kSamples1, kFormat1, kWidth1, kHeight1);
+      renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetColorAttachmentFormat());
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
@@ -247,10 +247,10 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   // check adding another
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient2Id, kRenderbufferService2Id);
-  Renderbuffer* rb_info2 =
+  Renderbuffer* renderbuffer2 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient2Id);
-  ASSERT_TRUE(rb_info2 != NULL);
-  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info2);
+  ASSERT_TRUE(renderbuffer2 != NULL);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer2);
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
@@ -268,7 +268,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   renderbuffer_manager_.SetInfo(
-      rb_info2, kSamples2, kFormat2, kWidth2, kHeight2);
+      renderbuffer2, kSamples2, kFormat2, kWidth2, kHeight2);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_FALSE(framebuffer_->IsCleared());
@@ -286,14 +286,14 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   // Check adding one that is already cleared.
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient3Id, kRenderbufferService3Id);
-  Renderbuffer* rb_info3 =
+  Renderbuffer* renderbuffer3 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient3Id);
-  ASSERT_TRUE(rb_info3 != NULL);
+  ASSERT_TRUE(renderbuffer3 != NULL);
   renderbuffer_manager_.SetInfo(
-      rb_info3, kSamples3, kFormat3, kWidth3, kHeight3);
-  renderbuffer_manager_.SetCleared(rb_info3, true);
+      renderbuffer3, kSamples3, kFormat3, kWidth3, kHeight3);
+  renderbuffer_manager_.SetCleared(renderbuffer3, true);
 
-  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info3);
+  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer3);
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetColorAttachmentFormat());
@@ -305,7 +305,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Check marking the renderbuffer as unclared.
   renderbuffer_manager_.SetInfo(
-      rb_info1, kSamples1, kFormat1, kWidth1, kHeight1);
+      renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1),
             framebuffer_->GetColorAttachmentFormat());
   EXPECT_TRUE(framebuffer_->HasDepthAttachment());
@@ -334,13 +334,13 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   // Check replacing an attachment
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient4Id, kRenderbufferService4Id);
-  Renderbuffer* rb_info4 =
+  Renderbuffer* renderbuffer4 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient4Id);
-  ASSERT_TRUE(rb_info4 != NULL);
+  ASSERT_TRUE(renderbuffer4 != NULL);
   renderbuffer_manager_.SetInfo(
-      rb_info4, kSamples4, kFormat4, kWidth4, kHeight4);
+      renderbuffer4, kSamples4, kFormat4, kWidth4, kHeight4);
 
-  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info4);
+  framebuffer_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, renderbuffer4);
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->IsCleared());
 
@@ -356,7 +356,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Check changing an attachment.
   renderbuffer_manager_.SetInfo(
-      rb_info4, kSamples4, kFormat4, kWidth4 + 1, kHeight4);
+      renderbuffer4, kSamples4, kFormat4, kWidth4 + 1, kHeight4);
 
   attachment = framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT);
   ASSERT_TRUE(attachment != NULL);
@@ -383,7 +383,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
 
   // Remove depth, Set color to 0 size.
   framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, NULL);
-  renderbuffer_manager_.SetInfo(rb_info1, kSamples1, kFormat1, 0, 0);
+  renderbuffer_manager_.SetInfo(renderbuffer1, kSamples1, kFormat1, 0, 0);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
@@ -543,28 +543,28 @@ TEST_F(FramebufferInfoTest, UnbindRenderbuffer) {
 
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
-  Renderbuffer* rb_info1 =
+  Renderbuffer* renderbuffer1 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(rb_info1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != NULL);
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient2Id, kRenderbufferService2Id);
-  Renderbuffer* rb_info2 =
+  Renderbuffer* renderbuffer2 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient2Id);
-  ASSERT_TRUE(rb_info2 != NULL);
+  ASSERT_TRUE(renderbuffer2 != NULL);
 
   // Attach to 2 attachment points.
-  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, rb_info1);
-  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
+  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, renderbuffer1);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer1);
   // Check they were attached.
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
   // Unbind unattached renderbuffer.
-  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info2);
+  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer2);
   // Should be no-op.
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) != NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) != NULL);
   // Unbind renderbuffer.
-  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info1);
+  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer1);
   // Check they were detached
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
   EXPECT_TRUE(framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT) == NULL);
@@ -617,9 +617,9 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
 
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
-  Renderbuffer* rb_info1 =
+  Renderbuffer* renderbuffer1 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(rb_info1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != NULL);
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<Texture> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
@@ -635,7 +635,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
   manager_.MarkAsComplete(framebuffer_);
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
-  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer1);
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
 
   // Check MarkAttachmentsAsCleared marks as complete.
@@ -644,7 +644,7 @@ TEST_F(FramebufferInfoTest, IsCompleteMarkAsComplete) {
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
 
   // Check Unbind marks as not complete.
-  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info1);
+  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer1);
   EXPECT_FALSE(manager_.IsComplete(framebuffer_));
   manager_.MarkAsComplete(framebuffer_);
   EXPECT_TRUE(manager_.IsComplete(framebuffer_));
@@ -662,9 +662,9 @@ TEST_F(FramebufferInfoTest, GetStatus) {
 
   renderbuffer_manager_.CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
-  Renderbuffer* rb_info1 =
+  Renderbuffer* renderbuffer1 =
       renderbuffer_manager_.GetRenderbuffer(kRenderbufferClient1Id);
-  ASSERT_TRUE(rb_info1 != NULL);
+  ASSERT_TRUE(renderbuffer1 != NULL);
   texture_manager_.CreateTexture(kTextureClient2Id, kTextureService2Id);
   scoped_refptr<Texture> texture2(
       texture_manager_.GetTexture(kTextureClient2Id));
@@ -700,7 +700,7 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check adding another attachment calls CheckFramebufferStatus.
-  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, rb_info1);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer1);
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
@@ -731,7 +731,7 @@ TEST_F(FramebufferInfoTest, GetStatus) {
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 
   // Check Unbinding does not call CheckFramebufferStatus
-  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, rb_info1);
+  framebuffer_->UnbindRenderbuffer(GL_RENDERBUFFER, renderbuffer1);
   framebuffer_->GetStatus(&texture_manager_, GL_READ_FRAMEBUFFER);
 }
 
