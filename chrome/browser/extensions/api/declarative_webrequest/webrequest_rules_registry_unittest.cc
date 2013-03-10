@@ -242,7 +242,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
 
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
-  net::TestURLRequest http_request(http_url, NULL, &context);
+  net::TestURLRequest http_request(http_url, NULL, &context, NULL);
   WebRequestData request_data(&http_request, ON_BEFORE_REQUEST);
   matches = registry->GetMatches(request_data);
   EXPECT_EQ(2u, matches.size());
@@ -255,7 +255,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   EXPECT_TRUE(ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
 
   GURL foobar_url("http://www.foobar.com");
-  net::TestURLRequest foobar_request(foobar_url, NULL, &context);
+  net::TestURLRequest foobar_request(foobar_url, NULL, &context, NULL);
   request_data.request = &foobar_request;
   matches = registry->GetMatches(request_data);
   EXPECT_EQ(1u, matches.size());
@@ -381,7 +381,7 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
 
   GURL url("http://www.google.com");
   net::TestURLRequestContext context;
-  net::TestURLRequest request(url, NULL, &context);
+  net::TestURLRequest request(url, NULL, &context, NULL);
   WebRequestData request_data(&request, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(NULL, request_data, false);
@@ -429,7 +429,7 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
 
   GURL url("http://www.google.com/index.html");
   net::TestURLRequestContext context;
-  net::TestURLRequest request(url, NULL, &context);
+  net::TestURLRequest request(url, NULL, &context, NULL);
   WebRequestData request_data(&request, ON_BEFORE_REQUEST);
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(NULL, request_data, false);
@@ -482,7 +482,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
 
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
-  net::TestURLRequest http_request(http_url, NULL, &context);
+  net::TestURLRequest http_request(http_url, NULL, &context, NULL);
   WebRequestData request_data(&http_request, ON_BEFORE_REQUEST);
   matches = registry->GetMatches(request_data);
   EXPECT_EQ(1u, matches.size());
@@ -538,7 +538,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
 
   for (size_t i = 0; i < arraysize(matchingRuleIds); ++i) {
     // Construct the inputs.
-    net::TestURLRequest http_request(urls[i], NULL, &context);
+    net::TestURLRequest http_request(urls[i], NULL, &context, NULL);
     WebRequestData request_data(&http_request, ON_BEFORE_REQUEST);
     http_request.set_first_party_for_cookies(firstPartyUrls[i]);
     // Now run both rules on the input.
