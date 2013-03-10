@@ -296,10 +296,11 @@ Error* CapabilitiesParser::ParseProxy(const base::Value* option) {
   proxy_options.insert("sslProxy");
   proxy_options.insert("class");  // Created by BeanToJSONConverter.
 
-  DictionaryValue::key_iterator key_iter = options->begin_keys();
-  for (; key_iter != options->end_keys(); ++key_iter) {
-    if (proxy_options.find(*key_iter) == proxy_options.end()) {
-      logger_.Log(kInfoLogLevel, "Unrecognized proxy capability: " + *key_iter);
+  for (DictionaryValue::Iterator iter(*options); !iter.IsAtEnd();
+       iter.Advance()) {
+    if (proxy_options.find(iter.key()) == proxy_options.end()) {
+      logger_.Log(kInfoLogLevel,
+                  "Unrecognized proxy capability: " + iter.key());
     }
   }
 

@@ -577,13 +577,12 @@ void ProfileImpl::InitHostZoomMap() {
       prefs_->GetDictionary(prefs::kPerHostZoomLevels);
   // Careful: The returned value could be NULL if the pref has never been set.
   if (host_zoom_dictionary != NULL) {
-    for (DictionaryValue::key_iterator i(host_zoom_dictionary->begin_keys());
-         i != host_zoom_dictionary->end_keys(); ++i) {
-      const std::string& host(*i);
+    for (DictionaryValue::Iterator i(*host_zoom_dictionary); !i.IsAtEnd();
+         i.Advance()) {
+      const std::string& host(i.key());
       double zoom_level = 0;
 
-      bool success = host_zoom_dictionary->GetDoubleWithoutPathExpansion(
-          host, &zoom_level);
+      bool success = i.value().GetAsDouble(&zoom_level);
       DCHECK(success);
       host_zoom_map->SetZoomLevel(host, zoom_level);
     }

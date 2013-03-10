@@ -226,18 +226,17 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                                              bool* dirty,
                                              TransportSecurityState* state) {
   scoped_ptr<Value> value(base::JSONReader::Read(serialized));
-  DictionaryValue* dict_value;
+  DictionaryValue* dict_value = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict_value))
     return false;
 
   const base::Time current_time(base::Time::Now());
   bool dirtied = false;
 
-  for (DictionaryValue::key_iterator i = dict_value->begin_keys();
-       i != dict_value->end_keys(); ++i) {
-    DictionaryValue* parsed;
-    if (!dict_value->GetDictionaryWithoutPathExpansion(*i, &parsed)) {
-      LOG(WARNING) << "Could not parse entry " << *i << "; skipping entry";
+  for (DictionaryValue::Iterator i(*dict_value); !i.IsAtEnd(); i.Advance()) {
+    const DictionaryValue* parsed = NULL;
+    if (!i.value().GetAsDictionary(&parsed)) {
+      LOG(WARNING) << "Could not parse entry " << i.key() << "; skipping entry";
       continue;
     }
 
@@ -251,7 +250,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                             &domain_state.include_subdomains) ||
         !parsed->GetString(kMode, &mode_string) ||
         !parsed->GetDouble(kExpiry, &expiry)) {
-      LOG(WARNING) << "Could not parse some elements of entry " << *i
+      LOG(WARNING) << "Could not parse some elements of entry " << i.key()
                    << "; skipping entry";
       continue;
     }
@@ -260,7 +259,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     parsed->GetDouble(kDynamicSPKIHashesExpiry,
                       &dynamic_spki_hashes_expiry);
 
-    ListValue* pins_list = NULL;
+    const ListValue* pins_list = NULL;
     // preloaded_spki_hashes is a legacy synonym for static_spki_hashes.
     if (parsed->GetList(kStaticSPKIHashes, &pins_list))
       SPKIHashesFromListValue(*pins_list, &domain_state.static_spki_hashes);
@@ -278,7 +277,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
           TransportSecurityState::DomainState::MODE_DEFAULT;
     } else {
       LOG(WARNING) << "Unknown TransportSecurityState mode string "
-                   << mode_string << " found for entry " << *i
+                   << mode_string << " found for entry " << i.key()
                    << "; skipping entry";
       continue;
     }
@@ -302,7 +301,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    std::string hashed = ExternalStringToHashedDomain(*i);
+    std::string hashed = ExternalStringToHashedDomain(i.key());
     if (hashed.empty()) {
       dirtied = true;
       continue;

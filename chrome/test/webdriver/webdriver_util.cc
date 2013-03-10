@@ -409,19 +409,17 @@ void TruncateString(std::string* data) {
 
 // Truncates all strings contained in the given value.
 void TruncateContainedStrings(Value* value) {
-  ListValue* list;
-  if (value->IsType(Value::TYPE_DICTIONARY)) {
-    DictionaryValue* dict = static_cast<DictionaryValue*>(value);
-    DictionaryValue::key_iterator key = dict->begin_keys();
-    for (; key != dict->end_keys(); ++key) {
-      Value* child;
-      if (!dict->GetWithoutPathExpansion(*key, &child))
-        continue;
+  ListValue* list = NULL;
+  DictionaryValue* dict = NULL;
+  if (value->GetAsDictionary(&dict)) {
+    for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
       std::string data;
-      if (child->GetAsString(&data)) {
+      if (it.value().GetAsString(&data)) {
         TruncateString(&data);
-        dict->SetWithoutPathExpansion(*key, new base::StringValue(data));
+        dict->SetWithoutPathExpansion(it.key(), new base::StringValue(data));
       } else {
+        Value* child = NULL;
+        dict->GetWithoutPathExpansion(it.key(), &child);
         TruncateContainedStrings(child);
       }
     }

@@ -1140,11 +1140,10 @@ void ExtensionPrefs::GetSavedFileEntries(
   const DictionaryValue* file_entries = NULL;
   if (!prefs->GetDictionary(kFileEntries, &file_entries))
     return;
-  for (DictionaryValue::key_iterator it = file_entries->begin_keys();
-       it != file_entries->end_keys(); ++it) {
-    std::string id = *it;
+  for (DictionaryValue::Iterator it(*file_entries); !it.IsAtEnd();
+       it.Advance()) {
     const DictionaryValue* file_entry = NULL;
-    if (!file_entries->GetDictionaryWithoutPathExpansion(id, &file_entry))
+    if (!it.value().GetAsDictionary(&file_entry))
       continue;
     base::FilePath::StringType path_string;
     if (!file_entry->GetString(kFileEntryPath, &path_string))
@@ -1154,7 +1153,7 @@ void ExtensionPrefs::GetSavedFileEntries(
       continue;
     base::FilePath file_path(path_string);
     out->push_back(app_file_handler_util::SavedFileEntry(
-        id, file_path, writable));
+        it.key(), file_path, writable));
   }
 }
 
@@ -2010,7 +2009,7 @@ void ExtensionPrefs::LoadExtensionControlledPrefs(
   if (!source_dict->GetDictionary(key, &preferences))
     return;
 
-  for (DictionaryValue::Iterator i(*preferences); i.HasNext(); i.Advance()) {
+  for (DictionaryValue::Iterator i(*preferences); !i.IsAtEnd(); i.Advance()) {
     extension_pref_value_map_->SetExtensionPref(
         extension_id, i.key(), scope, i.value().DeepCopy());
   }

@@ -756,35 +756,24 @@ DictionaryValue* DictionaryValue::DeepCopyWithoutEmptyChildren() {
 }
 
 void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
-  for (DictionaryValue::key_iterator key(dictionary->begin_keys());
-       key != dictionary->end_keys(); ++key) {
-    const Value* merge_value;
-    if (dictionary->GetWithoutPathExpansion(*key, &merge_value)) {
-      // Check whether we have to merge dictionaries.
-      if (merge_value->IsType(Value::TYPE_DICTIONARY)) {
-        DictionaryValue* sub_dict;
-        if (GetDictionaryWithoutPathExpansion(*key, &sub_dict)) {
-          sub_dict->MergeDictionary(
-              static_cast<const DictionaryValue*>(merge_value));
-          continue;
-        }
+  for (DictionaryValue::Iterator it(*dictionary); !it.IsAtEnd(); it.Advance()) {
+    const Value* merge_value = &it.value();
+    // Check whether we have to merge dictionaries.
+    if (merge_value->IsType(Value::TYPE_DICTIONARY)) {
+      DictionaryValue* sub_dict;
+      if (GetDictionaryWithoutPathExpansion(it.key(), &sub_dict)) {
+        sub_dict->MergeDictionary(
+            static_cast<const DictionaryValue*>(merge_value));
+        continue;
       }
-      // All other cases: Make a copy and hook it up.
-      SetWithoutPathExpansion(*key, merge_value->DeepCopy());
     }
+    // All other cases: Make a copy and hook it up.
+    SetWithoutPathExpansion(it.key(), merge_value->DeepCopy());
   }
 }
 
 void DictionaryValue::Swap(DictionaryValue* other) {
   dictionary_.swap(other->dictionary_);
-}
-
-DictionaryValue::key_iterator::key_iterator(ValueMap::const_iterator itr) {
-  itr_ = itr;
-}
-
-DictionaryValue::key_iterator::key_iterator(const key_iterator& rhs) {
-  itr_ = rhs.itr_;
 }
 
 DictionaryValue::Iterator::Iterator(const DictionaryValue& target)
@@ -809,21 +798,17 @@ bool DictionaryValue::Equals(const Value* other) const {
 
   const DictionaryValue* other_dict =
       static_cast<const DictionaryValue*>(other);
-  key_iterator lhs_it(begin_keys());
-  key_iterator rhs_it(other_dict->begin_keys());
-  while (lhs_it != end_keys() && rhs_it != other_dict->end_keys()) {
-    const Value* lhs;
-    const Value* rhs;
-    if (*lhs_it != *rhs_it ||
-        !GetWithoutPathExpansion(*lhs_it, &lhs) ||
-        !other_dict->GetWithoutPathExpansion(*rhs_it, &rhs) ||
-        !lhs->Equals(rhs)) {
+  Iterator lhs_it(*this);
+  Iterator rhs_it(*other_dict);
+  while (!lhs_it.IsAtEnd() && !rhs_it.IsAtEnd()) {
+    if (lhs_it.key() != rhs_it.key() ||
+        !lhs_it.value().Equals(&rhs_it.value())) {
       return false;
     }
-    ++lhs_it;
-    ++rhs_it;
+    lhs_it.Advance();
+    rhs_it.Advance();
   }
-  if (lhs_it != end_keys() || rhs_it != other_dict->end_keys())
+  if (!lhs_it.IsAtEnd() || !rhs_it.IsAtEnd())
     return false;
 
   return true;

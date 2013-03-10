@@ -315,19 +315,18 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
   // Each description is an object that contains the policy value under the
   // "Value" key. The optional "Level" key is either "Mandatory" (default) or
   // "Recommended".
-  for (base::DictionaryValue::key_iterator it = dict->begin_keys();
-       it != dict->end_keys(); ++it) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     base::DictionaryValue* description = NULL;
-    if (!dict->GetDictionary(*it, &description))
+    if (!dict->GetDictionaryWithoutPathExpansion(it.key(), &description))
       return false;
 
     base::Value* value = NULL;
-    if (!description->Remove(kValue, &value))
+    if (!description->RemoveWithoutPathExpansion(kValue, &value))
       return false;
 
     PolicyLevel level = POLICY_LEVEL_MANDATORY;
     std::string level_string;
-    if (description->GetString(kLevel, &level_string) &&
+    if (description->GetStringWithoutPathExpansion(kLevel, &level_string) &&
         level_string == kRecommended) {
       level = POLICY_LEVEL_RECOMMENDED;
     }
@@ -335,7 +334,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     // If policy for components is ever used for device-level settings then
     // this must support a configurable scope; assuming POLICY_SCOPE_USER is
     // fine for now.
-    policy->Set(*it, level, POLICY_SCOPE_USER, value);
+    policy->Set(it.key(), level, POLICY_SCOPE_USER, value);
   }
 
   return true;

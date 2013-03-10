@@ -176,14 +176,12 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   // Populate the cache
   const DictionaryValue* cache =
       prefs_->GetDictionary(prefs::kProfileInfoCache);
-  for (DictionaryValue::key_iterator it = cache->begin_keys();
-       it != cache->end_keys(); ++it) {
-    std::string key = *it;
+  for (DictionaryValue::Iterator it(*cache); !it.IsAtEnd(); it.Advance()) {
     const DictionaryValue* info = NULL;
-    cache->GetDictionary(key, &info);
+    it.value().GetAsDictionary(&info);
     string16 name;
     info->GetString(kNameKey, &name);
-    sorted_keys_.insert(FindPositionForProfile(key, name), key);
+    sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
   }
 }
 
@@ -813,11 +811,10 @@ std::vector<string16> ProfileInfoCache::GetProfileNames() {
   const DictionaryValue* cache = local_state->GetDictionary(
       prefs::kProfileInfoCache);
   string16 name;
-  for (base::DictionaryValue::key_iterator it = cache->begin_keys();
-       it != cache->end_keys();
-       ++it) {
+  for (base::DictionaryValue::Iterator it(*cache); !it.IsAtEnd();
+       it.Advance()) {
     const base::DictionaryValue* info = NULL;
-    cache->GetDictionary(*it, &info);
+    it.value().GetAsDictionary(&info);
     info->GetString(kNameKey, &name);
     names.push_back(name);
   }
