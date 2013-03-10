@@ -18,6 +18,7 @@ import logging
 import optparse
 import os
 import pipes
+import psutil
 import signal
 import socket
 import subprocess
@@ -69,7 +70,6 @@ MAX_LAUNCH_FAILURES = SHORT_BACKOFF_THRESHOLD + 10
 
 # Globals needed by the atexit cleanup() handler.
 g_desktops = []
-g_pidfile = None
 g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
 
 class Config:
@@ -421,87 +421,39 @@ class Desktop:
     self.host_proc.stdin.close()
 
 
-class PidFile:
-  """Class to allow creating and deleting a file which holds the PID of the
-  running process.  This is used to detect if a process is already running, and
-  inform the user of the PID.  On process termination, the PID file is
-  deleted.
+def get_daemon_pid():
+  """Checks if there is already an instance of this script running, and returns
+  its PID.
 
-  Note that PID files are not truly atomic or reliable, see
-  http://mywiki.wooledge.org/ProcessManagement for more discussion on this.
-
-  So this class is just to prevent the user from accidentally running two
-  instances of this script, and to report which PID may be the other running
-  instance.
+  Returns:
+    The process ID of the existing daemon process, or 0 if the daemon is not
+    running.
   """
+  uid = os.getuid()
+  this_pid = os.getpid()
 
-  def __init__(self, filename):
-    """Create an object to manage a PID file.  This does not create the PID
-    file itself."""
-    self.filename = filename
-    self.created = False
+  for process in psutil.process_iter():
+    # Skip any processes that raise an exception, as processes may terminate
+    # during iteration over the list.
+    try:
+      # Skip other users' processes.
+      if process.uids.real != uid:
+        continue
 
-  def check(self):
-    """Checks current status of the process.
+      # Skip the process for this instance.
+      if process.pid == this_pid:
+        continue
 
-    Returns:
-      Tuple (running, pid):
-      |running| is True if the daemon is running.
-      |pid| holds the process ID of the running instance if |running| is True.
-      If the PID file exists but the PID couldn't be read from the file
-      (perhaps if the data hasn't been written yet), 0 is returned.
+      # |cmdline| will be [python-interpreter, script-file, other arguments...]
+      cmdline = process.cmdline
+      if len(cmdline) < 2:
+        continue
+      if cmdline[0] == sys.executable and cmdline[1] == sys.argv[0]:
+        return process.pid
+    except psutil.error.Error:
+      continue
 
-    Raises:
-      IOError: Filesystem error occurred.
-    """
-    if os.path.exists(self.filename):
-      pid_file = open(self.filename, 'r')
-      file_contents = pid_file.read()
-      pid_file.close()
-
-      try:
-        pid = int(file_contents)
-      except ValueError:
-        return True, 0
-
-      # Test to see if there's a process currently running with that PID.
-      # If there is no process running, the existing PID file is definitely
-      # stale and it is safe to overwrite it.  Otherwise, report the PID as
-      # possibly a running instance of this script.
-      if os.path.exists("/proc/%d" % pid):
-        return True, pid
-
-    return False, 0
-
-  def create(self):
-    """Creates an empty PID file."""
-    pid_file = open(self.filename, 'w')
-    pid_file.close()
-    self.created = True
-
-  def write_pid(self):
-    """Write the current process's PID to the PID file.
-
-    This is done separately from create() as this needs to be called
-    after any daemonization, when the correct PID becomes known.  But
-    check() and create() has to happen before daemonization, so that
-    if another instance is already running, this fact can be reported
-    to the user's terminal session.  This also avoids corrupting the
-    log file of the other process, since daemonize() would create a
-    new log file.
-    """
-    pid_file = open(self.filename, 'w')
-    pid_file.write('%d\n' % os.getpid())
-    pid_file.close()
-    self.created = True
-
-  def delete_file(self):
-    """Delete the PID file if it was created by this instance.
-
-    This is called on process termination.
-    """
-    if self.created:
-      os.remove(self.filename)
+  return 0
 
 
 def choose_x_session():
@@ -634,14 +586,6 @@ def daemonize(log_filename):
 
 def cleanup():
   logging.info("Cleanup.")
-
-  global g_pidfile
-  if g_pidfile:
-    try:
-      g_pidfile.delete_file()
-      g_pidfile = None
-    except Exception, e:
-      logging.error("Unexpected error deleting PID file: " + str(e))
 
   global g_desktops
   for desktop in g_desktops:
@@ -834,16 +778,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
   # Determine the filename of the host configuration and PID files.
   if not options.config:
     options.config = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
-  pid_filename = os.path.splitext(options.config)[0] + ".pid"
 
   # Check for a modal command-line option (start, stop, etc.)
   if options.check_running:
-    running, pid = PidFile(pid_filename).check()
-    return 0 if (running and pid != 0) else 1
+    pid = get_daemon_pid()
+    return 0 if pid != 0 else 1
 
   if options.stop:
-    running, pid = PidFile(pid_filename).check()
-    if not running:
+    pid = get_daemon_pid()
+    if pid == 0:
       print "The daemon is not currently running"
     else:
       print "Killing process %s" % pid
@@ -851,8 +794,8 @@ Web Store: https://chrome.google.com/remotedesktop"""
     return 0
 
   if options.reload:
-    running, pid = PidFile(pid_filename).check()
-    if not running:
+    pid = get_daemon_pid()
+    if pid == 0:
       return 1
     os.kill(pid, signal.SIGHUP)
     return 0
@@ -931,17 +874,12 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Determine whether a desktop is already active for the specified host
   # host configuration.
-  global g_pidfile
-  g_pidfile = PidFile(pid_filename)
-  running, pid = g_pidfile.check()
-  if running:
+  pid = get_daemon_pid()
+  if pid != 0:
     # Debian policy requires that services should "start" cleanly and return 0
     # if they are already running.
     print "Service already running."
     return 0
-
-  # Record that we are running a desktop against for this configuration.
-  g_pidfile.create()
 
   # Detach a separate "daemon" process to run the session, unless specifically
   # requested to run in the foreground.
@@ -951,8 +889,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
           prefix="chrome_remote_desktop_", delete=False)
       os.environ[LOG_FILE_ENV_VAR] = log_file.name
     daemonize(os.environ[LOG_FILE_ENV_VAR])
-
-  g_pidfile.write_pid()
 
   logging.info("Using host_id: " + host.host_id)
 
