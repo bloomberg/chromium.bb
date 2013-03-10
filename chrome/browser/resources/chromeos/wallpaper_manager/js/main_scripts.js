@@ -18,6 +18,7 @@
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/list.js"/>
 //<include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js"/>
 //<include src="progress_manager.js"/>
+//<include src="wallpaper_directories.js"/>
 //<include src="wallpaper_images_grid.js"/>
 //<include src="wallpaper_manager.js"/>
 //<include src="main.js"/>

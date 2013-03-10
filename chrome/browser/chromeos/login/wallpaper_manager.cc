@@ -328,22 +328,24 @@ void WallpaperManager::RemoveUserWallpaperInfo(const std::string& email) {
   DeleteUserWallpapers(email);
 }
 
-void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
-                                              const base::FilePath& path,
-                                              ash::WallpaperLayout layout,
-                                              int preferred_width,
-                                              int preferred_height) {
+bool WallpaperManager::ResizeWallpaper(
+    const UserImage& wallpaper,
+    ash::WallpaperLayout layout,
+    int preferred_width,
+    int preferred_height,
+    scoped_refptr<base::RefCountedBytes>* output) {
   DCHECK(BrowserThread::GetBlockingPool()->
       IsRunningSequenceOnCurrentThread(sequence_token_));
   int width = wallpaper.image().width();
   int height = wallpaper.image().height();
   int resized_width;
   int resized_height;
+  *output = new base::RefCountedBytes();
 
   if (layout == ash::WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // Do not resize custom wallpaper if it is smaller than preferred size.
     if (!(width > preferred_width && height > preferred_height))
-      return;
+      return false;
 
     double horizontal_ratio = static_cast<double>(preferred_width) / width;
     double vertical_ratio = static_cast<double>(preferred_height) / height;
@@ -360,10 +362,8 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
     resized_width = preferred_width;
     resized_height = preferred_height;
   } else {
-    // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
-    if (file_util::PathExists(path))
-      file_util::Delete(path, false);
-    return;
+    resized_width = width;
+    resized_height = height;
   }
 
   gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
@@ -372,7 +372,6 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
       gfx::Size(resized_width, resized_height));
 
   SkBitmap image = *(resized_image.bitmap());
-  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   SkAutoLockPixels lock_input(image);
   gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(image.getAddr32(0, 0)),
@@ -380,10 +379,28 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
       image.width(),
       image.height(),
       image.width() * image.bytesPerPixel(),
-      kDefaultEncodingQuality, &data->data());
-  SaveWallpaperInternal(path,
-                        reinterpret_cast<const char*>(data->front()),
-                        data->size());
+      kDefaultEncodingQuality, &(*output)->data());
+  return true;
+}
+
+void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
+                                              const base::FilePath& path,
+                                              ash::WallpaperLayout layout,
+                                              int preferred_width,
+                                              int preferred_height) {
+  if (layout == ash::WALLPAPER_LAYOUT_CENTER) {
+    // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
+    if (file_util::PathExists(path))
+      file_util::Delete(path, false);
+    return;
+  }
+  scoped_refptr<base::RefCountedBytes> data;
+  if (ResizeWallpaper(wallpaper, layout, preferred_width, preferred_height,
+                      &data)) {
+    SaveWallpaperInternal(path,
+                          reinterpret_cast<const char*>(data->front()),
+                          data->size());
+  }
 }
 
 void WallpaperManager::RestartTimer() {
@@ -561,6 +578,11 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
             desktop_background_controller()->GetAppropriateResolution();
         const char* sub_dir = (resolution == ash::WALLPAPER_RESOLUTION_SMALL) ?
             kSmallWallpaperSubDir : kLargeWallpaperSubDir;
+        // Wallpaper is not resized when layout is ash::WALLPAPER_LAYOUT_CENTER.
+        // Original wallpaper should be used in this case.
+        // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
+        if (info.layout == ash::WALLPAPER_LAYOUT_CENTER)
+          sub_dir = kOriginalWallpaperSubDir;
         base::FilePath wallpaper_path = GetCustomWallpaperPath(sub_dir, email,
                                                                info.file);
         if (current_wallpaper_path_ == wallpaper_path)
@@ -657,6 +679,19 @@ void WallpaperManager::ClearObsoleteWallpaperPrefs() {
   wallpaper_properties_pref->Clear();
   DictionaryPrefUpdate wallpapers_pref(prefs, kUserWallpapers);
   wallpapers_pref->Clear();
+}
+
+void WallpaperManager::DeleteAllExcept(const base::FilePath& path) {
+  base::FilePath dir = path.DirName();
+  if (file_util::DirectoryExists(dir)) {
+    file_util::FileEnumerator files(dir, false,
+                                    file_util::FileEnumerator::FILES);
+    for (base::FilePath current = files.Next(); !current.empty();
+         current = files.Next()) {
+      if (current != path)
+        file_util::Delete(current, false);
+    }
+  }
 }
 
 void WallpaperManager::DeleteWallpaperInList(
@@ -1030,13 +1065,16 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& email,
   SaveWallpaperInternal(original_path,
                         reinterpret_cast<char*>(&*image_data.begin()),
                         image_data.size());
+  DeleteAllExcept(original_path);
 
   ResizeAndSaveWallpaper(wallpaper, small_wallpaper_path, layout,
                          ash::kSmallWallpaperMaxWidth,
                          ash::kSmallWallpaperMaxHeight);
+  DeleteAllExcept(small_wallpaper_path);
   ResizeAndSaveWallpaper(wallpaper, large_wallpaper_path, layout,
                          ash::kLargeWallpaperMaxWidth,
                          ash::kLargeWallpaperMaxHeight);
+  DeleteAllExcept(large_wallpaper_path);
 }
 
 void WallpaperManager::RecordUma(User::WallpaperType type, int index) {

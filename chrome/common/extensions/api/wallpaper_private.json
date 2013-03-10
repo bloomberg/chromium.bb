@@ -86,7 +86,7 @@
       {
         "name": "setCustomWallpaper",
         "type": "function",
-        "description": "Sets wallpaper to the image from local file with specified layout",
+        "description": "Sets wallpaper to the image from local file with specified layout and returns thumbnail if needed.",
         "nodoc": "true",
         "parameters": [
           {
@@ -99,12 +99,22 @@
             "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
           },
           {
+            "type": "boolean",
+            "name": "generateThumbnail",
+            "description": "If true, callback should have a binary thumbnail."
+          },
+          {
+            "type": "string",
+            "name": "fileName"
+          },
+          {
             "type": "function",
             "name": "callback",
             "parameters": [
               {
-                "type": "string",
-                "name": "fileName"
+                "type": "binary",
+                "optional": true,
+                "name": "thumbnail"
               }
             ]
           }

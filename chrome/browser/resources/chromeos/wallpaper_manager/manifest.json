@@ -12,6 +12,8 @@
   },
   "permissions": [
     "storage",
+    "unlimitedStorage",
+    {"fileSystem": ["write"]},
     "wallpaperPrivate",
     "https://commondatastorage.googleapis.com/",
     "https://storage.googleapis.com/"

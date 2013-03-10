@@ -524,6 +524,11 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(!layout_string.empty());
   layout_ = GetLayoutEnum(layout_string);
 
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(2, &generate_thumbnail_));
+
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &file_name_));
+  EXTENSION_FUNCTION_VALIDATE(!file_name_.empty());
+
   // Gets email address while at UI thread.
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
 
@@ -540,9 +545,8 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   chromeos::UserImage::RawImage raw_image(image_data_.begin(),
                                           image_data_.end());
   chromeos::UserImage image(wallpaper, raw_image);
-  std::string file = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir, email_, file);
+      chromeos::kThumbnailWallpaperSubDir, email_, file_name_);
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -551,20 +555,25 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 
-  wallpaper.EnsureRepsForSupportedScaleFactors();
-  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
-  // Generates thumbnail before call api function callback. We can then request
-  // thumbnail in the javascript callback.
-  task_runner->PostTask(FROM_HERE,
-      base::Bind(&WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail,
-                 this, thumbnail_path, base::Passed(&deep_copy)));
-
   // In the new wallpaper picker UI, we do not depend on WallpaperDelegate
   // to refresh thumbnail. Uses a null delegate here.
-  wallpaper_manager->SetCustomWallpaper(email_, file, layout_,
+  wallpaper_manager->SetCustomWallpaper(email_, file_name_, layout_,
                                         chromeos::User::CUSTOMIZED,
                                         image);
   wallpaper_decoder_ = NULL;
+
+  if (generate_thumbnail_) {
+    wallpaper.EnsureRepsForSupportedScaleFactors();
+    scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
+    // Generates thumbnail before call api function callback. We can then
+    // request thumbnail in the javascript callback.
+    task_runner->PostTask(FROM_HERE,
+        base::Bind(
+            &WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail,
+            this, thumbnail_path, base::Passed(&deep_copy)));
+  } else {
+    SendResponse(true);
+  }
 }
 
 void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
@@ -575,23 +584,25 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
   if (!file_util::PathExists(thumbnail_path.DirName()))
     file_util::CreateDirectory(thumbnail_path.DirName());
 
-  chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
+  scoped_refptr<base::RefCountedBytes> data;
+  chromeos::WallpaperManager::Get()->ResizeWallpaper(
       wallpaper,
-      thumbnail_path,
       ash::WALLPAPER_LAYOUT_STRETCH,
       ash::kWallpaperThumbnailWidth,
-      ash::kWallpaperThumbnailHeight);
-  std::string file_name = thumbnail_path.BaseName().value();
+      ash::kWallpaperThumbnailHeight,
+      &data);
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
             &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated,
-            this, file_name));
+            this, data));
 }
 
 void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
-    const std::string& file_name) {
-  SetResult(new base::StringValue(file_name));
+    base::RefCountedBytes* data) {
+  BinaryValue* result = BinaryValue::CreateWithCopiedBuffer(
+      reinterpret_cast<const char*>(data->front()), data->size());
+  SetResult(result);
   SendResponse(true);
 }
 

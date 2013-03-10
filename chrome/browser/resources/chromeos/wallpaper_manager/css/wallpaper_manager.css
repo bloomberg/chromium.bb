@@ -99,20 +99,10 @@ body {
   display: -webkit-box;
 }
 
-#category-container,
-#custom-container {
+#category-container {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
-}
-
-#custom-container {
-  margin: 10px;
-  padding: 10px;
-}
-
-#custom-container > div {
-  margin: 10px 0 5px 0;
 }
 
 .image-picker {
@@ -209,6 +199,10 @@ body {
   -webkit-box-flex: 1;
 }
 
+#online-wallpaper-attribute {
+  display: -webkit-box;
+}
+
 #attribute-image {
   -webkit-margin-end: 10px;
   height: 34px;
@@ -220,13 +214,6 @@ body {
   overflow: hidden;
   white-space: nowrap;
   width: 240px;
-}
-
-/* Custom wallpaper thumbnail container. */
-#preview {
-  -webkit-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  height: 80px;
-  width: 128px;
 }
 
 /* [hidden] does display:none, but its priority is too low. */
@@ -249,7 +236,7 @@ body {
   width: 0;
 }
 
-#error-container {
+.overlay-container {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
@@ -264,7 +251,7 @@ body {
   z-index: 4;
 }
 
-#error-container .page {
+.overlay-container .page {
   -webkit-border-radius: 3px;
   -webkit-box-orient: vertical;
   background: rgb(255, 255, 255);
@@ -276,7 +263,11 @@ body {
   width: 302px;
 }
 
-#close-error {
+#error-container {
+  z-index: 5;
+}
+
+.close-overlay {
   background-image: url('../images/ui/close-error.png');
   height: 14px;
   position: absolute;
@@ -285,6 +276,35 @@ body {
   width: 14px
 }
 
-#close-error:hover {
+.close-overlay:hover {
   background-image: url('../images/ui/close-error-hover.png');
+}
+
+/* Custom wallpaper thumbnail container. */
+#add-new img {
+  content: url('../images/ui/add-wallpaper-thumbnail.png');
+}
+
+#add-new:hover img {
+  content: url('../images/ui/add-wallpaper-thumbnail-hover.png');
+}
+
+#wallpaper-selection-container #content div {
+  margin: 20px 0 5px 0;
+}
+
+#wallpaper-selection-container #warning span {
+  line-height: 17px;
+}
+
+#wallpaper-selection-container select {
+  height: 30px;
+}
+
+#wallpaper-selection-container input[type='file']::-webkit-file-upload-button {
+  height: 30px;
+}
+
+#wallpaper-selection-container .remember-icon {
+  content: url('../images/ui/remember.png');
 }

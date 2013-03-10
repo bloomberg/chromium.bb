@@ -53,7 +53,9 @@ chrome.test.getConfig(function(config) {
     function setCustomJpegWallpaper() {
       chrome.wallpaperPrivate.setCustomWallpaper(wallpaper,
                                                  'CENTER_CROPPED',
-                                                 pass(function(fileName) {
+                                                 true,
+                                                 '123',
+                                                 pass(function(thumbnail) {
         chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
                                                          pass(function() {
           chrome.wallpaperPrivate.setCustomWallpaperLayout('STRETCH', pass());
@@ -78,7 +80,8 @@ chrome.test.getConfig(function(config) {
         if (requestStatus === 200) {
           var badWallpaper = response;
           chrome.wallpaperPrivate.setCustomWallpaper(badWallpaper,
-              'CENTER_CROPPED', fail(wallpaperStrings.invalidWallpaper));
+              'CENTER_CROPPED', false, '123',
+              fail(wallpaperStrings.invalidWallpaper));
         } else {
           chrome.test.fail('Failed to load test_bad.jpg from local server.');
         }

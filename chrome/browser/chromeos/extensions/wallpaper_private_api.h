@@ -157,10 +157,16 @@ class WallpaperPrivateSetCustomWallpaperFunction
                          scoped_ptr<gfx::ImageSkia> image);
 
   // Thumbnail is ready. Calls api function javascript callback.
-  void ThumbnailGenerated(const std::string& file_name);
+  void ThumbnailGenerated(base::RefCountedBytes* data);
 
   // Layout of the downloaded wallpaper.
   ash::WallpaperLayout layout_;
+
+  // True if need to generate thumbnail and pass to callback.
+  bool generate_thumbnail_;
+
+  // Unique file name of the custom wallpaper.
+  std::string file_name_;
 
   // Email address of logged in user.
   std::string email_;

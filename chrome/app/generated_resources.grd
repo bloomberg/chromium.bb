@@ -12231,7 +12231,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Downloading
       </message>
       <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
-        Your wallpaper will be shown on the login screens and your background.
+        Wallpapers appear on the Sign-in Screen.
       </message>
       <message name="IDS_WALLPAPER_MANAGER_ACCESS_FAIL" desc="The string displayed to user when access wallpaper server failed.">
         Chrome cannot access wallpapers at this time.
