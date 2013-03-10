@@ -14,6 +14,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
       Poretsky.
 
 ** Braille Table Improvements
+   - da-dk-g2.ctb, mostly rewritten to use nocross and hyphenation table.
    - Most tables: removed the default collapse whitespace statements, if you need to compress 
      whitespace, consider adding compress.ctb to the list of tables when processing.
    - Corrections to Unified English Braille Code (Grade 2), thanks to
@@ -50,7 +51,7 @@ new tables the long awaited table for UEB is finally here.
     - Korean table thanks to Joseph Lee
 
 ** Braille Table Improvements
-   - da-gk-g2.ctb, fixes for transposed â, å, æ, ä, ø  and ö,
+   - da-dk-g2.ctb, fixes for transposed â, å, æ, ä, ø  and ö,
      corrected/improved harness tests.
    - Corrections for en-GB-g2.ctb thanks to Paul Wood
    - Corrections to the Hungarian grade 1 table thanks to Hammer
