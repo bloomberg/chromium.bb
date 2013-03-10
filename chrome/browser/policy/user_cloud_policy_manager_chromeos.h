@@ -9,32 +9,44 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_manager.h"
+#include "chrome/browser/policy/component_cloud_policy_service.h"
 
 class PrefService;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace policy {
 
 class DeviceManagementService;
+class ResourceCache;
 
 // UserCloudPolicyManagerChromeOS implements logic for initializing user policy
 // on Chrome OS.
-class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
-                                       public CloudPolicyClient::Observer {
+class UserCloudPolicyManagerChromeOS
+    : public CloudPolicyManager,
+      public CloudPolicyClient::Observer,
+      public ComponentCloudPolicyService::Delegate {
  public:
   // If |wait_for_policy_fetch| is true, IsInitializationComplete() will return
   // false as long as there hasn't been a successful policy fetch.
-  UserCloudPolicyManagerChromeOS(scoped_ptr<CloudPolicyStore> store,
-                                 bool wait_for_policy_fetch);
+  UserCloudPolicyManagerChromeOS(
+      scoped_ptr<CloudPolicyStore> store,
+      scoped_ptr<ResourceCache> resource_cache,
+      bool wait_for_policy_fetch);
   virtual ~UserCloudPolicyManagerChromeOS();
 
   // Initializes the cloud connection. |local_state| and
   // |device_management_service| must stay valid until this object is deleted.
   void Connect(PrefService* local_state,
                DeviceManagementService* device_management_service,
+               scoped_refptr<net::URLRequestContextGetter> request_context,
                UserAffiliation user_affiliation);
 
   // Cancels waiting for the policy fetch and flags the
@@ -51,11 +63,21 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
+  virtual void RegisterPolicyDomain(
+      PolicyDomain domain,
+      const std::set<std::string>& component_ids) OVERRIDE;
+
+  // CloudPolicyManager:
+  virtual scoped_ptr<PolicyBundle> CreatePolicyBundle() OVERRIDE;
 
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
   virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
   virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
+
+  // ComponentCloudPolicyService::Observer:
+  virtual void OnComponentCloudPolicyRefreshNeeded() OVERRIDE;
+  virtual void OnComponentCloudPolicyUpdated() OVERRIDE;
 
  private:
   // Completion handler for the explicit policy fetch triggered on startup in
@@ -63,8 +85,14 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // successful.
   void OnInitialPolicyFetchComplete(bool success);
 
+  void StartRefreshScheduler();
+
   // Owns the store, note that CloudPolicyManager just keeps a plain pointer.
   scoped_ptr<CloudPolicyStore> store_;
+
+  // Handles fetching and storing cloud policy for components. It uses the
+  // |store_|, so destroy it first.
+  scoped_ptr<ComponentCloudPolicyService> component_policy_service_;
 
   // Whether to wait for a policy fetch to complete before reporting
   // IsInitializationComplete().

@@ -14,7 +14,9 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/resource_cache.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,12 +67,13 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   void CreateManagerWithPendingFetch() {
     store_ = new MockCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
-    manager_.reset(
-        new UserCloudPolicyManagerChromeOS(scoped_ptr<CloudPolicyStore>(store_),
-                                           true));
+    manager_.reset(new UserCloudPolicyManagerChromeOS(
+        scoped_ptr<CloudPolicyStore>(store_),
+        scoped_ptr<ResourceCache>(),
+        true));
     manager_->Init();
     manager_->AddObserver(&observer_);
-    manager_->Connect(&prefs_, &device_management_service_,
+    manager_->Connect(&prefs_, &device_management_service_, NULL,
                       USER_AFFILIATION_NONE);
     Mock::VerifyAndClearExpectations(store_);
     EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));

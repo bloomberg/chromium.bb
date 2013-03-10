@@ -62,6 +62,7 @@
 #include "chrome/browser/policy/device_status_collector.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
+#include "chrome/browser/policy/resource_cache.h"
 #include "chrome/browser/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/user_cloud_policy_store_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -76,13 +77,18 @@ namespace policy {
 
 namespace {
 
-// Subdirectory in the user's profile for storing user policies.
-const base::FilePath::CharType kPolicyDir[] =
+// Subdirectory in the user's profile for storing legacy user policies.
+const base::FilePath::CharType kDeviceManagementDir[] =
     FILE_PATH_LITERAL("Device Management");
-// File in the above directory for stroing user policy dmtokens.
-const base::FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
-// File in the above directory for storing user policy data.
-const base::FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
+// File in the above directory for storing legacy user policy dmtokens.
+const base::FilePath::CharType kToken[] = FILE_PATH_LITERAL("Token");
+// This constant is used to build two different paths. It can be a file inside
+// kDeviceManagementDir where legacy user policy data is stored, and it can be
+// a directory inside the profile directory where other resources are stored.
+const base::FilePath::CharType kPolicy[] = FILE_PATH_LITERAL("Policy");
+// Directory under kPolicy, in the user's profile dir, where external policy
+// resources are stored.
+const base::FilePath::CharType kResourceDir[] = FILE_PATH_LITERAL("Resources");
 
 // The following constants define delays applied before the initial policy fetch
 // on startup. (So that displaying Chrome's GUI does not get delayed.)
@@ -308,9 +314,11 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
   profile_dir = profile_dir.Append(
       command_line->GetSwitchValuePath(switches::kLoginProfile));
-  const base::FilePath policy_dir = profile_dir.Append(kPolicyDir);
-  const base::FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
-  const base::FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
+  const base::FilePath legacy_dir = profile_dir.Append(kDeviceManagementDir);
+  const base::FilePath policy_cache_file = legacy_dir.Append(kPolicy);
+  const base::FilePath token_cache_file = legacy_dir.Append(kToken);
+  const base::FilePath resource_cache_dir =
+      profile_dir.Append(kPolicy).Append(kResourceDir);
   base::FilePath policy_key_dir;
   CHECK(PathService::Get(chrome::DIR_USER_POLICY_KEYS, &policy_key_dir));
 
@@ -330,13 +338,18 @@ void BrowserPolicyConnector::InitializeUserPolicy(
             chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
             user_name, policy_key_dir, token_cache_file, policy_cache_file));
+    scoped_ptr<ResourceCache> resource_cache;
+    if (command_line->HasSwitch(switches::kEnableComponentCloudPolicy))
+      resource_cache.reset(new ResourceCache(resource_cache_dir));
     user_cloud_policy_manager_.reset(
         new UserCloudPolicyManagerChromeOS(store.Pass(),
+                                           resource_cache.Pass(),
                                            wait_for_policy_fetch));
 
     user_cloud_policy_manager_->Init();
     user_cloud_policy_manager_->Connect(local_state_,
                                         device_management_service_.get(),
+                                        request_context_,
                                         GetUserAffiliation(user_name));
     global_user_cloud_policy_provider_.SetDelegate(
         user_cloud_policy_manager_.get());
