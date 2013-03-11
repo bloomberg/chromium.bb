@@ -1170,8 +1170,7 @@ def TestVersionFiles(filter):
   return errs
 
 
-default_dirs = ['.', 'trusted', 'dev', 'private', 'extensions',
-                'extensions/dev']
+default_dirs = ['.', 'trusted', 'dev', 'private']
 def ParseFiles(filenames):
   parser = IDLParser()
   filenodes = []
