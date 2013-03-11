@@ -726,7 +726,8 @@ class Runner(object):
         #   The test failed.
         #   The wasn't the first attempt (this is needed so the test parser can
         #       detect that a test has been successfully retried).
-        line += '\n' + i['output']
+        if i['output']:
+          line += '\n' + i['output']
       self.progress.update_item(line, True, need_to_retry)
 
       if need_to_retry:
