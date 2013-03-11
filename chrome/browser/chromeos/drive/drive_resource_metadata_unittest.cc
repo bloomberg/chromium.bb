@@ -49,6 +49,17 @@ void CopyResultFromGetChangestampCallback(
   *out_changestamp = in_changestamp;
 }
 
+// Returns the sorted base names from |entries|.
+std::vector<std::string> GetSortedBaseNames(
+    const DriveEntryProtoVector& entries) {
+  std::vector<std::string> base_names;
+  for (size_t i = 0; i < entries.size(); ++i)
+    base_names.push_back(entries[i].base_name());
+  std::sort(base_names.begin(), base_names.end());
+
+  return base_names;
+}
+
 }  // namespace
 
 class DriveResourceMetadataTest : public testing::Test {
@@ -308,13 +319,8 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entries.get());
   ASSERT_EQ(3U, entries->size());
-
   // The order is not guaranteed so we should sort the base names.
-  std::vector<std::string> base_names;
-  for (size_t i = 0; i < 3; ++i)
-    base_names.push_back(entries->at(i).base_name());
-  std::sort(base_names.begin(), base_names.end());
-
+  std::vector<std::string> base_names = GetSortedBaseNames(*entries);
   EXPECT_EQ("dir3", base_names[0]);
   EXPECT_EQ("file4", base_names[1]);
   EXPECT_EQ("file5", base_names[2]);
@@ -836,6 +842,131 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file9", entry_proto->base_name());
+}
+
+TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
+  base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/dir1"));
+
+  // Read the directory.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProtoVector> entries;
+  resource_metadata_->ReadDirectoryByPath(
+      base::FilePath(kDirectoryPath),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  // "file4", "file5", "dir3" should exist in drive/dir1.
+  ASSERT_EQ(3U, entries->size());
+  std::vector<std::string> base_names = GetSortedBaseNames(*entries);
+  EXPECT_EQ("dir3", base_names[0]);
+  EXPECT_EQ("file4", base_names[1]);
+  EXPECT_EQ("file5", base_names[2]);
+
+  // Get the directory.
+  scoped_ptr<DriveEntryProto> dir1_proto;
+  resource_metadata_->GetEntryInfoByPath(
+      kDirectoryPath,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &dir1_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(dir1_proto.get());
+
+  // Update the directory with an empty map.
+  base::FilePath file_path;
+  DriveEntryProtoMap entry_map;
+  resource_metadata_->RefreshDirectory(
+      dir1_proto->resource_id(),
+      entry_map,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(kDirectoryPath, file_path);
+
+  // Read the directory again.
+  resource_metadata_->ReadDirectoryByPath(
+      base::FilePath(kDirectoryPath),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  // "file4", "file5" should be gone now, as RefreshDirectory() was called
+  // with an empty map. "dir3" should still remain, as RefreshDirectory()
+  // does not touch directories at this moment. TODO(satorux):
+  // RefreshDirectory() should update directories too. crbug.com/178348
+  ASSERT_EQ(1U, entries->size());
+  base_names = GetSortedBaseNames(*entries);
+  EXPECT_EQ("dir3", base_names[0]);
+}
+
+TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
+  base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/dir1"));
+
+  // Read the directory.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProtoVector> entries;
+  resource_metadata_->ReadDirectoryByPath(
+      base::FilePath(kDirectoryPath),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  // "file4", "file5", "dir3" should exist in drive/dir1.
+  ASSERT_EQ(3U, entries->size());
+  std::vector<std::string> base_names = GetSortedBaseNames(*entries);
+  EXPECT_EQ("dir3", base_names[0]);
+  EXPECT_EQ("file4", base_names[1]);
+  EXPECT_EQ("file5", base_names[2]);
+
+  // Get the directory.
+  scoped_ptr<DriveEntryProto> dir1_proto;
+  resource_metadata_->GetEntryInfoByPath(
+      kDirectoryPath,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &dir1_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(dir1_proto.get());
+
+  // Create a map with a new file.
+  DriveEntryProto new_file;
+  new_file.set_title("new_file");
+  new_file.set_resource_id("new_resource_id");
+  new_file.set_parent_resource_id(dir1_proto->resource_id());
+  DriveEntryProtoMap entry_map;
+  entry_map["new_resource_id"] = new_file;
+
+  // Update the directory with the map.
+  base::FilePath file_path;
+  resource_metadata_->RefreshDirectory(
+      dir1_proto->resource_id(),
+      entry_map,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(kDirectoryPath, file_path);
+
+  // Read the directory again.
+  resource_metadata_->ReadDirectoryByPath(
+      base::FilePath(kDirectoryPath),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  // "file4", "file5" should be gone now, and "new_file" should now be added.
+  ASSERT_EQ(2U, entries->size());
+  base_names = GetSortedBaseNames(*entries);
+  EXPECT_EQ("dir3", base_names[0]);
+  EXPECT_EQ("new_file", base_names[1]);
 }
 
 TEST_F(DriveResourceMetadataTest, AddEntry) {
