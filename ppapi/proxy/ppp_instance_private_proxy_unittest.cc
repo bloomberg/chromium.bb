@@ -147,7 +147,15 @@ class PPP_Instance_Private_ProxyTest : public TwoWayTest {
 
 }  // namespace
 
+// TODO(raymes): This #ifdef is only here because we check the state of the
+// plugin globals on the main thread, rather than the plugin thread which causes
+// the thread checker to fail. Once ENABLE_PEPPER_THREADING is the default,
+// this will be safe to do anyway, so we can remove this.
+#ifdef ENABLE_PEPPER_THREADING
 TEST_F(PPP_Instance_Private_ProxyTest, PPPInstancePrivate) {
+#else
+TEST_F(PPP_Instance_Private_ProxyTest, DISABLED_PPPInstancePrivate) {
+#endif
   // This test controls its own instance; we can't use the one that
   // PluginProxyTestHarness provides.
   ASSERT_NE(kInstance, pp_instance());
