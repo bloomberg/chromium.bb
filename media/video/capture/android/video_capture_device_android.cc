@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "jni/Camera_jni.h"
 #include "jni/VideoCapture_jni.h"
 #include "media/base/video_util.h"
 
@@ -42,53 +42,28 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 
   JNIEnv* env = AttachCurrentThread();
 
-  int num_cameras = JNI_Camera::Java_Camera_getNumberOfCameras(env);
+  int num_cameras = Java_ChromiumCameraInfo_getNumberOfCameras(env);
   DVLOG(1) << "VideoCaptureDevice::GetDeviceNames: num_cameras=" << num_cameras;
   if (num_cameras <= 0)
     return;
 
-  // TODO(wjia): switch to using same approach as Camera when
-  // jar_file_jni_generator.gypi supports system inner classes.
-  std::string camera_info_string("android/hardware/Camera$CameraInfo");
-
-  ScopedJavaLocalRef<jclass> camera_info_class(
-      GetClass(env, camera_info_string.c_str()));
-  jmethodID constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, camera_info_class.obj(), "<init>", "()V");
-
-  ScopedJavaLocalRef<jobject> object_camera_info(
-      env, env->NewObject(camera_info_class.obj(), constructor));
-
-  jfieldID field_facing = GetFieldID(env, camera_info_class, "facing", "I");
-  jfieldID field_facing_front = GetStaticFieldID(
-      env, camera_info_class, "CAMERA_FACING_FRONT", "I");
-
   for (int camera_id = num_cameras - 1; camera_id >= 0; --camera_id) {
-    JNI_Camera::Java_Camera_getCameraInfo(
-        env, camera_id, object_camera_info.obj());
+    ScopedJavaLocalRef<jobject> ci =
+        Java_ChromiumCameraInfo_getAt(env, camera_id);
 
     Name name;
-    name.unique_id = StringPrintf("%d", camera_id);
-    std::string facing_string;
-    if (env->GetIntField(object_camera_info.obj(), field_facing) ==
-        env->GetStaticIntField(camera_info_class.obj(), field_facing_front)) {
-      facing_string = "front";
-    } else {
-      facing_string = "back";
-    }
-    name.device_name = StringPrintf(
-        "camera %d, facing %s", camera_id, facing_string.c_str());
+    name.unique_id = StringPrintf(
+        "%d", Java_ChromiumCameraInfo_getId(env, ci.obj()));
+    name.device_name = base::android::ConvertJavaStringToUTF8(
+        Java_ChromiumCameraInfo_getDeviceName(env, ci.obj()));
     device_names->push_back(name);
-    jfieldID field_orientation = GetFieldID(
-        env, camera_info_class, "orientation", "I");
-    jint orientation = env->GetIntField(object_camera_info.obj(),
-                                        field_orientation);
+
     DVLOG(1) << "VideoCaptureDevice::GetDeviceNames: camera device_name="
              << name.device_name
              << ", unique_id="
              << name.unique_id
              << ", orientation "
-             << orientation;
+             << Java_ChromiumCameraInfo_getOrientation(env, ci.obj());
   }
 }
 
@@ -108,7 +83,7 @@ VideoCaptureDevice* VideoCaptureDeviceAndroid::Create(const Name& device_name) {
 
 // static
 bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
-  return RegisterNativesImpl(env) && JNI_Camera::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)

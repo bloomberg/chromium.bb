@@ -135,7 +135,8 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
                 }
             }
             if (minDiff == Integer.MAX_VALUE) {
-                Log.e(TAG, "allocate: can not find a resolution whose width is multiple of 32");
+                Log.e(TAG, "allocate: can not find a resolution whose width " +
+                           "is multiple of 32");
                 return false;
             }
             mCurrentCapability.mWidth = matchedWidth;
@@ -303,6 +304,44 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     // performance and frame rate.
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) { }
+
+    private static class ChromiumCameraInfo {
+        private final int mId;
+        private final Camera.CameraInfo mCameraInfo;
+
+        private ChromiumCameraInfo(int index) {
+            mId = index;
+            mCameraInfo = new Camera.CameraInfo();
+            Camera.getCameraInfo(index, mCameraInfo);
+        }
+
+        @CalledByNative("ChromiumCameraInfo")
+        private static int getNumberOfCameras() {
+            return Camera.getNumberOfCameras();
+        }
+
+        @CalledByNative("ChromiumCameraInfo")
+        private static ChromiumCameraInfo getAt(int index) {
+            return new ChromiumCameraInfo(index);
+        }
+
+        @CalledByNative("ChromiumCameraInfo")
+        private int getId() {
+            return mId;
+        }
+
+        @CalledByNative("ChromiumCameraInfo")
+        private String getDeviceName() {
+            return  "camera " + mId + ", facing " +
+                    (mCameraInfo.facing ==
+                     Camera.CameraInfo.CAMERA_FACING_FRONT ? "front" : "back");
+        }
+
+        @CalledByNative("ChromiumCameraInfo")
+        private int getOrientation() {
+            return mCameraInfo.orientation;
+        }
+    }
 
     private native void nativeOnFrameAvailable(
             int nativeVideoCaptureDeviceAndroid,

@@ -1426,21 +1426,8 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          'target_name': 'camera_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_package': 'media',
-            'input_java_class': 'android/hardware/Camera.class',
-            'input_jar_file': '<(android_sdk)/android.jar',
-          },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
-        },
-        {
           'target_name': 'video_capture_android_jni_headers',
           'type': 'none',
-          'dependencies': [
-            'camera_jni_headers',
-          ],
           'sources': [
             'base/android/java/src/org/chromium/media/VideoCapture.java',
           ],
