@@ -346,14 +346,16 @@ class MyActivity(object):
     ret['owner'] = issue['owner_email']
     ret['author'] = ret['owner']
 
-    ret['reviewers'] = set(username(r) for r in issue['reviewers'])
+    ret['reviewers'] = set(issue['reviewers'])
 
     shorturl = instance['url']
     if 'shorturl' in instance:
       shorturl = instance['shorturl']
 
     ret['review_url'] = 'http://%s/%d' % (shorturl, issue['issue'])
-    ret['header'] = issue['description'].split('\n')[0]
+
+    # Rietveld sometimes has '\r\n' instead of '\n'.
+    ret['header'] = issue['description'].replace('\r', '').split('\n')[0]
 
     ret['modified'] = datetime_from_rietveld(issue['modified'])
     ret['created'] = datetime_from_rietveld(issue['created'])
@@ -410,6 +412,10 @@ class MyActivity(object):
       ret['replies'] = self.process_gerrit_issue_replies(issue['comments'])
     else:
       ret['replies'] = []
+    ret['reviewers'] = set()
+    for reply in ret['replies']:
+      if reply['author'] != ret['author']:
+        ret['reviewers'].add(reply['author'])
     return ret
 
   @staticmethod
@@ -598,8 +604,9 @@ class MyActivity(object):
         if match:
           changes.append(int(match.group(1)))
 
-    # TODO(enne): should convert full names to usernames via CommitterList.
-    ret['reviewers'] = set(reviewers)
+    committer_list = webkitpy.common.config.committers.CommitterList()
+    ret['reviewers'] = set(
+        (committer_list.contributor_by_name(r).emails[0] for r in reviewers))
 
     # Reviews more useful than change link itself, but tricky if multiple
     # Reviews == bugs for WebKit changes
@@ -710,11 +717,15 @@ class MyActivity(object):
       self.webkit_repo = None
 
   def print_change(self, change):
+    optional_values = {
+        'reviewers': ', '.join(change['reviewers'])
+    }
     self.print_generic(self.options.output_format,
                        self.options.output_format_changes,
                        change['header'],
                        change['review_url'],
-                       change['author'])
+                       change['author'],
+                       optional_values)
 
   def print_issue(self, issue):
     optional_values = {
@@ -928,12 +939,13 @@ def main():
   output_format_group.add_option(
       '--output-format-changes', metavar='<format>',
       default=None,
-      help='Specifies the format to use when printing changes.')
+      help='Specifies the format to use when printing changes. Supports the '
+      'additional variable {reviewers}')
   output_format_group.add_option(
       '--output-format-issues', metavar='<format>',
       default=None,
-      help='Specifies the format to use when printing issues. Has support '
-           'for the additional variable owner.')
+      help='Specifies the format to use when printing issues. Supports the '
+           'additional variable {owner}.')
   output_format_group.add_option(
       '--output-format-reviews', metavar='<format>',
       default=None,
