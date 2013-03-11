@@ -21,14 +21,15 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/** @type {Object} */
+remoting.storage = {};
+
 remoting.initMockStorage = function() {
   if (typeof(chrome.storage) != 'undefined') {
-    console.warn('Congratulations! You already have access to chrome.storage.',
-                 'You should probably remove the call to initMockStorage.');
+    console.warn('If storage.js is no longer needed, consider removing it.');
+    remoting.storage.local = chrome.storage.local;
   } else {
-    /** @type {Object} */
-    chrome.storage = {};
-    chrome.storage.local = new remoting.MockStorage();
+    remoting.storage.local = new remoting.MockStorage();
   }
 };
 

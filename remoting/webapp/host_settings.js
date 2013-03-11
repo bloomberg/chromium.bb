@@ -60,7 +60,7 @@ remoting.HostSettings.save = function(hostId, options, opt_callback) {
     allHosts[hostId] = requestedHost;
     var newSettings = {};
     newSettings[remoting.HostSettings.KEY_] = JSON.stringify(allHosts);
-    chrome.storage.local.set(newSettings, opt_callback);
+    remoting.storage.local.set(newSettings, opt_callback);
   };
   remoting.HostSettings.loadInternal_(hostId, onDone);
 };
@@ -96,7 +96,7 @@ remoting.HostSettings.loadInternal_ = function(hostId, callback) {
     }
     callback({}, /** @type {Object} */(result));
   };
-  chrome.storage.local.get(remoting.HostSettings.KEY_, onDone);
+  remoting.storage.local.get(remoting.HostSettings.KEY_, onDone);
 };
 
 /** @type {string} @private */

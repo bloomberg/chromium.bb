@@ -200,7 +200,7 @@ remoting.promptClose = function() {
  */
 remoting.signOut = function() {
   remoting.oauth2.clear();
-  chrome.storage.local.clear();
+  remoting.storage.local.clear();
   remoting.setMode(remoting.AppMode.HOME);
   document.getElementById('auth-dialog').hidden = false;
 };
