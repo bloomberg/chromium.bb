@@ -13,6 +13,22 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 
+namespace {
+// Returns true if the user is signed in and full history sync is enabled,
+// and false otherwise.
+bool IsHistorySyncEnabled(Profile* profile) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kHistoryEnableFullHistorySync)) {
+    ProfileSyncService* sync =
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+    return sync &&
+        sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+  }
+  return false;
+}
+
+}  // namespace
+
 // static
 WebHistoryServiceFactory* WebHistoryServiceFactory::GetInstance() {
   return Singleton<WebHistoryServiceFactory>::get();
@@ -21,24 +37,19 @@ WebHistoryServiceFactory* WebHistoryServiceFactory::GetInstance() {
 // static
 history::WebHistoryService* WebHistoryServiceFactory::GetForProfile(
       Profile* profile) {
-  return static_cast<history::WebHistoryService*>(
-      GetInstance()->GetServiceForProfile(profile, true));
+  if (IsHistorySyncEnabled(profile)) {
+    return static_cast<history::WebHistoryService*>(
+        GetInstance()->GetServiceForProfile(profile, true));
+  }
+  return NULL;
 }
 
 ProfileKeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   // Ensure that the service is not instantiated or used if the user is not
   // signed into sync, or if web history is not enabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHistoryEnableFullHistorySync)) {
-    ProfileSyncService* sync =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    if (sync &&
-        sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
-      return new history::WebHistoryService(profile);
-    }
-  }
-  return NULL;
+  return IsHistorySyncEnabled(profile) ?
+      new history::WebHistoryService(profile) : NULL;
 }
 
 WebHistoryServiceFactory::WebHistoryServiceFactory()

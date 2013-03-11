@@ -41,8 +41,14 @@ bool TimeRangeLessThan(const syncer::SyncData& data1,
   return range1.end_time_usec() < range2.end_time_usec();
 }
 
+// Converts a Unix timestamp in microseconds to a base::Time value.
 base::Time UnixUsecToTime(int64 usec) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(usec);
+}
+
+// Converts a base::Time value to a Unix timestamp in microseconds.
+int64 TimeToUnixUsec(base::Time time) {
+  return (time - base::Time::UnixEpoch()).InMicroseconds();
 }
 
 // Converts global IDs in |global_id_directive| to times.
@@ -255,6 +261,43 @@ void DeleteDirectiveHandler::Start(
 void DeleteDirectiveHandler::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_processor_.reset();
+}
+
+bool DeleteDirectiveHandler::CreateDeleteDirectives(
+    const std::set<int64>& global_ids,
+    base::Time begin_time,
+    base::Time end_time) {
+  base::Time now = base::Time::Now();
+  sync_pb::HistoryDeleteDirectiveSpecifics delete_directive;
+
+  int64 begin_time_usecs = TimeToUnixUsec(begin_time);
+  // Delete directives require a non-null begin time.
+  if (begin_time.is_null())
+    begin_time_usecs += 1;
+
+  // Determine the actual end time -- it should not be null or in the future.
+  // TODO(dubroy): Use sane time (crbug.com/146090) here when it's available.
+  base::Time end = (end_time.is_null() || end_time > now) ? now : end_time;
+  // -1 because end time in delete directives is inclusive.
+  int64 end_time_usecs = TimeToUnixUsec(end) - 1;
+
+  if (global_ids.empty()) {
+    sync_pb::TimeRangeDirective* time_range_directive =
+        delete_directive.mutable_time_range_directive();
+    time_range_directive->set_start_time_usec(begin_time_usecs);
+    time_range_directive->set_end_time_usec(end_time_usecs);
+  } else {
+    for (std::set<int64>::const_iterator it = global_ids.begin();
+         it != global_ids.end(); ++it) {
+      sync_pb::GlobalIdDirective* global_id_directive =
+          delete_directive.mutable_global_id_directive();
+      global_id_directive->add_global_id(*it);
+      global_id_directive->set_start_time_usec(begin_time_usecs);
+      global_id_directive->set_end_time_usec(end_time_usecs);
+    }
+  }
+  syncer::SyncError error = ProcessLocalDeleteDirective(delete_directive);
+  return !error.IsSet();
 }
 
 syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(

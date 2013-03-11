@@ -66,6 +66,14 @@ class WebHistoryService : public ProfileKeyedService {
       const std::vector<ExpireHistoryArgs>& expire_list,
       const ExpireWebHistoryCallback& callback);
 
+  // Removes all visits to specified URLs in the given time range.
+  // This is the of equivalent HistoryService::ExpireHistoryBetween().
+  scoped_ptr<Request> ExpireHistoryBetween(
+      const std::set<GURL>& restrict_urls,
+      base::Time begin_time,
+      base::Time end_time,
+      const ExpireWebHistoryCallback& callback);
+
  private:
   Profile* profile_;
 

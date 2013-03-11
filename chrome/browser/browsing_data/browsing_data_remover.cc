@@ -248,8 +248,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       //     http://crbug.com/145680 for details.
       base::Time history_end_ = delete_end_ == base::Time::Max() ?
             base::Time() : delete_end_;
-      history_service->ExpireHistoryBetween(restrict_urls,
-          delete_begin_, history_end_,
+      history_service->ExpireLocalAndRemoteHistoryBetween(
+          restrict_urls, delete_begin_, history_end_,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      base::Unretained(this)),
           &history_task_tracker_);

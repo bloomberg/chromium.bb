@@ -34,6 +34,14 @@ class DeleteDirectiveHandler {
              scoped_ptr<syncer::SyncChangeProcessor> sync_processor);
   void Stop();
 
+  // Create delete directives for the deletion of visits identified by
+  // |global_ids| (which may be empty), in the time range specified by
+  // |begin_time| and |end_time|.
+  bool CreateDeleteDirectives(
+      const std::set<int64>& global_ids,
+      base::Time begin_time,
+      base::Time end_time);
+
   // Sends the given |delete_directive| to SyncChangeProcessor (if it exists).
   // Returns any error resulting from sending the delete directive to sync.
   // NOTE: the given |delete_directive| is not processed to remove local

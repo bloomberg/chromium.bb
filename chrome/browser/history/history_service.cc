@@ -50,6 +50,8 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/browser/history/visit_filter.h"
+#include "chrome/browser/history/web_history_service.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_constants.h"
@@ -114,6 +116,14 @@ class URLIteratorFromURLRows
 
   DISALLOW_COPY_AND_ASSIGN(URLIteratorFromURLRows);
 };
+
+// Callback from WebHistoryService::ExpireWebHistory().
+void ExpireWebHistoryComplete(
+    history::WebHistoryService::Request* request,
+    bool success) {
+  // Ignore the result and delete the request.
+  delete request;
+}
 
 }  // namespace
 
@@ -1122,6 +1132,38 @@ void HistoryService::ExpireHistory(
       FROM_HERE,
       base::Bind(&HistoryBackend::ExpireHistory, history_backend_, expire_list),
       callback);
+}
+
+void HistoryService::ExpireLocalAndRemoteHistoryBetween(
+    const std::set<GURL>& restrict_urls,
+    Time begin_time,
+    Time end_time,
+    const base::Closure& callback,
+    CancelableTaskTracker* tracker) {
+  // TODO(dubroy): This should be factored out into a separate class that
+  // dispatches deletions to the proper places.
+
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(profile_);
+  if (web_history) {
+    // TODO(dubroy): This API does not yet support deletion of specific URLs.
+    DCHECK(restrict_urls.empty());
+
+    delete_directive_handler_.CreateDeleteDirectives(
+        std::set<int64>(), begin_time, end_time);
+
+    // Attempt online deletion from the history server, but ignore the result.
+    // Deletion directives ensure that the results will eventually be deleted.
+    // Pass ownership of the request to the callback.
+    scoped_ptr<history::WebHistoryService::Request> request =
+        web_history->ExpireHistoryBetween(
+            restrict_urls, begin_time, end_time,
+            base::Bind(&ExpireWebHistoryComplete));
+
+    // The request will be freed when the callback is called.
+    CHECK(request.release());
+  }
+  ExpireHistoryBetween(restrict_urls, begin_time, end_time, callback, tracker);
 }
 
 void HistoryService::BroadcastNotificationsHelper(

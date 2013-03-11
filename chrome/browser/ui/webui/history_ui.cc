@@ -581,9 +581,9 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
 
   if (web_history) {
     web_history_delete_request_ = web_history->ExpireHistory(
-      expire_list,
-      base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
-                 base::Unretained(this)));
+        expire_list,
+        base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
+                   base::Unretained(this)));
   }
 }
 

@@ -202,6 +202,22 @@ std::string GetQueryUrl(const QueryOptions& options) {
   return url.spec();
 }
 
+// Creates a DictionaryValue to hold the parameters for a deletion.
+// Ownership is passed to the caller.
+// |url| may be empty, indicating a time-range deletion.
+DictionaryValue* CreateDeletion(
+    const std::string& min_time,
+    const std::string& max_time,
+    const GURL& url) {
+  DictionaryValue* deletion = new DictionaryValue;
+  deletion->SetString("type", "CHROME_HISTORY");
+  if (url.is_valid())
+    deletion->SetString("url", url.spec());
+  deletion->SetString("min_timestamp_usec", min_time);
+  deletion->SetString("max_timestamp_usec", max_time);
+  return deletion;
+}
+
 }  // namespace
 
 WebHistoryService::Request::Request() {
@@ -236,22 +252,26 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
     const ExpireWebHistoryCallback& callback) {
   DictionaryValue delete_request;
   scoped_ptr<ListValue> deletions(new ListValue);
+  base::Time now = base::Time::Now();
 
   for (std::vector<ExpireHistoryArgs>::const_iterator it = expire_list.begin();
        it != expire_list.end(); ++it) {
     // Convert the times to server timestamps.
     std::string min_timestamp = ServerTimeString(it->begin_time);
-    std::string max_timestamp = ServerTimeString(it->end_time);
+    // TODO(dubroy): Use sane time (crbug.com/146090) here when it's available.
+    base::Time end_time = it->end_time;
+    if (end_time.is_null() || end_time > now)
+      end_time = now;
+    std::string max_timestamp = ServerTimeString(end_time);
 
     for (std::set<GURL>::const_iterator url_iterator = it->urls.begin();
          url_iterator != it->urls.end(); ++url_iterator) {
-      scoped_ptr<DictionaryValue> deletion(new DictionaryValue);
-      deletion->SetString("type", "CHROME_HISTORY");
-      deletion->SetString("url", url_iterator->spec());
-      deletion->SetString("min_timestamp_usec", min_timestamp);
-      deletion->SetString("max_timestamp_usec", max_timestamp);
-      deletions->Append(deletion.release());
+      deletions->Append(
+          CreateDeletion(min_timestamp, max_timestamp, *url_iterator));
     }
+    // If no URLs were specified, delete everything in the time range.
+    if (it->urls.empty())
+      deletions->Append(CreateDeletion(min_timestamp, max_timestamp, GURL()));
   }
   delete_request.Set("del", deletions.release());
   std::string post_data;
@@ -262,6 +282,18 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
   request->set_post_data(post_data);
   request->Start();
   return request.PassAs<Request>();
+}
+
+scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistoryBetween(
+    const std::set<GURL>& restrict_urls,
+    base::Time begin_time,
+    base::Time end_time,
+    const ExpireWebHistoryCallback& callback) {
+  std::vector<ExpireHistoryArgs> expire_list(1);
+  expire_list.back().urls = restrict_urls;
+  expire_list.back().begin_time = begin_time;
+  expire_list.back().end_time = end_time;
+  return ExpireHistory(expire_list, callback);
 }
 
 }  // namespace history

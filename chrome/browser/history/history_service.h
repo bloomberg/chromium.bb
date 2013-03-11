@@ -415,6 +415,16 @@ class HistoryService : public CancelableRequestProvider,
                      const base::Closure& callback,
                      CancelableTaskTracker* tracker);
 
+  // Removes all visits to the given URLs in the specified time range. Calls
+  // ExpireHistoryBetween() to delete local visits, and handles deletion of
+  // synced visits if appropriate.
+  void ExpireLocalAndRemoteHistoryBetween(
+      const std::set<GURL>& restrict_urls,
+      base::Time begin_time,
+      base::Time end_time,
+      const base::Closure& callback,
+      CancelableTaskTracker* tracker);
+
   // Processes the given |delete_directive| and sends it to the
   // SyncChangeProcessor (if it exists).  Returns any error resulting
   // from sending the delete directive to sync.
