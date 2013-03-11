@@ -209,6 +209,17 @@ class UrlHelperTest(unittest.TestCase):
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}}, None)
 
+  def testUrlOpenHTTPErrorRetry404(self):
+    response = 'data'
+    def mock_url_open(_url, data):
+      if not run_isolated.COUNT_KEY + '=0' in data:
+        return StringIO.StringIO(response)
+      raise urllib2.HTTPError('url', 404, 'error message', None, None)
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {},
+                                               'retry_404': True},
+                               response)
+
   def testUrlOpenHTTPErrorWithRetry(self):
     response = 'response'
 

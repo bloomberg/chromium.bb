@@ -309,7 +309,7 @@ def fix_python_path(cmd):
   return out
 
 
-def url_open(url, data=None):
+def url_open(url, data=None, retry_404=False):
   """Attempts to open the given url multiple times.
 
   |data| can be either:
@@ -353,7 +353,7 @@ def url_open(url, data=None):
       logging.info('url_open(%s) succeeded', url)
       return url_response
     except urllib2.HTTPError as e:
-      if e.code < 500:
+      if e.code < 500 and not (retry_404 and e.code == 404):
         # This HTTPError means we reached the server and there was a problem
         # with the request, so don't retry.
         logging.exception('Able to connect to %s but an exception was '
@@ -651,7 +651,11 @@ class Remote(object):
         try:
           zipped_source = file_or_url + item
           logging.debug('download_file(%s)', zipped_source)
-          connection = url_open(zipped_source)
+
+          # Because the app engine DB is only eventually consistent, retry
+          # 404 errors because the file might just not be visible yet (even
+          # though it has been uploaded).
+          connection = url_open(zipped_source, retry_404=True)
           if not connection:
             raise IOError('Unable to open connection to %s' % zipped_source)
           decompressor = zlib.decompressobj()
