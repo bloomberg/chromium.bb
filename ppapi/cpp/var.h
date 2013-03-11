@@ -55,10 +55,13 @@ class Var {
   ///
   /// You will not normally need to use this constructor because
   /// the reference count will not normally be incremented for you.
-  Var(PassRef, PP_Var var) {
+  Var(PassRef, const PP_Var& var) {
     var_ = var;
     is_managed_ = true;
   }
+
+  /// A constructor that increments the reference count.
+  explicit Var(const PP_Var& var);
 
   struct DontManage {};
 
@@ -70,7 +73,7 @@ class Var {
   /// increased or decreased by this class instance.
   ///
   /// @param[in] var A <code>Var</code>.
-  Var(DontManage, PP_Var var) {
+  Var(DontManage, const PP_Var& var) {
     var_ = var;
     is_managed_ = false;
   }

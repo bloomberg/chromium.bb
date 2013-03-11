@@ -1,0 +1,87 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+label Chrome {
+  M27 = 0.1
+};
+
+/**
+ * Used to represent arbitrary C function pointers. Please note that usually
+ * the function that a <code>PP_Ext_GenericFuncType</code> pointer points to
+ * has a different signature than <code>void (*)()</code>.
+ */
+typedef void PP_Ext_GenericFuncType();
+
+/**
+ * An event listener that can be registered with the browser and receive
+ * notifications via the callback function.
+ *
+ * A function is defined for each event type to return a properly-filled
+ * <code>PP_Ext_EventListener</code> struct, for example,
+ * <code>PP_Ext_Alarms_OnAlarm_Dev()</code>.
+ */
+[passByValue]
+struct PP_Ext_EventListener {
+  /**
+   * The name of the event to register to.
+   */
+  cstr_t event_name;
+  /**
+   * A callback function whose signature is determined by
+   * <code>event_name</code>. All calls will happen on the same thread as the
+   * one on which <code>AddListener()</code> is called.
+   */
+  PP_Ext_GenericFuncType func;
+  /**
+   * An opaque pointer that will be passed to <code>func</code>.
+   */
+  mem_t user_data;
+};
+
+interface PPB_Ext_Events_Dev {
+  /**
+   * Registers a listener to an event.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
+   * a module.
+   * @param[in] listener A <code>PP_Ext_EventListener</code> struct.
+   *
+   * @return An listener ID, or 0 if failed.
+   */
+  uint32_t AddListener(
+      [in] PP_Instance instance,
+      [in] PP_Ext_EventListener listener);
+
+  /**
+   * Deregisters a listener.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
+   * a module.
+   * @param[in] listener_id The ID returned by <code>AddListener()</code>.
+   */
+  void RemoveListener(
+      [in] PP_Instance instance,
+      [in] uint32_t listener_id);
+};
+
+#inline c
+/**
+ * Creates a <code>PP_Ext_EventListener</code> struct.
+ *
+ * Usually you should not call it directly. Instead you should call those
+ * functions that return a <code>PP_Ext_EventListener</code> struct for a
+ * specific event type, for example, <code>PP_Ext_Alarms_OnAlarm_Dev()</code>.
+ */
+PP_INLINE struct PP_Ext_EventListener PP_Ext_MakeEventListener(
+    const char* event_name,
+    PP_Ext_GenericFuncType func,
+    void* user_data) {
+  struct PP_Ext_EventListener listener;
+  listener.event_name = event_name;
+  listener.func = func;
+  listener.user_data = user_data;
+  return listener;
+}
+#endinl
