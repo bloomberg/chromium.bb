@@ -85,7 +85,6 @@ WebDataService::WebDataService(WebDatabaseService* wdbs)
   // WebDataService requires DB thread if instantiated.
   // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
   // if you do not want to instantiate WebDataService in your test.
-  DCHECK(!ProfileManager::IsImportProcess(*CommandLine::ForCurrentProcess()));
   DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
 }
 

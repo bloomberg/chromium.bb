@@ -182,8 +182,6 @@ void WebDatabaseServiceInternal::Commit() {
 ////////////////////////////////////////////////////////////////////////////////
 WebDatabaseServiceImpl::WebDatabaseServiceImpl(const base::FilePath& path)
     : path_(path) {
-  // Do not start WebDatabaseService on ImportProcess.
-  DCHECK(!ProfileManager::IsImportProcess(*CommandLine::ForCurrentProcess()));
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // WebDatabaseService requires DB thread if instantiated.
