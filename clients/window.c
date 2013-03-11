@@ -3398,8 +3398,10 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		return;
 
 	if (fullscreen) {
+		if (window->type == TYPE_TOPLEVEL) {
+			window->saved_allocation = window->main_surface->allocation;
+		}
 		window->type = TYPE_FULLSCREEN;
-		window->saved_allocation = window->main_surface->allocation;
 		wl_shell_surface_set_fullscreen(window->shell_surface,
 						window->fullscreen_method,
 						0, NULL);
