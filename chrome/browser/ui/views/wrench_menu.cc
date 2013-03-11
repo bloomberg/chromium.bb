@@ -42,8 +42,8 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -63,9 +63,9 @@ using ui::MenuModel;
 using views::CustomButton;
 using views::ImageButton;
 using views::Label;
+using views::LabelButton;
 using views::MenuConfig;
 using views::MenuItemView;
-using views::TextButton;
 using views::View;
 
 namespace {
@@ -310,7 +310,7 @@ string16 GetAccessibleNameForWrenchMenuItem(
       accessible_name, accelerator_text);
 }
 
-// WrenchMenuView is a view that can contain text buttons.
+// WrenchMenuView is a view that can contain label buttons.
 class WrenchMenuView : public views::View,
                        public views::ButtonListener {
  public:
@@ -327,7 +327,7 @@ class WrenchMenuView : public views::View,
     View::SchedulePaintInRect(gfx::Rect(size()));
   }
 
-  TextButton* CreateAndConfigureButton(int string_id,
+  LabelButton* CreateAndConfigureButton(int string_id,
                                        MenuButtonBackground::ButtonType type,
                                        int index,
                                        MenuButtonBackground** background) {
@@ -335,12 +335,12 @@ class WrenchMenuView : public views::View,
       string_id, type, index, background, string_id);
   }
 
-  TextButton* CreateButtonWithAccName(int string_id,
-                                      MenuButtonBackground::ButtonType type,
-                                      int index,
-                                      MenuButtonBackground** background,
-                                      int acc_string_id) {
-    TextButton* button = new TextButton(this, gfx::RemoveAcceleratorChar(
+  LabelButton* CreateButtonWithAccName(int string_id,
+                                       MenuButtonBackground::ButtonType type,
+                                       int index,
+                                       MenuButtonBackground** background,
+                                       int acc_string_id) {
+    LabelButton* button = new LabelButton(this, gfx::RemoveAcceleratorChar(
         l10n_util::GetStringUTF16(string_id), '&', NULL, NULL));
     button->SetAccessibleName(
         GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
@@ -352,14 +352,13 @@ class WrenchMenuView : public views::View,
         new MenuButtonBackground(type, menu_->use_new_menu());
     button->set_background(bg);
     const MenuConfig& menu_config = menu_->GetMenuConfig();
-    button->SetEnabledColor(menu_config.text_color);
+    button->SetTextColor(views::Button::STATE_NORMAL, menu_config.text_color);
     if (background)
       *background = bg;
     button->set_border(
         new MenuButtonBorder(menu_config, menu_->use_new_menu()));
-    button->set_alignment(TextButton::ALIGN_CENTER);
+    button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button->SetFont(menu_config.font);
-    button->ClearMaxTextSize();
     AddChildView(button);
     return button;
   }
@@ -415,15 +414,15 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
                    int copy_index,
                    int paste_index)
       : WrenchMenuView(menu, menu_model) {
-    TextButton* cut = CreateAndConfigureButton(
+    LabelButton* cut = CreateAndConfigureButton(
         IDS_CUT, MenuButtonBackground::LEFT_BUTTON, cut_index, NULL);
 
     MenuButtonBackground* copy_background = NULL;
-    TextButton* copy = CreateAndConfigureButton(
+    LabelButton* copy = CreateAndConfigureButton(
         IDS_COPY, MenuButtonBackground::CENTER_BUTTON, copy_index,
         &copy_background);
 
-    TextButton* paste = CreateAndConfigureButton(
+    LabelButton* paste = CreateAndConfigureButton(
         IDS_PASTE,
         menu_->use_new_menu() && menu_->supports_new_separators_ ?
             MenuButtonBackground::CENTER_BUTTON :
@@ -431,15 +430,15 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
         paste_index,
         NULL);
     if (menu_->use_new_menu()) {
-      cut->SetEnabledColor(kTouchButtonText);
-      copy->SetEnabledColor(kTouchButtonText);
-      paste->SetEnabledColor(kTouchButtonText);
+      cut->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
+      copy->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
+      paste->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
     } else {
       SkColor text_color = GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
-      cut->SetEnabledColor(text_color);
-      copy->SetEnabledColor(text_color);
-      paste->SetEnabledColor(text_color);
+      cut->SetTextColor(views::Button::STATE_NORMAL, text_color);
+      copy->SetTextColor(views::Button::STATE_NORMAL, text_color);
+      paste->SetTextColor(views::Button::STATE_NORMAL, text_color);
     }
     copy_background->SetOtherButtons(cut, paste);
   }
@@ -541,18 +540,24 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
     if (menu_->use_new_menu()) {
       zoom_label_->SetEnabledColor(kTouchButtonText);
-      decrement_button_->SetEnabledColor(kTouchButtonText);
-      increment_button_->SetEnabledColor(kTouchButtonText);
+      decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
+                                      kTouchButtonText);
+      increment_button_->SetTextColor(views::Button::STATE_NORMAL,
+                                      kTouchButtonText);
     } else {
       SkColor enabled_text_color = GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
       zoom_label_->SetEnabledColor(enabled_text_color);
-      decrement_button_->SetEnabledColor(enabled_text_color);
-      increment_button_->SetEnabledColor(enabled_text_color);
+      decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
+                                      enabled_text_color);
+      increment_button_->SetTextColor(views::Button::STATE_NORMAL,
+                                      enabled_text_color);
       SkColor disabled_text_color = GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
-      decrement_button_->SetDisabledColor(disabled_text_color);
-      increment_button_->SetDisabledColor(disabled_text_color);
+      decrement_button_->SetTextColor(views::Button::STATE_DISABLED,
+                                      disabled_text_color);
+      increment_button_->SetTextColor(views::Button::STATE_DISABLED,
+                                      disabled_text_color);
     }
 
     fullscreen_button_->set_focusable(true);
@@ -688,13 +693,13 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.
-  TextButton* increment_button_;
+  LabelButton* increment_button_;
 
   // Label showing zoom as a percent.
   Label* zoom_label_;
 
   // Button for decrementing the zoom.
-  TextButton* decrement_button_;
+  LabelButton* decrement_button_;
 
   ImageButton* fullscreen_button_;
 

@@ -19,7 +19,7 @@ class BookmarkBubbleViewObserver;
 class Profile;
 
 namespace views {
-class TextButton;
+class LabelButton;
 class Textfield;
 }
 
@@ -111,10 +111,10 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   views::Link* remove_link_;
 
   // Button to bring up the editor.
-  views::TextButton* edit_button_;
+  views::LabelButton* edit_button_;
 
   // Button to close the window.
-  views::TextButton* close_button_;
+  views::LabelButton* close_button_;
 
   // Textfield showing the title of the bookmark.
   views::Textfield* title_tf_;
