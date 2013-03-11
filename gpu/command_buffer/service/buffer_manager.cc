@@ -266,13 +266,13 @@ void BufferManager::DoBufferData(
     data = zero.get();
   }
 
-  decoder->CopyRealGLErrorsToWrapper();
+  GLESDECODER_COPY_REAL_GL_ERRORS_TO_WRAPPER(decoder, "glBufferData");
   if (IsUsageClientSideArray(usage)) {
     glBufferData(buffer->target(), 0, NULL, usage);
   } else {
     glBufferData(buffer->target(), size, data, usage);
   }
-  GLenum error = decoder->PeekGLError();
+  GLenum error = GLESDECODER_PEEK_GL_ERROR(decoder, "glBufferData");
   if (error == GL_NO_ERROR) {
     SetInfo(buffer, size, usage, data);
   } else {
@@ -287,7 +287,8 @@ void BufferManager::DoBufferSubData(
     GLsizeiptr size,
     const GLvoid* data) {
   if (!buffer->SetRange(offset, size, data)) {
-    decoder->SetGLError(GL_INVALID_VALUE, "glBufferSubData", "out of range");
+    GLESDECODER_SET_GL_ERROR(
+        decoder, GL_INVALID_VALUE, "glBufferSubData", "out of range");
     return;
   }
 

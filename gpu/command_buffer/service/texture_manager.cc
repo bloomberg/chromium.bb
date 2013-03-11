@@ -1068,10 +1068,11 @@ void TextureManager::SetParameter(
   GLenum result = texture->SetParameter(feature_info_, pname, param);
   if (result != GL_NO_ERROR) {
     if (result == GL_INVALID_ENUM) {
-      decoder->SetGLErrorInvalidEnum(function_name, param, "param");
+      GLESDECODER_SET_GL_ERROR_INVALID_ENUM(
+          decoder, function_name, param, "param");
     } else {
-      decoder->SetGLErrorInvalidParam(
-          result, function_name, pname, static_cast<GLint>(param));
+      GLESDECODER_SET_GL_ERROR_INVALID_PARAM(
+          decoder, result, function_name, pname, static_cast<GLint>(param));
     }
   } else {
     // Texture tracking pools exist only for the command decoder, so

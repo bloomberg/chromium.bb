@@ -498,7 +498,7 @@ void TestHelper::DoBufferData(
     ::gfx::MockGLInterface* gl, MockGLES2Decoder* decoder,
     BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
     const GLvoid* data, GLenum error) {
-  EXPECT_CALL(*decoder, CopyRealGLErrorsToWrapper())
+  EXPECT_CALL(*decoder, CopyRealGLErrorsToWrapper(_, _, _))
       .Times(1)
       .RetiresOnSaturation();
   if (manager->IsUsageClientSideArray(usage)) {
@@ -512,7 +512,7 @@ void TestHelper::DoBufferData(
         .Times(1)
         .RetiresOnSaturation();
   }
-  EXPECT_CALL(*decoder, PeekGLError())
+  EXPECT_CALL(*decoder, PeekGLError(_, _, _))
       .WillOnce(Return(error))
       .RetiresOnSaturation();
   manager->DoBufferData(decoder, buffer, size, usage, data);
@@ -529,11 +529,11 @@ void TestHelper::SetTexParameterWithExpectations(
           .RetiresOnSaturation();
     }
   } else if (error == GL_INVALID_ENUM) {
-    EXPECT_CALL(*decoder, SetGLErrorInvalidEnum(_, value, _))
+    EXPECT_CALL(*decoder, SetGLErrorInvalidEnum(_, _, _, value, _))
         .Times(1)
         .RetiresOnSaturation();
   } else {
-    EXPECT_CALL(*decoder, SetGLErrorInvalidParam(error, _, _, _))
+    EXPECT_CALL(*decoder, SetGLErrorInvalidParam(_, _, error, _, _, _))
         .Times(1)
         .RetiresOnSaturation();
   }

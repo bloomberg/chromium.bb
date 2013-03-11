@@ -186,8 +186,8 @@ bool VertexAttribManager::ValidateBindings(
       GLuint count = attrib->MaxVertexAccessed(primcount, max_vertex_accessed);
       // This attrib is used in the current program.
       if (!attrib->CanAccess(count)) {
-        decoder->SetGLError(
-            GL_INVALID_OPERATION, function_name,
+        GLESDECODER_SET_GL_ERROR(
+            decoder, GL_INVALID_OPERATION, function_name,
             (std::string(
                  "attempt to access out of range vertices in attribute ") +
              base::IntToString(attrib->index())).c_str());
@@ -231,8 +231,8 @@ bool VertexAttribManager::ValidateBindings(
     } else {
       // This attrib is not used in the current program.
       if (!attrib->buffer()) {
-        decoder->SetGLError(
-            GL_INVALID_OPERATION, function_name,
+        GLESDECODER_SET_GL_ERROR(
+            decoder, GL_INVALID_OPERATION, function_name,
             (std::string(
                  "attempt to render with no buffer attached to "
                  "enabled attribute ") +
@@ -253,8 +253,8 @@ bool VertexAttribManager::ValidateBindings(
   }
 
   if (primcount && !divisor0) {
-    decoder->SetGLError(
-        GL_INVALID_OPERATION, function_name,
+    GLESDECODER_SET_GL_ERROR(
+        decoder, GL_INVALID_OPERATION, function_name,
         "attempt instanced render with all attributes having "
         "non-zero divisors");
     return false;

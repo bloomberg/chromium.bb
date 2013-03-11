@@ -61,7 +61,7 @@ class BufferManagerTestBase : public testing::Test {
       const GLvoid* data) {
     bool success = true;
     if (!buffer->CheckRange(offset, size)) {
-      EXPECT_CALL(*decoder_, SetGLError(GL_INVALID_VALUE, _, _))
+      EXPECT_CALL(*decoder_, SetGLError(_, _, GL_INVALID_VALUE, _, _))
           .Times(1)
           .RetiresOnSaturation();
       success = false;

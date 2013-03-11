@@ -3085,7 +3085,8 @@ class StateSetHandler(TypeHandler):
     if len(code):
       file.Write("  if (%s) {\n" % " ||\n      ".join(code))
       file.Write(
-        '    SetGLError(GL_INVALID_VALUE, "%s", "%s out of range");\n' %
+        '    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,'
+        ' "%s", "%s out of range");\n' %
         (func.name, args[ndx].name))
       file.Write("    return error::kNoError;\n")
       file.Write("  }\n")
@@ -3307,7 +3308,8 @@ class TodoHandler(CustomHandler):
                 func.MakeTypedOriginalArgString("")))
     file.Write("  // TODO: for now this is a no-op\n")
     file.Write(
-        "  SetGLError(GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
+        "  SetGLError("
+        "GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
         func.name)
     if func.return_type != "void":
       file.Write("  return 0;\n")
@@ -3323,7 +3325,8 @@ class TodoHandler(CustomHandler):
         func.name)
     file.Write("  // TODO: for now this is a no-op\n")
     file.Write(
-        "  SetGLError(GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
+        "  LOCAL_SET_GL_ERROR("
+        "GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
         func.name)
     file.Write("  return error::kNoError;\n")
     file.Write("}\n")
@@ -4373,7 +4376,7 @@ class GETnHandler(TypeHandler):
 """
     shadowed = func.GetInfo('shadowed')
     if not shadowed:
-      file.Write("  CopyRealGLErrorsToWrapper();\n");
+      file.Write('  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("%s");\n' % func.name)
     file.Write(code)
     func.WriteHandlerImplementation(file)
     if shadowed:
@@ -4386,13 +4389,13 @@ class GETnHandler(TypeHandler):
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
   } else {
-    SetGLError(error, "", "");
+    LOCAL_SET_GL_ERROR(error, "%(func_name)s", "");
   }
   return error::kNoError;
 }
 
 """
-    file.Write(code)
+    file.Write(code % {'func_name': func.name})
 
   def WriteGLES2Implementation(self, func, file):
     """Overrriden from TypeHandler."""
@@ -5752,16 +5755,18 @@ class SizeArgument(Argument):
   def WriteValidationCode(self, file, func):
     """overridden from Argument."""
     file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
-               (func.original_name, self.name))
+    file.Write(
+        "    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
+        (func.original_name, self.name))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
   def WriteClientSideValidationCode(self, file, func):
     """overridden from Argument."""
     file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
-               (func.original_name, self.name))
+    file.Write(
+        "    SetGLError(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
+        (func.original_name, self.name))
     file.Write("    return;\n")
     file.Write("  }\n")
 
@@ -5798,11 +5803,11 @@ class EnumBaseArgument(Argument):
         (ToUnderscore(self.type_name), self.name))
     if self.gl_error == "GL_INVALID_ENUM":
       file.Write(
-          "    SetGLErrorInvalidEnum(\"gl%s\", %s, \"%s\");\n" %
+          "    LOCAL_SET_GL_ERROR_INVALID_ENUM(\"gl%s\", %s, \"%s\");\n" %
           (func.original_name, self.name, self.name))
     else:
       file.Write(
-          "    SetGLError(%s, \"gl%s\", \"%s %s\");\n" %
+          "    LOCAL_SET_GL_ERROR(%s, \"gl%s\", \"%s %s\");\n" %
           (self.gl_error, func.original_name, self.name, self.gl_error))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
