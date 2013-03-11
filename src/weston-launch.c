@@ -558,7 +558,7 @@ main(int argc, char *argv[])
 			break;
 		case 'h':
 			help("weston-launch");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -588,20 +588,20 @@ main(int argc, char *argv[])
 		      " - or add yourself to the 'weston-launch' group.");
 
 	if (setup_tty(&wl, tty) < 0)
-		return 1;
+		exit(EXIT_FAILURE);
 
 	if (setup_pam(&wl) < 0)
-		return 1;
+		exit(EXIT_FAILURE);
 
 	wl.epollfd = epoll_create1(EPOLL_CLOEXEC);
 	if (wl.epollfd < 0)
 		error(1, errno, "epoll create failed");
 
 	if (setup_launcher_socket(&wl) < 0)
-		return 1;
+		exit(EXIT_FAILURE);
 
 	if (setup_signals(&wl) < 0)
-		return 1;
+		exit(EXIT_FAILURE);
 
 	switch ((wl.child = fork())) {
 	case -1:
