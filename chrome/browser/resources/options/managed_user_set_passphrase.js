@@ -22,24 +22,6 @@ cr.define('options', function() {
 
   cr.addSingletonGetter(ManagedUserSetPassphraseOverlay);
 
-  /** Closes the page and resets the passphrase fields */
-  var closePage = function(container) {
-    // Reseting the fields directly would lead to a flicker, so listen to
-    // webkitTransitionEnd to clear them after that. Similar to how it is done
-    // in setOverlayVisible_ in options_page.js.
-    container.addEventListener('webkitTransitionEnd', function f(e) {
-      if (e.target != e.currentTarget || e.propertyName != 'opacity')
-        return;
-      container.removeEventListener('webkitTransitionEnd', f);
-
-      // Reset the fields.
-      $('managed-user-passphrase').value = '';
-      $('passphrase-confirm').value = '';
-      $('passphrase-mismatch').hidden = true;
-    });
-    OptionsPage.closeOverlay();
-  };
-
   ManagedUserSetPassphraseOverlay.prototype = {
     __proto__: OptionsPage.prototype,
 
@@ -71,7 +53,7 @@ cr.define('options', function() {
       };
 
       $('cancel-passphrase').onclick = function(event) {
-        closePage(self.container);
+        self.closePage();
       };
     },
 
@@ -92,7 +74,7 @@ cr.define('options', function() {
      */
     setPassphrase_: function(event) {
       chrome.send('setPassphrase', [$('managed-user-passphrase').value]);
-      closePage(this.container);
+      this.closePage();
     },
 
     /** @override */
@@ -110,7 +92,26 @@ cr.define('options', function() {
      * Make sure that we reset the fields on cancel.
      */
     handleCancel: function() {
-      closePage(this.container);
+      this.closePage();
+    },
+
+    /** Closes the page and resets the passphrase fields */
+    closePage: function() {
+      // Reseting the fields directly would lead to a flicker, so listen to
+      // webkitTransitionEnd to clear them after that. Similar to how it is done
+      // in setOverlayVisible_ in options_page.js.
+      var self = this;
+      this.container.addEventListener('webkitTransitionEnd', function f(e) {
+        if (e.target != e.currentTarget || e.propertyName != 'opacity')
+          return;
+        self.container.removeEventListener('webkitTransitionEnd', f);
+
+        // Reset the fields.
+        $('managed-user-passphrase').value = '';
+        $('passphrase-confirm').value = '';
+        self.updateDisplay_();
+      });
+      OptionsPage.closeOverlay();
     }
   };
 
