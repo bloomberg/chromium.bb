@@ -111,13 +111,13 @@ bool ChromeV8Context::CallChromeHiddenMethod(
     int argc,
     v8::Handle<v8::Value>* argv,
     v8::Handle<v8::Value>* result) const {
-  v8::Context::Scope context_scope(v8_context_.get());
-
   // ChromeV8ContextSet calls Invalidate() and then schedules a task to delete
   // this object. This check prevents a race from attempting to execute script
   // on a NULL web_frame_.
   if (!web_frame_)
     return false;
+
+  v8::Context::Scope context_scope(v8_context_.get());
 
   // Look up the function name, which may be a sub-property like
   // "Port.dispatchOnMessage" in the hidden global variable.
