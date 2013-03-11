@@ -10,13 +10,13 @@
 });
 
 function printData(trafficRecord) {
-  var traffic_data = '';
-  traffic_data += '===\n';
-  traffic_data += 'Client Server Traffic\n';
-  traffic_data += '===\n';
-  traffic_data += JSON.stringify(trafficRecord, null, 2);
-  traffic_data += '\n';
+  var trafficData = '';
+  trafficData += '===\n';
+  trafficData += 'Client Server Traffic\n';
+  trafficData += '===\n';
+  trafficData += JSON.stringify(trafficRecord, null, 2);
+  trafficData += '\n';
 
-  trafficDump.textContent = traffic_data;
+  trafficDump.textContent = trafficData;
 }
 })();

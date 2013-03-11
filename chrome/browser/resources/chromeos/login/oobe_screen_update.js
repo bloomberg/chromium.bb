@@ -70,7 +70,7 @@ cr.define('oobe', function() {
     },
   };
 
-  var ellipsis_animation_active = false;
+  var ellipsisAnimationActive = false;
 
   /**
    * Updates number of dots in the ellipsis.
@@ -80,7 +80,7 @@ cr.define('oobe', function() {
    */
   function updateEllipsisAnimation_(count) {
     $('update-checking-ellipsis').textContent = ELLIPSIS[count];
-    if (ellipsis_animation_active) {
+    if (ellipsisAnimationActive) {
       window.setTimeout(function() {
           updateEllipsisAnimation_((count + 1) % ELLIPSIS.length);
         }, ELLIPSIS_ANIMATION_TIMEOUT_MS);
@@ -98,7 +98,7 @@ cr.define('oobe', function() {
    * Starts animation for tail ellipses in "Checking for update..." label.
    */
   UpdateScreen.startEllipsisAnimation = function() {
-    ellipsis_animation_active = true;
+    ellipsisAnimationActive = true;
     updateEllipsisAnimation_(0);
   };
 
@@ -106,7 +106,7 @@ cr.define('oobe', function() {
    * Stops animation for tail ellipses in "Checking for update..." label.
    */
   UpdateScreen.stopEllipsisAnimation = function() {
-    ellipsis_animation_active = false;
+    ellipsisAnimationActive = false;
   };
 
   return {

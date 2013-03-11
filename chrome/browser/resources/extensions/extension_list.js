@@ -54,15 +54,15 @@ cr.define('options', function() {
       // Iterate over the extension data and add each item to the list.
       this.data_.extensions.forEach(this.createNode_, this);
 
-      var id_to_highlight = this.getIdQueryParam_();
-      if (id_to_highlight) {
+      var idToHighlight = this.getIdQueryParam_();
+      if (idToHighlight) {
         // Scroll offset should be calculated slightly higher than the actual
         // offset of the element being scrolled to, so that it ends up not all
         // the way at the top. That way it is clear that there are more elements
         // above the element being scrolled to.
-        var scroll_fudge = 1.2;
-        var offset = $(id_to_highlight).offsetTop -
-                     (scroll_fudge * $(id_to_highlight).clientHeight);
+        var scrollFudge = 1.2;
+        var offset = $(idToHighlight).offsetTop -
+                     (scrollFudge * $(idToHighlight).clientHeight);
         var wrapper = this.parentNode;
         var list = wrapper.parentNode;
         list.scrollTop = offset;
@@ -92,8 +92,8 @@ cr.define('options', function() {
       if (!extension.userModifiable)
         node.classList.add('may-not-disable');
 
-      var id_to_highlight = this.getIdQueryParam_();
-      if (node.id == id_to_highlight)
+      var idToHighlight = this.getIdQueryParam_();
+      if (node.id == idToHighlight)
         node.classList.add('extension-highlight');
 
       var item = node.querySelector('.extension-list-item');
@@ -241,9 +241,9 @@ cr.define('options', function() {
 
         enable.querySelector('input').checked = extension.enabled;
       } else {
-        var terminated_reload = node.querySelector('.terminated-reload-link');
-        terminated_reload.hidden = false;
-        terminated_reload.addEventListener('click', function(e) {
+        var terminatedReload = node.querySelector('.terminated-reload-link');
+        terminatedReload.hidden = false;
+        terminatedReload.addEventListener('click', function(e) {
           chrome.send('extensionSettingsReload', [extension.id]);
         });
       }

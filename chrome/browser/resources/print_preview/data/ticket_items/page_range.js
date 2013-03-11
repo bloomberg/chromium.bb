@@ -71,8 +71,7 @@ cr.define('print_preview.ticket_items', function() {
      *     ranges.
      */
     getPageRanges: function() {
-      var page_ranges = pageRangeTextToPageRanges(this.getValue());
-      return page_ranges ? page_ranges : [];
+      return pageRangeTextToPageRanges(this.getValue()) || [];
     },
 
     /**
@@ -82,9 +81,9 @@ cr.define('print_preview.ticket_items', function() {
      *     page ranges.
      */
     getDocumentPageRanges: function() {
-      var page_ranges = pageRangeTextToPageRanges(this.getValue(),
-                                                  this.documentInfo_.pageCount);
-      return page_ranges ? page_ranges : [];
+      var pageRanges = pageRangeTextToPageRanges(this.getValue(),
+                                                 this.documentInfo_.pageCount);
+      return pageRanges || [];
     },
   };
 

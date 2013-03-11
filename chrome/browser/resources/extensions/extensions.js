@@ -10,7 +10,7 @@
 
 // Used for observing function of the backend datasource for this page by
 // tests.
-var webui_responded_ = false;
+var webuiResponded = false;
 
 cr.define('extensions', function() {
   var ExtensionsList = options.ExtensionsList;
@@ -234,7 +234,7 @@ cr.define('extensions', function() {
       document.documentElement.classList.remove('loading');
     }, 0);
 
-    webui_responded_ = true;
+    webuiResponded = true;
 
     if (extensionsData.extensions.length > 0) {
       // Enforce order specified in the data or (if equal) then sort by

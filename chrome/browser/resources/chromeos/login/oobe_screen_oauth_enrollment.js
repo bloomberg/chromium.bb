@@ -164,14 +164,14 @@ cr.define('oobe', function() {
       // The cancel button is not available during auto-enrollment.
       var cancel = this.isAutoEnrollment_ ? null : 'cancel';
       // During auto-enrollment the user must try again from the error screen.
-      var error_cancel = this.isAutoEnrollment_ ? 'try-again' : 'cancel';
+      var errorCancel = this.isAutoEnrollment_ ? 'try-again' : 'cancel';
       this.steps_ = [
         { name: STEP_SIGNIN,
           button: cancel },
         { name: STEP_WORKING,
           button: cancel },
         { name: STEP_ERROR,
-          button: error_cancel,
+          button: errorCancel,
           focusButton: this.isAutoEnrollment_ },
         { name: STEP_EXPLAIN,
           button: 'explain',

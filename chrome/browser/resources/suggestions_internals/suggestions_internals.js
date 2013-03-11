@@ -81,10 +81,10 @@ cr.define('suggestionsInternals', function() {
     var columns = [];
     list.forEach(function(entry) {
       for (var column in entry) {
-        if (typeof(entry[column]) == 'object') {
+        if (typeof entry[column] == 'object') {
           // Expand one level deep
-          for (var sub_column in entry[column]) {
-            var path = column + '.' + sub_column;
+          for (var subColumn in entry[column]) {
+            var path = column + '.' + subColumn;
             if (columns.indexOf(path) < 0)
               columns.push(path);
           }
@@ -130,10 +130,10 @@ cr.define('suggestionsInternals', function() {
     var rank = 1;
     list.forEach(function(entry) {
       var row = document.createElement('tr');
-      columns.forEach(function(column_name) {
+      columns.forEach(function(columnName) {
         var column = document.createElement('td');
         // Expand the path and find the data if it's there.
-        var path = column_name.split('.');
+        var path = columnName.split('.');
         var data = entry;
         for (var i = 0; i < path.length; ++i) {
           if (data && data.hasOwnProperty(path[i]))
@@ -155,15 +155,15 @@ cr.define('suggestionsInternals', function() {
           } else {
             column.innerText = data;
           }
-        } else if (column_name == 'rank') {
+        } else if (columnName == 'rank') {
           column.innerText = rank++;
-        } else if (column_name == 'screenshot') {
+        } else if (columnName == 'screenshot') {
           var thumbnailUrl = 'chrome://thumb/' + entry.url;
           var img = document.createElement('img');
           img.onload = function() { setBooleanColumn(column, true); }
           img.onerror = function() { setBooleanColumn(column, false); }
           img.src = thumbnailUrl;
-        } else if (column_name == 'favicon') {
+        } else if (columnName == 'favicon') {
           var faviconUrl = 'chrome://favicon/size/16@1x/' + entry.url;
           column.style.backgroundImage = url(faviconUrl);
           column.style.backgroundRepeat = 'no-repeat';

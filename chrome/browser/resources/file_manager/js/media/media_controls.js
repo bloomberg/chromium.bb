@@ -986,9 +986,9 @@ function VideoControls(containerElement, onMediaError,
         'playback-state-icon', opt_stateIconParent);
   }
 
-  var video_controls = this;
+  var videoControls = this;
   chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
-      function() { video_controls.togglePlayStateWithFeedback(); });
+      function() { videoControls.togglePlayStateWithFeedback(); });
 }
 
 /**
@@ -1133,13 +1133,13 @@ function AudioControls(container, advanceTrack, onError) {
   this.createButton('previous', this.onAdvanceClick_.bind(this, false));
   this.createButton('next', this.onAdvanceClick_.bind(this, true));
 
-  var audio_controls = this;
+  var audioControls = this;
   chrome.mediaPlayerPrivate.onNextTrack.addListener(
-      function() { audio_controls.onAdvanceClick_(true); });
+      function() { audioControls.onAdvanceClick_(true); });
   chrome.mediaPlayerPrivate.onPrevTrack.addListener(
-      function() { audio_controls.onAdvanceClick_(false); });
+      function() { audioControls.onAdvanceClick_(false); });
   chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
-      function() { audio_controls.togglePlayState(); });
+      function() { audioControls.togglePlayState(); });
 }
 
 AudioControls.prototype = { __proto__: MediaControls.prototype };

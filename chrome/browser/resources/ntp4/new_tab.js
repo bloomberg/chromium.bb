@@ -170,9 +170,9 @@ cr.define('ntp', function() {
     }
 
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled')) {
-      var suggestions_script = document.createElement('script');
-      suggestions_script.src = 'suggestions_page.js';
-      suggestions_script.onload = function() {
+      var suggestionsScript = document.createElement('script');
+      suggestionsScript.src = 'suggestions_page.js';
+      suggestionsScript.onload = function() {
          newTabView.appendTilePage(new ntp.SuggestionsPage(),
                                    loadTimeData.getString('suggestions'),
                                    false,
@@ -181,7 +181,7 @@ cr.define('ntp', function() {
          chrome.send('getSuggestions');
          cr.dispatchSimpleEvent(document, 'sectionready', true, true);
       };
-      document.querySelector('head').appendChild(suggestions_script);
+      document.querySelector('head').appendChild(suggestionsScript);
     }
 
     if (!loadTimeData.getBoolean('showWebStoreIcon')) {

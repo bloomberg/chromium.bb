@@ -64,11 +64,11 @@ Loader.prototype = {
   onMessage_: function(event) {
     var msg = event.data;
     if (msg.method == 'validate') {
-      var reply_msg = {
+      var replyMsg = {
           method: 'validationResults',
           os: 'ChromeOS'
       };
-      event.source.postMessage(reply_msg, event.origin);
+      event.source.postMessage(replyMsg, event.origin);
     } else {
       console.log('#### Loader.onMessage_: unknown message');
     }

@@ -461,12 +461,11 @@ function FlingConfig() {
  * WebUI instance for configuring gesture.* and overscroll.* preference values
  * used by Chrome's gesture recognition system.
  */
-var gesture_config = (function() {
-
+var gesture_config = {
   /**
    * Build and initialize the gesture configuration form.
    */
-  function initialize() {
+  initialize: function() {
     var g = GestureConfig();
     g.buildAll();
 
@@ -485,22 +484,17 @@ var gesture_config = (function() {
       f.onReset();
       c.onReset();
     };
-  }
+  },
 
   /**
    * Handle callback from call to getPreferenceValue.
    * @param {string} prefName The name of the requested preference value.
    * @param {value} value The current value associated with prefName.
    */
-  function getPreferenceValueResult(prefName, value) {
+  getPreferenceValueResult: function(prefName, value) {
     prefName = prefName.substring(prefName.indexOf('.') + 1);
     $(prefName).value = value;
-  }
-
-  return {
-    initialize: initialize,
-    getPreferenceValueResult: getPreferenceValueResult
-  };
-})();
+  },
+};
 
 document.addEventListener('DOMContentLoaded', gesture_config.initialize);

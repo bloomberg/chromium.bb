@@ -300,9 +300,9 @@ NetworkMenuItem.prototype = {
     if (attrs.font) {
       this.label_.style.font = attrs.font;
 
-      var base_font = attrs.font.replace(/bold/, '').replace(/italic/, '');
-      this.status_.style.font = base_font;
-      this.action_.style.font = base_font;
+      var baseFont = attrs.font.replace(/bold/, '').replace(/italic/, '');
+      this.status_.style.font = baseFont;
+      this.action_.style.font = baseFont;
     }
   },
 

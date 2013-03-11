@@ -29,22 +29,22 @@ TaskManager.prototype = {
     var sm = this.selectionModel_;
     var dm = this.dataModel_;
     var selectedIndexes = sm.selectedIndexes;
-    var is_end_process_enabled = true;
+    var isEndProcessEnabled = true;
     if (selectedIndexes.length == 0)
-      is_end_process_enabled = false;
+      isEndProcessEnabled = false;
     for (var i = 0; i < selectedIndexes.length; i++) {
       var index = selectedIndexes[i];
       var task = dm.item(index);
       if (task['type'] == 'BROWSER')
-        is_end_process_enabled = false;
+        isEndProcessEnabled = false;
     }
-    if (this.is_end_process_enabled_ != is_end_process_enabled) {
-      if (is_end_process_enabled)
+    if (this.isEndProcessEnabled_ != isEndProcessEnabled) {
+      if (isEndProcessEnabled)
         $('kill-process').removeAttribute('disabled');
       else
         $('kill-process').setAttribute('disabled', 'true');
 
-      this.is_end_process_enabled_ = is_end_process_enabled;
+      this.isEndProcessEnabled_ = isEndProcessEnabled;
     }
   },
 
@@ -96,8 +96,8 @@ TaskManager.prototype = {
 
     this.localized_column_ = [];
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
-      var column_label_id = DEFAULT_COLUMNS[i][1];
-      this.localized_column_[i] = loadTimeData.getString(column_label_id);
+      var columnLabelId = DEFAULT_COLUMNS[i][1];
+      this.localized_column_[i] = loadTimeData.getString(columnLabelId);
     }
 
     this.initElements_();
@@ -212,23 +212,23 @@ TaskManager.prototype = {
   },
 
   initColumnModel_: function() {
-    var table_columns = new Array();
+    var tableColumns = new Array();
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
       var column = DEFAULT_COLUMNS[i];
       var columnId = column[0];
       if (!isColumnEnabled(columnId))
         continue;
 
-      table_columns.push(new cr.ui.table.TableColumn(columnId,
+      tableColumns.push(new cr.ui.table.TableColumn(columnId,
                                                      this.localized_column_[i],
                                                      column[2]));
     }
 
-    for (var i = 0; i < table_columns.length; i++) {
-      table_columns[i].renderFunction = this.renderColumn_.bind(this);
+    for (var i = 0; i < tableColumns.length; i++) {
+      tableColumns[i].renderFunction = this.renderColumn_.bind(this);
     }
 
-    this.columnModel_ = new cr.ui.table.TableColumnModel(table_columns);
+    this.columnModel_ = new cr.ui.table.TableColumnModel(tableColumns);
   },
 
   initColumnMenu_: function() {
@@ -275,10 +275,10 @@ TaskManager.prototype = {
     this.table_menu_commands_ = [];
     this.tableContextMenu_ = this.document_.createElement('menu');
 
-    var addMenuItem = function(tm, command_id, string_id) {
+    var addMenuItem = function(tm, commandId, string_id) {
       // Creates command element to receive event.
       var command = tm.document_.createElement('command');
-      command.id = COMMAND_CONTEXTMENU_TABLE_PREFIX + '-' + command_id;
+      command.id = COMMAND_CONTEXTMENU_TABLE_PREFIX + '-' + commandId;
       cr.ui.Command.decorate(command);
       tm.table_menu_commands_[command.id] = command;
       tm.commandsElement_.appendChild(command);
@@ -591,23 +591,23 @@ TaskManager.prototype = {
    */
   onCommand_: function(event) {
     var command = event.command;
-    var command_id = command.id.split('-', 2);
+    var commandId = command.id.split('-', 2);
 
-    var main_command = command_id[0];
-    var sub_command = command_id[1];
+    var mainCommand = commandId[0];
+    var subCommand = commandId[1];
 
-    if (main_command == COMMAND_CONTEXTMENU_COLUMN_PREFIX) {
-      this.onColumnContextMenu_(sub_command, command);
-    } else if (main_command == COMMAND_CONTEXTMENU_TABLE_PREFIX) {
-      var target_unique_id = this.currentContextMenuTarget_;
+    if (mainCommand == COMMAND_CONTEXTMENU_COLUMN_PREFIX) {
+      this.onColumnContextMenu_(subCommand, command);
+    } else if (mainCommand == COMMAND_CONTEXTMENU_TABLE_PREFIX) {
+      var targetUniqueId = this.currentContextMenuTarget_;
 
-      if (!target_unique_id)
+      if (!targetUniqueId)
         return;
 
-      if (sub_command == 'inspect')
-        commands.inspect(target_unique_id);
-      else if (sub_command == 'activate')
-        commands.activatePage(target_unique_id);
+      if (subCommand == 'inspect')
+        commands.inspect(targetUniqueId);
+      else if (subCommand == 'activate')
+        commands.activatePage(targetUniqueId);
 
       this.currentContextMenuTarget_ = undefined;
     }
@@ -627,14 +627,14 @@ TaskManager.prototype = {
       return;
 
     var mc = this.table_menu_commands_;
-    var inspect_menuitem =
+    var inspectMenuitem =
         mc[COMMAND_CONTEXTMENU_TABLE_PREFIX + '-inspect'].menuitem;
-    var activate_menuitem =
+    var activateMenuitem =
         mc[COMMAND_CONTEXTMENU_TABLE_PREFIX + '-activate'].menuitem;
 
     // Disabled by default.
-    inspect_menuitem.disabled = true;
-    activate_menuitem.disabled = true;
+    inspectMenuitem.disabled = true;
+    activateMenuitem.disabled = true;
 
     var target = e.target;
     for (;; target = target.parentNode) {
@@ -644,18 +644,18 @@ TaskManager.prototype = {
           Array.prototype.indexOf.call(classes, 'detail-title') != -1) break;
     }
 
-    var index_in_group = target.index_in_group;
+    var indexInGroup = target.index_in_group;
 
     // Sets the uniqueId for current target page under the mouse corsor.
-    this.currentContextMenuTarget_ = target.data['uniqueId'][index_in_group];
+    this.currentContextMenuTarget_ = target.data['uniqueId'][indexInGroup];
 
     // Enables if the page can be inspected.
-    if (target.data['canInspect'][index_in_group])
-      inspect_menuitem.disabled = false;
+    if (target.data['canInspect'][indexInGroup])
+      inspectMenuitem.disabled = false;
 
     // Enables if the page can be activated.
-    if (target.data['canActivate'][index_in_group])
-      activate_menuitem.disabled = false;
+    if (target.data['canActivate'][indexInGroup])
+      activateMenuitem.disabled = false;
   },
 
   onColumnContextMenu_: function(columnId, command) {

@@ -114,7 +114,7 @@ cr.define('diag', function() {
       $('choose-adapter').hidden = false;
 
       // Update netif state.
-      var found_valid_ip = false;
+      var foundValidIp = false;
       for (var i = 0; i < DiagPage.AdapterType.length; i++) {
         var adapterType = DiagPage.AdapterType[i];
         var status = netifStatus[adapterType.adapter];
@@ -128,11 +128,11 @@ cr.define('diag', function() {
           this.adapterStatus_[i] = DiagPage.AdapterStatus.VALID_IP;
 
         if (this.adapterStatus_[i] == DiagPage.AdapterStatus.VALID_IP)
-          found_valid_ip = true;
+          foundValidIp = true;
       }
 
       // If we have valid IP, start ping test.
-      if (found_valid_ip &&
+      if (foundValidIp &&
           this.pingTestStatus_ == DiagPage.PingTestStatus.NOT_STARTED) {
         this.pingTestStatus_ == DiagPage.PingTestStatus.IN_PROGRESS;
         chrome.send('testICMP', [String('8.8.8.8')]);

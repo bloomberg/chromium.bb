@@ -117,11 +117,11 @@ function showPage() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var time_to_wait = localStrings.getString('time_to_wait');
-  var show_activation = localStrings.getString('show_activation') == 'true';
-  window.setTimeout(showPage, time_to_wait);
+  var timeToWait = localStrings.getString('time_to_wait');
+  var showActivation = localStrings.getString('show_activation') == 'true';
+  window.setTimeout(showPage, timeToWait);
   var lower = document.getElementById('lower');
-  if (show_activation)
+  if (showActivation)
     lower.style.display = 'block';
 });
 </script>

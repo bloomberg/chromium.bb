@@ -132,12 +132,12 @@ cr.define('mobile', function() {
     },
 
     changeState_: function(deviceInfo) {
-      var new_state = deviceInfo.state;
-      if (this.state_ == new_state)
+      var newState = deviceInfo.state;
+      if (this.state_ == newState)
         return;
       var main = $('mainbody');
       // Map handler state to UX.
-      switch (new_state) {
+      switch (newState) {
         case MobileSetup.PLAN_ACTIVATION_PAGE_LOADING:
         case MobileSetup.PLAN_ACTIVATION_START:
         case MobileSetup.PLAN_ACTIVATION_DELAY_OTASP:
@@ -229,7 +229,7 @@ cr.define('mobile', function() {
           $('finalStatus').classList.remove('hidden');
           break;
       }
-      this.state_ = new_state;
+      this.state_ = newState;
     },
 
     updateDeviceStatus_: function(deviceInfo) {

@@ -64,19 +64,19 @@ cr.define('cr.ui', function() {
       select.appendChild(option);
     }
     if (callback) {
-      var send_callback = function() {
+      var sendCallback = function() {
         chrome.send(callback, [select.options[select.selectedIndex].value]);
       };
-      select.addEventListener('blur', function(event) { send_callback(); });
-      select.addEventListener('click', function(event) { send_callback(); });
+      select.addEventListener('blur', sendCallback);
+      select.addEventListener('click', sendCallback);
       select.addEventListener('keyup', function(event) {
-        var keycode_interested = [
+        var keycodeInterested = [
           9,  // Tab
           13,  // Enter
           27,  // Escape
         ];
-        if (keycode_interested.indexOf(event.keyCode) >= 0)
-          send_callback();
+        if (keycodeInterested.indexOf(event.keyCode) >= 0)
+          sendCallback();
       });
     }
   };

@@ -449,21 +449,21 @@ cr.define('options.internet', function() {
     enableManualProxy_: function(e) {
       $('advanced-config').hidden = false;
       $('ignored-host-list').redraw();
-      var all_disabled = $('manual-proxy').disabled;
-      $('new-host').disabled = all_disabled;
-      $('remove-host').disabled = all_disabled;
-      $('add-host').disabled = all_disabled;
-      $('proxy-all-protocols').disabled = all_disabled;
-      $('proxy-host-name').disabled = all_disabled;
-      $('proxy-host-port').disabled = all_disabled;
-      $('proxy-host-single-name').disabled = all_disabled;
-      $('proxy-host-single-port').disabled = all_disabled;
-      $('secure-proxy-host-name').disabled = all_disabled;
-      $('secure-proxy-port').disabled = all_disabled;
-      $('ftp-proxy').disabled = all_disabled;
-      $('ftp-proxy-port').disabled = all_disabled;
-      $('socks-host').disabled = all_disabled;
-      $('socks-port').disabled = all_disabled;
+      var allDisabled = $('manual-proxy').disabled;
+      $('new-host').disabled = allDisabled;
+      $('remove-host').disabled = allDisabled;
+      $('add-host').disabled = allDisabled;
+      $('proxy-all-protocols').disabled = allDisabled;
+      $('proxy-host-name').disabled = allDisabled;
+      $('proxy-host-port').disabled = allDisabled;
+      $('proxy-host-single-name').disabled = allDisabled;
+      $('proxy-host-single-port').disabled = allDisabled;
+      $('secure-proxy-host-name').disabled = allDisabled;
+      $('secure-proxy-port').disabled = allDisabled;
+      $('ftp-proxy').disabled = allDisabled;
+      $('ftp-proxy-port').disabled = allDisabled;
+      $('socks-host').disabled = allDisabled;
+      $('socks-port').disabled = allDisabled;
       $('proxy-config').disabled = true;
     },
   };

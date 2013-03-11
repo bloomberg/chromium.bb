@@ -47,10 +47,10 @@ function forceLoad() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var show_delay_time = localStrings.getString('show_delay_time');
-  var total_wait_time = localStrings.getString('total_wait_time');
-  window.setTimeout(showPage, show_delay_time);
-  window.setTimeout(forceLoad, total_wait_time);
+  var showDelayTime = localStrings.getString('show_delay_time');
+  var totalWaitTime = localStrings.getString('total_wait_time');
+  window.setTimeout(showPage, showDelayTime);
+  window.setTimeout(forceLoad, totalWaitTime);
 });
 </script>
 

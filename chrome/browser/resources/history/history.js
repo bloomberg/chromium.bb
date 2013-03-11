@@ -615,7 +615,7 @@ HistoryModel.prototype.queryHistory_ = function() {
  * @private
  */
 HistoryModel.prototype.haveDataForPage_ = function(page) {
-  return (page * RESULTS_PER_PAGE < this.getSize());
+  return page * RESULTS_PER_PAGE < this.getSize();
 };
 
 /**
@@ -1263,21 +1263,21 @@ function PageState(model, view) {
 
   // TODO(glen): Replace this with a bound method so we don't need
   //     public model and view.
-  this.checker_ = setInterval((function(state_obj) {
-    var hashData = state_obj.getHashData();
-    var isGroupedByDomain = (hashData.grouped == 'true');
+  this.checker_ = window.setInterval(function(stateObj) {
+    var hashData = stateObj.getHashData();
+    var isGroupedByDomain = hashData.grouped == 'true';
     var page = parseInt(hashData.page, 10);
     var range = parseInt(hashData.range, 10);
     var offset = parseInt(hashData.offset, 10);
-    if (hashData.q != state_obj.model.getSearchText() ||
-        page != state_obj.view.getPage() ||
-        isGroupedByDomain != state_obj.view.model_.getGroupByDomain() ||
-        range != state_obj.model.rangeInDays ||
-        offset != state_obj.model.offset) {
-      state_obj.view.setPageState(hashData.q, page, isGroupedByDomain,
-                                  range, offset);
+    if (hashData.q != stateObj.model.getSearchText() ||
+        page != stateObj.view.getPage() ||
+        isGroupedByDomain != stateObj.view.model_.getGroupByDomain() ||
+        range != stateObj.model.rangeInDays ||
+        offset != stateObj.model.offset) {
+      stateObj.view.setPageState(hashData.q, page, isGroupedByDomain,
+                                 range, offset);
     }
-  }), 50, this);
+  }, 50, this);
 }
 
 /**
@@ -1600,9 +1600,9 @@ function updateParentCheckbox(checkbox) {
   if (!entry)
     return;
 
-  var group_checkbox = entry.querySelector('.site-domain-wrapper input');
-  if (group_checkbox)
-      group_checkbox.checked = false;
+  var groupCheckbox = entry.querySelector('.site-domain-wrapper input');
+  if (groupCheckbox)
+      groupCheckbox.checked = false;
 }
 
 function entryBoxMousedown(event) {

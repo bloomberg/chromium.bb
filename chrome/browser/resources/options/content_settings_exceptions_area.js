@@ -622,8 +622,8 @@ cr.define('options.contentSettings', function() {
           divs[i].hidden = true;
       }
 
-      var media_header = this.pageDiv.querySelector('.media-header');
-      media_header.hidden = type != 'media-stream';
+      var mediaHeader = this.pageDiv.querySelector('.media-header');
+      mediaHeader.hidden = type != 'media-stream';
     },
 
     /**

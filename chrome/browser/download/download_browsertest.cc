@@ -1611,7 +1611,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   bool webui_responded = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents,
-      "window.domAutomationController.send(window.webui_responded_);",
+      "window.domAutomationController.send(window.webuiResponded);",
       &webui_responded));
   EXPECT_TRUE(webui_responded);
 }

@@ -148,17 +148,17 @@ cr.define('options.dictionary_words', function() {
      * @param {Array} entries The list of dictionary words.
      */
     addWords: function(entries) {
-      var to_add = [];
+      var toAdd = [];
       for (var i = 0; i < entries.length; i++) {
         if (this.allWordsList_.indexOf(entries[i]) == -1) {
           this.allWordsList_.push(entries[i]);
-          to_add.push(entries[i]);
+          toAdd.push(entries[i]);
         }
       }
-      if (to_add.length == 0)
+      if (toAdd.length == 0)
         return;
-      for (var i = 0; i < to_add.length; i++)
-        this.dataModel.splice(this.dataModel.length - 1, 0, to_add[i]);
+      for (var i = 0; i < toAdd.length; i++)
+        this.dataModel.splice(this.dataModel.length - 1, 0, toAdd[i]);
       this.onWordListChanged();
     },
 
@@ -169,7 +169,7 @@ cr.define('options.dictionary_words', function() {
      */
     removeWords: function(entries) {
       var index;
-      var to_remove = [];
+      var toRemove = [];
       for (var i = 0; i < entries.length; i++) {
         index = this.removedWordsList_.indexOf(entries[i]);
         if (index > -1) {
@@ -178,14 +178,14 @@ cr.define('options.dictionary_words', function() {
           index = this.allWordsList_.indexOf(entries[i]);
           if (index > -1) {
             this.allWordsList_.splice(index, 1);
-            to_remove.push(entries[i]);
+            toRemove.push(entries[i]);
           }
         }
       }
-      if (to_remove.length == 0)
+      if (toRemove.length == 0)
         return;
-      for (var i = 0; i < to_remove.length; i++) {
-        index = this.dataModel.indexOf(to_remove[i]);
+      for (var i = 0; i < toRemove.length; i++) {
+        index = this.dataModel.indexOf(toRemove[i]);
         if (index > -1)
           this.dataModel.splice(index, 1);
       }

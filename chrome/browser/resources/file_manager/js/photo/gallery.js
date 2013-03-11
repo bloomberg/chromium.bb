@@ -855,8 +855,8 @@ Gallery.prototype.updateShareMenu_ = function() {
 
   var internalId = util.platform.getAppId();
   function isShareAction(task) {
-    var task_parts = task.taskId.split('|');
-    return task_parts[0] != internalId;
+    var taskParts = task.taskId.split('|');
+    return taskParts[0] != internalId;
   }
 
   var api = Gallery.getFileBrowserPrivate();

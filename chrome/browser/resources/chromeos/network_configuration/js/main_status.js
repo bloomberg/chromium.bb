@@ -8,9 +8,9 @@ function onPageLoad() {
 
   networkStatus.setUserActionHandler(function(action) {
     if (action.command == 'openConfiguration') {
-      var config_url =
+      var configUrl =
           chrome.extension.getURL('config.html?network=' + action.networkId);
-      window.open(config_url, 'network-config-frame');
+      window.open(configUrl, 'network-config-frame');
     }
   });
 }

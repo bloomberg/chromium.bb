@@ -45,12 +45,12 @@ function updateResourcePrefetchPredictorDbView(database) {
     $('rpp_disabled').style.display = 'none';
   }
 
-  var has_url_data = database.url_db && database.url_db.length > 0;
-  var has_host_data = database.host_db && database.host_db.length > 0;
+  var hasUrlData = database.url_db && database.url_db.length > 0;
+  var hasHostData = database.host_db && database.host_db.length > 0;
 
-  if (has_url_data)
+  if (hasUrlData)
     renderCacheData($('rpp_url_body'), database.url_db);
-  if (has_host_data)
+  if (hasHostData)
     renderCacheData($('rpp_host_body'), database.host_db);
 }
 

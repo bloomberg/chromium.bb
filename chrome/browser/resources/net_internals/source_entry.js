@@ -217,14 +217,14 @@ var SourceEntry = (function() {
           return this.entries_[1];
         if (this.entries_[0].type == EventType.REQUEST_ALIVE &&
             this.entries_[0].params == undefined) {
-          var start_index = 1;
+          var startIndex = 1;
           // Skip over URL_REQUEST_BLOCKED_ON_DELEGATE events for URL_REQUESTs.
-          while (start_index + 1 < this.entries_.length &&
-                 this.entries_[start_index].type ==
+          while (startIndex + 1 < this.entries_.length &&
+                 this.entries_[startIndex].type ==
                      EventType.URL_REQUEST_BLOCKED_ON_DELEGATE) {
-            ++start_index;
+            ++startIndex;
           }
-          return this.entries_[start_index];
+          return this.entries_[startIndex];
         }
         if (this.entries_[1].type == EventType.IPV6_PROBE_RUNNING)
           return this.entries_[1];

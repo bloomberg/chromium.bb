@@ -85,9 +85,9 @@ function removeNullValues() {
   }
   var nodes = document.getElementsByName('timer');
   for (var i = 0, node; node = nodes[i]; i++) {
-    var value_node = getTimerValueFromTimerNode(node);
-    if (value_node.innerHTML == 'null')
-      value_node.innerHTML = '';
+    var valueNode = getTimerValueFromTimerNode(node);
+    if (valueNode.innerHTML == 'null')
+      valueNode.innerHTML = '';
   }
 }
 
@@ -114,11 +114,11 @@ function onLoadWork() {
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByName('string-sort');
   for (var i = 0; i < elements.length; ++i)
-    elements[i].onclick = function() { sort_table('string'); };
+    elements[i].onclick = function() { sortTable('string'); };
 
   elements = document.getElementsByName('number-sort');
   for (i = 0; i < elements.length; ++i)
-    elements[i].onclick = function() { sort_table('number'); };
+    elements[i].onclick = function() { sortTable('number'); };
 
   doColor();
   removeNullValues();
@@ -136,12 +136,12 @@ function onLoadWork() {
 // The function sorts rows after the row with onclick event handler.
 //
 // type: the data type, 'string', 'number'
-function sort_table(type) {
+function sortTable(type) {
   var cell = event.target;
   var cnum = cell.cellIndex;
 
   var row = cell.parentNode;
-  var start_index = row.rowIndex + 1;
+  var startIndex = row.rowIndex + 1;
 
   var tbody = row.parentNode;
   var table = tbody.parentNode;
@@ -150,40 +150,40 @@ function sort_table(type) {
 
   var indexes = new Array();
   // skip the first row
-  for (var i = start_index; i < table.rows.length; i++)
+  for (var i = startIndex; i < table.rows.length; i++)
     rows.push(table.rows[i]);
 
   // a, b are strings
-  function compare_strings(a, b) {
+  function compareStrings(a, b) {
     if (a == b) return 0;
     if (a < b) return -1;
     return 1;
   }
 
   // a, b are numbers
-  function compare_numbers(a, b) {
+  function compareNumbers(a, b) {
     var x = isNaN(a) ? 0 : a;
     var y = isNaN(b) ? 0 : b;
     return x - y;
   }
 
-  var sort_func;
+  var sortFunc;
   if (type === 'string') {
-    sort_func = function(a, b) {
+    sortFunc = function(a, b) {
       var x = a.cells[cnum].innerText;
       var y = b.cells[cnum].innerText;
-      return compare_strings(x, y);
+      return compareStrings(x, y);
     };
 
   } else if (type === 'number') {
-    sort_func = function(a, b) {
+    sortFunc = function(a, b) {
       var x = parseFloat(a.cells[cnum].innerText);
       var y = parseFloat(b.cells[cnum].innerText);
-      return compare_numbers(x, y);
+      return compareNumbers(x, y);
     };
   }
 
-  rows.sort(sort_func);
+  rows.sort(sortFunc);
 
   // change tables
   if (cell._reverse) {

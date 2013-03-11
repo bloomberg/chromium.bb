@@ -89,10 +89,10 @@ FileTasks.prototype.onTasks_ = function(tasks) {
 FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
   var id = util.platform.getAppId();
-  var is_on_drive = false;
+  var isOnDrive = false;
   for (var index = 0; index < this.urls_.length; ++index) {
     if (FileType.isOnDrive(this.urls_[index])) {
-      is_on_drive = true;
+      isOnDrive = true;
       break;
     }
   }
@@ -101,57 +101,57 @@ FileTasks.prototype.processTasks_ = function(tasks) {
     var task = tasks[i];
 
     // Skip Drive App if the file is not on Drive.
-    if (!is_on_drive && task.driveApp)
+    if (!isOnDrive && task.driveApp)
       continue;
 
     // Tweak images, titles of internal tasks.
-    var task_parts = task.taskId.split('|');
-    if (task_parts[0] == id && task_parts[1] == 'file') {
-      if (task_parts[2] == 'play') {
+    var taskParts = task.taskId.split('|');
+    if (taskParts[0] == id && taskParts[1] == 'file') {
+      if (taskParts[2] == 'play') {
         // TODO(serya): This hack needed until task.iconUrl is working
         //             (see GetFileTasksFileBrowserFunction::RunImpl).
         task.iconType = 'audio';
         task.title = loadTimeData.getString('ACTION_LISTEN');
-      } else if (task_parts[2] == 'mount-archive') {
+      } else if (taskParts[2] == 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
-      } else if (task_parts[2] == 'gallery') {
+      } else if (taskParts[2] == 'gallery') {
         task.iconType = 'image';
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (task_parts[2] == 'watch') {
+      } else if (taskParts[2] == 'watch') {
         task.iconType = 'video';
         task.title = loadTimeData.getString('ACTION_WATCH');
-      } else if (task_parts[2] == 'open-hosted-generic') {
+      } else if (taskParts[2] == 'open-hosted-generic') {
         if (this.urls_.length > 1)
           task.iconType = 'generic';
         else // Use specific icon.
           task.iconType = FileType.getIcon(this.urls_[0]);
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (task_parts[2] == 'open-hosted-gdoc') {
+      } else if (taskParts[2] == 'open-hosted-gdoc') {
         task.iconType = 'gdoc';
         task.title = loadTimeData.getString('ACTION_OPEN_GDOC');
-      } else if (task_parts[2] == 'open-hosted-gsheet') {
+      } else if (taskParts[2] == 'open-hosted-gsheet') {
         task.iconType = 'gsheet';
         task.title = loadTimeData.getString('ACTION_OPEN_GSHEET');
-      } else if (task_parts[2] == 'open-hosted-gslides') {
+      } else if (taskParts[2] == 'open-hosted-gslides') {
         task.iconType = 'gslides';
         task.title = loadTimeData.getString('ACTION_OPEN_GSLIDES');
-      } else if (task_parts[2] == 'view-pdf') {
+      } else if (taskParts[2] == 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
           continue;
         task.iconType = 'pdf';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (task_parts[2] == 'view-in-browser') {
+      } else if (taskParts[2] == 'view-in-browser') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (task_parts[2] == 'install-crx') {
+      } else if (taskParts[2] == 'install-crx') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('INSTALL_CRX');
       }
     }
 
-    if (!task.iconType && task_parts[1] == 'web-intent') {
+    if (!task.iconType && taskParts[1] == 'web-intent') {
       task.iconType = 'generic';
     }
 
@@ -213,12 +213,12 @@ FileTasks.prototype.executeDefault_ = function() {
 FileTasks.prototype.execute_ = function(taskId, opt_urls) {
   var urls = opt_urls || this.urls_;
   this.checkAvailability_(function() {
-    var task_parts = taskId.split('|');
-    if (task_parts[0] == util.platform.getAppId() && task_parts[1] == 'file') {
+    var taskParts = taskId.split('|');
+    if (taskParts[0] == util.platform.getAppId() && taskParts[1] == 'file') {
       // For internal tasks we do not listen to the event to avoid
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
-      this.executeInternalTask_(task_parts[2], urls);
+      this.executeInternalTask_(taskParts[2], urls);
     } else {
       chrome.fileBrowserPrivate.executeTask(taskId, urls);
     }
