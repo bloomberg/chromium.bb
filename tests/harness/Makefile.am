@@ -1,5 +1,4 @@
 EXTRA_DIST = 				\
-	da-dk-g2_harness.txt		\
 	en-GB-g2_harness.txt		\
 	ethio-g1_harness.txt		\
 	hu-hu-comp8_harness.txt		\
