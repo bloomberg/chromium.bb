@@ -655,11 +655,6 @@ class GitWrapper(SCMWrapper):
       detach_head = True
     if options.verbose:
       clone_cmd.append('--verbose')
-    # Don't assume 'with_branch_heads' is added by 'gclient sync' setup, since
-    # _Clone() can by reached in roundabout ways (e.g. 'gclient revert').
-    if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
-      clone_cmd.extend(['--config', 'remote.origin.fetch=+refs/branch-heads/*:'
-                        'refs/remotes/branch-heads/*'])
     clone_cmd.extend([url, self.checkout_path])
 
     # If the parent directory does not exist, Git clone on Windows will not
@@ -682,15 +677,6 @@ class GitWrapper(SCMWrapper):
       try:
         self._Run(clone_cmd, options, cwd=self._root_dir, filter_fn=_GitFilter,
                   print_stdout=False)
-        # Update the "branch-heads" remote-tracking branches, since clone
-        # doesn't automatically fetch those, and we might need it to checkout a
-        # specific revision below.
-        if (hasattr(options, 'with_branch_heads') and
-            options.with_branch_heads):
-          fetch_cmd = ['fetch', 'origin']
-          if options.verbose:
-            fetch_cmd.append('--verbose')
-          self._Run(fetch_cmd, options)
         break
       except subprocess2.CalledProcessError, e:
         # Too bad we don't have access to the actual output yet.
@@ -702,6 +688,31 @@ class GitWrapper(SCMWrapper):
           print('Retrying...')
           continue
         raise e
+
+    for _ in range(3):
+      try:
+        # Add the "branch-heads" refspecs. Do this separately from the clone
+        # command since apparently some versions of git don't support 'clone
+        # --config'.
+        # Don't assume 'with_branch_heads' is added by 'gclient sync' setup,
+        # since _Clone() can by reached in roundabout ways (e.g. 'gclient
+        # revert').
+        if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
+          config_cmd = ['config', 'remote.origin.fetch',
+                        '+refs/branch-heads/*:refs/remotes/branch-heads/*']
+          self._Run(config_cmd, options)
+
+          # Update the "branch-heads" remote-tracking branches, since we might
+          # need it to checkout a specific revision below.
+          fetch_cmd = ['fetch', 'origin']
+          if options.verbose:
+            fetch_cmd.append('--verbose')
+          self._Run(fetch_cmd, options)
+        break
+      except subprocess2.CalledProcessError, e:
+        print(str(e))
+        print('Retrying...')
+        continue
 
     if detach_head:
       # Squelch git's very verbose detached HEAD warning and use our own
