@@ -1136,7 +1136,8 @@ solutions = [
               for path in path_list)
 
         # Use entry and not entry_fixed there.
-        if ((not any(path.startswith(entry + '/') for path in entries)) and
+        if (entry not in entries and
+            (not any(path.startswith(entry + '/') for path in entries)) and
             os.path.exists(e_dir)):
           file_list = []
           scm = gclient_scm.CreateSCM(prev_url, self.root_dir, entry_fixed)
