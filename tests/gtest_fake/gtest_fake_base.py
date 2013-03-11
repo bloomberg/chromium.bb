@@ -14,8 +14,8 @@ def get_test_output(test_name):
     '[----------] Global test environment set-up.\n'
     '[----------] 1 test from %(fixture)s\n'
     '[ RUN      ] %(fixture)s.%(case)s\n'
-    '[       OK ] %(fixture)s.%(case)s (0 ms)\n'
-    '[----------] 1 test from %(fixture)s (0 ms total)\n'
+    '[       OK ] %(fixture)s.%(case)s (100 ms)\n'
+    '[----------] 1 test from %(fixture)s (100 ms total)\n'
     '\n') % {
       'fixture': fixture,
       'case': case,
@@ -25,7 +25,7 @@ def get_test_output(test_name):
 def get_footer(number, total):
   return (
     '[----------] Global test environment tear-down\n'
-    '[==========] %(number)d test from %(total)d test case ran. (0 ms total)\n'
+    '[==========] %(number)d test from %(total)d test case ran. (30 ms total)\n'
     '[  PASSED  ] %(number)d test.\n'
     '\n'
     '  YOU HAVE 5 DISABLED TESTS\n'

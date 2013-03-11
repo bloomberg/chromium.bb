@@ -28,6 +28,7 @@ TOTAL = sum(len(v) for v in TESTS.itervalues())
 def main():
   parser = optparse.OptionParser()
   parser.add_option('--gtest_list_tests', action='store_true')
+  parser.add_option('--gtest_print_time', action='store_true')
   parser.add_option('--gtest_filter')
   options, args = parser.parse_args()
   if args:
@@ -45,7 +46,8 @@ def main():
   if options.gtest_filter:
     # Simulate running one test.
     print 'Note: Google Test filter = %s\n' % options.gtest_filter
-    print gtest_fake_base.get_test_output(options.gtest_filter)
+    for i in options.gtest_filter.split(':'):
+      print gtest_fake_base.get_test_output(i)
     print gtest_fake_base.get_footer(1, 1)
     return 0
 

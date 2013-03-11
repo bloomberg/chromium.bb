@@ -26,6 +26,7 @@ TOTAL = sum(len(v) for v in TESTS.itervalues())
 def main():
   parser = optparse.OptionParser()
   parser.add_option('--gtest_list_tests', action='store_true')
+  parser.add_option('--gtest_print_time', action='store_true')
   parser.add_option('--gtest_filter')
   options, args = parser.parse_args()
   if len(args) != 1:

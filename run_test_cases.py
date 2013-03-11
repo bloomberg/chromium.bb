@@ -670,7 +670,7 @@ class Runner(object):
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
 
-  def map(self, priority, test_case, try_count):
+  def map(self, priority, test_cases, try_count):
     """Traces a single test case and returns its output.
 
     try_count is 0 based, the original try is 0.
@@ -678,55 +678,70 @@ class Runner(object):
     if self.decider.should_stop():
       return []
 
+    cmd = self.cmd + ['--gtest_filter=%s' % ':'.join(test_cases)]
+    if '--gtest_print_time' not in cmd:
+      cmd.append('--gtest_print_time')
     start = time.time()
     output, returncode = call_with_timeout(
-        self.cmd + ['--gtest_filter=%s' % test_case],
+        cmd,
         self.timeout,
         cwd=self.cwd_dir,
         stderr=subprocess.STDOUT,
         env=self.env)
     duration = time.time() - start
-    data = {
-      'test_case': test_case,
-      'returncode': returncode,
-      'duration': duration,
-      # It needs to be valid utf-8 otherwise it can't be store.
-      'output': output.decode('ascii', 'ignore').encode('utf-8'),
-    }
-    if '[ RUN      ]' not in output:
-      # Can't find gtest marker, mark it as invalid.
-      returncode = returncode or 1
-    self.decider.got_result(not bool(returncode))
+
+    # It needs to be valid utf-8 otherwise it can't be stored.
+    # TODO(maruel): Be more intelligent than decoding to ascii.
+    utf8_output = output.decode('ascii', 'ignore').encode('utf-8')
+
+    if len(test_cases) > 1:
+      data = process_output(utf8_output, test_cases, duration, returncode)
+    else:
+      if '[ RUN      ]' not in output:
+        # Can't find gtest marker, mark it as invalid.
+        returncode = returncode or 1
+      data = [
+        {
+          'test_case': test_cases[0],
+          'returncode': returncode,
+          'duration': duration,
+          'output': utf8_output,
+        }
+      ]
+
     if sys.platform == 'win32':
       output = output.replace('\r\n', '\n')
-    need_to_retry = returncode and try_count < self.retries
 
-    if try_count:
-      line = '%s (%.2fs) - retry #%d' % (test_case, duration, try_count)
-    else:
-      line = '%s (%.2fs)' % (test_case, duration)
-    if self.verbose or returncode or try_count > 0:
-      # Print output in one of three cases:
-      #   --verbose was specified.
-      #   The test failed.
-      #   The wasn't the first attempt (this is needed so the test parser can
-      #       detect that a test has been successfully retried).
-      line += '\n' + output
-    self.progress.update_item(line, True, need_to_retry)
-
-    if need_to_retry:
-      if try_count + 1 < self.retries:
-        # The test failed and needs to be retried normally.
-        # Leave a buffer of ~40 test cases before retrying.
-        priority += 40
-        self.add_task(priority, self.map, priority, test_case, try_count + 1)
+    for i in data:
+      self.decider.got_result(i['returncode'] == 0)
+      need_to_retry = i['returncode'] != 0 and try_count < self.retries
+      if try_count:
+        line = '%s (%.2fs) - retry #%d' % (
+            i['test_case'], i['duration'] or 0, try_count)
       else:
-        # This test only has one retry left, so the final retry should be
-        # done serially.
-        self.add_serial_task(priority, self.map, priority, test_case,
-                             try_count + 1)
+        line = '%s (%.2fs)' % (i['test_case'], i['duration'] or 0)
+      if self.verbose or i['returncode'] != 0 or try_count > 0:
+        # Print output in one of three cases:
+        #   --verbose was specified.
+        #   The test failed.
+        #   The wasn't the first attempt (this is needed so the test parser can
+        #       detect that a test has been successfully retried).
+        line += '\n' + i['output']
+      self.progress.update_item(line, True, need_to_retry)
 
-    return [data]
+      if need_to_retry:
+        if try_count + 1 < self.retries:
+          # The test failed and needs to be retried normally.
+          # Leave a buffer of ~40 test cases before retrying.
+          priority += 40
+          self.add_task(
+              priority, self.map, priority, [i['test_case']], try_count + 1)
+        else:
+          # This test only has one retry left, so the final retry should be
+          # done serially.
+          self.add_serial_task(
+              priority, self.map, priority, [i['test_case']], try_count + 1)
+    return data
 
 
 def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards, seed):
@@ -949,7 +964,8 @@ def run_test_cases(
     - cwd: working directory.
     - test_cases: list of preprocessed test cases to run.
     - jobs: number of parallel execution threads to do.
-    - timeout: individual test case timeout.
+    - timeout: individual test case timeout. Modulated when used with
+      clustering.
     - clusters: number of test cases to lump together in a single execution. 0
       means the default automatic value which depends on len(test_cases) and
       jobs. Capped to len(test_cases) / jobs.
@@ -979,6 +995,8 @@ def run_test_cases(
     # Limit the value.
     clusters = min(clusters, len(test_cases) / jobs)
 
+  logging.debug('%d test cases with clusters of %d', len(test_cases), clusters)
+
   if gtest_output:
     gtest_output = gen_gtest_output_dir(cwd, gtest_output)
   progress = Progress(len(test_cases))
@@ -996,11 +1014,11 @@ def run_test_cases(
         cmd, cwd, timeout, progress, retries, decider, verbose,
         pool.add_task, add_serial_task)
     function = runner.map
-    logging.debug('Adding tests to ThreadPool')
     progress.use_cr_only = not no_cr
-    for i, test_case in enumerate(test_cases):
-      pool.add_task(i, function, i, test_case, 0)
-    logging.debug('All tests added to the ThreadPool')
+    # Cluster the test cases right away.
+    for i in xrange((len(test_cases) + clusters - 1) / clusters):
+      cluster = test_cases[i*clusters : (i+1)*clusters]
+      pool.add_task(i, function, i, cluster, 0)
     results = pool.join()
 
     # Retry any failed tests serially.
@@ -1019,14 +1037,15 @@ def run_test_cases(
     duration = time.time() - pool.tasks.progress.start
 
   cleaned = {}
-  for item in results:
-    if item:
-      cleaned.setdefault(item[0]['test_case'], []).extend(item)
+  for map_run in results:
+    for test_case_result in map_run:
+      cleaned.setdefault(test_case_result['test_case'], []).append(
+          test_case_result)
   results = cleaned
 
   # Total time taken to run each test case.
   test_case_duration = dict(
-      (test_case, sum(i.get('duration', 0) for i in item))
+      (test_case, sum((i.get('duration') or 0) for i in item))
       for test_case, item in results.iteritems())
 
   # Classify the results
@@ -1037,13 +1056,14 @@ def run_test_cases(
   for test_case in sorted(results):
     items = results[test_case]
     nb_runs += len(items)
-    if not any(not i['returncode'] for i in items):
+    if not any(i['returncode'] == 0 for i in items):
       fail.append(test_case)
-    elif len(items) > 1 and any(not i['returncode'] for i in items):
+    elif len(items) > 1 and any(i['returncode'] == 0 for i in items):
       flaky.append(test_case)
     elif len(items) == 1 and items[0]['returncode'] == 0:
       success.append(test_case)
     else:
+      # The test never ran.
       assert False, items
   missing = list(set(test_cases) - set(success) - set(flaky) - set(fail))
 

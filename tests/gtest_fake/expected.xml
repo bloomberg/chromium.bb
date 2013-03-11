@@ -8,12 +8,12 @@
 [----------] Global test environment set-up.
 [----------] 1 test from Foo
 [ RUN      ] Foo.Bar1
-[       OK ] Foo.Bar1 (0 ms)
-[----------] 1 test from Foo (0 ms total)
+[       OK ] Foo.Bar1 (100 ms)
+[----------] 1 test from Foo (100 ms total)
 
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (0 ms total)
+[==========] 1 test from 1 test case ran. (30 ms total)
 [  PASSED  ] 1 test.
 
   YOU HAVE 5 DISABLED TESTS
@@ -28,12 +28,12 @@
 [----------] Global test environment set-up.
 [----------] 1 test from Foo
 [ RUN      ] Foo.Bar5
-[       OK ] Foo.Bar5 (0 ms)
-[----------] 1 test from Foo (0 ms total)
+[       OK ] Foo.Bar5 (100 ms)
+[----------] 1 test from Foo (100 ms total)
 
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (0 ms total)
+[==========] 1 test from 1 test case ran. (30 ms total)
 [  PASSED  ] 1 test.
 
   YOU HAVE 5 DISABLED TESTS
@@ -48,12 +48,12 @@
 [----------] Global test environment set-up.
 [----------] 1 test from Foo
 [ RUN      ] Foo.Bar4
-[       OK ] Foo.Bar4 (0 ms)
-[----------] 1 test from Foo (0 ms total)
+[       OK ] Foo.Bar4 (100 ms)
+[----------] 1 test from Foo (100 ms total)
 
 
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test case ran. (0 ms total)
+[==========] 1 test from 1 test case ran. (30 ms total)
 [  PASSED  ] 1 test.
 
   YOU HAVE 5 DISABLED TESTS

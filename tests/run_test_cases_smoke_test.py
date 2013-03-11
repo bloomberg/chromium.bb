@@ -154,7 +154,42 @@ class RunTestCases(unittest.TestCase):
   def test_simple_pass(self):
     out, err, return_code = RunTest(
         [
+          '--clusters', '1',
           '--jobs', '3',
+          '--result', self.filename,
+          os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
+        ])
+
+    self.assertEqual(0, return_code)
+
+    expected_out_re = [
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      re.escape('Summary:'),
+      re.escape('  Success:    3 100.00% ') + r' +\d+\.\d\ds',
+      re.escape('    Flaky:    0   0.00% ') + r' +\d+\.\d\ds',
+      re.escape('     Fail:    0   0.00% ') + r' +\d+\.\d\ds',
+      r'  \d+\.\d\ds Done running 3 tests with 3 executions. \d+\.\d\d test/s',
+    ]
+    self._check_results(expected_out_re, out, err)
+
+    test_cases = [
+        ('Foo.Bar1', 1),
+        ('Foo.Bar2', 1),
+        ('Foo.Bar/3', 1)
+    ]
+    self._check_results_file(
+        fail=[],
+        flaky=[],
+        success=sorted([u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar/3']),
+        test_cases=test_cases)
+
+  def test_simple_pass_cluster(self):
+    out, err, return_code = RunTest(
+        [
+          '--clusters', '10',
+          '--jobs', '1',
           '--result', self.filename,
           os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py'),
         ])
@@ -189,6 +224,7 @@ class RunTestCases(unittest.TestCase):
     out, err, return_code = RunTest(
         [
           # Linearize execution.
+          '--clusters', '1',
           '--jobs', '1',
           '--verbose',
           '--result', self.filename,
@@ -237,6 +273,8 @@ class RunTestCases(unittest.TestCase):
   def test_simple_fail(self):
     out, err, return_code = RunTest(
         [
+          # Linearize execution.
+          '--clusters', '1',
           '--jobs', '1',
           '--result', self.filename,
           os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_fail.py'),
@@ -299,6 +337,7 @@ class RunTestCases(unittest.TestCase):
     out, err, return_code = RunTest(
         [
           # Linearize execution.
+          '--clusters', '1',
           '--jobs', '1',
           '--verbose',
           '--result', self.filename,
@@ -409,7 +448,7 @@ class RunTestCases(unittest.TestCase):
     out, err, return_code = RunTest(
         [
           '--result', self.filename,
-          # Make it determinist.
+          # Linearize execution.
           '--clusters', '1',
           '--jobs', '1',
           '--retries', '1',
@@ -442,7 +481,7 @@ class RunTestCases(unittest.TestCase):
           # In that case, it's an XML file even if it has the wrong extension.
           '--gtest_output=xml:' + self.filename,
           '--no-dump',
-          # Make it determinist.
+          # Linearize execution.
           '--clusters', '1',
           '--jobs', '1',
           '--retries', '1',
