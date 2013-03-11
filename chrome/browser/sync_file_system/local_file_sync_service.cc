@@ -98,7 +98,8 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile)
     : profile_(profile),
       sync_context_(new LocalFileSyncContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+      local_change_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   sync_context_->AddOriginChangeObserver(this);
 }
@@ -136,8 +137,8 @@ void LocalFileSyncService::RegisterURLForWaitingSync(
 }
 
 void LocalFileSyncService::ProcessLocalChange(
-    LocalChangeProcessor* processor,
     const SyncFileCallback& callback) {
+  DCHECK(local_change_processor_);
   // Pick an origin to process next.
   GURL origin;
   if (!origin_change_map_.NextOriginToProcess(&origin)) {
@@ -153,7 +154,12 @@ void LocalFileSyncService::ProcessLocalChange(
   sync_context_->GetFileForLocalSync(
       origin_to_contexts_[origin],
       base::Bind(&LocalFileSyncService::DidGetFileForLocalSync,
-                 AsWeakPtr(), processor));
+                 AsWeakPtr()));
+}
+
+void LocalFileSyncService::SetLocalChangeProcessor(
+    LocalChangeProcessor* processor) {
+  local_change_processor_ = processor;
 }
 
 void LocalFileSyncService::HasPendingLocalChanges(
@@ -332,7 +338,6 @@ void LocalFileSyncService::RunLocalSyncCallback(
 }
 
 void LocalFileSyncService::DidGetFileForLocalSync(
-    LocalChangeProcessor* processor,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info) {
   DCHECK(!local_sync_callback_.is_null());
@@ -344,28 +349,26 @@ void LocalFileSyncService::DidGetFileForLocalSync(
     // There's a slight chance this could happen.
     SyncFileCallback callback = local_sync_callback_;
     local_sync_callback_.Reset();
-    ProcessLocalChange(processor, callback);
+    ProcessLocalChange(callback);
     return;
   }
 
   DVLOG(1) << "ProcessLocalChange: " << sync_file_info.url.DebugString()
            << " change:" << sync_file_info.changes.front().DebugString();
 
-  DCHECK(processor);
-  processor->ApplyLocalChange(
+  local_change_processor_->ApplyLocalChange(
       sync_file_info.changes.front(),
       sync_file_info.local_file_path,
       sync_file_info.metadata,
       sync_file_info.url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), processor,
+                 AsWeakPtr(),
                  sync_file_info,
                  sync_file_info.changes.front(),
                  sync_file_info.changes.PopAndGetNewList()));
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
-    LocalChangeProcessor* processor,
     const LocalFileSyncInfo& sync_file_info,
     const FileChange& last_change,
     const FileChangeList& changes,
@@ -401,14 +404,13 @@ void LocalFileSyncService::ProcessNextChangeForURL(
     return;
   }
 
-  DCHECK(processor);
-  processor->ApplyLocalChange(
+  local_change_processor_->ApplyLocalChange(
       changes.front(),
       sync_file_info.local_file_path,
       sync_file_info.metadata,
       url,
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
-                 AsWeakPtr(), processor, sync_file_info,
+                 AsWeakPtr(), sync_file_info,
                  changes.front(), changes.PopAndGetNewList()));
 }
 

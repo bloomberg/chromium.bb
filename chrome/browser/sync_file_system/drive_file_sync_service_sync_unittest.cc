@@ -173,6 +173,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         base_dir_,
         scoped_ptr<DriveFileSyncClientInterface>(fake_sync_client_),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
+    sync_service_->SetRemoteChangeProcessor(fake_remote_processor_.get());
   }
 
   void TearDownForTestCase() {
@@ -231,6 +232,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         base_dir_,
         sync_client.Pass(),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
+    sync_service_->SetRemoteChangeProcessor(fake_remote_processor_.get());
   }
 
   void FetchRemoteChange() {
@@ -243,7 +245,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     sync_service_->ProcessRemoteChange(
-        fake_remote_processor_.get(),
         base::Bind(&DidProcessRemoteChange, &done, &status));
     message_loop_.RunUntilIdle();
     EXPECT_TRUE(done);

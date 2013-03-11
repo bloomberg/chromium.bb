@@ -266,6 +266,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     sync_service_->SetSyncEnabled(enabled);
     sync_service_->AddServiceObserver(&mock_remote_observer_);
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
+    sync_service_->SetRemoteChangeProcessor(mock_remote_processor());
     message_loop_.RunUntilIdle();
   }
 
@@ -421,7 +422,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     }
 
     sync_service_->ProcessRemoteChange(
-        mock_remote_processor(),
         base::Bind(&DriveFileSyncServiceMockTest::DidProcessRemoteChange,
                    base::Unretained(this),
                    &actual_status, &actual_url));

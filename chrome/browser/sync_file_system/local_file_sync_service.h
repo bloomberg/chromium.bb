@@ -82,10 +82,14 @@ class LocalFileSyncService
                                  const base::Closure& on_syncable_callback);
 
   // Synchronize one (or a set of) local change(s) to the remote server
-  // using |processor|.
+  // using local_change_processor given by SetLocalChangeProcessor().
   // |processor| must have same or longer lifetime than this service.
-  void ProcessLocalChange(LocalChangeProcessor* processor,
-                          const SyncFileCallback& callback);
+  // It is invalid to call this method before calling SetLocalChangeProcessor().
+  void ProcessLocalChange(const SyncFileCallback& callback);
+
+  // Sets a local change processor.  This must be called before any
+  // ProcessLocalChange().
+  void SetLocalChangeProcessor(LocalChangeProcessor* processor);
 
   // Returns true via |callback| if the given file |url| has local pending
   // changes.
@@ -179,11 +183,9 @@ class LocalFileSyncService
 
   // Callbacks for ProcessLocalChange.
   void DidGetFileForLocalSync(
-      LocalChangeProcessor* processor,
       SyncStatusCode status,
       const LocalFileSyncInfo& sync_file_info);
   void ProcessNextChangeForURL(
-      LocalChangeProcessor* processor,
       const LocalFileSyncInfo& sync_file_info,
       const FileChange& last_change,
       const FileChangeList& changes,
@@ -207,6 +209,8 @@ class LocalFileSyncService
   // This callback is non-null while a local sync is running (i.e.
   // ProcessLocalChange has been called and has not been returned yet).
   SyncFileCallback local_sync_callback_;
+
+  LocalChangeProcessor* local_change_processor_;
 
   ObserverList<Observer> change_observers_;
 

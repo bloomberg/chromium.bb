@@ -351,8 +351,8 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
               ApplyLocalChange(change, platform_path, metadata, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
 
+  local_service_->SetLocalChangeProcessor(&local_change_processor);
   local_service_->ProcessLocalChange(
-      &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  SYNC_STATUS_OK, kFile));
 
@@ -388,8 +388,8 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveFile) {
       .WillOnce(MockStatusCallback(SYNC_FILE_ERROR_NOT_FOUND));
 
   // The sync should succeed anyway.
+  local_service_->SetLocalChangeProcessor(&local_change_processor);
   local_service_->ProcessLocalChange(
-      &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  SYNC_STATUS_OK, kFile));
 
@@ -417,8 +417,8 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateAndRemoveDirectory) {
   // The local_change_processor's ApplyLocalChange should never be called.
   StrictMock<MockLocalChangeProcessor> local_change_processor;
 
+  local_service_->SetLocalChangeProcessor(&local_change_processor);
   local_service_->ProcessLocalChange(
-      &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  SYNC_STATUS_NO_CHANGE_TO_SYNC, FileSystemURL()));
 
@@ -459,8 +459,8 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_MultipleChanges) {
       .Times(2)
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes))
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
+  local_service_->SetLocalChangeProcessor(&local_change_processor);
   local_service_->ProcessLocalChange(
-      &local_change_processor,
       base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                  SYNC_STATUS_OK, kPath));
 
@@ -544,8 +544,8 @@ TEST_F(LocalFileSyncServiceTest, RecordFakeChange) {
       .WillOnce(MockStatusCallbackAndRecordChange(SYNC_STATUS_OK, &changes));
   {
     base::RunLoop run_loop;
+    local_service_->SetLocalChangeProcessor(&local_change_processor);
     local_service_->ProcessLocalChange(
-        &local_change_processor,
         base::Bind(&OnSyncCompleted, FROM_HERE, run_loop.QuitClosure(),
                    SYNC_STATUS_OK, kURL));
     run_loop.Run();

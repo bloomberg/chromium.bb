@@ -168,9 +168,12 @@ void SyncFileSystemService::Initialize(
   remote_file_service_ = remote_file_service.Pass();
 
   local_file_service_->AddChangeObserver(this);
+  local_file_service_->SetLocalChangeProcessor(
+      remote_file_service_->GetLocalChangeProcessor());
 
   remote_file_service_->AddServiceObserver(this);
   remote_file_service_->AddFileStatusObserver(this);
+  remote_file_service_->SetRemoteChangeProcessor(local_file_service_.get());
 
   ProfileSyncServiceBase* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -245,7 +248,6 @@ void SyncFileSystemService::MaybeStartRemoteSync() {
   DVLOG(1) << "Calling ProcessRemoteChange";
   remote_sync_running_ = true;
   remote_file_service_->ProcessRemoteChange(
-      local_file_service_.get(),
       base::Bind(&SyncFileSystemService::DidProcessRemoteChange,
                  AsWeakPtr()));
 }
@@ -263,7 +265,6 @@ void SyncFileSystemService::MaybeStartLocalSync() {
   DVLOG(1) << "Calling ProcessLocalChange";
   local_sync_running_ = true;
   local_file_service_->ProcessLocalChange(
-      remote_file_service_->GetLocalChangeProcessor(),
       base::Bind(&SyncFileSystemService::DidProcessLocalChange,
                  AsWeakPtr()));
 }

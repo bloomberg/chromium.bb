@@ -39,9 +39,10 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(const GURL& origin, const SyncStatusCallback& callback));
   MOCK_METHOD2(DeleteOriginDirectory,
                void(const GURL& origin, const SyncStatusCallback& callback));
-  MOCK_METHOD2(ProcessRemoteChange,
-               void(RemoteChangeProcessor* processor,
-                    const SyncFileCallback& callback));
+  MOCK_METHOD1(ProcessRemoteChange,
+               void(const SyncFileCallback& callback));
+  MOCK_METHOD1(SetRemoteChangeProcessor,
+               void(RemoteChangeProcessor* processor));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
   MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
   MOCK_METHOD2(GetRemoteFileMetadata,
@@ -94,8 +95,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       const GURL& origin, const SyncStatusCallback& callback);
   void DeleteOriginDirectoryStub(
       const GURL& origin, const SyncStatusCallback& callback);
-  void ProcessRemoteChangeStub(
-      RemoteChangeProcessor* processor, const SyncFileCallback& callback);
+  void ProcessRemoteChangeStub(const SyncFileCallback& callback);
   void GetRemoteFileMetadataStub(
       const fileapi::FileSystemURL& url,
       const SyncFileMetadataCallback& callback);

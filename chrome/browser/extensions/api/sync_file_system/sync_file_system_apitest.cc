@@ -92,7 +92,7 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
       base::FilePath(FILE_PATH_LITERAL("foo.txt")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg1,
+      FROM_HERE, base::Bind(arg0,
                             sync_file_system::SYNC_STATUS_OK,
                             mock_url));
   mock_remote_service->NotifyFileStatusChanged(
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
   GURL origin;
   EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
-  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
+  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(ReturnWithFakeFileAddedStatus(
           &origin,
           mock_remote_service(),
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
   GURL origin;
   EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
       .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
-  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
+  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
       .WillOnce(ReturnWithFakeFileAddedStatus(
           &origin,
           mock_remote_service(),

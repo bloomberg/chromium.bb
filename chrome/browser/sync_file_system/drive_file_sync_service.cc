@@ -170,7 +170,6 @@ void DriveFileSyncService::OnIncomingInvalidation(
 
 struct DriveFileSyncService::ProcessRemoteChangeParam {
   scoped_ptr<TaskToken> token;
-  RemoteChangeProcessor* processor;
   RemoteChange remote_change;
   SyncFileCallback callback;
 
@@ -182,11 +181,9 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   bool clear_local_changes;
 
   ProcessRemoteChangeParam(scoped_ptr<TaskToken> token,
-                           RemoteChangeProcessor* processor,
                            const RemoteChange& remote_change,
                            const SyncFileCallback& callback)
       : token(token.Pass()),
-        processor(processor),
         remote_change(remote_change),
         callback(callback),
         metadata_updated(false),
@@ -216,6 +213,11 @@ struct DriveFileSyncService::ApplyLocalChangeParam {
         has_drive_metadata(false),
         callback(callback) {}
 };
+
+void DriveFileSyncService::SetRemoteChangeProcessor(
+    RemoteChangeProcessor* processor) {
+  remote_change_processor_ = processor;
+}
 
 DriveFileSyncService::ChangeQueueItem::ChangeQueueItem()
     : changestamp(0),
@@ -288,6 +290,7 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       push_notification_enabled_(false),
       polling_delay_seconds_(kMinimumPollingDelaySeconds),
       may_have_unfetched_changes_(true),
+      remote_change_processor_(NULL),
       conflict_resolution_(CONFLICT_RESOLUTION_MANUAL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   temporary_file_dir_ =
@@ -455,14 +458,14 @@ void DriveFileSyncService::DeleteOriginDirectory(
 }
 
 void DriveFileSyncService::ProcessRemoteChange(
-    RemoteChangeProcessor* processor,
     const SyncFileCallback& callback) {
   scoped_ptr<TaskToken> token(
       GetToken(FROM_HERE, TASK_TYPE_DRIVE, "Process remote change"));
+  DCHECK(remote_change_processor_);
+
   if (!token) {
     pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncService::ProcessRemoteChange, AsWeakPtr(),
-        processor, callback));
+        &DriveFileSyncService::ProcessRemoteChange, AsWeakPtr(), callback));
     return;
   }
 
@@ -492,8 +495,8 @@ void DriveFileSyncService::ProcessRemoteChange(
            << " remote_change:" << remote_change.change.DebugString();
 
   scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
-      token.Pass(), processor, remote_change, callback));
-  processor->PrepareForProcessRemoteChange(
+      token.Pass(), remote_change, callback));
+  remote_change_processor_->PrepareForProcessRemoteChange(
       remote_change.url,
       kServiceName,
       base::Bind(&DriveFileSyncService::DidPrepareForProcessRemoteChange,
@@ -722,6 +725,7 @@ DriveFileSyncService::DriveFileSyncService(
       push_notification_enabled_(false),
       polling_delay_seconds_(-1),
       may_have_unfetched_changes_(false),
+      remote_change_processor_(NULL),
       conflict_resolution_(CONFLICT_RESOLUTION_MANUAL),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(profile);
@@ -1442,8 +1446,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     param->sync_action = SYNC_ACTION_NONE;
     param->clear_local_changes = false;
 
-    RemoteChangeProcessor* processor = param->processor;
-    processor->RecordFakeLocalChange(
+    remote_change_processor_->RecordFakeLocalChange(
         url,
         FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE),
         base::Bind(&DriveFileSyncService::DidResolveConflictToLocalChange,
@@ -1502,7 +1505,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
     param->sync_action = SYNC_ACTION_DELETED;
 
     const FileChange& file_change = remote_file_change;
-    param->processor->ApplyRemoteChange(
+    remote_change_processor_->ApplyRemoteChange(
         file_change, base::FilePath(), url,
         base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
                    base::Passed(&param)));
@@ -1596,7 +1599,7 @@ void DriveFileSyncService::DidDownloadFileForRemoteSync(
   const FileChange& change = param->remote_change.change;
   const base::FilePath& temporary_file_path = param->temporary_file_path;
   const FileSystemURL& url = param->remote_change.url;
-  param->processor->ApplyRemoteChange(
+  remote_change_processor_->ApplyRemoteChange(
       change, temporary_file_path, url,
       base::Bind(&DriveFileSyncService::DidApplyRemoteChange,
                  AsWeakPtr(), base::Passed(&param)));
@@ -1687,10 +1690,9 @@ void DriveFileSyncService::FinalizeRemoteSync(
   // not clear them here since we added the fake local change to sync with the
   // remote file.
   if (param->clear_local_changes) {
-    RemoteChangeProcessor* processor = param->processor;
     const FileSystemURL& url = param->remote_change.url;
     param->clear_local_changes = false;
-    processor->ClearLocalChanges(
+    remote_change_processor_->ClearLocalChanges(
         url, base::Bind(&DriveFileSyncService::FinalizeRemoteSync,
                         AsWeakPtr(), base::Passed(&param), status));
     return;

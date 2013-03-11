@@ -80,9 +80,9 @@ class DriveFileSyncService
   virtual void DeleteOriginDirectory(
       const GURL& origin,
       const SyncStatusCallback& callback) OVERRIDE;
-  virtual void ProcessRemoteChange(
-      RemoteChangeProcessor* processor,
-      const SyncFileCallback& callback) OVERRIDE;
+  virtual void ProcessRemoteChange(const SyncFileCallback& callback) OVERRIDE;
+  virtual void SetRemoteChangeProcessor(
+      RemoteChangeProcessor* processor) OVERRIDE;
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual void GetRemoteFileMetadata(
@@ -444,6 +444,8 @@ class DriveFileSyncService
 
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;
+
+  RemoteChangeProcessor* remote_change_processor_;
 
   ConflictResolutionPolicy conflict_resolution_;
 

@@ -108,9 +108,13 @@ class RemoteFileSyncService {
   // Called by the sync engine to process one remote change.
   // After a change is processed |callback| will be called (to return
   // the control to the sync engine).
-  virtual void ProcessRemoteChange(
-      RemoteChangeProcessor* processor,
-      const SyncFileCallback& callback) = 0;
+  // It is invalid to call this before calling SetRemoteChangeProcessor().
+  virtual void ProcessRemoteChange(const SyncFileCallback& callback) = 0;
+
+  // Sets a remote change processor.  This must be called before any
+  // ProcessRemoteChange().
+  virtual void SetRemoteChangeProcessor(
+      RemoteChangeProcessor* processor) = 0;
 
   // Returns a LocalChangeProcessor that applies a local change to the remote
   // storage backed by this service.

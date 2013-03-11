@@ -34,7 +34,7 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
   ON_CALL(*this, DeleteOriginDirectory(_, _))
       .WillByDefault(
           Invoke(this, &self::DeleteOriginDirectoryStub));
-  ON_CALL(*this, ProcessRemoteChange(_, _))
+  ON_CALL(*this, ProcessRemoteChange(_))
       .WillByDefault(Invoke(this, &self::ProcessRemoteChangeStub));
   ON_CALL(*this, GetLocalChangeProcessor())
       .WillByDefault(Return(&mock_local_change_processor_));
@@ -108,7 +108,6 @@ void MockRemoteFileSyncService::DeleteOriginDirectoryStub(
 }
 
 void MockRemoteFileSyncService::ProcessRemoteChangeStub(
-    RemoteChangeProcessor* processor,
     const SyncFileCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
