@@ -595,10 +595,19 @@ def drover(options, args):
 
   filename = str(revision)+".txt"
   out = open(filename,"w")
-  out.write(action +" " + str(revision) + "\n")
-  for line in getRevisionLog(url, revision).splitlines():
+  drover_title = '%s %s' % (action, revision)
+  revision_log = getRevisionLog(url, revision).splitlines()
+  if revision_log:
+    commit_title = revision_log[0]
+    # Limit title to 68 chars so git log --oneline is <80 chars.
+    max_commit_title = 68 - (len(drover_title) + 3)
+    if len(commit_title) > max_commit_title:
+      commit_title = commit_title[:max_commit_title-3] + '...'
+    drover_title += ' "%s"' % commit_title
+  out.write(drover_title + '\n\n')
+  for line in revision_log:
     out.write('> %s\n' % line)
-  if (author):
+  if author:
     out.write("\nTBR=" + author)
   out.close()
 
