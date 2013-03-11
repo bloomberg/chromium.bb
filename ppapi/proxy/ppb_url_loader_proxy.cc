@@ -609,7 +609,10 @@ void PPB_URLLoader_Proxy::OnMsgReadResponseBodyAck(
     return;
   }
 
-  DCHECK(result < 0 || result == data_len);
+  if (result >= 0 && result != data_len) {
+    NOTREACHED() << "Data size mismatch";
+    return;
+  }
 
   EnterPluginFromHostResource<PPB_URLLoader_API> enter(host_resource);
   if (enter.succeeded())
