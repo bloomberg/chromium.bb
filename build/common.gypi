@@ -3233,9 +3233,6 @@
                   '-Wno-extra', # Enabled by -Wextra, but no specific flag
                   '-Wno-ignored-qualifiers',
                   '-Wno-type-limits',
-                  # Other things unrelated to -Wextra:
-                  '-Wno-non-virtual-dtor',
-                  '-Wno-sign-promo',
                 ],
                 'cflags_cc': [
                   # Disabling c++0x-compat should be handled in WebKit, but
@@ -3243,6 +3240,9 @@
                   # correctly when building with the Android build system.
                   # TODO(torne): Fix this in WebKit.
                   '-Wno-error=c++0x-compat',
+                  # Other things unrelated to -Wextra:
+                  '-Wno-non-virtual-dtor',
+                  '-Wno-sign-promo',
                 ],
               }],
               ['android_build_type==1 and chromium_code==0', {
@@ -3250,14 +3250,15 @@
                   # There is a class of warning which:
                   #  1) Android always enables and also treats as errors
                   #  2) Chromium ignores in third party code
-                  # For now, I am leaving these warnings enabled but preventing
-                  # them from being treated as errors here.
+                  # So we re-enable those warnings when building Android.
                   '-Wno-address',
                   '-Wno-format-security',
-                  '-Wno-non-virtual-dtor',
                   '-Wno-return-type',
                   '-Wno-sequence-point',
                 ],
+                'cflags_cc': [
+                  '-Wno-non-virtual-dtor',
+                ]
               }],
               ['target_arch == "arm"', {
                 'ldflags': [
