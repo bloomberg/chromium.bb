@@ -43,6 +43,9 @@ class NetLogLogger : public net::NetLog::ThreadSafeObserver {
  private:
   ScopedStdioHandle file_;
 
+  // True if OnAddEntry() has been called at least once.
+  bool added_events_;
+
   DISALLOW_COPY_AND_ASSIGN(NetLogLogger);
 };
 
