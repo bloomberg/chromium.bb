@@ -25,6 +25,16 @@ function MediaControls(containerElement, onMediaError) {
 }
 
 /**
+ * Button's state types. Values are used as CSS class names.
+ * @enum {string}
+ */
+MediaControls.ButtonStateType = {
+  DEFAULT: 'default',
+  PLAYING: 'playing',
+  ENDED: 'ended'
+};
+
+/**
  * @return {HTMLAudioElement|HTMLVideoElement} The media element.
  */
 MediaControls.prototype.getMedia = function() { return this.media_ };
@@ -70,25 +80,27 @@ MediaControls.prototype.createControl = function(className, opt_parent) {
  * @param {string} className Class name.
  * @param {function(Event)} handler Click handler.
  * @param {HTMLElement=} opt_parent Parent element or container if undefined.
- * @param {boolean=} opt_toggle True if the button has toggle state.
+ * @param {number=} opt_numStates Number of states, default: 1.
  * @return {HTMLElement} The new button element.
  */
 MediaControls.prototype.createButton = function(
-    className, handler, opt_parent, opt_toggle) {
+    className, handler, opt_parent, opt_numStates) {
+  opt_numStates = opt_numStates || 1;
+
   var button = this.createControl(className, opt_parent);
   button.classList.add('media-button');
   button.addEventListener('click', handler);
 
-  var numStates = opt_toggle ? 2 : 1;
-  for (var state = 0; state != numStates; state++) {
-    var stateClass = 'state' + state;
+  var stateTypes = Object.keys(MediaControls.ButtonStateType);
+  for (var state = 0; state != opt_numStates; state++) {
+    var stateClass = MediaControls.ButtonStateType[stateTypes[state]];
     this.createControl('normal ' + stateClass, button);
     this.createControl('hover ' + stateClass, button);
     this.createControl('active ' + stateClass, button);
   }
   this.createControl('disabled', button);
 
-  button.setAttribute('state', 0);
+  button.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
   button.addEventListener('click', handler);
   return button;
 };
@@ -151,7 +163,7 @@ MediaControls.prototype.togglePlayState = function() {
  */
 MediaControls.prototype.initPlayButton = function(opt_parent) {
   this.playButton_ = this.createButton('play media-control',
-      this.togglePlayState.bind(this), opt_parent, true /* toggle */);
+      this.togglePlayState.bind(this), opt_parent, 3 /* States. */);
 };
 
 /*
@@ -231,6 +243,7 @@ MediaControls.prototype.onProgressDrag_ = function(on) {
       else
         this.media_.play();
     }
+    this.updatePlayButtonState_(this.isPlaying());
   }
 };
 
@@ -365,7 +378,7 @@ MediaControls.prototype.onMediaPlay_ = function(playing) {
   if (this.progressSlider_.isDragging())
     return;
 
-  this.playButton_.setAttribute('state', playing ? '1' : '0');
+  this.updatePlayButtonState_(playing);
   this.onPlayStateChanged();
 };
 
@@ -434,6 +447,24 @@ MediaControls.prototype.onMediaComplete = function() {};
  * This is the right moment to save the play state.
  */
 MediaControls.prototype.onPlayStateChanged = function() {};
+
+/**
+ * Updates the play button state.
+ * @param {boolean} playing If the video is playing.
+ * @private
+ */
+MediaControls.prototype.updatePlayButtonState_ = function(playing) {
+  if (playing) {
+    this.playButton_.setAttribute('state',
+                                  MediaControls.ButtonStateType.PLAYING);
+  } else if (!this.media_.ended) {
+    this.playButton_.setAttribute('state',
+                                  MediaControls.ButtonStateType.DEFAULT);
+  } else {
+    this.playButton_.setAttribute('state',
+                                  MediaControls.ButtonStateType.ENDED);
+  }
+};
 
 /**
  * Restore play state. Base implementation is empty.

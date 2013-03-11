@@ -17,12 +17,18 @@
   width: 100%;
 }
 
-.media-button[state='0']:not(.disabled):not(:hover):not(:active) > .state0.normal,
-.media-button[state='0']:not(.disabled):hover > .state0.hover,
-.media-button[state='0']:not(.disabled):active > .state0.active,
-.media-button[state='1']:not(.disabled):not(:hover):not(:active) > .state1.normal,
-.media-button[state='1']:not(.disabled):hover > .state1.hover,
-.media-button[state='1']:not(.disabled):active > .state1.active,
+.media-button[state='default']:not(.disabled):not(:hover):not(:active) >
+    .default.normal,
+.media-button[state='default']:not(.disabled):hover > .default.hover,
+.media-button[state='default']:not(.disabled):active > .default.active,
+.media-button[state='playing']:not(.disabled):not(:hover):not(:active) >
+    .playing.normal,
+.media-button[state='playing']:not(.disabled):hover > .playing.hover,
+.media-button[state='playing']:not(.disabled):active > .playing.active,
+.media-button[state='ended']:not(.disabled):not(:hover):not(:active) >
+    .ended.normal,
+.media-button[state='ended']:not(.disabled):hover > .ended.hover,
+.media-button[state='ended']:not(.disabled):active > .ended.active,
 .media-button.disabled > .disabled {
   opacity: 1;
 }
@@ -184,40 +190,58 @@
   margin-right: -7px;
 }
 
-.media-button.play > .state0.normal {
+.media-button.play > .default.normal {
   background-image: -webkit-image-set(
     url('../images/media/media_play.png') 1x,
     url('../images/media/2x/media_play.png') 2x);
 }
 
-.media-button.play > .state0.hover {
+.media-button.play > .default.hover {
   background-image: -webkit-image-set(
     url('../images/media/media_play_hover.png') 1x,
     url('../images/media/2x/media_play_hover.png') 2x);
 }
 
-.media-button.play > .state0.active {
+.media-button.play > .default.active {
   background-image: -webkit-image-set(
     url('../images/media/media_play_down.png') 1x,
     url('../images/media/2x/media_play_down.png') 2x);
 }
 
-.media-button.play > .state1.normal {
+.media-button.play > .playing.normal {
   background-image: -webkit-image-set(
     url('../images/media/media_pause.png') 1x,
     url('../images/media/2x/media_pause.png') 2x);
 }
 
-.media-button.play > .state1.hover {
+.media-button.play > .playing.hover {
   background-image: -webkit-image-set(
     url('../images/media/media_pause_hover.png') 1x,
     url('../images/media/2x/media_pause_hover.png') 2x);
 }
 
-.media-button.play > .state1.active {
+.media-button.play > .playing.active {
   background-image: -webkit-image-set(
     url('../images/media/media_pause_down.png') 1x,
     url('../images/media/2x/media_pause_down.png') 2x);
+}
+
+.media-button.play > .ended.normal {
+  background-image: -webkit-image-set(
+    url('../images/media/media_loop.png') 1x,
+    url('../images/media/2x/media_loop.png') 2x);
+}
+
+.media-button.play > .ended.hover {
+  background-image: -webkit-image-set(
+    url('../images/media/media_loop_hover.png') 1x,
+    url('../images/media/2x/media_loop_hover.png') 2x);
+}
+
+.media-button.play > .ended.active {
+  background-image: -webkit-image-set(
+    url('../images/media/media_loop_down.png') 1x,
+    url('../images/media/2x/media_loop_down.png') 2x);
 }
 
 .media-button.play > .disabled {
