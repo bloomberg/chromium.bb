@@ -335,12 +335,6 @@ Gallery.prototype.createToolbarButton_ = function(clazz, title) {
  * @param {Array.<string>} selectedUrls Array of selected urls.
  */
 Gallery.prototype.load = function(urls, selectedUrls) {
-  if (!this.mosaicMode_ && selectedUrls.length > 1) {
-    // If the mosaic is disabled revert to the old multiple selection behavior.
-    urls = selectedUrls;  // Only show the items selected in the file list.
-    selectedUrls = selectedUrls.slice(0, 1);  // Force single selection.
-  }
-
   var items = [];
   for (var index = 0; index < urls.length; ++index) {
     items.push(new Gallery.Item(urls[index]));
@@ -361,10 +355,20 @@ Gallery.prototype.load = function(urls, selectedUrls) {
     this.onSelection_();
 
   var mosaic = this.mosaicMode_ && this.mosaicMode_.getMosaic();
-  if (mosaic &&
-      (selectedUrls.length != 1 ||
-      (this.context_.pageState &&
-          this.context_.pageState.gallery == 'mosaic'))) {
+
+  // Mosaic view should show up if most of the selected files are images.
+  var imagesCount = 0;
+  for (var i = 0; i != selectedUrls.length; i++) {
+    if (FileType.getMediaType(selectedUrls[i]) == 'image')
+      imagesCount++;
+  }
+  var mostlyImages = imagesCount > (selectedUrls.length / 2.0);
+
+  var forcedMosaic = (this.context_.pageState &&
+       this.context_.pageState.gallery == 'mosaic');
+
+  var showMosaic = (mostlyImages && selectedUrls.length > 1) || forcedMosaic;
+  if (mosaic && showMosaic) {
     this.setCurrentMode_(this.mosaicMode_);
     mosaic.init();
     mosaic.show();
