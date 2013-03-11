@@ -242,9 +242,6 @@ class NET_EXPORT URLRequestContext
 #if !defined(DISABLE_FTP_SUPPORT)
   scoped_ptr<FtpAuthCache> ftp_auth_cache_;
 #endif
-  // The charset of the referrer where this request comes from. It's not
-  // used in communication with a server but is used to construct a suggested
-  // filename for file download.
   HttpTransactionFactory* http_transaction_factory_;
   FtpTransactionFactory* ftp_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
