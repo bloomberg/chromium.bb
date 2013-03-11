@@ -184,6 +184,7 @@ class TransferStateInternal
  public:
   explicit TransferStateInternal(GLuint texture_id,
                                  bool wait_for_uploads,
+                                 bool wait_for_creation,
                                  bool use_image_preserved)
       : texture_id_(texture_id),
         thread_texture_id_(0),
@@ -191,6 +192,7 @@ class TransferStateInternal
         transfer_completion_(true, true),
         egl_image_(EGL_NO_IMAGE_KHR),
         wait_for_uploads_(wait_for_uploads),
+        wait_for_creation_(wait_for_creation),
         use_image_preserved_(use_image_preserved) {
     static const AsyncTexImage2DParams zero_params = {0, 0, 0, 0, 0, 0, 0, 0};
     late_bind_define_params_ = zero_params;
@@ -254,8 +256,13 @@ class TransferStateInternal
   }
 
   void CreateEglImageOnMainThreadIfNeeded() {
-    if (egl_image_ == EGL_NO_IMAGE_KHR)
+    if (egl_image_ == EGL_NO_IMAGE_KHR) {
       CreateEglImage(texture_id_);
+      if (wait_for_creation_) {
+        TRACE_EVENT0("gpu", "glFinish creation");
+        glFinish();
+      }
+    }
   }
 
   void WaitForLastUpload() {
@@ -323,6 +330,7 @@ class TransferStateInternal
 
   // Customize when we block on fences (these are work-arounds).
   bool wait_for_uploads_;
+  bool wait_for_creation_;
   bool use_image_preserved_;
 };
 
@@ -332,9 +340,11 @@ class AsyncTransferStateAndroid : public AsyncPixelTransferState {
  public:
   explicit AsyncTransferStateAndroid(GLuint texture_id,
                                      bool wait_for_uploads,
+                                     bool wait_for_creation,
                                      bool use_image_preserved)
       : internal_(new TransferStateInternal(texture_id,
                                             wait_for_uploads,
+                                            wait_for_creation,
                                             use_image_preserved)) {
   }
   virtual ~AsyncTransferStateAndroid() {}
@@ -454,6 +464,11 @@ AsyncPixelTransferState*
   // In practice, they are complete when the CPU glTexSubImage2D completes.
   bool wait_for_uploads = !is_imagination_;
 
+  // Qualcomm runs into texture corruption problems if the same texture is
+  // uploaded to with both async and normal uploads. Synchronize after EGLImage
+  // creation on the main thread as a work-around.
+  bool wait_for_creation = is_qualcomm_;
+
   // Qualcomm has a race when using image_preserved=FALSE,
   // which can result in black textures even after the first upload.
   // Since using FALSE is mainly for performance (to avoid layout changes),
@@ -464,6 +479,7 @@ AsyncPixelTransferState*
   return static_cast<AsyncPixelTransferState*>(
       new AsyncTransferStateAndroid(texture_id,
                                     wait_for_uploads,
+                                    wait_for_creation,
                                     use_image_preserved));
 }
 
