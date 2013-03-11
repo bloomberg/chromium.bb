@@ -410,6 +410,7 @@ class RunTestCases(unittest.TestCase):
         [
           '--result', self.filename,
           # Make it determinist.
+          '--clusters', '1',
           '--jobs', '1',
           '--retries', '1',
           '--max-failures', '2',
@@ -442,6 +443,7 @@ class RunTestCases(unittest.TestCase):
           '--gtest_output=xml:' + self.filename,
           '--no-dump',
           # Make it determinist.
+          '--clusters', '1',
           '--jobs', '1',
           '--retries', '1',
           '--max-failures', '2',

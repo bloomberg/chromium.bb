@@ -104,14 +104,15 @@ class RunTestCases(unittest.TestCase):
     old = run_test_cases.run_test_cases
     exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
     def expect(
-        executable, cwd, test_cases, jobs, timeout, retries, run_all,
-        max_failures, no_cr, gtest_output, result_file, verbose):
+        executable, cwd, test_cases, jobs, timeout, clusters, retries,
+        run_all, max_failures, no_cr, gtest_output, result_file, verbose):
       self.assertEqual(run_test_cases.fix_python_path([exe]), executable)
       self.assertEqual(os.getcwd(), cwd)
       # They are in reverse order due to test shuffling.
       self.assertEqual(['Foo.Bar1', 'Foo.Bar/3'], test_cases)
       self.assertEqual(run_test_cases.num_processors(), jobs)
       self.assertEqual(120, timeout)
+      self.assertEqual(None, clusters)
       self.assertEqual(2, retries)
       self.assertEqual(None, run_all)
       self.assertEqual(None, no_cr)
@@ -172,6 +173,41 @@ class RunTestCases(unittest.TestCase):
     for _ in xrange(200):
       self.assertFalse(decider.should_stop())
       decider.got_result(False)
+
+  def test_calc_cluster_default(self):
+    # Always display the full diff.
+    self.maxDiff = None
+    expected = [
+      ((0, 1), 0),
+      ((1, 1), 1),
+      ((1, 10), 1),
+      ((10, 10), 1),
+      ((10, 100), 1),
+
+      # Most VMs have 4 or 8 CPUs, asserts the values are sane.
+      ((5, 1), 5),
+      ((5, 2), 2),
+      ((5, 4), 1),
+      ((5, 8), 1),
+      ((10, 1), 2),
+      ((10, 4), 2),
+      ((10, 8), 1),
+      ((100, 1), 17),
+      ((100, 4), 5),
+      ((100, 8), 3),
+      ((1000, 1), 100),
+      ((1000, 4), 42),
+      ((1000, 8), 21),
+      ((3000, 1), 100),
+      ((3000, 4), 100),
+      ((3000, 8), 63),
+    ]
+    actual = [
+      ((num_test_cases, jobs),
+        run_test_cases.calc_cluster_default(num_test_cases, jobs))
+      for (num_test_cases, jobs), _ in expected
+    ]
+    self.assertEquals(expected, actual)
 
 
 class RunTestCasesTmp(unittest.TestCase):

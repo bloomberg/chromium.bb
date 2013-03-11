@@ -834,8 +834,25 @@ def gen_gtest_output_dir(cwd, gtest_output):
     gtest_output = base + ext
 
 
+def calc_cluster_default(num_test_cases, jobs):
+  """Calculates a desired number for clusters depending on the number of test
+  cases and parallel jobs.
+  """
+  if not num_test_cases:
+    return 0
+  chunks = 6 * jobs
+  if chunks >= num_test_cases:
+    # Too many chunks, use 1~5 test case per thread. Not enough to start
+    # chunking.
+    return max(1, (num_test_cases) / jobs)
+
+  # Use chunks that are spread across threads but limit to 100 test cases per
+  # cluster.
+  return min(100, (num_test_cases + chunks - 1) / chunks)
+
+
 def run_test_cases(
-    cmd, cwd, test_cases, jobs, timeout, retries, run_all,
+    cmd, cwd, test_cases, jobs, timeout, clusters, retries, run_all,
     max_failures, no_cr, gtest_output, result_file, verbose):
   """Runs test cases in parallel.
 
@@ -845,6 +862,9 @@ def run_test_cases(
     - test_cases: list of preprocessed test cases to run.
     - jobs: number of parallel execution threads to do.
     - timeout: individual test case timeout.
+    - clusters: number of test cases to lump together in a single execution. 0
+      means the default automatic value which depends on len(test_cases) and
+      jobs. Capped to len(test_cases) / jobs.
     - retries: number of times a test case can be retried.
     - run_all: If true, do not early return even if all test cases fail.
     - max_failures is the absolute maximum number of tolerated failures or None.
@@ -864,6 +884,12 @@ def run_test_cases(
   else:
     # If 10% of test cases fail, just too bad.
     decider = RunSome(len(test_cases), retries, 2, 0.1, max_failures)
+
+  if not clusters:
+    clusters = calc_cluster_default(len(test_cases), jobs)
+  else:
+    # Limit the value.
+    clusters = min(clusters, len(test_cases) / jobs)
 
   if gtest_output:
     gtest_output = gen_gtest_output_dir(cwd, gtest_output)
@@ -1087,6 +1113,11 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
         default=os.environ.get('GTEST_RANDOM_SEED', '1'),
         help='Deterministically shuffle the test list if non-0. default: '
              '%default')
+    group.add_option(
+        '--clusters',
+        type='int',
+        help='Number of test cases to cluster together, clamped to '
+             'len(test_cases) / jobs; the default is automatic')
     self.add_option_group(group)
 
   def parse_args(self, *args, **kwargs):
@@ -1233,6 +1264,7 @@ def main(argv):
         test_cases,
         options.jobs,
         options.timeout,
+        options.clusters,
         options.retries,
         options.run_all,
         options.max_failures,
