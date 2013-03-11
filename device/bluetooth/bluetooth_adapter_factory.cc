@@ -7,13 +7,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_switches.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 #if defined(OS_CHROMEOS)
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos_experimental.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #endif
@@ -69,10 +72,18 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   if (!default_adapter.Get().get()) {
 #if defined(OS_CHROMEOS)
-    chromeos::BluetoothAdapterChromeOS* new_adapter =
-        new chromeos::BluetoothAdapterChromeOS;
-    new_adapter->TrackDefaultAdapter();
-    default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnableExperimentalBluetooth)) {
+      chromeos::BluetoothAdapterChromeOSExperimental* new_adapter =
+          new chromeos::BluetoothAdapterChromeOSExperimental;
+      new_adapter->TrackDefaultAdapter();
+      default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
+    } else {
+      chromeos::BluetoothAdapterChromeOS* new_adapter =
+          new chromeos::BluetoothAdapterChromeOS;
+      new_adapter->TrackDefaultAdapter();
+      default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
+    }
 #elif defined(OS_WIN)
     BluetoothAdapterWin* new_adapter = new BluetoothAdapterWin(
         base::Bind(&RunAdapterCallbacks));
@@ -97,10 +108,18 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::MaybeGetAdapter() {
 BluetoothAdapter* BluetoothAdapterFactory::Create(const std::string& address) {
   BluetoothAdapter* adapter = NULL;
 #if defined(OS_CHROMEOS)
-  chromeos::BluetoothAdapterChromeOS* adapter_chromeos =
-      new chromeos::BluetoothAdapterChromeOS;
-  adapter_chromeos->FindAdapter(address);
-  adapter = adapter_chromeos;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableExperimentalBluetooth)) {
+    chromeos::BluetoothAdapterChromeOSExperimental* adapter_chromeos =
+        new chromeos::BluetoothAdapterChromeOSExperimental;
+    adapter_chromeos->FindAdapter(address);
+    adapter = adapter_chromeos;
+  } else {
+    chromeos::BluetoothAdapterChromeOS* adapter_chromeos =
+        new chromeos::BluetoothAdapterChromeOS;
+    adapter_chromeos->FindAdapter(address);
+    adapter = adapter_chromeos;
+  }
 #elif defined(OS_WIN)
   adapter = new BluetoothAdapterWin(base::Bind(&RunAdapterCallbacks));
 #endif

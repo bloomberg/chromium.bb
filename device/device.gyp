@@ -23,6 +23,8 @@
         'bluetooth/bluetooth_adapter.h',
         'bluetooth/bluetooth_adapter_chromeos.cc',
         'bluetooth/bluetooth_adapter_chromeos.h',
+        'bluetooth/bluetooth_adapter_chromeos_experimental.cc',
+        'bluetooth/bluetooth_adapter_chromeos_experimental.h',
         'bluetooth/bluetooth_adapter_factory.cc',
         'bluetooth/bluetooth_adapter_factory.h',
         'bluetooth/bluetooth_adapter_mac.h',
