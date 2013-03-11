@@ -61,6 +61,7 @@ cr.define('options', function() {
     /** @override */
     didShowPage: function() {
       this.pageDiv.querySelector('.cookies-search-box').value = '';
+      this.lastQuery_ = '';
     },
 
     /**
