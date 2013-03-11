@@ -47,11 +47,11 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
     net::TestURLRequestContext context;
     net::TestURLRequest extension_request(
-        GURL("http://example.com/"), NULL, &context);
+        GURL("http://example.com/"), NULL, &context, NULL);
     extension_request.set_first_party_for_cookies(
         GURL("chrome-extension://abcdef/bingo.html"));
     net::TestURLRequest web_page_request(
-        GURL("http://example.com/"), NULL, &context);
+        GURL("http://example.com/"), NULL, &context, NULL);
     web_page_request.set_first_party_for_cookies(
         GURL("http://example.com/helloworld.html"));
 
@@ -114,7 +114,8 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   }
 
   void SetDelegate(net::NetworkDelegate* delegate) {
-    context_.set_network_delegate(delegate);
+    network_delegate_ = delegate;
+    context_.set_network_delegate(network_delegate_);
   }
 
   // Does a request using the |url_string| URL and verifies that the expected
@@ -125,7 +126,8 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     // Show the URL in the trace so we know where we failed.
     SCOPED_TRACE(url_string);
 
-    net::TestURLRequest request(GURL(url_string), &delegate_, &context_);
+    net::TestURLRequest request(
+        GURL(url_string), &delegate_, &context_, network_delegate_);
 
     request.Start();
     MessageLoop::current()->RunUntilIdle();
@@ -143,6 +145,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   BooleanPrefMember force_google_safe_search_;
   scoped_ptr<net::URLRequest> request_;
   net::TestURLRequestContext context_;
+  net::NetworkDelegate* network_delegate_;
   net::TestDelegate delegate_;
 };
 

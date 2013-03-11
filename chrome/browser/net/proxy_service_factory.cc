@@ -73,6 +73,7 @@ PrefProxyConfigTrackerImpl* ProxyServiceFactory::CreatePrefProxyConfigTracker(
 net::ProxyService* ProxyServiceFactory::CreateProxyService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
+    net::NetworkDelegate* network_delegate,
     net::ProxyConfigService* proxy_config_service,
     const CommandLine& command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -121,7 +122,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
         dhcp_factory.Create(context),
         context->host_resolver(),
         net_log,
-        context->network_delegate());
+        network_delegate);
 #endif  // defined(OS_IOS)
   } else {
     proxy_service = net::ProxyService::CreateUsingSystemProxyResolver(

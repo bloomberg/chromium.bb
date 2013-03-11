@@ -884,6 +884,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
       ProxyServiceFactory::CreateProxyService(
           net_log_,
           globals_->proxy_script_fetcher_context.get(),
+          globals_->system_network_delegate.get(),
           system_proxy_config_service_.release(),
           command_line));
 

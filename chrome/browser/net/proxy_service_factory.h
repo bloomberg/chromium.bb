@@ -20,6 +20,7 @@ class ProxyConfigServiceImpl;
 
 namespace net {
 class NetLog;
+class NetworkDelegate;
 class ProxyConfigService;
 class ProxyService;
 class URLRequestContext;
@@ -45,6 +46,7 @@ class ProxyServiceFactory {
   static net::ProxyService* CreateProxyService(
       net::NetLog* net_log,
       net::URLRequestContext* context,
+      net::NetworkDelegate* network_delegate,
       net::ProxyConfigService* proxy_config_service,
       const CommandLine& command_line);
 

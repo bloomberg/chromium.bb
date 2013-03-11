@@ -656,10 +656,13 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
       new chrome_browser_net::ChromeFraudulentCertificateReporter(
           main_request_context_.get()));
 
+  // NOTE: Proxy service uses the default io thread network delegate, not the
+  // delegate just created.
   proxy_service_.reset(
       ProxyServiceFactory::CreateProxyService(
           io_thread->net_log(),
           io_thread_globals->proxy_script_fetcher_context.get(),
+          io_thread_globals->system_network_delegate.get(),
           profile_params_->proxy_config_service.release(),
           command_line));
 
@@ -825,7 +828,7 @@ void ProfileIOData::PopulateNetworkSessionParams(
   params->ssl_session_cache_shard = GetSSLSessionCacheShard();
   params->ssl_config_service = context->ssl_config_service();
   params->http_auth_handler_factory = context->http_auth_handler_factory();
-  params->network_delegate = context->network_delegate();
+  params->network_delegate = network_delegate();
   params->http_server_properties = context->http_server_properties();
   params->net_log = context->net_log();
 }
