@@ -23,7 +23,8 @@ namespace {
 // cancel the menu as well.
 class ActivationChangeObserverImpl
     : public aura::client::ActivationChangeObserver,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public ui::EventHandler {
  public:
   ActivationChangeObserverImpl(MenuController* controller,
                                aura::RootWindow* root)
@@ -31,6 +32,7 @@ class ActivationChangeObserverImpl
         root_(root) {
     aura::client::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
+    root_->AddPreTargetHandler(this);
   }
 
   virtual ~ActivationChangeObserverImpl() {
@@ -49,6 +51,11 @@ class ActivationChangeObserverImpl
     Cleanup();
   }
 
+  // ui::EventHandler overrides:
+  virtual void OnCancelMode(ui::CancelModeEvent* event) OVERRIDE {
+    controller_->CancelAll();
+  }
+
  private:
   void Cleanup() {
     if (!root_)
@@ -58,6 +65,7 @@ class ActivationChangeObserverImpl
         aura::client::GetActivationClient(root_);
     if (client)
       client->RemoveObserver(this);
+    root_->RemovePreTargetHandler(this);
     root_->RemoveObserver(this);
     root_ = NULL;
   }
