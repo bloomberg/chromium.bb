@@ -59,11 +59,89 @@
 }%%
 
 %%{
+  machine set_spurious_prefixes;
+
+  action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
+  action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
+  action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
+  action set_spurious_rex_w         { SET_SPURIOUS_REX_W();                }
+}%%
+
+%%{
+  machine prefixes_parsing;
+
+  data16 = 0x66 @data16_prefix;
+  branch_hint = 0x2e @branch_not_taken | 0x3e @branch_taken;
+  condrep = 0xf2 @repnz_prefix | 0xf3 @repz_prefix;
+  lock = 0xf0 @lock_prefix;
+  rep = 0xf3 @rep_prefix;
+  repnz = 0xf2 @repnz_prefix;
+  repz = 0xf3 @repz_prefix;
+}%%
+
+%%{
+  machine prefixes_parsing_noaction;
+
+  data16 = 0x66;
+  branch_hint = 0x2e | 0x3e;
+  condrep = 0xf2 | 0xf3;
+  lock = 0xf0;
+  rep = 0xf3;
+  repnz = 0xf2;
+  repz = 0xf3;
+}%%
+
+%%{
   machine rex_actions;
 
   action rex_prefix {
     SET_REX_PREFIX(*current_position);
   }
+}%%
+
+%%{
+  machine rex_parsing;
+
+  REX_NONE = 0x40 @rex_prefix;
+  REX_W    = b_0100_x000 @rex_prefix;
+  REX_R    = b_0100_0x00 @rex_prefix;
+  REX_X    = b_0100_00x0 @rex_prefix;
+  REX_B    = b_0100_000x @rex_prefix;
+  REX_WR   = b_0100_xx00 @rex_prefix;
+  REX_WX   = b_0100_x0x0 @rex_prefix;
+  REX_WB   = b_0100_x00x @rex_prefix;
+  REX_RX   = b_0100_0xx0 @rex_prefix;
+  REX_RB   = b_0100_0x0x @rex_prefix;
+  REX_XB   = b_0100_00xx @rex_prefix;
+  REX_WRX  = b_0100_xxx0 @rex_prefix;
+  REX_WRB  = b_0100_xx0x @rex_prefix;
+  REX_WXB  = b_0100_x0xx @rex_prefix;
+  REX_RXB  = b_0100_0xxx @rex_prefix;
+  REX_WRXB = b_0100_xxxx @rex_prefix;
+
+  rex_w    = REX_W    - REX_NONE;
+  rex_r    = REX_R    - REX_NONE;
+  rex_x    = REX_X    - REX_NONE;
+  rex_b    = REX_B    - REX_NONE;
+  rex_wr   = REX_WR   - REX_NONE;
+  rex_wx   = REX_WX   - REX_NONE;
+  rex_wb   = REX_WB   - REX_NONE;
+  rex_rx   = REX_RX   - REX_NONE;
+  rex_rb   = REX_RB   - REX_NONE;
+  rex_xb   = REX_XB   - REX_NONE;
+  rex_wrx  = REX_WRX  - REX_NONE;
+  rex_wrb  = REX_WRB  - REX_NONE;
+  rex_wxb  = REX_WXB  - REX_NONE;
+  rex_rxb  = REX_RXB  - REX_NONE;
+  rex_wrxb = REX_WRXB - REX_NONE;
+  REXW_NONE= b_0100_1000 @rex_prefix;
+  REXW_R   = b_0100_1x00 @rex_prefix;
+  REXW_X   = b_0100_10x0 @rex_prefix;
+  REXW_B   = b_0100_100x @rex_prefix;
+  REXW_RX  = b_0100_1xx0 @rex_prefix;
+  REXW_RB  = b_0100_1x0x @rex_prefix;
+  REXW_XB  = b_0100_10xx @rex_prefix;
+  REXW_RXB = b_0100_1xxx @rex_prefix;
 }%%
 
 %%{
@@ -116,6 +194,47 @@
     SET_VEX_PREFIX2(((*current_position) & VEX_R) | (VEX_X | VEX_B | VEX_MAP1));
     SET_VEX_PREFIX3((*current_position) & (~VEX_W));
   }
+}%%
+
+%%{
+  machine vex_parsing_common;
+
+  VEX_map01 = b_xxx_00001;
+  VEX_map02 = b_xxx_00010;
+  VEX_map03 = b_xxx_00011;
+  VEX_map08 = b_xxx_01000;
+  VEX_map09 = b_xxx_01001;
+  VEX_map0A = b_xxx_01010;
+  VEX_map00001 = b_xxx_00001;
+  VEX_map00010 = b_xxx_00010;
+  VEX_map00011 = b_xxx_00011;
+  VEX_map01000 = b_xxx_01000;
+  VEX_map01001 = b_xxx_01001;
+  VEX_map01010 = b_xxx_01010;
+}%%
+
+%%{
+  machine vex_parsing_ia32;
+
+  include vex_parsing_common
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  # In ia32 mode bits R, X, and B are not used.
+  VEX_NONE = b_111_xxxxx;
+}%%
+
+%%{
+  machine vex_parsing_amd64;
+
+  include vex_parsing_common
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  VEX_NONE = b_111_xxxxx @vex_prefix2;
+  VEX_R = b_x11_xxxxx @vex_prefix2;
+  VEX_X = b_1x1_xxxxx @vex_prefix2;
+  VEX_B = b_11x_xxxxx @vex_prefix2;
+  VEX_RX = b_xx1_xxxxx @vex_prefix2;
+  VEX_RB = b_x1x_xxxxx @vex_prefix2;
+  VEX_XB = b_1xx_xxxxx @vex_prefix2;
+  VEX_RXB = b_xxx_xxxxx @vex_prefix2;
 }%%
 
 %%{
@@ -192,6 +311,114 @@
                                     IndexExtentionFromVEX(GET_VEX_PREFIX2())]);
     SET_MODRM_SCALE(ScaleFromSIB(*current_position));
   }
+}%%
+
+%%{
+  machine modrm_parsing_common;
+
+  operand_sib_base_index =
+    (b_00_xxx_100 . (any - b_xx_xxx_101) @modrm_parse_sib) |
+    (b_01_xxx_100 . any @modrm_parse_sib . disp8) |
+    (b_10_xxx_100 . any @modrm_parse_sib . disp32);
+  operand_sib_pure_index =
+    b_00_xxx_100 . b_xx_xxx_101 @modrm_pure_index . disp32;
+  operand_disp  =
+    ((b_01_xxx_xxx - b_xx_xxx_100) @modrm_base_disp . disp8) |
+    ((b_10_xxx_xxx - b_xx_xxx_100) @modrm_base_disp . disp32);
+  single_register_memory =
+    (b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101) @modrm_only_base;
+  modrm_memory =
+    operand_disp | operand_rip |
+    operand_sib_base_index | operand_sib_pure_index |
+    single_register_memory;
+  modrm_registers = b_11_xxx_xxx;
+
+  # Operations selected using opcode in ModR/M.
+  opcode_0 = b_xx_000_xxx;
+  opcode_1 = b_xx_001_xxx;
+  opcode_2 = b_xx_010_xxx;
+  opcode_3 = b_xx_011_xxx;
+  opcode_4 = b_xx_100_xxx;
+  opcode_5 = b_xx_101_xxx;
+  opcode_6 = b_xx_110_xxx;
+  opcode_7 = b_xx_111_xxx;
+  # Used for segment operations: there only 6 segment registers.
+  opcode_s = (any - b_xx_110_xxx - b_xx_111_xxx);
+  # This is used to move operand name detection after first byte of ModRM.
+  opcode_m = (any - b_11_xxx_xxx);
+  opcode_r = b_11_xxx_xxx;
+}%%
+
+%%{
+  machine modrm_parsing_ia32;
+
+  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
+  operand_rip = b_00_xxx_101 @modrm_pure_disp . disp32;
+  include modrm_parsing_common
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+}%%
+
+%%{
+  machine modrm_parsing_amd64;
+
+  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
+  operand_rip = b_00_xxx_101 @modrm_rip . disp32;
+  include modrm_parsing_common
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+}%%
+
+%%{
+  machine modrm_parsing_common_noactions;
+
+  operand_sib_base_index =
+    (b_00_xxx_100 . (any - b_xx_xxx_101)) |
+    (b_01_xxx_100 . any . disp8) |
+    (b_10_xxx_100 . any . disp32);
+  operand_sib_pure_index =
+    b_00_xxx_100 . b_xx_xxx_101 . disp32;
+  operand_disp  =
+    ((b_01_xxx_xxx - b_xx_xxx_100) . disp8) |
+    ((b_10_xxx_xxx - b_xx_xxx_100) . disp32);
+  single_register_memory =
+    (b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101);
+  modrm_memory =
+    operand_disp | operand_rip |
+    operand_sib_base_index | operand_sib_pure_index |
+    single_register_memory;
+  modrm_registers = b_11_xxx_xxx;
+
+  # Operations selected using opcode in ModR/M.
+  opcode_0 = b_xx_000_xxx;
+  opcode_1 = b_xx_001_xxx;
+  opcode_2 = b_xx_010_xxx;
+  opcode_3 = b_xx_011_xxx;
+  opcode_4 = b_xx_100_xxx;
+  opcode_5 = b_xx_101_xxx;
+  opcode_6 = b_xx_110_xxx;
+  opcode_7 = b_xx_111_xxx;
+  # Used for segment operations: there only 6 segment registers.
+  opcode_s = (any - b_xx_110_xxx - b_xx_111_xxx);
+  # This is used to move operand name detection after first byte of ModRM.
+  opcode_m = (any - b_11_xxx_xxx);
+  opcode_r = b_11_xxx_xxx;
+}%%
+
+%%{
+  machine modrm_parsing_ia32_noactions;
+
+  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
+  operand_rip = b_00_xxx_101 . disp32;
+  include modrm_parsing_common_noactions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+}%%
+
+%%{
+  machine modrm_parsing_amd64_noactions;
+
+  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
+  operand_rip = b_00_xxx_101 . disp32;
+  include modrm_parsing_common_noactions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 }%%
 
 %%{
@@ -491,6 +718,20 @@
 }%%
 
 %%{
+  machine displacement_fields_parsing;
+
+  # This action is used to mark transitions corresponding to immediates,
+  # displacements and relative jump targets - stuff that we don't have to
+  # enumerate in enumeration tests.
+  # TODO(shcherbina): find appropriate place for this action.
+  action any_byte {}
+
+  disp8  = any @disp8_operand $any_byte;
+  disp32 = any{4} @disp32_operand $any_byte;
+  disp64 = any{8} @disp64_operand $any_byte;
+}%%
+
+%%{
   machine immediate_fields_actions;
 
   action imm2_operand {
@@ -532,6 +773,33 @@
 }%%
 
 %%{
+  machine immediate_fields_parsing_common;
+
+  imm8 = any @imm8_operand $any_byte;
+  imm16 = any{2} @imm16_operand $any_byte;
+  imm32 = any{4} @imm32_operand $any_byte;
+  imm64 = any{8} @imm64_operand $any_byte;
+  imm8n2 = any @imm8_second_operand $any_byte;
+  imm16n2 = any{2} @imm16_second_operand $any_byte;
+}%%
+
+%%{
+  machine immediate_fields_parsing_ia32;
+
+  include immediate_fields_parsing_common
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  imm2 = b_0xxx_00xx @imm2_operand;
+}%%
+
+%%{
+  machine immediate_fields_parsing_amd64;
+
+  include immediate_fields_parsing_common
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  imm2 = b_xxxx_00xx @imm2_operand;
+}%%
+
+%%{
   machine relative_fields_actions;
 
   action rel8_operand {
@@ -555,6 +823,14 @@
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
   }
+}%%
+
+%%{
+  machine relative_fields_parsing;
+
+  rel8  = any @rel8_operand $any_byte;
+  rel16 = any{2} @rel16_operand $any_byte;
+  rel32 = any{4} @rel32_operand $any_byte;
 }%%
 
 %%{
@@ -622,283 +898,6 @@
   action att_show_name_suffix_x   { SET_ATT_INSTRUCTION_SUFFIX("x");       }
   action att_show_name_suffix_y   { SET_ATT_INSTRUCTION_SUFFIX("y");       }
 }%%
-
-%%{
-  machine set_spurious_prefixes;
-
-  action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
-  action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
-  action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
-  action set_spurious_rex_w         { SET_SPURIOUS_REX_W();                }
-}%%
-
-%%{
-  machine prefixes_parsing;
-
-  data16 = 0x66 @data16_prefix;
-  branch_hint = 0x2e @branch_not_taken | 0x3e @branch_taken;
-  condrep = 0xf2 @repnz_prefix | 0xf3 @repz_prefix;
-  lock = 0xf0 @lock_prefix;
-  rep = 0xf3 @rep_prefix;
-  repnz = 0xf2 @repnz_prefix;
-  repz = 0xf3 @repz_prefix;
-}%%
-
-%%{
-  machine prefixes_parsing_noaction;
-
-  data16 = 0x66;
-  branch_hint = 0x2e | 0x3e;
-  condrep = 0xf2 | 0xf3;
-  lock = 0xf0;
-  rep = 0xf3;
-  repnz = 0xf2;
-  repz = 0xf3;
-}%%
-
-%%{
-  machine rex_parsing;
-
-  REX_NONE = 0x40 @rex_prefix;
-  REX_W    = b_0100_x000 @rex_prefix;
-  REX_R    = b_0100_0x00 @rex_prefix;
-  REX_X    = b_0100_00x0 @rex_prefix;
-  REX_B    = b_0100_000x @rex_prefix;
-  REX_WR   = b_0100_xx00 @rex_prefix;
-  REX_WX   = b_0100_x0x0 @rex_prefix;
-  REX_WB   = b_0100_x00x @rex_prefix;
-  REX_RX   = b_0100_0xx0 @rex_prefix;
-  REX_RB   = b_0100_0x0x @rex_prefix;
-  REX_XB   = b_0100_00xx @rex_prefix;
-  REX_WRX  = b_0100_xxx0 @rex_prefix;
-  REX_WRB  = b_0100_xx0x @rex_prefix;
-  REX_WXB  = b_0100_x0xx @rex_prefix;
-  REX_RXB  = b_0100_0xxx @rex_prefix;
-  REX_WRXB = b_0100_xxxx @rex_prefix;
-
-  rex_w    = REX_W    - REX_NONE;
-  rex_r    = REX_R    - REX_NONE;
-  rex_x    = REX_X    - REX_NONE;
-  rex_b    = REX_B    - REX_NONE;
-  rex_wr   = REX_WR   - REX_NONE;
-  rex_wx   = REX_WX   - REX_NONE;
-  rex_wb   = REX_WB   - REX_NONE;
-  rex_rx   = REX_RX   - REX_NONE;
-  rex_rb   = REX_RB   - REX_NONE;
-  rex_xb   = REX_XB   - REX_NONE;
-  rex_wrx  = REX_WRX  - REX_NONE;
-  rex_wrb  = REX_WRB  - REX_NONE;
-  rex_wxb  = REX_WXB  - REX_NONE;
-  rex_rxb  = REX_RXB  - REX_NONE;
-  rex_wrxb = REX_WRXB - REX_NONE;
-  REXW_NONE= b_0100_1000 @rex_prefix;
-  REXW_R   = b_0100_1x00 @rex_prefix;
-  REXW_X   = b_0100_10x0 @rex_prefix;
-  REXW_B   = b_0100_100x @rex_prefix;
-  REXW_RX  = b_0100_1xx0 @rex_prefix;
-  REXW_RB  = b_0100_1x0x @rex_prefix;
-  REXW_XB  = b_0100_10xx @rex_prefix;
-  REXW_RXB = b_0100_1xxx @rex_prefix;
-}%%
-
-%%{
-  machine vex_parsing_common;
-
-  VEX_map01 = b_xxx_00001;
-  VEX_map02 = b_xxx_00010;
-  VEX_map03 = b_xxx_00011;
-  VEX_map08 = b_xxx_01000;
-  VEX_map09 = b_xxx_01001;
-  VEX_map0A = b_xxx_01010;
-  VEX_map00001 = b_xxx_00001;
-  VEX_map00010 = b_xxx_00010;
-  VEX_map00011 = b_xxx_00011;
-  VEX_map01000 = b_xxx_01000;
-  VEX_map01001 = b_xxx_01001;
-  VEX_map01010 = b_xxx_01010;
-}%%
-
-%%{
-  machine vex_parsing_ia32;
-
-  include vex_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  # In ia32 mode bits R, X, and B are not used.
-  VEX_NONE = b_111_xxxxx;
-}%%
-
-%%{
-  machine vex_parsing_amd64;
-
-  include vex_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  VEX_NONE = b_111_xxxxx @vex_prefix2;
-  VEX_R = b_x11_xxxxx @vex_prefix2;
-  VEX_X = b_1x1_xxxxx @vex_prefix2;
-  VEX_B = b_11x_xxxxx @vex_prefix2;
-  VEX_RX = b_xx1_xxxxx @vex_prefix2;
-  VEX_RB = b_x1x_xxxxx @vex_prefix2;
-  VEX_XB = b_1xx_xxxxx @vex_prefix2;
-  VEX_RXB = b_xxx_xxxxx @vex_prefix2;
-}%%
-
-%%{
-  machine modrm_parsing_common;
-
-  operand_sib_base_index =
-    (b_00_xxx_100 . (any - b_xx_xxx_101) @modrm_parse_sib) |
-    (b_01_xxx_100 . any @modrm_parse_sib . disp8) |
-    (b_10_xxx_100 . any @modrm_parse_sib . disp32);
-  operand_sib_pure_index =
-    b_00_xxx_100 . b_xx_xxx_101 @modrm_pure_index . disp32;
-  operand_disp  =
-    ((b_01_xxx_xxx - b_xx_xxx_100) @modrm_base_disp . disp8) |
-    ((b_10_xxx_xxx - b_xx_xxx_100) @modrm_base_disp . disp32);
-  single_register_memory =
-    (b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101) @modrm_only_base;
-  modrm_memory =
-    operand_disp | operand_rip |
-    operand_sib_base_index | operand_sib_pure_index |
-    single_register_memory;
-  modrm_registers = b_11_xxx_xxx;
-
-  # Operations selected using opcode in ModR/M.
-  opcode_0 = b_xx_000_xxx;
-  opcode_1 = b_xx_001_xxx;
-  opcode_2 = b_xx_010_xxx;
-  opcode_3 = b_xx_011_xxx;
-  opcode_4 = b_xx_100_xxx;
-  opcode_5 = b_xx_101_xxx;
-  opcode_6 = b_xx_110_xxx;
-  opcode_7 = b_xx_111_xxx;
-  # Used for segment operations: there only 6 segment registers.
-  opcode_s = (any - b_xx_110_xxx - b_xx_111_xxx);
-  # This is used to move operand name detection after first byte of ModRM.
-  opcode_m = (any - b_11_xxx_xxx);
-  opcode_r = b_11_xxx_xxx;
-}%%
-
-%%{
-  machine modrm_parsing_ia32;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 @modrm_pure_disp . disp32;
-  include modrm_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-}%%
-
-%%{
-  machine modrm_parsing_amd64;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 @modrm_rip . disp32;
-  include modrm_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-}%%
-
-%%{
-  machine modrm_parsing_common_noactions;
-
-  operand_sib_base_index =
-    (b_00_xxx_100 . (any - b_xx_xxx_101)) |
-    (b_01_xxx_100 . any . disp8) |
-    (b_10_xxx_100 . any . disp32);
-  operand_sib_pure_index =
-    b_00_xxx_100 . b_xx_xxx_101 . disp32;
-  operand_disp  =
-    ((b_01_xxx_xxx - b_xx_xxx_100) . disp8) |
-    ((b_10_xxx_xxx - b_xx_xxx_100) . disp32);
-  single_register_memory =
-    (b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101);
-  modrm_memory =
-    operand_disp | operand_rip |
-    operand_sib_base_index | operand_sib_pure_index |
-    single_register_memory;
-  modrm_registers = b_11_xxx_xxx;
-
-  # Operations selected using opcode in ModR/M.
-  opcode_0 = b_xx_000_xxx;
-  opcode_1 = b_xx_001_xxx;
-  opcode_2 = b_xx_010_xxx;
-  opcode_3 = b_xx_011_xxx;
-  opcode_4 = b_xx_100_xxx;
-  opcode_5 = b_xx_101_xxx;
-  opcode_6 = b_xx_110_xxx;
-  opcode_7 = b_xx_111_xxx;
-  # Used for segment operations: there only 6 segment registers.
-  opcode_s = (any - b_xx_110_xxx - b_xx_111_xxx);
-  # This is used to move operand name detection after first byte of ModRM.
-  opcode_m = (any - b_11_xxx_xxx);
-  opcode_r = b_11_xxx_xxx;
-}%%
-
-%%{
-  machine modrm_parsing_ia32_noactions;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 . disp32;
-  include modrm_parsing_common_noactions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-}%%
-
-%%{
-  machine modrm_parsing_amd64_noactions;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 . disp32;
-  include modrm_parsing_common_noactions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-}%%
-
-%%{
-  machine relative_fields_parsing;
-
-  rel8  = any @rel8_operand $any_byte;
-  rel16 = any{2} @rel16_operand $any_byte;
-  rel32 = any{4} @rel32_operand $any_byte;
-}%%
-
-%%{
-  machine displacement_fields_parsing;
-
-  # This action is used to mark transitions corresponding to immediates,
-  # displacements and relative jump targets - stuff that we don't have to
-  # enumerate in enumeration tests.
-  # TODO(shcherbina): find appropriate place for this action.
-  action any_byte {}
-
-  disp8  = any @disp8_operand $any_byte;
-  disp32 = any{4} @disp32_operand $any_byte;
-  disp64 = any{8} @disp64_operand $any_byte;
-}%%
-
-%%{
-  machine immediate_fields_parsing_common;
-
-  imm8 = any @imm8_operand $any_byte;
-  imm16 = any{2} @imm16_operand $any_byte;
-  imm32 = any{4} @imm32_operand $any_byte;
-  imm64 = any{8} @imm64_operand $any_byte;
-  imm8n2 = any @imm8_second_operand $any_byte;
-  imm16n2 = any{2} @imm16_second_operand $any_byte;
-}%%
-
-%%{
-  machine immediate_fields_parsing_ia32;
-
-  include immediate_fields_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  imm2 = b_0xxx_00xx @imm2_operand;
-}%%
-
-%%{
-  machine immediate_fields_parsing_amd64;
-
-  include immediate_fields_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  imm2 = b_xxxx_00xx @imm2_operand;
-}%%
-
 
 %%{
   machine decoder;
