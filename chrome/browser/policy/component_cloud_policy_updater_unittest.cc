@@ -428,4 +428,20 @@ TEST_F(ComponentCloudPolicyUpdaterTest, InvalidatedJob) {
   EXPECT_EQ(GURL(kTestDownload3), fetcher->GetOriginalURL());
 }
 
+TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
+  // Start a fetch with a valid download url.
+  updater_->UpdateExternalPolicy(CreateResponse());
+  net::TestURLFetcher* fetcher = GetCurrentFetcher();
+  ASSERT_TRUE(fetcher);
+
+  // Now update the policy fetch response before the fetch completes. The new
+  // data does not have a download url.
+  builder_.payload().Clear();
+  updater_->UpdateExternalPolicy(CreateResponse());
+
+  // The download has been cancelled.
+  fetcher = GetCurrentFetcher();
+  ASSERT_FALSE(fetcher);
+}
+
 }  // namespace policy

@@ -351,8 +351,10 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
   }
 
   // Maybe the data for this hash has already been downloaded and cached.
-  if (data.secure_hash() == store_->GetCachedHash(ns))
+  if (data.has_secure_hash() &&
+      data.secure_hash() == store_->GetCachedHash(ns)) {
     return;
+  }
 
   // TODO(joaodasilva): implement the other two auth methods.
   if (data.download_auth_method() != em::ExternalPolicyData::NONE)
