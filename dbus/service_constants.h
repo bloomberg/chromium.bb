@@ -707,6 +707,7 @@ const char kDiagnosticsDisconnectsProperty[] = "Diagnostics.Disconnects";
 const char kDiagnosticsMisconnectsProperty[] = "Diagnostics.Misconnects";
 const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
 const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
+const char kErrorDetailsProperty[] = "ErrorDetails";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kIPConfigProperty[] = "IPConfig";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
