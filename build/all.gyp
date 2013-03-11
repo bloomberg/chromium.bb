@@ -11,7 +11,6 @@
       'dependencies': [
         'some.gyp:*',
         '../base/base.gyp:*',
-        '../build/mac/asan.gyp:*',
         '../chrome/chrome.gyp:*',
         '../content/content.gyp:*',
         '../crypto/crypto.gyp:*',
