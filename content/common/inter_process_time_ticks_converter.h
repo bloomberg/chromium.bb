@@ -64,7 +64,9 @@ class CONTENT_EXPORT InterProcessTimeTicksConverter {
  private:
   int64 Convert(int64 value);
 
-  int64 offset_;
+  // The local time which |remote_lower_bound_| is mapped to.
+  int64 local_base_time_;
+
   int64 numerator_;
   int64 denominator_;
 
