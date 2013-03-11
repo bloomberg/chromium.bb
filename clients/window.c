@@ -218,6 +218,7 @@ struct window {
 	int redraw_needed;
 	struct task redraw_task;
 	int resize_needed;
+	int saved_type;
 	int type;
 	int focus_count;
 
@@ -3398,6 +3399,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		return;
 
 	if (fullscreen) {
+		window->saved_type = window->type;
 		if (window->type == TYPE_TOPLEVEL) {
 			window->saved_allocation = window->main_surface->allocation;
 		}
@@ -3406,11 +3408,16 @@ window_set_fullscreen(struct window *window, int fullscreen)
 						window->fullscreen_method,
 						0, NULL);
 	} else {
-		window->type = TYPE_TOPLEVEL;
-		wl_shell_surface_set_toplevel(window->shell_surface);
-		window_schedule_resize(window,
-				       window->saved_allocation.width,
-				       window->saved_allocation.height);
+		if (window->saved_type == TYPE_MAXIMIZED) {
+			window_set_maximized(window, 1);
+		} else {
+			window->type = TYPE_TOPLEVEL;
+			wl_shell_surface_set_toplevel(window->shell_surface);
+			window_schedule_resize(window,
+						   window->saved_allocation.width,
+						   window->saved_allocation.height);
+		}
+
 	}
 }
 
@@ -3438,6 +3445,9 @@ window_set_maximized(struct window *window, int maximized)
 
 	if (window->type == TYPE_TOPLEVEL) {
 		window->saved_allocation = window->main_surface->allocation;
+		wl_shell_surface_set_maximized(window->shell_surface, NULL);
+		window->type = TYPE_MAXIMIZED;
+	} else if (window->type == TYPE_FULLSCREEN) {
 		wl_shell_surface_set_maximized(window->shell_surface, NULL);
 		window->type = TYPE_MAXIMIZED;
 	} else {
