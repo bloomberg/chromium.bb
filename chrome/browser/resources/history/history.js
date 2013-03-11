@@ -1387,10 +1387,14 @@ function load() {
   var offset = parseInt(hashData.offset, 10) || historyView.getOffset();
   historyView.setPageState(hashData.q, page, grouped, range, offset);
 
-  $('search-form').onsubmit = function() {
+  var doSearch = function(e) {
+    // Disable the group by domain control when a search is active.
+    $('display-filter-sites').disabled = (searchField.value != '');
     historyView.setSearch(searchField.value);
-    return false;
   };
+
+  searchField.addEventListener('search', doSearch);
+  $('search-button').addEventListener('click', doSearch);
 
   $('remove-visit').addEventListener('activate', function(e) {
     activeVisit.removeFromHistory();
