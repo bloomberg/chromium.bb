@@ -948,8 +948,12 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
       task->SetString("title", (*i)->title);
       task->SetBoolean("isDefault", false);
 
-      GURL best_icon = extensions::IconsInfo::GetIconURL(
-          extension, kPreferredIconSize, ExtensionIconSet::MATCH_BIGGER);
+      GURL best_icon =
+          ExtensionIconSource::GetIconURL(extension,
+                                          kPreferredIconSize,
+                                          ExtensionIconSet::MATCH_BIGGER,
+                                          false,  // grayscale
+                                          NULL);  // exists
       if (!best_icon.is_empty())
         task->SetString("iconUrl", best_icon.spec());
       else
