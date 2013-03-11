@@ -2696,8 +2696,8 @@ class VerifyPackageTest(CpuTestBase):
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
     run_result = RunCommandResult(returncode=0,
                                   output=ebuild_path)
-    cros_build_lib.RunCommand(['equery', 'which', '--include-masked', cpv],
-                              error_code_ok=True,
+    cros_build_lib.RunCommand(['equery', '-C', 'which', '--include-masked',
+                               cpv], error_code_ok=True,
                               extra_env=envvars, print_cmd=False,
                               redirect_stdout=True, combine_stdout_stderr=True,
                               ).AndReturn(run_result)
@@ -2751,7 +2751,8 @@ class VerifyPackageTest(CpuTestBase):
     mocked_upgrader._GetBoardCmd('equery').AndReturn('equery')
     run_result = RunCommandResult(returncode=0,
                                   output=output)
-    cros_build_lib.RunCommand(['equery', '--no-pipe', 'list', '-op', cpv],
+    cros_build_lib.RunCommand(['equery', '-qCN', 'list', '-F',
+                               '$mask|$cpv:$slot', '-op', cpv],
                               error_code_ok=True,
                               extra_env='envvars', print_cmd=False,
                               redirect_stdout=True, combine_stdout_stderr=True,
@@ -2763,28 +2764,28 @@ class VerifyPackageTest(CpuTestBase):
     self.mox.VerifyAll()
 
   def testGetMaskBitsUnmaskedStable(self):
-    output = '[-P-] [  ] foo/bar-2.7.0:0'
+    output = '  |foo/bar-2.7.0:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.0')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertTrue(pinfo.upgraded_unmasked)
     self.assertTrue(pinfo.upgraded_stable)
 
   def testGetMaskBitsUnmaskedUnstable(self):
-    output = '[-P-] [ ~] foo/bar-2.7.3:0'
+    output = ' ~|foo/bar-2.7.3:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.3')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertTrue(pinfo.upgraded_unmasked)
     self.assertFalse(pinfo.upgraded_stable)
 
   def testGetMaskBitsMaskedStable(self):
-    output = '[-P-] [M ] foo/bar-2.7.4:0'
+    output = 'M |foo/bar-2.7.4:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.4')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertFalse(pinfo.upgraded_unmasked)
     self.assertTrue(pinfo.upgraded_stable)
 
   def testGetMaskBitsMaskedUnstable(self):
-    output = '[-P-] [M~] foo/bar-2.7.4-r1:0'
+    output = 'M~|foo/bar-2.7.4-r1:0'
     pinfo = cpu.PInfo(upgraded_cpv='foo/bar-2.7.4-r1')
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertFalse(pinfo.upgraded_unmasked)

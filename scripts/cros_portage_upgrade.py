@@ -127,7 +127,6 @@ class Upgrader(object):
                '_missing_eclass_re',# Regexp for missing eclass in equery
                '_outdated_eclass_re',# Regexp for outdated eclass in equery
                '_emptydir',     # Path to temporary empty directory
-               '_equery_regexp',# Regexp mask bits from 'equery list' output
                '_master_archs', # Set. Archs of tables merged into master_table
                '_master_cnt',   # Number of tables merged into master_table
                '_master_table', # Merged table from all board runs
@@ -176,7 +175,6 @@ class Upgrader(object):
     self._deps_graph = None
 
     # Pre-compiled regexps for speed.
-    self._equery_regexp = re.compile(r'^\[...\]\s*\[(.)(.)\]\s+\S+$')
     self._missing_eclass_re = re.compile(r'(\S+\.eclass) could not be '
                                          'found by inherit')
     self._outdated_eclass_re = re.compile(r'Call stack:\n'
@@ -493,7 +491,7 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
-    cmd = [equery, 'which', pkg]
+    cmd = [equery, '-C', 'which', pkg]
     cmd_result = cros_build_lib.RunCommand(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
@@ -511,23 +509,26 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
     equery = self._GetBoardCmd('equery')
-    cmd = [equery, '--no-pipe', 'list', '-op', cpv]
+    cmd = [equery, '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv]
     result = cros_build_lib.RunCommand(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
 
-    output = result.output.strip()
+    output = result.output
+    if result.returncode:
+      raise RuntimeError('equery failed on us:\n %s\noutput:\n %s'
+                         % (' '.join(cmd), output))
 
     # Expect output like one of these cases (~ == unstable, M == masked):
-    # [-P-] [ ~] sys-fs/fuse-2.7.3:0
-    # [-P-] [  ] sys-fs/fuse-2.7.3:0
-    # [-P-] [M ] sys-fs/fuse-2.7.3:0
-    # [-P-] [M~] sys-fs/fuse-2.7.3:0
+    #  ~|sys-fs/fuse-2.7.3:0
+    #   |sys-fs/fuse-2.7.3:0
+    # M |sys-fs/fuse-2.7.3:0
+    # M~|sys-fs/fuse-2.7.3:0
     for line in output.split('\n'):
-      match = self._equery_regexp.search(line)
-      if match:
-        pinfo.upgraded_unmasked = 'M' != match.group(1)
-        pinfo.upgraded_stable = '~' != match.group(2)
+      mask = line.split('|')[0]
+      if len(mask) == 2:
+        pinfo.upgraded_unmasked = 'M' != mask[0]
+        pinfo.upgraded_stable = '~' != mask[1]
         return
 
     raise RuntimeError('Unable to determine whether %s is stable from equery:\n'
@@ -551,7 +552,7 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=False)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
-    cmd = [equery, 'which', '--include-masked', cpv]
+    cmd = [equery, '-C', 'which', '--include-masked', cpv]
     result = cros_build_lib.RunCommand(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
@@ -595,7 +596,7 @@ class Upgrader(object):
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok=True)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
-    cmd = [equery, '--no-pipe', 'which', cpv]
+    cmd = [equery, '-C', '--no-pipe', 'which', cpv]
     result = cros_build_lib.RunCommand(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True)
