@@ -62,12 +62,10 @@ DriveDirectory::~DriveDirectory() {
 }
 
 int64 DriveDirectory::changestamp() const {
-  DCHECK(proto_.has_directory_specific_info());
   return proto_.directory_specific_info().changestamp();
 }
 
 void DriveDirectory::set_changestamp(int64 changestamp) {
-  DCHECK(proto_.has_directory_specific_info());
   proto_.mutable_directory_specific_info()->set_changestamp(changestamp);
 }
 
