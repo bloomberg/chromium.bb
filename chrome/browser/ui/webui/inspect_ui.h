@@ -5,10 +5,15 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_INSPECT_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_INSPECT_UI_H_
 
+#include <map>
+
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/devtools/devtools_adb_bridge.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_data_source.h"
 
 class InspectUI : public content::WebUIController,
                   public content::NotificationObserver {
@@ -21,6 +26,11 @@ class InspectUI : public content::WebUIController,
  private:
   class WorkerCreationDestructionListener;
 
+  static bool WeakHandleRequestCallback(
+      const base::WeakPtr<InspectUI>& inspect_ui,
+      const std::string& path,
+      const content::WebUIDataSource::GotDataCallback& callback);
+
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -28,10 +38,33 @@ class InspectUI : public content::WebUIController,
 
   void StopListeningNotifications();
 
+  content::WebUIDataSource* CreateInspectUIHTMLSource();
+
+  bool HandleRequestCallback(
+      const std::string& path,
+      const content::WebUIDataSource::GotDataCallback& callback);
+
+  bool HandleAdbQueryCallback(
+      const std::string& path,
+      const content::WebUIDataSource::GotDataCallback& callback);
+
+  bool HandleLocalXhrCallback(
+      const std::string& path,
+      const content::WebUIDataSource::GotDataCallback& callback);
+
+  void RespondOnUIThread(
+      const content::WebUIDataSource::GotDataCallback& callback,
+      const std::string& error,
+      const std::string& data);
+
+
   scoped_refptr<WorkerCreationDestructionListener> observer_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
+
+  scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+  base::WeakPtrFactory<InspectUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);
 };

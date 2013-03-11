@@ -11,6 +11,24 @@ function requestData() {
   return [];
 }
 
+function adbQuery(query) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'adb-query/' + query, false);
+  xhr.send(null);
+  if (xhr.status === 200)
+    return JSON.parse(xhr.responseText);
+  return [String(xhr.status), ''];
+}
+
+function xhr(url) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'local-xhr/' + url, false);
+  xhr.send(null);
+  if (xhr.status === 200)
+    return JSON.parse(xhr.responseText);
+  return [String(xhr.status), ''];
+}
+
 function inspect(data) {
   chrome.send('inspect',
               [String(data.processId), String(data.routeId)]);
