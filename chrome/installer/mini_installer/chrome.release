@@ -42,6 +42,7 @@ chrome_touch_100_percent.pak: %(VersionDir)s\
 SecondaryTile.png: %(VersionDir)s\
 delegate_execute.exe: %(VersionDir)s\
 metro_driver.dll: %(VersionDir)s\
+libpeerconnection.dll: %(VersionDir)s\
 PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
 PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\
 # All or none of the following 3 files need to be present as the creation of
