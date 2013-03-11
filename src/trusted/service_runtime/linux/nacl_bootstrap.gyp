@@ -92,6 +92,7 @@
         '-fstack-protector-all',
         '-fprofile-generate',
         '-finstrument-functions',
+        '-funwind-tables',
       ],
       'conditions': [
         ['clang==1', {
