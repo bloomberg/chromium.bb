@@ -69,7 +69,7 @@ CancelableTaskTracker::TaskId FaviconService::GetFaviconImage(
     icon_urls.push_back(icon_url);
     return history_service_->GetFavicons(
         icon_urls, icon_type, desired_size_in_dip,
-        ui::GetSupportedScaleFactors(), callback_runner, tracker);
+        FaviconUtil::GetFaviconScaleFactors(), callback_runner, tracker);
   } else {
     return RunWithEmptyResultAsync(callback_runner, tracker);
   }
