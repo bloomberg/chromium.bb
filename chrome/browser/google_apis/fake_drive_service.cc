@@ -362,6 +362,8 @@ void FakeDriveService::GetAccountMetadata(
   ++account_metadata_load_count_;
   scoped_ptr<AccountMetadata> account_metadata =
       AccountMetadata::CreateFrom(*account_metadata_value_);
+  // Overwrite the change stamp.
+  account_metadata->set_largest_changestamp(largest_changestamp_);
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
@@ -391,6 +393,8 @@ void FakeDriveService::GetAboutResource(
       AboutResource::CreateFromAccountMetadata(
           *AccountMetadata::CreateFrom(*account_metadata_value_),
           GetRootResourceId()));
+  // Overwrite the change id.
+  about_resource->set_largest_change_id(largest_changestamp_);
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,

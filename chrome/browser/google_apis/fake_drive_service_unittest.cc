@@ -78,6 +78,16 @@ class FakeDriveServiceTest : public testing::Test {
     return false;
   }
 
+  int64 GetLargestChangeByAboutResource() {
+    GDataErrorCode error;
+    scoped_ptr<AboutResource> about_resource;
+    fake_service_.GetAboutResource(
+        base::Bind(&test_util::CopyResultsFromGetAboutResourceCallback,
+                   &error, &about_resource));
+    message_loop_.RunUntilIdle();
+    return about_resource->largest_change_id();
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   FakeDriveService fake_service_;
@@ -694,6 +704,10 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
 TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "document:5_document_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -712,7 +726,8 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
   EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
   EXPECT_EQ("new name", resource_entry->title());
   // Should be incremented as a new hosted document was created.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonexistingHostedDocument) {
@@ -776,6 +791,10 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
 TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "file:2_file_resource_id";
 
@@ -793,7 +812,8 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("new name", resource_entry->title());
   // Should be incremented as a file was renamed.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
@@ -834,6 +854,10 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "file:2_file_resource_id";
   const std::string kOldParentResourceId = fake_service_.GetRootResourceId();
@@ -857,12 +881,17 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
   EXPECT_TRUE(HasParent(kResourceId, kNewParentResourceId));
   // Should be incremented as a file was moved.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "file:subdirectory_file_1_id";
   const std::string kOldParentResourceId = "folder:1_folder_resource_id";
@@ -886,7 +915,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   EXPECT_TRUE(HasParent(kResourceId, kOldParentResourceId));
   EXPECT_TRUE(HasParent(kResourceId, kNewParentResourceId));
   // Should be incremented as a file was moved.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
@@ -910,6 +940,10 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "file:1_orphanfile_resource_id";
   const std::string kNewParentResourceId = "folder:1_folder_resource_id";
@@ -932,7 +966,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
   EXPECT_TRUE(HasParent(kResourceId, kNewParentResourceId));
   EXPECT_FALSE(HasParent(kResourceId, fake_service_.GetRootResourceId()));
   // Should be incremented as a file was moved.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
@@ -957,6 +992,10 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "file:subdirectory_file_1_id";
   const std::string kParentResourceId = "folder:1_folder_resource_id";
@@ -984,7 +1023,8 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_FALSE(parent_link);
   // Should be incremented as a file was moved to the root directory.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
@@ -1045,6 +1085,10 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
@@ -1063,12 +1107,17 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   EXPECT_TRUE(HasParent(resource_entry->resource_id(),
                         fake_service_.GetRootResourceId()));
   // Should be incremented as a new directory was created.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/empty_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
@@ -1087,12 +1136,17 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
   EXPECT_TRUE(HasParent(resource_entry->resource_id(),
                         fake_service_.GetRootResourceId()));
   // Should be incremented as a new directory was created.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kParentResourceId = "folder:1_folder_resource_id";
 
@@ -1112,7 +1166,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
   EXPECT_EQ("new directory", resource_entry->title());
   EXPECT_TRUE(HasParent(resource_entry->resource_id(), kParentResourceId));
   // Should be incremented as a new directory was created.
-  EXPECT_EQ(1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
