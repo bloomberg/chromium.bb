@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -1689,7 +1690,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->Clear(ui::Clipboard::BUFFER_STANDARD);
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_C, kCtrlOrCmdMask));
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_COPY));
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 
