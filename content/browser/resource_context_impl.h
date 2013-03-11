@@ -10,7 +10,6 @@
 namespace content {
 
 class ChromeBlobStorageContext;
-class StreamContext;
 class BrowserContext;
 class HostZoomMap;
 class URLDataManagerBackend;
@@ -20,9 +19,6 @@ class URLDataManagerBackend;
 // public API.
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
-    ResourceContext* resource_context);
-
-StreamContext* GetStreamContextForResourceContext(
     ResourceContext* resource_context);
 
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
