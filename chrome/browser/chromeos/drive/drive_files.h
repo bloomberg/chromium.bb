@@ -159,8 +159,7 @@ class DriveDirectory : public DriveEntry {
   // Map between base_name and resource_id of files and directories.
   typedef std::map<base::FilePath::StringType, std::string> ChildMap;
   // Collection of children.
-  ChildMap child_files_;
-  ChildMap child_directories_;
+  ChildMap children_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };

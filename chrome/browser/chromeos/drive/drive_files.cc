@@ -115,28 +115,17 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
            << ", resource = " + entry->resource_id();
 
   // Setup child and parent links.
-  if (entry->proto().file_info().is_directory()) {
-    child_directories_.insert(std::make_pair(entry->base_name(),
-                                             entry->resource_id()));
-  } else {
-    child_files_.insert(std::make_pair(entry->base_name(),
-                                       entry->resource_id()));
-  }
+  children_.insert(std::make_pair(entry->base_name(),
+                                  entry->resource_id()));
   entry->set_parent_resource_id(proto_.resource_id());
 }
 
 void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
-  for (ChildMap::const_iterator iter = dir->child_files_.begin();
-       iter != dir->child_files_.end(); ++iter) {
+  for (ChildMap::const_iterator iter = dir->children_.begin();
+       iter != dir->children_.end(); ++iter) {
     TakeOverEntry(iter->second);
   }
-  dir->child_files_.clear();
-
-  for (ChildMap::iterator iter = dir->child_directories_.begin();
-       iter != dir->child_directories_.end(); ++iter) {
-    TakeOverEntry(iter->second);
-  }
-  dir->child_directories_.clear();
+  dir->children_.clear();
 }
 
 void DriveDirectory::TakeOverEntry(const std::string& resource_id) {
@@ -156,14 +145,9 @@ void DriveDirectory::RemoveEntry(DriveEntry* entry) {
 
 std::string DriveDirectory::FindChild(
     const base::FilePath::StringType& file_name) const {
-  ChildMap::const_iterator iter = child_files_.find(file_name);
-  if (iter != child_files_.end())
+  ChildMap::const_iterator iter = children_.find(file_name);
+  if (iter != children_.end())
     return iter->second;
-
-  iter = child_directories_.find(file_name);
-  if (iter != child_directories_.end())
-    return iter->second;
-
   return std::string();
 }
 
@@ -177,8 +161,7 @@ void DriveDirectory::RemoveChild(DriveEntry* entry) {
   resource_metadata_->RemoveEntryFromResourceMap(entry->resource_id());
 
   // Then delete it from tree.
-  child_files_.erase(base_name);
-  child_directories_.erase(base_name);
+  children_.erase(base_name);
 
   entry->set_parent_resource_id(std::string());
 }
@@ -186,43 +169,50 @@ void DriveDirectory::RemoveChild(DriveEntry* entry) {
 void DriveDirectory::RemoveChildren() {
   RemoveChildFiles();
   RemoveChildDirectories();
+  DCHECK(children_.empty());
 }
 
 void DriveDirectory::RemoveChildFiles() {
   DVLOG(1) << "RemoveChildFiles " << proto_.resource_id();
-  for (ChildMap::const_iterator iter = child_files_.begin();
-       iter != child_files_.end(); ++iter) {
+  for (ChildMap::iterator iter = children_.begin(), iter_next = iter;
+       iter != children_.end(); iter = iter_next) {
+    ++iter_next;
     DriveEntry* child = resource_metadata_->GetEntryByResourceId(iter->second);
     DCHECK(child);
-    resource_metadata_->RemoveEntryFromResourceMap(iter->second);
-    delete child;
+    if (!child->proto().file_info().is_directory()) {
+      resource_metadata_->RemoveEntryFromResourceMap(iter->second);
+      delete child;
+      children_.erase(iter);
+    }
   }
-  child_files_.clear();
 }
 
 void DriveDirectory::RemoveChildDirectories() {
-  for (ChildMap::iterator iter = child_directories_.begin();
-       iter != child_directories_.end(); ++iter) {
+  for (ChildMap::iterator iter = children_.begin(), iter_next = iter;
+       iter != children_.end(); iter = iter_next) {
+    ++iter_next;
     DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
         iter->second)->AsDriveDirectory();
-    DCHECK(dir);
-    // Remove directories recursively.
-    dir->RemoveChildren();
-    resource_metadata_->RemoveEntryFromResourceMap(iter->second);
-    delete dir;
+    if (dir) {
+      // Remove directories recursively.
+      dir->RemoveChildren();
+      resource_metadata_->RemoveEntryFromResourceMap(iter->second);
+      delete dir;
+      children_.erase(iter);
+    }
   }
-  child_directories_.clear();
 }
 
 void DriveDirectory::GetChildDirectoryPaths(
     std::set<base::FilePath>* child_dirs) {
-  for (ChildMap::const_iterator iter = child_directories_.begin();
-       iter != child_directories_.end(); ++iter) {
+  for (ChildMap::const_iterator iter = children_.begin();
+       iter != children_.end(); ++iter) {
     DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
         iter->second)->AsDriveDirectory();
-    DCHECK(dir);
-    child_dirs->insert(dir->GetFilePath());
-    dir->GetChildDirectoryPaths(child_dirs);
+    if (dir) {
+      child_dirs->insert(dir->GetFilePath());
+      dir->GetChildDirectoryPaths(child_dirs);
+    }
   }
 }
 
@@ -255,39 +245,27 @@ void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
   *proto->mutable_drive_entry() = proto_;
   DCHECK(proto->drive_entry().file_info().is_directory());
 
-  for (ChildMap::const_iterator iter = child_files_.begin();
-       iter != child_files_.end(); ++iter) {
-    DriveEntry* file = resource_metadata_->GetEntryByResourceId(
+  for (ChildMap::const_iterator iter = children_.begin();
+       iter != children_.end(); ++iter) {
+    DriveEntry* entry = resource_metadata_->GetEntryByResourceId(
         iter->second);
-    DCHECK(file);
-    DCHECK(!file->proto().file_info().is_directory());
-    *proto->add_child_files() = file->proto();
-  }
-  for (ChildMap::const_iterator iter = child_directories_.begin();
-       iter != child_directories_.end(); ++iter) {
-    DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
-        iter->second)->AsDriveDirectory();
-    DCHECK(dir);
-    dir->ToProto(proto->add_child_directories());
+    DCHECK(entry);
+    DriveDirectory* dir = entry->AsDriveDirectory();
+    if (dir)
+      dir->ToProto(proto->add_child_directories());
+    else
+      *proto->add_child_files() = entry->proto();
   }
 }
 
 scoped_ptr<DriveEntryProtoVector> DriveDirectory::ToProtoVector() const {
   scoped_ptr<DriveEntryProtoVector> entries(new DriveEntryProtoVector);
-  // Use ToProtoFull, as we don't want to include children in |proto|.
-  for (ChildMap::const_iterator iter = child_files_.begin();
-       iter != child_files_.end(); ++iter) {
+  for (ChildMap::const_iterator iter = children_.begin();
+       iter != children_.end(); ++iter) {
     const DriveEntryProto& proto =
         resource_metadata_->GetEntryByResourceId(iter->second)->proto();
     entries->push_back(proto);
   }
-  for (ChildMap::const_iterator iter = child_directories_.begin();
-       iter != child_directories_.end(); ++iter) {
-    const DriveEntryProto& proto =
-        resource_metadata_->GetEntryByResourceId(iter->second)->proto();
-    entries->push_back(proto);
-  }
-
   return entries.Pass();
 }
 
