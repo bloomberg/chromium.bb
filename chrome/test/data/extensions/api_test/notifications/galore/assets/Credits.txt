@@ -23,3 +23,9 @@ Public domain images and their origins:
   Woman2.jpg: http://www.publicdomainpictures.net/view-image.php?image=26173
   Woman3.jpg: http://publicphoto.org/people/
                 young-woman-and-girl-with-poppy-flower-in-hair/
+
+Other images are:
+
+  Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.

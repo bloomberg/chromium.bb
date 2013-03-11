@@ -1,12 +1,12 @@
 {
   "name": "Notifications Galore!",
   "description": "A testbed for Chrome notifications",
-  "version": "0.7",
+  "version": "0.9",
   "manifest_version": 2,
   "minimum_chrome_version": "23",
   "app": {
     "background": {
-      "scripts": ["model.js", "view.js", "controller.js", "main.js"]
+      "scripts": ["view.js", "controller.js", "main.js"]
     }
   },
   "icons": {
@@ -14,5 +14,5 @@
     "48": "images/icon-48x48.png",
     "128": "images/icon-128x128.png"
   },
-  "permissions": ["notifications"]
+  "permissions": ["experimental", "notifications", "storage"]
 }

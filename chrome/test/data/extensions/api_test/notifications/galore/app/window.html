@@ -4,33 +4,44 @@
   -- found in the LICENSE file. -->
 <html>
   <head>
-    <title>Garrulous</title>
+    <title>Notifications Galore!</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
-  <body>
-    <button id="close"></button>
+  <body data-active="" data-popup="false">
     <div id="templates">
       <div class="section"><h1><span/></h1></div>
       <div class="event"></div>
-      <button><img src="images/white-64x64.png"></button>
+      <div class="error"></div>
+      <div class="spacer"></div>
+      <button class="notification">
+        <img src="images/white-40x40.png">
+      </button>
     </div>
-    <div>
+    <div id="priority" class="section">
       <h1><span>Priority</span></h1>
-      <form name="priority" id="priority">
-        <label><input type="radio" name="priority" value="-2">-2</label>
-        <label><input type="radio" name="priority" value="-1">-1</label>
-        <label>
-          <input type="radio" name="priority" value="0" checked="true">0
-        </label>
-        <label><input type="radio" name="priority" value="1">1</label>
-        <label><input type="radio" name="priority" value="2">2</label>
-      </div>
+      <button class="priority" data-priority="-2">-2</button>
+      <button class="priority" data-priority="-1">-1</button>
+      <button class="priority" data-priority="0">0</button>
+      <button class="priority" data-priority="1">1</button>
+      <button class="priority" data-priority="2">2</button>
     </div>
-    <div id="sections"></div>
-    <div id="events">
-      <h1><span>Events</span></h1>
+    <div id="notifications"></div>
+    <div id="events" class="section">
       <div id="events-scroll"></div>
       <div id="events-fade"></div>
+      <h1><span>Events</span></h1>
     </div>
+    <div id="popup">
+      <div id="shadow" class="shadow"></div>
+      <div id="menu">
+        <div id="menu-items">
+          <button id="show-settings" class="menu">Settings...</button>
+          <button id="clear-events" class="menu">Clear Events</button>
+        </div>
+        <div id="arrow"></div>
+      </div>
+    </div>
+    <button id="close" class="close" name="Close"></button>
+    <button id="show-menu" class="menu" name="Show Menu"></button>
   </body>
 </html>

@@ -5,100 +5,206 @@
 var Galore = Galore || {};
 
 Galore.controller = {
-
-  BUTTON_IMAGE_SIZE: 64,
-  NOTIFICATION_ICON_SIZE: 80,
-
+  /** @constructor */
   create: function() {
+    Galore.identifier = Galore.identifier ? (Galore.identifier + 1) : 1;
     var controller = Object.create(this);
+    controller.identifier = Galore.identifier;
+    controller.api = chrome;
     controller.counter = 0;
-    controller.prefix = chrome.runtime.getURL('').slice(0, -1);
-    controller.view = Galore.view.create(this.prepare_.bind(controller));
-    controller.listen_('onDisplayed');
-    controller.listen_('onClosed');
-    controller.listen_('onClicked');
-    controller.listen_('onButtonClicked');
     return controller;
   },
 
-  /** @private */
-  listen_: function(event) {
-    var listener = this.event_.bind(this, event);
-    chrome.notifications[event].addListener(listener);
+  createWindow: function() {
+    this.view = Galore.view.create(function() {
+      var request = new XMLHttpRequest();
+      request.open('GET', '/data/notifications.json', true);
+      request.responseType = 'text';
+      request.onload = this.onData_.bind(this, request);
+      request.send();
+    }.bind(this));
   },
 
   /** @private */
-  prepare_: function() {
-    Galore.NOTIFICATIONS.forEach(function (type) {
-      type.notifications.forEach(function (options) {
-        this.view.addNotificationButton(
-            type.type,
-            type.name,
-            this.replace_(options.iconUrl, this.BUTTON_IMAGE_SIZE),
-            this.notify_.bind(this, type.type, options));
+  onData_: function(request) {
+    var data = JSON.parse(request.response);
+    var path = data[0].api || 'notifications';
+    this.api = chrome;
+    path.split('.').forEach(function(key) {
+      var before = this.api;
+      this.api = this.api && this.api[key];
+    }, this);
+    if (this.api)
+      this.onApi_(data);
+    else
+      this.view.logError('No API found - chrome.' + path + ' is undefined');
+  },
+
+  /** @private */
+  onApi_: function(data) {
+    var count = 0;
+    var globals = data[0].globals || {};
+    (data[0].events || []).forEach(function(event) {
+      this.addListener_(event);
+    }, this);
+    data.forEach(function(section) {
+      (section.notificationOptions || []).forEach(function(options) {
+        var button = this.view.addNotificationButton(section.sectionName);
+        Object.keys(section.globals || globals).forEach(function (key) {
+          options[key] = options[key] || (section.globals || globals)[key];
+        });
+        ++count;
+        this.fetchImages_(options, function() {
+          var create = this.createNotification_.bind(this, section, options);
+          var iconUrl = options.galoreIconUrl || options.iconUrl;
+          delete options.galoreIconUrl;
+          this.view.setNotificationButtonAction(button, create);
+          this.view.setNotificationButtonIcon(button, iconUrl, options.title);
+          if (--count == 0)
+            this.view.showWindow();
+        }.bind(this));
       }, this);
     }, this);
   },
 
   /** @private */
-  id_: function() {
+  onImages_: function(button, section, options) {
+    var create = this.createNotification_.bind(this, section, options);
+    var iconUrl = options.galoreIconUrl || options.iconUrl;
+    delete options.galoreIconUrl;
+    this.view.setNotificationButtonAction(button, create);
+    this.view.setNotificationButtonIcon(button, iconUrl, options.title);
+  },
+
+  /** @private */
+  fetchImages_: function(options, onFetched) {
+    var count = 0;
+    var replacements = {};
+    this.mapStrings_(options, function(string) {
+      if (string.indexOf("/images/") == 0 || string.indexOf("http:/") == 0) {
+        ++count;
+        this.fetchImage_(string, function(url) {
+          replacements[string] = url;
+          if (--count == 0) {
+            this.mapStrings_(options, function(string) {
+              return replacements[string] || string;
+            });
+            onFetched.call(this, options);
+          }
+        });
+      }
+    });
+  },
+
+  /** @private */
+  fetchImage_: function(url, onFetched) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'blob';
+    request.onload = function() {
+      var url = window.URL.createObjectURL(request.response);
+      onFetched.call(this, url);
+    }.bind(this);
+    request.send();
+  },
+
+  /** @private */
+  createNotification_: function(section, options) {
+    var id = this.getNextId_();
+    var type = section.notificationType;
+    var priority = this.view.settings.priority;
+    var expanded = this.expandOptions_(options, id, type, priority);
+    if (type == 'webkit')
+      this.createWebKitNotification_(expanded);
+    else
+      this.createRichNotification_(expanded, id, type, priority);
+  },
+
+  /** @private */
+  createWebKitNotification_: function(options) {
+    var iconUrl = options.iconUrl;
+    var title = options.title;
+    var message = options.message;
+    webkitNotifications.createNotification(iconUrl, title, message).show();
+    this.handleEvent_('create', '?', 'title: "' + title + '"');
+  },
+
+  /** @private */
+  createRichNotification_: function(options, id, type, priority) {
+    this.api.create(id, options, function() {
+      var argument1 = 'type: "' + type + '"';
+      var argument2 = 'priority: ' + priority;
+      var argument3 = 'title: "' + options.title + '"';
+      this.handleEvent_('create', id, argument1, argument2, argument3);
+    }.bind(this));
+  },
+
+  /** @private */
+  getNextId_: function() {
     this.counter += 1;
     return String(this.counter);
   },
 
   /** @private */
-  notify_: function(type, options) {
-    var id = this.id_();
-    var priority = this.view.getPriority();
-    var expanded = this.expand_(options, type, priority);
-    if (chrome.notifications.create) {
-      chrome.notifications.create(id, expanded, function() {});
-    } else {
-      expanded.replaceId = id;
-      delete expanded.buttonOneIconUrl;
-      delete expanded.buttonOneTitle;
-      delete expanded.buttonTwoIconUrl;
-      delete expanded.buttonTwoTitle;
-      chrome.notifications.show(expanded, function() {});
-    }
-    this.event_('create', id, 'priority: ' + priority);
-  },
-
-  /** @private */
-  expand_: function(options, type, priority) {
-    var expanded = {type: type, priority: priority};
-    Object.keys(options).forEach(function (key) {
-      expanded[key] = this.replace_(options[key], this.NOTIFICATION_ICON_SIZE);
+  expandOptions_: function(options, id, type, priority) {
+    var expanded = this.deepCopy_(options);
+    return this.mapStrings_(expanded, function(string) {
+      return this.expandOption_(string, id, type, priority);
     }, this);
-    return expanded;
+  },
+  /** @private */
+  expandOption_: function(option, id, type, priority) {
+    if (option == '$!') {
+      option = priority;  // Avoids making priorities into strings.
+    } else {
+      option = option.replace(/\$#/g, id);
+      option = option.replace(/\$\?/g, type);
+      option = option.replace(/\$\!/g, priority);
+    }
+    return option;
   },
 
   /** @private */
-  replace_: function(option, size) {
-    var replaced;
-    if (typeof option === 'string') {
-      replaced = option.replace(/\$#/g, this.counter);
-      replaced = replaced.replace(/\$@/g, this.prefix);
-      replaced = replaced.replace(/\$%/g, size);
-    } else if (Array.isArray(option)) {
-      replaced = [];
-      option.forEach(function(element) {
-        replaced.push(this.replace_(element, size));
-      }, this);
-    } else {
-      replaced = {};
-      Object.keys(option).forEach(function (key) {
-        replaced[key] = this.replace_(option[key], size);
+  deepCopy_: function(value) {
+    var copy = value;
+    if (Array.isArray(value)) {
+      copy = value.map(this.deepCopy_, this);
+    } else if (value && typeof value === 'object') {
+      copy = {}
+      Object.keys(value).forEach(function (key) {
+        copy[key] = this.deepCopy_(value[key]);
       }, this);
     }
-    return replaced;
+    return copy;
   },
 
   /** @private */
-  event_: function(event, id, var_args) {
+  mapStrings_: function(value, map) {
+    var mapped = value;
+    if (typeof value === 'string') {
+      mapped = map.call(this, value);
+      mapped = (typeof mapped !== 'undefined') ? mapped : value;
+    } else if (value && typeof value == 'object') {
+      Object.keys(value).forEach(function (key) {
+        mapped[key] = this.mapStrings_(value[key], map);
+      }, this);
+    }
+    return mapped;
+  },
+
+  /** @private */
+  addListener_: function(event) {
+    var listener = this.handleEvent_.bind(this, event);
+    if (this.api[event])
+      this.api[event].addListener(listener);
+    else
+      console.log('Event ' + event + ' not defined.');
+  },
+
+  /** @private */
+  handleEvent_: function(event, id, var_args) {
     this.view.logEvent('Notification #' + id + ': ' + event + '(' +
                        Array.prototype.slice.call(arguments, 2).join(', ') +
                        ')');
   }
-
 };

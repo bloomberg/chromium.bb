@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 (function() {
-  var listener = Galore.controller.create.bind(Galore.controller);
+  var controller = Galore.controller.create();
+  var listener = controller.createWindow.bind(controller);
   chrome.app.runtime.onLaunched.addListener(listener);
   chrome.app.runtime.onRestarted.addListener(listener);
 }());

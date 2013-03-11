@@ -2,129 +2,267 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+/* Globals ********************************************************************/
+
 body {
   -webkit-app-region: drag;
-  cursor: -webkit-grab;
-  font: 16px 'Arimo', 'Gill Sans', 'Open Sans',
-             'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  margin: 0;
-  padding: 17px 4px 0;
-}
-
-button {
-  -webkit-app-region: no-drag;
-  background: none;
-  border: 1px solid white;
   cursor: default;
-  height: 72px;
   margin: 0;
-  padding: 3px;
-  width: 72px;
+  padding: 15px 4px 4px;
 }
 
-button:active {
-  opacity: 0.5;
-}
-
-button:hover {
-  border: 1px solid black;
-}
-
-#close {
-  background: url("/images/close-26x26.png");
-  background-size: cover;
-  border: none;
-  height: 12px;
-  opacity: 0.2;
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  width: 12px;
-}
-
-#close:hover {
-  border: none;
-  border-radius: 0;
-  opacity: 0.75;
-}
-
-#close:active:hover {
-  opacity: 1;
-}
-
-#events {
+.section {
+  margin: 12px 0 0;
   position: relative;
-}
-
-#events-fade {
-  background: -webkit-linear-gradient(rgba(255, 255, 255, 1),
-                                      rgba(255, 255, 255, 0));
-  height: 48px;
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 20px;
-  z-index: 99;
-}
-
-#events-scroll {
-  -webkit-app-region: no-drag;
-  color: gray;
-  cursor: text;
-  font-weight: lighter;
-  height: 90px;
-  overflow: scroll;
-  padding: 0 3px;
-  -webkit-user-select: text;
+  padding: 23px 0 0;
 }
 
 h1 {
+  /* White with a vertically centered one pixel horizontal black line. */
   background: -webkit-linear-gradient(white, white 59%,
                                       black 60%, black 64%,
                                       white 65%, white);
-  font-size: 16px;
-  font-weight: normal;
-  margin: 8px 0 2px;
+  font: normal 16px 'Arimo', 'Gill Sans', 'Open Sans',
+                    'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  right: 0;
   text-align: center;
-  z-index: -1;
+  top: 0;
 }
 
 h1 span {
   background: white;
-  padding: 0 2px;
-  position: relative;
+  padding: 0 4px;
 }
 
-img {
-  display: block;
-  height: 64px;
+button {
+  background: none;
+  border: 1px solid white;
   margin: 0;
-  padding: 0;
-  width: 64px;
+  padding: 3px;
 }
 
 ::-webkit-scrollbar {
-  display: none;
+  display: none !important;
 }
 
-#priority {
-  -webkit-app-region: no-drag;
-  margin: 0 0 0 33px;
-}
-
-#priority input {
-  margin: 0 8px 0 0;
-}
-
-#priority label {
-  display: inline-block;
-  font-size: 14px;
-  margin: 0 0 0 23px;
-  width: 68px
-}
+/* Template section (invisible) ***********************************************/
 
 #templates {
   position: absolute;
   visibility: hidden;
 }
+
+/* Priority section ***********************************************************/
+
+#priority {
+  font-size: 0;  /* To collapse the spaces between buttons. */
+}
+
+#priority .priority:first-of-type {
+  margin: 0 0 0 96px;  /* Leftmost button is 96 pixels in. */
+}
+
+button.priority {
+  font: normal 14px 'Arimo', 'Gill Sans', 'Open Sans',
+                    'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  height: 24px;
+  width: 48px;
+}
+
+/* Notification sections ******************************************************/
+
+button.notification {
+  height: 48px;
+  width: 48px;
+}
+
+img {
+  display: block;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  width: 40px;
+}
+
+/* Events section *************************************************************/
+
+#events {
+  position: relative;
+  height: 112px;
+}
+
+#events-scroll {
+  bottom: 4px;
+  font-weight: lighter;
+  left: 4px;
+  padding: 0;
+  max-height: 119px;
+  overflow: scroll;
+  position: absolute;
+  right: 4px;
+  -webkit-user-select: text;
+}
+
+#events-fade {
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 1),
+                                      rgba(255, 255, 255, 1) 50%,
+                                      rgba(255, 255, 255, 0));
+  height: 46px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.event {
+  color: gray;
+  font: 11px 'Arimo', 'Gill Sans', 'Open Sans',
+             'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+}
+
+.error {
+  color: red;
+  font: bold 16px 'Arimo', 'Gill Sans', 'Open Sans',
+             'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  text-align: center;
+}
+
+/* Menu ***********************************************************************/
+
+body[data-active="menu"] #popup,
+body[data-popup="true"] #popup {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+body:not([data-active="menu"]):not([data-popup="true"]) #popup {
+  left: -9999px !important;
+  position: absolute !important;
+  top: -9999px !important;
+}
+
+#shadow {
+  background: gray;
+  bottom: 0;
+  left: 0;
+  opacity: 0.33;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#menu {
+  left: 12px;
+  padding: 0;
+  position: absolute;
+  top: 26px;
+  width: auto;
+}
+
+#menu-items {
+  background: white;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.7);
+  margin: 7px 0 0;
+  padding: 4px;
+}
+
+#menu-items button {
+  display: block;
+  text-align: left;
+  width: 100%;
+}
+
+#show-settings {
+  /* TODO(dharcourt): Add a settings panel and make this open it. */
+  display: none !important;
+}
+
+#arrow {
+  border-bottom: 7px solid white;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  height: 0;
+  position: absolute;
+  top: 0;
+  width: 0;
+}
+
+/* Menu and close buttons *****************************************************/
+
+#show-menu,
+#close {
+  border: 1px solid transparent;
+  height: 16px;
+  opacity: 0.15;
+  position: absolute;
+  top: 11px;
+  width: 16px;
+}
+
+#show-menu {
+  background: url("/images/menu-14x14.png");
+  left: 11px;
+}
+
+#close {
+  background: url("/images/close-14x14.png");
+  right: 11px;
+}
+
+#show-menu:hover,
+#close:hover {
+  opacity: 0.6;
+}
+
+body[data-active="close"] #close,
+body[data-active="menu"] #show-menu {
+  opacity: 1;
+}
+
+/* Highlighting ***************************************************************/
+
+body[data-active=""] button[data-hover="true"],
+body[data-active="close"] button.close[data-hover="true"],
+body[data-active="menu"] button.menu[data-hover="true"],
+body[data-active="notification"] button.notification[data-hover="true"],
+body[data-active="priority"] button.priority[data-hover="true"] {
+  border: 1px solid black !important;
+}
+
+body[data-active="notification"] button.notification[data-hover="true"],
+body[data-active="priority"] button.priority[data-hover="true"] {
+  opacity: 0.5;
+}
+
+body[data-priority="-2"] button.priority[data-priority="-2"],
+body[data-priority="-1"] button.priority[data-priority="-1"],
+body[data-priority="0"] button.priority[data-priority="0"],
+body[data-priority="1"] button.priority[data-priority="1"],
+body[data-priority="2"] button.priority[data-priority="2"] {
+  background: rgb(255, 255, 85);
+  -webkit-box-shadow: inset 3px 3px 0 white, inset -3px -3px 0 white;
+}
+
+/* Cursor and dragging control ************************************************/
+
+body:not([data-active=""]),
+body:not([data-active="menu"]):not([data-popup="true"]) button,
+button.menu,
+button.close {
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+}
+
+body:not([data-active="menu"]):not([data-popup="true") #events {
+  -webkit-app-region: no-drag;
+  cursor: text;
+}
+
+/* That's all folks! **********************************************************/
