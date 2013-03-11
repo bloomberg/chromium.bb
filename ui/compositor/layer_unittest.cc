@@ -18,6 +18,7 @@
 #include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/test/test_compositor_host.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -324,6 +325,7 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_ScaleUpDown DISABLED_ScaleUpDown
 #define MAYBE_ScaleReparent DISABLED_ScaleReparent
 #define MAYBE_NoScaleCanvas DISABLED_NoScaleCanvas
+#define MAYBE_AddRemoveThreadedAnimations DISABLED_AddRemoveThreadedAnimations
 #else
 #define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
@@ -338,6 +340,7 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_ScaleUpDown ScaleUpDown
 #define MAYBE_ScaleReparent ScaleReparent
 #define MAYBE_NoScaleCanvas NoScaleCanvas
+#define MAYBE_AddRemoveThreadedAnimations AddRemoveThreadedAnimations
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -1307,6 +1310,52 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   child->SetDelegatedFrame(MakeFrameData(gfx::Size(10, 10)), gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(20, 20).ToString());
+}
+
+// Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
+TEST_F(LayerWithRealCompositorTest, MAYBE_AddRemoveThreadedAnimations) {
+  scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> l2(CreateLayer(LAYER_TEXTURED));
+
+  l1->SetAnimator(LayerAnimator::CreateImplicitAnimator());
+  l2->SetAnimator(LayerAnimator::CreateImplicitAnimator());
+
+  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+
+  // Trigger a threaded animation.
+  l1->SetOpacity(0.5f);
+
+  EXPECT_TRUE(l1->HasPendingThreadedAnimations());
+
+  // Ensure we can remove a pending threaded animation.
+  l1->GetAnimator()->StopAnimating();
+
+  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+
+  // Trigger another threaded animation.
+  l1->SetOpacity(0.2f);
+
+  EXPECT_TRUE(l1->HasPendingThreadedAnimations());
+
+  root->Add(l1.get());
+  GetCompositor()->SetRootLayer(root.get());
+
+  // Now that l1 is part of a tree, it should have dispatched the pending
+  // animation.
+  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+
+  // Ensure that l1 no longer holds on to animations.
+  l1->SetOpacity(0.1f);
+  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+
+  // Ensure that adding a layer to an existing tree causes its pending
+  // animations to get dispatched.
+  l2->SetOpacity(0.5f);
+  EXPECT_TRUE(l2->HasPendingThreadedAnimations());
+
+  l1->Add(l2.get());
+  EXPECT_FALSE(l2->HasPendingThreadedAnimations());
 }
 
 }  // namespace ui

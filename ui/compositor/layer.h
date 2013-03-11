@@ -15,6 +15,7 @@
 #include "cc/animation_events.h"
 #include "cc/content_layer_client.h"
 #include "cc/layer_animation_event_observer.h"
+#include "cc/scoped_ptr_vector.h"
 #include "cc/texture_layer_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -305,6 +306,11 @@ class COMPOSITOR_EXPORT Layer
   // LayerAnimationEventObserver
   virtual void OnAnimationStarted(const cc::AnimationEvent& event) OVERRIDE;
 
+  // Whether this layer has animations waiting to get sent to its cc::Layer.
+  bool HasPendingThreadedAnimations() {
+    return pending_threaded_animations_.size() != 0;
+  }
+
  private:
   // Stacks |child| above or below |other|.  Helper method for StackAbove() and
   // StackBelow().
@@ -360,6 +366,12 @@ class COMPOSITOR_EXPORT Layer
   void UpdateIsDrawn();
 
   void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
+
+  // We cannot send animations to our cc_layer_ until we have been added to a
+  // layer tree. Instead, we hold on to these animations in
+  // pending_threaded_animations_, and expect SendPendingThreadedAnimations to
+  // be called once we have been added to a tree.
+  void SendPendingThreadedAnimations();
 
   const LayerType type_;
 
@@ -426,6 +438,10 @@ class COMPOSITOR_EXPORT Layer
   LayerDelegate* delegate_;
 
   scoped_refptr<LayerAnimator> animator_;
+
+  // Animations that are passed to AddThreadedAnimation before this layer is
+  // added to a tree.
+  cc::ScopedPtrVector<cc::Animation> pending_threaded_animations_;
 
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.

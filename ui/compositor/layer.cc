@@ -13,6 +13,7 @@
 #include "cc/content_layer.h"
 #include "cc/delegated_frame_data.h"
 #include "cc/delegated_renderer_layer.h"
+#include "cc/scoped_ptr_algorithm.h"
 #include "cc/solid_color_layer.h"
 #include "cc/texture_layer.h"
 #include "cc/transferable_resource.h"
@@ -130,8 +131,10 @@ void Layer::SetCompositor(Compositor* compositor) {
   DCHECK(!compositor || compositor->root_layer() == this);
   DCHECK(!parent_);
   compositor_ = compositor;
-  if (compositor)
+  if (compositor) {
     OnDeviceScaleFactorChanged(compositor->device_scale_factor());
+    SendPendingThreadedAnimations();
+  }
 }
 
 void Layer::Add(Layer* child) {
@@ -143,6 +146,8 @@ void Layer::Add(Layer* child) {
   cc_layer_->addChild(child->cc_layer_);
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
   child->UpdateIsDrawn();
+  if (GetCompositor())
+    child->SendPendingThreadedAnimations();
 }
 
 void Layer::Remove(Layer* child) {
@@ -804,12 +809,56 @@ SkColor Layer::GetColorForAnimation() const {
 
 void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
   DCHECK(cc_layer_);
-  cc_layer_->addAnimation(animation.Pass());
+  // Until this layer has a compositor (and hence cc_layer_ has a
+  // LayerTreeHost), addAnimation will fail.
+  if (GetCompositor())
+    cc_layer_->addAnimation(animation.Pass());
+  else
+    pending_threaded_animations_.push_back(animation.Pass());
+}
+
+namespace{
+
+struct HasAnimationId {
+  HasAnimationId(int id): id_(id) {
+  }
+
+  bool operator()(cc::Animation* animation) const {
+    return animation->id() == id_;
+  }
+
+ private:
+  int id_;
+};
+
 }
 
 void Layer::RemoveThreadedAnimation(int animation_id) {
   DCHECK(cc_layer_);
-  cc_layer_->removeAnimation(animation_id);
+  if (pending_threaded_animations_.size() == 0) {
+    cc_layer_->removeAnimation(animation_id);
+    return;
+  }
+
+  pending_threaded_animations_.erase(
+      cc::remove_if(pending_threaded_animations_,
+                    pending_threaded_animations_.begin(),
+                    pending_threaded_animations_.end(),
+                    HasAnimationId(animation_id)),
+      pending_threaded_animations_.end());
+}
+
+void Layer::SendPendingThreadedAnimations() {
+  for (cc::ScopedPtrVector<cc::Animation>::iterator it =
+           pending_threaded_animations_.begin();
+       it != pending_threaded_animations_.end();
+       ++it)
+    cc_layer_->addAnimation(pending_threaded_animations_.take(it));
+
+  pending_threaded_animations_.clear();
+
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->SendPendingThreadedAnimations();
 }
 
 void Layer::CreateWebLayer() {
