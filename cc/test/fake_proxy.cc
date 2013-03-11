@@ -6,70 +6,45 @@
 
 namespace cc {
 
-bool FakeProxy::CompositeAndReadback(void* pixels, gfx::Rect rect)
-{
-    return true;
+bool FakeProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
+  return true;
 }
 
-bool FakeProxy::IsStarted() const
-{
-    return true;
+bool FakeProxy::IsStarted() const { return true; }
+
+bool FakeProxy::InitializeOutputSurface() { return true; }
+
+bool FakeProxy::InitializeRenderer() { return true; }
+
+bool FakeProxy::RecreateOutputSurface() { return true; }
+
+const RendererCapabilities& FakeProxy::GetRendererCapabilities() const {
+  return capabilities_;
 }
 
-bool FakeProxy::InitializeOutputSurface()
-{
-    return true;
+RendererCapabilities& FakeProxy::GetRendererCapabilities() {
+  return capabilities_;
 }
 
-bool FakeProxy::InitializeRenderer()
-{
-    return true;
+bool FakeProxy::CommitRequested() const { return false; }
+
+size_t FakeProxy::MaxPartialTextureUpdates() const {
+  return max_partial_texture_updates_;
 }
 
-bool FakeProxy::RecreateOutputSurface()
-{
-    return true;
+void FakeProxy::SetMaxPartialTextureUpdates(size_t max) {
+  max_partial_texture_updates_ = max;
 }
 
-const RendererCapabilities& FakeProxy::GetRendererCapabilities() const
-{
-    return m_capabilities;
-}
+bool FakeProxy::CommitPendingForTesting() { return false; }
 
-RendererCapabilities& FakeProxy::GetRendererCapabilities()
-{
-    return m_capabilities;
-}
-
-bool FakeProxy::CommitRequested() const
-{
-    return false;
-}
-
-size_t FakeProxy::MaxPartialTextureUpdates() const
-{
-    return m_maxPartialTextureUpdates;
-}
-
-void FakeProxy::setMaxPartialTextureUpdates(size_t max)
-{
-    m_maxPartialTextureUpdates = max;
-}
-
-bool FakeProxy::CommitPendingForTesting()
-{
-    return false;
-}
-
-skia::RefPtr<SkPicture> FakeProxy::CapturePicture()
-{
-    return skia::RefPtr<SkPicture>();
+skia::RefPtr<SkPicture> FakeProxy::CapturePicture() {
+  return skia::RefPtr<SkPicture>();
 }
 
 scoped_ptr<base::Value> FakeProxy::AsValue() const {
-    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-    return state.PassAs<base::Value>();
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  return state.PassAs<base::Value>();
 }
-
 
 }  // namespace cc

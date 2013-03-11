@@ -12,11 +12,7 @@ namespace cc {
 
 class FakeImplProxy : public FakeProxy {
  public:
-   FakeImplProxy()
-       : FakeProxy(scoped_ptr<Thread>()),
-         set_impl_thread_(this)
-   {
-   }
+  FakeImplProxy() : FakeProxy(scoped_ptr<Thread>()), set_impl_thread_(this) {}
 
  private:
   DebugScopedSetImplThread set_impl_thread_;

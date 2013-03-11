@@ -1892,7 +1892,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
         proxy->GetRendererCapabilities().allowPartialTextureUpdates = false;
-        proxy->setMaxPartialTextureUpdates(5);
+        proxy->SetMaxPartialTextureUpdates(5);
 
         LayerTreeSettings settings;
         settings.maxPartialTextureUpdates = 10;
@@ -1909,7 +1909,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
         proxy->GetRendererCapabilities().allowPartialTextureUpdates = true;
-        proxy->setMaxPartialTextureUpdates(5);
+        proxy->SetMaxPartialTextureUpdates(5);
 
         LayerTreeSettings settings;
         settings.maxPartialTextureUpdates = 10;
@@ -1926,7 +1926,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates)
 
         scoped_ptr<FakeProxy> proxy = make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
         proxy->GetRendererCapabilities().allowPartialTextureUpdates = true;
-        proxy->setMaxPartialTextureUpdates(20);
+        proxy->SetMaxPartialTextureUpdates(20);
 
         LayerTreeSettings settings;
         settings.maxPartialTextureUpdates = 10;

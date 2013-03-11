@@ -101,7 +101,7 @@ bool LayerTreeHost::initialize(scoped_ptr<Thread> implThread)
     if (implThread)
         return initializeProxy(ThreadProxy::create(this, implThread.Pass()));
     else
-        return initializeProxy(SingleThreadProxy::create(this));
+        return initializeProxy(SingleThreadProxy::Create(this));
 }
 
 bool LayerTreeHost::initializeForTesting(scoped_ptr<Proxy> proxyForTesting)
@@ -537,7 +537,7 @@ PrioritizedResourceManager* LayerTreeHost::contentsTextureManager() const
 void LayerTreeHost::composite()
 {
     if (!m_proxy->HasImplThread())
-        static_cast<SingleThreadProxy*>(m_proxy.get())->compositeImmediately();
+        static_cast<SingleThreadProxy*>(m_proxy.get())->CompositeImmediately();
     else
         setNeedsCommit();
 }
