@@ -22,6 +22,7 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_browser_target.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -436,6 +437,10 @@ DevToolsHttpHandlerImpl::PageList DevToolsHttpHandlerImpl::GeneratePageList() {
 
       RenderViewHost* host =
           RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+      // Don't report swapped out views.
+      if (static_cast<RenderViewHostImpl*>(host)->is_swapped_out())
+        continue;
+
       page_list.push_back(CreatePageInfo(host, delegate_->GetTargetType(host)));
     }
   }
