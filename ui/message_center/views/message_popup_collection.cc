@@ -52,7 +52,8 @@ class ToastContentsView : public views::WidgetDelegateView {
     // The origin of the initial bounds are set to (0, 0). It'll then moved by
     // MessagePopupCollection.
     params.bounds = gfx::Rect(
-        gfx::Size(kWebNotificationWidth, GetPreferredSize().height()));
+        gfx::Size(kWebNotificationWidth,
+                  GetHeightForWidth(kWebNotificationWidth)));
     params.delegate = this;
     views::Widget* widget = new views::Widget();
     widget->Init(params);
@@ -62,6 +63,12 @@ class ToastContentsView : public views::WidgetDelegateView {
   void SetContents(MessageView* view) {
     RemoveAllChildViews(true);
     AddChildView(view);
+    views::Widget* widget = GetWidget();
+    if (widget) {
+      gfx::Rect bounds = widget->GetWindowBoundsInScreen();
+      bounds.set_height(view->GetHeightForWidth(kWebNotificationWidth));
+      widget->SetBounds(bounds);
+    }
     Layout();
   }
 
@@ -148,18 +155,22 @@ void MessagePopupCollection::UpdatePopups() {
     old_toast_ids.insert(iter->first);
   }
 
-  int total_height = 0;
-  std::vector<views::Widget*> widgets;
-  for (NotificationList::PopupNotifications::const_iterator iter =
-           popups.begin(); iter != popups.end(); ++iter) {
+  int bottom = work_area.bottom() - kMarginBetweenItems;
+  int left = work_area.right() - kWebNotificationWidth - kMarginBetweenItems;
+  // Iterate in the reverse order to keep the oldest toasts on screen. Newer
+  // items may be ignored if there are no room to place them.
+  for (NotificationList::PopupNotifications::const_reverse_iterator iter =
+           popups.rbegin(); iter != popups.rend(); ++iter) {
+    MessageView* view =
+        NotificationView::Create(*(*iter), message_center_, true);
+    int view_height = view->GetHeightForWidth(kWebNotificationWidth);
+    if (bottom - view_height - kMarginBetweenItems < 0) {
+      delete view;
+      break;
+    }
+
     ToastContainer::iterator toast_iter = toasts_.find((*iter)->id());
     views::Widget* widget = NULL;
-    // NotificationViews are expanded by default here because
-    // MessagePopupCollection hasn't been tested yet with changing subview
-    // sizes, and such changes could come if those subviews were initially
-    // collapsed and allowed to be expanded by users. TODO(dharcourt): Fix.
-    MessageView* view = NotificationView::Create(*(*iter), message_center_,
-                                                 true);
     if (toast_iter != toasts_.end()) {
       widget = toast_iter->second->GetWidget();
       old_toast_ids.erase((*iter)->id());
@@ -174,19 +185,21 @@ void MessagePopupCollection::UpdatePopups() {
       toast->StartTimer();
       toasts_[(*iter)->id()] = toast;
     }
+
+    // Place/move the toast widgets. Currently it stacks the widgets from the
+    // right-bottom of the work area.
+    // TODO(mukai): allow to specify the placement policy from outside of this
+    // class. The policy should be specified from preference on Windows, or
+    // the launcher alignment on ChromeOS.
     if (widget) {
-      gfx::Rect bounds = widget->GetWindowBoundsInScreen();
-      int new_height = total_height + bounds.height() + kMarginBetweenItems;
-      if (new_height < work_area.height()) {
-        total_height = new_height;
-        widgets.push_back(widget);
-      } else {
-        if (toast_iter != toasts_.end())
-          toasts_.erase(toast_iter);
-        delete widget;
-        break;
-      }
+      gfx::Rect bounds(widget->GetWindowBoundsInScreen());
+      bounds.set_origin(gfx::Point(left, bottom - bounds.height()));
+      widget->SetBounds(bounds);
+      if (!widget->IsVisible())
+        widget->Show();
     }
+
+    bottom -= view_height + kMarginBetweenItems;
   }
 
   for (std::set<std::string>::const_iterator iter = old_toast_ids.begin();
@@ -197,22 +210,6 @@ void MessagePopupCollection::UpdatePopups() {
     widget->RemoveObserver(this);
     widget->Close();
     toasts_.erase(toast_iter);
-  }
-
-  // Place/move the toast widgets. Currently it stacks the widgets from the
-  // right-bottom of the work area.
-  // TODO(mukai): allow to specify the placement policy from outside of this
-  // class. The policy should be specified from preference on Windows, or
-  // the launcher alignment on ChromeOS.
-  int top = work_area.bottom() - total_height;
-  int left = work_area.right() - kWebNotificationWidth - kMarginBetweenItems;
-  for (size_t i = 0; i < widgets.size(); ++i) {
-    gfx::Rect widget_bounds = widgets[i]->GetWindowBoundsInScreen();
-    widgets[i]->SetBounds(gfx::Rect(
-        left, top, widget_bounds.width(), widget_bounds.height()));
-    if (!widgets[i]->IsVisible())
-      widgets[i]->Show();
-    top += widget_bounds.height() + kMarginBetweenItems;
   }
 }
 
