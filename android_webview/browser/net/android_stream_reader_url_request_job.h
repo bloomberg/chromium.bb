@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
 #define ANDROID_WEBVIEW_NATIVE_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
 
+#include <string>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -24,6 +26,7 @@ class TaskRunner;
 }
 
 namespace net {
+class HttpResponseInfo;
 class URLRequest;
 }
 
@@ -81,6 +84,8 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
       const net::HttpRequestHeaders& headers) OVERRIDE;
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual bool GetCharset(std::string* charset) OVERRIDE;
+  virtual int GetResponseCode() const OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
 
  protected:
   virtual ~AndroidStreamReaderURLRequestJob();
@@ -95,6 +100,8 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
       CreateStreamReader(android_webview::InputStream* stream);
 
  private:
+  void HeadersComplete(int status_code, const std::string& status_text);
+
   void OnInputStreamOpened(
       scoped_ptr<Delegate> delegate,
       scoped_ptr<android_webview::InputStream> input_stream);
@@ -102,6 +109,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
   void OnReaderReadCompleted(int bytes_read);
 
   net::HttpByteRange byte_range_;
+  scoped_ptr<net::HttpResponseInfo> response_info_;
   scoped_ptr<Delegate> delegate_;
   scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;
   base::WeakPtrFactory<AndroidStreamReaderURLRequestJob> weak_factory_;

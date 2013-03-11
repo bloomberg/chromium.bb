@@ -246,6 +246,34 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
         mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testHttpStatusField() throws Throwable {
+        final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
+        final String syncGetJs =
+            "(function() {" +
+            "  var xhr = new XMLHttpRequest();" +
+            "  xhr.open('GET', '" + syncGetUrl + "', false);" +
+            "  xhr.send(null);" +
+            "  console.info('xhr.status = ' + xhr.status);" +
+            "  return xhr.status;" +
+            "})();";
+        enableJavaScriptOnUiThread(mAwContents);
+
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), aboutPageUrl);
+
+        mShouldInterceptRequestHelper.setReturnValue(
+                new InterceptedRequestData("text/html", "UTF-8", null));
+        assertEquals("404",
+                executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, syncGetJs));
+
+        mShouldInterceptRequestHelper.setReturnValue(
+                new InterceptedRequestData("text/html", "UTF-8", new EmptyInputStream()));
+        assertEquals("200",
+                executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, syncGetJs));
+    }
+
 
     private String makePageWithTitle(String title) {
         return CommonResources.makeHtmlPageFrom("<title>" + title + "</title>",
