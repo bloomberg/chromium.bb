@@ -507,7 +507,12 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   device()->DeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
+#if defined(OS_WIN)
+#define MAYBE_RejectsInvalidAllocateParams DISABLED_RejectsInvalidAllocateParams
+#else
+#define MAYBE_RejectsInvalidAllocateParams RejectsInvalidAllocateParams
+#endif
+TEST_F(WebContentsVideoCaptureDeviceTest, MAYBE_RejectsInvalidAllocateParams) {
   device()->Allocate(1280, 720, -2, consumer());
   ASSERT_NO_FATAL_FAILURE(consumer()->WaitForError());
 }
