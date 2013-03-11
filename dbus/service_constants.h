@@ -10,9 +10,15 @@
 namespace dbus {
 const char kDBusServiceName[] = "org.freedesktop.DBus";
 const char kDBusServicePath[] = "/org/freedesktop/DBus";
+
+// Properties interface
 const char kDBusPropertiesInterface[] = "org.freedesktop.DBus.Properties";
 // Methods
+const char kDBusPropertiesGet[] = "Get";
+const char kDBusPropertiesSet[] = "Set";
 const char kDBusPropertiesGetAll[] = "GetAll";
+// Signals
+const char kDBusPropertiesChangedSignal[] = "PropertiesChanged";
 }  // namespace dbus
 
 
