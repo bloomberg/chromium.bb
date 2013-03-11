@@ -45,6 +45,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/omaha_query_params.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
@@ -443,6 +444,33 @@ static void ExtractParameters(const std::string& params,
   }
 }
 
+static void VerifyQueryAndExtractParameters(
+    const std::string& query,
+    std::map<std::string, std::string>* result) {
+  std::map<std::string, std::string> params;
+  ExtractParameters(query, &params);
+
+chrome::OmahaQueryParams::ProdId prod =
+#if defined(GOOGLE_CHROME_BUILD)
+  chrome::OmahaQueryParams::CHROMECRX;
+#else
+  chrome::OmahaQueryParams::CHROMIUMCRX;
+#endif
+  std::string omaha_params = chrome::OmahaQueryParams::Get(prod);
+  std::map<std::string, std::string> expected;
+  ExtractParameters(omaha_params, &expected);
+
+  for (std::map<std::string, std::string>::iterator it = expected.begin();
+       it != expected.end(); ++it) {
+    EXPECT_EQ(it->second, params[it->first]);
+  }
+
+  EXPECT_EQ(1U, params.count("x"));
+  std::string decoded = net::UnescapeURLComponent(
+      params["x"], net::UnescapeRule::URL_SPECIAL_CHARS);
+  ExtractParameters(decoded, result);
+}
+
 // All of our tests that need to use private APIs of ExtensionUpdater live
 // inside this class (which is a friend to ExtensionUpdater).
 class ExtensionUpdaterTest : public testing::Test {
@@ -554,16 +582,10 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ("/bar", url.path());
 
     // Validate the extension request parameters in the query. It should
-    // look something like "?x=id%3D<id>%26v%3D<version>%26uc".
+    // look something like "x=id%3D<id>%26v%3D<version>%26uc".
     EXPECT_TRUE(url.has_query());
-    std::vector<std::string> parts;
-    base::SplitString(url.query(), '=', &parts);
-    EXPECT_EQ(2u, parts.size());
-    EXPECT_EQ("x", parts[0]);
-    std::string decoded = net::UnescapeURLComponent(
-        parts[1], net::UnescapeRule::URL_SPECIAL_CHARS);
     std::map<std::string, std::string> params;
-    ExtractParameters(decoded, &params);
+    VerifyQueryAndExtractParameters(url.query(), &params);
     if (pending) {
       EXPECT_TRUE(pending_extension_manager->IsIdPending(params["id"]));
       EXPECT_EQ("0.0.0.0", params["v"]);
@@ -603,16 +625,10 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ("/service/update2/crx", url.path());
 
     // Validate the extension request parameters in the query. It should
-    // look something like "?x=id%3D<id>%26v%3D<version>%26uc".
+    // look something like "x=id%3D<id>%26v%3D<version>%26uc".
     EXPECT_TRUE(url.has_query());
-    std::vector<std::string> parts;
-    base::SplitString(url.query(), '=', &parts);
-    EXPECT_EQ(2u, parts.size());
-    EXPECT_EQ("x", parts[0]);
-    std::string decoded = net::UnescapeURLComponent(
-        parts[1], net::UnescapeRule::URL_SPECIAL_CHARS);
     std::map<std::string, std::string> params;
-    ExtractParameters(decoded, &params);
+    VerifyQueryAndExtractParameters(url.query(), &params);
     EXPECT_EQ("com.google.crx.blacklist", params["id"]);
     EXPECT_EQ("0", params["v"]);
     EXPECT_EQ("", params["uc"]);
@@ -627,9 +643,12 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
     fetch_data.AddExtension(id, version, &kNeverPingedData, "", "");
-    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-              "%26v%3D1.0%26uc",
-              fetch_data.full_url().spec());
+
+    std::map<std::string, std::string> params;
+    VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
+    EXPECT_EQ(id, params["id"]);
+    EXPECT_EQ(version, params["v"]);
+    EXPECT_EQ(0U, params.count("ap"));
   }
 
   void TestUpdateUrlDataSimple() {
@@ -640,9 +659,11 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
     fetch_data.AddExtension(id, version, &kNeverPingedData, "bar", "");
-    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-              "%26v%3D1.0%26uc%26ap%3Dbar",
-              fetch_data.full_url().spec());
+    std::map<std::string, std::string> params;
+    VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
+    EXPECT_EQ(id, params["id"]);
+    EXPECT_EQ(version, params["v"]);
+    EXPECT_EQ("bar", params["ap"]);
   }
 
   void TestUpdateUrlDataCompound() {
@@ -653,9 +674,11 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
     fetch_data.AddExtension(id, version, &kNeverPingedData, "a=1&b=2&c", "");
-    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-              "%26v%3D1.0%26uc%26ap%3Da%253D1%2526b%253D2%2526c",
-              fetch_data.full_url().spec());
+    std::map<std::string, std::string> params;
+    VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
+    EXPECT_EQ(id, params["id"]);
+    EXPECT_EQ(version, params["v"]);
+    EXPECT_EQ("a%3D1%26b%3D2%26c", params["ap"]);
   }
 
   void TestUpdateUrlDataFromGallery(const std::string& gallery_url) {
@@ -695,9 +718,11 @@ class ExtensionUpdaterTest : public testing::Test {
     ManifestFetchData fetch_data(GURL("http://localhost/foo"), 0);
     fetch_data.AddExtension(id, version, &kNeverPingedData,
                             kEmptyUpdateUrlData, install_source);
-    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-              "%26v%3D1.0%26installsource%3Dinstally%26uc",
-              fetch_data.full_url().spec());
+    std::map<std::string, std::string> params;
+    VerifyQueryAndExtractParameters(fetch_data.full_url().query(), &params);
+    EXPECT_EQ(id, params["id"]);
+    EXPECT_EQ(version, params["v"]);
+    EXPECT_EQ(install_source, params["installsource"]);
   }
 
   void TestDetermineUpdates() {

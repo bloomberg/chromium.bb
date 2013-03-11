@@ -326,6 +326,8 @@
         'common/nacl_messages.h',
         'common/nacl_types.cc',
         'common/nacl_types.h',
+        'common/omaha_query_params.cc',
+        'common/omaha_query_params.h',
         'common/one_click_signin_messages.h',
         'common/password_generation_util.cc',
         'common/password_generation_util.h',

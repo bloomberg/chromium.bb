@@ -15,7 +15,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/omaha_query_params.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -43,63 +43,6 @@ bool HasDebugValue(const std::vector<std::string>& vec, const char* test) {
     return 0;
   return (std::find(vec.begin(), vec.end(), test) != vec.end());
 }
-
-// The request extra information is the OS and architecture, this helps
-// the server select the right package to be delivered.
-const char kExtraInfo[] =
-#if defined(OS_MACOSX)
-  #if defined(__amd64__)
-    "os=mac&arch=x64&prod=chrome&prodversion=";
-  #elif defined(__i386__)
-     "os=mac&arch=x86&prod=chrome&prodversion=";
-  #else
-     #error "unknown mac architecture"
-  #endif
-#elif defined(OS_WIN)
-  #if defined(_WIN64)
-    "os=win&arch=x64&prod=chrome&prodversion=";
-  #elif defined(_WIN32)
-    "os=win&arch=x86&prod=chrome&prodversion=";
-  #else
-    #error "unknown windows architecture"
-  #endif
-#elif defined(OS_ANDROID)
-  #if defined(__i386__)
-    "os=android&arch=x86&prod=chrome&prodversion=";
-  #elif defined(__arm__)
-    "os=android&arch=arm&prod=chrome&prodversion=";
-  #else
-    "os=android&arch=unknown&prod=chrome&prodversion=";
-  #endif
-#elif defined(OS_CHROMEOS)
-  #if defined(__i386__)
-    "os=cros&arch=x86&prod=chrome&prodversion=";
-  #elif defined(__arm__)
-    "os=cros&arch=arm&prod=chrome&prodversion=";
-  #else
-    "os=cros&arch=unknown&prod=chrome&prodversion=";
-  #endif
-#elif defined(OS_LINUX)
-  #if defined(__amd64__)
-    "os=linux&arch=x64&prod=chrome&prodversion=";
-  #elif defined(__i386__)
-    "os=linux&arch=x86&prod=chrome&prodversion=";
-  #elif defined(__arm__)
-    "os=linux&arch=arm&prod=chrome&prodversion=";
-  #else
-    "os=linux&arch=unknown&prod=chrome&prodversion=";
-  #endif
-#elif defined(OS_OPENBSD)
-  #if defined(__amd64__)
-    "os=openbsd&arch=x64";
-  #elif defined(__i386__)
-    "os=openbsd&arch=x86";
-  #else
-    "os=openbsd&arch=unknown";
-  #endif
-#else
-    #error "unknown os or architecture"
-#endif
 
 }  // namespace
 
@@ -132,7 +75,8 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
 ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
     net::URLRequestContextGetter* url_request_getter)
       : url_request_getter_(url_request_getter),
-        extra_info_(kExtraInfo) {
+        extra_info_(chrome::OmahaQueryParams::Get(
+            chrome::OmahaQueryParams::CHROME)) {
   // Parse comma-delimited debug flags.
   std::vector<std::string> debug_values;
   Tokenize(cmdline->GetSwitchValueASCII(switches::kComponentUpdaterDebug),
@@ -142,7 +86,6 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
 
   // Make the extra request params, they are necessary so omaha does
   // not deliver components that are going to be rejected at install time.
-  extra_info_ += chrome::VersionInfo().Version();
 #if defined(OS_WIN)
   if (base::win::OSInfo::GetInstance()->wow64_status() ==
       base::win::OSInfo::WOW64_ENABLED)
