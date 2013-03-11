@@ -11,6 +11,14 @@ namespace dbus {
 const char kDBusServiceName[] = "org.freedesktop.DBus";
 const char kDBusServicePath[] = "/org/freedesktop/DBus";
 
+// Object Manager interface
+const char kDBusObjectManagerInterface[] = "org.freedesktop.DBus.ObjectManager";
+// Methods
+const char kDBusObjectManagerGetManagedObjects[] = "GetManagedObjects";
+// Signals
+const char kDBusObjectManagerInterfacesAddedSignal[] = "InterfacesAdded";
+const char kDBusObjectManagerInterfacesRemovedSignal[] = "InterfacesRemoved";
+
 // Properties interface
 const char kDBusPropertiesInterface[] = "org.freedesktop.DBus.Properties";
 // Methods
