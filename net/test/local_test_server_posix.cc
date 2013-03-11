@@ -135,6 +135,10 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
 
   // Launch a new testserver process.
   base::LaunchOptions options;
+
+  // TODO(phajdan.jr): Remove after fixing http://crbug.com/96594 .
+  options.debug = true;
+
   options.fds_to_remap = &map_write_fd;
   if (!base::LaunchProcess(python_command, options, &process_handle_)) {
     LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();

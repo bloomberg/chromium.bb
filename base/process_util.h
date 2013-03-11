@@ -242,31 +242,41 @@ typedef int* LaunchSynchronizationHandle;
 // Options for launching a subprocess that are passed to LaunchProcess().
 // The default constructor constructs the object with default options.
 struct LaunchOptions {
-  LaunchOptions() : wait(false),
+  LaunchOptions()
+      : wait(false),
+        debug(false),
 #if defined(OS_WIN)
-                    start_hidden(false), inherit_handles(false), as_user(NULL),
-                    empty_desktop_name(false), job_handle(NULL),
-                    stdin_handle(NULL),
-                    stdout_handle(NULL),
-                    stderr_handle(NULL),
-                    force_breakaway_from_job_(false)
+        start_hidden(false),
+        inherit_handles(false),
+        as_user(NULL),
+        empty_desktop_name(false),
+        job_handle(NULL),
+        stdin_handle(NULL),
+        stdout_handle(NULL),
+        stderr_handle(NULL),
+        force_breakaway_from_job_(false)
 #else
-                    environ(NULL), fds_to_remap(NULL), maximize_rlimits(NULL),
-                    new_process_group(false)
+        environ(NULL),
+        fds_to_remap(NULL),
+        maximize_rlimits(NULL),
+        new_process_group(false)
 #if defined(OS_LINUX)
-                  , clone_flags(0)
+      , clone_flags(0)
 #endif  // OS_LINUX
 #if defined(OS_CHROMEOS)
-                  , ctrl_terminal_fd(-1)
+      , ctrl_terminal_fd(-1)
 #endif  // OS_CHROMEOS
 #if defined(OS_MACOSX)
-                  , synchronize(NULL)
+      , synchronize(NULL)
 #endif  // defined(OS_MACOSX)
 #endif  // !defined(OS_WIN)
-      {}
+  {}
 
   // If true, wait for the process to complete.
   bool wait;
+
+  // If true, print more debugging info (OS-dependent).
+  bool debug;
 
 #if defined(OS_WIN)
   bool start_hidden;
