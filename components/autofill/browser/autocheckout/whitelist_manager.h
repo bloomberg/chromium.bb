@@ -80,6 +80,9 @@ class WhitelistManager : public net::URLFetcherDelegate,
   // State of the kEnableExperimentalFormFilling flag.
   const bool experimental_form_filling_enabled_;
 
+  // State of the kBypassAutocheckoutWhitelist flag.
+  const bool bypass_autocheckout_whitelist_;
+
   // The request object.
   scoped_ptr<net::URLFetcher> request_;
 

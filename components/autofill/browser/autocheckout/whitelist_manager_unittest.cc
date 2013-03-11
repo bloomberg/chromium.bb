@@ -237,6 +237,30 @@ TEST_F(WhitelistManagerTest, GetMatchedURLPrefix) {
                 GURL("https://www.merchant1.com/CheckOut/")));
 }
 
+TEST_F(WhitelistManagerTest, BypassWhitelist) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalFormFilling);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kBypassAutocheckoutWhitelist);
+  DownloadWhitelist(net::HTTP_OK, kDownloadWhitelistResponse);
+  EXPECT_EQ(2U, get_url_prefixes().size());
+
+  // Empty url.
+  EXPECT_EQ(std::string(),
+            whitelist_manager_->GetMatchedURLPrefix(GURL(std::string())));
+  // Positive tests.
+  EXPECT_EQ("https://www.merchant1.com/checkout/",
+            whitelist_manager_->GetMatchedURLPrefix(
+                GURL("https://www.merchant1.com/checkout/")));
+  EXPECT_EQ("https://cart.merchant2.com/",
+            whitelist_manager_->GetMatchedURLPrefix(
+                GURL("https://cart.merchant2.com/ShippingInfo?a=b&c=d")));
+  // Bypass other urls.
+  EXPECT_EQ(std::string("https://bypass.me/"),
+            whitelist_manager_->GetMatchedURLPrefix(
+                GURL("https://bypass.me/")));
+}
+
 }  // namespace autocheckout
 }  // namespace autofill
 

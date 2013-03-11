@@ -57,7 +57,10 @@ WhitelistManager::WhitelistManager(
       context_getter_(context_getter),
       experimental_form_filling_enabled_(
           CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalFormFilling)){
+              switches::kEnableExperimentalFormFilling)),
+      bypass_autocheckout_whitelist_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+                        switches::kBypassAutocheckoutWhitelist)) {
   DCHECK(context_getter);
 }
 
@@ -129,7 +132,7 @@ std::string WhitelistManager::GetMatchedURLPrefix(const GURL& url) const {
       return *it;
     }
   }
-  return std::string();
+  return bypass_autocheckout_whitelist_ ? url.spec() : std::string();
 }
 
 void WhitelistManager::BuildWhitelist(const std::string& data) {
