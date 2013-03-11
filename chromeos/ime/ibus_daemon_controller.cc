@@ -263,20 +263,52 @@ class IBusDaemonControllerImpl : public IBusDaemonController {
   DISALLOW_COPY_AND_ASSIGN(IBusDaemonControllerImpl);
 };
 
-// The stub implementation of IBusDaemonController.
-class IBusDaemonControllerStubImpl : public IBusDaemonController {
+// An implementation of IBusDaemonController without ibus-daemon interaction.
+// Currently this class is used only on linux desktop.
+// TODO(nona): Remove IBusDaemonControlelr this once crbug.com/171351 is fixed.
+class IBusDaemonControllerDaemonlessImpl : public IBusDaemonController {
  public:
-  IBusDaemonControllerStubImpl() {}
-  virtual ~IBusDaemonControllerStubImpl() {}
+  IBusDaemonControllerDaemonlessImpl()
+      : is_started_(false) {}
+  virtual ~IBusDaemonControllerDaemonlessImpl() {}
 
   // IBusDaemonController overrides:
-  virtual void AddObserver(Observer* observer) OVERRIDE {}
-  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual bool Start() OVERRIDE { return true; }
-  virtual bool Stop() OVERRIDE { return true; }
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
+  virtual bool Start() OVERRIDE {
+    if (is_started_)
+      return false;
+    // IBusBus should be initialized but it is okay to pass "dummy address" as
+    // the bus address because the actual dbus implementation is stub if the
+    // Chrome OS is working on Linux desktop. This path is not used in
+    // production at this moment, only for Chrome OS on Linux Desktop.
+    // TODO(nona): Remove InitIBusBus oncer all legacy ime is migrated to IME
+    // extension API.
+    DCHECK(!base::chromeos::IsRunningOnChromeOS());
+    DBusThreadManager::Get()->InitIBusBus("dummy address",
+                                          base::Bind(&base::DoNothing));
+    is_started_ = true;
+    FOR_EACH_OBSERVER(Observer, observers_, OnConnected());
+    return true;
+  }
+  virtual bool Stop() OVERRIDE {
+    if (!is_started_)
+      return false;
+    is_started_ = false;
+    FOR_EACH_OBSERVER(Observer, observers_, OnDisconnected());
+    return true;
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IBusDaemonControllerStubImpl);
+  ObserverList<Observer> observers_;
+  bool is_started_;
+  DISALLOW_COPY_AND_ASSIGN(IBusDaemonControllerDaemonlessImpl);
 };
 
 }  // namespace
@@ -300,7 +332,7 @@ void IBusDaemonController::Initialize(
     g_ibus_daemon_controller = new IBusDaemonControllerImpl(ui_task_runner,
                                                             file_task_runner);
   } else {
-    g_ibus_daemon_controller = new IBusDaemonControllerStubImpl();
+    g_ibus_daemon_controller = new IBusDaemonControllerDaemonlessImpl();
   }
 }
 
