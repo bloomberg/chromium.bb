@@ -2431,24 +2431,35 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     {0, 0, 0, 0, 10, 0, 51.2, 70, 2, 0},
   };
   ClickTestHardwareStateAndExpectations records[] = {
+    // reset
     {{0,0,0,0,NULL,0,0,0,0},-1,0,0},
+
+    // button down, 2 fingers touch, button up, 2 fingers lift
     {{1,1,0,0,NULL,0,0,0,0},-1,0,0},
-    {{1.01,1,2,3,&finger_states[0],0,0,0,0},-1,GESTURES_BUTTON_RIGHT,0},
-    {{3,0,0,0,NULL,0,0,0,0},-1,0,GESTURES_BUTTON_RIGHT},
-    {{4,1,0,0,NULL,0,0,0,0},-1,0,0},
-    {{4.01,1,2,2,&finger_states[0],0,0,0,0},-1,GESTURES_BUTTON_RIGHT,0},
-    {{6,0,0,0,NULL,0,0,0,0},-1,0,GESTURES_BUTTON_RIGHT},
+    {{1.01,1,2,2,&finger_states[0],0,0,0,0},-1,0,0},
+    {{2,0,2,2,&finger_states[0],0,0,0,0},
+     -1,GESTURES_BUTTON_RIGHT,GESTURES_BUTTON_RIGHT},
+    {{3,0,0,0,NULL,0,0,0,0},-1,0,0},
+
+    // button down, 2 close fingers touch, fingers lift
     {{7,1,0,0,NULL,0,0,0,0},-1,0,0},
     {{7.01,1,2,2,&finger_states[2],0,0,0,0},-1,0,0},
-    {{7.05,1,2,2,&finger_states[2],0,0,0,0},-1,GESTURES_BUTTON_LEFT,0},
-    {{8,0,0,0,NULL,0,0,0,0},-1,0,GESTURES_BUTTON_LEFT},
-    {{9,0,0,0,NULL,0,0,0,0},-1,0,0},
+    {{7.02,0,2,2,&finger_states[2],0,0,0,0},
+     -1,GESTURES_BUTTON_LEFT,GESTURES_BUTTON_LEFT},
+    {{8,0,0,0,NULL,0,0,0,0},-1,0,0},
+
+    // button down with 2 fingers, button up, fingers lift
     {{9.01,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
-    {{9.05,1,2,2,&finger_states[4],0,0,0,0},-1,GESTURES_BUTTON_LEFT,0},
-    {{10,0,0,0,NULL,0,0,0,0},-1,0,GESTURES_BUTTON_LEFT},
-    {{11,1,0,0,NULL,0,0,0,0},-1,0,0},
-    {{0,0,0,0,NULL,0,0,0,0},11.1,GESTURES_BUTTON_LEFT,0},
-    {{12,0,0,0,NULL,0,0,0,0},-1,0,GESTURES_BUTTON_LEFT},
+    {{9.05,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
+    {{9.5,0,2,2,&finger_states[4],0,0,0,0},
+     -1,GESTURES_BUTTON_LEFT,GESTURES_BUTTON_LEFT},
+    {{10,0,0,0,NULL,0,0,0,0},-1,0,0},
+
+    // button down with 2 fingers, timeout, button up, fingers lift
+    {{11,1,2,2,&finger_states[4],0,0,0,0},-1,0,0},
+    {{0,0,0,0,NULL,0,0,0,0},11.5,GESTURES_BUTTON_LEFT,0},
+    {{12,0,2,2,&finger_states[4],0,0,0,0},-1,0,GESTURES_BUTTON_LEFT},
+    {{10,0,0,0,NULL,0,0,0,0},-1,0,0}
   };
 
   for (size_t i = 0; i < arraysize(records); ++i) {
@@ -2502,7 +2513,7 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
     { { 1329527921.344421, 0, 2, 2, NULL, 0, 0, 0, 0 }, 0, 0,
       { { 0, 0, 0, 0, 50.301102, 0, 20.250002, 59.400002, 130, 0 },
         { 0, 0, 0, 0, 42.007469, 0, 57.479977, 43.700001, 131, 0 } } },
-    { { 1329527921.361196,1,2,2,NULL,0,0,0,0 },GESTURES_BUTTON_RIGHT,0,
+    { { 1329527921.361196,1,2,2,NULL,0,0,0,0 }, 0, 0,
       { { 0, 0, 0, 0, 50.608433, 0, 20.250002, 59.400002, 130, 0 },
         { 0, 0, 0, 0, 42.065464, 0, 57.494164, 43.700001, 131, 0 } } },
     { { 1329527921.372364, 1, 2, 2, NULL, 0, 0, 0, 0 }, 0, 0,
@@ -2526,7 +2537,7 @@ TEST(ImmediateInterpreterTest, BigHandsRightClickTest) {
     { { 1329527921.439094, 1, 2, 2, NULL, 0, 0, 0, 0 }, 0, 0,
       { { 0, 0, 0, 0, 53.191925, 0, 20.250002, 59.400002, 130, 0 },
         { 0, 0, 0, 0, 42.868217, 0, 57.640007, 43.700001, 131, 0 } } },
-    { { 1329527921.461392, 1, 2, 2, NULL, 0, 0, 0, 0 }, 0, 0,
+    { { 1329527921.461392, 1, 2, 2, NULL, 0, 0, 0, 0 },GESTURES_BUTTON_RIGHT,0,
       { { 0, 0, 0, 0, 53.602665, 0, 20.250002, 59.400002, 130, 0 },
         { 0, 0, 0, 0, 43.016544, 0, 57.676689, 43.700001, 131, 0 } } },
     { { 1329527921.483690, 1, 2, 2, NULL, 0, 0, 0, 0 }, 0, 0,
@@ -3430,7 +3441,7 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
     // button down
     { 0.5, GESTURES_BUTTON_LEFT, 0, 0, NULL, 0, 0, 0, 0 },
     { 0.9, 0, 0, 0, NULL, 0, 0, 0, 0 },                      // left button up
-    { 1.1, GESTURES_BUTTON_RIGHT, 0, 0, NULL, 0, 0, 0, 0 },  // not delay right
+    { 1.1, GESTURES_BUTTON_RIGHT, 0, 0, NULL, 0, 0, 0, 0 },  // delay right
     // button down
     { 1.3, GESTURES_BUTTON_RIGHT, 0, 0, NULL, 0, 0, 0, 0 },
     { 1.5, 0, 0, 0, NULL, 0, 0, 0, 0 },                      // right button up
@@ -3442,7 +3453,7 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
 
   for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
     Gesture* gs = ii.SyncInterpret(&hardware_states[idx], NULL);
-    if (idx < 2 || idx == 5 || idx == 7) {
+    if (idx < 2 || idx == 4 || idx == 7) {
       EXPECT_EQ(NULL, gs);
     } else {
       EXPECT_TRUE(gs != NULL);
@@ -3453,7 +3464,7 @@ TEST(ImmediateInterpreterTest, BasicButtonTest) {
         EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.down);
       else if (idx == 3)
         EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.up);
-      else if (idx == 4)
+      else if (idx == 5)
         EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.down);
       else if (idx == 6)
         EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.up);

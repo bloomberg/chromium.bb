@@ -184,12 +184,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   void UpdatePointingFingers(const HardwareState& hwstate);
 
   // Returns the square of the distance that this contact has travelled since
-  // fingers changed.
-  float DistanceTravelledSq(const FingerState& fs) const;
+  // fingers changed (origin=false) or since they touched down (origin=true).
+  float DistanceTravelledSq(const FingerState& fs, bool origin) const;
 
-  // Returns a vector describing the movement of the finger since the
-  // fingers changed.
-  Point FingerTraveledVector(const FingerState& fs) const;
+  // Returns the vector that this finger has travelled since
+  // fingers changed (origin=false) or since they touched down (origin=true).
+  Point FingerTraveledVector(const FingerState& fs, bool origin) const;
 
   // Returns the square of distance between two fingers.
   // Returns -1 if not exactly two fingers are present.
@@ -266,7 +266,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Returns true iff finger is in the bottom, dampened zone of the pad
   bool FingerInDampenedZone(const FingerState& finger) const;
 
-  // Called when fingers have changed to fill start_positions_.
+  // Called when fingers have changed to fill start_positions_
+  // and origin_positions_.
   void FillStartPositions(const HardwareState& hwstate);
 
   // Fills the origin_* member variables.
@@ -284,10 +285,14 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Called when the timeout is fired for UpdateButtons.
   void UpdateButtonsTimeout(stime_t now);
 
+  // Returns which button type corresponds to which touch count.
+  int GetButtonTypeForTouchCount(int touch_count) const;
+
   // By looking at |hwstate| and internal state, determins if a button down
   // at this time would correspond to a left/middle/right click. Returns
   // GESTURES_BUTTON_{LEFT,MIDDLE,RIGHT}.
-  int EvaluateButtonType(const HardwareState& hwstate);
+  int EvaluateButtonType(const HardwareState& hwstate,
+                         stime_t button_down_time);
 
   // Looking at this finger and the previous ones within a small window
   // and returns true iff the pressure is changing so quickly that we
@@ -365,6 +370,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // When fingers change, we keep track of where they started.
   // Map: Finger ID -> (x, y) coordinate
   map<short, Point, kMaxFingers> start_positions_;
+
+  // We keep track of where each finger started when they touched.
+  // Map: Finger ID -> (x, y) coordinate.
+  map<short, Point, kMaxFingers> origin_positions_;
 
   // tracking ids of known fingers that are not palms, nor thumbs.
   set<short, kMaxFingers> pointing_;
@@ -511,6 +520,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty bottom_zone_size_;
   // Time [s] to evaluate number of fingers for a click
   DoubleProperty button_evaluation_timeout_;
+  // Distance [mm] a finger can move to still be considered for a button click
+  DoubleProperty button_move_dist_;
+  // Distance [mm] a finger can be away from it's expected location to be
+  // considered part of the same finger group
+  DoubleProperty button_max_dist_from_expected_;
   // Timeval of time when keyboard was last touched. After the low one is set,
   // the two are converted into an stime_t and stored in keyboard_touched_.
   IntProperty keyboard_touched_timeval_high_;  // seconds
