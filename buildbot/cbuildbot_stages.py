@@ -1119,7 +1119,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
   def HandleSkip(self):
     self._CommunicateVersion()
 
-  def _BuildImages(self):
+  def __BuildImages(self):
     # We only build base, dev, and test images from this stage.
     images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._build_config['images']).intersection(
@@ -1148,7 +1148,13 @@ class BuildTargetStage(BoardSpecificBuilderStage):
       os.remove(cbuildbot_image_link)
 
     os.symlink(latest_image, cbuildbot_image_link)
-    self._CommunicateVersion()
+
+  def _BuildImages(self):
+    try:
+      if self._build_config['images']:
+        self.__BuildImages()
+    finally:
+      self._CommunicateVersion()
 
   def _BuildAutotestTarballs(self):
     # Build autotest tarball, which is used in archive step. This is generated
@@ -1197,10 +1203,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     else:
       self._archive_stage.AutotestTarballsReady(None)
 
-    if self._build_config['images']:
-      steps.append(self._BuildImages)
-    else:
-      self._CommunicateVersion()
+    steps.append(self._BuildImages)
     parallel.RunParallelSteps(steps)
 
     # TODO(yjhong): Remove this and instruct archive_hwqual to copy the tarball
