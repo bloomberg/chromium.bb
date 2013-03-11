@@ -2664,8 +2664,9 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
 
   views::FocusManager* focus_manager = GetFocusManager();
   views::View* focused = focus_manager->GetFocusedView();
-  if (focused->GetClassName() == views::Textfield::kViewClassName ||
-      focused->GetClassName() == OmniboxViewViews::kViewClassName) {
+  if (focused &&
+      (focused->GetClassName() == views::Textfield::kViewClassName ||
+       focused->GetClassName() == OmniboxViewViews::kViewClassName)) {
     views::Textfield* textfield = static_cast<views::Textfield*>(focused);
     textfield->ExecuteCommand(command_id);
     return;
