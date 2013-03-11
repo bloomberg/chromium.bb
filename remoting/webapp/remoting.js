@@ -98,7 +98,7 @@ remoting.init = function() {
   remoting.hostList.load(onLoad);
 
   // Show the tab-type warnings if necessary.
-  /** @param {boolean} windowed */
+  /** @param {boolean} isWindowed */
   var onIsWindowed = function(isWindowed) {
     if (!isWindowed &&
         navigator.platform.indexOf('Mac') == -1) {
