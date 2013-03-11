@@ -142,6 +142,7 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
 
 void WASAPIAudioInputStream::Stop() {
   DCHECK(CalledOnValidThread());
+  DVLOG(1) << "WASAPIAudioInputStream::Stop()";
   if (!started_)
     return;
 
@@ -167,6 +168,7 @@ void WASAPIAudioInputStream::Stop() {
 }
 
 void WASAPIAudioInputStream::Close() {
+  DVLOG(1) << "WASAPIAudioInputStream::Close()";
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
   Stop();

@@ -540,9 +540,17 @@ MediaStreamImpl::CreateLocalAudioRenderer(
     return NULL;
   }
 
+  webrtc::AudioTrackVector audio_tracks = stream->GetAudioTracks();
+  DCHECK_EQ(audio_tracks.size(), 1u);
+  webrtc::AudioTrackInterface* audio_track = audio_tracks[0];
+  DVLOG(1) << "audio_track.kind   : " << audio_track->kind()
+           << "audio_track.id     : " << audio_track->id()
+           << "audio_track.enabled: " << audio_track->enabled();
+
   // Create a new WebRtcLocalAudioRenderer instance and connect it to the
   // existing WebRtcAudioCapturer so that the renderer can use it as source.
-  return new WebRtcLocalAudioRenderer(source, RenderViewObserver::routing_id());
+  return new WebRtcLocalAudioRenderer(source, audio_track,
+                                      RenderViewObserver::routing_id());
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(

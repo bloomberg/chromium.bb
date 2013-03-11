@@ -11,7 +11,6 @@
 #include "content/common/child_process.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 
@@ -180,9 +179,9 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
 }
 
 WebRtcAudioCapturer::WebRtcAudioCapturer()
-    : source_(NULL),
+    : main_loop_(base::MessageLoopProxy::current()),
+      source_(NULL),
       running_(false),
-      buffering_(false),
       agc_is_enabled_(false) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
@@ -190,7 +189,6 @@ WebRtcAudioCapturer::WebRtcAudioCapturer()
 WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sinks_.empty());
-  DCHECK(!loopback_fifo_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
 }
 
@@ -218,6 +216,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
     const scoped_refptr<media::AudioCapturerSource>& source,
     media::ChannelLayout channel_layout,
     float sample_rate) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "SetCapturerSource(channel_layout=" << channel_layout << ","
            << "sample_rate=" << sample_rate << ")";
   scoped_refptr<media::AudioCapturerSource> old_source;
@@ -261,93 +260,14 @@ void WebRtcAudioCapturer::SetCapturerSource(
   }
 }
 
-void WebRtcAudioCapturer::SetStopCallback(
-    const base::Closure& on_device_stopped_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) <<  "WebRtcAudioCapturer::SetStopCallback()";
-  base::AutoLock auto_lock(lock_);
-  on_device_stopped_cb_ = on_device_stopped_cb;
-}
-
-void WebRtcAudioCapturer::PrepareLoopback() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) <<  "WebRtcAudioCapturer::PrepareLoopback()";
-  base::AutoLock auto_lock(lock_);
-  DCHECK(!loopback_fifo_);
-
-  // TODO(henrika): we could add a more dynamic solution here but I prefer
-  // a fixed size combined with bad audio at overflow. The alternative is
-  // that we start to build up latency and that can be more difficult to
-  // detect. Tests have shown that the FIFO never contains more than 2 or 3
-  // audio frames but I have selected a max size of ten buffers just
-  // in case since these tests were performed on a 16 core, 64GB Win 7
-  // machine. We could also add some sort of error notifier in this area if
-  // the FIFO overflows.
-  loopback_fifo_.reset(new media::AudioFifo(
-      buffer_->params().channels(),
-      10 * buffer_->params().frames_per_buffer()));
-  buffering_ = true;
-}
-
-void WebRtcAudioCapturer::CancelLoopback() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) <<  "WebRtcAudioCapturer::CancelLoopback()";
-  base::AutoLock auto_lock(lock_);
-  buffering_ = false;
-  if (loopback_fifo_.get() != NULL) {
-    loopback_fifo_->Clear();
-    loopback_fifo_.reset();
-  }
-}
-
-void WebRtcAudioCapturer::PauseBuffering() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) <<  "WebRtcAudioCapturer::PauseBuffering()";
-  base::AutoLock auto_lock(lock_);
-  buffering_ = false;
-}
-
-void WebRtcAudioCapturer::ResumeBuffering() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) <<  "WebRtcAudioCapturer::ResumeBuffering()";
-  base::AutoLock auto_lock(lock_);
-  if (buffering_)
-    return;
-  if (loopback_fifo_.get() != NULL)
-    loopback_fifo_->Clear();
-  buffering_ = true;
-}
-
-void WebRtcAudioCapturer::ProvideInput(media::AudioBus* dest) {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(loopback_fifo_.get() != NULL);
-
-  if (!running_) {
-    dest->Zero();
-    return;
-  }
-
-  // Provide data by reading from the FIFO if the FIFO contains enough
-  // to fulfill the request.
-  if (loopback_fifo_->frames() >= dest->frames()) {
-    loopback_fifo_->Consume(dest, 0, dest->frames());
-  } else {
-    dest->Zero();
-    // This warning is perfectly safe if it happens for the first audio
-    // frames. It should not happen in a steady-state mode.
-    DVLOG(2) << "WARNING: loopback FIFO is empty.";
-  }
-}
-
 void WebRtcAudioCapturer::Start() {
   DVLOG(1) << "WebRtcAudioCapturer::Start()";
   base::AutoLock auto_lock(lock_);
   if (running_)
     return;
 
-  // What Start() and SetAutomaticGainControl() does is supposed to be very
-  // light, for example, posting a task to another thread, so it is safe to
-  // call Start() and SetAutomaticGainControl() under the lock.
+  // Start the data source, i.e., start capturing data from the current source.
+  // Note that, the source does not have to be a microphone.
   if (source_) {
     // We need to set the AGC control before starting the stream.
     source_->SetAutomaticGainControl(agc_is_enabled_);
@@ -367,10 +287,8 @@ void WebRtcAudioCapturer::Stop() {
 
     // Ignore the Stop() request if we need to continue running for the
     // local capturer.
-    if (loopback_fifo_) {
-      loopback_fifo_->Clear();
+    if (sinks_.size() > 1)
       return;
-    }
 
     source = source_;
     running_ = false;
@@ -405,12 +323,6 @@ void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
     source_->SetAutomaticGainControl(enable);
 }
 
-bool WebRtcAudioCapturer::IsInLoopbackMode() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
-  return (loopback_fifo_ != NULL);
-}
-
 void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
                                   int audio_delay_milliseconds,
                                   double volume) {
@@ -429,17 +341,6 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     // buffer is reconfigured while we are calling back.
     buffer_ref_while_calling = buffer_;
     sinks = sinks_;
-
-    // Push captured audio to FIFO so it can be read by a local sink.
-    // Buffering is only enabled if we are rendering a local media stream.
-    if (loopback_fifo_ && buffering_) {
-      if (loopback_fifo_->frames() + audio_source->frames() <=
-          loopback_fifo_->max_frames()) {
-        loopback_fifo_->Push(audio_source);
-      } else {
-        DVLOG(1) << "FIFO is full";
-      }
-    }
   }
 
   int bytes_per_sample =
@@ -470,23 +371,28 @@ void WebRtcAudioCapturer::OnDeviceStarted(const std::string& device_id) {
 
 void WebRtcAudioCapturer::OnDeviceStopped() {
   DCHECK_EQ(MessageLoop::current(), ChildProcess::current()->io_message_loop());
-  DVLOG(1) << "WebRtcAudioCapturer::OnDeviceStopped()";
+  main_loop_->PostTask(
+      FROM_HERE, base::Bind(&WebRtcAudioCapturer::DoOnDeviceStopped, this));
+}
+
+void WebRtcAudioCapturer::DoOnDeviceStopped() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "WebRtcAudioCapturer::DoOnDeviceStopped()";
   {
     base::AutoLock auto_lock(lock_);
     running_ = false;
-    buffering_ = false;
-    if (loopback_fifo_) {
-      loopback_fifo_->Clear();
-    }
   }
 
-  // Inform the local renderer about the stopped device.
-  // The renderer can then save resources by not asking for more data from
-  // the stopped source. We are on the IO thread but the callback task will
-  // be posted on the message loop of the main render thread thanks to
-  // usage of BindToLoop() when the callback was initialized.
-  if (!on_device_stopped_cb_.is_null())
-    on_device_stopped_cb_.Run();
+  SinkList sinks;
+  {
+    base::AutoLock auto_lock(lock_);
+    sinks = sinks_;
+  }
+
+  // Inform registered sinks about the stopped device so they can take
+  // appropriate actions.
+  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it)
+    (*it)->OnCaptureDeviceStopped();
 }
 
 media::AudioParameters WebRtcAudioCapturer::audio_parameters() const {

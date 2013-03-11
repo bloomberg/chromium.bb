@@ -53,8 +53,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       sequence_started_(false),
       total_frame_count_(0),
       dropped_frame_count_(0),
-      media_log_(media_log),
-      volume_modified_(false) {
+      media_log_(media_log) {
   DVLOG(1) << "WebMediaPlayerMS::ctor";
   DCHECK(media_stream_client);
   media_log_->AddEvent(
@@ -196,21 +195,8 @@ void WebMediaPlayerMS::setVolume(float volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!audio_renderer_)
     return;
-
-  // The first time setVolume() is called, the call will come from WebKit's
-  // initialization code, not from javascript.  For local video streams we
-  // have this temporary workaround for WebRTC applications that automatically
-  // mutes the audio output of locally captured streams when the stream is
-  // assigned to a video or audio tag.
-  // So, when WebKit calls us, we set the volume to 0 (mute) for local
-  // audio streams only but subsequent calls will actually set the volume
-  // since those calls will be from the application.
-  // More details here: http://crbug.com/164811.
-  if (!volume_modified_ && audio_renderer_->IsLocalRenderer())
-    volume = 0.0f;
-
+  DVLOG(1) << "WebMediaPlayerMS::setVolume(volume=" << volume << ")";
   audio_renderer_->SetVolume(volume);
-  volume_modified_ = true;
 }
 
 void WebMediaPlayerMS::setVisible(bool visible) {

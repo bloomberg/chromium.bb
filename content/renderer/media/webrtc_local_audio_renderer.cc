@@ -4,10 +4,6 @@
 
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 
-#include "base/atomicops.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -15,144 +11,140 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/renderer_audio_output_device.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "media/base/bind_to_loop.h"
-#include "media/base/media_switches.h"
+#include "media/base/audio_bus.h"
 
 namespace content {
 
-// WebRtcLocalAudioRenderer::AudioCallback wraps the AudioOutputDevice thread,
-// receives callbacks on that thread and proxies these requests to the capture
-// sink.
-class WebRtcLocalAudioRenderer::AudioCallback
-    : public media::AudioRendererSink::RenderCallback {
- public:
-  explicit AudioCallback(LocalRenderCallback* source);
-  virtual ~AudioCallback();
-
-  // media::AudioRendererSink::RenderCallback implementation.
-  // Render() is called on the AudioOutputDevice thread and OnRenderError()
-  // on the IO thread.
-  virtual int Render(media::AudioBus* audio_bus,
-                     int audio_delay_milliseconds) OVERRIDE;
-  virtual void OnRenderError() OVERRIDE;
-
-  void Start();
-  void Play();
-  void Pause();
-  bool Playing() const;
-
-  base::TimeDelta total_render_time() const { return total_render_time_; }
-
- private:
-  // Get data from this source on each render request.
-  LocalRenderCallback* source_;
-
-  // Set when playing, cleared when paused.
-  base::subtle::Atomic32 playing_;
-
-  // Stores last time a render callback was received. The time difference
-  // between a new time stamp and this value can be used to derive the
-  // total render time.
-  base::Time last_render_time_;
-
-  // Keeps track of total time audio has been rendered.
-  base::TimeDelta total_render_time_;
-
-  // Protects |total_render_time_| and |source_capture_device_has_stopped_
-  base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioCallback);
-};
-
-// WebRtcLocalAudioRenderer::AudioCallback implementation.
-WebRtcLocalAudioRenderer::AudioCallback::AudioCallback(
-    LocalRenderCallback* source)
-    : source_(source),
-      playing_(false) {
-}
-
-WebRtcLocalAudioRenderer::AudioCallback::~AudioCallback() {}
-
-void WebRtcLocalAudioRenderer::AudioCallback::Start() {
-  last_render_time_ = base::Time::Now();
-  base::subtle::Release_Store(&playing_, 0);
-}
-
-void WebRtcLocalAudioRenderer::AudioCallback::Play() {
-  base::subtle::Release_Store(&playing_, 1);
-  last_render_time_ = base::Time::Now();
-}
-
-void WebRtcLocalAudioRenderer::AudioCallback::Pause() {
-  base::subtle::Release_Store(&playing_, 0);
-}
-
-bool WebRtcLocalAudioRenderer::AudioCallback::Playing() const {
-  return (base::subtle::Acquire_Load(&playing_) != false);
-}
-
 // media::AudioRendererSink::RenderCallback implementation
-int WebRtcLocalAudioRenderer::AudioCallback::Render(
+int WebRtcLocalAudioRenderer::Render(
     media::AudioBus* audio_bus, int audio_delay_milliseconds) {
+  base::AutoLock auto_lock(thread_lock_);
 
-  if (!Playing())
+  if (!playing_) {
+    audio_bus->Zero();
     return 0;
+  }
+
+  TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::Render");
 
   base::Time now = base::Time::Now();
-  {
-    base::AutoLock auto_lock(lock_);
-    total_render_time_ += now - last_render_time_;
-  }
+  total_render_time_ += now - last_render_time_;
   last_render_time_ = now;
 
-  TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::AudioCallback::Render");
+  DCHECK(loopback_fifo_.get() != NULL);
 
-  // Acquire audio samples from the FIFO owned by the capturing source.
-  source_->ProvideInput(audio_bus);
+  // Provide data by reading from the FIFO if the FIFO contains enough
+  // to fulfill the request.
+  if (loopback_fifo_->frames() >= audio_bus->frames()) {
+    loopback_fifo_->Consume(audio_bus, 0, audio_bus->frames());
+  } else {
+    audio_bus->Zero();
+    // This warning is perfectly safe if it happens for the first audio
+    // frames. It should not happen in a steady-state mode.
+    DVLOG(2) << "loopback FIFO is empty";
+  }
+
   return audio_bus->frames();
 }
 
-void WebRtcLocalAudioRenderer::AudioCallback::OnRenderError() {
+void WebRtcLocalAudioRenderer::OnRenderError() {
   NOTIMPLEMENTED();
+}
+
+// content::WebRtcAudioCapturerSink implementation
+void WebRtcLocalAudioRenderer::CaptureData(const int16* audio_data,
+                                           int number_of_channels,
+                                           int number_of_frames,
+                                           int audio_delay_milliseconds,
+                                           double volume) {
+  TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::CaptureData");
+  base::AutoLock auto_lock(thread_lock_);
+
+  if (!playing_ || !track_is_enabled_) {
+    return;
+  }
+
+  // Push captured audio to FIFO so it can be read by a local sink.
+  if (loopback_fifo_ && track_is_enabled_) {
+    if (loopback_fifo_->frames() + number_of_frames <=
+        loopback_fifo_->max_frames()) {
+      scoped_ptr<media::AudioBus> audio_source = media::AudioBus::Create(
+          number_of_channels, number_of_frames);
+      audio_source->FromInterleaved(audio_data,
+                                    audio_source->frames(),
+                                    sizeof(audio_data[0]));
+      loopback_fifo_->Push(audio_source.get());
+    } else {
+      DVLOG(1) << "FIFO is full";
+    }
+  }
+}
+
+void WebRtcLocalAudioRenderer::SetCaptureFormat(
+    const media::AudioParameters& params) {
+  NOTIMPLEMENTED() << "WebRtcLocalAudioRenderer::SetCaptureFormat()";
+}
+
+void WebRtcLocalAudioRenderer::OnCaptureDeviceStopped() {
+  DVLOG(1) << "WebRtcLocalAudioRenderer::OnCaptureDeviceStopped()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  {
+    base::AutoLock auto_lock(thread_lock_);
+    if (!sink_)
+      return;
+
+    if (loopback_fifo_)
+      loopback_fifo_->Clear();
+  }
+
+  // The capture device has stopped and we should therefore stop all activity
+  // as well to save resources.
+  Stop();
+}
+
+// webrtc::ObserverInterface implementation
+void WebRtcLocalAudioRenderer::OnChanged() {
+  DVLOG(1) << "WebRtcLocalAudioRenderer::OnChanged()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(thread_lock_);
+  track_is_enabled_ = audio_track_->enabled();
 }
 
 // WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer implementation.
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
     const scoped_refptr<WebRtcAudioCapturer>& source,
+    webrtc::AudioTrackInterface* audio_track,
     int source_render_view_id)
     : source_(source),
-      source_render_view_id_(source_render_view_id) {
+      audio_track_(audio_track),
+      source_render_view_id_(source_render_view_id),
+      playing_(false),
+      track_is_enabled_(true) {
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
 }
 
 WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!Started());
+  DCHECK(!sink_);
   DVLOG(1) << "WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer()";
 }
 
 void WebRtcLocalAudioRenderer::Start() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!Started());
   DVLOG(1) << "WebRtcLocalAudioRenderer::Start()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(source_);
 
-  if (source_->IsInLoopbackMode()) {
-    DLOG(ERROR) << "Only one local renderer is supported";
-    return;
+  if (audio_track_) {
+    audio_track_->RegisterObserver(this);
+    track_is_enabled_ = audio_track_->enabled();
   }
 
-  // Create the audio callback instance and attach the capture source to ensure
-  // that the renderer can read data from the loopback buffer in the capture
-  // source.
-  callback_.reset(new WebRtcLocalAudioRenderer::AudioCallback(source_));
+  base::AutoLock auto_lock(thread_lock_);
+  DCHECK(!sink_);
 
-  // Register the local renderer with its source. We are a sink seen from the
-  // source perspective.
-  const base::Closure& on_device_stopped_cb = media::BindToCurrentLoop(
-      base::Bind(
-          &WebRtcLocalAudioRenderer::OnSourceCaptureDeviceStopped, this));
-  source_->PrepareLoopback();
-  source_->SetStopCallback(on_device_stopped_cb);
+  // Add this class as sink to the capturer to ensure that we receive
+  // WebRtcAudioCapturerSink::CaptureData() callbacks for captured audio.
+  source_->AddCapturerSink(this);
 
   // Use the capturing source audio parameters when opening the output audio
   // device. Any mismatch will be compensated for by the audio output back-end.
@@ -164,106 +156,119 @@ void WebRtcLocalAudioRenderer::Start() {
   // TODO(henrika): verify this scheme on as many different devices and
   // combinations of sample rates as possible
   media::AudioParameters source_params = source_->audio_parameters();
+
+  // TODO(henrika): we could add a more dynamic solution here but I prefer
+  // a fixed size combined with bad audio at overflow. The alternative is
+  // that we start to build up latency and that can be more difficult to
+  // detect. Tests have shown that the FIFO never contains more than 2 or 3
+  // audio frames but I have selected a max size of ten buffers just
+  // in case since these tests were performed on a 16 core, 64GB Win 7
+  // machine. We could also add some sort of error notifier in this area if
+  // the FIFO overflows.
+  DCHECK(!loopback_fifo_);
+  loopback_fifo_.reset(new media::AudioFifo(
+      source_params.channels(),
+      10 * source_params.frames_per_buffer()));
+
   media::AudioParameters sink_params(source_params.format(),
                                      source_params.channel_layout(),
                                      source_params.sample_rate(),
                                      source_params.bits_per_sample(),
                                      2 * source_params.frames_per_buffer());
   sink_ = AudioDeviceFactory::NewOutputDevice();
-
   // TODO(henrika): we could utilize the unified audio here instead and do
   // sink_->InitializeIO(sink_params, 2, callback_.get());
   // It would then be possible to avoid using the WebRtcAudioCapturer.
-  DVLOG(1) << "The live audio input feature is enabled";
-
-  sink_->Initialize(sink_params, callback_.get());
+  sink_->Initialize(sink_params, this);
   sink_->SetSourceRenderView(source_render_view_id_);
 
-  // Start local rendering and the capturer. Note that, the capturer is owned
+  // Start the capturer and local rendering. Note that, the capturer is owned
   // by the WebRTC ADM and might already bee running.
   source_->Start();
   sink_->Start();
-  callback_->Start();
+
+  last_render_time_ = base::Time::Now();
+  playing_ = false;
 }
 
 void WebRtcLocalAudioRenderer::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioRenderer::Stop()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(thread_lock_);
 
-  if (!Started())
+  if (!sink_)
     return;
 
   // Stop the output audio stream, i.e, stop asking for data to render.
   sink_->Stop();
   sink_ = NULL;
 
-  // Delete the audio callback before deleting the source since the callback
-  // is using the source.
-  callback_.reset();
+  if (loopback_fifo_.get() != NULL) {
+    loopback_fifo_->Clear();
+    loopback_fifo_.reset();
+  }
 
-  // Unregister this class as sink to the capturing source and invalidate the
-  // source pointer. This call clears the local FIFO in the capturer, and at
-  // same time, ensure that recorded data is no longer added to the FIFO.
+  // Ensure that the capturer stops feeding us with captured audio.
   // Note that, we do not stop the capturer here since it may still be used by
   // the WebRTC ADM.
-  source_->CancelLoopback();
+  source_->RemoveCapturerSink(this);
   source_ = NULL;
+
+  if (audio_track_) {
+    audio_track_->UnregisterObserver(this);
+    audio_track_ = NULL;
+  }
 }
 
 void WebRtcLocalAudioRenderer::Play() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioRenderer::Play()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(thread_lock_);
 
-  if (!Started())
+  if (!sink_)
     return;
 
   // Resumes rendering by ensuring that WebRtcLocalAudioRenderer::Render()
-  // now reads data from the local FIFO in the capturing source.
-  callback_->Play();
-  source_->ResumeBuffering();
+  // now reads data from the local FIFO.
+  playing_ = true;
+  last_render_time_ = base::Time::Now();
+
+  if (loopback_fifo_)
+    loopback_fifo_->Clear();
 }
 
 void WebRtcLocalAudioRenderer::Pause() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioRenderer::Pause()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(thread_lock_);
 
-  if (!Started())
+  if (!sink_)
     return;
 
   // Temporarily suspends rendering audio.
   // WebRtcLocalAudioRenderer::Render() will return early during this state
-  // and no data will be provided to the active sink.
-  callback_->Pause();
-  source_->PauseBuffering();
+  // and only zeros will be provided to the active sink.
+  playing_ = false;
 }
 
 void WebRtcLocalAudioRenderer::SetVolume(float volume) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioRenderer::SetVolume(" << volume << ")";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(thread_lock_);
   if (sink_)
     sink_->SetVolume(volume);
 }
 
 base::TimeDelta WebRtcLocalAudioRenderer::GetCurrentRenderTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!Started())
+  base::AutoLock auto_lock(thread_lock_);
+  if (!sink_)
     return base::TimeDelta();
-  return callback_->total_render_time();
+  return total_render_time();
 }
 
 bool WebRtcLocalAudioRenderer::IsLocalRenderer() const {
   return true;
-}
-
-void WebRtcLocalAudioRenderer::OnSourceCaptureDeviceStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcLocalAudioRenderer::OnSourceCaptureDeviceStopped()";
-  if (!Started())
-    return;
-
-  // The capture device has stopped and we should therefore stop all activity
-  // as well to save resources.
-  Stop();
 }
 
 }  // namespace content
