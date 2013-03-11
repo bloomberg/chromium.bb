@@ -756,7 +756,7 @@ util.updateAppState = function(replace, path, opt_param) {
 
   var hash;
   if (path)
-    hash = '#' + encodeURI(path);
+    hash = '#' + encodeURIComponent(path);
   else
     hash = location.hash;
 

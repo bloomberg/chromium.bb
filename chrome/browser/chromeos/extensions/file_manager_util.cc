@@ -405,14 +405,18 @@ void OpenFileBrowserImpl(const base::FilePath& path,
     arg_value.SetString("action", action_id);
     std::string query;
     base::JSONWriter::Write(&arg_value, &query);
-    url += "?" + net::EscapeUrlEncodedData(query, false);
+    url += "?" +
+        net::EscapeUrlEncodedData(query,
+                                  false);  // Space to %20 instead of +.
   }
   if (!path.empty()) {
     base::FilePath virtual_path;
     if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
                                              &virtual_path))
       return;
-    url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
+    url += "#/" +
+        net::EscapeUrlEncodedData(virtual_path.value(),
+                                  false);  // Space to %20 instead of +.
   }
 
   ExtensionService* service =
@@ -617,7 +621,9 @@ bool ConvertFileToFileSystemUrl(Profile* profile,
 
   GURL base_url = fileapi::GetFileSystemRootURI(origin_url,
       fileapi::kFileSystemTypeExternal);
-  *url = GURL(base_url.spec() + virtual_path.value());
+  *url = GURL(base_url.spec() +
+              net::EscapeUrlEncodedData(virtual_path.value(),
+                                        false));  // Space to %20 instead of +.
   return true;
 }
 
@@ -699,8 +705,9 @@ GURL GetFileBrowserUrlWithParams(
 
   // kChromeUIFileManagerURL could not be used since query parameters are not
   // supported for it.
-  std::string url = GetFileBrowserUrl().spec() +
-                    '?' + net::EscapeUrlEncodedData(json_args, false);
+  std::string url = GetFileBrowserUrl().spec() + '?' +
+      net::EscapeUrlEncodedData(json_args,
+                                false);  // Space to %20 instead of +.
   return GURL(url);
 }
 
@@ -774,7 +781,8 @@ void OpenActionChoiceDialog(const base::FilePath& path) {
                                            &virtual_path))
     return;
   std::string url = kActionChoiceUrl;
-  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
+  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(),
+                                          false);  // Space to %20 instead of +.
   GURL dialog_url(url);
 
   const gfx::Size screen = ash::Shell::GetScreen()->GetPrimaryDisplay().size();
