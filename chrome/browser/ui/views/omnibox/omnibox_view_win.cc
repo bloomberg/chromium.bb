@@ -63,6 +63,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/mouse_wheel_util.h"
+#include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/button_drag_utils.h"
@@ -1570,8 +1571,8 @@ LRESULT OmniboxViewWin::OnTouchEvent(UINT message,
   // single-point tap on an unfocused model.
   if ((wparam == 1) && !model()->has_focus()) {
     TOUCHINPUT point = {0};
-    if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(lparam), 1,
-                          &point, sizeof(TOUCHINPUT))) {
+    if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(lparam), 1,
+                                     &point, sizeof(TOUCHINPUT))) {
       if (point.dwFlags & TOUCHEVENTF_DOWN)
         SetCapture();
       else if (point.dwFlags & TOUCHEVENTF_UP)

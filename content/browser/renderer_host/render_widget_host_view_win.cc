@@ -67,6 +67,7 @@
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
+#include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -2132,8 +2133,8 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
       static_cast<int>(WebKit::WebTouchEvent::touchesLengthCap));
   TOUCHINPUT points[WebKit::WebTouchEvent::touchesLengthCap];
 
-  if (!total || !GetTouchInputInfo((HTOUCHINPUT)lparam, total,
-                                   points, sizeof(TOUCHINPUT))) {
+  if (!total || !ui::GetTouchInputInfoWrapper((HTOUCHINPUT)lparam, total,
+                                              points, sizeof(TOUCHINPUT))) {
     TRACE_EVENT0("browser", "EarlyOut_NothingToDo");
     return 0;
   }

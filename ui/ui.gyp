@@ -309,6 +309,8 @@
         'base/win/shell.h',
         'base/win/singleton_hwnd.cc',
         'base/win/singleton_hwnd.h',
+        'base/win/touch_input.cc',
+        'base/win/touch_input.h',
         'base/win/window_impl.cc',
         'base/win/window_impl.h',
         'base/window_open_disposition.cc',

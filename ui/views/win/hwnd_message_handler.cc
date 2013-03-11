@@ -16,6 +16,7 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
+#include "ui/base/win/touch_input.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/icon_util.h"
@@ -1925,8 +1926,9 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                                          LPARAM l_param) {
   int num_points = LOWORD(w_param);
   scoped_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
-  if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(l_param),
-                        num_points, input.get(), sizeof(TOUCHINPUT))) {
+  if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
+                                   num_points, input.get(),
+                                   sizeof(TOUCHINPUT))) {
     for (int i = 0; i < num_points; ++i) {
       ui::EventType touch_event_type = ui::ET_UNKNOWN;
 
