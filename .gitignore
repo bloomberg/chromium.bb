@@ -7,15 +7,22 @@
 *.gypcmd
 *.Makefile
 *.mk
+*.props
 *.pyc
 *.pyc-2.4
 *.pyo
 *.pyo-2.4
 *.rules
+*.sdf
 *.sln
 *.slo
 *.swp
+*.suo
+*.targets
+*.user
 *.vcproj
+*.vcxproj
+*.vcxproj.filters
 *.xcodeproj/
 testserver.log
 
