@@ -30,12 +30,6 @@ const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 
 const char kTestRootResourceId[] = "test_root";
 
-// Callback for DriveResourceMetadata::InitFromDB.
-void CopyResultsFromInitFromDBCallback(DriveFileError* expected_error,
-                                       DriveFileError actual_error) {
-  *expected_error = actual_error;
-}
-
 // Copies result from GetChildDirectoriesCallback.
 void CopyResultFromGetChildDirectoriesCallback(
     std::set<base::FilePath>* out_child_directories,
@@ -407,65 +401,6 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
             pair_result->second.path);
   ASSERT_FALSE(pair_result->second.proto.get());
-}
-
-TEST_F(DriveResourceMetadataTest, DBTest) {
-  TestingProfile profile;
-  scoped_refptr<base::SequencedWorkerPool> pool =
-      content::BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
-      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-
-  DriveResourceMetadata resource_metadata(kTestRootResourceId);
-  Init(&resource_metadata);
-
-  base::FilePath db_path(DriveCache::GetCacheRootPath(&profile).
-      AppendASCII("meta").AppendASCII("resource_metadata.db"));
-  // InitFromDB should fail with DRIVE_FILE_ERROR_NOT_FOUND since the db
-  // doesn't exist.
-  DriveFileError db_error;
-  resource_metadata.InitFromDB(
-      db_path,
-      blocking_task_runner,
-      base::Bind(&CopyResultsFromInitFromDBCallback, &db_error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, db_error);
-
-  // Create a file system and write it to disk.
-  // We cannot call SaveToDB without first having called InitFromDB because
-  // InitFrom initializes the db_path and blocking_task_runner needed by
-  // SaveToDB.
-  resource_metadata.SaveToDB();
-  google_apis::test_util::RunBlockingPoolTask();
-
-  // InitFromDB should fail with DRIVE_FILE_ERROR_IN_USE.
-  resource_metadata.InitFromDB(
-      db_path,
-      blocking_task_runner,
-      base::Bind(&CopyResultsFromInitFromDBCallback, &db_error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_ERROR_IN_USE, db_error);
-
-  // InitFromDB should succeed.
-  DriveResourceMetadata test_resource_metadata(kTestRootResourceId);
-  test_resource_metadata.InitFromDB(
-      db_path,
-      blocking_task_runner,
-      base::Bind(&CopyResultsFromInitFromDBCallback, &db_error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(DRIVE_FILE_OK, db_error);
-
-  // Verify by checking for drive/dir2, which should have 3 children.
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  scoped_ptr<DriveEntryProtoVector> entries;
-  test_resource_metadata.ReadDirectoryByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir2"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  ASSERT_TRUE(entries.get());
-  ASSERT_EQ(3U, entries->size());
 }
 
 TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {

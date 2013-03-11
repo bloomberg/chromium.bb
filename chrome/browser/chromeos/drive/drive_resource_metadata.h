@@ -27,11 +27,9 @@ class ResourceEntry;
 
 namespace drive {
 
-struct CreateDBParams;
 class DriveDirectory;
 class DriveEntry;
 class DriveEntryProto;
-class ResourceMetadataDB;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 typedef std::map<std::string /* resource_id */, DriveEntryProto>
@@ -263,13 +261,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   void SerializeToString(std::string* serialized_proto) const;
   bool ParseFromString(const std::string& serialized_proto);
 
-  // Restores from and saves to database, calling |callback| asynchronously.
-  // |callback| must not be null.
-  void InitFromDB(const base::FilePath& db_path,
-                  base::SequencedTaskRunner* blocking_task_runner,
-                  const FileOperationCallback& callback);
-  void SaveToDB();
-
   // TODO(achuith): Remove all DriveEntry based methods. crbug.com/127856.
   // Creates DriveEntry from proto.
   scoped_ptr<DriveEntry> CreateDriveEntryFromProto(
@@ -294,12 +285,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   DriveEntry* GetEntryByResourceId(const std::string& resource_id);
 
  private:
-  // Initializes the resource map using serialized_resources fetched from the
-  // database.
-  // |callback| must not be null.
-  void InitResourceMap(CreateDBParams* create_params,
-                       const FileOperationCallback& callback);
-
   // Clears root_ and the resource map.
   void ClearRoot();
 
@@ -337,7 +322,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<ResourceMetadataDB> resource_metadata_db_;
 
   ResourceMap resource_map_;
 

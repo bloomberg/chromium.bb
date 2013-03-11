@@ -33,8 +33,6 @@ namespace {
 
 const base::FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
-const base::FilePath::CharType kResourceMetadataDBFile[] =
-    FILE_PATH_LITERAL("resource_metadata.db");
 
 // Update the fetch progress UI per every this number of feeds.
 const int kFetchUiUpdateStep = 10;
@@ -105,11 +103,6 @@ void SaveProtoOnBlockingPool(const base::FilePath& path,
                    << path.value();
     }
   }
-}
-
-bool UseLevelDB() {
-  // TODO(achuith): Re-enable this.
-  return false;
 }
 
 // Parses a google_apis::ResourceList from |data|.
@@ -617,25 +610,16 @@ void ChangeListLoader::LoadFromCache(const FileOperationCallback& callback) {
 
   LoadRootFeedParams* params = new LoadRootFeedParams(callback);
   base::FilePath path =
-      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
-  if (UseLevelDB()) {
-    path = path.Append(kResourceMetadataDBFile);
-    resource_metadata_->InitFromDB(path, blocking_task_runner_,
-        base::Bind(
-            &ChangeListLoader::ContinueWithInitializedResourceMetadata,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::Owned(params)));
-  } else {
-    path = path.Append(kFilesystemProtoFile);
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(),
-        FROM_HERE,
-        base::Bind(&LoadProtoOnBlockingPool,
-                   path, &params->last_modified, &params->proto),
-        base::Bind(&ChangeListLoader::OnProtoLoaded,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(params)));
-  }
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
+          kFilesystemProtoFile);
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&LoadProtoOnBlockingPool,
+                 path, &params->last_modified, &params->proto),
+      base::Bind(&ChangeListLoader::OnProtoLoaded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(params)));
 }
 
 void ChangeListLoader::OnProtoLoaded(LoadRootFeedParams* params,
@@ -681,21 +665,17 @@ void ChangeListLoader::SaveFileSystem() {
     return;
   }
 
-  if (UseLevelDB()) {
-    resource_metadata_->SaveToDB();
-  } else {
-    const base::FilePath path =
-        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
-            kFilesystemProtoFile);
-    scoped_ptr<std::string> serialized_proto(new std::string());
-    resource_metadata_->SerializeToString(serialized_proto.get());
-    resource_metadata_->set_last_serialized(base::Time::Now());
-    resource_metadata_->set_serialized_size(serialized_proto->size());
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&SaveProtoOnBlockingPool, path,
-                   base::Passed(&serialized_proto)));
-  }
+  const base::FilePath path =
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
+          kFilesystemProtoFile);
+  scoped_ptr<std::string> serialized_proto(new std::string());
+  resource_metadata_->SerializeToString(serialized_proto.get());
+  resource_metadata_->set_last_serialized(base::Time::Now());
+  resource_metadata_->set_serialized_size(serialized_proto->size());
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SaveProtoOnBlockingPool, path,
+                 base::Passed(&serialized_proto)));
 }
 
 void ChangeListLoader::UpdateFromFeed(
