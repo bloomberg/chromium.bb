@@ -21,7 +21,6 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "ipc/ipc_listener.h"
-#include "ipc/unix_domain_socket_util.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace {
@@ -146,7 +145,7 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
   struct sockaddr_un server_address = { 0 };
   memset(&server_address, 0, sizeof(server_address));
   server_address.sun_family = AF_UNIX;
-  int path_len = snprintf(server_address.sun_path, IPC::kMaxSocketNameLength,
+  int path_len = snprintf(server_address.sun_path, IPC::kMaxPipeNameLength,
                           "%s", name.c_str());
   DCHECK_EQ(static_cast<int>(name.length()), path_len);
   size_t server_address_len = offsetof(struct sockaddr_un,
@@ -312,7 +311,7 @@ TEST_F(IPCChannelPosixTest, BadChannelName) {
                              "future-proof_growth_strategies_Continually"
                              "pontificate_proactive_potentialities_before"
                              "leading-edge_processes";
-  EXPECT_GE(strlen(kTooLongName), IPC::kMaxSocketNameLength);
+  EXPECT_GE(strlen(kTooLongName), IPC::kMaxPipeNameLength);
   IPC::ChannelHandle handle2(kTooLongName);
   IPC::Channel channel2(handle2, IPC::Channel::MODE_NAMED_SERVER, NULL);
   EXPECT_FALSE(channel2.Connect());
