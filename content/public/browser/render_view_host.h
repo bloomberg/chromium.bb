@@ -287,6 +287,10 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void RequestFindMatchRects(int current_version) = 0;
 #endif
 
+ private:
+  // This interface should only be implemented inside content.
+  friend class RenderViewHostImpl;
+  RenderViewHost() {}
 };
 
 }  // namespace content

@@ -177,6 +177,11 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
  protected:
   virtual ~RenderView() {}
+
+ private:
+  // This interface should only be implemented inside content.
+  friend class RenderViewImpl;
+  RenderView() {}
 };
 
 }  // namespace content

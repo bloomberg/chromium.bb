@@ -429,6 +429,10 @@ class WebContents : public PageNavigator,
   virtual int DownloadFavicon(const GURL& url, int image_size,
                               const FaviconDownloadCallback& callback) = 0;
 
+ private:
+  // This interface should only be implemented inside content.
+  friend class WebContentsImpl;
+  WebContents() {}
 };
 
 }  // namespace content
