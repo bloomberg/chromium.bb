@@ -1447,8 +1447,6 @@
    fun:content::WebContentsImpl::Init
    fun:content::TestWebContents::Create
    fun:content::WebContentsTester::CreateTestWebContents
-   fun:extensions::::TestExtensionEnvironment::MakeTab
-   fun:extensions::::DeclarativeContentActionTest_ShowPageAction_Test::TestBody
 }
 {
    bug_145705

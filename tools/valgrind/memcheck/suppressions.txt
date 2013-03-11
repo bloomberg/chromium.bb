@@ -5521,8 +5521,6 @@
    fun:_ZN7content15WebContentsImpl4InitERKNS_11WebContents12CreateParamsE
    fun:_ZN7content15TestWebContents6CreateEPNS_14BrowserContextEPNS_12SiteInstanceE
    fun:_ZN7content17WebContentsTester21CreateTestWebContentsEPNS_14BrowserContextEPNS_12SiteInstanceE
-   fun:_ZN10extensions12_GLOBAL__N_124TestExtensionEnvironment7MakeTabEv
-   fun:_ZN10extensions12_GLOBAL__N_148DeclarativeContentActionTest_ShowPageAction_Test8TestBodyEv
 }
 {
    bug_145704
