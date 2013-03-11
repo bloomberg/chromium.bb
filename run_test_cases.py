@@ -562,6 +562,94 @@ class RunAll(object):
     pass
 
 
+def process_output(output, test_cases, duration, returncode):
+  """Returns the data of each test cases.
+
+  Expects the test cases to be run in the order of the list.
+
+  Handles the following google-test behavior:
+    - Test case crash causing a partial number of test cases to be run.
+    - Invalid test case name so the test case wasn't run at all.
+
+  This function automatically distribute the startup cost across each test case.
+  """
+  data = []
+  lines = output.splitlines(True)
+  test_cases = test_cases[:]
+  run_prefix = '[ RUN      ] '
+  ok_prefix = '[       OK ] '
+  failed_prefix = '[  FAILED  ] '
+  test_case = None
+  while (test_case or test_cases) and lines:
+    line = lines.pop(0)
+    i = line.find(run_prefix)
+    if i > 0 and data:
+      # This may occur specifically in browser_tests, because the test case is
+      # run in a child process. If the child process doesn't terminate its
+      # output with a LF, it may cause the "[ RUN    ]" line to be improperly
+      # printed out in the middle of a line.
+      data[-1]['output'] += line[:i]
+      line = line[i:]
+      i = 0
+    if i >= 0:
+      if test_case:
+        # The previous test case had crashed.
+        data[-1]['returncode'] = 1
+        data[-1]['duration'] = 0
+      test_case = line[len(run_prefix):].strip().split(' ', 1)[0]
+      # Accept the test case even if it was unexpected.
+      if test_case in test_cases:
+        test_cases.remove(test_case)
+      else:
+        logging.warning('Unexpected test case: %s', test_case)
+      data.append(
+        {
+          'test_case': test_case,
+          'returncode': None,
+          'duration': None,
+          'output': line,
+        })
+    elif test_case:
+      data[-1]['output'] += line
+      if line.startswith((ok_prefix, failed_prefix)):
+        # The test completed.
+        match = re.search(r' \((\d+) ms\)', line)
+        if match:
+          data[-1]['duration'] = float(match.group(1)) / 1000.
+        data[-1]['returncode'] = int(line.startswith(failed_prefix))
+        test_case = None
+
+  has_crashed = test_case and data
+  if has_crashed:
+    # This means the last one likely crashed.
+    if not data[-1]['returncode']:
+      data[-1]['returncode'] = (returncode or 1)
+    data[-1]['output'] += ''.join(lines)
+
+  # If test_cases is not empty, these test cases were not run.
+  data.extend(
+      {'test_case': t, 'returncode': None, 'duration': None, 'output': None}
+      for t in test_cases)
+
+  # Alias the list 'data' into 'data_ran' for the results of test cases that
+  # ran.
+  data_ran = [i for i in data if i['duration'] is not None]
+  startup_duration = duration
+  if data_ran:
+    startup_duration -= sum(i['duration'] for i in data_ran)
+
+  if has_crashed:
+    data[-1]['duration'] = startup_duration
+  else:
+    # Distribute the one-time process startup cost across the test cases that
+    # ran if the startup cost was above 10ms.
+    if startup_duration > 0.01 and data_ran:
+      distributed_duration = startup_duration / len(data_ran)
+      for i in data_ran:
+        i['duration'] += distributed_duration
+  return data
+
+
 class Runner(object):
   """Immutable settings to run many test cases in a loop."""
   def __init__(

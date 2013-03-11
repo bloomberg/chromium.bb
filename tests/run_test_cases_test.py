@@ -174,9 +174,177 @@ class RunTestCases(unittest.TestCase):
       self.assertFalse(decider.should_stop())
       decider.got_result(False)
 
+  def test_process_output_garbage(self):
+    data = 'garbage\n'
+    expected = [
+      {
+        'duration': None,
+        'output': None,
+        'returncode': None,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': None,
+        'output': None,
+        'returncode': None,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_crash_cr(self):
+    # CR only is supported. Let's assume a crash.
+    data = '[ RUN      ] Test.1\r[ RUN      ] Test.2\r'
+    expected = [
+      {
+        'duration': 0,
+        'output': '[ RUN      ] Test.1\r',
+        'returncode': 1,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': 1.,
+        'output': '[ RUN      ] Test.2\r',
+        'returncode': 1,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_crashes(self):
+    data = '[ RUN      ] Test.1\n[ RUN      ] Test.2\n'
+    expected = [
+      {
+        'duration': 0,
+        'output': '[ RUN      ] Test.1\n',
+        'returncode': 1,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': 1.,
+        'output': '[ RUN      ] Test.2\n',
+        'returncode': 1,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 1.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_ok(self):
+    data = (
+      '[ RUN      ] Test.1\n'
+      '[       OK ] Test.1 (1000 ms)\n'
+      '[ RUN      ] Test.2\n'
+      '[       OK ] Test.2 (2000 ms)\n')
+    expected = [
+      {
+        'duration': 11.,
+        'output': '[ RUN      ] Test.1\n[       OK ] Test.1 (1000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': 12.,
+        'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_fail_1(self):
+    data = (
+      '[ RUN      ] Test.1\n'
+      '[  FAILED  ] Test.1 (1000 ms)\n'
+      '[ RUN      ] Test.2\n'
+      '[       OK ] Test.2 (2000 ms)\n')
+    expected = [
+      {
+        'duration': 11.,
+        'output': '[ RUN      ] Test.1\n[  FAILED  ] Test.1 (1000 ms)\n',
+        'returncode': 1,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': 12.,
+        'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_crash_ok(self):
+    data = (
+      '[ RUN      ] Test.1\n'
+      'blah blah crash.\n'
+      '[ RUN      ] Test.2\n'
+      '[       OK ] Test.2 (2000 ms)\n')
+    expected = [
+      {
+        'duration': 4.,
+        'output': '[ RUN      ] Test.1\nblah blah crash.\n',
+        'returncode': 1,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': 6.,
+        'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_crash_garbage_ok(self):
+    data = (
+      '[ RUN      ] Test.1\n'
+      'blah blah crash[ RUN      ] Test.2\n'
+      '[       OK ] Test.2 (2000 ms)\n')
+    expected = [
+      {
+        'duration': 4.,
+        'output': '[ RUN      ] Test.1\nblah blah crash',
+        'returncode': 1,
+        'test_case': 'Test.1',
+      },
+      {
+        'duration': 6.,
+        'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.2',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 10.0, 0)
+    self.assertEquals(expected, actual)
+
+  def test_process_output_missing(self):
+    data = (
+      '[ RUN      ] Test.2\n'
+      '[       OK ] Test.2 (2000 ms)\n')
+    expected = [
+      {
+        'duration': 23.,
+        'output': '[ RUN      ] Test.2\n[       OK ] Test.2 (2000 ms)\n',
+        'returncode': 0,
+        'test_case': 'Test.2',
+      },
+      {
+        'duration': None,
+        'output': None,
+        'returncode': None,
+        'test_case': 'Test.1',
+      },
+    ]
+    actual = run_test_cases.process_output(data, ['Test.1', 'Test.2'], 23.0, 0)
+    self.assertEquals(expected, actual)
+
   def test_calc_cluster_default(self):
-    # Always display the full diff.
-    self.maxDiff = None
     expected = [
       ((0, 1), 0),
       ((1, 1), 1),
@@ -328,4 +496,5 @@ class WorkerPoolTest(unittest.TestCase):
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv
   logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
+  unittest.TestCase.maxDiff = 5000
   unittest.main()
