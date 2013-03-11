@@ -12,6 +12,8 @@
 
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "skia/ext/skia_utils_base.h"
+#include "third_party/skia/include/core/SkStream.h"
 
 namespace content {
 
@@ -23,31 +25,21 @@ FontConfigIPC::~FontConfigIPC() {
   close(fd_);
 }
 
-bool FontConfigIPC::Match(std::string* result_family,
-                          unsigned* result_filefaceid,
-                          bool filefaceid_valid, unsigned filefaceid,
-                          const std::string& family,
-                          const void* characters, size_t characters_bytes,
-                          bool* is_bold, bool* is_italic) {
-  if (family.length() > kMaxFontFamilyLength)
+bool FontConfigIPC::matchFamilyName(const char familyName[],
+                                    SkTypeface::Style requestedStyle,
+                                    FontIdentity* outFontIdentity,
+                                    SkString* outFamilyName,
+                                    SkTypeface::Style* outStyle) {
+  size_t familyNameLen = familyName ? strlen(familyName) : 0;
+  if (familyNameLen > kMaxFontFamilyLength)
     return false;
 
   Pickle request;
   request.WriteInt(METHOD_MATCH);
-  request.WriteBool(filefaceid_valid);
-  if (filefaceid_valid)
-    request.WriteUInt32(filefaceid);
+  request.WriteData(familyName, familyNameLen);
+  request.WriteUInt32(requestedStyle);
 
-  request.WriteBool(is_bold && *is_bold);
-  request.WriteBool(is_bold && *is_italic);
-
-  request.WriteUInt32(characters_bytes);
-  if (characters_bytes)
-    request.WriteBytes(characters, characters_bytes);
-
-  request.WriteString(family);
-
-  uint8_t reply_buf[512];
+  uint8_t reply_buf[2048];
   const ssize_t r = UnixDomainSocket::SendRecvMsg(fd_, reply_buf,
                                                   sizeof(reply_buf), NULL,
                                                   request);
@@ -62,33 +54,29 @@ bool FontConfigIPC::Match(std::string* result_family,
   if (!result)
     return false;
 
-  uint32_t reply_filefaceid;
-  std::string reply_family;
-  bool resulting_bold, resulting_italic;
-  if (!reply.ReadUInt32(&iter, &reply_filefaceid) ||
-      !reply.ReadString(&iter, &reply_family) ||
-      !reply.ReadBool(&iter, &resulting_bold) ||
-      !reply.ReadBool(&iter, &resulting_italic)) {
+  SkString     reply_family;
+  FontIdentity reply_identity;
+  uint32_t     reply_style;
+  if (!skia::ReadSkString(reply, &iter, &reply_family) ||
+      !skia::ReadSkFontIdentity(reply, &iter, &reply_identity) ||
+      !reply.ReadUInt32(&iter, &reply_style)) {
     return false;
   }
 
-  if (result_filefaceid)
-    *result_filefaceid = reply_filefaceid;
-  if (result_family)
-    *result_family = reply_family;
-
-  if (is_bold)
-    *is_bold = resulting_bold;
-  if (is_italic)
-    *is_italic = resulting_italic;
+  if (outFontIdentity)
+    *outFontIdentity = reply_identity;
+  if (outFamilyName)
+    *outFamilyName = reply_family;
+  if (outStyle)
+    *outStyle = static_cast<SkTypeface::Style>(reply_style);
 
   return true;
 }
 
-int FontConfigIPC::Open(unsigned filefaceid) {
+SkStream* FontConfigIPC::openStream(const FontIdentity& identity) {
   Pickle request;
   request.WriteInt(METHOD_OPEN);
-  request.WriteUInt32(filefaceid);
+  request.WriteUInt32(identity.fID);
 
   int result_fd = -1;
   uint8_t reply_buf[256];
@@ -97,7 +85,7 @@ int FontConfigIPC::Open(unsigned filefaceid) {
                                                   &result_fd, request);
 
   if (r == -1)
-    return -1;
+    return NULL;
 
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   bool result;
@@ -106,10 +94,10 @@ int FontConfigIPC::Open(unsigned filefaceid) {
       !result) {
     if (result_fd)
       close(result_fd);
-    return -1;
+    return NULL;
   }
 
-  return result_fd;
+  return new SkFDStream(result_fd, true);
 }
 
 }  // namespace content
