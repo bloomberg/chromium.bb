@@ -9,6 +9,7 @@
 
 #include "base/string_number_conversions.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/exported_object.h"
@@ -118,13 +119,13 @@ class IBusEngineFactoryServiceDaemonlessImpl : public IBusEngineFactoryService {
   virtual void SetCreateEngineHandler(
       const std::string& engine_id,
       const CreateEngineHandler& create_engine_handler) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusBridge::Get()->SetCreateEngineHandler(engine_id, create_engine_handler);
   }
 
   // IBusEngineFactoryService override.
   virtual void UnsetCreateEngineHandler(
       const std::string& engine_id) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusBridge::Get()->UnsetCreateEngineHandler(engine_id);
   }
 
  private:

@@ -8,10 +8,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/dbus/ibus/ibus_engine_service.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -391,20 +393,22 @@ class IBusPanelServiceDaemonlessImpl : public IBusPanelService {
   // IBusPanelService override.
   virtual void SetUpCandidateWindowHandler(
       IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusBridge::Get()->SetCandidateWindowHandler(handler);
   }
 
   // IBusPanelService override.
   virtual void SetUpPropertyHandler(
       IBusPanelPropertyHandlerInterface* handler) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusBridge::Get()->SetPropertyHandler(handler);
   }
 
   // IBusPanelService override.
   virtual void CandidateClicked(uint32 index,
                                 ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE {
-    // TODO(nona): Implement this.
+    IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+    if (engine)
+      engine->CandidateClicked(index, button, state);
   }
 
   // IBusPanelService override.
