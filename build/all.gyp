@@ -283,6 +283,11 @@
             '../sandbox/sandbox.gyp:sandbox_linux_unittests',
           ],
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_unittests',
+          ],
+        }],
       ],
     }, # target_name: chromium_builder_tests
     {
