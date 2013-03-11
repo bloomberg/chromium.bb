@@ -2326,15 +2326,7 @@ TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
       sorting->GetAppLaunchOrdinal(extension_misc::kWebStoreAppId).IsValid());
 }
 
-// Flaky failures on Vista. http://crbug.com/145381
-#if defined(OS_WIN)
-#define MAYBE_InstallAppsWithUnlimitedStorage \
-    DISABLED_InstallAppsWithUnlimitedStorage
-#else
-#define MAYBE_InstallAppsWithUnlimitedStorage InstallAppsWithUnlimitedStorage
-#endif
-
-TEST_F(ExtensionServiceTest, MAYBE_InstallAppsWithUnlimitedStorage) {
+TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   InitializeEmptyExtensionService();
   InitializeRequestContext();
   EXPECT_TRUE(service_->extensions()->is_empty());
