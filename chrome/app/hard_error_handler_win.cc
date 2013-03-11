@@ -10,125 +10,100 @@
 #undef FACILITY_VISUALCPP
 #endif
 #include <DelayIMP.h>
-
-#include <ntsecapi.h>
-#include <string>
+#include <winternl.h>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
-#include "base/string_piece.h"
-#include "base/sys_string_conversions.h"
+#include "base/string_util.h"
 
 namespace {
-
 const DWORD kExceptionModuleNotFound = VcppException(ERROR_SEVERITY_ERROR,
                                                      ERROR_MOD_NOT_FOUND);
 const DWORD kExceptionEntryPtNotFound = VcppException(ERROR_SEVERITY_ERROR,
                                                       ERROR_PROC_NOT_FOUND);
+// This is defined in <ntstatus.h> but we can't include this file here.
+const DWORD FACILITY_GRAPHICS_KERNEL = 0x1E;
+const DWORD NT_STATUS_ENTRYPOINT_NOT_FOUND = 0xC0000139;
+const DWORD NT_STATUS_DLL_NOT_FOUND = 0xC0000135;
 
-const int32 NT_STATUS_ENTRYPOINT_NOT_FOUND = 0xC0000139;
-const int32 NT_STATUS_DLL_NOT_FOUND = 0xC0000135;
-
-bool MakeNTUnicodeString(const std::wstring& str,
-                         UNICODE_STRING* nt_string) {
-  if (str.empty())
-    return false;
-  size_t str_size_bytes = str.size() * sizeof(wchar_t);
-  if (kuint16max < str_size_bytes) {
-    // The string is too long - nt_string->Length is USHORT
-    NOTREACHED() << "The string is too long";
-    return false;
-  }
-  nt_string->Length = static_cast<USHORT>(str_size_bytes);
-  nt_string->MaximumLength = static_cast<USHORT>(str_size_bytes);
-  nt_string->Buffer = const_cast<wchar_t*>(str.c_str());
-  return true;
+// We assume that exception codes are NT_STATUS codes.
+DWORD FacilityFromException(DWORD exception_code) {
+  return (exception_code >> 16) & 0x0FFF;
 }
 
-// NT-level function (not a win32 api) used to tell CSRSS of a critical error
-// in the program which results in a message box dialog.
-// The |exception| parameter is a standard exception code, the |param_count|
-// indicates the number of items in |payload_params|. |payload_params| is
-// dependent on the |exception| type but is typically an array to pointers to
-// strings. |error_mode| indicates the kind of dialog buttons to show.
-typedef LONG (WINAPI *NtRaiseHardErrorPF)(LONG exception,
-                                          ULONG param_count,
-                                          ULONG undocumented,
-                                          PVOID payload_params,
-                                          UINT error_mode,
-                                          PULONG response);
+// This is not a generic function. It only works with some |nt_status| values.
+// Check the strings here http://msdn.microsoft.com/en-us/library/cc704588.aspx
+// before attempting to use this function.
+void RaiseHardErrorMsg(long nt_status, const std::string& p1,
+                                       const std::string& p2) {
+  HMODULE ntdll = ::GetModuleHandleA("NTDLL.DLL");
+  wchar_t* msg_template = NULL;
+  size_t count = ::FormatMessage(
+      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS |
+      FORMAT_MESSAGE_FROM_HMODULE,
+      ntdll,
+      nt_status,
+      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      reinterpret_cast<wchar_t*>(&msg_template),
+      0,
+      NULL);
 
-// Helper function to call NtRaiseHardError(). It takes the exception code
-// and one or two strings which are dependent on the exception code. No
-// effort is done to validate that they match.
-void RaiseHardErrorMsg(int32 exception, const std::wstring& text1,
-                                        const std::wstring& text2) {
-  // Bind the entry point. We can do it here since this function is really
-  // called at most once per session. Usually never called.
-  NtRaiseHardErrorPF NtRaiseHardError =
-      reinterpret_cast<NtRaiseHardErrorPF>(
-      ::GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtRaiseHardError"));
-  if (!NtRaiseHardError)
+  if (!count)
     return;
-
-  UNICODE_STRING uni_str1;
-  UNICODE_STRING uni_str2;
-  // A message needs to be displayed or else it would be confusing to the user.
-  if (!MakeNTUnicodeString(text1, &uni_str1))
-    return;
-  int num_params = 1;
-  // The second string is optional.
-  if (MakeNTUnicodeString(text2, &uni_str2))
-    num_params = 2;
-
-  UNICODE_STRING* args[] = {&uni_str1, &uni_str2};
-  uint32 undoc_value = 3;   // Display message to user.
-  uint32 error_mode = 1;    // Display OK button only.
-  ULONG response;           // What user clicked in the dialog. Discarded.
-  NtRaiseHardError(exception, num_params, 3, args, error_mode, &response);
+  count += p1.size() + p2.size() + 1;
+  string16 message;
+  ::wsprintf(WriteInto(&message, count), msg_template, p1.c_str(), p2.c_str());
+  // The MB_SERVICE_NOTIFICATION causes this message to be displayed by
+  // csrss. This means that we are not creating windows or pumping WM messages
+  // in this process.
+  ::MessageBox(NULL, message.c_str(),
+               L"chrome.exe",
+               MB_OK | MB_SERVICE_NOTIFICATION);
+  ::LocalFree(msg_template);
 }
 
-}  // namespace.
-
-// Using RaiseHardErrorMsg(), it generates the same message box that is seen
-// when the loader cannot find a DLL that a module depends on. |module| is the
-// DLL name and it cannot be empty. The Message box only has an 'ok' button.
-void ModuleNotFoundHardError(const char* module) {
-  if (!module)
+void ModuleNotFoundHardError(const EXCEPTION_RECORD* ex_record) {
+  DelayLoadInfo* dli = reinterpret_cast<DelayLoadInfo*>(
+      ex_record->ExceptionInformation[0]);
+  if (!dli->szDll)
     return;
-  std::wstring mod_name(base::SysMultiByteToWide(module, CP_ACP));
-  RaiseHardErrorMsg(NT_STATUS_DLL_NOT_FOUND, mod_name, std::wstring());
+  RaiseHardErrorMsg(NT_STATUS_DLL_NOT_FOUND, dli->szDll, std::string());
 }
 
-// Using RaiseHardErrorMsg(), it generates the same message box that seen
-// when the loader cannot find an import a module depends on. |module| is the
-// DLL name and it cannot be empty. |entry| is the name of the method that
-// could not be found. The Message box only has an 'ok' button.
-void EntryPointNotFoundHardError(const char* entry, const char* module) {
-  if (!module || !entry)
+void EntryPointNotFoundHardError(const EXCEPTION_RECORD* ex_record) {
+  DelayLoadInfo* dli = reinterpret_cast<DelayLoadInfo*>(
+      ex_record->ExceptionInformation[0]);
+  if (!dli->dlp.fImportByName)
     return;
-  std::wstring entry_point(base::SysMultiByteToWide(entry, CP_ACP));
-  std::wstring mod_name(base::SysMultiByteToWide(module, CP_ACP));
-  RaiseHardErrorMsg(NT_STATUS_ENTRYPOINT_NOT_FOUND, entry_point, mod_name);
+  if (!dli->dlp.szProcName)
+    return;
+  if (!dli->szDll)
+    return;
+  RaiseHardErrorMsg(NT_STATUS_ENTRYPOINT_NOT_FOUND,
+      dli->dlp.szProcName, dli->szDll);
 }
 
-bool DelayLoadFailureExceptionMessageBox(EXCEPTION_POINTERS* ex_info) {
+}  // namespace
+
+bool HardErrorHandler(EXCEPTION_POINTERS* ex_info) {
   if (!ex_info)
     return false;
-  DelayLoadInfo* dli = reinterpret_cast<DelayLoadInfo*>(
-      ex_info->ExceptionRecord->ExceptionInformation[0]);
-  if (!dli)
+  if (!ex_info->ExceptionRecord)
     return false;
-  if (ex_info->ExceptionRecord->ExceptionCode == kExceptionModuleNotFound) {
-    ModuleNotFoundHardError(dli->szDll);
+
+  long exception = ex_info->ExceptionRecord->ExceptionCode;
+  if (exception == kExceptionModuleNotFound) {
+    ModuleNotFoundHardError(ex_info->ExceptionRecord);
     return true;
-  }
-  if (ex_info->ExceptionRecord->ExceptionCode == kExceptionEntryPtNotFound) {
-    if (dli->dlp.fImportByName) {
-      EntryPointNotFoundHardError(dli->dlp.szProcName, dli->szDll);
-      return true;
-    }
+  } else if (exception == kExceptionEntryPtNotFound) {
+    EntryPointNotFoundHardError(ex_info->ExceptionRecord);
+    return true;
+  } else if (FacilityFromException(exception) == FACILITY_GRAPHICS_KERNEL) {
+#if defined(USE_AURA)
+    RaiseHardErrorMsg(exception, std::string(), std::string());
+    return true;
+#else
+    return false;
+#endif
   }
   return false;
 }
-

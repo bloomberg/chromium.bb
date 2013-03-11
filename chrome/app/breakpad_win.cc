@@ -509,9 +509,11 @@ bool DumpDoneCallbackWhenNoCrash(const wchar_t*, const wchar_t*, void*,
 bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
                       EXCEPTION_POINTERS* ex_info,
                       MDRawAssertionInfo*, bool) {
-  // If the exception is because there was a problem loading a delay-loaded
-  // module, then show the user a dialog explaining the problem and then exit.
-  if (DelayLoadFailureExceptionMessageBox(ex_info))
+  // Check if the exception is one of the kind which would not be solved
+  // by simply restarting chrome. In this case we show a message box with
+  // and exit silently. Remember that chrome is in a crashed state so we
+  // can't show our own UI from this process.
+  if (HardErrorHandler(ex_info))
     return true;
 
   // We set CHROME_CRASHED env var. If the CHROME_RESTART is present.
