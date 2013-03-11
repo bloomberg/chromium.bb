@@ -107,7 +107,6 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     // inserting instant_ntp into the tabstrip and will take ownership.
     ignore_result(instant_ntp.release());
   }
-  content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
   return true;
 }
 
@@ -239,6 +238,16 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
 
 void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
                                            const search::Mode& new_mode) {
+  if (search::IsInstantExtendedAPIEnabled()) {
+    // Record some actions corresponding to the mode change. Note that to get
+    // the full story, it's necessary to look at other UMA actions as well,
+    // such as tab switches.
+    if (new_mode.is_search_results())
+      content::RecordAction(UserMetricsAction("InstantExtended.ShowSRP"));
+    else if (new_mode.is_ntp())
+      content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
+  }
+
   // If mode is now |NTP|, send theme-related information to Instant.
   if (new_mode.is_ntp())
     UpdateThemeInfo();

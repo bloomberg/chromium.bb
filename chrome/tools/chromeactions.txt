@@ -126,6 +126,7 @@
 0x878b28b309d1205e	BadMessageTerminate_AOF
 0xec6518c4af50b7ac	BadMessageTerminate_BMF
 0x1f57dc66c6c91837	BadMessageTerminate_BPE
+0x0eba05c9a1e2be6a	BadMessageTerminate_BPGM
 0x5a858938e484c903	BadMessageTerminate_BRPH
 0x6f41bf748eb54008	BadMessageTerminate_DBMF
 0xd910b7f4e1b53c11	BadMessageTerminate_DSMF
@@ -252,6 +253,7 @@
 0xe1b2d67ea37c5ba0	ClickToPlay_InfobarShown
 0xcfe5a8d495d7df34	ClickToPlay_LoadAll_Bubble
 0xb30dcb1850e21bce	ClickToPlay_LoadAll_Infobar
+0x9cd1157e30fc2b55	ClickedBookmarkBarAppsShortcutButton
 0x57b3678b429935ee	ClickedBookmarkBarFolder
 0x55c851e7c3d9a792	ClickedBookmarkBarURLButton
 0x4f667771b8f484b1	CloseAllSuppressedPopups
@@ -496,6 +498,7 @@
 0x1342e1e52f335f69	InsertUnorderedList
 0xb7c371f7dd19c6fd	InstallSite
 0x3545f6127f5688ab	InstantExtended.ShowNTP
+0x67ae87c0c5a6f55d	InstantExtended.ShowSRP
 0x1d874710ccdcd46b	Italic
 0x5569092107ae9fb0	JustifyCenter
 0xb2e54b8c7671e92e	JustifyLeft
