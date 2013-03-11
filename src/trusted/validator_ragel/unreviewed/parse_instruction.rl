@@ -216,8 +216,7 @@
 %%{
   machine vex_parsing_ia32;
 
-  include vex_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_parsing_common;
   # In ia32 mode bits R, X, and B are not used.
   VEX_NONE = b_111_xxxxx;
 }%%
@@ -225,8 +224,8 @@
 %%{
   machine vex_parsing_amd64;
 
-  include vex_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_parsing_common;
+
   VEX_NONE = b_111_xxxxx @vex_prefix2;
   VEX_R = b_x11_xxxxx @vex_prefix2;
   VEX_X = b_1x1_xxxxx @vex_prefix2;
@@ -354,8 +353,7 @@
 
   # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
   operand_rip = b_00_xxx_101 @modrm_pure_disp . disp32;
-  include modrm_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_common;
 }%%
 
 %%{
@@ -363,8 +361,7 @@
 
   # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
   operand_rip = b_00_xxx_101 @modrm_rip . disp32;
-  include modrm_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_common;
 }%%
 
 %%{
@@ -408,8 +405,7 @@
 
   # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
   operand_rip = b_00_xxx_101 . disp32;
-  include modrm_parsing_common_noactions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_common_noactions;
 }%%
 
 %%{
@@ -417,8 +413,7 @@
 
   # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
   operand_rip = b_00_xxx_101 . disp32;
-  include modrm_parsing_common_noactions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_common_noactions;
 }%%
 
 %%{
@@ -567,8 +562,7 @@
 %%{
   machine operand_actions_ia32;
 
-  include operand_actions_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include operand_actions_common;
 
   action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_TYPE_32_BIT); }
   action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_TYPE_32_BIT); }
@@ -627,8 +621,7 @@
 %%{
   machine operand_actions_amd64;
 
-  include operand_actions_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include operand_actions_common;
 
   action operand0_regsize {  SET_OPERAND_TYPE(0, OPERAND_TYPE_64_BIT); }
   action operand1_regsize {  SET_OPERAND_TYPE(1, OPERAND_TYPE_64_BIT); }
@@ -786,16 +779,14 @@
 %%{
   machine immediate_fields_parsing_ia32;
 
-  include immediate_fields_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_parsing_common;
   imm2 = b_0xxx_00xx @imm2_operand;
 }%%
 
 %%{
   machine immediate_fields_parsing_amd64;
 
-  include immediate_fields_parsing_common
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_parsing_common;
   imm2 = b_xxxx_00xx @imm2_operand;
 }%%
 
