@@ -5,9 +5,26 @@
   'target_defaults': {
     'variables': {
       'chromium_code': 1,
+      'enable_wexit_time_destructors': 1,
     },
     'include_dirs': [
       '<(DEPTH)',
+      # To allow including "version.h"
+      '<(SHARED_INTERMEDIATE_DIR)',
+    ],
+    'defines' : [
+      'SECURITY_WIN32',
+      'STRICT',
+      '_ATL_APARTMENT_THREADED',
+      '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
+      '_ATL_NO_AUTOMATIC_NAMESPACE',
+      '_ATL_NO_EXCEPTIONS',
+    ],
+    'conditions': [
+      ['OS=="win"', {
+        # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+        'msvs_disabled_warnings': [ 4267, ],
+      }],
     ],
   },
   'targets': [
@@ -20,6 +37,14 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/printing/printing.gyp:printing',
       ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
+            '<(DEPTH)/chrome/chrome.gyp:launcher_support',
+          ],
+        }],
+      ],
       'sources': [
         'service_state.cc',
         'service_state.h',
@@ -30,40 +55,17 @@
         'win/local_security_policy.cc',
         'win/local_security_policy.h',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            '<(DEPTH)/chrome/chrome.gyp:launcher_support',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        }],
-      ],
     },
     {
       'target_name': 'cloud_print_service',
       'type': 'executable',
-      'include_dirs': [
-        # To allow including "version.h"
-        '<(SHARED_INTERMEDIATE_DIR)',
-      ],
       'sources': [
         'win/cloud_print_service.cc',
-        'win/cloud_print_service.h',
         'win/cloud_print_service.rc',
         'win/resource.h',
       ],
       'dependencies': [
         'cloud_print_service_lib',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
-          ],
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
-        }],
       ],
       'msvs_settings': {
         'VCLinkerTool': {
