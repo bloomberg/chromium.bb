@@ -785,18 +785,28 @@ void OpenActionChoiceDialog(const base::FilePath& path) {
 
   Browser* browser = GetBrowserForUrl(dialog_url);
 
-  if (!browser) {
-    browser = new Browser(
-        Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
-                                            "action_choice",
-                                            bounds,
-                                            profile,
-                                            chrome::HOST_DESKTOP_TYPE_ASH));
-
-    chrome::AddSelectedTabWithURL(browser, dialog_url,
-                                  content::PAGE_TRANSITION_LINK);
+  if (browser) {
+    browser->window()->Show();
+    return;
   }
-  browser->window()->Show();
+
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+    profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord())->
+        extension_service();
+  if (!service)
+    return;
+
+  const extensions::Extension* extension =
+      service->GetExtensionById(kFileBrowserDomain, false);
+  if (!extension)
+    return;
+
+  chrome::AppLaunchParams params(profile, extension,
+                                 extension_misc::LAUNCH_WINDOW,
+                                 NEW_FOREGROUND_TAB);
+  params.override_url = dialog_url;
+  params.override_bounds = bounds;
+  chrome::OpenApplication(params);
 }
 
 void ViewItem(const base::FilePath& path) {

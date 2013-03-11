@@ -126,9 +126,9 @@ WebContents* OpenApplicationWindow(
   if (extension) {
     window_bounds.set_width(extension->launch_width());
     window_bounds.set_height(extension->launch_height());
-  } else if (!override_bounds.IsEmpty()) {
-    window_bounds = override_bounds;
   }
+  if (!override_bounds.IsEmpty())
+    window_bounds = override_bounds;
 
   Browser::CreateParams params(type, profile, chrome::GetActiveDesktop());
   params.app_name = app_name;
@@ -274,6 +274,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       container(container),
       disposition(disposition),
       override_url(),
+      override_bounds(),
       command_line(NULL) {}
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
@@ -284,6 +285,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       container(extension_misc::LAUNCH_NONE),
       disposition(disposition),
       override_url(),
+      override_bounds(),
       command_line(NULL) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -303,6 +305,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       container(extension_misc::LAUNCH_NONE),
       disposition(ui::DispositionFromEventFlags(event_flags)),
       override_url(),
+      override_bounds(),
       command_line(NULL) {
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     container = extension_misc::LAUNCH_TAB;
@@ -326,6 +329,7 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
   const extensions::Extension* extension = params.extension;
   extension_misc::LaunchContainer container = params.container;
   const GURL& override_url = params.override_url;
+  const gfx::Rect& override_bounds = params.override_bounds;
 
   WebContents* tab = NULL;
   ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
@@ -348,7 +352,7 @@ WebContents* OpenApplication(const AppLaunchParams& params) {
     case extension_misc::LAUNCH_PANEL:
     case extension_misc::LAUNCH_WINDOW:
       tab = OpenApplicationWindow(profile, extension, container,
-                                  override_url, NULL, gfx::Rect());
+                                  override_url, NULL, override_bounds);
       break;
     case extension_misc::LAUNCH_TAB: {
       tab = OpenApplicationTab(profile, extension, override_url,

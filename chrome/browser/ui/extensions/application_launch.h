@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/rect.h"
 
 class Browser;
 class CommandLine;
@@ -20,10 +21,6 @@ class WebContents;
 
 namespace extensions {
 class Extension;
-}
-
-namespace gfx {
-class Rect;
 }
 
 namespace chrome {
@@ -61,6 +58,10 @@ struct AppLaunchParams {
 
   // If non-empty, use override_url in place of the application's launch url.
   GURL override_url;
+
+  // If non-empty, use override_boudns in place of the application's default
+  // position and dimensions.
+  gfx::Rect override_bounds;
 
   // If non-NULL, information from the command line may be passed on to the
   // application.
