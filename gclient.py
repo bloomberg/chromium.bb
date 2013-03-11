@@ -1128,8 +1128,16 @@ solutions = [
         # Fix path separator on Windows.
         entry_fixed = entry.replace('/', os.path.sep)
         e_dir = os.path.join(self.root_dir, entry_fixed)
+
+        def _IsParentOfAny(parent, path_list):
+          parent_plus_slash = parent + '/'
+          return any(
+              path[:len(parent_plus_slash)] == parent_plus_slash
+              for path in path_list)
+
         # Use entry and not entry_fixed there.
-        if entry not in entries and os.path.exists(e_dir):
+        if ((not any(path.startswith(entry + '/') for path in entries)) and
+            os.path.exists(e_dir)):
           file_list = []
           scm = gclient_scm.CreateSCM(prev_url, self.root_dir, entry_fixed)
           scm.status(self._options, [], file_list)
