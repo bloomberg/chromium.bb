@@ -117,6 +117,7 @@ class DriveFileSyncService
   friend class DriveFileSyncServiceMockTest;
   friend class DriveFileSyncServiceSyncTest;
   class TaskToken;
+  struct ApplyLocalChangeParam;
   struct ProcessRemoteChangeParam;
 
   enum RemoteSyncType {
@@ -217,44 +218,39 @@ class DriveFileSyncService
       scoped_ptr<google_apis::ResourceEntry> entry);
 
   // Local synchronization related methods.
+  // Resolves LocalSync operation type. If non-null |param| is given
+  // the method also populates param->has_drive_metadata and
+  // param->drive_metadata fields.
   LocalSyncOperationType ResolveLocalSyncOperationType(
       const FileChange& local_file_change,
-      const fileapi::FileSystemURL& url);
-  void DidApplyLocalChange(
-      scoped_ptr<TaskToken> token,
       const fileapi::FileSystemURL& url,
+      ApplyLocalChangeParam* param);
+  void DidApplyLocalChange(
+      scoped_ptr<ApplyLocalChangeParam> param,
       const google_apis::GDataErrorCode error,
-      const SyncStatusCallback& callback,
       SyncStatusCode status);
   void DidResolveConflictToRemoteChange(
-      scoped_ptr<TaskToken> token,
-      const fileapi::FileSystemURL& url,
-      const std::string& resource_id,
-      const SyncStatusCallback& callback,
+      scoped_ptr<ApplyLocalChangeParam> param,
       SyncStatusCode status);
   void FinalizeLocalSync(
       scoped_ptr<TaskToken> token,
       const SyncStatusCallback& callback,
       SyncStatusCode status);
   void DidUploadNewFileForLocalSync(
-      scoped_ptr<TaskToken> token,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback,
+      scoped_ptr<ApplyLocalChangeParam> param,
       google_apis::GDataErrorCode error,
       const std::string& resource_id,
       const std::string& file_md5);
   void DidUploadExistingFileForLocalSync(
-      scoped_ptr<TaskToken> token,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback,
+      scoped_ptr<ApplyLocalChangeParam> param,
       google_apis::GDataErrorCode error,
       const std::string& resource_id,
       const std::string& file_md5);
   void DidDeleteFileForLocalSync(
-      scoped_ptr<TaskToken> token,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback,
+      scoped_ptr<ApplyLocalChangeParam> param,
       google_apis::GDataErrorCode error);
+  void HandleConflictForLocalSync(
+      scoped_ptr<ApplyLocalChangeParam> param);
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
                                   SyncStatusCode status,
@@ -380,10 +376,6 @@ class DriveFileSyncService
       bool has_new_changes,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> changes);
-  void HandleConflictForLocalSync(
-      scoped_ptr<TaskToken> token,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback);
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
   void OnPollingTimerFired();

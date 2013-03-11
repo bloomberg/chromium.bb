@@ -295,7 +295,8 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   DriveFileSyncService::LocalSyncOperationType ResolveLocalSyncOperationType(
       const FileChange& local_change,
       const fileapi::FileSystemURL& url) {
-    return sync_service_->ResolveLocalSyncOperationType(local_change, url);
+    return sync_service_->ResolveLocalSyncOperationType(
+        local_change, url, NULL);
   }
 
   bool IsLocalSyncOperationAdd(
