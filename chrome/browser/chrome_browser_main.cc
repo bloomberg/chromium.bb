@@ -1065,14 +1065,6 @@ void ChromeBrowserMainParts::PostBrowserStart() {
     RunPageCycler();
 #endif
 
-  // Create the instance of the Google Now service.
-#if defined(ENABLE_GOOGLE_NOW)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGoogleNowIntegration)) {
-    GoogleNowServiceFactory::GetForProfile(profile_);
-  }
-#endif
-
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostBrowserStart();
 #if !defined(OS_ANDROID)

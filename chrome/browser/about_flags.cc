@@ -1258,6 +1258,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableExperimentalBluetooth)
   },
 #endif
+#if defined(ENABLE_GOOGLE_NOW)
+  {
+    "enable-google-now",
+    IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_NAME,
+    IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableGoogleNowIntegration)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

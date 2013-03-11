@@ -25,14 +25,14 @@
 // TODO(vadimt): Report internal and server errors. Collect UMAs on errors where
 // appropriate. Also consider logging errors or throwing exceptions.
 
-// TODO(vadimt): Figure out the server name. Use it in the manifest and for
 // TODO(vadimt): Consider processing errors for all storage.set calls.
+// TODO(vadimt): Figure out the server name. Use it in the manifest and for
 // NOTIFICATION_CARDS_URL. Meanwhile, to use the feature, you need to manually
-// edit NOTIFICATION_CARDS_URL before building Chrome.
+// set the server name via local storage.
 /**
  * URL to retrieve notification cards.
  */
-var NOTIFICATION_CARDS_URL = '';
+var NOTIFICATION_CARDS_URL = localStorage['server_url'];
 
 /**
  * Standard response code for successful HTTP requests. This is the only success
