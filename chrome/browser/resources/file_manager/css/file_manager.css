@@ -684,6 +684,18 @@ body[type='full-page'] list .filename-label > :hover,
   text-decoration: underline;
 }
 
+.breadcrumb-path.accepts {
+  -webkit-animation: acceptsBlinkText 200ms linear 1s 3;
+}
+
+@-webkit-keyframes acceptsBlinkText {
+  0% {
+    color: white;
+  }
+  50% {
+  }
+}
+
 .img-container > img {
   -webkit-user-drag: none;
   position: absolute;
@@ -846,6 +858,20 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #list-container.nohover grid > .accepts {
   background-color: transparent;
   border-color: transparent;
+}
+
+#roots-list > .accepts,
+#list-container list > .accepts,
+#list-container grid > .accepts {
+  -webkit-animation: acceptsBlink 200ms linear 1s 3;
+}
+
+@-webkit-keyframes acceptsBlink {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+  }
 }
 
 .table-row-cell .filename-label,
