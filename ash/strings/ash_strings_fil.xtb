@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Overlay ng Keyboard</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Tray ng katayuan</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Kumokonekta...</translation>
 <translation id="2946640296642327832">Paganahin ang Bluetooth</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cellular</translation>
@@ -29,6 +30,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="153454903766751181">Sinisimulan ang cellular na modem...</translation>
 <translation id="7864539943188674973">Huwag Paganahin ang Bluetooth</translation>
 <translation id="3126069444801937830">I-restart upang mag-update</translation>
+<translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="6303423059719347535">Ang baterya ay <ph name="PERCENTAGE"/>% na puno</translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
@@ -41,6 +43,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="3892641579809465218">Panloob na Display</translation>
 <translation id="7823564328645135659">Nagbago ang wika mula &quot;<ph name="FROM_LOCALE"/>&quot; patungong &quot;<ph name="TO_LOCALE"/>&quot; pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="8340999562596018839">Pasalitang feedback</translation>
+<translation id="8654520615680304441">I-on ang Wi-Fi...</translation>
 <translation id="5825747213122829519">Naging <ph name="INPUT_METHOD_ID"/> ang iyong pamamaraan ng pag-input.
 Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="2562916301614567480">Pribadong Network</translation>
@@ -57,8 +60,9 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="1895658205118569222">Shutdown</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="6356500677799115505">Ang baterya ay puno at nagcha-charge.</translation>
-<translation id="551263474266254304">I-on ang WiFi...</translation>
+<translation id="7874779702599364982">Naghahanap ng mga cellular network...</translation>
 <translation id="1383876407941801731">Paghahanap</translation>
+<translation id="3901991538546252627">Kumokonekta sa <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Impormasyon ng Network</translation>
 <translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Lumabas sa session ng bisita</translation>
@@ -69,6 +73,7 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="2472320577759310817">Naka-off ang bluetooth.</translation>
 <translation id="2372145515558759244">Nagsi-sync ng apps...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Dinidiskonekta...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> hanggang mapuno</translation>
 <translation id="5787281376604286451">Pinagana ang pasalitang feedback.
 Pindutin ang Ctrl+Alt+Z upang huwag paganahin.</translation>
@@ -77,6 +82,7 @@ Pindutin ang Ctrl+Alt+Z upang huwag paganahin.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maximize</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Kumokonekta...</translation>
 <translation id="252373100621549798">Hindi Kilalang Display</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">I-lock</translation>
@@ -84,11 +90,10 @@ Pindutin ang Ctrl+Alt+Z upang huwag paganahin.</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
 <translation id="2872961005593481000">Shut down</translation>
-<translation id="5360056864692078751">Ang <ph name="DISPLAY_NAME"/> ay isang nakabahaging account na pinapamahalaan ng <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: Kumokonekta...</translation>
 <translation id="8132793192354020517">Kumukonekta sa <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Magtakda ng wallpaper...</translation>
 <translation id="2739500853984626550">Walang mga available na bluetooth device</translation>
+<translation id="2666092431469916601">Tuktok</translation>
 <translation id="3019353588588144572">Natitirang oras bago ganap na ma-charge ang baterya, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="1602076796624386989">Paganahin ang mobile data</translation>
@@ -98,6 +103,7 @@ Pindutin ang Ctrl+Alt+Z upang huwag paganahin.</translation>
 <translation id="225680501294068881">Nag-i-scan para sa mga device...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Naghahanap ng mga network na Wi-Fi...</translation>
+<translation id="2999742336789313416">Ang <ph name="DISPLAY_NAME"/> ay isang pampublikong session na pinamamahalaan ng <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
 <translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
 <translation id="4872237917498892622">Alt+Search o Shift</translation>
@@ -121,6 +127,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8061464966246066292">Mataas na contrast</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ang natitira</translation>
+<translation id="8000066093800657092">Walang network</translation>
 <translation id="5941711191222866238">Minimize</translation>
 <translation id="6911468394164995108">Sumali sa iba...</translation>
 <translation id="6843725295806269523">i-mute</translation>

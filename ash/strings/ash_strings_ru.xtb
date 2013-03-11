@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Накладка на клавиатуру</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="2297568595583585744">Строка состояния</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: соединение...</translation>
 <translation id="2946640296642327832">Включить Bluetooth</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Сотовый</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">Инициализация сотового модема…</translation>
 <translation id="7864539943188674973">Отключить Bluetooth</translation>
 <translation id="3126069444801937830">Перезагрузите, чтобы выполнить обновление</translation>
+<translation id="735745346212279324">VPN-соединение прервано</translation>
 <translation id="6303423059719347535">Батарея заряжена на <ph name="PERCENTAGE"/>%.</translation>
 <translation id="3294437725009624529">Гость</translation>
 <translation id="8190698733819146287">Настройка языков и ввода...</translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">Встроенный дисплей</translation>
 <translation id="7823564328645135659">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE"/>, а не <ph name="FROM_LOCALE"/>.</translation>
 <translation id="8340999562596018839">Голосовое сопровождение</translation>
+<translation id="8654520615680304441">Включение Wi-Fi...</translation>
 <translation id="5825747213122829519">Способ ввода изменен на <ph name="INPUT_METHOD_ID"/>.
 Для переключения нажмите Shift + Alt.</translation>
 <translation id="2562916301614567480">Частная сеть</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">Завершение работы</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="6356500677799115505">Батарея заряжена и подключена к источнику питания.</translation>
-<translation id="551263474266254304">Включить Wi-Fi…</translation>
+<translation id="7874779702599364982">Поиск сетей мобильной связи...</translation>
 <translation id="1383876407941801731">Поиск</translation>
+<translation id="3901991538546252627">Подключение к <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Информация о сети</translation>
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT"/>.</translation>
 <translation id="5980301590375426705">Завершить гостевой сеанс</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="2472320577759310817">Bluetooth отключен.</translation>
 <translation id="2372145515558759244">Синхронизация приложений…</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: отключение...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до заполнения</translation>
 <translation id="5787281376604286451">Голосовое сопровождение включено. Чтобы отключить его, нажмите Ctrl + Alt + Z.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -76,6 +81,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Развернуть</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: соединение...</translation>
 <translation id="252373100621549798">Неизвестный дисплей</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Заблокировать</translation>
@@ -83,11 +89,10 @@
 <translation id="2482878487686419369">Оповещения</translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> – это общий аккаунт под управлением <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710">Подключение к сети <ph name="NETWORK"/>…</translation>
 <translation id="8132793192354020517">Подключено к сети <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Выбрать обои</translation>
 <translation id="2739500853984626550">Устройства Bluetooth недоступны</translation>
+<translation id="2666092431469916601">Наверх</translation>
 <translation id="3019353588588144572">Оставшееся время до полной зарядки батареи: <ph name="TIME_REMAINING"/>.</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="1602076796624386989">Включить мобильную передачу данных</translation>
@@ -97,6 +102,7 @@
 <translation id="225680501294068881">Поиск устройств…</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Поиск сетей Wi-Fi...</translation>
+<translation id="2999742336789313416">Открытый сеанс <ph name="DISPLAY_NAME"/> выполняется в домене <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Завершить сеанс</translation>
 <translation id="8454013096329229812">Wi-Fi включен</translation>
 <translation id="4872237917498892622">Alt + Search или Shift</translation>
@@ -120,6 +126,7 @@
 Чтобы отключить его, нажмите Alt + Search или Shift.</translation>
 <translation id="8061464966246066292">Высокая контрастность</translation>
 <translation id="5102001756192215136">Осталось <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">Нет сети</translation>
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="6911468394164995108">Подключиться к другой сети...</translation>
 <translation id="6843725295806269523">отключить звук</translation>

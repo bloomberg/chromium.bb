@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Clavier en superposition</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Barre d'état</translation>
+<translation id="4508225577814909926"><ph name="NAME"/> : Connexion en cours…</translation>
 <translation id="2946640296642327832">Activer le Bluetooth</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobile</translation>
@@ -29,6 +30,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="153454903766751181">Initialisation du modem cellulaire en cours…</translation>
 <translation id="7864539943188674973">Désactiver le Bluetooth</translation>
 <translation id="3126069444801937830">Redémarrez pour mettre à jour</translation>
+<translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="6303423059719347535">La batterie est chargée à <ph name="PERCENTAGE"/> %.</translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
@@ -41,6 +43,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="3892641579809465218">Affichage interne</translation>
 <translation id="7823564328645135659">La langue utilisée est passée de &quot;<ph name="FROM_LOCALE"/>&quot; à &quot;<ph name="TO_LOCALE"/>&quot; après la synchronisation de vos paramètres.</translation>
 <translation id="8340999562596018839">Commentaires audio</translation>
+<translation id="8654520615680304441">Activer le Wi-Fi…</translation>
 <translation id="5825747213122829519">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID"/>.
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2562916301614567480">Réseau privé</translation>
@@ -57,8 +60,9 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="1895658205118569222">Arrêt.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="6356500677799115505">La batterie est pleine et en charge.</translation>
-<translation id="551263474266254304">Activation Wi-Fi…</translation>
+<translation id="7874779702599364982">Recherche de réseaux cellulaires en cours…</translation>
 <translation id="1383876407941801731">Recherche</translation>
+<translation id="3901991538546252627">Connexion à <ph name="NAME"/> en cours…</translation>
 <translation id="2204305834655267233">Informations réseau</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT"/>.</translation>
 <translation id="5980301590375426705">Fermer la session Invité</translation>
@@ -69,6 +73,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="2472320577759310817">Bluetooth désactivé</translation>
 <translation id="2372145515558759244">Synchronisation des applications…</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/> : Déconnexion en cours…</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> de chargement</translation>
 <translation id="5787281376604286451">Les commentaires audio sont activés.
 Appuyez sur les touches Ctrl+Alt+Z pour les désactiver.</translation>
@@ -77,6 +82,7 @@ Appuyez sur les touches Ctrl+Alt+Z pour les désactiver.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="1398853756734560583">Agrandir</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/> : Connexion en cours…</translation>
 <translation id="252373100621549798">Écran inconnu</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Verrouiller</translation>
@@ -84,11 +90,10 @@ Appuyez sur les touches Ctrl+Alt+Z pour les désactiver.</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="2872961005593481000">Éteindre</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> est un compte partagé géré par <ph name="DOMAIN"/>.</translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/> : connexion en cours…</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Définir un fond d'écran…</translation>
 <translation id="2739500853984626550">Aucun appareil Bluetooth disponible</translation>
+<translation id="2666092431469916601">En haut</translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING"/>.</translation>
 <translation id="3473479545200714844">Loupe</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
@@ -98,6 +103,7 @@ Appuyez sur les touches Ctrl+Alt+Z pour les désactiver.</translation>
 <translation id="225680501294068881">Recherche d'appareils en cours…</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Recherche de réseaux Wi-Fi...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> est une session publique gérée par <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
@@ -121,6 +127,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> d'autonomie</translation>
+<translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="6843725295806269523">muet</translation>

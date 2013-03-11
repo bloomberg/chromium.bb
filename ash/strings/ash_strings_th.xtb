@@ -16,6 +16,7 @@
 <translation id="938582441709398163">การวางซ้อนแป้นพิมพ์</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="2297568595583585744">ถาดสถานะ</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: กำลังเชื่อมต่อ...</translation>
 <translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
 <translation id="6459472438155181876">ขยายหน้าจอไปยัง <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">กำลังเริ่มต้นโมเด็มมือถือ...</translation>
 <translation id="7864539943188674973">ปิดใช้งานบลูทูธ</translation>
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
+<translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
 <translation id="6303423059719347535">มีแบตเตอรี่ <ph name="PERCENTAGE"/>%</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">จอแสดงผลภายใน</translation>
 <translation id="7823564328645135659">เปลี่ยนภาษาจาก &quot;<ph name="FROM_LOCALE"/>&quot; เป็น &quot;<ph name="TO_LOCALE"/>&quot; หลังจากซิงค์การตั้งค่าของคุณ</translation>
 <translation id="8340999562596018839">การตอบสนองด้วยเสียง</translation>
+<translation id="8654520615680304441">เปิด WiFi...</translation>
 <translation id="5825747213122829519">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/> แล้ว
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="2562916301614567480">เครือข่ายส่วนบุคคล</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">ปิด</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="6356500677799115505">แบตเตอรี่เต็มและกำลังชาร์จ</translation>
-<translation id="551263474266254304">กำลังเปิด WiFi...</translation>
+<translation id="7874779702599364982">กำลังค้นหาเครือข่ายโทรศัพท์มือถือ...</translation>
 <translation id="1383876407941801731">เครื่องมือค้นหา</translation>
+<translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME"/></translation>
 <translation id="2204305834655267233">ข้อมูลเครือข่าย</translation>
 <translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ออกจากเซสชันผู้มาเยือน</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="2472320577759310817">บลูทูธปิดอยู่</translation>
 <translation id="2372145515558759244">กำลังซิงค์แอปพลิเคชัน...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: กำลังยกเลิกการเชื่อมต่อ...</translation>
 <translation id="8456362689280298700">อีก <ph name="HOUR"/>:<ph name="MINUTE"/> จึงจะเต็ม</translation>
 <translation id="5787281376604286451">เปิดใช้งานการตอบสนองด้วยเสียงอยู่
 กด Ctrl+Alt+Z เพื่อปิดใช้งาน</translation>
@@ -77,6 +82,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">ย่อ</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: กำลังเชื่อมต่อ...</translation>
 <translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">ล็อก</translation>
@@ -84,11 +90,10 @@
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
 <translation id="2872961005593481000">ปิด</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> เป็นบัญชีที่ใช้งานร่วมกันซึ่งจัดการโดย <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: กำลังเชื่อมต่อ...</translation>
 <translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME"/></translation>
 <translation id="7052914147756339792">ตั้งค่าวอลเปเปอร์...</translation>
 <translation id="2739500853984626550">ไม่มีอุปกรณ์บลูทูธที่ใช้ได้</translation>
+<translation id="2666092431469916601">ด้านบน</translation>
 <translation id="3019353588588144572">เวลาที่เหลือกว่าจะชาร์จแบตเตอรี่เต็ม, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="1602076796624386989">เปิดใช้งานข้อมูลมือถือ</translation>
@@ -98,6 +103,7 @@
 <translation id="225680501294068881">กำลังสแกนหาอุปกรณ์...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> เป็นเซสชันสาธารณะซึ่งจัดการโดย <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
 <translation id="8454013096329229812">WiFi เปิดอยู่</translation>
 <translation id="4872237917498892622">Alt+ค้นหา หรือ Shift</translation>
@@ -121,6 +127,7 @@
 กด Alt+ค้นหา หรือ Shift เพื่อยกเลิก</translation>
 <translation id="8061464966246066292">ความคมชัดสูง</translation>
 <translation id="5102001756192215136">เหลืออีก <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="5941711191222866238">ย่อ</translation>
 <translation id="6911468394164995108">เชื่อมต่อเครือข่ายอื่น...</translation>
 <translation id="6843725295806269523">ปิดเสียง</translation>

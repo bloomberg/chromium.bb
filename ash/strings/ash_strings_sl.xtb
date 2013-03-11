@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Prekrivna tipkovnica</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Pladenj stanja</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: vzpostavljanje povezave ...</translation>
 <translation id="2946640296642327832">Omogoči Bluetooth</translation>
 <translation id="6459472438155181876">Razširitev zaslon na <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Prenosni</translation>
@@ -29,6 +30,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="153454903766751181">Inicializacija modema za mobilno omrežje ...</translation>
 <translation id="7864539943188674973">Onemogoči Bluetooth</translation>
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
+<translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
 <translation id="6303423059719347535">Napolnjenost akumulatorja: <ph name="PERCENTAGE"/> %</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
@@ -41,6 +43,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="3892641579809465218">Notranji zaslon</translation>
 <translation id="7823564328645135659">Po sinhronizaciji nastavitev se je jezik spremenil iz jezika »<ph name="FROM_LOCALE"/>« v jezik »<ph name="TO_LOCALE"/>«.</translation>
 <translation id="8340999562596018839">Glasovni odziv</translation>
+<translation id="8654520615680304441">Vklop omrežja Wi-Fi ...</translation>
 <translation id="5825747213122829519">Način vnosa se je spremenil v <ph name="INPUT_METHOD_ID"/>.
 Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="2562916301614567480">Zasebno omrežje</translation>
@@ -57,8 +60,9 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="1895658205118569222">Zaprt</translation>
 <translation id="4430019312045809116">Glasnost</translation>
 <translation id="6356500677799115505">Akumulator je poln in se polni.</translation>
-<translation id="551263474266254304">Vklop povezave Wi-Fi ...</translation>
+<translation id="7874779702599364982">Iskanje mobilnih omrežij ...</translation>
 <translation id="1383876407941801731">Iskanje</translation>
+<translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Podatki o omrežju</translation>
 <translation id="1621499497873603021">Preostali čas do izpraznitve akumulatorja, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Zapusti sejo gosta</translation>
@@ -69,6 +73,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="2472320577759310817">Bluetooth je izklopljen.</translation>
 <translation id="2372145515558759244">Sinhronizacija aplikacij ...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: prekinjanje povezave ...</translation>
 <translation id="8456362689280298700">Čas polnjenja: še <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5787281376604286451">Glasovni odziv je omogočen.
 Če ga želite onemogočiti, pritisnite Ctrl + Alt + Z.</translation>
@@ -77,6 +82,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Povečaj</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: vzpostavljanje povezave ...</translation>
 <translation id="252373100621549798">Neznan prikaz</translation>
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Zakleni</translation>
@@ -84,11 +90,10 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> je račun v skupni rabi, ki ga upravlja <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: Vzpostavljanje povezave ...</translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME"/> je vzpostavljena </translation>
 <translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
 <translation id="2739500853984626550">Na voljo ni nobena naprava Bluetooth</translation>
+<translation id="2666092431469916601">Na vrh</translation>
 <translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="1602076796624386989">Omogoči mobilno podatkovno povezavo</translation>
@@ -98,6 +103,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="225680501294068881">Iskanje naprav ...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Iskanje omrežij Wi-Fi</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je javna seja, ki jo upravlja <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
 <translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
 <translation id="4872237917498892622">Alt + iskanje ali Shift</translation>
@@ -121,6 +127,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8061464966246066292">Visok kontrast</translation>
 <translation id="5102001756192215136">Še <ph name="HOUR"/>.<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="5941711191222866238">Pomanjšaj</translation>
 <translation id="6911468394164995108">Pridružite se drugemu ...</translation>
 <translation id="6843725295806269523">nemo</translation>

@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">You may securely access this computer using Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Please enter your PIN for <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Remote connections for this computer have been disabled.</translation>
+<translation id="8244400547700556338">Learn how.</translation>
 <translation id="332624996707057614">Edit computer name</translation>
 <translation id="1996161829609978754">Chrome is downloading the Chromoting Host installer.  Once the download is complete, please run the installer before continuing.</translation>
 <translation id="7658239707568436148">Cancel</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">You are not signed in to Chromoting. Please sign in and try again.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Re-type PIN</translation>
-<translation id="4686372254213217147">Original size</translation>
 <translation id="154040539590487450">Failed to start remote access service.</translation>
 <translation id="7948001860594368197">Screen options</translation>
 <translation id="8172070902751707422">Authentication failed. Please sign in to Chrome Remote Desktop again.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">To use Chrome Remote Desktop you must grant extended access permissions to your computer. You only have to do this once.</translation>
 <translation id="9032136467203159543">Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.</translation>
 <translation id="1342297293546459414">See and control a shared computer.</translation>
+<translation id="1520828917794284345">Resize desktop to fit</translation>
 <translation id="701976023053394610">Remote Assistance</translation>
 <translation id="6193698048504518729">Connect to <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Help us improve Chromoting by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="7649070708921625228">Help</translation>
+<translation id="4517233780764084060">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="7144878232160441200">Retry</translation>
 <translation id="4703799847237267011">Your Chromoting session has ended.</translation>

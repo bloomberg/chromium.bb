@@ -8,12 +8,13 @@
 
 Google Chrome is unable to recover your settings.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
+<translation id="6236285698028833233">Google Chrome has stopped updating and no longer supports this version of your operating system.</translation>
 <translation id="5453904507266736060">Let Google Chrome Run In The Background</translation>
 <translation id="2383457833405848421">About Chrome Frame...</translation>
 <translation id="3454512769850953877">Yes, exit Chrome</translation>
+<translation id="2704356438731803243">If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
-<translation id="741045321678647133">Google Chrome App Host</translation>
 <translation id="1065672644894730302">Your preferences cannot be read.
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
@@ -39,8 +40,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
         again for improved performance.</translation>
 <translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
 <translation id="1773601347087397504">Get help with using Chrome OS</translation>
-<translation id="1872436416934435136">Google Chrome is no longer updating because your operating system is obsolete.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN"/> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Google Chrome OS Terms.</translation>
 <translation id="5339639696978861456">Chrome Frame has been updated. Please relaunch your browser. Chrome version: <ph name="TODO_0001"/>, Chrome Frame version: <ph name="TODO_0002"/></translation>
+<translation id="8471072774411320686">You need to be signed into Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.</translation>
 <translation id="5775197990071433230">This computer already has a more recent version of the Google Chrome components. Please use a more recent installer.</translation>
 <translation id="8398145039500709259">Use this Google Account to sync all your Chrome stuff?</translation>
 <translation id="1779550429052479749">A conflicting installation of Google Chrome or Google Chrome Frame was found on the system. Please uninstall it and try again.</translation>
@@ -51,9 +53,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
-<translation id="2886077349328709775">Use the Chrome Apps Launcher to launch your apps.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
+<translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
@@ -63,6 +65,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1480489203462860648">Try it out, it's already installed</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Get help with using Chrome</translation>
+<translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS"/>. Please use the same account to sign in again.</translation>
 <translation id="3487814320513494737">Chrome's New Tab page has been remodelled. Switch between sections by clicking these labels. Chrome will remember your preference for next time.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiration. This means Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct the error and refresh this page.</translation>
@@ -105,7 +108,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2783467918276328046">See <ph name="BEGIN_LINK"/>more benefits<ph name="END_LINK"/> of signing in to Chrome.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
-<translation id="6536030683808219174">Show a shortcut to the Chrome Apps Launcher in the Windows TaskBar.</translation>
 <translation id="4351362253593301573">Go to
           <ph name="BEGIN_BOLD"/>
           the Chrome menu &gt;
@@ -128,9 +130,14 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> has been added to Chrome.</translation>
 <translation id="9073088951656332330">No installation of Google Chrome or Google Chrome Frame found to update.</translation>
+<translation id="2346876346033403680">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST"/>. If that isn't your account, create a new Chrome user to keep your information separate.
+
+Signing in anyway will merge Chrome information like bookmarks, history and other settings to <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Warning:<ph name="END_BOLD"/> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="4794050651896644714">Save details in Chrome</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
+<translation id="3872765354315765470">Show Chrome App Launcher.</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
@@ -138,6 +145,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
 <translation id="7436949144778751379">Google Chrome requires Windows XP or later. Some features may not work.</translation>
+<translation id="103396972844768118">Important information regarding your Chrome data</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
 <translation id="7062966102157262887">A download is currently in progress. Do you want to exit Google Chrome and cancel the download?</translation>
@@ -145,6 +153,8 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="1104959162601287462">About the &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
+<translation id="7417357582482895658">Allow signing into Chrome.</translation>
+<translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="4270804660370715583">Go to
@@ -169,11 +179,11 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="61852838583753520">Update the &amp;Chrome OS</translation>
 <translation id="6650142020817594541">This site recommends Google Chrome Frame (already installed).</translation>
-<translation id="550529737713987795">Show Chrome Apps Launcher.</translation>
 <translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
 <translation id="5577648424992741236">This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and download it again.</translation>
 <translation id="7018032895891496381">Google Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE"/>. Do you want to keep your default search engine?</translation>
 <translation id="6326175484149238433">Remove from Chrome</translation>
+<translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>
@@ -181,9 +191,11 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="163860049029591106">Get Started with Chrome OS</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
 <translation id="576822117893741893">Show the Chrome menu</translation>
+<translation id="8520216698644798023">Windows error detected</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6479088914470149333">Your computer is missing some important Windows system files, so Chrome will be unable to function correctly.</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
 <translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>
 <translation id="5046764976540625289">Exit Chrome</translation>
@@ -197,17 +209,19 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="7253415505590551024">Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
+<translation id="3135343025848309798">Use the Chrome App Launcher to launch your apps.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="1061257178446858647">You're now signed in to Chrome! Your bookmarks, history, and other settings will be synced to your Google Account.</translation>
 <translation id="3335672657969596251">Google Chrome does not support <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
+<translation id="7311208098963907218">Show a shortcut to the Chrome App Launcher in the Windows TaskBar.</translation>
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome is up to date.</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
-<translation id="4710332363312836873">Chrome Apps Launcher</translation>
 <translation id="4084877369264707540">Google Chrome Frame is already installed and available to all users of this computer. If you want to install Google Chrome Frame at the user level, you must first uninstall the system-level version installed by an administrator.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="6991142834212251086">Link my Chrome data to this account</translation>
 <translation id="3451115285585441894">Adding to Chrome...</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
@@ -216,6 +230,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
 <translation id="3419750618886995598">Chrome Frame Update.</translation>
 <translation id="3336524238463733095">Google Chrome or Google Chrome Frame cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see http://goo.gl/uJ9gV for details.</translation>
+<translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="4338032231047635328">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chrome-etäkäytön avulla.</translation>
 <translation id="4808503597364150972">Anna kohteen <ph name="HOSTNAME"/> PIN-koodi.</translation>
 <translation id="7672203038394118626">Tietokoneen etäyhteydet on poistettu käytöstä.</translation>
+<translation id="8244400547700556338">Lisätietoja.</translation>
 <translation id="332624996707057614">Muokkaa tietokoneen nimeä</translation>
 <translation id="1996161829609978754">Chrome lataa Chromoting-isäntäsovelluksen asennusohjelmaa. Suorita asennusohjelma, kun lataus on valmis.</translation>
 <translation id="7658239707568436148">Peruuta</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Et ole kirjautunut Chromotingiin. Kirjaudu sisään ja yritä uudelleen.</translation>
 <translation id="7401733114166276557">Chrome-etäkäyttö</translation>
 <translation id="3362124771485993931">Kirjoita PIN-koodi uudelleen</translation>
-<translation id="4686372254213217147">Alkuperäinen koko</translation>
 <translation id="154040539590487450">Etäkäyttöpalvelun käynnistäminen epäonnistui.</translation>
 <translation id="7948001860594368197">Ruudun asetukset</translation>
 <translation id="8172070902751707422">Todennus epäonnistui. Kirjaudu uudelleen sisään Chrome-etäkäyttöön.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Sinun on annettava laajennetut käyttöoikeudet tietokoneeseesi, jotta voit käyttää Chrome-etäkäyttöä. Tämä täytyy tehdä vain kerran.</translation>
 <translation id="9032136467203159543">Jotkin Chromotingin käyttöön vaadittavat komponentit puuttuvat. Varmista, että olet asentanut uusimman version, ja yritä uudelleen.</translation>
 <translation id="1342297293546459414">Tarkastele ja hallinnoi jaettua tietokonetta.</translation>
+<translation id="1520828917794284345">Sovita työpöydän koko</translation>
 <translation id="701976023053394610">Etätuki</translation>
 <translation id="6193698048504518729">Yhdistä kohteeseen <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">PIN-koodin päivitys epäonnistui. Yritä myöhemmin uudelleen.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Auta meitä parantamaan Chromotingia antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="7649070708921625228">Ohje</translation>
+<translation id="4517233780764084060">Huomautus: voit varmistaa, että kaikki pikanäppäimet ovat käytettävissä, kun määrität Chromotingin avautumaan ikkunana.</translation>
 <translation id="4176825807642096119">Käyttökoodi</translation>
 <translation id="7144878232160441200">Yritä uudelleen</translation>
 <translation id="4703799847237267011">Chromoting-käyttökerta on päättynyt.</translation>

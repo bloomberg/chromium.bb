@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį kompiuterio valdymą.</translation>
 <translation id="4808503597364150972">Įveskite „<ph name="HOSTNAME"/>“ PIN kodą.</translation>
 <translation id="7672203038394118626">Nuotolinis ryšys šiame kompiuteryje neleidžiamas.</translation>
+<translation id="8244400547700556338">Sužinokite, kaip tai padaryti.</translation>
 <translation id="332624996707057614">Redaguoti kompiuterio pavadinimą</translation>
 <translation id="1996161829609978754">„Chrome“ atsisiunčiama „Chrome“ nuotolinio ryšio prieglobos diegimo programa. Kai atsisiuntimas bus baigtas, prieš tęsdami paleiskite ją.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Nesate prisijungę prie „Chrome“ nuotolinio ryšio. Prisijunkite ir bandykite dar kartą.</translation>
 <translation id="7401733114166276557">„Chrome“ nuotolinis kompiuterio valdymas</translation>
 <translation id="3362124771485993931">Iš naujo įveskite PIN kodą</translation>
-<translation id="4686372254213217147">Pradinis dydis</translation>
 <translation id="154040539590487450">Paleidžiant nuotolinės prieigos paslaugą įvyko klaida.</translation>
 <translation id="7948001860594368197">Ekrano parinktys</translation>
 <translation id="8172070902751707422">Nustatant tapatybę įvyko klaida. Bandykite prisijungti prie „Chrome“ nuotolinio kompiuterio valdymo dar kartą.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą, turite suteikti išplėstinės prieigos prie kompiuterio leidimus. Tai reikės atlikti tik vieną kartą.</translation>
 <translation id="9032136467203159543">Trūksta kai kurių „Chrome“ nuotoliniam ryšiui reikalingų komponentų. Įsitikinkite, kad įdiegėte naujausią versiją, ir bandykite dar kartą.</translation>
 <translation id="1342297293546459414">Matykite ir valdykite bendrinamą kompiuterį.</translation>
+<translation id="1520828917794284345">Sumažinti darbalaukį, kad tilptų</translation>
 <translation id="701976023053394610">Nuotolinė pagalba</translation>
 <translation id="6193698048504518729">Prisijungti prie „<ph name="HOSTNAME"/>“</translation>
 <translation id="3020807351229499221">Atnaujinant PIN kodą įvyko klaida. Bandykite dar kartą vėliau.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Leidę mums kaupti naudojimo statistiką ir strigčių ataskaitas, padėsite tobulinti „Chrome“ nuotolinį ryšį.</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="7649070708921625228">Žinynas</translation>
+<translation id="4517233780764084060">PASTABA: jei norite užtikrinti, kad pasiekiami visi spartieji klavišai, galite konfigūruoti „Chrome“ nuotolinį ryšį į „Atidaryti kaip langą“.</translation>
 <translation id="4176825807642096119">Prieigos kodas</translation>
 <translation id="7144878232160441200">Bandyti dar kartą</translation>
 <translation id="4703799847237267011">„Chrome“ nuotolinio ryšio sesija baigėsi.</translation>

@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="4808503597364150972">Bitte geben Sie Ihre PIN für <ph name="HOSTNAME"/> ein.</translation>
 <translation id="7672203038394118626">Die Remote-Verbindungen für diesen Computer wurden deaktiviert.</translation>
+<translation id="8244400547700556338">Weitere Informationen</translation>
 <translation id="332624996707057614">Computernamen bearbeiten</translation>
 <translation id="1996161829609978754">Chrome lädt das Installationsprogramm für den Chromoting-Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Sie sind nicht in Chromoting angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">PIN erneut eingeben</translation>
-<translation id="4686372254213217147">Originalgröße</translation>
 <translation id="154040539590487450">Fehler beim Starten des Remote-Zugriffsdienstes</translation>
 <translation id="7948001860594368197">Bildschirmoptionen</translation>
 <translation id="8172070902751707422">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome Remote Desktop an.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Zur Verwendung von Chrome Remote Desktop müssen Sie erweiterte Zugriffsberechtigungen auf Ihren Computer gewähren. Dieser Schritt ist nur einmal erforderlich.</translation>
 <translation id="9032136467203159543">Es fehlen einige Komponenten, die für Chromoting erforderlich sind. Überprüfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="1342297293546459414">Freigegebenen Computer sehen und steuern</translation>
+<translation id="1520828917794284345">Desktop-Größe anpassen</translation>
 <translation id="701976023053394610">Remote-Unterstützung</translation>
 <translation id="6193698048504518729">Mit <ph name="HOSTNAME"/> verbinden</translation>
 <translation id="3020807351229499221">Fehler beim Aktualisieren der PIN. Bitte versuchen Sie es später erneut.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Helfen Sie uns bei der Verbesserung von Chromoting, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="7649070708921625228">Hilfe</translation>
+<translation id="4517233780764084060">Hinweis: Sie können in Chromoting die Option zum Öffnen als Fenster einstellen, damit alle Tastaturkürzel verfügbar sind.</translation>
 <translation id="4176825807642096119">Zugriffscode</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
 <translation id="4703799847237267011">Ihre Chromoting-Sitzung wurde beendet.</translation>
@@ -110,7 +112,7 @@
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="7319983568955948908">Freigabe beenden</translation>
 <translation id="6668065415969892472">Ihre PIN wurde aktualisiert.</translation>
-<translation id="4277736576214464567">Der Zugriffscode ist ungültig. Versuchen Sie es erneut.</translation>
+<translation id="4277736576214464567">Der Zugriffscode ist ungültig. Bitte versuchen Sie es erneut.</translation>
 <translation id="7729639150174291243">Sie sind nicht in Chrome Remote Desktop angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="2841013758207633010">Zeit</translation>
 <translation id="6011539954251327702">Chromoting ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chromoting App ausführen. Diese App finden Sie unter <ph name="URL"/>.</translation>

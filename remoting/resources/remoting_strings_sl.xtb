@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Oddaljeno namizje za Chrome omogoča varen dostop do tega računalnika.</translation>
 <translation id="4808503597364150972">Vnesite kodo PIN za gostitelja <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Oddaljene povezave za ta računalnik so onemogočene.</translation>
+<translation id="8244400547700556338">Več o tem.</translation>
 <translation id="332624996707057614">Urejanje imena računalnika</translation>
 <translation id="1996161829609978754">Chrome prenaša namestitveni program za gostitelja Oddaljenega povezovanja s Chromom. Po končanem prenosu zaženite namestitveni program, preden nadaljujete.</translation>
 <translation id="7658239707568436148">Prekliči</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Niste prijavljeni v Oddaljeno povezovanje s Chromom. Prijavite se in poskusite znova.</translation>
 <translation id="7401733114166276557">Oddaljeno namizje za Chrome</translation>
 <translation id="3362124771485993931">Znova vnesite PIN</translation>
-<translation id="4686372254213217147">Prvotna velikost</translation>
 <translation id="154040539590487450">Storitve oddaljenega dostopa ni bilo mogoče zagnati.</translation>
 <translation id="7948001860594368197">Možnosti zaslona</translation>
 <translation id="8172070902751707422">Preverjanje pristnosti ni uspelo. Še enkrat se prijavite v Oddaljeno namizje za Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Če želite uporabljati Oddaljeno namizje za Chrome, morate odobriti razširjena dovoljenja za dostop do računalnika. To morate storiti samo enkrat.</translation>
 <translation id="9032136467203159543">Ni nekaterih delov, ki so zahtevani za Oddaljeno povezovanje s Chromom. Preverite, ali imate najnovejšo različico Google Chroma in poskusite znova.</translation>
 <translation id="1342297293546459414">Ogled in nadziranje računalnika v skupni rabi.</translation>
+<translation id="1520828917794284345">Prilagodi velikost namizja</translation>
 <translation id="701976023053394610">Oddaljena pomoč</translation>
 <translation id="6193698048504518729">Vzpostavljanje povezave z gostiteljem <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Kode PIN ni bilo mogoče posodobiti. Poskusite znova pozneje.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Pomagajte nam izboljšati Oddaljeno povezovanje s Chromom, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="7649070708921625228">Pomoč</translation>
+<translation id="4517233780764084060">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko oddaljeno povezovanje s Chromom konfigurirate na »Odpri kot okno«.</translation>
 <translation id="4176825807642096119">Koda za dostop</translation>
 <translation id="7144878232160441200">Poskusi znova</translation>
 <translation id="4703799847237267011">Seja Oddaljenega povezovanja s Chromom je končana.</translation>

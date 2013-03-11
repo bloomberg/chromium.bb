@@ -17,16 +17,14 @@
 <translation id="7128196614940529818">Chromium Frame כבר מותקן וזמין לכל המשתמשים במחשב זה. אם ברצונך להתקין את Chromium Frame ברמת המשתמש, עליך ראשית להסיר התקנת את הגרסה ברמת המערכת שהותקנה על ידי מנהל המערכת.</translation>
 <translation id="731644333568559921">עדכן את &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="7421823331379285070">Chromium דורש גרסת Windows XP או מאוחרת יותר. תכונות מסוימות עלולות שלא לפעול.</translation>
+<translation id="7419987137528340081">אם אתה מעדיף לשמור את נתוני Chromium הקיימים שלך בנפרד, תוכל ליצור משתמש Chromium חדש עבור <ph name="USER_NAME"/>.</translation>
 <translation id="3549345495227188780">תחילת העבודה עם Chromium OS</translation>
 <translation id="4330297532943865716">התקנה מתנגשת של Chromium או Chromium Frame נמצאה במערכת. הסר אותה ונסה שוב.</translation>
 <translation id="6953661834318318668">סרגל הכלים של Chromium</translation>
-<translation id="7097100943370017396">Chromium‏ אינו מתעדכן יותר, כי מערכת ההפעלה שלך מיושנת.</translation>
 <translation id="2245147136185581459">מזהה Chromium Captive Portal</translation>
 <translation id="4285930937574705105">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="2589479092236095792">הגדרות מילוי אוטומטי של Chromium</translation>
-<translation id="658492233547000995">השתמש ב-Chromium Apps Launcher כדי להפעיל את היישומים שלך.</translation>
 <translation id="3555616473548901994">הסרת ההתקנה הושלמה.</translation>
-<translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">אופציונלי: עזור לנו לשפר את Chromium באמצעות שליחת סטטיסטיקת שימוש ודוחות קריסה אל Google באופן אוטומטי.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהשרת הציג מכיל שגיאות. Chromium אינו יכול להשתמש באישור שמכיל שגיאות ואינו יכול לאמת את הזהות של האתר שאליו ניסית להתחבר.</translation>
@@ -77,6 +75,7 @@
 <translation id="4077262827416206768">סגור את כל החלונות של Chromium והפעל אותו מחדש כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="6944967875980567883">מודולים שנטענו ב-Chromium</translation>
 <translation id="118298050220780080">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שהונפק על ידי ישות שמערכת ההפעלה של המחשב אינה בוטחת בה. ייתכן שהשרת יצר את פרטי הכניסה בעצמו, ו-Chromium אינו יכול להסתמך עליהם לשם השגת פרטי זיהוי, או שייתכן שתוקף מנסה ליירט את התקשורת שלך.</translation>
+<translation id="7915138385500177190">במחשב שלך חסרים מספר קבצים חשובים של מערכת Windows, כך ש-Chromium לא יכול לתפקד כראוי.</translation>
 <translation id="3296368748942286671">המשך הפעלת יישומים ברקע כאשר Chromium סגור</translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="6055895534982063517">גרסה חדשה של Chromium זמינה, והיא מהירה יותר מאי פעם.</translation>
@@ -89,10 +88,14 @@
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="85843667276690461">קבלת עזרה באמצעות Chromium</translation>
+<translation id="3354334135076267965">הצג קיצור דרך ל-Chromium App Launcher בשורת המשימות של Windows.</translation>
 <translation id="263863604136125912">הפעל את Chromium</translation>
+<translation id="9036189287518468038">Chromium App Launcher</translation>
 <translation id="2881203820889150661">Chromium‏ אינו מצליח ליצור קיצור דרך ליישום משום שאינו יכול לקבוע את סביבת שולחן העבודה הנוכחית.</translation>
 <translation id="4886158514168859177">במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium Frame ונסה שוב.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
+<translation id="8474264489072517623">השתמש ב-Chromium App Launcher כדי להפעיל את היישומים שלך.</translation>
+<translation id="95514773681268843"><ph name="DOMAIN"/> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים של מערכת ההפעלה של Chromium.</translation>
 <translation id="1699664235656412242">סגור את כל החלונות של Chromium (כולל חלונות במצב Windows 8) ונסה שוב.</translation>
 <translation id="6734080038664603509">עדכן &amp;את Chromium‏</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
@@ -116,6 +119,8 @@
         אם פעולה זו אינה פותרת את הבעיה, מומלץ לבחור באפשרות הזו שוב לקבלת ביצועים משופרים.</translation>
 <translation id="275588974610408078">דיווח על התרסקויות אינו זמין ב-Chromium.</translation>
 <translation id="5909170354645388250">אינו משמש ב-Chromium. מציין מיקום שנועד לסנכרון מפות משאבים. הוא מקבל ארגומנט אחד: $1.</translation>
+<translation id="7937630085815544518">נכנסת ל-Chromium כ-<ph name="USER_EMAIL_ADDRESS"/>. השתמש באותו חשבון כדי להיכנס שוב.</translation>
+<translation id="2685838254101182273">Chromium הפסיק לעדכן את הגרסה הזו של מערכת ההפעלה שלך וכבר אינו תומך בה.</translation>
 <translation id="3582788516608077514">מעדכן את Chromium‏...</translation>
 <translation id="7223968959479464213">מנהל המשימות - Chromium</translation>
 <translation id="3838208658251026018">Chromium מייבא כעת את הפריטים הבאים מ-<ph name="BROWSER_COMPONENT"/>:</translation>
@@ -131,6 +136,7 @@
 ייתכן שחלק מהתכונות לא יהיו זמינות. ציין ספריית פרופיל אחרת או השתמש בגרסה חדשה יותר של Chromium.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
 <translation id="4881709374218686648">נכנסת בעבר באמצעות חשבון אחר. אם תיכנס הנתונים שלך ימוזגו. כדאי שתיצור משתמש Chromium חדש דרך <ph name="BEGIN_LINK"/>דף ההגדרות<ph name="END_LINK"/> בשביל הדברים שלך ב-Chromium.</translation>
+<translation id="5285406370705656673">התר כניסה ל-Chromium.</translation>
 <translation id="9013087743919948559">הוסף ל-‏Chromium‏</translation>
 <translation id="6212496753309875659">במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium ונסה שוב.</translation>
 <translation id="3014684866565908571">Chromium Utility</translation>
@@ -139,7 +145,9 @@
 <translation id="130631256467250065">השינויים ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את המכשיר.</translation>
 <translation id="1105130903706696483">Chromium לא נסגר כראוי. לפתיחה מחדש של הדפים שפתחת, לחץ על שחזר.</translation>
 <translation id="1929939181775079593">Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
+<translation id="1414495520565016063">נכנסת ל-Chromium!</translation>
 <translation id="6089587093203430357">Instant</translation>
+<translation id="8520216698644798023">אותרה שגיאת Windows</translation>
 <translation id="2966088006374919794">Chromium צריך להפעיל יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME"/>. הקישור הנדרש הוא <ph name="PROTOLINK"/>.</translation>
 <translation id="8046283042877435986">אתר זה ממליץ על Chromium Frame (כבר מותקן).</translation>
 <translation id="6287463253129672858">לא ניתן להתקין את אותה גרסת Chromium Frame שפועלת כרגע. סגור את Chromium Frame ונסה שוב.</translation>
@@ -166,6 +174,7 @@
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">דפדפן אינטרנט</translation>
 <translation id="6424492062988593837">‫Chromium ממשיך להשתפר! קיימת גירסה חדשה.</translation>
+<translation id="6601972021154586963">עליך להיכנס ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות אחרות שלך בין מכשירים שונים.</translation>
 <translation id="2910007522516064972">מידע על &amp;Chromium‏</translation>
 <translation id="8453117565092476964">הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="2162026298602630383">עבור אל
@@ -180,20 +189,22 @@
           וודא שהגדרות התצורה הן &quot;אין שרת Proxy&quot; או &quot;ישיר&quot;.</translation>
 <translation id="3249425904492147663">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שתוקפו פג. אין מידע זמין שיכול לציין אם האישור נפגע מאז פג תוקפו. פירוש הדבר ש-Chromium אינו יכול להבטיח שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את השגיאה ולרענן את דף.</translation>
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
+<translation id="457845228957001925">מידע חשוב בנוגע לנתונים שלך ב-Chromium</translation>
 <translation id="7483335560992089831">לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="7641113255207688324">Chromium אינו דפדפן ברירת המחדל שלך.</translation>
-<translation id="6208388956150196549">Chromium Apps Launcher</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
-<translation id="9109696651501887488">הצג קיצור דרך ל-Chromium Apps Launcher בשורת המשימות של Windows.</translation>
 <translation id="2119636228670142020">מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="1708666629004767631">גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
 <translation id="1539981464052805551">Copyright 2013 The Chromium Authors. כל הזכויות שמורות.</translation>
-<translation id="6606161915035466984">הצג את Chromium Apps Launcher.</translation>
 <translation id="8616882682724010661">עיין ב<ph name="BEGIN_LINK"/>יתרונות נוספים<ph name="END_LINK"/> של הכניסה ל-Chromium.</translation>
 <translation id="378917192836375108">Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="8724049448828509830">הורדה מתבצעת כעת. האם ברצונך לצאת מ-Chromium ולבטל את ההורדה?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">מארח הפלאגין של Chromium</translation>
+<translation id="2128780683974727821">הצג את Chromium App Launcher.</translation>
+<translation id="8985587603644336029">מישהו נכנס בעבר ל-Chromuim מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST"/>. אם זה לא החשבון שלך, צור משתמש חדש ל-Chromuim כדי לשמור על הפרדת המידע שלך.
+
+אם תמשיך בכניסה, המידע ב-Chromuim , כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">הורדות מתבצעות כעת. האם ברצונך לצאת מ-Chromium ולבטל את ההורדות?</translation>
 <translation id="9013262824292842194">להפעלת Chromium יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="1967743265616885482">מודול בעל אותו שם מתנגש עם Chromium.</translation>
@@ -211,5 +222,8 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium‏ מוגדר באופן אוטומטי לפעול בעת הפעלת המחשב.</translation>
 <translation id="8974095189086268230">מערכת ההפעלה של Chrome התאפשרה באמצעות <ph name="BEGIN_LINK_CROS_OSS"/>תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS"/> נוספת.</translation>
+<translation id="313551035350905294">אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כמו יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME"/>. תוכל למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר.</translation>
+<translation id="8823523095753232532">קשר את הנתונים שלי ב-Chromium לחשבון הזה</translation>
 <translation id="1221340462641866827">מערכת ההפעלה של Chromium אינה תומכת בהפעלת יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME"/>. הקישור הנדרש הוא <ph name="PROTOLINK"/>.</translation>
+<translation id="5032989939245619637">שמור פרטים ב-Chromium</translation>
 </translationbundle>

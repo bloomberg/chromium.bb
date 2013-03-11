@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Näppäimistön peitto</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Tila-alue</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Yhdistetään…</translation>
 <translation id="2946640296642327832">Ota Bluetooth käyttöön</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Matkapuhelin</translation>
@@ -29,6 +30,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="153454903766751181">Alustetaan matkapuhelinmodeemia…</translation>
 <translation id="7864539943188674973">Poista Bluetooth käytöstä</translation>
 <translation id="3126069444801937830">Päivitä käynnistämällä uudelleen</translation>
+<translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="6303423059719347535">Akussa on virtaa <ph name="PERCENTAGE"/> %</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
@@ -41,6 +43,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE"/> kieleksi <ph name="TO_LOCALE"/> asetustesi synkronoinnin yhteydessä.</translation>
 <translation id="8340999562596018839">Äänipalaute</translation>
+<translation id="8654520615680304441">Ota wifi käyttöön…</translation>
 <translation id="5825747213122829519">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>.
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="2562916301614567480">Yksityinen verkko</translation>
@@ -57,8 +60,9 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1895658205118569222">Sulkeminen</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="6356500677799115505">Akku on täynnä ja laite on kytketty laturiin.</translation>
-<translation id="551263474266254304">Otetaan wifi käyttöön...</translation>
+<translation id="7874779702599364982">Haetaan matkapuhelinverkkoja…</translation>
 <translation id="1383876407941801731">Haku</translation>
+<translation id="3901991538546252627">Yhdistetään verkkoon <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Verkon tiedot</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT"/> kuluttua</translation>
 <translation id="5980301590375426705">Sulje vierastila</translation>
@@ -69,6 +73,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="2472320577759310817">Bluetooth ei ole käytössä.</translation>
 <translation id="2372145515558759244">Synkronoidaan sovelluksia...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Katkaistaan yhteyttä…</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> kunnes akku on ladattu</translation>
 <translation id="5787281376604286451">Äänipalaute on käytössä.
 Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
@@ -77,6 +82,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="5543001071567407895">Tekstiviesti</translation>
 <translation id="8814190375133053267">Wifi</translation>
 <translation id="1398853756734560583">Suurenna</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Yhdistetään…</translation>
 <translation id="252373100621549798">Tuntematon näyttö</translation>
 <translation id="1882897271359938046">Peilataan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Lukitse</translation>
@@ -84,11 +90,10 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="1850504506766569011">Wifi ei ole käytössä.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> on verkkotunnuksen <ph name="DOMAIN"/> hallinnoima jaettu tili</translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: Yhteyttä muodostetaan...</translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
 <translation id="2739500853984626550">Bluetooth-laitteita ei ole käytettävissä</translation>
+<translation id="2666092431469916601">Yleisin</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING"/> kuluttua</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
@@ -98,6 +103,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="225680501294068881">Etsitään laitteita...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Haetaan wifi-verkkoja...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="8454013096329229812">Wifi on käytössä.</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
@@ -119,6 +125,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="7209101170223508707">CAPS LOCK on päällä. Peruuta painamalla Alt + hakupainike tai Shift.</translation>
 <translation id="8061464966246066292">Suuri kontrasti</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>.<ph name="MINUTE"/> jäljellä</translation>
+<translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="6843725295806269523">äänetön</translation>

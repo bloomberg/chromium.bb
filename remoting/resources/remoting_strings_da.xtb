@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
+<translation id="8244400547700556338">Få flere oplysninger.</translation>
 <translation id="332624996707057614">Rediger computerens navn</translation>
 <translation id="1996161829609978754">Chrome downloader installationsprogrammet Chromoting Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
 <translation id="7658239707568436148">Annuller</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Du er ikke logget ind på Chromoting. Log ind, og prøv igen.</translation>
 <translation id="7401733114166276557">Chrome Fjernskrivebord</translation>
 <translation id="3362124771485993931">Indtast pinkoden igen</translation>
-<translation id="4686372254213217147">Oprindelig størrelse</translation>
 <translation id="154040539590487450">Tjenesten til fjernadgang kunne ikke starte.</translation>
 <translation id="7948001860594368197">Valgmuligheder for skærm</translation>
 <translation id="8172070902751707422">Godkendelse mislykkedes. Log ind på Chrome Fjernskrivebord igen.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Hvis du vil bruge Chrome Fjernskrivebord, skal du give udvidet adgangstilladelse til din computer. Du skal kun gøre dette én gang.</translation>
 <translation id="9032136467203159543">Nogle komponenter, der kræves til Chromoting, mangler. Kontrollér, at du har den nyeste version, og prøv igen.</translation>
 <translation id="1342297293546459414">Få vist og kontrollér en delt computer.</translation>
+<translation id="1520828917794284345">Tilpas størrelse på skrivebord</translation>
 <translation id="701976023053394610">Fjernsupport</translation>
 <translation id="6193698048504518729">Opret forbindelse til <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Pinkoden kunne ikke opdateres. Prøv igen senere.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Hjælp os med at forbedre Chromoting ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="7649070708921625228">Hjælp</translation>
+<translation id="4517233780764084060">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chromoting til &quot;Åbn som vindue&quot;.</translation>
 <translation id="4176825807642096119">Adgangskode</translation>
 <translation id="7144878232160441200">Prøv igen</translation>
 <translation id="4703799847237267011">Din session med Chromoting er afsluttet.</translation>

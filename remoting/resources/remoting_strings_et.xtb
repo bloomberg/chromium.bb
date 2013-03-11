@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Pääsete turvaliselt arvuti juurde Chrome Remote Desktopi abil.</translation>
 <translation id="4808503597364150972">Sisestage hosti <ph name="HOSTNAME"/> PIN-kood.</translation>
 <translation id="7672203038394118626">Selles arvutis on kaugühendused keelatud.</translation>
+<translation id="8244400547700556338">Lisateave.</translation>
 <translation id="332624996707057614">Arvuti nime muutmine</translation>
 <translation id="1996161829609978754">Chrome laadib alla rakenduse Chromoting Host installerit. Kui allalaadimine on lõppenud, käitage enne jätkamist installerit.</translation>
 <translation id="7658239707568436148">Tühista</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Te ei ole rakendusse Chromoting sisse logitud. Logige sisse ja proovige uuesti.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Sisestage PIN-kood uuesti</translation>
-<translation id="4686372254213217147">Originaalsuurus</translation>
 <translation id="154040539590487450">Kaugühenduse teenuse käivitamine ebaõnnestus.</translation>
 <translation id="7948001860594368197">Ekraani valikud</translation>
 <translation id="8172070902751707422">Autentimine ebaõnnestus. Logige uuesti sisse Chrome Remote Desktopi.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Chrome Remote Desktopi kasutamiseks peate andma arvutile laiendatud pääsuload. Seda tuleb teha vaid üks kord.</translation>
 <translation id="9032136467203159543">Mõned rakenduse Chromoting jaoks vajalikud komponendid on puudu. Veenduge, et installitud on uusim versioon, ja proovige uuesti.</translation>
 <translation id="1342297293546459414">Vaadake ja juhtige jagatud arvutit.</translation>
+<translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
 <translation id="701976023053394610">Kaugabi</translation>
 <translation id="6193698048504518729">Loob ühenduse hostiga <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">PIN-koodi värskendamine ebaõnnestus. Proovige hiljem uuesti.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Aidake meil rakendust Chromoting täiustada, lubades kasutusstatistika ja krahhiaruannete kogumise.</translation>
 <translation id="6040143037577758943">Sule</translation>
 <translation id="7649070708921625228">Abi</translation>
+<translation id="4517233780764084060">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chromootimine seadistada valikule „Ava aknana”.</translation>
 <translation id="4176825807642096119">Pääsukood</translation>
 <translation id="7144878232160441200">Proovi uuesti</translation>
 <translation id="4703799847237267011">Teie rakenduse Chromoting seanss on lõppenud.</translation>

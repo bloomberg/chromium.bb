@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Επικάλυψη πληκτρολογίου</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Δίσκος κατάστασης</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Σύνδεση…</translation>
 <translation id="2946640296642327832">Ενεργοποίηση Bluetooth</translation>
 <translation id="6459472438155181876">Επέκταση οθόνης σε <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Κινητό</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">Εκκίνηση μόντεμ δικτύου κινητής τηλεφωνίας…</translation>
 <translation id="7864539943188674973">Απενεργοποίηση Bluetooth</translation>
 <translation id="3126069444801937830">Επανεκκίνηση για ενημέρωση</translation>
+<translation id="735745346212279324">Το VPN αποσυνδέθηκε</translation>
 <translation id="6303423059719347535">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE"/>%</translation>
 <translation id="3294437725009624529">Επισκέπτης</translation>
 <translation id="8190698733819146287">Προσαρμογή γλωσσών και εισόδου...</translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">Εσωτερική οθόνη</translation>
 <translation id="7823564328645135659">Η γλώσσα του άλλαξε από &quot;<ph name="FROM_LOCALE"/>&quot; σε &quot;<ph name="TO_LOCALE"/>&quot; μετά τον συγχρονισμό των ρυθμίσεών σας.</translation>
 <translation id="8340999562596018839">Προφορικά σχόλια</translation>
+<translation id="8654520615680304441">Ενεργοποίηση Wi-Fi…</translation>
 <translation id="5825747213122829519">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID"/>.
 Πατήστε Shift + Alt για εναλλαγή.</translation>
 <translation id="2562916301614567480">Ιδιωτικό δίκτυο</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">Τερματισμός λειτουργίας</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="6356500677799115505">Η μπαταρία είναι πλήρης και φορτίζει.</translation>
-<translation id="551263474266254304">Ενεργοποίηση WiFi…</translation>
+<translation id="7874779702599364982">Αναζήτηση για δίκτυα κινητής τηλεφωνίας…</translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
+<translation id="3901991538546252627">Σύνδεση με <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Πληροφορίες δικτύου</translation>
 <translation id="1621499497873603021">Χρόνος που απομένει μέχρι να αδειάσει η μπαταρία, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Έξοδος επισκέπτη</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="2472320577759310817">Το Bluetooth είναι απενεργοποιημένο.</translation>
 <translation id="2372145515558759244">Συγχρονισμός εφαρμογών…</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Αποσύνδεση…</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> μέχρι την ολοκλήρωση</translation>
 <translation id="5787281376604286451">Τα προφορικά σχόλια έχουν ενεργοποιηθεί.
 Πατήστε Ctrl+Alt+Z για απενεργοποίηση.</translation>
@@ -77,6 +82,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Σύνδεση…</translation>
 <translation id="252373100621549798">Άγνωστη οθόνη</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Κλείδωμα</translation>
@@ -84,11 +90,10 @@
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="1850504506766569011">Το Wi-Fi έχει απενεργοποιηθεί.</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
-<translation id="5360056864692078751">Ο λογαριασμός <ph name="DISPLAY_NAME"/> είναι κοινόχρηστος και η διαχείρισή του γίνεται από τον τομέα <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: Σύνδεση…</translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Ορισμός ταπετσαρίας...</translation>
 <translation id="2739500853984626550">Δεν υπάρχουν διαθέσιμες συσκευές Bluetooth</translation>
+<translation id="2666092431469916601">Κορυφή</translation>
 <translation id="3019353588588144572">Χρόνος που απομένει μέχρι να φορτιστεί πλήρως η μπαταρία, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="1602076796624386989">Ενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
@@ -98,6 +103,7 @@
 <translation id="225680501294068881">Σάρωση για συσκευές…</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Αναζήτηση για δίκτυα Wi-Fi...</translation>
+<translation id="2999742336789313416">Το <ph name="DISPLAY_NAME"/> είναι μια δημόσια περίοδος σύνδεσης που διαχειρίζεται το <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Έξοδος από συνεδρία</translation>
 <translation id="8454013096329229812">Το Wi-Fi έχει ενεργοποιηθεί.</translation>
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
@@ -121,6 +127,7 @@
 Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
 <translation id="8061464966246066292">Υψηλή αντίθεση</translation>
 <translation id="5102001756192215136">Απομένουν <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="5941711191222866238">Ελαχιστοποίηση</translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>
 <translation id="6843725295806269523">σίγαση</translation>

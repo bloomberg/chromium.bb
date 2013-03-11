@@ -6,12 +6,13 @@
 <translation id="8485767968786176057">ఈ సందర్భంలో, ప్రమాణపత్రంలో జాబితా చేసిన చిరునామా మీ బ్రౌజర్ వెళ్లడానికి ప్రయత్నించిన చిరునామాతో సరిపోలడం లేదు. సరిపోలకపోవడానికి కారణమయ్యే మరొక వెబ్‌సైట్ కోసం ప్రమాణపత్రాన్ని అందించే దాడి చేసే వ్యక్తి ద్వారా మీ కమ్యూనికేషన్‌లు అడ్డగించబడుతుండటం దీనికి ఒక సాధ్యమయ్యే కారణం. అటువంటి అన్ని వెబ్‌సైట్‌ల కోసం ప్రమాణపత్రం చెల్లుబాటు కానప్పటికీ, మీరు సందర్శించడానికి ప్రయత్నిస్తున్న దానితో సహా, బహుళ వెబ్‌సైట్‌ల కోసం అదే ప్రమాణపత్రం తిరిగి రావడానికి సర్వర్ సెట్ అప్ చేయబడటం మరొక సాధ్యమయ్యే కారణం. మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;ను చేరుకున్నారని Google Chrome ఖచ్చితంగా తెలియజేస్తుంది, కానీ మీరు చేరుకోవాలనుకున్న &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; వలే అదే సైట్‌ అని ధృవీకరించలేదు. మీరు కొనసాగితే, Chrome ఏదైనా తదుపరి పేరు సరిపోలకపోవడాన్ని తనిఖీ చేయదు.</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
+<translation id="6236285698028833233">Google Chrome నవీకరించడాన్ని ఆపివేసింది మరియు ఇక మీ ఆపరేటింగ్ సిస్టమ్ యొక్క ఈ సంస్కరణకు మద్దతివ్వదు.</translation>
 <translation id="5453904507266736060">Google Chromeను నేపథ్యంలో అమలు అయ్యేందుకు అనుమతించండి</translation>
 <translation id="2383457833405848421">Chrome Frame గురించి...</translation>
 <translation id="3454512769850953877">అవును, Chrome నుండి నిష్క్రమించు</translation>
+<translation id="2704356438731803243">మీరు ప్రస్తుతం ఉన్న మీ Chrome డేటాను విడిగా ఉంచడానికి ప్రాధాన్యత ఇస్తే, మీరు <ph name="USER_NAME"/> కోసం క్రొత్త Chrome వినియోగదారును సృష్టించవచ్చు.</translation>
 <translation id="386202838227397562">దయచేసి అన్ని Google Chrome విండోలను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="2770231113462710648">డిఫాల్ట్ బ్రౌజర్‌ను దీనికి మార్చు:</translation>
-<translation id="741045321678647133">Google Chrome అనువర్తన హోస్ట్</translation>
 <translation id="1065672644894730302">మీ ప్రాధాన్యతలు చదవబడలేవు. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు మరియు ప్రాధాన్యతలకు మార్పులు సేవ్ చేయబడకపోవచ్చు.</translation>
 <translation id="7781002470561365167">Google Chrome యొక్క క్రొత్త సంస్కరణ ఇప్పుడు అందుబాటులో ఉంది.</translation>
 <translation id="7101265395643981223">Google Chromeను ప్రారంభించు</translation>
@@ -33,8 +34,9 @@
         ఇది సమస్యను పరిష్కరించకపోతే, మెరుగైన పనితీరు కోసం మళ్లీ ఈ ఎంపికను ఎంచుకోవాలని మేము సిఫార్సు చేస్తున్నాము.</translation>
 <translation id="3140883423282498090">మీ మార్పులు మీరు Google Chromeను మళ్లీ ప్రారంభించినప్పుడు ప్రభావాన్ని చూపుతాయి.</translation>
 <translation id="1773601347087397504">Chrome OSని ఉపయోగించి సహాయాన్ని పొందండి</translation>
-<translation id="1872436416934435136">మీ ఆపరేటింగ్ సిస్టమ్ ఉపయోగించడానికి తగనందున Google Chrome నవీకరించబడదు.</translation>
+<translation id="6982337800632491844">మీరు ఈ పరికరాన్ని ఉపయోగించడానికి ముందు సేవా నిబంధనలను చదివి, అంగీకరించాలని <ph name="DOMAIN"/> కోరుతోంది. ఈ నిబంధనలు Google Chrome OS నిబంధనలను విస్తరింపజేయవు, సవరించవు లేదా పరిమితం చేయవు.</translation>
 <translation id="5339639696978861456">Chrome Frame నవీకరించబడింది. దయచేసి మీ బ్రౌజర్‌ను పునఃప్రారంభించండి. Chrome సంస్కరణ: <ph name="TODO_0001"/>, Chrome Frame సంస్కరణ: <ph name="TODO_0002"/></translation>
+<translation id="8471072774411320686">మీరు అనువర్తనాలను ఉపయోగించడానికి Chromeకు సైన్ ఇన్ చేయాలి. ఇది మీ అనువర్తనాలను, బుక్‌మార్క్‌లను, చరిత్రను, పాస్‌వర్డ్‌లను మరియు ఇతర సెట్టింగ్‌లను పరికరాల్లో సమకాలీకరించడానికి Chromeను అనుమతిస్తుంది.</translation>
 <translation id="5775197990071433230">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome భాగాల యొక్క మరింత ఇటీవల సంస్కరణను కలిగి ఉంది. దయచేసి మరింత ఇటీవల ఇన్‌స్టాలర్‌ను ఉపయోగించండి.</translation>
 <translation id="8398145039500709259">మీ అన్ని Chrome అంశాలను సమకాలీకరించడానికి ఈ Google ఖాతాని ఉపయోగించాలా?</translation>
 <translation id="1779550429052479749">సిస్టమ్‌లో Google Chrome లేదా Google Chrome Frame యొక్క సంఘర్షించే వ్యవస్థాపన కనుగొనబడింది. దయచేసి దీన్ని అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
@@ -45,9 +47,9 @@
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="3080151273017101988">Google Chrome మూసివేసినపుడు అనువర్తనాలను నేపథ్యంలో అమలు చేయడాన్ని కొనసాగించు</translation>
 <translation id="4149882025268051530">ఆర్కైవ్‌ను విస్తరించడంలో ఇన్‌స్టాలర్ విఫలమైంది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
-<translation id="2886077349328709775">మీ అనువర్తనాలను ప్రారంభించడానికి Chrome అనువర్తనాల లాంచర్‌ను ఉపయోగించండి.</translation>
 <translation id="6989339256997917931">Google Chrome నవీకరింబడింది, కానీ మీరు దీన్ని కనీసం 30 రోజులు ఉయోగించలేరు.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
+<translation id="7060865993964054389">Google Chrome అనువర్తన లాంచర్</translation>
 <translation id="1682634494516646069">Google Chrome దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో వ్రాయలేదు: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chrome ఇన్‌స్టాలేషన్ డైరెక్టరీ ఉపయోగంలో ఉన్నట్టుగా ఉంది. దయచేసి మీ కంప్యూటర్‌ను రీబూట్ చేసి మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> లింకులను నిర్వహించడానికి Google Chrome ఒక బాహ్య అప్లికేషన్‌ను ప్రారంభించాల్సి ఉంది. అభ్యర్థించిన లింక్ <ph name="PROTOLINK"/>.</translation>
@@ -55,6 +57,7 @@
 <translation id="1480489203462860648">దీన్ని ప్రయత్నించండి, ఇది ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Chromeని ఉపయోగించి సహాయాన్ని పొందండి</translation>
+<translation id="7398801000654795464">మీరు <ph name="USER_EMAIL_ADDRESS"/>గా Chromeకు సైన్ ఇన్ చేసారు. దయచేసి మళ్లీ సైన్ ఇన్ చేయడానికి ఇదే ఖాతాను ఉపయోగించండి.</translation>
 <translation id="3487814320513494737">Chrome యొక్క క్రొత్త ట్యాబ్ పేజీ మార్చబడింది. ఈ లేబుల్‌లు క్లిక్ చేయడం ద్వారా విభాగాల మధ్య మారవచ్చు. తదుపరి సమయానికి మీ ప్రాధాన్యతను Chrome గుర్తుంచుకుంటుంది.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ని చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ గడువు ముగిసిన ప్రమాణపత్రాన్ని అందించింది. దీని గడువు ముగిసినందున ప్రమాణపత్రం రాజీపడిందో లేదో సూచించడానికి సమాచారం అందుబాటులో లేదు. దీని అర్థం మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;తో కమ్యూనికేట్ అవుతున్నారని మరియు దాడి చేసే వారితో కాదని Google Chrome హామీ ఇవ్వలేదు. ప్రస్తుతం మీ కంప్యూటర్ యొక్క గడియారం <ph name="CURRENT_TIME"/>కు సెట్ చేయబడింది. అది సరైనదిగా కనిపిస్తోందా? లేకుంటే, మీరు లోపాన్ని తప్పనిసరిగా సరిచేసి, ఈ పేజీని రిఫ్రెష్ చేయాలి.</translation>
@@ -95,7 +98,6 @@
 <translation id="2783467918276328046">Chromeకు సైన్ ఇన్ చేయడం వల్ల కలిగే <ph name="BEGIN_LINK"/>మరిన్ని ప్రయోజనాలు<ph name="END_LINK"/> చూడండి.</translation>
 <translation id="2580411288591421699">ప్రస్తుతం అమలవుతున్న అదే Google Chrome సంస్కరణను వ్యవస్థాపించలేదు. దయచేసి Google Chromeను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="1457721931618994305">Google Chromeని నవీకరిస్తోంది...</translation>
-<translation id="6536030683808219174">Windows టాస్క్‌బార్‌లో Chrome అనువర్తనాల లాంచర్‌కు సత్వర మార్గాన్ని చూపు.</translation>
 <translation id="4351362253593301573"><ph name="BEGIN_BOLD"/>
           Chrome మెను &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -115,9 +117,14 @@
 <translation id="2748463065602559597">మీరు సురక్షితమైన Google Chrome పేజీని వీక్షిస్తున్నారు.</translation>
 <translation id="7185038942300673794">Chromeకు <ph name="EXTENSION_NAME"/> జోడించబడింది.</translation>
 <translation id="9073088951656332330">అప్‌డేట్ చేయడానికి Google Chrome లేదా Google Chrome Frame యొక్క వ్యవస్థాపన కనుగొనబడలేదు.</translation>
+<translation id="2346876346033403680">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST"/>గా Chromeకు సైన్ ఇన్ చేసారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి క్రొత్త Chrome వినియోగదారును సృష్టించండి.
+
+ఏదేమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chrome సమాచారం <ph name="ACCOUNT_EMAIL_NEW"/>కు విలీనం చేయబడుతుంది.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>హెచ్చరిక:<ph name="END_BOLD"/> Google Chrome మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయడం నుండి పొడిగింపుని నిరోధించలేదు. ఈ పొడిగింపుని అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="4794050651896644714">వివరాలను Chromeలో సేవ్ చేయి</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
+<translation id="3872765354315765470">Chrome అనువర్తన లాంచర్‌ను చూపండి.</translation>
 <translation id="2044287590254833138">Google Chrome ఉపకరణ పట్టీ</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">సిస్టమ్-స్థాయిలో ఇన్‌స్టాల్‌ చెయ్యడానికి మీకు సరైన హక్కులు లేవు. నిర్వాహకుడి లాగ ఇన్‌స్టాలర్‌ను మళ్ళీ రన్ చెయ్యడానికి ప్రయత్నించండి.</translation>
@@ -125,6 +132,7 @@
 <translation id="2874156562296220396">Google Chrome <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ఓపెన్ సోర్స్ ప్రాజెక్ట్‌ మరియు ఇతర <ph name="BEGIN_LINK_OSS"/>open source software‌<ph name="END_LINK_OSS"/> వల్ల సాధ్యం అవుతుంది.</translation>
 <translation id="3847841918622877581">Google Chrome మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు.</translation>
 <translation id="7436949144778751379">Google Chromeకు Windows XP లేదా క్రొత్తది అవసరం. కొన్ని లక్షణాలు పని చేయకపోవచ్చు.</translation>
+<translation id="103396972844768118">మీ Chrome డేటాకు సంబంధించిన ముఖ్యమైన సమాచారం</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్‌స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>
 <translation id="7062966102157262887">ప్రస్తుతం డౌన్‌లోడ్ ప్రోగ్రెస్‌లో ఉంది. మీరు Google Chrome నుండి నిష్క్రమించాలని మరియు డౌన్‌లోడ్‌ను రద్దు చేయాలని కోరుకుంటున్నారా?</translation>
@@ -132,6 +140,8 @@
 <translation id="1104959162601287462">&amp;Chrome OS గురించి</translation>
 <translation id="5328989068199000832">Google Chrome బైనరీస్</translation>
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
+<translation id="7417357582482895658">Chromeకు సైన్ ఇన్ చేయడానికి అనుమతించు.</translation>
+<translation id="1469002951682717133">Chrome అనువర్తన లాంచర్</translation>
 <translation id="4990567037958725628">Google Chrome కేనరీ</translation>
 <translation id="4561051373932531560">Google Chrome వెబ్‌లో మిమ్మళ్ని ఫోన్ నంబర్ క్లిక్ చెయ్యనిస్తుంది మరియు Skypeతో కాల్ చేస్తుంది!</translation>
 <translation id="4270804660370715583"><ph name="BEGIN_BOLD"/>
@@ -154,11 +164,11 @@
 <translation id="3612333635265770873">Google Chromeతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
 <translation id="61852838583753520">&amp;Chrome OSను నవీకరించు</translation>
 <translation id="6650142020817594541">ఈ సైట్ Google Chrome Frame (ఇప్పటికే వ్యవస్థాపించబడిన)ని సిఫార్సు చేస్తుంది.</translation>
-<translation id="550529737713987795">Chrome అనువర్తనాల లాంచర్‌ను చూపు.</translation>
 <translation id="2712549016134575851">ఇన్‌స్టాల్ చెయ్యబడిన మరొక అప్లికేషన్‌తో విరోధం కనుగొనబడింది.</translation>
 <translation id="5577648424992741236">ఈ కంప్యూటర్ ఇప్పటికే Google Chrome Frame యొక్క తాజా సంస్కరణను కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chrome Frameని అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="7018032895891496381">Google Chrome ప్రస్తుతం <ph name="PAGE_TITLE"/>కు సెట్ చేసిన, మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉపయోగిస్తుంది. మీరు మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉంచాలనుకుంటున్నారా?</translation>
 <translation id="6326175484149238433">Chrome నుండి తీసివేయి</translation>
+<translation id="2871893339301912279">మీరు Chromeకు సైన్ ఇన్ చేసారు!</translation>
 <translation id="7161904924553537242">Google Chromeకు స్వాగతం</translation>
 <translation id="8669527147644353129">Google Chrome సహాయకారుడు</translation>
 <translation id="870251953148363156">&amp;Google Chromeను నవీకరించు</translation>
@@ -166,9 +176,11 @@
 <translation id="163860049029591106">Chrome OSతో ప్రారంభించండి</translation>
 <translation id="1399397803214730675">ఈ కంప్యూటర్‌లో ఇప్పటికే Google Chrome యొక్క తాజా సంస్కరణ ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chromeను అన్‌ఇన్‌స్టాల్ చేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="576822117893741893">Chrome మెనును చూపు</translation>
+<translation id="8520216698644798023">Windows లోపం గుర్తించబడింది</translation>
 <translation id="3444832043240812445">మీరు <ph name="BEGIN_LINK"/>క్రాష్‌ నివేదికను ప్రారంభించినపుడు<ph name="END_LINK"/> ఈ పేజీ మీ ఇటీవలి క్రాష్‌ల సమాచారాన్ని మాత్రమే చూపిస్తుంది.</translation>
 <translation id="8614913330719544658">Google Chrome స్పందించడం లేదు. ఇప్పుడే పునఃప్రారంభించాలా?</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6479088914470149333">మీ కంప్యూటర్‌లో కొన్ని ముఖ్యమైన Windows సిస్టమ్ ఫైల్‌లు లేవు, కనుక Chrome సరిగ్గా పని చేయడం సాధ్యపడదు.</translation>
 <translation id="6126631249883707068">మీ పాస్‌వర్డ్‌ను Google Chrome సేవ్ చేయాలని మీరు అనుకుంటున్నారా?</translation>
 <translation id="7773845170078702898">మీరు Google Chrome ఈ సైట్ కోసం మీ పాస్‌వర్డ్‌ను సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="5046764976540625289">Chrome నుండి నిష్క్రమించు</translation>
@@ -182,17 +194,19 @@
 <translation id="7253415505590551024">ప్రస్తుతం డౌన్‌లోడ్‌లు ప్రోగ్రెస్‌లో ఉన్నాయి. మీరు Google Chrome నుండి నిష్క్రమించాలని మరియు డౌన్‌లోడ్‌లను రద్దు చేయాలని కోరుకుంటున్నారా?</translation>
 <translation id="7196020411877309443">నేను దీనిని ఎందుకు చూస్తున్నాను?</translation>
 <translation id="2769762047821873045">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు.</translation>
+<translation id="3135343025848309798">మీ అనువర్తనాలను ప్రారంభించడానికి Chrome అనువర్తన లాంచర్‌ను ఉపయోగించండి.</translation>
 <translation id="7825851276765848807">పేర్కొనలేని లోపం కారణంగా వ్యవస్థాపన విఫలమైంది. దయచేసి Google Chromeని మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="1061257178446858647">ఇప్పుడు మీరు Chromeకు సైన్ ఇన్ చేసారు! మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లు మీ Google ఖాతాకు సమకాలీకరించబడతాయి.</translation>
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/>కు మద్దతు ఇవ్వదు.</translation>
 <translation id="4458285410772214805">దయచేసి ఈ మార్పు ప్రభావవంతం కావడానికి సైన్ అవుట్ చేసి, మళ్లీ సైన్ ఇన్ చేయండి.</translation>
+<translation id="7311208098963907218">Windows విధిబార్‌లో Chrome అనువర్తన లాంచర్‌కు సత్వరమార్గాన్ని చూపండి.</translation>
 <translation id="5334545119300433702">ఈ మాడ్యూల్ Google Chromeతో వైరుధ్యంగా ఉంటుంది.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="2084710999043359739">Chromeకి జోడించు</translation>
-<translation id="4710332363312836873">Chrome అనువర్తనాల లాంచర్</translation>
 <translation id="4084877369264707540">Google Chrome Frame ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది మరియు ఈ కంప్యూటర్ యొక్క వినియోగదారులందరికీ అందుబాటులో ఉంటుంది. మీరు Google Chrome Frameను వినియోగదారు స్థాయిలో ఇన్‌స్టాల్ చేయాలకుంటే, మీరు మొదట నిర్వాహకుడి ద్వారా ఇన్‌స్టాల్ చేయబడిన సిస్టమ్-స్థాయి సంస్కరణను ఖచ్చితంగా అన్‌ఇన్‌స్టాల్ చేయాలి.</translation>
 <translation id="3360895254066713204">Chrome సహాయకారుడు</translation>
+<translation id="6991142834212251086">నా Chrome డేటాను ఈ ఖాతాకు లింక్ చేయి</translation>
 <translation id="3451115285585441894">Chromeకు జోడిస్తోంది...</translation>
 <translation id="1001534784610492198">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="2246246234298806438">అంతర్నిర్మిత PDF వ్యూవర్ లేనప్పుడు Google Chrome ముద్రణ పరిదృశ్యాన్ని చూపించదు.</translation>
@@ -201,6 +215,7 @@
 <translation id="1698376642261615901">Google Chrome అనేది మెరుపు వేగంతో వెబ్‌పేజీలను మరియు అనువర్తనాలను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగమైనది, సామర్థ్యం కలది మరియు ఉపయోగించడానికి సులభమైంది. Google Chromeలో నిర్మితమైన మాల్వేర్ మరియు ఫిషింగ్ భద్రతతో మరింత సురక్షితంగా వెబ్‌ను బ్రౌజ్ చేయండి.</translation>
 <translation id="3419750618886995598">Chrome Frame నవీకరణ.</translation>
 <translation id="3336524238463733095">సరిపోలని Google నవీకరణ సమూహం విధానం సెట్టింగ్‌లు కారణంగా Google Chrome లేదా Google Chrome Frame నవీకరించబడదు. Google Chrome Binaries అనువర్తనం కోసం నవీకరణ విధానం భర్తీని సెట్ చేయడానికి సమూహం విధానం ఎడిటర్‌ను ఉపయోగించండి మరియు మళ్ళీ ప్రయత్నించండి; వివరాల కోసం http://goo.gl/uJ9gVని చూడండి.</translation>
+<translation id="853189717709780425">మీరు నిర్వహించబడే ఖాతాతో సైన్ ఇన్ చేస్తున్నారు మరియు దాని నిర్వాహకుడికి మీ Google Chrome ప్రొఫైల్‌పై నియంత్రణను ఇస్తున్నారు. మీ అనువర్తనాలు, బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌ల మరియు ఇతర సెట్టింగ్‌లు వంటి మీ Chrome డేటా శాశ్వతంగా <ph name="USER_NAME"/>కు అనుబంధించబడుతుంది. మీరు ఈ డేటాను Google ఖాతాల డాష్‌బోర్డ్ ద్వారా తొలగించగలరు, కానీ ఈ డేటాను మరో ఖాతాకు అనుబంధించలేరు.</translation>
 <translation id="6049075767726609708">ఒక నిర్వాహకుడు ఈ సిస్టమ్‌పై Google Chromeను ఇన్‌స్టాల్ చేసారు మరియు ఇది మొత్తం యూజర్‌లకు అందుబాటులో ఉంటుంది. ఇప్పుడు సిస్టమ్ స్థాయి Google Chrome మీ యూజర్ స్థాయి ఇన్‌స్టాలేషన్‌ను భర్తీ చేస్తుంది.</translation>
 <translation id="4338032231047635328">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నిస్తున్నారు, కానీ సర్వర్ అందించిన ప్రమాణపత్రంలో లోపాలు ఉన్నాయి. Google Chrome లోపాలతో ఉన్న ప్రమాణపత్రాన్ని ఉపయోగించదు మరియు దీనికి కనెక్ట్ చేయడానికి మీరు ప్రయత్నిస్తున్న సైట్ యొక్క గుర్తింపుని ధృవీకరించదు.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

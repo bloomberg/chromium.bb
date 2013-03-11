@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Você pode acessar este computador com segurança, usando a Área de trabalho remota do Google Chrome.</translation>
 <translation id="4808503597364150972">Digite seu PIN para <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">As conexões remotas deste computador foram desativadas.</translation>
+<translation id="8244400547700556338">Saiba como.</translation>
 <translation id="332624996707057614">Editar nome do computador</translation>
 <translation id="1996161829609978754">O Google Chrome está fazendo download do instalador do host do Chromoting. Quando o download estiver concluído, execute o instalador antes de continuar.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Você não está conectado ao Chromoting. Faça login e tente novamente.</translation>
 <translation id="7401733114166276557">Área de trabalho remota do Google Chrome</translation>
 <translation id="3362124771485993931">Digite o PIN novamente</translation>
-<translation id="4686372254213217147">Tamanho original</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="7948001860594368197">Opções de tela</translation>
 <translation id="8172070902751707422">Falha na autenticação. Faça login novamente na Área de trabalho remota do Google Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Para utilizar a Área de trabalho remota do Google Chrome, é necessário conceder permissões de acesso estendidas a seu computador. Você só precisará fazer isto uma vez.</translation>
 <translation id="9032136467203159543">Alguns componentes necessários ao Chromoting estão faltando. Certifique-se de que tenha instalado a versão mais recente e tente novamente.</translation>
 <translation id="1342297293546459414">Ver e controlar um computador compartilhado.</translation>
+<translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
 <translation id="701976023053394610">Assistência remota</translation>
 <translation id="6193698048504518729">Conectar a <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="4517233780764084060">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar o Chromoting para &quot;Abrir como janela&quot;.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="4703799847237267011">Sua sessão do Chromoting foi encerrada.</translation>

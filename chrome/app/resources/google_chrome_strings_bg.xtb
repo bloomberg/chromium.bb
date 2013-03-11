@@ -6,12 +6,13 @@
 <translation id="8485767968786176057">В този случай посоченият в сертификата адрес не съответства на адреса на уебсайта, който браузърът ви се е опитал да отвори. Една от възможните причини за това е връзката ви да е прихваната от извършител на атака, представящ сертификат за друг уебсайт, което ще доведе до несъответствие. Друга възможна причина е сървърът да е настроен да предоставя един и същи сертификат за няколко уебсайта, включително и за този, който се опитвате да посетите, въпреки че сертификатът не е валиден за всички тях. Google Chrome може да гарантира, че сте се свързали с/ъс &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не и да потвърди, че това е същият сайт, като &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, който сте искали да отворите. Ако продължите, Chrome вече няма да проверява за несъответствия на имена.</translation>
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
+<translation id="6236285698028833233">Google Chrome спря да се актуализира и вече не поддържа тази версия на операционната ви система.</translation>
 <translation id="5453904507266736060">Нека Google Chrome да се изпълнява на заден план</translation>
 <translation id="2383457833405848421">Всичко за Chrome Frame...</translation>
 <translation id="3454512769850953877">Да, искам да изляза от Chrome</translation>
+<translation id="2704356438731803243">Ако предпочитате да съхранявате отделно съществуващите си данни в Chrome, можете да създадете в браузъра нов потребител за <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Моля, затворете всички прозорци на Google Chrome и опитайте отново.</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
-<translation id="741045321678647133">Google Chrome App Host</translation>
 <translation id="1065672644894730302">Предпочитанията ви не могат да бъдат прочетени. Възможно е да няма достъп до някои функции и промените в предпочитанията няма да бъдат запазени.</translation>
 <translation id="7781002470561365167">Налице е нова версия на Google Chrome.</translation>
 <translation id="7101265395643981223">Стартиране на Google Chrome</translation>
@@ -34,8 +35,9 @@
 Ако това не реши проблема, препоръчваме ви да изберете отново тази опция, за да подобрите ефективността.</translation>
 <translation id="3140883423282498090">Промените ви ще влязат в сила следващия път, когато стартирате отново Google Chrome.</translation>
 <translation id="1773601347087397504">Получаване на помощ за използването на Chrome OS</translation>
-<translation id="1872436416934435136">Google Chrome вече не се актуализира, защото операционната ви система е остаряла.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN"/> изисква да прочетете и приемете следните Общи условия, преди да използвате това устройство. Те не разширяват, не променят, нито ограничават Условията на Google Chrome OS.</translation>
 <translation id="5339639696978861456">Chrome Frame се актуализира. Моля, рестартирайте браузъра си. Версия на Chrome: <ph name="TODO_0001"/>, версия на Chrome Frame: <ph name="TODO_0002"/></translation>
+<translation id="8471072774411320686">Трябва да сте влезли в Chrome, за да използвате приложения. Това разрешава на браузъра да синхронизира на устройствата вашите приложения, отметки, история, пароли и други настройки.</translation>
 <translation id="5775197990071433230">На този компютър вече има по-скорошна версия на компонентите на Google Chrome. Моля, използвайте по-нова инсталационна програма.</translation>
 <translation id="8398145039500709259">Да се използва ли този профил в Google за синхронизиране на всичките ви неща в Chrome?</translation>
 <translation id="1779550429052479749">В системата бе намерена несъвместима инсталация на Google Chrome или Google Chrome Frame. Моля, деинсталирайте я и опитайте отново.</translation>
@@ -46,9 +48,9 @@
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
-<translation id="2886077349328709775">Използвайте стартовия панел с приложения за Chrome, за да стартирате използваните от вас.</translation>
 <translation id="6989339256997917931">Google Chrome е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
+<translation id="7060865993964054389">Стартов панел с приложения за Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може да чете и записва в директорията си за данни:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
@@ -58,6 +60,7 @@
 <translation id="1480489203462860648">Изпробвайте браузъра – вече е инсталиран</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Общи условия<ph name="END_TERMS_OF_SERVICE_LINK"/> на Google Chrome</translation>
 <translation id="1393853151966637042">Получаване на помощ за използването на Chrome</translation>
+<translation id="7398801000654795464">Бяхте влезли в Chrome като <ph name="USER_EMAIL_ADDRESS"/>. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="3487814320513494737">Новият раздел в Chrome бе реорганизиран. Превключвайте между секциите с кликване върху тези етикети. Chrome ще запомни предпочитанието ви за следващия път.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">Направихте опит да се свържете с/ъс &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сървърът предостави сертификат с изтекла валидност. Няма налична информация, указваща дали този сертификат е бил компрометиран след изтичането си. Това означава, че Google Chrome не може да гарантира, че комуникирате с/ъс &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с извършител на атака. Понастоящем за часовника на компютъра ви е зададено <ph name="CURRENT_TIME"/>. Правилно ли изглежда това? В противен случай трябва да поправите всички грешки, след което да презаредите тази страница.</translation>
@@ -100,7 +103,6 @@
 <translation id="2783467918276328046">Вижте <ph name="BEGIN_LINK"/>още предимства<ph name="END_LINK"/> от влизането в Chrome.</translation>
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="1457721931618994305">Google Chrome се актуализира...</translation>
-<translation id="6536030683808219174">Изведете пряк път към стартовия панел с приложения за Chrome в лентата на задачите на Windows.</translation>
 <translation id="4351362253593301573">Отворете
 <ph name="BEGIN_BOLD"/>
 менюто на Chrome &gt;
@@ -121,9 +123,14 @@ LAN настройки
 <translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
 <translation id="7185038942300673794">Разширението <ph name="EXTENSION_NAME"/> е добавено към Chrome.</translation>
 <translation id="9073088951656332330">Няма намерена инсталация за актуализиране на Google Chrome или Google Chrome Frame.</translation>
+<translation id="2346876346033403680">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST"/>. Ако това не е профилът ви, създайте нов потребител в браузъра, за да се съхранява отделно информацията ви.
+
+В случай че влезете въпреки това, данните в Chrome като отметки, история и други настройки ще се обединят с/ъс <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Предупреждение<ph name="END_BOLD"/>: Google Chrome не може да попречи на разширенията да записват историята ви на сърфиране. За да деактивирате това разширение в режим „инкогнито“, премахнете отметката от тази опция.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="4794050651896644714">Подробностите да се запазват в Chrome</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
+<translation id="3872765354315765470">Показване на стартовия панел с приложения за Chrome.</translation>
 <translation id="2044287590254833138">Лента с инструменти на Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">Нямате подходящи права за инсталация на ниво система. Опитайте да стартирате отново инсталационната програма като администратор.</translation>
@@ -131,6 +138,7 @@ LAN настройки
 <translation id="2874156562296220396">Google Chrome съществува благодарение на проекта с отворен код <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и други <ph name="BEGIN_LINK_OSS"/>софтуерни продукти с отворен код<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="7436949144778751379">Google Chrome изисква Windows XP или по-нова версия. Някои функции може да не работят.</translation>
+<translation id="103396972844768118">Важна информация относно данните ви в Chrome</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="7062966102157262887">Понастоящем се извършва изтегляне. Искате ли да излезете от Google Chrome и да го анулирате?</translation>
@@ -138,6 +146,8 @@ LAN настройки
 <translation id="1104959162601287462">Всичко за &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
+<translation id="7417357582482895658">Да се разреши влизането в Chrome.</translation>
+<translation id="1469002951682717133">Стартов панел с приложения за Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
 <translation id="4270804660370715583">Отворете
@@ -161,11 +171,11 @@ LAN настройки
 <translation id="3612333635265770873">Известно е, че модул със същото име влиза в конфликт с Google Chrome.</translation>
 <translation id="61852838583753520">Актуализиране на &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Този сайт препоръчва Google Chrome Frame (вече е инсталиран).</translation>
-<translation id="550529737713987795">Показване на стартовия панел с приложения за Chrome.</translation>
 <translation id="2712549016134575851">Установен е конфликт с друго инсталирано приложение.</translation>
 <translation id="5577648424992741236">На този компютър вече има по-нова версия на Google Chrome Frame. Ако софтуерът не работи, моля, деинсталирайте Google Chrome Frame и опитайте отново.</translation>
 <translation id="7018032895891496381">Google Chrome използва търсещата ви машина по подразбиране, която понастоящем е <ph name="PAGE_TITLE"/>. Искате ли да я запазите?</translation>
 <translation id="6326175484149238433">Премахване от Chrome</translation>
+<translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">Актуализиране на &amp;Google Chrome</translation>
@@ -173,9 +183,11 @@ LAN настройки
 <translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
 <translation id="1399397803214730675">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и опитайте отново.</translation>
 <translation id="576822117893741893">Показване на менюто на Chrome</translation>
+<translation id="8520216698644798023">Открита бе грешка в Windows</translation>
 <translation id="3444832043240812445">В тази страница се показва информация за скорошните сривове само ако сте <ph name="BEGIN_LINK"/>активирали изпращането на сигнали за сривове<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6479088914470149333">В компютъра ви липсват някои важни системни файлове на Windows, поради което Chrome няма да може да функционира правилно.</translation>
 <translation id="6126631249883707068">Искате ли Google Chrome да запази паролата ви?</translation>
 <translation id="7773845170078702898">Искате ли Google Chrome да запази паролата ви за този сайт?</translation>
 <translation id="5046764976540625289">Изход от Chrome</translation>
@@ -190,17 +202,19 @@ LAN настройки
 <translation id="7253415505590551024">Понастоящем се извършват изтегляния. Искате ли да излезете от Google Chrome и да ги анулирате?</translation>
 <translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
+<translation id="3135343025848309798">Използвайте стартовия панел с приложения за Chrome, за да стартирате ползваните от вас.</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="1061257178446858647">Вече влязохте в Chrome! Вашите отметки, история и други настройки ще се синхронизират с профила ви в Google.</translation>
 <translation id="3335672657969596251">Google Chrome не поддържа <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
+<translation id="7311208098963907218">Изведете пряк път към стартовия панел с приложения за Chrome в лентата на задачите на Windows.</translation>
 <translation id="5334545119300433702">За този модул е известно, че влиза в конфликт с Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome е актуален.</translation>
 <translation id="2084710999043359739">Добавяне</translation>
-<translation id="4710332363312836873">Стартов панел за приложения за Chrome</translation>
 <translation id="4084877369264707540">Приставката Google Chrome Frame вече е инсталирана и налице за всички потребители на този компютър. Ако искате да я инсталирате на ниво потребител, трябва първо да деинсталирате версията на системно ниво, инсталирана от администратора.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="6991142834212251086">Свързване на данните ми в Chrome с този профил</translation>
 <translation id="3451115285585441894">Добавя се към Chrome...</translation>
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF файлове липсва.</translation>
@@ -209,6 +223,7 @@ LAN настройки
 <translation id="1698376642261615901">Google Chrome е уеб браузър, който зарежда уеб страници и изпълнява приложения със светкавична скорост. Той е бърз, стабилен и лесен за употреба. Сърфирайте в мрежата по-безопасно с вградената защита на Google Chrome срещу злонамерен софтуер и фишинг.</translation>
 <translation id="3419750618886995598">Актуализация на Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome или Google Chrome Frame не могат да бъдат актуализирани поради несъответстващи настройки на груповите ни правила за актуализиране. Използвайте редактора за тези правила, за да отмените това за актуализиране на приложението Google Chrome Binaries и опитайте отново. Вижте http://goo.gl/uJ9gV за подробности.</translation>
+<translation id="853189717709780425">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME"/>. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но няма да сте в състояние да ги свържете с друг профил.</translation>
 <translation id="6049075767726609708">Google Chrome е бил инсталиран на този компютър от администратор и е достъпен за всички потребители. Google Chrome на системно ниво ще замести инсталацията на потребителско ниво.</translation>
 <translation id="4338032231047635328">Направихте опит да се свържете с/ъс &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но предоставеният от сървъра сертификат съдържа грешки. Google Chrome не може да го използва и да потвърди идентичността на сайта, с който се опитахте да се свържете.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

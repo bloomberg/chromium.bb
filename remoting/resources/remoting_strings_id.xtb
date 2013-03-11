@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Sambungan jarak jauh untuk komputer ini telah dinonaktifkan.</translation>
+<translation id="8244400547700556338">Pelajari caranya.</translation>
 <translation id="332624996707057614">Edit nama komputer</translation>
 <translation id="1996161829609978754">Chrome sedang mengunduh pemasang Inang Chromoting. Setelah unduhan selesai, jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="7658239707568436148">Batal</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Anda tidak masuk ke Chromoting. Masuk dan coba lagi.</translation>
 <translation id="7401733114166276557">Chrome Desktop Jarak Jauh</translation>
 <translation id="3362124771485993931">Ketik ulang PIN</translation>
-<translation id="4686372254213217147">Ukuran asli</translation>
 <translation id="154040539590487450">Gagal memulai layanan akses jarak jauh.</translation>
 <translation id="7948001860594368197">Opsi layar</translation>
 <translation id="8172070902751707422">Autentikasi gagal. Masuk ke Chrome Desktop Jarak Jauh lagi.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Untuk menggunakan Chrome Desktop Jarak Jauh, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
 <translation id="9032136467203159543">Beberapa komponen yang diperlukan untuk Chromoting hilang. Pastikan bahwa Anda telah memasang versi teranyar dan coba lagi.</translation>
 <translation id="1342297293546459414">Melihat dan mengontrol komputer bersama.</translation>
+<translation id="1520828917794284345">Ubah ukuran desktop agar sesuai</translation>
 <translation id="701976023053394610">Bantuan Jarak Jauh</translation>
 <translation id="6193698048504518729">Sambungkan ke <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Gagal memperbarui PIN. Coba lagi nanti.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Bantu kami meningkatkan Chromoting dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="7649070708921625228">Bantuan</translation>
+<translation id="4517233780764084060">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chromoting menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="4176825807642096119">Kode akses</translation>
 <translation id="7144878232160441200">Coba lagi</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>

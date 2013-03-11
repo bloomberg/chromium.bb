@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">K tomuto počítaču môžete bezpečne pristupovať pomocou Vzdialenej plochy Chrome.</translation>
 <translation id="4808503597364150972">Zadajte kód PIN pre počítač <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Vzdialené pripojenia k tomuto počítaču boli zakázané.</translation>
+<translation id="8244400547700556338">Ďalšie informácie.</translation>
 <translation id="332624996707057614">Upraviť názov počítača</translation>
 <translation id="1996161829609978754">Chrome preberá inštalátor hostiteľa Vzdialenej plochy Chrome. Inštalátor po prevzatí najprv spustite a pokračujte až potom.</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Nie ste prihlásený/-á do služby Chromoting. Prihláste sa a skúste to znova.</translation>
 <translation id="7401733114166276557">Vzdialená plocha Chrome</translation>
 <translation id="3362124771485993931">Znova zadajte kód PIN</translation>
-<translation id="4686372254213217147">Pôvodná veľkosť</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="8172070902751707422">Overenie totožnosti zlyhalo. Prihláste sa do služby Vzdialená plocha Chrome znova.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Ak chcete používať Vzdialenú plochu Chrome, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
 <translation id="9032136467203159543">Niektoré komponenty potrebné pre aplikáciu Chromoting chýbajú. Uistite sa, že ste nainštalovali najnovšiu verziu a skúste to znova.</translation>
 <translation id="1342297293546459414">Zobrazte a ovládajte zdieľaný počítač.</translation>
+<translation id="1520828917794284345">Prispôsobiť veľkosť pracovnej plochy obrazovke klienta</translation>
 <translation id="701976023053394610">Pomoc na diaľku</translation>
 <translation id="6193698048504518729">Pripojiť k počítaču <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Aktualizácia kódu PIN sa nepodarila. Skúste to znova neskôr.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Pomôžte nám zlepšiť aplikáciu Chromoting tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
 <translation id="7649070708921625228">Pomocník</translation>
+<translation id="4517233780764084060">POZNÁMKA: Ak chcete mať k dispozícii všetky klávesové skratky, povoľte v konfigurácii funkcie Chromoting možnosť Otvoriť ako okno.</translation>
 <translation id="4176825807642096119">Prístupový kód</translation>
 <translation id="7144878232160441200">Skúsiť znova</translation>
 <translation id="4703799847237267011">Vaša relácia aplikácie Chromoting bola ukončená.</translation>

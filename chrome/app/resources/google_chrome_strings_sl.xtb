@@ -8,12 +8,13 @@
 
 Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
+<translation id="6236285698028833233">Google Chrome se ne posodablja več in ne podpira več te različice operacijskega sistema.</translation>
 <translation id="5453904507266736060">Naj se Google Chrome izvaja v ozadju</translation>
 <translation id="2383457833405848421">O vtičniku Chrome Frame ...</translation>
 <translation id="3454512769850953877">Da, zapri Google Chrome</translation>
+<translation id="2704356438731803243">Če želite, da bodo vaši obstoječi podatki v Chromu ločeni, lahko ustvarite nov profil v Chromu za uporabnika <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Zaprite vsa okna brskalnika Google Chrome in poskusite znova.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
-<translation id="741045321678647133">Google Chrome App Host</translation>
 <translation id="1065672644894730302">Nastavitev ni mogoče prebrati.
 
 Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
@@ -39,8 +40,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
         zaradi izboljšanega delovanja znova izberete.</translation>
 <translation id="3140883423282498090">Spremembe bodo začele veljati ob naslednjem zagonu Google Chroma.</translation>
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
-<translation id="1872436416934435136">Za Goolgle Chrome ni več posodobitev, ker je operacijski sistem zastarel.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN"/> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Google Chrome OS.</translation>
 <translation id="5339639696978861456">Chrome Frame je bil posodobljen. Znova zaženite brskalnik. Različica Chroma: <ph name="TODO_0001"/>, Različica Chrome Framea: <ph name="TODO_0002"/></translation>
+<translation id="8471072774411320686">Če želite uporabljati aplikacije, morate biti prijavljeni v Chrome. Ko se prijavite, lahko Chrome vaše aplikacije, zaznamke, gesla in druge nastavitve sinhronizira z vsemi napravami, ki jih uporabljate.</translation>
 <translation id="5775197990071433230">Ta računalnik že ima novejšo različico komponent Google Chroma. Uporabite novejši namestitveni programi.</translation>
 <translation id="8398145039500709259">Želite uporabiti ta Google Račun za sinhroniziranje vseh nastavitev Google Chroma?</translation>
 <translation id="1779550429052479749">V sistemu je bila odkrita namestitev Google Chroma ali vtičnika Google Chrome Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
@@ -51,9 +53,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
 <translation id="3080151273017101988">Nadaljuj izvajanje programov v ozadju, ko je Google Chrome zaprt</translation>
 <translation id="4149882025268051530">Namestitvenemu programu ni uspelo razširiti arhiva. Ponovno prenesite program Google Chrome.</translation>
-<translation id="2886077349328709775">Uporabite zaganjalnik aplikacij v Chromu za zaganjanje aplikacij.</translation>
 <translation id="6989339256997917931">Google Chrome je posodobljen, a ga niste uporabljali že vsaj 30 dni.</translation>
 <translation id="5744005218040929396">Orodje za Google Chrome</translation>
+<translation id="7060865993964054389">Zaganjalnik aplikacij v Google Chromu</translation>
 <translation id="1682634494516646069">Google Chrome ne more brati svojega imenika s podatki ali pisati vanj:
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
@@ -63,6 +65,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1480489203462860648">Preskusite ga, je že nameščen.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK"/> za Google Chrome</translation>
 <translation id="1393853151966637042">Pomoč pri uporabi Google Chroma</translation>
+<translation id="7398801000654795464">V Chrome ste bili prijavljeni kot <ph name="USER_EMAIL_ADDRESS"/>. Pri vnovični prijavi uporabite isti račun.</translation>
 <translation id="3487814320513494737">Stran »Nov zavihek« v Google Chrome je spremenjena. Med razdelki preklapljate tako, da kliknete te oznake. Google Chrome si bo zapomnil vaše nastavitve.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki je poteklo. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je bilo potrdilo po poteku ogroženo. To pomeni, da Google Chrome ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne z napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, odpravite napako in osvežite stran.</translation>
@@ -105,7 +108,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2783467918276328046">Oglejte si <ph name="BEGIN_LINK"/>vse prednosti<ph name="END_LINK"/> prijave v Chrome.</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
 <translation id="1457721931618994305">Posodabljanje Google Chroma ...</translation>
-<translation id="6536030683808219174">Pokaži bližnjico do zaganjalnika aplikacij v Chromu v opravilni vrstici sistema Windows.</translation>
 <translation id="4351362253593301573">Odprite
           <ph name="BEGIN_BOLD"/>
           meni Chroma &gt;
@@ -128,9 +130,14 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="2748463065602559597">Ogledujete si varno stran Google Chrome.</translation>
 <translation id="7185038942300673794">Razširitev <ph name="EXTENSION_NAME"/> je dodana v Chrome.</translation>
 <translation id="9073088951656332330">Najti ni bilo mogoče nobenega brskalnika Google Chrome ali vtičnika Google Chrome Frame, ki bi ga bilo mogoče posodobiti.</translation>
+<translation id="2346876346033403680">Nekdo se je prijavil v Chrome v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST"/>. Če to ni vaš račun, ustvarite nov uporabniški profil za Chrome, da bodo vaši podatki ločeni.
+
+Če se boste kljub temu prijavili, bodo podatki v Chromu, na primer zaznamki, zgodovina in druge nastavitve, združeni v računu <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Opozorilo:<ph name="END_BOLD"/> Google Chrome razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="4794050651896644714">Shrani podrobnosti v Chrome</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
+<translation id="3872765354315765470">Prikaz zaganjalnika aplikacij v Chromu.</translation>
 <translation id="2044287590254833138">Orodna vrstica za Google Chrome</translation>
 <translation id="5074344184765391290">Gostitelj za vtičnike za Chrome</translation>
 <translation id="8862326446509486874">Nimate ustreznih pravic za namestitev na ravni sistema. Poskusite znova zagnati namestitveni program kot skrbnik.</translation>
@@ -138,6 +145,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="2874156562296220396">Brskalnik Google Chrome omogoča odprtokodni projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> in druga <ph name="BEGIN_LINK_OSS"/>odprtokodna programska oprema<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="7436949144778751379">Google Chrome zahteva Windows XP ali novejšo različico. Nekatere funkcije morda ne bodo delovale.</translation>
+<translation id="103396972844768118">Pomembne informacije o vaših podatkih v Chromu</translation>
 <translation id="6757767188268205357">Ne nadleguj me</translation>
 <translation id="2290095356545025170">Ali ste prepričani, da želite odstraniti Google Chrome?</translation>
 <translation id="7062966102157262887">Trenutno poteka prenos. Ali želite zapreti Google Chrome in preklicati prenos?</translation>
@@ -145,6 +153,8 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="1104959162601287462">O &amp;sistemu Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
+<translation id="7417357582482895658">Omogoči prijavo v Chrome.</translation>
+<translation id="1469002951682717133">Zaganjalnik aplikacij v Chromu</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome vam omogoča, da na spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="4270804660370715583">Odprite
@@ -169,11 +179,11 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="3612333635265770873">Modul z istim imenom je že bil v sporu z Google Chromom.</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
 <translation id="6650142020817594541">To spletno mesto priporoča vtičnik Google Chrome Frame (že nameščen).</translation>
-<translation id="550529737713987795">Pokaži zaganjalnik aplikacij v Chromu.</translation>
 <translation id="2712549016134575851">Zaznan je bil spor z drugim nameščenim programom.</translation>
 <translation id="5577648424992741236">V tem računalniku je že nameščena novejša različica vtičnika Google Chrome Frame. Če programska oprema ne deluje, odstranite Google Chrome Frame in poskusite znova.</translation>
 <translation id="7018032895891496381">Google Chrome uporablja privzet iskalnik, ki je trenutno <ph name="PAGE_TITLE"/>. Ali želite obdržati privzet iskalnik?</translation>
 <translation id="6326175484149238433">Odstrani iz Chroma</translation>
+<translation id="2871893339301912279">Zdaj ste prijavljeni v Chrome.</translation>
 <translation id="7161904924553537242">Dobrodošli v brskalniku Google Chrome</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
 <translation id="870251953148363156">Posodabljanje &amp;Google Chroma</translation>
@@ -181,9 +191,11 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="163860049029591106">Začnite uporabljati Chrome OS</translation>
 <translation id="1399397803214730675">V tem računalniku je že nameščena novejša različica Google Chroma. Če programska oprema ne deluje, odstranite Google Chrome in poskusite znova.</translation>
 <translation id="576822117893741893">Prikaz menija Chroma</translation>
+<translation id="8520216698644798023">Zaznana je bila napaka v sistemu Windows</translation>
 <translation id="3444832043240812445">Ta stran prikazuje informacije o zadnjih zrušitvah, samo če <ph name="BEGIN_LINK"/>omogočite poročanje o zrušitvah<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="5318056482164160049">Gostitelj za vtičnike za Google Chrome</translation>
+<translation id="6479088914470149333">V računalniku ni nekaterih pomembnih sistemskih datotek sistema Windows, zato Chrome ne bo deloval pravilno.</translation>
 <translation id="6126631249883707068">Ali želite, da Google Chrome shrani vaše geslo?</translation>
 <translation id="7773845170078702898">Ali želite, da Google Chrome shrani vaše geslo za to spletno mesto?</translation>
 <translation id="5046764976540625289">Izhod iz brskalnika Chrome</translation>
@@ -197,17 +209,19 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="7253415505590551024">Trenutno potekajo prenosi. Ali želite zapreti Google Chrome in preklicati prenose?</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="2769762047821873045">Google Chrome ni privzeti brskalnik.</translation>
+<translation id="3135343025848309798">Aplikacije zaženite z zaganjalnikom aplikacij v Chromu.</translation>
 <translation id="7825851276765848807">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Google Chrome.</translation>
 <translation id="1061257178446858647">Zdaj ste prijavljeni v Chrome. Vaši zaznamki, zgodovina in druge nastavitve bodo sinhronizirani z Google Računom.</translation>
 <translation id="3335672657969596251">Google Chrome ne podpira OS <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
+<translation id="7311208098963907218">Prikaz bližnjice do zaganjalnika aplikacij v Chromu v opravilni vrstici sistema Windows.</translation>
 <translation id="5334545119300433702">Za ta modul je znano, da je v sporu z Google Chromom.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome je posodobljen.</translation>
 <translation id="2084710999043359739">Dodaj v Chrome</translation>
-<translation id="4710332363312836873">Zaganjalnik aplikacij za Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame je že nameščen in na voljo vsem uporabnikom tega računalnika. Če želite namestiti Google Chrome Frame na ravni uporabnika, morate najprej odstraniti različico na ravni sistema, ki jo je namestil skrbnik.</translation>
 <translation id="3360895254066713204">Pomočnik za Chrome</translation>
+<translation id="6991142834212251086">Poveži moje podatke v Chromu s tem računom</translation>
 <translation id="3451115285585441894">Dodajanje v Chrome ...</translation>
 <translation id="1001534784610492198">Arhiv namestitvenega programa je poškodovan ali neveljaven. Ponovno prenesite program Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome ne more odpreti predogleda tiskanja, če ni vgrajenega pregledovalnika datotek PDF.</translation>
@@ -216,6 +230,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="1698376642261615901">Google Chrome je spletni brskalnik, ki bliskovito odpira spletna mesta in izvaja programe. Je hiter, stabilen in preprost za uporabo. V Google Chrome je vgrajena zaščita pred zlonamerno programsko opremo in lažnim predstavljanjem, kar omogoča varnejše brskanje v spletu.</translation>
 <translation id="3419750618886995598">Posodobitev vtičnika Chrome Frame.</translation>
 <translation id="3336524238463733095">Brskalnika Google Chrome ali vtičnika Google Chrome Frame ni mogoče posodobiti v računu zaradi nedoslednih nastavitev pravilnika skupine za Google Posodobitve. Uporabite urejevalnik pravilnika skupine in nastavite preglasitev pravilnika za posodobitev za dvojiške vrednosti programov za Google Chrome, nato poskusite znova. Več podrobnosti najdete na http://goo.gl/uJ9gV.</translation>
+<translation id="853189717709780425">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadziranje vašega profila v Google Chromu. Vaši podatki v Chromu, na primer aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME"/>. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom.</translation>
 <translation id="6049075767726609708">Skrbnik je namestil Google Chrome v ta sistem in je na voljo vsem uporabnikom. Sistemska različica programa Google Chrome bo zdaj nadomestila vašo uporabniško namestitev.</translation>
 <translation id="4338032231047635328">Poskušali ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima potrdilo, ki ga je uporabil strežnik, napake. Google Chrome ne more uporabiti potrdila z napakami in ne more preveriti identitete spletnega mesta, s katerim ste poskušali vzpostaviti povezavo.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

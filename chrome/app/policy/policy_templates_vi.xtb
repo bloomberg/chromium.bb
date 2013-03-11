@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="5324685310432603046">Tỷ lệ phần trăm để đo độ trễ khi không sử dụng trong chế độ trình bày</translation>
 <translation id="1503959756075098984">ID tiện ích mở rộng và URL cập nhật cần cài đặt tĩnh</translation>
 <translation id="2463365186486772703">Ngôn ngữ của ứng dụng</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -81,6 +82,17 @@
       Xin lưu ý rằng chính sách này ghi đè cả DisabledPlugins và DisabledPluginsExceptions.
 
       Nếu không thiết lập chính sách này, người dùng có thể tắt bất kỳ trình cắm nào được cài đặt trên hệ thống.</translation>
+<translation id="653608967792832033">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị khóa khi chạy trên nguồn pin.
+
+          Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> khóa màn hình.
+
+          Khi chính sách này được đặt thành không, <ph name="PRODUCT_OS_NAME"/> không khóa màn hình khi người dùng ở chế độ không sử dụng.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Cách khóa màn hình khi ở chế độ không sử dụng được khuyến nghị là cho phép khóa màn hình khi tạm ngừng và đặt <ph name="PRODUCT_OS_NAME"/> tạm ngừng sau độ trễ khi không sử dụng. Chỉ nên sử dụng chính sách này khi khóa màn hình xảy ra sớm hơn thời gian tạm ngừng đáng kể hoặc khi tạm ngừng ở chế độ không sử dụng hoàn toàn không được mong muốn.
+
+          Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
 <translation id="4157003184375321727">Báo cáo phiên bản hệ điều hành và chương trình cơ sở</translation>
 <translation id="4752214355598028025">Dịch vụ Duyệt web an toàn hiển thị trang cảnh báo khi người dùng điều hướng tới các trang bị gắn cờ là có khả năng gây độc hại. Việc bật cài đặt này ngăn người dùng tiếp tục đi từ trang cảnh báo tới trang web độc hại.
 
@@ -101,6 +113,7 @@
 
       Nếu không đặt chính sách này, <ph name="PRODUCT_OS_NAME"/> sẽ sử dụng giá trị mặc định là 3 giờ.</translation>
 <translation id="3765260570442823273">Thời lượng hiển thị thông điệp cảnh báo đăng xuất khi không hoạt động</translation>
+<translation id="7302043767260300182">Độ trễ khóa màn hình khi chạy trên nguồn AC</translation>
 <translation id="7331962793961469250">Khi được đặt thành True, kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ không xuất hiện trên trang tab mới.
 
       Nếu đặt tùy chọn này thành False hoặc không đặt, các kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ xuất hiện trên trang tab mới.</translation>
@@ -124,6 +137,7 @@
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="3288595667065905535">Kênh phát hành</translation>
+<translation id="8369602308428138533">Độ trễ tắt màn hình khi chạy trên nguồn AC</translation>
 <translation id="6513756852541213407">Cho phép bạn chỉ định máy chủ proxy mà <ph name="PRODUCT_NAME"/> sử dụng và ngăn người dùng thay đổi cài đặt proxy.
 
           Nếu bạn chọn không bao giờ sử dụng máy chủ proxy và luôn kết nối trực tiếp, tất cả các tùy chọn khác đều bị bỏ qua.
@@ -146,6 +160,10 @@
 <translation id="5630352020869108293">Khôi phục phiên trước đó</translation>
 <translation id="4980635395568992380">Loại dữ liệu:</translation>
 <translation id="3096595567015595053">Danh sách trình cắm được kích hoạt</translation>
+<translation id="3048744057455266684">Nếu chính sách này được đặt và URL tìm kiếm được đề xuất từ thanh địa chỉ có chứa tham số này trong chuỗi truy vấn hoặc trong số nhận dạng phân đoạn, thì đề xuất sẽ hiển thị cụm từ tìm kiếm và nhà cung cấp dịch vụ tìm kiếm thay vì URL tìm kiếm thô.
+          Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có thay thế cụm từ tìm kiếm nào được thực hiện.
+
+          Chính sách này chỉ được lưu tâm nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="5912364507361265851">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu</translation>
 <translation id="510186355068252378">Tắt đồng bộ hóa dữ liệu trong <ph name="PRODUCT_NAME"/> bằng cách sử dụng các dịch vụ đồng bộ hóa được lưu trữ trên Google và ngăn người dùng thay đổi cài đặt này.
 
@@ -162,8 +180,6 @@
 <translation id="1353966721814789986">Trang khởi động</translation>
 <translation id="5564962323737505851">Định cấu hình trình quản lý mật khẩu. Nếu bật trình quản lý mật khẩu, bạn có thể chọn bật hoặc tắt chế độ người dùng có thể hiển thị mật khẩu được lưu trữ bằng văn bản rõ ràng hay không.</translation>
 <translation id="4668325077104657568">Cài đặt hình ảnh mặc định</translation>
-<translation id="7161193985878519056">Đã tắt chế độ ẩn danh.</translation>
-<translation id="2524379983318108884">Cho phép thu âm thanh</translation>
 <translation id="7978961945071764766">Tắt đồng bộ hóa Google Drive khi sử dụng kết nối mạng di động khi được đặt thành Đúng. Trong trường hợp đó, dữ liệu chỉ được đồng bộ hóa với Google Drive khi được kết nối qua WiFi hoặc Ethernet.
 
           Nếu không được đặt hoặc được đặt thành Sai, thì người dùng có thể chuyển tệp sang Google Drive qua kết nối mạng di động.</translation>
@@ -176,6 +192,13 @@
 <translation id="2906874737073861391">Danh sách tiện ích mở rộng trong AppPack</translation>
 <translation id="3758249152301468420">Vô hiệu hóa công cụ dành cho nhà phát triển</translation>
 <translation id="8665076741187546529">Định cấu hình danh sách các tiện ích mở rộng bắt buộc cài đặt</translation>
+<translation id="410478022164847452">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó hành động không sử dụng được thực hiện khi chạy trên nguồn AC.
+
+          Khi được đặt, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> thực hiện hành động không sử dụng mà có thể được định cấu hình riêng biệt.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Phải chỉ định giá trị chính sách bằng mili giây.</translation>
 <translation id="1675391920437889033">Kiểm soát các loại ứng dụng/tiện ích mở rộng được phép cài đặt.
 
           Cài đặt này liệt kê các loại tiện ích mở rộng/ứng dụng được cho phép mà có thể cài đặt được trong <ph name="PRODUCT_NAME"/>. Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số loại sau: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Xem tài liệu về tiện ích mở rộng Chrome để biết thêm thông tin về các loại này.
@@ -185,6 +208,7 @@
           Nếu cài đặt này được định cấu hình, tiện ích mở rộng/ứng dụng có loại không nằm trong danh sách sẽ không được cài đặt.
 
           Nếu cài đặt này không được định cấu hình, không có giới hạn về tiện ích mở rộng/ứng dụng được chấp nhận nào được đặt ra.</translation>
+<translation id="6378076389057087301">Chỉ định xem hoạt động âm thanh có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="8818173863808665831">Báo cáo vị trí địa lý của thiết bị.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>
@@ -214,6 +238,15 @@
 
       Nếu cài đặt này bị tắt, người dùng không thể in từ <ph name="PRODUCT_NAME"/>. In bị tắt trong menu cờ lê, tiện ích mở rộng, ứng dụng JavaScript, v.v.  <ph name="PRODUCT_NAME"/> trong khi in. Để biết ví dụ, ứng dụng Flash nhất định có tùy chọn in trong trình đơn ngữ cảnh, không chịu sự điều chỉnh của chính sách này.</translation>
 <translation id="9135033364005346124">Bật proxy <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="4519046672992331730">Bật đề xuất tìm kiếm trong thanh địa chỉ của <ph name="PRODUCT_NAME"/> và không cho phép người dùng thay đổi cài đặt này.
+
+      Nếu bạn bật cài đặt này, đề xuất tìm kiếm sẽ được sử dụng.
+
+      Nếu bạn tắt cài đặt này, đề xuất tìm kiếm sẽ không bao giờ được sử dụng.
+
+      Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.
+
+      Nếu chính sách này không được đặt, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
 <translation id="6925212669267783763">Định cấu hình thư mục mà <ph name="PRODUCT_FRAME_NAME"/> sẽ sử dụng để lưu trữ dữ liệu người dùng.
 
@@ -223,6 +256,7 @@
 
       Nếu cài đặt này không được thiết lập, thư mục tiểu sử mặc định sẽ được sử dụng.</translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>
+<translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME"/> có thể sử dụng dịch vụ web của Google để giúp giải quyết các lỗi chính tả. Nếu cài đặt này được bật thì dịch vụ này sẽ luôn được sử dụng. Nếu cài đặt này bị tắt thì dịch vụ này sẽ không bao giờ được sử dụng.
 
@@ -239,6 +273,13 @@
 
       Nếu cài đặt này tắt, sẽ không có ứng dụng cửa hàng web doanh nghiệp nào xuất hiện trên trang tab mới.</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
+<translation id="7195064223823777550">Chỉ định hành động sẽ thực hiện khi người dùng đóng nắp.
+
+          Khi được đặt, chính sách này chỉ định hành động mà <ph name="PRODUCT_OS_NAME"/> sẽ thực hiện khi người dùng đóng nắp thiết bị.
+
+          Khi chính sách này không được đặt, hành động mặc định tạm ngừng được thực hiện.
+
+          Nếu hành động là tạm ngừng, <ph name="PRODUCT_OS_NAME"/> có thể được định cấu hình riêng biệt thành khóa hoặc không khóa màn hình trước khi tạm ngừng.</translation>
 <translation id="3915395663995367577">URL tới một tệp .pac proxy</translation>
 <translation id="1022361784792428773">Các ID tiện ích mở rộng mà bạn nên ngăn người dùng cài đặt (hoặc * cho tất cả)</translation>
 <translation id="5499375345075963939">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
@@ -330,7 +371,6 @@
       Xác định khoảng thời gian trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập của các thiết bị ở chế độ bán lẻ.
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
-<translation id="1082519594196055704">Cho phép quay video</translation>
 <translation id="6368011194414932347">Định cấu hình URL trang chủ</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
@@ -341,6 +381,9 @@
           Nếu không thiết lập chính sách này, tất cả bốn giao thức sẽ được sử dụng.</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
+<translation id="5319306267766543020">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME"/>.
+
+      Những chính sách này cho phép bạn định cấu hình cách <ph name="PRODUCT_OS_NAME"/> hoạt động khi người dùng duy trì chế độ không sử dụng trong một số khoảng thời gian.</translation>
 <translation id="2747783890942882652">Định cấu hình tên miền máy chủ bắt buộc sẽ được áp đặt trên các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.
 
           Nếu cài đặt này được bật thì chỉ có thể chia sẻ máy chủ bằng các tài khoản đã đăng ký trên tên miền được chỉ định.
@@ -393,6 +436,7 @@
       Các thiết bị mới sẽ bắt đầu với múi giờ được đặt thành &quot;Hoa Kỳ/Thái Bình Dương&quot;.
 
       Định dạng của giá trị sẽ theo tên của múi giờ trong &quot;Cơ sở dữ liệu múi giờ IANA&quot; (xem &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Cụ thể, có thể tham chiếu hầu hết các múi giờ bằng định dạng &quot;lục địa/thành_phố_lớn&quot; hoặc &quot;đại dương/thành_phố_lớn&quot;.</translation>
+<translation id="152657506688053119">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="5182055907976889880">Định cấu hình Google Drive trong <ph name="PRODUCT_OS_NAME"/>.</translation>
@@ -415,6 +459,12 @@
       Các ngoại lệ có thể được xác định trong chính sách danh sách trắng URL. Các chính sách này được giới hạn đến 100 mục nhập; các mục nhập tiếp theo sẽ bị bỏ qua.
 
       Nếu không thiết lập chính sách này, sẽ không có URL nào bị liệt vào danh sách đen trong trình duyệt.</translation>
+<translation id="9074735209675488877">Cho phép hoặc từ chối ghi âm.
+
+      Khi chính sách này bị tắt, ghi âm sẽ không khả dụng. Nếu được bật, ghi âm sẽ luôn được phép.
+      Nếu chính sách không được định cấu hình (mặc định), người dùng sẽ được nhắc về truy cập thiết bị ghi âm.
+
+      Chính sách này ảnh hưởng đến tất cả loại đầu vào âm thanh mà không chỉ micrô cài sẵn.</translation>
 <translation id="2762164719979766599">Chỉ định danh sách tài khoản trong thiết bị được hiển thị trên màn hình đăng nhập.
 
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
@@ -435,6 +485,8 @@
       Chính sách này nhằm cho phép danh sách đen plugin nghiêm ngặt trong đó danh sách 'DisabledPlugins' có chứa các mục có ký tự đại diện như tắt tất cả các plugin '*' hoặc tắt tất cả các plugin Java '*Java*' nhưng quản trị viên lại muốn bật một phiên bản cụ thể nào đó như 'IcedTea Java 2.3'. Các phiên bản cụ thể này có thể được chỉ định trong chính sách này.
 
       Nếu không đặt chính sách này, mọi plugin khớp với các mẫu trong 'DisabledPlugins' đều chắc chắn bị tắt và người dùng sẽ không thể bật chúng.</translation>
+<translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
+<translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
 <translation id="5316405756476735914">Cho phép bạn đặt liệu các trang web có được phép đặt dữ liệu cục bộ hay không. Bạn có thể cho phép hoặc từ chối đặt dữ liệu cục bộ đối với tất cả các trang web. Nếu không thiết lập chính sách này, 'AllowCookies' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
@@ -479,6 +531,7 @@
           Nếu không thiết lập chính sách này, 'BlockPopups' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="2529700525201305165">Hạn chế người dùng được phép đăng nhập vào <ph name="PRODUCT_NAME"/></translation>
 <translation id="3864818549971490907">Cài đặt trình cắm mặc định</translation>
+<translation id="1910566775788829857">Đăng xuất người dùng</translation>
 <translation id="7151201297958662315">Xác định liệu quá trình <ph name="PRODUCT_NAME"/> có bắt đầu khi đăng nhập vào OS và tiếp tục chạy khi cửa sổ trình duyệt cuối cùng đóng, cho phép các ứng dụng dưới nền vẫn hoạt động. Quá trình chạy dưới nền hiển thị biểu tượng trong khay hệ thống và luôn có thể được đóng từ đó.
 
       Nếu chính sách này được đặt thành đúng, chế độ chạy dưới nền sẽ được bật và người dùng sẽ không thể điều khiển được chế độ này trong cài đặt trình duyệt.
@@ -499,7 +552,8 @@
 <translation id="1098794473340446990">Báo cáo thời gian hoạt động của thiết bị.
 
       Nếu cài đặt này được đặt thành Đúng, các thiết bị đã đăng ký sẽ báo cáo khoảng thời gian khi người dùng hoạt động trên thiết bị. Nếu cài đặt này chưa được đặt hoặc được đặt thành Sai, thời gian hoạt động của thiết bị sẽ không được ghi lại hoặc báo cáo.</translation>
-<translation id="896575211736907134">Bắt buộc chế độ ẩn danh.</translation>
+<translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
+<translation id="489803897780524242">Tham số kiểm soát vị trí cụm từ tìm kiếm cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="7912255076272890813">Định cấu hình loại ứng dụng/tiện ích mở rộng được cho phép</translation>
 <translation id="817455428376641507">Cho phép truy cập vào các URL đã liệt kê, ngoại trừ danh sách đen URL.
 
@@ -512,6 +566,11 @@
       Chính sách này được giới hạn đến 1000 mục nhập; các mục nhập tiếp theo sẽ bị bỏ qua.
 
       Nếu không thiết lập chính sách này, sẽ không có ngoại lệ nào cho danh sách đen từ chính sách 'URLBlacklist'.</translation>
+<translation id="4163644371169597382">Quản trị viên CNTT cho thiết bị của doanh nghiệp có thể sử dụng cờ này để kiểm soát xem có cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS không.
+
+      Nếu chính sách này được đặt là đúng hoặc không được đặt, người dùng có thể đổi phiếu mua hàng thông qua Đăng ký Chrome OS.
+
+      Nếu chính sách này được đặt là sai, người dùng sẽ không thể đổi phiếu mua hàng.</translation>
 <translation id="6177482277304066047">Đặt phiên bản đích cho Cập nhật tự động.
 
       Chỉ định tiền tố của phiên bản đích mà <ph name="PRODUCT_OS_NAME"/> sẽ cập nhật. Nếu thiết bị đang chạy một phiên bản trước khi tiền tố được chỉ định, thiết bị sẽ cập nhật lên phiên bản mới nhất với tiền tố đã cho. Nếu thiết bị đã chạy phiên bản mới hơn, sẽ không có ảnh hưởng (tức là không bị hạ cấp) và thiết bị sẽ vẫn chạy trên phiên bản hiện tại. Định dạng tiền tố hoạt động theo từng thành phần như được minh họa trong ví dụ sau:
@@ -526,16 +585,8 @@
 <translation id="7929480864713075819">Cho phép báo cáo thông tin bộ nhớ (kích thước heap JS) đối với trang</translation>
 <translation id="7003746348783715221">Tùy chọn <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Bật tính năng chặn tường lửa từ máy khách truy cập từ xa</translation>
-<translation id="726580293849003996">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi URL này.
-
-          Trang chủ là trang được mở bằng nút Trang chủ. Những trang mở khi khởi động được các chính sách RestoreOnStartup kiểm soát.
-
-          Có thể đặt loại trang chủ thành URL mà bạn chỉ định ở đây hoặc đặt thành Trang tab mới. Nếu bạn chọn Trang tab mới thì chính sách này sẽ bị bỏ qua.
-
-          Nếu bạn bật cài đặt này, người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME"/> nhưng họ vẫn có thể chọn Trang tab mới làm trang chủ.
-
-          Việc không đặt chính sách này sẽ cho phép người dùng chọn trang chủ theo ý riêng của họ nếu HomepageIsNewTabPage cũng không được đặt.</translation>
 <translation id="6367755442345892511">Kênh phát hành có thể được định cấu hình bởi người dùng hay không</translation>
+<translation id="4035570660718398959">Cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS.</translation>
 <translation id="3868347814555911633">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Liệt kê các tiện ích mở rộng được tự động cài đặt cho người dùng Bản trình diễn, cho các thiết bị ở chế độ bán lẻ. Các tiện ích mở rộng này được lưu trong thiết bị và có thể được cài đặt khi ngoại tuyến, sau quá trình cài đặt này.
@@ -583,7 +634,7 @@
 <translation id="6157537876488211233">Danh sách quy tắc bỏ qua proxy được phân cách bằng dấu phẩy</translation>
 <translation id="7788511847830146438">Cho mỗi tiểu sử</translation>
 <translation id="3965339130942650562">Thời gian chờ cho tới khi đăng xuất của người dùng không hoạt động được thực thi</translation>
-<translation id="5293547923319914979">Bật tính năng ẩn của máy chủ truy cập từ xa.</translation>
+<translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="7091198954851103976">Luôn chạy plugin yêu cầu ủy quyền</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
 <translation id="1240643596769627465">Chỉ định URL của công cụ tìm kiếm được sử dụng để cung cấp kết quả tức thì. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER"/>. Chuỗi này sẽ được thay thế vào thời điểm truy vấn bằng văn bản mà người dùng đã nhập vào từ trước đến nay.
@@ -594,7 +645,7 @@
 <translation id="6693751878507293182">Nếu bạn đặt cài đặt này thành bật, tìm kiếm tự động và cài đặt trình cắm bị thiếu sẽ bị tắt trong <ph name="PRODUCT_NAME"/>.
 
       Đặt thành tắt hoặc không đặt tùy chọn này, trình tìm kiếm trình cắm sẽ hoạt động.</translation>
-<translation id="8238143662496081361">Lưu cookie trong suốt khoảng thời gian của phiên.</translation>
+<translation id="2650049181907741121">Hành động sẽ thực hiện khi người dùng đóng nắp</translation>
 <translation id="7880891067740158163">Cho phép bạn chỉ định danh sách các mẫu url chỉ định những trang web mà <ph name="PRODUCT_NAME"/> sẽ chọn tự động một chứng chỉ ứng dụng khách, nếu trang web yêu cầu chứng chỉ.
 
           Nếu không thiết lập chính sách này, sẽ không có lựa chọn tự động nào được thực hiện cho bất kỳ trang web nào.</translation>
@@ -615,6 +666,7 @@
       Các URL sử dụng lược đồ từ danh sách này sẽ không tải và không thể được điều hướng tới.
 
       Nếu không thiết lập chính sách này hoặc danh sách bị để trống, tất cả các lược đồ đều có thể truy cập được trong <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5586942249556966598">Không làm gì</translation>
 <translation id="131353325527891113">Hiển thị tên người dùng trên màn hình đăng nhập</translation>
 <translation id="5317965872570843334">Cho phép sử dụng STUN và máy chủ chuyển tiếp khi máy khách từ xa cố gắng thiết lập kết nối với máy này.
 
@@ -623,25 +675,36 @@
           Nếu cài đặt này bị tắt và kết nối UDP đi bị lọc bởi tường lửa, máy này sẽ chỉ cho phép kết nối từ các máy khách trong mạng cục bộ.
 
           Nếu không thiết lập chính sách này, cài đặt này sẽ được bật.</translation>
+<translation id="6523554768023503406">Chỉ định tỷ lệ phần trăm để đo độ trễ khi không sử dụng khi thiết bị ở chế độ trình bày.
+
+          Nếu được đặt, chính sách này sẽ chỉ định tỷ lệ phần trăm để đo độ trễ khi không sử dụng khi thiết bị ở chế độ trình bày. Khi độ trễ khi không sử dụng được đo, độ trễ mờ màn hình, tắt màn hình và khóa màn hình được điều chỉnh để duy trì cùng khoảng cách với độ trễ khi không sử dụng như được định cấu hình ban đầu.
+
+          Nếu chính sách này không được đặt, hệ số đo mặc định sẽ được sử dụng.
+
+          Hệ số đo phải là 100% hoặc hơn. Các giá trị có thể làm cho độ trễ khi không sử dụng trong chế độ trình bày ngắn hơn độ trễ khi không sử dụng thông thường sẽ không được phép sử dụng.</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
 <translation id="3709266154059827597">Định cấu hình danh sách đen cài đặt tiện ích mở rộng</translation>
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
 <translation id="8469342921412620373">Cho phép sử dụng nhà cung cấp dịch vụ tìm kiếm mặc định. Nếu bạn bật cài đặt này, tìm kiếm mặc định được thực hiện khi người dùng nhập văn bản không phải là URL vào thanh địa chỉ. Bạn có thể chỉ định nhà cung cấp dịch vụ tìm kiếm mặc định được sử dụng bằng cách thiết lập phần còn lại của các chính sách tìm kiếm mặc định. Nếu để trống các chính sách này, người dùng có thể chọn nhà cung cấp mặc định. Nếu bạn tắt cài đặt này, sẽ không có tìm kiếm nào được thực hiện khi người dùng nhập văn bản không phải là URL vào thanh địa chỉ. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>. Nếu không thiết lập chính sách này, nhà cung cấp dịch vụ tìm kiếm mặc định sẽ được bật và người dùng có thể thiết lập danh sách nhà cung cấp dịch vụ tìm kiếm.</translation>
 <translation id="8731693562790917685">Cài đặt nội dung cho phép bạn chỉ định cách xử lý những loại nội dung cụ thể (ví dụ: Cookie, Hình ảnh hoặc JavaScript).</translation>
 <translation id="2411919772666155530">Chặn thông báo trên các trang web này</translation>
-<translation id="5281259077246025371">Cho phép thu âm thanh.
-
-      Khi chính sách này được đặt thành sai, tính năng thu âm thanh không khả dụng trên thiết bị khi người dùng đã đăng nhập.
-
-      Chính sách này ảnh hưởng đến tất cả các loại đầu vào âm thanh chứ không chỉ đến micrrô tích hợp sẵn.
-
-      Nếu cài đặt này được đặt thành đúng hoặc không được định cấu hình thì người dùng có thể sử dụng tất cả các loại đầu vào âm thanh được hỗ trợ trên thiết bị của họ.</translation>
 <translation id="6923366716660828830">Chỉ định tên của nhà cung cấp dịch vụ tìm kiếm mặc định. Nếu để trống hoặc không đặt, tên máy chủ lưu trữ do URL tìm kiếm chỉ định sẽ được sử dụng.
 
           Chính sách này chỉ được xem xét nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="467236746355332046">Các tính năng được hỗ trợ:</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="3038323923255997294">Tiếp tục chạy các ứng dụng dưới nền khi <ph name="PRODUCT_NAME"/> bị đóng</translation>
+<translation id="8909280293285028130">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị khóa khi chạy trên nguồn AC.
+
+          Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> khóa màn hình.
+
+          Khi chính sách này được đặt thành không, <ph name="PRODUCT_OS_NAME"/> không khóa màn hình khi người dùng ở chế độ không sử dụng.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Cách khóa màn hình khi ở chế độ không sử dụng được khuyến nghị là cho phép khóa màn hình khi tạm ngừng và đặt <ph name="PRODUCT_OS_NAME"/> tạm ngừng sau độ trễ khi không sử dụng. Chỉ nên sử dụng chính sách này khi khóa màn hình xảy ra sớm hơn thời gian tạm ngừng đáng kể hoặc khi tạm ngừng ở chế độ không sử dụng hoàn toàn không được mong muốn.
+
+          Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
 <translation id="7651739109954974365">Xác định liệu chuyển vùng dữ liệu có được bật cho thiết bị hay không. Nếu được đặt thành đúng, chuyển vùng dữ liệu sẽ được phép. Nếu không được định cấu hình hoặc được đặt thành sai, chuyển vùng dữ liệu sẽ không khả dụng.</translation>
 <translation id="6244210204546589761">Các URL được mở khi khởi động</translation>
 <translation id="7468416082528382842">Vị trí sổ đăng ký Windows:</translation>
@@ -662,6 +725,7 @@
           Chính sách này là tùy chọn. Nếu không thiết lập, mặc định được sử dụng sẽ là UTF-8.
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="1964634611280150550">Đã tắt chế độ ẩn danh</translation>
 <translation id="1454846751303307294">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultJavaScriptSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -712,6 +776,7 @@
           Nếu không thiết lập chính sách này, mọi máy chủ sẽ được chấp nhận để xác thực tích hợp.</translation>
 <translation id="7712109699186360774">Hỏi mỗi lần trang web muốn truy cập vào máy ảnh và/hoặc micrô</translation>
 <translation id="350797926066071931">Bật tính năng Dịch</translation>
+<translation id="3711895659073496551">Tạm ngừng</translation>
 <translation id="4010738624545340900">Cho phép kích hoạt các hộp thoại chọn tệp</translation>
 <translation id="4518251772179446575">Hỏi bất cứ khi nào trang web muốn theo dõi vị trí thực của người dùng.</translation>
 <translation id="402759845255257575">Không cho phép bất kỳ trang web nào chạy JavaScript</translation>
@@ -728,8 +793,16 @@
       Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt trong  <ph name="PRODUCT_NAME"/>.
 
       Nếu không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
+<translation id="7546291275204811722">Chỉ định hành động sẽ thực hiện khi đạt tới độ trễ khi không sử dụng.
+
+          Khi được đặt, chính sách này chỉ định hành động mà <ph name="PRODUCT_OS_NAME"/> sẽ thực hiện khi người dùng duy trì chế độ không sử dụng trong khoảng thời gian mà độ trễ khi không sử dụng cung cấp, độ trễ khi không sử dụng này có thể được định cấu hình riêng biệt.
+
+          Khi chính sách này không được đặt, hành động mặc định tạm ngừng sẽ được thực hiện.
+
+          Nếu hành động là tạm ngừng, <ph name="PRODUCT_OS_NAME"/> có thể được định cấu hình riêng biệt thành khóa hoặc không khóa màn hình trước khi tạm ngừng.</translation>
 <translation id="5475361623548884387">Bật tính năng in</translation>
 <translation id="3653237928288822292">Biểu tượng nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="2872961005593481000">Tắt</translation>
 <translation id="4445684791305970001">Tắt các Công cụ dành cho nhà phát triển và bảng điều khiển JavaScript.
 
       Nếu bạn bật cài đặt này, sẽ không thể truy cập các Công cụ dành cho nhà phát triển cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi trình đơn hoặc các mục nhập trình đơn ngữ cảnh để mở các Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript sẽ bị tắt.
@@ -802,7 +875,6 @@
       Truy cập http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được thiết lập, thư mục bộ nhớ cache mặc định sẽ được sử dụng và người dùng sẽ có thể ghi đè thư mục đó với cờ dòng lệnh '--disk-cache-dir'.</translation>
-<translation id="7202926611616207807">Cho phép tất cả các trang web đặt dữ liệu cục bộ.</translation>
 <translation id="3034580675120919256">Cho phép bạn đặt liệu các trang web có được phép chạy JavaScript hay không. Bạn có thể cho phép hoặc từ chối chạy JavaScript đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'AllowJavaScript' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -820,15 +892,6 @@
 <translation id="5868414965372171132">Cấu hình mạng ở mức người dùng</translation>
 <translation id="4480694116501920047">Buộc Tìm kiếm an toàn</translation>
 <translation id="1221359380862872747">Tải các url đã chỉ định khi đăng nhập ở chế độ trình diễn</translation>
-<translation id="5493552890659553833">Cho phép đề xuất tìm kiếm trong Thanh địa chỉ của  <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này.
-
-      Nếu bạn bật cài đặt này, đề xuất tìm kiếm sẽ được sử dụng.
-
-      Nếu bạn tắt cài đặt này, đề xuất tìm kiếm sẽ không bao giờ được sử dụng.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này trong  <ph name="PRODUCT_NAME"/>.
-
-      Nếu không thiết lập chính sách này, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="2431811512983100641">Chỉ định liệu tiện ích mở rộng chứng chỉ giới hạn tên miền TLS có được bật hay không.
 
       Cài đặt này được sử dụng nhằm bật tiện ích mở rộng chứng chỉ giới hạn tên miền TLS để thử nghiệm.  Cài đặt thử nghiệm này sẽ bị xóa trong tương lai.</translation>
@@ -839,8 +902,14 @@
           Chính sách này chỉ được xem xét nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="5774856474228476867">URL tìm kiếm nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4650759511838826572">Tắt lược đồ giao thức URL</translation>
+<translation id="8099880303030573137">Độ trễ khi không sử dụng khi chạy trên nguồn pin</translation>
 <translation id="602728333950205286">URL instant của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="3030000825273123558">Bật báo cáo số liệu</translation>
+<translation id="9142321226029580122">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không.
+
+          Nếu chính sách này được đặt là Đúng hoặc không được đặt, người dùng không được coi là không sử dụng trong khi đang phát video. Điều này ngăn đạt tới độ trễ khi không sử dụng, độ trễ mờ màn hình, độ trễ tắt màn hình và độ trễ khóa màn hình và thực hiện các hành động tương ứng.
+
+          Nếu chính sách được đặt thành Sai, hoạt động video sẽ không ngăn người dùng bị coi là không sử dụng.</translation>
 <translation id="6559057113164934677">Không cho phép bất kỳ trang web nào truy cập vào máy ảnh và micrô</translation>
 <translation id="1675002386741412210">Hỗ trợ trên:</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
@@ -868,6 +937,7 @@
       Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này.
 
       Nếu không đặt cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
+<translation id="6282799760374509080">Cho phép hoặc từ chối ghi âm</translation>
 <translation id="3264793472749429012">Mã hóa của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="8101760444435022591">Cân nhắc sự thật rằng các kiểm tra lỗi phần mềm, thu hồi trực tuyến không cung cấp lợi ích bảo mật thực sự nào, chúng bị tắt theo mặc định trong <ph name="PRODUCT_NAME"/> phiên bản 19 và cao hơn. Bằng cách đặt chính sách này thành đúng, hoạt động trước đó được khôi phục và các kiểm tra OCSP/CRL trực tuyến sẽ được thực hiện.
 
@@ -903,6 +973,8 @@
 
           Chính sách này chỉ có hiệu lực nếu chính sách 'RestoreOnStartup' được đặt thành 'RestoreOnStartupIsURLs'.</translation>
 <translation id="649418342108050703">Tắt hỗ trợ dành cho API đồ họa 3D. Bật cài đặt này sẽ ngăn các trang web truy cập bộ xử lý đồ họa (GPU). Cụ thể, các trang web không thể truy cập API WebGL và các trình cắm không thể sử dụng API Pepper 3D. Tắt hoặc không thiết lập cài đặt này có thể cho phép các trang web sử dụng API WebGL và các trình cắm sử dụng API Pepper 3D. Cài đặt mặc định của trình duyệt có thể vẫn yêu cầu phải thông qua đối số dòng lệnh để sử dụng các API này.</translation>
+<translation id="2077273864382355561">Độ trễ tắt màn hình khi chạy trên nguồn pin</translation>
+<translation id="909184783177222836">Quản lý nguồn</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME"/> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
       Nếu chính sách này được đặt thành sai, <ph name="PRODUCT_OS_NAME"/> sẽ không cho phép bắt đầu phiên khách.</translation>
@@ -914,6 +986,7 @@
 <translation id="237494535617297575">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
+<translation id="7258823566580374486">Bật tính năng ẩn của máy chủ truy cập từ xa</translation>
 <translation id="944817693306670849">Đặt kích thước bộ nhớ cache của đĩa</translation>
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="2371309782685318247">Chỉ định khoảng thời gian tính bằng mili giây mà trong khoảng đó dịch vụ quản lý thiết bị sẽ được truy vấn về thông tin chính sách người dùng.
@@ -938,6 +1011,15 @@
 <translation id="7227967227357489766">Xác định danh sách những người dùng được phép đăng nhập vào thiết bị. Các mục nhập sẽ có dạng <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, chẳng hạn như <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Để cho phép bất kỳ người dùng nào trên miền, hãy sử dụng các mục nhập có dạng <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Nếu chính sách này không được định cấu hình, sẽ không có hạn chế về người dùng được phép đăng nhập. Lưu ý rằng việc tạo người dùng mới sẽ vẫn yêu cầu chính sách <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> phải được định cấu hình chính xác.</translation>
+<translation id="8135937294926049787">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị tắt khi chạy trên nguồn AC.
+
+          Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> tắt màn hình.
+
+          Khi chính sách này được đặt thành không, <ph name="PRODUCT_OS_NAME"/> không tắt màn hình khi người dùng ở chế độ không sử dụng.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích mở rộng, ứng dụng và tập lệnh người dùng</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME"/></translation>
@@ -976,7 +1058,6 @@
 
       Nếu chính sách này không được thiết lập, đường dẫn tiểu sử mặc định sẽ được sử dụng và người dùng sẽ có thể ghi đè đường dẫn đó với cờ dòng lệnh '--user-data-dir'.</translation>
 <translation id="5067143124345820993">Danh sách trắng những người dùng được phép đăng nhập</translation>
-<translation id="3612784419634427880">Chế độ ẩn danh khả dụng.</translation>
 <translation id="2514328368635166290">Chỉ định URL biểu tượng yêu thích của nhà cung cấp dịch vụ tìm kiếm mặc định.
 
           Chính sách này là tùy chọn. Nếu không thiết lập chính sách này, sẽ không có biểu tượng nào được hiển thị cho nhà cung cấp dịch vụ tìm kiếm.
@@ -994,10 +1075,27 @@
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="8499172469244085141">Cài đặt mặc định (người dùng có thể ghi đè)</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
+<translation id="3072847235228302527">Đặt Điều khoản dịch vụ cho một tài khoản cục bộ trên thiết bị</translation>
 <translation id="3866530186104388232">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME"/> sẽ hiển thị những người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng. Nếu chính sách này được đặt thành sai, <ph name="PRODUCT_OS_NAME"/> sẽ sử dụng lời nhắc nhập tên người dùng/mật khẩu để đăng nhập.</translation>
 <translation id="2098658257603918882">Bật tính năng báo cáo sử dụng và dữ liệu liên quan đến sự cố</translation>
+<translation id="172374442286684480">Cho phép tất cả trang web đặt dữ liệu cục bộ</translation>
+<translation id="6922569848241326941">Cho phép hoặc từ chối quay video.
+
+      Khi chính sách này bị tắt, thiết bị quay video sẽ không khả dụng. Nếu được bật, quay video sẽ luôn được phép.
+      Nếu chính sách không được định cấu hình (mặc định), người dùng sẽ được nhắc về truy cập thiết bị video.
+
+      Chính sách này ảnh hưởng đến tất cả loại đầu vào video mà không chỉ máy ảnh cài sẵn.</translation>
 <translation id="1151353063931113432">Cho phép hình ảnh trên các trang web này</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
+<translation id="2976002782221275500">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn pin.
+
+          Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> làm mờ màn hình.
+
+          Khi chính sách này được đặt thành không, <ph name="PRODUCT_OS_NAME"/> không làm mờ màn hình khi người dùng ở chế độ không sử dụng.
+
+         Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ tắt màn hình (nếu được đặt) và độ trễ khi không sử dụng.</translation>
 <translation id="8631434304112909927">cho đến phiên bản <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
 <translation id="4906194810004762807">Chính sách tốc độ làm mới cho thiết bị</translation>
@@ -1013,6 +1111,7 @@
 
           Nếu cài đặt này bị tắt và kết nối UDP đi bị lọc bởi tường lửa, máy này chỉ có thể kết nối với máy chủ trong mạng cục bộ.</translation>
 <translation id="5511702823008968136">Bật Thanh dấu trang</translation>
+<translation id="5105313908130842249">Độ trễ khóa màn hình khi chạy trên nguồn pin</translation>
 <translation id="7882585827992171421">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định id của tiện ích mở rộng được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích mở rộng phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
@@ -1029,13 +1128,18 @@
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="3973371701361892765">Không bao giờ tự động ẩn giá</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME"/> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
-<translation id="1681852583119028071">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định.</translation>
+<translation id="2948087343485265211">Chỉ định xem hoạt động âm thanh có ảnh hưởng đến việc quản lý nguồn không.
+
+          Nếu chính sách này được đặt là Đúng hoặc không được đặt, người dùng không được coi là không sử dụng trong khi đang phát âm thanh. Điều này ngăn đạt tới thời gian chờ không hoạt động và thực hiện hành động không sử dụng. Tuy nhiên, việc làm mờ màn hình, tắt màn hình và khóa màn hình sẽ được thực hiện sau thời gian chờ được định cấu hình, bất kể hoạt động âm thanh.
+
+          Nếu chính sách này được đặt là Sai, hoạt động âm thanh sẽ không ngăn người dùng bị coi là không sử dụng.</translation>
 <translation id="7842869978353666042">Định cấu hình tùy chọn Google Drive</translation>
 <translation id="718956142899066210">Các loại kết nối được cho phép để cập nhật</translation>
 <translation id="6985168562472482191">Tên của cửa hàng trực tuyến dành cho doanh nghiệp sẽ xuất hiện bên dưới biểu tượng ứng dụng trên trang tab mới. Cài đặt này không có hiệu lực nếu không đặt EnterpriseWebStoreURL.
 
       Nếu tắt cài đặt này, ứng dụng cửa hành trực tuyến dành cho doanh nghiệp (nếu tồn tại) sẽ được gắn nhãn bằng URL của cửa hàng đó.</translation>
 <translation id="1734716591049455502">Định cấu hình tùy chọn truy cập từ xa</translation>
+<translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
 <translation id="8777120694819070607">Cho phép <ph name="PRODUCT_NAME"/> chạy các trình cắm lỗi thời. Nếu bạn bật cài đặt này, các trình cắm lỗi thời sẽ được sử dụng như những trình cắm bình thường. Nếu bạn tắt cài đặt này, các trình cắm lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp phép chạy các trình cắm đó. Nếu bạn không đặt cài đặt này, người dùng sẽ được yêu cầu cấp phép để chạy các trình cắm lỗi thời.</translation>
 <translation id="2629448496147630947">Định cấu hình tùy chọn truy cập từ xa trong <ph name="PRODUCT_NAME"/>.
 
@@ -1049,6 +1153,7 @@
          Để biết thêm ví dụ cụ thể, truy cập:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">URL cửa hàng trực tuyến dành cho doanh nghiệp</translation>
+<translation id="3219421230122020860">Chế độ ẩn danh khả dụng</translation>
 <translation id="7690740696284155549">Định cấu hình thư mục mà <ph name="PRODUCT_NAME"/> sẽ sử dụng để tải xuống tệp.
 
       Nếu bạn thiết lập chính sách này, <ph name="PRODUCT_NAME"/> sẽ sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định một thư mục hay đã bật cờ để được nhắc vị trí cho mỗi lần tải xuống.
@@ -1100,15 +1205,23 @@
 
           Không thiết lập chính sách này sẽ cho phép người dùng tự chọn cài đặt proxy.</translation>
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
-<translation id="2302939792212564737">Cho phép quay video.
+<translation id="1749815929501097806">Đặt Điều khoản dịch vụ mà người dùng phải chấp nhận trước khi bắt đầu phiên tài khoản cục bộ trên thiết bị.
 
-      Khi chính sách này bị đặt thành sai, quay video sẽ không khả dụng trên thiết bị trong khi người dùng đăng nhập.
+      Nếu chính sách này được đặt, <ph name="PRODUCT_OS_NAME"/> sẽ tải xuống Điều khoản dịch vụ và giới thiệu chúng với người dùng bất cứ khi nào phiên tài khoản cục bộ trên thiết bị bắt đầu. Người dùng chỉ được phép tham gia phiên sau khi chấp nhận Điều khoản dịch vụ.
 
-      Chính sách này ảnh hưởng đến tất cả các loại đầu vào video chứ không chỉ máy ảnh tính hợp.
+      Nếu không đặt chính sách này, không Điều khoản dịch vụ nào được hiển thị.
 
-      Nếu cài đặt này được đặt thành đúng hoặc không được định cấu hình thì người dùng có thể sử dụng tất cả đầu vào video được hỗ trợ trên thiết bị của mình.</translation>
+      Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME"/> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
+<translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
+<translation id="5781806558783210276">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó hành động không sử dụng được thực hiện khi chạy trên nguồn pin.
+
+          Khi được đặt, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> thực hiện hành động không sử dụng mà có thể được định cấu hình riêng biệt.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Phải chỉ định giá trị chính sách bằng mili giây.</translation>
 <translation id="5512418063782665071">URL trang chủ</translation>
 <translation id="2948381198510798695"><ph name="PRODUCT_NAME"/> sẽ bỏ qua mọi proxy cho danh sách các máy chủ lưu trữ được cung cấp ở đây.
 
@@ -1127,6 +1240,15 @@
           Nếu cài đặt này được bật thì người dùng phải cung cấp mã xác thực hai bước hợp lệ khi truy cập vào máy chủ.
 
           Nếu cài đặt này bị tắt hoặc không được đặt thì tính năng xác thực hai bước sẽ không được bật và hành vi mặc định là có mã PIN do người dùng xác định sẽ được sử dụng.</translation>
+<translation id="7329842439428490522">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị tắt khi chạy trên nguồn pin.
+
+          Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> tắt màn hình.
+
+          Khi chính sách này được đặt thành không, <ph name="PRODUCT_OS_NAME"/> không tắt màn hình khi người dùng ở chế độ không sử dụng.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ khi không sử dụng.</translation>
 <translation id="384743459174066962">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web không được phép mở cửa sổ bật lên.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả trang web.</translation>
@@ -1134,9 +1256,28 @@
 <translation id="4043912146394966243"> Các loại kết nối được phép để sử dụng cho cập nhật OS. Các cập nhật OS có khả năng gây quá tải cho kết nối do kích thước của chúng và có thể phải chịu thêm phí. Do đó, theo mặc định chúng không được bật cho các loại kết nối hiện được xem là đắt đỏ, gồm có WiMax, Bluetooth và kết nối di động.
 
       Các mã định danh loại kết nối được nhận dạng là &quot;ethernet&quot;, &quot;wifi&quot;, &quot;wimax&quot;, &quot;bluetooth&quot; và &quot;cellular&quot;.</translation>
+<translation id="3243309373265599239">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị mờ đi khi chạy trên nguồn AC.
+
+          Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME"/> làm mờ màn hình.
+
+          Khi chính sách này được đặt thành không, <ph name="PRODUCT_OS_NAME"/> không làm mờ màn hình khi người dùng ở chế độ không sử dụng.
+
+          Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
+
+          Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ tắt màn hình (nếu được đặt) và độ trễ khi không sử dụng.</translation>
 <translation id="7049373494483449255">Cho phép <ph name="PRODUCT_NAME"/> gửi tài liệu tới <ph name="CLOUD_PRINT_NAME"/> để in. LƯU Ý: Điều này chỉ ảnh hưởng đến hỗ trợ <ph name="CLOUD_PRINT_NAME"/> trong <ph name="PRODUCT_NAME"/> chứ không ngăn người dùng gửi lệnh in trên các trang web.
 
       Nếu bật hoặc không định cấu hình cài đặt này, người dùng có thể in sang <ph name="CLOUD_PRINT_NAME"/> từ hộp thoại in của <ph name="PRODUCT_NAME"/>.
 
       Nếu tắt cài đặt này, người dùng không thể in sang <ph name="CLOUD_PRINT_NAME"/> từ hộp thoại in của <ph name="PRODUCT_NAME"/></translation>
+<translation id="4088589230932595924">Bắt buộc chế độ ẩn danh</translation>
+<translation id="7649638372654023172">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi nó.
+
+          Trang chủ là trang được mở bằng nút Trang chủ. Trang mở khi khởi động được chính sách RestoreOnStartup kiểm soát.
+
+          Có thể đặt loại trang chủ thành URL bạn chỉ định tại đây hoặc thành Trang tab mới. Nếu bạn chọn Trang tab mới, thì chính sách này không có hiệu lực.
+
+          Nếu bạn bật cài đặt này, người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME"/>, nhưng họ vẫn có thể chọn Trang tab mới làm trang chủ của mình.
+
+          Không đặt chính sách này sẽ cho phép người dùng chọn trang chủ của riêng mình nếu HomepageIsNewTabPage cũng không được đặt.</translation>
 </translationbundle>

@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Bandeja de status</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: conectando...</translation>
 <translation id="2946640296642327832">Ativar bluetooth</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Celular</translation>
@@ -29,6 +30,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="153454903766751181">Inicializando modem celular...</translation>
 <translation id="7864539943188674973">Desativar bluetooth</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
+<translation id="735745346212279324">VPN desconectada</translation>
 <translation id="6303423059719347535">A bateria está <ph name="PERCENTAGE"/>% cheia</translation>
 <translation id="3294437725009624529">Visitante</translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
@@ -41,6 +43,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="7823564328645135659">O idioma foi alterado de &quot;<ph name="FROM_LOCALE"/>&quot; para &quot;<ph name="TO_LOCALE"/>&quot; após a sincronização de suas configurações.</translation>
 <translation id="8340999562596018839">Feedback falado</translation>
+<translation id="8654520615680304441">Ativar Wi-Fi...</translation>
 <translation id="5825747213122829519">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID"/>.
 Pressione Shift + Alt para alternar.</translation>
 <translation id="2562916301614567480">Rede privada</translation>
@@ -57,8 +60,9 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1895658205118569222">Encerramento</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="6356500677799115505">A bateria está cheia e carregando.</translation>
-<translation id="551263474266254304">Ativar o Wi-Fi...</translation>
+<translation id="7874779702599364982">Procurando redes de celular...</translation>
 <translation id="1383876407941801731">Pesquisa</translation>
+<translation id="3901991538546252627">Conectando-se a <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Informações de rede</translation>
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Sair da sessão de visitante</translation>
@@ -69,6 +73,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="2472320577759310817">O Bluetooth está desligado.</translation>
 <translation id="2372145515558759244">Sincronizando aplicativos...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: desconectando...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> para carga completa</translation>
 <translation id="5787281376604286451">O feedback falado está ativado.
 Pressione Ctrl+Alt+Z para desativá-lo.</translation>
@@ -77,6 +82,7 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maximizar</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: conectando...</translation>
 <translation id="252373100621549798">Exibição desconhecida</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Bloquear</translation>
@@ -84,11 +90,10 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> é uma conta compartilhada gerenciada por <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: conectando...</translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Definir papel de parede...</translation>
 <translation id="2739500853984626550">Não há dispositivos Bluetooth disponíveis</translation>
+<translation id="2666092431469916601">Parte superior</translation>
 <translation id="3019353588588144572">O tempo restante até que a bateria esteja totalmente carregada é de <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
@@ -98,6 +103,7 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="225680501294068881">Procurando dispositivos...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Procurando redes Wi-Fi...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> é uma sessão pública gerenciada por <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
@@ -119,6 +125,7 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="7209101170223508707">A tecla CAPS LOCK está ativada. Pressione Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> restantes</translation>
+<translation id="8000066093800657092">Sem rede</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="6843725295806269523">sem som</translation>

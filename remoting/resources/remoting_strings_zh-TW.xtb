@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
+<translation id="8244400547700556338">瞭解詳情</translation>
 <translation id="332624996707057614">編輯電腦名稱</translation>
 <translation id="1996161829609978754">Chrome 正在下載 Chromoting 主機安裝程式。下載完成後，請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">您尚未登入 Chromoting。請登入並再試一次。</translation>
 <translation id="7401733114166276557">Chrome 遠端桌面</translation>
 <translation id="3362124771485993931">重新輸入 PIN</translation>
-<translation id="4686372254213217147">原始大小</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="8172070902751707422">驗證失敗。請重新登入 Chrome 遠端桌面。</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">如要使用 Chrome 遠端桌面，您必須將電腦的延伸存取權限授予該應用程式，這個步驟只需執行一次。</translation>
 <translation id="9032136467203159543">找不到 Chromoting 所需的部分元件。請確認您已安裝最新版本，然後再試一次。</translation>
 <translation id="1342297293546459414">瀏覽及操作共用的電腦。</translation>
+<translation id="1520828917794284345">將桌面調整為合適大小</translation>
 <translation id="701976023053394610">遠端協助</translation>
 <translation id="6193698048504518729">連線至 <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">無法更新 PIN，請稍後再試。</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">允許我們收集使用統計資料和當機報告，協助我們改善 Chromoting。</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="7649070708921625228">說明</translation>
+<translation id="4517233780764084060">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chromoting 設定為 [在視窗中開啟]。</translation>
 <translation id="4176825807642096119">存取碼</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="4703799847237267011">您的 Chromoting 工作階段已結束。</translation>

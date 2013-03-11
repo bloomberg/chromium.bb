@@ -16,6 +16,7 @@
 <translation id="938582441709398163">키보드 오버레이</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="2297568595583585744">상태 표시줄</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: 연결하는 중...</translation>
 <translation id="2946640296642327832">블루투스 사용</translation>
 <translation id="6459472438155181876">화면을 <ph name="DISPLAY_NAME"/>(으)로 확장</translation>
 <translation id="8206859287963243715">휴대전화</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">휴대전화 모뎀 초기화하는 중...</translation>
 <translation id="7864539943188674973">블루투스 사용 안 함</translation>
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
+<translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="6303423059719347535">배터리가 <ph name="PERCENTAGE"/>% 충전됨</translation>
 <translation id="3294437725009624529">손님</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE"/>'에서 '<ph name="TO_LOCALE"/>'(으)로 변경되었습니다.</translation>
 <translation id="8340999562596018839">음성 피드백</translation>
+<translation id="8654520615680304441">Wi-Fi 사용...</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="2562916301614567480">사설 네트워크</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">종료</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="6356500677799115505">배터리 충전이 완료되었으며 충전 중입니다.</translation>
-<translation id="551263474266254304">Wi-Fi 사용…</translation>
+<translation id="7874779702599364982">휴대전화 네트워크를 검색하는 중...</translation>
 <translation id="1383876407941801731">검색</translation>
+<translation id="3901991538546252627"><ph name="NAME"/>에 연결 중</translation>
 <translation id="2204305834655267233">네트워크 정보</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT"/>입니다.</translation>
 <translation id="5980301590375426705">손님 세션 종료</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="2472320577759310817">블루투스가 꺼져 있습니다.</translation>
 <translation id="2372145515558759244">앱 동기화...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: 연결을 끊는 중...</translation>
 <translation id="8456362689280298700">충전 완료까지 <ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
 <translation id="5787281376604286451">음성 피드백을 사용할 수 있습니다.
 사용중지하려면 Ctrl+Alt+Z를 누르세요.</translation>
@@ -77,6 +82,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">최대화</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: 연결하는 중...</translation>
 <translation id="252373100621549798">알 수 없는 디스플레이</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>에 미러링</translation>
 <translation id="3784455785234192852">잠금</translation>
@@ -84,11 +90,10 @@
 <translation id="2482878487686419369">알림</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
 <translation id="2872961005593481000">종료</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/>은(는) <ph name="DOMAIN"/>에서 관리하는 공유 계정입니다.</translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: 연결 중...</translation>
 <translation id="8132793192354020517"><ph name="NAME"/>에 연결됨</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
 <translation id="2739500853984626550">사용 가능한 블루투스 기기가 없습니다.</translation>
+<translation id="2666092431469916601">맨 위</translation>
 <translation id="3019353588588144572">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING"/>입니다.</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
@@ -98,6 +103,7 @@
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> <ph name="SHORT_WEEKDAY"/></translation>
 <translation id="4448844063988177157">Wi-Fi 네트워크를 검색하는 중...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/>은(는) <ph name="DOMAIN"/>에서 관리하는 공개 세션입니다.</translation>
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
@@ -121,6 +127,7 @@
 취소하려면 Alt+검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="8061464966246066292">고대비</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
+<translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="5941711191222866238">최소화</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6843725295806269523">음소거</translation>

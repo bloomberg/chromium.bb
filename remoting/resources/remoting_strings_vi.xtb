@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Bạn có thể truy cập an toàn vào máy tính này bằng Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Vui lòng nhập mã PIN của bạn cho <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Kết nối từ xa cho máy tính này đã bị tắt.</translation>
+<translation id="8244400547700556338">Tìm hiểu cách thức.</translation>
 <translation id="332624996707057614">Chỉnh sửa tên máy tính</translation>
 <translation id="1996161829609978754">Chrome đang tải xuống trình cài đặt máy chủ Kết nối từ xa trên Chrome. Sau khi quá trình tải xuống hoàn tất, vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
 <translation id="7658239707568436148">Hủy</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Bạn chưa đăng nhập Kết nối từ xa trên Chrome. Vui lòng đăng nhập và thử lại.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Nhập lại mã PIN</translation>
-<translation id="4686372254213217147">Kích thước ban đầu</translation>
 <translation id="154040539590487450">Không thể bắt đầu dịch vụ truy cập từ xa.</translation>
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
 <translation id="8172070902751707422">Xác thực không thành công. Vui lòng đăng nhập lại Chrome Remote Desktop.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Để sử dụng Chrome Remote Desktop, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
 <translation id="9032136467203159543">Thiếu một số thành phần cần thiết cho Kết nối từ xa trên Chrome. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất và thử lại.</translation>
 <translation id="1342297293546459414">Xem và kiểm soát máy tính dùng chung.</translation>
+<translation id="1520828917794284345">Thay đổi kích thước màn hình cho vừa</translation>
 <translation id="701976023053394610">Hỗ trợ từ xa</translation>
 <translation id="6193698048504518729">Kết nối với <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Không thể cập nhật mã PIN. Vui lòng thử lại sau.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Giúp chúng tôi cải thiện Kết nối từ xa trên Chrome bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
+<translation id="4517233780764084060">LƯU Ý: Để đảm bảo rằng tất cả phím tắt đều khả dụng, bạn có thể định cấu hình Kết nối từ xa trên Chrome để ‘Mở dưới dạng cửa sổ’.</translation>
 <translation id="4176825807642096119">Mã truy cập</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="4703799847237267011">Phiên Kết nối từ xa trên Chrome của bạn đã kết thúc.</translation>

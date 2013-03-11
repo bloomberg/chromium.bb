@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="4808503597364150972">请输入您用于“<ph name="HOSTNAME"/>”的 PIN。</translation>
 <translation id="7672203038394118626">此计算机的远程连接已停用。</translation>
+<translation id="8244400547700556338">了解详情。</translation>
 <translation id="332624996707057614">修改计算机名称</translation>
 <translation id="1996161829609978754">Chrome 正在下载 Chrome 远程访问主机安装程序。下载完成后，请先运行该安装程序，再继续操作。</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">您目前并未登录到 Chrome 远程访问。请登录，然后重试。</translation>
 <translation id="7401733114166276557">Chrome 远程桌面</translation>
 <translation id="3362124771485993931">重新输入 PIN</translation>
-<translation id="4686372254213217147">原始大小</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="8172070902751707422">身份验证失败。请重新登录 Chrome 远程桌面。</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">要使用 Chrome 远程桌面，您必须向您的计算机授予更多访问权限。此操作只需执行一次。</translation>
 <translation id="9032136467203159543">缺少 Chrome 远程访问所需的某些组件。请确保您已安装最新版本，然后重试。</translation>
 <translation id="1342297293546459414">查看和控制共享的计算机。</translation>
+<translation id="1520828917794284345">将桌面调整为合适大小</translation>
 <translation id="701976023053394610">远程协助</translation>
 <translation id="6193698048504518729">连接到“<ph name="HOSTNAME"/>”</translation>
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="7649070708921625228">帮助</translation>
+<translation id="4517233780764084060">注意：为确保所有键盘快捷键都可使用，您可以将 Chrome 远程访问配置为“在窗口中打开”。</translation>
 <translation id="4176825807642096119">访问代码</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="4703799847237267011">您的 Chrome 远程访问会话已结束。</translation>

@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Biztonságosan hozzáférhet a számítógéphez a Chrome távoliasztal-szolgáltatás segítségével.</translation>
 <translation id="4808503597364150972">Kérjük, adja meg a(z) <ph name="HOSTNAME"/> PIN kódját.</translation>
 <translation id="7672203038394118626">A távoli kapcsolatok le vannak tiltva ezen a számítógépen.</translation>
+<translation id="8244400547700556338">Tudja meg, hogyan.</translation>
 <translation id="332624996707057614">Számítógép nevének módosítása</translation>
 <translation id="1996161829609978754">A Chrome letölti a Chromoting gazdagépekhez való telepítőjét. Miután a letöltés befejeződött, futtassa a telepítőt a folytatás előtt.</translation>
 <translation id="7658239707568436148">Mégse</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Nincs bejelentkezve a Chromoting alkalmazásba. Jelentkezzen be, és próbálkozzon újra.</translation>
 <translation id="7401733114166276557">Chrome távoliasztal-szolgáltatás</translation>
 <translation id="3362124771485993931">Írja be újra a PIN kódot</translation>
-<translation id="4686372254213217147">Eredeti méret</translation>
 <translation id="154040539590487450">Nem sikerült elindítani a távoli hozzáférési szolgáltatást.</translation>
 <translation id="7948001860594368197">Képernyő-beállítások</translation>
 <translation id="8172070902751707422">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chrome távoliasztal-szolgáltatásba.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">A Chrome távoliasztal-szolgáltatás használatához kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépéhez. Ezt csak egyszer kell elvégezni.</translation>
 <translation id="9032136467203159543">A Chromoting egyes szükséges összetevői hiányoznak. Kérjük, ellenőrizze, hogy telepítve van-e a legfrissebb verzió, majd próbálja újra.</translation>
 <translation id="1342297293546459414">Megosztott számítógép megtekintése és irányítása.</translation>
+<translation id="1520828917794284345">Az asztal átméretezése, hogy illeszkedjen</translation>
 <translation id="701976023053394610">Távsegítség</translation>
 <translation id="6193698048504518729">Csatlakozás a következőhöz: <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Nem sikerült módosítani a PIN kódot. Kérjük, próbálja újra később.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Segítsen fejleszteni a Chromoting alkalmazást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikát és a hibajelentéseket.</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="7649070708921625228">Súgó</translation>
+<translation id="4517233780764084060">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chromotingot a „Megnyitás új ablakban” lehetőséggel.</translation>
 <translation id="4176825807642096119">Elérési kód</translation>
 <translation id="7144878232160441200">Újra</translation>
 <translation id="4703799847237267011">Chromoting munkamenete befejeződött.</translation>

@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Możesz bezpiecznie korzystać z tego komputera przez Pulpit zdalny Chrome.</translation>
 <translation id="4808503597364150972">Wpisz PIN dla: <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Połączenia zdalne z tym komputerem zostały wyłączone.</translation>
+<translation id="8244400547700556338">Dowiedz się jak.</translation>
 <translation id="332624996707057614">Edytuj nazwę komputera</translation>
 <translation id="1996161829609978754">Chrome pobiera instalatora hosta Chromoting. Po zakończeniu pobierania uruchom instalatora.</translation>
 <translation id="7658239707568436148">Anuluj</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Nie jesteś zalogowany do Chromoting. Zaloguj się i spróbuj ponownie.</translation>
 <translation id="7401733114166276557">Pulpit zdalny Chrome</translation>
 <translation id="3362124771485993931">Ponownie wpisz PIN</translation>
-<translation id="4686372254213217147">Rozmiar pierwotny</translation>
 <translation id="154040539590487450">Nie udało się uruchomić usługi dostępu zdalnego.</translation>
 <translation id="7948001860594368197">Opcje ekranu</translation>
 <translation id="8172070902751707422">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Pulpitu zdalnego Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Aby korzystać z Pulpitu zdalnego Chrome, musisz przyznać rozszerzone uprawnienia dostępu do swojego komputera. Trzeba to zrobić tylko raz.</translation>
 <translation id="9032136467203159543">Brak niektórych elementów wymaganych przez Chromoting. Upewnij się, że masz zainstalowaną najnowszą wersję i spróbuj ponownie.</translation>
 <translation id="1342297293546459414">Zobacz i kontroluj udostępniony komputer.</translation>
+<translation id="1520828917794284345">Dopasuj pulpit</translation>
 <translation id="701976023053394610">Pomoc zdalna</translation>
 <translation id="6193698048504518729">Połącz z: <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Nie udało się zaktualizować PIN-u. Spróbuj ponownie później.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Pomóż nam udoskonalić Chromoting, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="7649070708921625228">Pomoc</translation>
+<translation id="4517233780764084060">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Chromoting na „Otwórz jako okno”.</translation>
 <translation id="4176825807642096119">Kod dostępu</translation>
 <translation id="7144878232160441200">Ponów próbę</translation>
 <translation id="4703799847237267011">Sesja Chromoting została zakończona.</translation>

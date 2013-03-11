@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="4808503597364150972">Veuillez saisir le code d'accès pour <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Les connexions à distance ont été désactivées pour cet ordinateur.</translation>
+<translation id="8244400547700556338">En savoir plus</translation>
 <translation id="332624996707057614">Modifier le nom de l'ordinateur</translation>
 <translation id="1996161829609978754">Le programme d'installation de l'hôte de Google Chromoting est en cours de téléchargement dans Google Chrome. Une fois le téléchargement terminé, veuillez lancer le programme d'installation avant de continuer.</translation>
 <translation id="7658239707568436148">Annuler</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Vous n'êtes pas connecté à Google Chromoting. Veuillez vous connecter, puis réessayer.</translation>
 <translation id="7401733114166276557">Bureau à distance Google Chrome</translation>
 <translation id="3362124771485993931">Saisissez à nouveau le code d'accès.</translation>
-<translation id="4686372254213217147">Taille initiale</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="7948001860594368197">Options de l'écran</translation>
 <translation id="8172070902751707422">Échec de l'authentification. Veuillez vous connecter à nouveau au bureau à distance Google Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Pour utiliser le bureau à distance Google Chrome, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="9032136467203159543">Certains composants nécessaires à l'utilisation de Google Chromoting sont introuvables. Veuillez vous assurer que vous utilisez la dernière version, puis réessayer.</translation>
 <translation id="1342297293546459414">Voir et contrôler un ordinateur partagé</translation>
+<translation id="1520828917794284345">Ajuster le bureau à la taille du client</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
 <translation id="6193698048504518729">Se connecter à <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Échec de la mise à jour du code d'accès. Veuillez réessayer ultérieurement.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Aidez-nous à améliorer Google Chromoting en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="7649070708921625228">Aide</translation>
+<translation id="4517233780764084060">REMARQUE : Pour vous assurer que tous les raccourcis clavier sont disponibles, vous pouvez configurer Chromoting en mode &quot;Ouvrir dans une fenêtre&quot;.</translation>
 <translation id="4176825807642096119">Code d'accès</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="4703799847237267011">La session Google Chromoting est terminée.</translation>

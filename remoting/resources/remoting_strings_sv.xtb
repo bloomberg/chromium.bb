@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjärranslutningar har inaktiverats för den här datorn.</translation>
+<translation id="8244400547700556338">Läs mer.</translation>
 <translation id="332624996707057614">Ändra datorns namn</translation>
 <translation id="1996161829609978754">Chrome hämtar installationsprogrammet för fjärranslutningsvärden Chromoting Host. Kör installationsprogrammet när hämtningen är klar.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Du är inte inloggad på Chromoting. Logga in och försök igen.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Ange PIN-koden igen</translation>
-<translation id="4686372254213217147">Originalstorlek</translation>
 <translation id="154040539590487450">Det gick inte att starta fjärråtkomsttjänsten.</translation>
 <translation id="7948001860594368197">Skärmalternativ</translation>
 <translation id="8172070902751707422">Autentiseringen misslyckades. Logga in på Chrome Remote Desktop igen.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Om du vill använda Chrome Remote Desktop måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
 <translation id="9032136467203159543">Vissa komponenter som krävs för Chromoting saknas. Kontrollera att du har installerat den senaste versionen och försök igen.</translation>
 <translation id="1342297293546459414">Visa och styra en delad dator.</translation>
+<translation id="1520828917794284345">Anpassa skrivbordets storlek</translation>
 <translation id="701976023053394610">Fjärrhjälp</translation>
 <translation id="6193698048504518729">Anslut till <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Hjälp oss att förbättra Chromoting genom att tillåta att vi samlar in användningsstatistik och felrapporter.</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="7649070708921625228">Hjälp</translation>
+<translation id="4517233780764084060">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chromoting på att Öppna som fönster.</translation>
 <translation id="4176825807642096119">Åtkomstkod</translation>
 <translation id="7144878232160441200">Försök igen</translation>
 <translation id="4703799847237267011">Chromoting-sessionen har avslutats.</translation>

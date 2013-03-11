@@ -1,42 +1,63 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="4763480195061959176">فيديو</translation>
 <translation id="5843503607508392247">آخر...</translation>
+<translation id="2426432199384958866">إرجاع الفيلم الذي يتم بثه إلى الوقت الفعلي</translation>
 <translation id="248395913932153421">يوم</translation>
 <translation id="6015796118275082299">عام</translation>
 <translation id="9186171386827445984">جارٍ تحميل المستند: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> من الصفحات...</translation>
 <translation id="1235745349614807883">محو آخر عمليات البحث</translation>
+<translation id="7223624360433298498">المدة المنقضية</translation>
 <translation id="1171774979989969504">الرجاء إدخال عنوان البريد الإلكتروني.</translation>
 <translation id="709897737746224366">الرجاء مطابقة التنسيق المطلوب.</translation>
 <translation id="5048533449481078685">محدّد القائمة</translation>
 <translation id="4202807286478387388">الدخول</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
+<translation id="2572483411312390101">تشغيل</translation>
+<translation id="8785498733064193001">بدء التشغيل</translation>
+<translation id="7057186640035488495">وقت الفيلم</translation>
 <translation id="8199524924445686405">سنة</translation>
 <translation id="795667975304826397">ّلم يتمّ اختيار أيّ ملفّ</translation>
+<translation id="1320012872283894746">محاولة الرجوع للوراء بسرعة</translation>
+<translation id="7789962463072032349">إيقاف مؤقت</translation>
+<translation id="6853785296079745596">إخفاء التسميات التوضيحية المغلقة</translation>
 <translation id="1758486001363313524">آخر...</translation>
 <translation id="8141602879876242471">يمكن البحث في هذا الفهرس بإدخال كلمات مفتاحية:</translation>
+<translation id="1930711995431081526">الحالة</translation>
+<translation id="658823671542763450">تشغيل وضع ملء الشاشة</translation>
+<translation id="7720026100085573005">المدة المتبقية</translation>
 <translation id="370665806235115550">تحميل...</translation>
+<translation id="2723001399770238859">الصوت</translation>
 <translation id="6845533974506654842">اضغط</translation>
 <translation id="8244226242650769279">مخطّط صورة</translation>
 <translation id="310520048233152454">الرجاء إدخال عنوان URL.</translation>
+<translation id="9039488204461337220">محاولة الانتقال للأمام بسرعة</translation>
 <translation id="4812940957355064477">الرجاء إدخال عدد.</translation>
 <translation id="2548326553472216322">لا عمليات بحث حديثة</translation>
 <translation id="7263440858009898357">الرجاء تحديد عنصر من القائمة.</translation>
+<translation id="901493112792887934">المدة الحالية بالثواني</translation>
 <translation id="5164977714490026579">يجب أن تكون القيمة أكبر من أو تساوي <ph name="MINIMUM"/>.</translation>
 <translation id="2247351761944213033">الأسبوع <ph name="WEEKNUMBER"/>، <ph name="YEAR"/></translation>
+<translation id="7740016676195725605">إيقاف عرض التسميات التوضيحية المغلقة</translation>
 <translation id="5944544982112848342">2048 (درجة عالية)</translation>
 <translation id="3075154866155599887">يرجى إدخال قيمة صالحة. الحقل غير مكتمل أو أن التاريخ غير صالح.</translation>
 <translation id="3040011195152428237">رابط</translation>
 <translation id="1014825444426747588">فارغ</translation>
+<translation id="3356679314312413792">محاولة إرجاع الفيلم للوراء بمقدار 30 ثانية</translation>
+<translation id="9050748414552849310">عرض التسميات التوضيحية المغلقة</translation>
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="8451268428117625855">الرجاء تحديد ملف.</translation>
 <translation id="8117451130807776954">هذا الأسبوع</translation>
 <translation id="5966707198760109579">الأسبوع</translation>
+<translation id="2901282870647571346">حالة الفيلم الحالية</translation>
 <translation id="2674318244760992338">تذييل</translation>
 <translation id="8987927404178983737">شهر</translation>
+<translation id="8115662671911883373">بدء عرض التسميات التوضيحية المغلقة</translation>
 <translation id="7364796246159120393">اختيار ملفّ</translation>
 <translation id="2761667185364618470">الرجاء تحديد هذا المربع إذا أردت المتابعة.</translation>
 <translation id="8534579021159131403">دقائق</translation>
+<translation id="819205353528511139">تشغيل الفيلم في وضع ملء الشاشة</translation>
 <translation id="8964020114565522021">سحب الملفّ إلى هنا</translation>
 <translation id="4103419683916926126">مللي ثانية</translation>
 <translation id="838869780401515933">الاختيار</translation>
@@ -45,16 +66,22 @@
 <translation id="5476505524087279545">إزالة علامة الاختيار</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2507943997699731163">الرجاء ملء هذا الحقل.</translation>
+<translation id="3785482301506746191">شريط تمرير وقت الفيلم</translation>
 <translation id="739024184232394898">آخر...</translation>
+<translation id="5468998798572797635">إنهاء وضع ملء الشاشة</translation>
 <translation id="5919473608089529604">تعذر تحميل المكوّن الإضافي.</translation>
+<translation id="5546461542133609677">إعادة الصوت</translation>
 <translation id="6663448176199120256">آخر عمليات البحث</translation>
+<translation id="1020833440720551630">كتم صوت المقطع الصوتي</translation>
 <translation id="2597378329261239068">هذا المستند محمي بكلمة المرور.  الرجاء إدخال كلمة مرور.</translation>
 <translation id="5466621249238537318">الرجاء تحديد ملف واحد أو أكثر.</translation>
 <translation id="9132465097189459683">آخر...</translation>
 <translation id="8750798805984357768">الرجاء اختيار أحد هذه الخيارات.</translation>
 <translation id="7740050170769002709">محتوى HTML</translation>
 <translation id="6692633176391053278">تخطي</translation>
+<translation id="8541249477527128034">التحكم في الوسائط</translation>
 <translation id="2226276347425096477">الرجاء اختصار هذا النص حتى يصل إلى <ph name="MAX_CHARACTERS"/> من الحروف أو أقل (أنت الآن تستخدم <ph name="CURRENT_LENGTH"/> من الحروف).</translation>
+<translation id="6101327004457443354">إعادة صوت المقطع الصوتي</translation>
 <translation id="1822429046913737220">صباحًا/مساءً</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="2908441821576996758">الرجاء إدخال قائمة مفصولة بفواصل لعناوين البريد الإلكتروني.</translation>
@@ -64,14 +91,23 @@
 <translation id="1842960171412779397">الاختيار</translation>
 <translation id="7673697353781729403">ساعات</translation>
 <translation id="3450233048674729344">يجب أن تكون القيمة أقل من أو تساوي <ph name="MAXIMUM"/>.</translation>
+<translation id="3471999216963526757">الرجوع للوراء بمقدار 30 ثانية</translation>
 <translation id="668171684555832681">ملف تعريف آخر...</translation>
+<translation id="6270583010843788609">صورة مصغرة للتسلسل الزمني للفيلم</translation>
+<translation id="5641012560118721995">إيقاف التشغيل مؤقتًا</translation>
 <translation id="1591562245178063882">هذا الشهر</translation>
 <translation id="6119846243427417423">تنشيط</translation>
 <translation id="8444882422881193423">عدد الملفات: <ph name="NUMBER_OF_FILES"/></translation>
 <translation id="6643016212128521049">محو</translation>
+<translation id="4851297395436456855">تقديم سريع</translation>
 <translation id="1088086359088493902">ثوانٍ‬‬</translation>
 <translation id="3934680773876859118">إخفاق تحميل مستند PDF</translation>
+<translation id="3632707345189162177">عدد الثواني المتبقية من الفيلم</translation>
+<translation id="6359256949422175976">صورة مصغرة لشريط تمرير وقت الفيلم</translation>
 <translation id="8597182159515967513">العنوان</translation>
+<translation id="6843725295806269523">كتم الصوت</translation>
+<translation id="2615751259741237794">الرجوع إلى الوقت الفعلي</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="3732799496749320381">شهر</translation>
+<translation id="4484359737905287537">الإرجاع السريع</translation>
 </translationbundle>

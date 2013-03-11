@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/> の PIN を入力してください。</translation>
 <translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
+<translation id="8244400547700556338">詳細を見る。</translation>
 <translation id="332624996707057614">パソコン名を編集</translation>
 <translation id="1996161829609978754">Chromoting ホスト インストーラをダウンロードしています。ダウンロードが完了したら、続行する前にインストーラを実行してください。</translation>
 <translation id="7658239707568436148">キャンセル</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Chromoting にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="7401733114166276557">Chrome リモート デスクトップ</translation>
 <translation id="3362124771485993931">PIN を再入力</translation>
-<translation id="4686372254213217147">元のサイズ</translation>
 <translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
 <translation id="7948001860594368197">画面のオプション</translation>
 <translation id="8172070902751707422">認証に失敗しました。Chrome リモート デスクトップにもう一度ログインしてください。</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Chrome リモート デスクトップを使用するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
 <translation id="9032136467203159543">Chromoting に必要なコンポーネントが見つかりません。最新のバージョンがインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="1342297293546459414">共有パソコンの画面を見ながら操作します。</translation>
+<translation id="1520828917794284345">デスクトップを画面に合わせてサイズ変更する</translation>
 <translation id="701976023053394610">リモート サポート</translation>
 <translation id="6193698048504518729"><ph name="HOSTNAME"/> に接続</translation>
 <translation id="3020807351229499221">PIN を更新できませんでした。しばらくしてからもう一度お試しください。</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Chromoting の改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
+<translation id="4517233780764084060">注: すべてのキーボード ショートカットを使用できるようにするには、Chromoting を [ウィンドウとして開く] に設定してください。</translation>
 <translation id="4176825807642096119">アクセス コード</translation>
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>

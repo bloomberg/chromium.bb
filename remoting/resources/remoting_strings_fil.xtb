@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
+<translation id="8244400547700556338">Matutunan kung paano.</translation>
 <translation id="332624996707057614">I-edit ang pangalan ng computer</translation>
 <translation id="1996161829609978754">Dina-download ng Chrome ang installer ng Host ng Chromoting.  Sa sandaling makumpleto ang pag-download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Hindi ka naka-sign in sa Chromoting. Mangyaring mag-sign in at subukang muli.</translation>
 <translation id="7401733114166276557">Remote na Desktop ng Chrome</translation>
 <translation id="3362124771485993931">Muling i-type ang PIN</translation>
-<translation id="4686372254213217147">Orihinal na laki</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="7948001860594368197">Mga pagpipilian sa screen</translation>
 <translation id="8172070902751707422">Nabigo ang pagpapatotoo. Mangyaring mag-sign in sa Remote na Desktop ng Chrome muli.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Upang magamit ang Remote na Desktop ng Chrome, dapat kang magbigay ng mga pagpapahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
 <translation id="9032136467203159543">Nawawala ang ilang bahagi na kinakailangan para sa Remote na Desktop ng Chrome. Mangyaring tiyakin na na-install mo na ang pinakabagong bersyon at subukang muli.</translation>
 <translation id="1342297293546459414">Tumingin at magkontrol ng nakabahaging computer.</translation>
+<translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
 <translation id="701976023053394610">Malayuang Tulong</translation>
 <translation id="6193698048504518729">Kumonekta sa <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Nabigong i-update ang PIN. Pakisubukang muli sa ibang pagkakataon.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Tumulong sa amin na pahusayin ang Chromoting sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="7649070708921625228">Tulong</translation>
+<translation id="4517233780764084060">TANDAAN: Upang matiyak na available ang lahat ng keyboard shortcut, maaari mong i-configure ang Chromoting upang 'Bumukas bilang window.’</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="4703799847237267011">Natapos na ang iyong session ng Chromoting.</translation>

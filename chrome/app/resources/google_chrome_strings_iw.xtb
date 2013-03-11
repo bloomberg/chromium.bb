@@ -6,12 +6,13 @@
 <translation id="8485767968786176057">במקרה זה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן ניסה להגיע. סיבה אפשרית אחת לכך היא שפעולות התקשורת שלך נלכדו על ידי תוקף שמציג אישור עבור אתר שונה, ובעקבות זאת נוצרה אי ההתאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להחזיר אותו אישור עבור אתרים מרובים, לרבות האתר שבו אתה מנסה לבקר, גם אם האישור אינו תקף לכל אותם אתרים. Google Chrome יכול לקבוע בוודאות שהגעת ל-‏&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, אך אינו יכול לאמת כי הוא זהה לאתר &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chrome לא יחפש אי התאמות שמיות נוספות.</translation>
 <translation id="5430073640787465221">קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
+<translation id="6236285698028833233">Google Chrome הפסיק לעדכן את הגרסה הזו של מערכת ההפעלה שלך וכבר אינו תומך בה.</translation>
 <translation id="5453904507266736060">אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="2383457833405848421">אודות Chrome Frame...</translation>
 <translation id="3454512769850953877">כן, צא מ-Chrome</translation>
+<translation id="2704356438731803243">אם אתה מעדיף לשמור בנפרד את הנתונים שלך ב-Chrome, תוכל ליצור משתמש Chrome חדש עבור <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">סגור את כל החלונות של Google Chrome ונסה שוב.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
-<translation id="741045321678647133">Google Chrome App Host</translation>
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="7781002470561365167">גרסה חדשה של Google Chrome זמינה כעת.</translation>
 <translation id="7101265395643981223">התחל את Google Chrome</translation>
@@ -34,8 +35,9 @@
         אם פעולה זו אינה פותרת את הבעיה, מומלץ לבחור באפשרות הזו שוב לקבלת ביצועים משופרים.</translation>
 <translation id="3140883423282498090">השינויים ייכנסו לתוקף בפעם הבאה שתשיק מחדש את Google Chrome.</translation>
 <translation id="1773601347087397504">קבלת עזרה לשימוש ב-Chrome OS</translation>
-<translation id="1872436416934435136">Google Chrome אינו מתעדכן יותר, כי מערכת ההפעלה שלך מיושנת.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN"/> דורש שתקרא ותקבל את התנאים וההגבלות הבאים לפני שתשתמש במכשיר הזה. תנאים אלה אינם מרחיבים, משנים או מגבילים את התנאים לשימוש במערכת ההפעלה של Google Chrome.</translation>
 <translation id="5339639696978861456">Chrome Frame עודכן. הפעל מחדש את הדפדפן. גרסת Chrome‏: <ph name="TODO_0001"/>, גרסת Chrome Frame‏: <ph name="TODO_0002"/></translation>
+<translation id="8471072774411320686">עליך להיות מחובר ל-Chrome כדי להשתמש ביישומים. כך Chrome יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות אחרות שלך בין מכשירים שונים.</translation>
 <translation id="5775197990071433230">במחשב זה כבר קיימת גרסה מתקדמת יותר של רכיבי Google Chrome. השתמש במתקין עדכני יותר.</translation>
 <translation id="8398145039500709259">האם להשתמש בחשבון Google זה כדי לסנכרן את כל הדברים שלך ב-Chrome?</translation>
 <translation id="1779550429052479749">נמצאה במערכת התקנה מתנגשת אחרת של Google Chrome או Google Chrome Frame. הסר את ההתקנה ונסה שוב.</translation>
@@ -46,9 +48,9 @@
 <translation id="4728575227883772061">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="3080151273017101988">המשך הפעלת יישומים ברקע כאשר Google Chrome סגור</translation>
 <translation id="4149882025268051530">המתקין נכשל בביצוע דחיסה לארכיון. הורד שוב את Google Chrome.</translation>
-<translation id="2886077349328709775">השתמש ב-Chrome Apps Launcher כדי להפעיל את היישומים שלך.</translation>
 <translation id="6989339256997917931">Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="5744005218040929396">תוכנית השירות Google Chrome Utility</translation>
+<translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="1682634494516646069">Google Chrome אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">ספריית ההתקנה של Google Chrome נמצאת בשימוש. אתחל את המחשב מחדש ונסה שנית.</translation>
 <translation id="8227755444512189073">Google Chrome חייב לבצע יישום חיצוני על מנת לנהל <ph name="SCHEME"/> קישורים הקישור המבוקש הוא <ph name="PROTOLINK"/>.</translation>
@@ -56,6 +58,7 @@
 <translation id="1480489203462860648">נסה את זה, זה כבר מותקן</translation>
 <translation id="5204098752394657250">Google Chrome‏ <ph name="TERMS_OF_SERVICE_LINK"/>תנאים והגבלות<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">קבלת עזרה לשימוש ב-Chrome</translation>
+<translation id="7398801000654795464">היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS"/>. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="3487814320513494737">הדף 'כרטיסייה חדשה' של Chrome עוצב מחדש. עבור בין קטעים על ידי לחיצה על תוויות. Chrome יזכור את ההעדפה שלך בשביל הפעם הבאה.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שתוקפו פג. אין מידע זמין שיכול לציין אם האישור נפגע מאז פג תוקפו. פירוש הדבר ש-Google Chrome אינו יכול להבטיח שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את השגיאה ולרענן את דף.</translation>
@@ -98,7 +101,6 @@
 <translation id="2783467918276328046">עיין ב<ph name="BEGIN_LINK"/>יתרונות נוספים<ph name="END_LINK"/> של הכניסה ל-Chrome‏.</translation>
 <translation id="2580411288591421699">אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="1457721931618994305">מעדכן את Google Chrome...</translation>
-<translation id="6536030683808219174">הצג קיצור דרך ל-Chrome Apps Launcher בשורת המשימות של Windows.</translation>
 <translation id="4351362253593301573">עבור אל
           <ph name="BEGIN_BOLD"/>
           תפריט Chrome &gt;
@@ -119,9 +121,14 @@
 <translation id="2748463065602559597">אתה מציג דף Google Chrome מאובטח.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> נוסף ל-‏Chrome.</translation>
 <translation id="9073088951656332330">לא נמצאה התקנה של Google Chrome או Google Chrome Frame שיש לעדכן.</translation>
+<translation id="2346876346033403680">מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST"/>. אם זה לא החשבון שלך, צור משתמש חדש ל-Chrome כדי לשמור על ההפרדה של המידע שלך.
+
+אם תמשיך ותיכנס, המידע ב-Chrome, כמו סימניות, היסטוריה והגדרות אחרות, ימוזג עם <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>אזהרה:<ph name="END_BOLD"/> ‏‏Google Chrome‏ אינו יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה פרטית, בטל אפשרות זו.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="4794050651896644714">שמור פרטים ב-Chrome</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
+<translation id="3872765354315765470">הצג את Chrome App Launcher.</translation>
 <translation id="2044287590254833138">סרגל הכלים של Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
@@ -129,6 +136,7 @@
 <translation id="2874156562296220396">Google Chrome התאפשר תודות לפרוייקט המקור הפתוח <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> <ph name="BEGIN_LINK_OSS"/>ותוכנות מקור פתוח אחרות<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7436949144778751379">Google Chrome דורש Windows XP ואילך. ייתכן שחלק מהתכונות לא יפעלו.</translation>
+<translation id="103396972844768118">מידע חשוב בנוגע לנתונים שלך ב-Chrome</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="2290095356545025170">האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
 <translation id="7062966102157262887">הורדה מתבצעת כעת. האם ברצונך לצאת מ-Google Chrome ולבטל את ההורדה?</translation>
@@ -136,6 +144,8 @@
 <translation id="1104959162601287462">מידע על מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
+<translation id="7417357582482895658">התר כניסה ל-Chrome.</translation>
+<translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="4270804660370715583">עבור אל
@@ -159,11 +169,11 @@
 <translation id="3612333635265770873">מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
 <translation id="61852838583753520">עדכן את מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="6650142020817594541">אתר זה ממליץ על Google Chrome Frame (כבר מותקן).</translation>
-<translation id="550529737713987795">הצג את Chrome Apps Launcher.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
 <translation id="5577648424992741236">במחשב זה מותקנת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome Frame ונסה שוב.</translation>
 <translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
 <translation id="6326175484149238433">הסר מ-Chrome</translation>
+<translation id="2871893339301912279">נכנסת ל-Chrome!</translation>
 <translation id="7161904924553537242">ברוך הבא ל-Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">עדכן את Google Chrome&amp;</translation>
@@ -171,9 +181,11 @@
 <translation id="163860049029591106">תחילת העבודה עם מערכת ההפעלה של Chromium OS</translation>
 <translation id="1399397803214730675">במחשב זה מותקנת כבר גירסה עדכנית יותר של Google Chrome. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome ונסה שוב.</translation>
 <translation id="576822117893741893">הצג את תפריט Chrome</translation>
+<translation id="8520216698644798023">אותרה שגיאת Windows</translation>
 <translation id="3444832043240812445">דף זה מציג מידע על הקריסות האחרונות בלבד אם <ph name="BEGIN_LINK"/>תפעיל את אפשרות הדיווח על קריסות<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="5318056482164160049">מארח הפלאגין של Google Chrome</translation>
+<translation id="6479088914470149333">במחשב שלך חסרים מספר קבצים חשובים של מערכת Windows, כך ש-Chrome לא יכול לתפקד כראוי.</translation>
 <translation id="6126631249883707068">האם אתה רוצה ש-Google Chrome ישמור את הסיסמה שלך? </translation>
 <translation id="7773845170078702898">האם אתה מעוניין ש-Google Chrome ישמור את הסיסמה עבור אתר זה?</translation>
 <translation id="5046764976540625289">צא מ-Chrome</translation>
@@ -187,17 +199,19 @@
 <translation id="7253415505590551024">הורדות מתבצעות כעת. האם ברצונך לצאת מ-Google Chrome ולבטל את ההורדות?</translation>
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="2769762047821873045">Google Chrome‏ אינו דפדפן ברירת המחדל שלך.</translation>
+<translation id="3135343025848309798">השתמש ב-Chrome App Launcher כדי להפעיל את היישומים שלך.</translation>
 <translation id="7825851276765848807">ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="1061257178446858647">נכנסת ל-Chrome‏! הסימניות, ההיסטוריה, והגדרות אחרות שלך יסונכרנו עם חשבון Google שלך.</translation>
 <translation id="3335672657969596251">Google Chrome אינו תומך ב <ph name="OS_NAME"/></translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
+<translation id="7311208098963907218">הצג קיצור דרך ל-Chrome Apps Launcher בשורת המשימות של Windows.</translation>
 <translation id="5334545119300433702">מודול זה מתנגש עם Google Chrome.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="6634887557811630702">Google Chrome מעודכן.</translation>
 <translation id="2084710999043359739">הוסף ל-Chrome</translation>
-<translation id="4710332363312836873">מפעיל יישומי Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame כבר מותקן וזמין לכל המשתמשים במחשב זה. אם ברצונך להתקין את Google Chrome Frame ברמת המשתמש, עליך ראשית להסיר את הגרסה המותקנת ברמת המערכת שהותקנה על ידי מנהל המערכת.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="6991142834212251086">קשר את הנתונים שלי ב-Chrome לחשבון הזה</translation>
 <translation id="3451115285585441894">הוספה ל-‏Chrome...</translation>
 <translation id="1001534784610492198">הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome אינו יכול להצג תצוגה מקדימה של ההדפסה כאשר מציג ה-‏PDF המובנה חסר.</translation>
@@ -206,6 +220,7 @@
 <translation id="1698376642261615901">Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ויישומים במהירות הבזק. הוא מהיר, יציב וקל לשימוש. גלוש באינטרנט בבטחה עם הגנה מפני תוכנות זדוניות והתחזות המובנית ב-Google Chrome.</translation>
 <translation id="3419750618886995598">עדכון של Chrome Frame.</translation>
 <translation id="3336524238463733095">לא ניתן לעדכן את Google Chrome או את Google Chrome Frame בשל הגדרות מדיניות קבוצה לא עקביים של 'עדכוני Google'. השתמש ב'עורך מדיניות הקבוצות' כדי להגדיר את ביטול מדיניות העדכונים עבור היישום Google Chrome Binaries ונסה שוב; לקבלת פרטים בקר בכתובת http://goo.gl/uJ9gV.</translation>
+<translation id="853189717709780425">אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chrome. הנתונים שלך ב-Chrome, כמו יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME"/>. תוכל למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר.</translation>
 <translation id="6049075767726609708">במערכת זו הותקן דפדפן Google Chrome על ידי מנהל והוא זמין עבור כל המשתמשים. Google Chrome ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
 <translation id="4338032231047635328">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהשרת הציג מכיל שגיאות. Google Chrome אינו יכול להשתמש באישור המכיל שגיאות ואינו יכול לאמת את זהות האתר שאליו ניסית להתחבר.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Розкладка клавіатури</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="2297568595583585744">Контейтер стану</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Під’єднання…</translation>
 <translation id="2946640296642327832">Увімкнути Bluetooth</translation>
 <translation id="6459472438155181876">Розширення екрана на <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Мобільний</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">Ініціалізація мобільного модема…</translation>
 <translation id="7864539943188674973">Вимкнути Bluetooth</translation>
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
+<translation id="735745346212279324">VPN від’єднано</translation>
 <translation id="6303423059719347535">Акумулятор заряджений на <ph name="PERCENTAGE"/>%</translation>
 <translation id="3294437725009624529">Гість</translation>
 <translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">Внутрішній екран</translation>
 <translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE"/>, нова: <ph name="TO_LOCALE"/>.</translation>
 <translation id="8340999562596018839">Голосові підказки</translation>
+<translation id="8654520615680304441">Увімкнення Wi-Fi…</translation>
 <translation id="5825747213122829519">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>.
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="2562916301614567480">Приватна мережа</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">Завершення роботи</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="6356500677799115505">Акумулятор заряджений і продовжує заряджатися.</translation>
-<translation id="551263474266254304">Увімкнути WiFi...</translation>
+<translation id="7874779702599364982">Пошук мобільних мереж…</translation>
 <translation id="1383876407941801731">Пошук</translation>
+<translation id="3901991538546252627">Під’єднання до <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Інформація про мережу</translation>
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Завершити сеанс у режимі гостя</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="2472320577759310817">Bluetooth вимкнено.</translation>
 <translation id="2372145515558759244">Синхронізація програм...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Від’єднання…</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до повного зарядження</translation>
 <translation id="5787281376604286451">Голосові підказки ввімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
@@ -77,6 +82,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Збільшити</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Під’єднання…</translation>
 <translation id="252373100621549798">Невідомий дисплей</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Заблокувати</translation>
@@ -84,11 +90,10 @@
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="1850504506766569011">Wi-Fi вимкнено.</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> – спільний обліковий запис, керований доменом <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: з’єднання...</translation>
 <translation id="8132793192354020517">З'єднано з <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
 <translation id="2739500853984626550">Немає доступних пристроїв Bluetooth</translation>
+<translation id="2666092431469916601">Верх</translation>
 <translation id="3019353588588144572">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="1602076796624386989">Увімкнути передавання мобільних даних</translation>
@@ -98,6 +103,7 @@
 <translation id="225680501294068881">Пошук пристроїв...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Пошук Wi-Fi мереж...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> – загальнодоступний сеанс, керований доменом <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
 <translation id="8454013096329229812">Wi-Fi увімкнено.</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
@@ -121,6 +127,7 @@
 Натисніть Alt+клавішу пошуку або Shift, щоб скасувати.</translation>
 <translation id="8061464966246066292">Високий контраст</translation>
 <translation id="5102001756192215136">Залишилося <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">Немає мережі</translation>
 <translation id="5941711191222866238">Зменшити</translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>
 <translation id="6843725295806269523">вимкнути звук</translation>

@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome attālo darbvirsmu.</translation>
 <translation id="4808503597364150972">Lūdzu, ievadiet saimniekdatora <ph name="HOSTNAME"/> PIN.</translation>
 <translation id="7672203038394118626">Šim datoram tika atspējoti attālie savienojumi.</translation>
+<translation id="8244400547700556338">Uzziniet vairāk</translation>
 <translation id="332624996707057614">Rediģējiet datora nosaukumu.</translation>
 <translation id="1996161829609978754">No pārlūka Chrome tiek lejupielādēta Chrome saites saimniekdatoram paredzētā instalēšanas programma. Kad lejupielāde būs pabeigta, lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
 <translation id="7658239707568436148">Atcelt</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Jūs neesat pierakstījies Chrome saitē. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
 <translation id="7401733114166276557">Chrome attālā darbvirsma</translation>
 <translation id="3362124771485993931">Atkārtoti ievadiet PIN.</translation>
-<translation id="4686372254213217147">Sākotnējais lielums</translation>
 <translation id="154040539590487450">Neizdevās sākt attālās piekļuves pakalpojumu.</translation>
 <translation id="7948001860594368197">Ekrāna opcijas</translation>
 <translation id="8172070902751707422">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties Chrome attālajā darbvirsmā.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Lai izmantotu Chrome attālo darbvirsmu, vispirms piešķiriet paplašinātas piekļuves atļaujas savam datoram. Tas ir jādara tikai vienu reizi.</translation>
 <translation id="9032136467203159543">Trūkst dažu Chrome saitei nepieciešamo komponentu. Pārbaudiet, vai esat instalējis jaunāko versiju, un mēģiniet vēlreiz.</translation>
 <translation id="1342297293546459414">Skatiet un kontrolējiet kopīgotu datoru.</translation>
+<translation id="1520828917794284345">Mainīt darbvirsmas izmērus, lai tā atbilstu</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
 <translation id="6193698048504518729">Izveidojiet savienojumu ar <ph name="HOSTNAME"/>.</translation>
 <translation id="3020807351229499221">Neizdevās atjaunināt PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Palīdziet mums uzlabot Chrome saiti, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
+<translation id="4517233780764084060">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome saiti varat konfigurēt šādi: “Atvērt kā logu”.</translation>
 <translation id="4176825807642096119">Piekļuves kods</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="4703799847237267011">Jūsu Chrome saites sesija ir pārtraukta.</translation>

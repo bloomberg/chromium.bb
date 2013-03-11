@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Tastaturoverlejring</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="2297568595583585744">Statusbakke</translation>
+<translation id="4508225577814909926"><ph name="NAME"/> : Opretter forbindelse...</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -29,6 +30,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="153454903766751181">Initialiserer mobilmodem...</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
+<translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="6303423059719347535">Batteriet er <ph name="PERCENTAGE"/> % fuldt</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
@@ -41,6 +43,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3892641579809465218">Internt display</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="8340999562596018839">Talefeedback</translation>
+<translation id="8654520615680304441">Slå Wi-Fi til...</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
@@ -57,8 +60,9 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1895658205118569222">Nedlukning</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="6356500677799115505">Batteriet er fuldt opladet og oplader.</translation>
-<translation id="551263474266254304">Aktivér WiFi...</translation>
+<translation id="7874779702599364982">Søger efter mobilnetværk...</translation>
 <translation id="1383876407941801731">Søgning</translation>
+<translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Netværksoplysninger</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Afslut gæstesession</translation>
@@ -69,6 +73,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="2472320577759310817">Bluetooth er slået fra.</translation>
 <translation id="2372145515558759244">Synkroniserer apps...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Afbryder forbindelsen...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
 <translation id="5787281376604286451">Talefeedback er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
@@ -77,6 +82,7 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maksimer</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Lås</translation>
@@ -84,11 +90,10 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="2482878487686419369">Meddelelser</translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
 <translation id="2872961005593481000">Luk</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> er en delt konto, der administreres af <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: Opretter forbindelse...</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Angiv baggrundsbillede...</translation>
 <translation id="2739500853984626550">Ingen Bluetooth-enheder til rådighed</translation>
+<translation id="2666092431469916601">Top</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
@@ -98,6 +103,7 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="4872237917498892622">Alt+Søg eller Skift</translation>
@@ -121,6 +127,7 @@ Tryk på Søg eller Skift for at annullere.</translation>
 Tryk på Alt+Søg eller Skift for at annullere.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
+<translation id="8000066093800657092">Intet netværk</translation>
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="6911468394164995108">Find andre... </translation>
 <translation id="6843725295806269523">slå lyden fra</translation>

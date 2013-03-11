@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Klaviatūros perdanga</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="2297568595583585744">Būsenos dėklas</translation>
+<translation id="4508225577814909926">„<ph name="NAME"/>“: jungiamasi...</translation>
 <translation id="2946640296642327832">Įgalinti „Bluetooth“</translation>
 <translation id="6459472438155181876">Ekranas išplečiamas į <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobilusis</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">Inicijuojamas korinio ryšio modemas...</translation>
 <translation id="7864539943188674973">Neleisti „Bluetooth“</translation>
 <translation id="3126069444801937830">Paleisti iš naujo, kad būtų atnaujinta</translation>
+<translation id="735745346212279324">VPN atjungtas</translation>
 <translation id="6303423059719347535">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE"/> %</translation>
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">Vidinė pateiktis</translation>
 <translation id="7823564328645135659">Po nustatymų sinchronizavimo kalba pakeista iš <ph name="FROM_LOCALE"/> į <ph name="TO_LOCALE"/>.</translation>
 <translation id="8340999562596018839">Žodiniai atsiliepimai</translation>
+<translation id="8654520615680304441">Įjungti „Wi-Fi“...</translation>
 <translation id="5825747213122829519">Įvesties metodas pakeistas į <ph name="INPUT_METHOD_ID"/>.
         Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="2562916301614567480">Privatus tinklas</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">Išjungimas</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="6356500677799115505">Akumuliatorius įkrautas ir vis įkraunamas.</translation>
-<translation id="551263474266254304">Įjungti „Wi-Fi“...</translation>
+<translation id="7874779702599364982">Ieškoma korinio ryšio tinklų...</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
+<translation id="3901991538546252627">Jungiamasi prie „<ph name="NAME"/>“</translation>
 <translation id="2204305834655267233">Tinklo informacija</translation>
 <translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Išeiti iš svečio režimo</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="2472320577759310817">„Bluetooth“ išjungtas.</translation>
 <translation id="2372145515558759244">Sinchronizuojamos programos...</translation>
+<translation id="3227723743333276085">„<ph name="BLUETOOTH"/>“: atjungiama...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>.<ph name="MINUTE"/> iki visiško įkrovimo</translation>
 <translation id="5787281376604286451">Žodiniai atsiliepimai įgalinti.
 Jei norite neleisti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
@@ -77,6 +82,7 @@ Jei norite neleisti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
+<translation id="2692809339924654275">„<ph name="BLUETOOTH"/>“: jungiamasi...</translation>
 <translation id="252373100621549798">Nežinoma pateiktis</translation>
 <translation id="1882897271359938046">Dubliuojama <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Užrakinti</translation>
@@ -84,11 +90,10 @@ Jei norite neleisti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="1850504506766569011">„Wi-Fi“ ryšys išjungtas.</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
-<translation id="5360056864692078751">„<ph name="DISPLAY_NAME"/>“ yra bendrinama paskyra, tvarkoma <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710">„<ph name="NETWORK"/>“: prisijungiama...</translation>
 <translation id="8132793192354020517">Prisijungta prie „<ph name="NAME"/>“</translation>
 <translation id="7052914147756339792">Nustatyti darbalaukio foną...</translation>
 <translation id="2739500853984626550">Nėra pasiekiamų „Bluetooth“ įrenginių</translation>
+<translation id="2666092431469916601">Į viršų</translation>
 <translation id="3019353588588144572">Laikas, likęs iki akumuliatoriaus įkrovimo: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="1602076796624386989">Įgalinti duomenis mobiliesiems</translation>
@@ -98,6 +103,7 @@ Jei norite neleisti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
 <translation id="225680501294068881">Ieškoma įrenginių...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/>, <ph name="SHORT_WEEKDAY"/></translation>
 <translation id="4448844063988177157">Ieškoma „Wi-Fi“ tinklų...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> yra vieša sesija, valdoma <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Išeiti iš sesijos</translation>
 <translation id="8454013096329229812">„Wi-Fi“ ryšys įjungtas.</translation>
 <translation id="4872237917498892622">„Alt“ + paieškos arba antrojo lygio klavišas</translation>
@@ -121,6 +127,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“ + antrojo lygio klavišas.</translation>
 <translation id="8061464966246066292">Didelis kontrastas</translation>
 <translation id="5102001756192215136">Liko <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">Tinklo nėra</translation>
 <translation id="5941711191222866238">Sumažinti</translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
 <translation id="6843725295806269523">nutildyti</translation>

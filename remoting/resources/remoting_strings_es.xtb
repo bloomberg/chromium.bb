@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Puedes acceder de forma segura a este ordenador con Escritorio remoto de Chrome.</translation>
 <translation id="4808503597364150972">Introduce el PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se han inhabilitado las conexiones remotas con este ordenador.</translation>
+<translation id="8244400547700556338">Más información</translation>
 <translation id="332624996707057614">Edita el nombre del ordenador</translation>
 <translation id="1996161829609978754">Chrome está descargando el archivo de instalación del host de Chromoting. Cuando se haya completado la descarga, ejecuta el archivo de instalación antes de continuar.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">No has iniciado sesión en Chromoting. Inicia sesión y vuelve a intentarlo.</translation>
 <translation id="7401733114166276557">Escritorio remoto de Chrome</translation>
 <translation id="3362124771485993931">Volver a escribir el PIN</translation>
-<translation id="4686372254213217147">Tamaño original</translation>
 <translation id="154040539590487450">No se ha podido iniciar el servicio de acceso remoto.</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="8172070902751707422">Se ha producido un error de autenticación. Vuelve a iniciar sesión en Escritorio remoto de Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Para poder utilizar Escritorio remoto de Chrome, debes conceder permisos de acceso ampliados a tu ordenador. Solo tienes que realizar esta acción una vez.</translation>
 <translation id="9032136467203159543">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de haber instalado la última versión y vuelve a intentarlo.</translation>
 <translation id="1342297293546459414">Permite ver y controlar un ordenador compartido.</translation>
+<translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
 <translation id="701976023053394610">Asistencia remota</translation>
 <translation id="6193698048504518729">Establece conexión con <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">No se ha podido actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="7649070708921625228">Ayuda</translation>
+<translation id="4517233780764084060">NOTA: para asegurarte de que todas las combinaciones de teclas están disponibles, puedes configurar Chromoting para que se abra como ventana.</translation>
 <translation id="4176825807642096119">Código de acceso</translation>
 <translation id="7144878232160441200">Volver a intentar</translation>
 <translation id="4703799847237267011">Ha finalizado tu sesión en Chromoting.</translation>

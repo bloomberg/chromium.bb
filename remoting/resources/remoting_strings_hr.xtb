@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Ovom računalu možete sigurno pristupiti pomoću Udaljene radne površine Chrome.</translation>
 <translation id="4808503597364150972">Unesite svoj PIN za host <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Na ovom su računalu onemogućene daljinske veze.</translation>
+<translation id="8244400547700556338">Saznajte kako.</translation>
 <translation id="332624996707057614">Uredi naziv računala</translation>
 <translation id="1996161829609978754">Chrome preuzima instalacijski program hosta za Chromoting. Nakon završetka preuzimanja pokrenite alat za instalaciju prije nego što nastavite.</translation>
 <translation id="7658239707568436148">Odustani</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Niste prijavljeni na aplikaciju Chromoting. Prijavite se i pokušajte ponovo.</translation>
 <translation id="7401733114166276557">Udaljena radna površine Chrome</translation>
 <translation id="3362124771485993931">Ponovo upišite PIN</translation>
-<translation id="4686372254213217147">Izvorna veličina</translation>
 <translation id="154040539590487450">Nisam uspio pokrenuti uslugu daljinskog pristupa.</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="8172070902751707422">Autentifikacija nije uspjela. Ponovo se prijavite na Udaljenu radnu površinu Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Da biste upotrebljavali Udaljenu radnu površinu Chrome, morate odobriti dozvole za prošireni pristup svojem računalu. To morate učiniti samo jednom.</translation>
 <translation id="9032136467203159543">Nedostaju neke komponente potrebne za aplikaciju Chromoting. Provjerite jeste li instalirali najnoviju verziju i pokušajte ponovo.</translation>
 <translation id="1342297293546459414">Gledajte dijeljeno računalo i upravljajte njime.</translation>
+<translation id="1520828917794284345">Prilagodi veličinu radne površine</translation>
 <translation id="701976023053394610">Daljinska pomoć</translation>
 <translation id="6193698048504518729">Povezivanje s hostom <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">PIN nije uspješno ažuriran. Pokušajte ponovo kasnije.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Pomognite nam da poboljšamo Chromoting tako da nam dopustite prikupljanje statistika o upotrebi i izvješća o padovima.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="7649070708921625228">Pomoć</translation>
+<translation id="4517233780764084060">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati Chromoting da se otvara kao prozor.</translation>
 <translation id="4176825807642096119">Pristupni kôd</translation>
 <translation id="7144878232160441200">Pokušaj ponovo</translation>
 <translation id="4703799847237267011">Vaša sesija aplikacije Chromoting završila je.</translation>

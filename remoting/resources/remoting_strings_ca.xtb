@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Podeu accedir de manera segura a aquest ordinador mitjançant l'escriptori remot de Chrome.</translation>
 <translation id="4808503597364150972">Introduïu el vostre PIN per a <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">S'han desactivat les connexions remotes en aquest ordinador.</translation>
+<translation id="8244400547700556338">Més informació</translation>
 <translation id="332624996707057614">Edita el nom de l'ordinador</translation>
 <translation id="1996161829609978754">Chrome està baixant l'instal·lador de l'amfitrió de Chromoting. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">No heu iniciat la sessió a Chromoting. Inicieu-hi la sessió i torneu-ho a provar.</translation>
 <translation id="7401733114166276557">Escriptori remot de Chrome</translation>
 <translation id="3362124771485993931">Torneu a escriure el PIN</translation>
-<translation id="4686372254213217147">Mida original</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="8172070902751707422">Ha fallat l'autenticació. Torneu a iniciar la sessió a l'escriptori remot de Chrome.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Per utilitzar l'escriptori remot de Chrome heu de concedir permisos d'accés ampliat a l'ordinador. Només ho heu de fer una vegada.</translation>
 <translation id="9032136467203159543">Falten alguns components necessaris per a Chromoting. Assegureu-vos que n'heu instal·lat la versió més recent i torneu-ho a provar.</translation>
 <translation id="1342297293546459414">Vegeu i controleu un ordinador compartit.</translation>
+<translation id="1520828917794284345">Ajusta la mida de l'escriptori</translation>
 <translation id="701976023053394610">Assistència remota</translation>
 <translation id="6193698048504518729">Connecta amb <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">No s'ha pogut actualitzar el PIN. Torneu-ho a provar més tard.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Ajudeu-nos a millorar Chromoting: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="4517233780764084060">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, activeu l'opció Obre com a finestra de la configuració de Chromoting.</translation>
 <translation id="4176825807642096119">Codi d'accés</translation>
 <translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="4703799847237267011">La vostra sessió de Chromoting ha finalitzat.</translation>

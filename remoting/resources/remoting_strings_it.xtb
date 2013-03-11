@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Inserisci il PIN di <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Le connessioni remote per questo computer sono state disattivate.</translation>
+<translation id="8244400547700556338">Scopri come.</translation>
 <translation id="332624996707057614">Modifica il nome del computer</translation>
 <translation id="1996161829609978754">Chrome sta scaricando il programma di installazione di Chromoting Host. Al termine del download esegui il programma di installazione prima di continuare.</translation>
 <translation id="7658239707568436148">Annulla</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Non hai eseguito l'accesso a Chromoting. Accedi e riprova.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Digita di nuovo PIN</translation>
-<translation id="4686372254213217147">Dimensione originale</translation>
 <translation id="154040539590487450">Impossibile avviare il servizio di accesso remoto.</translation>
 <translation id="7948001860594368197">Opzioni schermo</translation>
 <translation id="8172070902751707422">Autenticazione non riuscita. Accedi nuovamente a Chrome Remote Desktop.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Per utilizzare Chrome Remote Desktop devi concedere autorizzazioni di accesso esteso per il tuo computer. È necessario eseguire questa operazione solo una volta.</translation>
 <translation id="9032136467203159543">Mancano alcuni componenti necessari per Chromoting. Verifica che sia installata la versione più recente e riprova.</translation>
 <translation id="1342297293546459414">Visualizza e controlla un computer condiviso.</translation>
+<translation id="1520828917794284345">Adatta dimensioni desktop</translation>
 <translation id="701976023053394610">Assistenza remota</translation>
 <translation id="6193698048504518729">Connetti a <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Impossibile aggiornare il PIN. Riprova più tardi.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="7649070708921625228">Guida</translation>
+<translation id="4517233780764084060">NOTA. Per assicurarti che siano disponibili tutte le scorciatoie da tastiera, puoi configurare Chromoting con l'opzione &quot;Apri in una finestra&quot;.</translation>
 <translation id="4176825807642096119">Codice di accesso</translation>
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="4703799847237267011">La sessione Chromoting è terminata.</translation>

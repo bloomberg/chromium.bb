@@ -16,6 +16,7 @@
 <translation id="938582441709398163">שכבת על של מקלדת</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">מגש סטטוס</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: מתחבר...</translation>
 <translation id="2946640296642327832">הפעל Bluetooth</translation>
 <translation id="6459472438155181876">מרחיב את המסך אל <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">סלולארי</translation>
@@ -29,6 +30,7 @@
 <translation id="153454903766751181">מאתחל מודם סלולרי...</translation>
 <translation id="7864539943188674973">השבת Bluetooth</translation>
 <translation id="3126069444801937830">הפעל מחדש כדי לעדכן</translation>
+<translation id="735745346212279324">VPN מנותק</translation>
 <translation id="6303423059719347535">הסוללה טעונה ב-‎<ph name="PERCENTAGE"/>%‎</translation>
 <translation id="3294437725009624529">אורח</translation>
 <translation id="8190698733819146287">התאם אישית שפה וקלט...</translation>
@@ -41,6 +43,7 @@
 <translation id="3892641579809465218">תצוגה פנימית</translation>
 <translation id="7823564328645135659">שפת Chrome השתנתה מ&quot;<ph name="FROM_LOCALE"/>&quot; ל&quot;<ph name="TO_LOCALE"/>&quot; לאחר סנכרון ההגדרות.</translation>
 <translation id="8340999562596018839">משוב קולי</translation>
+<translation id="8654520615680304441">הפעל את ה-Wi-Fi...</translation>
 <translation id="5825747213122829519">שיטת הקלט שלך השתנתה ל-<ph name="INPUT_METHOD_ID"/>.
         הקש Shift + Alt כדי להחליף.</translation>
 <translation id="2562916301614567480">רשת פרטית</translation>
@@ -57,8 +60,9 @@
 <translation id="1895658205118569222">כיבוי</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="6356500677799115505">הסוללה מלאה ובטעינה.</translation>
-<translation id="551263474266254304">הפעל את WiFi...</translation>
+<translation id="7874779702599364982">מחפש רשתות סלולריות...</translation>
 <translation id="1383876407941801731">חיפוש</translation>
+<translation id="3901991538546252627">מתחבר אל: <ph name="NAME"/></translation>
 <translation id="2204305834655267233">פרטי רשת</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">צא מהפעלת אורח</translation>
@@ -69,6 +73,7 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="2472320577759310817">ה-Bluetooth כבוי.</translation>
 <translation id="2372145515558759244">מסנכרן יישומים...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: מתנתק...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> עד שמתמלא</translation>
 <translation id="5787281376604286451">משוב קולי מופעל.
 הקש Ctrl+Alt+Z כדי להשבית אותו.</translation>
@@ -77,6 +82,7 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">הגדל</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: מתחבר...</translation>
 <translation id="252373100621549798">תצוגה לא ידועה</translation>
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">נעילה</translation>
@@ -84,11 +90,10 @@
 <translation id="2482878487686419369">התראות</translation>
 <translation id="1850504506766569011">Wi-Fi כבוי.</translation>
 <translation id="2872961005593481000">כיבוי</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> הוא חשבון משותף המנוהל על ידי <ph name="DOMAIN"/></translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: מתחבר...</translation>
 <translation id="8132793192354020517">מחובר ל<ph name="NAME"/></translation>
 <translation id="7052914147756339792">הגדר טפט...</translation>
 <translation id="2739500853984626550">אין מכשירי Bluetooth זמינים</translation>
+<translation id="2666092431469916601">למעלה</translation>
 <translation id="3019353588588144572">הזמן שנותר עד לטעינה מלאה של הסוללה, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="1602076796624386989">הפעל נתונים לנייד</translation>
@@ -98,6 +103,7 @@
 <translation id="225680501294068881">סורק לאיתור מכשירים...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">מחפש רשתות Wi-Fi...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> היא הפעלה ציבורית המנוהלת על ידי <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="8454013096329229812">Wi-Fi מופעל.</translation>
 <translation id="4872237917498892622">Alt + חיפוש או Shift</translation>
@@ -121,6 +127,7 @@
 הקש על Alt + 'חיפוש' או Shift כדי לבטל.</translation>
 <translation id="8061464966246066292">ניגודיות גבוהה</translation>
 <translation id="5102001756192215136">נותרו <ph name="HOUR"/> <ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">אין רשת</translation>
 <translation id="5941711191222866238">מזער</translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
 <translation id="6843725295806269523">השתק</translation>

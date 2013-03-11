@@ -16,6 +16,7 @@
 <translation id="938582441709398163">Lớp phủ bàn phím</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Khay trạng thái</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Đang kết nối...</translation>
 <translation id="2946640296642327832">Bật bluetooth</translation>
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Di động</translation>
@@ -29,6 +30,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="153454903766751181">Đang khởi chạy modem di động...</translation>
 <translation id="7864539943188674973">Tắt bluetooth</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
+<translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
 <translation id="6303423059719347535">Pin <ph name="PERCENTAGE"/>% đầy</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
@@ -41,6 +43,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3892641579809465218">Màn hình nội bộ</translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ &quot;<ph name="FROM_LOCALE"/>&quot; thành &quot;<ph name="TO_LOCALE"/>&quot; sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="8340999562596018839">Phản hồi nói</translation>
+<translation id="8654520615680304441">Bật Wi-Fi...</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
 Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2562916301614567480">Mạng riêng</translation>
@@ -57,8 +60,9 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1895658205118569222">Tắt</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="6356500677799115505">Pin đầy và đang sạc.</translation>
-<translation id="551263474266254304">Bật WiFi…</translation>
+<translation id="7874779702599364982">Đang tìm kiếm mạng di động...</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
+<translation id="3901991538546252627">Đang kết nối với <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Thông tin mạng</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Thoát khỏi phiên khách</translation>
@@ -69,6 +73,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="2472320577759310817">Bluetooth tắt.</translation>
 <translation id="2372145515558759244">Đang đồng bộ hóa ứng dụng...</translation>
+<translation id="3227723743333276085"><ph name="BLUETOOTH"/>: Đang ngắt kết nối...</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> cho tới khi pin được sạc đầy</translation>
 <translation id="5787281376604286451">Phản hồi nói được bật.
 Nhấn Ctrl+Alt+Z để tắt.</translation>
@@ -77,6 +82,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Phóng to</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Đang kết nối...</translation>
 <translation id="252373100621549798">Màn hình không xác định</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Khóa</translation>
@@ -84,11 +90,10 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
 <translation id="2872961005593481000">Tắt</translation>
-<translation id="5360056864692078751"><ph name="DISPLAY_NAME"/> là một tài khoản chung do <ph name="DOMAIN"/> quản lý</translation>
-<translation id="5958620951513647710"><ph name="NETWORK"/>: Đang kết nối...</translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
 <translation id="2739500853984626550">Hiện không có thiết bị Bluetooth nào</translation>
+<translation id="2666092431469916601">Hàng đầu</translation>
 <translation id="3019353588588144572">Thời gian còn lại cho đến khi pin được sạc đầy, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="1602076796624386989">Bật dữ liệu di động</translation>
@@ -98,6 +103,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="225680501294068881">Đang quét tìm thiết bị...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> là phiên công khai được quản lý bởi <ph name="DOMAIN"/></translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
@@ -121,6 +127,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8061464966246066292">Độ tương phản cao</translation>
 <translation id="5102001756192215136">Còn lại <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="5941711191222866238">Thu nhỏ</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6843725295806269523">tắt tiếng</translation>

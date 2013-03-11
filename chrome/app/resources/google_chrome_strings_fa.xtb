@@ -6,12 +6,13 @@
 <translation id="8485767968786176057">در این مورد، آدرس لیست شده در گواهی با آدرس وب سایتی که مرورگر شما سعی در باز کردن آن را داشت یکی نیست. یک دلیل آن ممکن است این باشد که مهاجمی در ارتباطات شما دخالت می‌کند، این مهاجم یک گواهی را برای وب سایت دیگری ارائه می‌دهد و این باعث عدم تطابق می‌شود. دلیل ممکن دیگر این است که سرور طوری تنظیم شده است که یک گواهی را برای چند وب سایت برمی‌گرداند از جمله همین وب سایتی که می‌خواهید بازدید کنید، اما آن گواهی برای همه آن وب سایت‌ها معتبر نیست. Google Chrome اطمینان دارد که به &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; رفتید، اما نمی‌تواند تأیید کند که این همان سایت &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; است که شما سعی در برقراری ارتباط با آن را داشتید. اگر ادامه دهید، Chrome دیگر عدم تطابق نام‌ها را بررسی نمی‎کند.</translation>
 <translation id="5430073640787465221">فایل تنظیمات برگزیده شما خراب یا نامعتبر است. Google Chrome نمی‌تواند تنظیمات شما را بازیابی کند.</translation>
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
+<translation id="6236285698028833233">Google Chrome به‌روزرسانی را متوقف کرده است و دیگر از این نسخه سیستم عامل پشتیبانی نمی‌کند.</translation>
 <translation id="5453904507266736060">اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="2383457833405848421">درباره Chrome Frame...</translation>
 <translation id="3454512769850953877">بله، از Chrome خارج شود</translation>
+<translation id="2704356438731803243">اگر می‌خواهید داده‌های Chrome خود را جدا نگهدارید، می‌توانید کاربر جدید Chrome خود را برای <ph name="USER_NAME"/> ایجاد کنید.</translation>
 <translation id="386202838227397562">لطفاً همه پنجره‌های Google Chrome را ببندید و دوباره امتحان کنید.</translation>
 <translation id="2770231113462710648">تغییر مرورگر پیش‌فرض به:</translation>
-<translation id="741045321678647133">Google Chrome App Host</translation>
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
 <translation id="7781002470561365167">نسخه جدیدی از Google Chrome موجود است.</translation>
 <translation id="7101265395643981223">شروع کردن Google Chrome</translation>
@@ -34,8 +35,9 @@
         در صورتی که با این کار مشکل حل نشد، توصیه می‌کنیم این گزینه را دوباره برای عملکرد پبیشرفته انتخاب نمایید.</translation>
 <translation id="3140883423282498090">دفعه بعد که Google Chrome را مجدداً راه‌اندازی می‌کنید، این تغییرات اعمال می‌شوند.</translation>
 <translation id="1773601347087397504">دریافت راهنمایی برای استفاده از سیستم عامل Chrome </translation>
-<translation id="1872436416934435136">Google Chrome دیگر به‌روز نمی‌شود چون سیستم عامل شما قدیمی است.</translation>
+<translation id="6982337800632491844"><ph name="DOMAIN"/> لازم می‌داند که شما شرایط خدمات زیر را قبل از استفاده از دستگاه خوانده و بپذیرید. این شرایط، شرایط سیستم عامل Google Chrome را بیشتر، اصلاح و محدود نمی‌کنند.</translation>
 <translation id="5339639696978861456">Chrome Frame به روز شده است. لطفاً مرورگر خود را دوباره راه‌اندازی کنید. نسخه Chrome: <ph name="TODO_0001"/>، نسخه Chrome Frame: <ph name="TODO_0002"/></translation>
+<translation id="8471072774411320686">برای استفاده از این برنامه باید به سیستم Chrome وارد شوید. این کار به Chrome این امکان را می‌دهد که برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و دیگر تنظیمات خود را در بین دستگاه‌ها همگام‌سازی کنید.</translation>
 <translation id="5775197990071433230">این رایانه دارای نسخه جدیدتر مؤلفه‌های Google Chrome است. لطفاً از نصب کننده جدیدتر استفاده کنید.</translation>
 <translation id="8398145039500709259">از این حساب Google برای همگام‌سازی همهٔ موارد Chrome خود استفاده می‌کنید؟</translation>
 <translation id="1779550429052479749">یک مورد نصب مغایر با Google Chrome یا Google Chrome Frame در سیستم یافت شد. لطفاً آنرا حذف نصب کنید و دوباره امتحان کنید.</translation>
@@ -46,9 +48,9 @@
 <translation id="4728575227883772061">به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="3080151273017101988">ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Google Chrome بسته می‌شود</translation>
 <translation id="4149882025268051530">نصب کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
-<translation id="2886077349328709775">از راه‌انداز برنامه‌های Chrome استفاده کنید تا برنامه‌های خود را راه‌اندازی کنید.</translation>
 <translation id="6989339256997917931">Google Chrome به روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="5744005218040929396">برنامه کمکی Google Chrome</translation>
+<translation id="7060865993964054389">راه‌انداز برنامه Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome نمی‌تواند مسیر داده‌های خود را بخواند یا در آن بنویسد: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">دایرکتوری نصب Google Chrome در حال استفاده است. لطفاً رایانهٔ خود را مجدداً راه‌اندازی کنید و دوباره سعی کنید.</translation>
 <translation id="8227755444512189073">برای کار با پیوندهای <ph name="SCHEME"/>، Google Chrome باید برنامهٔ کاربردی خارجی را راه‌اندازی کند. پیوند <ph name="PROTOLINK"/> مورد نیاز است.</translation>
@@ -56,6 +58,7 @@
 <translation id="1480489203462860648">آن را امتحان کنید، از قبل نصب شده است</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>شرایط سرویس<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">دریافت راهنمایی برای استفاده از Chrome</translation>
+<translation id="7398801000654795464">شما بعنوان <ph name="USER_EMAIL_ADDRESS"/> وارد سیستم Chrome شدید. لطفاً برای ورود به سیستم مجدد از همان حساب استفاده کنید.</translation>
 <translation id="3487814320513494737">مدل صفحه برگهٔ جدید Chrome تغییر کرده است. با کلیک روی این برچسب‌ها، بین بخش‌های مختلف جابجا شوید. Chrome تنظیمات برگزیده شما را برای فرصت بعدی به خاطر می‌سپارد.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="6423071462708908582">شما تلاش کردید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;strong&gt; دسترسی پیدا کنید اما سرور یک گواهی منقضی شده را ارائه کرد. هیچ اطلاعاتی در دست نیست که نشان دهد آیا این گواهی از زمان انقضای خود در معرض خطر قرار گرفته است یا خیر. یعنی Google Chrome نمی‌تواند ضمانت کند که آیا شما با &lt;strong&gt;<ph name="DOMAIN2"/>&lt;strong&gt; یا با یک مهاجم ارتباط برقرار می‌کنید. ساعت رایانهٔ شما در حال حاضر روی <ph name="CURRENT_TIME"/> تنظیم شده است. آیا این درست است؟ اگر نه، باید خطا را اصلاح کنید و این صفحه را بازخوانی کنید.</translation>
@@ -98,7 +101,6 @@
 <translation id="2783467918276328046">ببینید وارد شدن به Chrome چه <ph name="BEGIN_LINK"/>مزایای دیگری<ph name="END_LINK"/> دارد.</translation>
 <translation id="2580411288591421699">نمی‌توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
 <translation id="1457721931618994305">به‌روزرسانی Google Chrome…</translation>
-<translation id="6536030683808219174">میان‌بری را در راه‌انداز برنامه‌های Chrome در نوار وظیفه Windows نشان دهید.</translation>
 <translation id="4351362253593301573">به
           <ph name="BEGIN_BOLD"/>
           منوی Chrome  &gt;
@@ -119,9 +121,14 @@
 <translation id="2748463065602559597">شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> به Chrome اضافه شد.</translation>
 <translation id="9073088951656332330">هیچ Google Chrome یا Google Chrome Frame برای به‌روزرسانی یافت نشد.</translation>
+<translation id="2346876346033403680">شخصی قبلاً بعنوان <ph name="ACCOUNT_EMAIL_LAST"/> وارد Chrome در این رایانه شده است. اگر این حساب شما نیست، کاربر جدید Chrome را ایجاد کنید تا اطلاعات خود را جدا نگهدارید.
+
+ورود به سیستم به هر حال اطلاعات Chrome مانند نشانک‌ها، سابقه، و سایر تنظیمات را در <ph name="ACCOUNT_EMAIL_NEW"/> ادغام می‌کند.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>اخطار:<ph name="END_BOLD"/> Google Chrome نمی‌تواند مانع از ثبت سابقه مرور شما توسط برنامه‌های افزودنی شود. برای غیر فعال کردن این برنامهٔ افزودنی در حالت ناشناس، این گزینه را از حالت انتخاب خارج کنید.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="4794050651896644714">ذخیره جزئیات در Chrome</translation>
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
+<translation id="3872765354315765470">راه‌انداز برنامه Chrome را نشان دهید.</translation>
 <translation id="2044287590254833138">نوارابزار Google Chrome</translation>
 <translation id="5074344184765391290">میزبان افزونه Chrome</translation>
 <translation id="8862326446509486874">شما حقوق لازم برای نصب در سطح سیستم را ندارید. دوباره به‌عنوان سرپرست نصب کننده را اجرا کنید.</translation>
@@ -129,6 +136,7 @@
 <translation id="2874156562296220396">Google Chrome با پروژه منبع باز <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> و دیگر <ph name="BEGIN_LINK_OSS"/>نرم‌افزارهای منبع باز<ph name="END_LINK_OSS"/> کار می‌کند.</translation>
 <translation id="3847841918622877581">Google Chrome ممکن است از سرویس‌های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="7436949144778751379">Google Chrome به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگی‌ها ممکن است کار نکند.</translation>
+<translation id="103396972844768118">اطلاعات مهم درباره داده‌های Chrome شما</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="2290095356545025170">آیا می‌خواهید Google Chrome را غیر فعال کنید؟</translation>
 <translation id="7062966102157262887">دانلودی اکنون در حال انجام است. آیا می‌خواهید از Google Chrome خارج شوید و دانلود را لغو کنید؟</translation>
@@ -136,6 +144,8 @@
 <translation id="1104959162601287462">درباره سیستم عامل &amp;Chrome</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Google Chrome مرورگر پیش‌فرض شود</translation>
+<translation id="7417357582482895658">ورود به سیستم Chrome را اجازه دهید.</translation>
+<translation id="1469002951682717133">را‌ه‌انداز برنامه Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="4270804660370715583">به
@@ -160,11 +170,11 @@
 <translation id="3612333635265770873">یک مدول با همین نام با Google Chrome تداخل دارد.</translation>
 <translation id="61852838583753520">به‌روزرسانی سیستم عامل Ch&amp;rome</translation>
 <translation id="6650142020817594541">این سایت Google Chrome Frame را توصیه می‌کند (در حال حاضر نصب است).</translation>
-<translation id="550529737713987795">راه‌انداز برنامه‌های Chrome را نشان دهید.</translation>
 <translation id="2712549016134575851">تداخلی با یک برنامهٔ کاربردی نصب شده دیگر شناسایی شد.</translation>
 <translation id="5577648424992741236">این رایانه در حال حاضر دارای نسخه جدیدتری از Google Chrome Frame است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome Frame را حذف نصب کنید و دوباره امتحان کنید.</translation>
 <translation id="7018032895891496381">Google Chrome از موتور جستجوی پیش‌فرض شما استفاده می‌کند، که اکنون روی <ph name="PAGE_TITLE"/> تنظیم شده است. آیا می‌خواهید موتور جستجوی پیش‌فرض خود را حفظ کنید؟</translation>
 <translation id="6326175484149238433">حذف از Chrome</translation>
+<translation id="2871893339301912279">شما در حال حاضر وارد سیستم Chrome شده‌اید!</translation>
 <translation id="7161904924553537242">به Google Chrome خوش آمدید</translation>
 <translation id="8669527147644353129">راهنمای Google Chrome</translation>
 <translation id="870251953148363156">به‌روزرسانی Goo&amp;gle Chrome</translation>
@@ -172,9 +182,11 @@
 <translation id="163860049029591106">شروع به کار با سیستم عامل Chrome</translation>
 <translation id="1399397803214730675">این رایانه از قبل دارای نسخه جدیدتر Google Chrome است. اگر نرم‌افزار کار نمی‌کند، لطفاً Google Chrome را حذف نصب کرده و دوباره امتحان کنید.</translation>
 <translation id="576822117893741893">نمایش منوی Chrome</translation>
+<translation id="8520216698644798023">خطای Windows شناسایی شد</translation>
 <translation id="3444832043240812445">در صورتی که <ph name="BEGIN_LINK"/>ارسال گزارش خرابی را فعال کنید<ph name="END_LINK"/>، این صفحه فقط اطلاعاتی را در مورد مشکلات اخیر شما نشان می‌دهد.</translation>
 <translation id="8614913330719544658">Google Chrome پاسخ نمی‌دهد. مجدداً راه‌اندازی شود؟</translation>
 <translation id="5318056482164160049">میزبان افزونه Google Chrome</translation>
+<translation id="6479088914470149333">رایانه شما برخی از فایل‌های مهم سیستم Windows را ندارد، بنابراین Chrome نمی‌تواند درست کار کند.</translation>
 <translation id="6126631249883707068">آیا می‌خواهید Google Chrome رمز ورود شما را ذخیره کند؟</translation>
 <translation id="7773845170078702898">آیا می‌خواهید Google Chrome گذرواژه شما برای این سایت را ذخیره کند؟</translation>
 <translation id="5046764976540625289">خروج از Chrome</translation>
@@ -188,17 +200,19 @@
 <translation id="7253415505590551024">دانلودهایی اکنون در حال انجام هستند. آیا می‌خواهید از Google Chrome خارج شوید و دانلودها را لغو کنید؟</translation>
 <translation id="7196020411877309443">چرا من این را می‌بینم؟</translation>
 <translation id="2769762047821873045">Google Chrome مرورگر پیش‌فرض شما نیست.</translation>
+<translation id="3135343025848309798">از راه‌انداز برنامه Chrome استفاده کنید تا برنامه‌های خود را راه‌اندازی کنید.</translation>
 <translation id="7825851276765848807">بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="1061257178446858647">اکنون وارد Chrome شده‌اید! نشانک‌ها، سابقه، و دیگر تنظیمات در حساب Google شما همگام می‌شوند.</translation>
 <translation id="3335672657969596251">Google Chrome از <ph name="OS_NAME"/> پشتیبانی نمی‌کند.</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
+<translation id="7311208098963907218">میان‌بری را برای راه‌انداز برنامه‌های Chrome در نوار وظیفه Windows نشان دهید.</translation>
 <translation id="5334545119300433702">این مدول با Google Chrome تداخل دارد.</translation>
 <translation id="4407807842708586359">سیستم عامل Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome به‌روز است</translation>
 <translation id="2084710999043359739">افزودن به Chrome</translation>
-<translation id="4710332363312836873">راه‌انداز Chrome Apps</translation>
 <translation id="4084877369264707540">Google Chrome Frame در حال حاضر نصب است و برای تمام کاربران این رایانه قابل دسترس است. اگر می‌خواهید Google Chrome Frame را در سطح کاربر نصب کنید، باید ابتدا نسخه سطح سیستمی آن را که توسط سرپرست نصب شده، حذف‌نصب کنید.</translation>
 <translation id="3360895254066713204">راهنمای Chrome</translation>
+<translation id="6991142834212251086">مرتبط کردن داده‌های Chrome من به این حساب</translation>
 <translation id="3451115285585441894">افزودن به Chrome...</translation>
 <translation id="1001534784610492198">آرشیو نصب کننده خراب یا نامعتبر است. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="2246246234298806438">زمانی که نمایش دهنده داخلی PDF وجود نداشته باشد، Google Chrome نمی‌تواند پیش‌نمایش چاپ را نشان دهد.</translation>
@@ -207,6 +221,7 @@
 <translation id="1698376642261615901">Google Chrome یک مرورگر وب است که برنامه‌های کاربردی و صفحات وب را در یک چشم به هم زدن اجرا و باز می‌کند. استفاده از آن سریع و آسان است و همیشه در دسترس است. با برنامه‌های حفاظت در برابر فیشینگ و بدافزار تعبیه شده در Google Chrome، وب را با امنیت بیشتر مرور کنید.</translation>
 <translation id="3419750618886995598">به‌روزرسانی Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome یا Google Chrome Frame را نمی‌توان به‌روزرسانی کرد زیرا تنظیمات Google Update Group Policy ناهماهنگ هستند. با استفاده از Group Policy Editor، جایگزین قانون به‌روزرسانی را برای برنامهٔ Google Chrome Binaries تنظیم کنید و دوباره امتحان کنید. برای جزئیات بیشتر http://goo.gl/uJ9gV را ببینید.</translation>
+<translation id="853189717709780425">شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست اجازه کنترل نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما مانند برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما برای همیشه به <ph name="USER_NAME"/> مرتبط می‌شوند. شما می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google خود حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط کنید.</translation>
 <translation id="6049075767726609708">یک سرپرست Google Chrome را روی این سیستم نصب کرده است، و برای همه کاربران در دسترس است. اکنون Google Chrome در سطح سیستم جایگزین این برنامه نصب شده در سطح کاربر خواهد شد.</translation>
 <translation id="4338032231047635328">شما سعی داشتید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; برسید، اما گواهی ارائه شده از سوی سرور دارای خطا است. Google Chrome نمی‌تواند از گواهی دارای خطا استفاده کند و نمی‌تواند هویت سایتی را تعیین کند که می‌خواهید به آن وصل شوید.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>

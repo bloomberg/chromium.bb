@@ -13,6 +13,7 @@
 <translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="7672203038394118626">Bu bilgisayara uzaktan bağlantılar devre dışı bırakıldı.</translation>
+<translation id="8244400547700556338">Nasıl yapıldığını öğrenin.</translation>
 <translation id="332624996707057614">Bilgisayarın adını düzenle</translation>
 <translation id="1996161829609978754">Chrome, Chromoting Ana Bilgisayar yükleyicisini indiriyor. İndirme işlemi tamamlandığında, devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
 <translation id="7658239707568436148">İptal</translation>
@@ -60,7 +61,6 @@
 <translation id="5908809458024685848">Chromoting'de oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
 <translation id="7401733114166276557">Chrome Uzaktan Masaüstü</translation>
 <translation id="3362124771485993931">PIN'i yeniden yazın</translation>
-<translation id="4686372254213217147">Orijinal boyut</translation>
 <translation id="154040539590487450">Uzaktan erişim hizmeti başlatılamadı.</translation>
 <translation id="7948001860594368197">Ekran seçenekleri</translation>
 <translation id="8172070902751707422">Kimlik doğrulama başarısız oldu. Lütfen Chrome Uzaktan Masaüstü'nde tekrar oturum açın.</translation>
@@ -69,6 +69,7 @@
 <translation id="173559734173571936">Chrome Uzaktan Masaüstü uygulamasını kullanabilmek için öncelikle, bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız gerekir.</translation>
 <translation id="9032136467203159543">Chromoting için gereken bazı bileşenler eksik. Lütfen son sürümü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="1342297293546459414">Paylaşılan bir bilgisayarı görün ve denetleyin.</translation>
+<translation id="1520828917794284345">Masaüstünü uygun şekilde yeniden boyutlandır</translation>
 <translation id="701976023053394610">Uzaktan Yardım</translation>
 <translation id="6193698048504518729"><ph name="HOSTNAME"/> adlı ana bilgisayara bağlan</translation>
 <translation id="3020807351229499221">PIN güncellenemedi. Lütfen daha sonra tekrar deneyin.</translation>
@@ -101,6 +102,7 @@
 <translation id="7038683108611689168">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chromoting'i daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="7649070708921625228">Yardım</translation>
+<translation id="4517233780764084060">NOT: Tüm klavye kısayollarının kullanılabilir olduğundan emin olmak için, Chromoting'i 'Pencere olarak aç' şeklinde yapılandırabilirsiniz.</translation>
 <translation id="4176825807642096119">Erişim kodu</translation>
 <translation id="7144878232160441200">Yeniden Dene</translation>
 <translation id="4703799847237267011">Chromoting oturumunuz sonlandırıldı.</translation>
