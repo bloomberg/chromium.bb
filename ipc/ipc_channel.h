@@ -167,8 +167,8 @@ class IPC_EXPORT Channel : public Sender {
   bool HasAcceptedConnection() const;
 
   // Returns true if the peer process' effective user id can be determined, in
-  // which case the supplied client_euid is updated with it.
-  bool GetClientEuid(uid_t* client_euid) const;
+  // which case the supplied peer_euid is updated with it.
+  bool GetPeerEuid(uid_t* peer_euid) const;
 
   // Closes any currently connected socket, and returns to a listening state
   // for more connections.
