@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "content/shell/webkit_test_platform_support.h"
 
 #include <AppKit/AppKit.h>
@@ -59,7 +60,7 @@ bool WebKitTestPlatformInitialize() {
   // its direct dependents, it's not easily possible to put the ttf files into
   // the helper's resource directory instead of the outer bundle's resource
   // directory.
-  NSString* bundle = [[NSBundle mainBundle] bundlePath];
+  NSString* bundle = [base::mac::FrameworkBundle() bundlePath];
   bundle = [bundle stringByAppendingPathComponent:@"../.."];
   NSURL* resources_directory = [[NSBundle bundleWithPath:bundle] resourceURL];
 
