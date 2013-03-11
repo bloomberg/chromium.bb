@@ -182,8 +182,6 @@
         'ext/skia_sandbox_support_win.h',
         'ext/skia_sandbox_support_win.cc',
         'ext/skia_trace_shim.h',
-        'ext/skia_utils_base.cc',
-        'ext/skia_utils_base.h',
         'ext/skia_utils_ios.mm',
         'ext/skia_utils_ios.h',
         'ext/skia_utils_mac.mm',
@@ -376,11 +374,8 @@
             '-Wno-unused-function',
           ],
           'sources': [
-            '../third_party/skia/src/ports/SkFontHost_fontconfig.cpp',
-            '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
-          ],
-          'sources!': [
-            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
+            'ext/SkFontHost_fontconfig.cpp',
+            'ext/SkFontHost_fontconfig_direct.cpp',
           ],
           'defines': [
 #            'SK_USE_COLOR_LUMINANCE',
