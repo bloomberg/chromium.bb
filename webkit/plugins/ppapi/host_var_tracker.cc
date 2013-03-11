@@ -16,7 +16,8 @@ using ppapi::NPObjectVar;
 namespace webkit {
 namespace ppapi {
 
-HostVarTracker::HostVarTracker() {
+HostVarTracker::HostVarTracker()
+  : VarTracker(SINGLE_THREADED) {
 }
 
 HostVarTracker::~HostVarTracker() {
@@ -27,7 +28,7 @@ ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
 }
 
 void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
-  DCHECK(CalledOnValidThread());
+  CheckThreadingPreconditions();
 
   InstanceMap::iterator found_instance = instance_map_.find(
       object_var->pp_instance());
@@ -47,7 +48,7 @@ void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
 }
 
 void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
-  DCHECK(CalledOnValidThread());
+  CheckThreadingPreconditions();
 
   InstanceMap::iterator found_instance = instance_map_.find(
       object_var->pp_instance());
@@ -72,7 +73,7 @@ void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
 
 NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
                                                     NPObject* np_object) {
-  DCHECK(CalledOnValidThread());
+  CheckThreadingPreconditions();
 
   InstanceMap::iterator found_instance = instance_map_.find(instance);
   if (found_instance == instance_map_.end())
@@ -87,7 +88,7 @@ NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
 }
 
 int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
-  DCHECK(CalledOnValidThread());
+  CheckThreadingPreconditions();
 
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
@@ -96,7 +97,7 @@ int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
 }
 
 void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
-  DCHECK(CalledOnValidThread());
+  CheckThreadingPreconditions();
 
   InstanceMap::iterator found_instance = instance_map_.find(instance);
   if (found_instance == instance_map_.end())
