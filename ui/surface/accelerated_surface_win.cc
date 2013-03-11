@@ -187,8 +187,6 @@ void PresentThread::InitDevice() {
 void PresentThread::ResetDevice() {
   TRACE_EVENT0("gpu", "PresentThread::ResetDevice");
 
-  LOG(ERROR) << "Reseting D3D device";
-
   // The D3D device must be created on the present thread.
   CHECK(message_loop() == MessageLoop::current());
 
