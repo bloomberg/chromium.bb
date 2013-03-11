@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
@@ -373,6 +374,26 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   // Work around for bug in NativeWidgetAura.
   // TODO: fix bug and remove this.
   parent->Close();
+}
+
+// Verifies that widget->FlashFrame() sets aura::client::kDrawAttentionKey,
+// and activating the window clears it.
+TEST_F(NativeWidgetAuraTest, FlashFrame) {
+  scoped_ptr<Widget> widget(new Widget());
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.context = root_window();
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+  aura::Window* window = widget->GetNativeWindow();
+  EXPECT_FALSE(window->GetProperty(aura::client::kDrawAttentionKey));
+  widget->FlashFrame(true);
+  EXPECT_TRUE(window->GetProperty(aura::client::kDrawAttentionKey));
+  widget->FlashFrame(false);
+  EXPECT_FALSE(window->GetProperty(aura::client::kDrawAttentionKey));
+  widget->FlashFrame(true);
+  EXPECT_TRUE(window->GetProperty(aura::client::kDrawAttentionKey));
+  widget->Activate();
+  EXPECT_FALSE(window->GetProperty(aura::client::kDrawAttentionKey));
 }
 
 }  // namespace

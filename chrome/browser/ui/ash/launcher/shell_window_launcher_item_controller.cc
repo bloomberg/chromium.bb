@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 
 #include "ash/launcher/launcher_util.h"
+#include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 
 namespace {
 
@@ -36,7 +39,8 @@ ShellWindowLauncherItemController::ShellWindowLauncherItemController(
     const std::string& app_id,
     ChromeLauncherController* controller)
     : LauncherItemController(type, app_id, controller),
-      app_launcher_id_(app_launcher_id) {
+      app_launcher_id_(app_launcher_id),
+      ALLOW_THIS_IN_INITIALIZER_LIST(observed_windows_(this)) {
 }
 
 ShellWindowLauncherItemController::~ShellWindowLauncherItemController() {
@@ -52,6 +56,7 @@ void ShellWindowLauncherItemController::AddShellWindow(
     shell_windows_.push_front(shell_window);
   else
     shell_windows_.push_back(shell_window);
+  observed_windows_.Add(shell_window->GetNativeWindow());
 }
 
 void ShellWindowLauncherItemController::RemoveShellWindowForWindow(
@@ -61,6 +66,7 @@ void ShellWindowLauncherItemController::RemoveShellWindowForWindow(
                    ShellWindowHasWindow(window));
   if (iter != shell_windows_.end())
     shell_windows_.erase(iter);
+  observed_windows_.Remove(window);
 }
 
 void ShellWindowLauncherItemController::SetActiveWindow(
@@ -186,6 +192,23 @@ ShellWindowLauncherItemController::GetApplicationList() {
     }
   }
   return items.Pass();
+}
+
+void ShellWindowLauncherItemController::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key == aura::client::kDrawAttentionKey) {
+    ash::LauncherItemStatus status;
+    if (ash::wm::IsActiveWindow(window)) {
+      status = ash::STATUS_ACTIVE;
+    } else if (window->GetProperty(aura::client::kDrawAttentionKey)) {
+      status = ash::STATUS_ATTENTION;
+    } else {
+      status = ash::STATUS_RUNNING;
+    }
+    launcher_controller()->SetItemStatus(launcher_id(), status);
+  }
 }
 
 void ShellWindowLauncherItemController::RestoreOrShow(

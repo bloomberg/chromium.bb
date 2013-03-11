@@ -461,9 +461,12 @@ bool NativeWidgetAura::IsVisible() const {
 void NativeWidgetAura::Activate() {
   // We don't necessarily have a root window yet. This can happen with
   // constrained windows.
-  if (window_->GetRootWindow())
+  if (window_->GetRootWindow()) {
     aura::client::GetActivationClient(window_->GetRootWindow())->ActivateWindow(
         window_);
+  }
+  if (window_->GetProperty(aura::client::kDrawAttentionKey))
+    window_->SetProperty(aura::client::kDrawAttentionKey, false);
 }
 
 void NativeWidgetAura::Deactivate() {
