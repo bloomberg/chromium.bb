@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "chromeos/dbus/blocking_method_caller.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
@@ -173,7 +174,7 @@ void OnError(const ShillClientHelper::ErrorCallback& error_callback,
 
 ShillClientHelper::ShillClientHelper(dbus::Bus* bus,
                                      dbus::ObjectProxy* proxy)
-    : blocking_method_caller_(bus, proxy),
+    : blocking_method_caller_(new BlockingMethodCaller(bus, proxy)),
       proxy_(proxy),
       weak_ptr_factory_(this) {
 }
@@ -330,7 +331,7 @@ void ShillClientHelper::CallListValueMethodWithErrorCallback(
 bool ShillClientHelper::CallVoidMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(
-      blocking_method_caller_.CallMethodAndBlock(method_call));
+      blocking_method_caller_->CallMethodAndBlock(method_call));
   if (!response.get())
     return false;
   return true;
@@ -339,7 +340,7 @@ bool ShillClientHelper::CallVoidMethodAndBlock(
 base::DictionaryValue* ShillClientHelper::CallDictionaryValueMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(
-      blocking_method_caller_.CallMethodAndBlock(method_call));
+      blocking_method_caller_->CallMethodAndBlock(method_call));
   if (!response.get())
     return NULL;
 

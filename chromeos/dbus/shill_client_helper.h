@@ -9,10 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 
@@ -37,6 +37,8 @@ class Signal;
 }  // namespace dbus
 
 namespace chromeos {
+
+class BlockingMethodCaller;
 
 // A class to help implement Shill clients.
 class ShillClientHelper {
@@ -158,7 +160,7 @@ class ShillClientHelper {
   void OnPropertyChanged(dbus::Signal* signal);
 
   // TODO(hashimoto): Remove this when we no longer need to make blocking calls.
-  BlockingMethodCaller blocking_method_caller_;
+  scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
   dbus::ObjectProxy* proxy_;
   PropertyChangedHandler property_changed_handler_;
   ObserverList<ShillPropertyChangedObserver, true /* check_empty */>
