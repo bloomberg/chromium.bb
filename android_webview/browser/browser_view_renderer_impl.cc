@@ -5,7 +5,6 @@
 #include "android_webview/browser/browser_view_renderer_impl.h"
 
 #include <android/bitmap.h>
-#include <sys/system_properties.h>
 
 #include "android_webview/common/renderer_picture_map.h"
 #include "android_webview/public/browser/draw_gl.h"
@@ -25,17 +24,6 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/gl/gl_bindings.h"
-
-// TODO(leandrogracia): remove when crbug.com/164140 is closed.
-// Borrowed from gl2ext.h. Cannot be included due to conflicts with
-// gl_bindings.h and the EGL library methods (eglGetCurrentContext).
-#ifndef GL_TEXTURE_EXTERNAL_OES
-#define GL_TEXTURE_EXTERNAL_OES 0x8D65
-#endif
-
-#ifndef GL_TEXTURE_BINDING_EXTERNAL_OES
-#define GL_TEXTURE_BINDING_EXTERNAL_OES 0x8D67
-#endif
 
 using base::android::AttachCurrentThread;
 using base::android::JavaRef;
@@ -229,87 +217,6 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
   if (!compositor_visible_)
     return;
 
-  // TODO(leandrogracia): remove when crbug.com/164140 is closed.
-  // ---------------------------------------------------------------------------
-  GLint texture_external_oes_binding;
-  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_external_oes_binding);
-
-  GLint vertex_array_buffer_binding;
-  glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding);
-
-  GLint index_array_buffer_binding;
-  glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &index_array_buffer_binding);
-
-  GLint pack_alignment;
-  glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment);
-
-  GLint unpack_alignment;
-  glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment);
-
-  struct {
-    GLint enabled;
-    GLint size;
-    GLint type;
-    GLint normalized;
-    GLint stride;
-    GLvoid* pointer;
-  } vertex_attrib[3];
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib); ++i) {
-    glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED,
-                        &vertex_attrib[i].enabled);
-    glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_SIZE,
-                        &vertex_attrib[i].size);
-    glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_TYPE,
-                        &vertex_attrib[i].type);
-    glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED,
-                        &vertex_attrib[i].normalized);
-    glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_STRIDE,
-                        &vertex_attrib[i].stride);
-    glGetVertexAttribPointerv(i, GL_VERTEX_ATTRIB_ARRAY_POINTER,
-                        &vertex_attrib[i].pointer);
-  }
-
-  GLboolean depth_test;
-  glGetBooleanv(GL_DEPTH_TEST, &depth_test);
-
-  GLboolean cull_face;
-  glGetBooleanv(GL_CULL_FACE, &cull_face);
-
-  GLboolean color_mask[4];
-  glGetBooleanv(GL_COLOR_WRITEMASK, color_mask);
-
-  GLboolean blend_enabled;
-  glGetBooleanv(GL_BLEND, &blend_enabled);
-
-  GLint blend_src_rgb;
-  glGetIntegerv(GL_BLEND_SRC_RGB, &blend_src_rgb);
-
-  GLint blend_src_alpha;
-  glGetIntegerv(GL_BLEND_SRC_ALPHA, &blend_src_alpha);
-
-  GLint blend_dest_rgb;
-  glGetIntegerv(GL_BLEND_DST_RGB, &blend_dest_rgb);
-
-  GLint blend_dest_alpha;
-  glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_dest_alpha);
-
-  GLint active_texture;
-  glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture);
-
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
-
-  GLboolean scissor_test;
-  glGetBooleanv(GL_SCISSOR_TEST, &scissor_test);
-
-  GLint scissor_box[4];
-  glGetIntegerv(GL_SCISSOR_BOX, scissor_box);
-
-  GLint current_program;
-  glGetIntegerv(GL_CURRENT_PROGRAM, &current_program);
-  // ---------------------------------------------------------------------------
-
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
   EGLContext current_context = eglGetCurrentContext();
@@ -374,66 +281,10 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
   compositor_->Composite();
   is_composite_pending_ = false;
 
-  // TODO(leandrogracia): remove when crbug.com/164140 is closed.
-  // ---------------------------------------------------------------------------
-  char no_gl_restore_prop[PROP_VALUE_MAX];
-  __system_property_get("webview.chromium_no_gl_restore", no_gl_restore_prop);
-  if (!strcmp(no_gl_restore_prop, "true")) {
-    LOG(WARNING) << "Android GL functor not restoring the previous GL state.";
-  } else {
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
-
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(vertex_attrib); ++i) {
-      glVertexAttribPointer(i, vertex_attrib[i].size,
-          vertex_attrib[i].type, vertex_attrib[i].normalized,
-          vertex_attrib[i].stride, vertex_attrib[i].pointer);
-
-      if (vertex_attrib[i].enabled)
-        glEnableVertexAttribArray(i);
-      else
-        glDisableVertexAttribArray(i);
-    }
-
-    if (depth_test)
-      glEnable(GL_DEPTH_TEST);
-    else
-      glDisable(GL_DEPTH_TEST);
-
-    if (cull_face)
-      glEnable(GL_CULL_FACE);
-    else
-      glDisable(GL_CULL_FACE);
-
-    glColorMask(color_mask[0], color_mask[1], color_mask[2], color_mask[3]);
-
-    if (blend_enabled)
-      glEnable(GL_BLEND);
-    else
-      glDisable(GL_BLEND);
-
-    glBlendFuncSeparate(blend_src_rgb, blend_dest_rgb,
-                        blend_src_alpha, blend_dest_alpha);
-
-    glActiveTexture(active_texture);
-
-    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-
-    if (scissor_test)
-      glEnable(GL_SCISSOR_TEST);
-    else
-      glDisable(GL_SCISSOR_TEST);
-
-    glScissor(scissor_box[0], scissor_box[1], scissor_box[2],
-              scissor_box[3]);
-
-    glUseProgram(current_program);
-  }
-  // ---------------------------------------------------------------------------
+  // The GL functor must ensure these are set to zero before returning.
+  // Not setting them leads to graphical artifacts that can affect other apps.
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void BrowserViewRendererImpl::SetScrollForHWFrame(int x, int y) {
