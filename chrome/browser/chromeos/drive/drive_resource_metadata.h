@@ -31,7 +31,6 @@ struct CreateDBParams;
 class DriveDirectory;
 class DriveEntry;
 class DriveEntryProto;
-class DriveFile;
 class ResourceMetadataDB;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
@@ -276,8 +275,8 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   scoped_ptr<DriveEntry> CreateDriveEntryFromProto(
       const DriveEntryProto& entry_proto);
 
-  // Creates a DriveFile instance.
-  scoped_ptr<DriveFile> CreateDriveFile();
+  // Creates a DriveEntry instance.
+  scoped_ptr<DriveEntry> CreateDriveEntry();
 
   // Creates a DriveDirectory instance.
   scoped_ptr<DriveDirectory> CreateDriveDirectory();

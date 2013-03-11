@@ -4,14 +4,10 @@
 
 #include "chrome/browser/chromeos/drive/drive_files.h"
 
-#include "base/platform_file.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 
 namespace drive {
@@ -19,84 +15,60 @@ namespace drive {
 // DriveEntry class.
 
 DriveEntry::DriveEntry(DriveResourceMetadata* resource_metadata)
-    : resource_metadata_(resource_metadata),
-      deleted_(false) {
+    : resource_metadata_(resource_metadata) {
   DCHECK(resource_metadata);
 }
 
 DriveEntry::~DriveEntry() {
 }
 
-DriveFile* DriveEntry::AsDriveFile() {
-  return NULL;
-}
-
 DriveDirectory* DriveEntry::AsDriveDirectory() {
   return NULL;
 }
 
-const DriveFile* DriveEntry::AsDriveFileConst() const {
-  // cast away const and call the non-const version. This is safe.
-  return const_cast<DriveEntry*>(this)->AsDriveFile();
-}
-
-const DriveDirectory* DriveEntry::AsDriveDirectoryConst() const {
-  // cast away const and call the non-const version. This is safe.
-  return const_cast<DriveEntry*>(this)->AsDriveDirectory();
-}
-
 base::FilePath DriveEntry::GetFilePath() const {
   base::FilePath path;
-  DriveEntry* parent = parent_resource_id_.empty() ? NULL :
-      resource_metadata_->GetEntryByResourceId(parent_resource_id_);
+  DriveEntry* parent = proto_.parent_resource_id().empty() ? NULL :
+      resource_metadata_->GetEntryByResourceId(proto_.parent_resource_id());
   if (parent)
     path = parent->GetFilePath();
-  path = path.Append(base_name());
+  path = path.Append(proto_.base_name());
   return path;
 }
 
 void DriveEntry::set_parent_resource_id(const std::string& parent_resource_id) {
-  parent_resource_id_ = parent_resource_id;
+  proto_.set_parent_resource_id(parent_resource_id);
 }
 
 void DriveEntry::SetBaseNameFromTitle() {
-  base_name_ = util::EscapeUtf8FileName(title_);
-}
-
-// DriveFile class implementation.
-
-DriveFile::DriveFile(DriveResourceMetadata* resource_metadata)
-    : DriveEntry(resource_metadata),
-      kind_(google_apis::ENTRY_KIND_UNKNOWN),
-      is_hosted_document_(false) {
-  file_info_.is_directory = false;
-}
-
-DriveFile::~DriveFile() {
-}
-
-DriveFile* DriveFile::AsDriveFile() {
-  return this;
-}
-
-void DriveFile::SetBaseNameFromTitle() {
-  if (is_hosted_document_) {
-    base_name_ = util::EscapeUtf8FileName(title_ + document_extension_);
+  if (proto_.has_file_specific_info() &&
+      proto_.file_specific_info().is_hosted_document()) {
+    proto_.set_base_name(util::EscapeUtf8FileName(
+        proto_.title() + proto_.file_specific_info().document_extension()));
   } else {
-    DriveEntry::SetBaseNameFromTitle();
+    proto_.set_base_name(util::EscapeUtf8FileName(proto_.title()));
   }
 }
 
 // DriveDirectory class implementation.
 
 DriveDirectory::DriveDirectory(DriveResourceMetadata* resource_metadata)
-    : DriveEntry(resource_metadata),
-      changestamp_(0) {
-  file_info_.is_directory = true;
+    : DriveEntry(resource_metadata) {
+  proto_.mutable_file_info()->set_is_directory(true);
 }
 
 DriveDirectory::~DriveDirectory() {
   RemoveChildren();
+}
+
+int64 DriveDirectory::changestamp() const {
+  DCHECK(proto_.has_directory_specific_info());
+  return proto_.directory_specific_info().changestamp();
+}
+
+void DriveDirectory::set_changestamp(int64 changestamp) {
+  DCHECK(proto_.has_directory_specific_info());
+  proto_.mutable_directory_specific_info()->set_changestamp(changestamp);
 }
 
 DriveDirectory* DriveDirectory::AsDriveDirectory() {
@@ -105,7 +77,7 @@ DriveDirectory* DriveDirectory::AsDriveDirectory() {
 
 void DriveDirectory::AddEntry(DriveEntry* entry) {
   DCHECK(entry->parent_resource_id().empty() ||
-         entry->parent_resource_id() == resource_id_);
+         entry->parent_resource_id() == proto_.resource_id());
 
   // Try to add the entry to resource map.
   if (!resource_metadata_->AddEntryToResourceMap(entry)) {
@@ -145,14 +117,14 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
            << ", resource = " + entry->resource_id();
 
   // Setup child and parent links.
-  if (entry->AsDriveFile())
-    child_files_.insert(std::make_pair(entry->base_name(),
-                                       entry->resource_id()));
-
-  if (entry->AsDriveDirectory())
+  if (entry->proto().file_info().is_directory()) {
     child_directories_.insert(std::make_pair(entry->base_name(),
                                              entry->resource_id()));
-  entry->set_parent_resource_id(resource_id_);
+  } else {
+    child_files_.insert(std::make_pair(entry->base_name(),
+                                       entry->resource_id()));
+  }
+  entry->set_parent_resource_id(proto_.resource_id());
 }
 
 void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
@@ -219,7 +191,7 @@ void DriveDirectory::RemoveChildren() {
 }
 
 void DriveDirectory::RemoveChildFiles() {
-  DVLOG(1) << "RemoveChildFiles " << resource_id();
+  DVLOG(1) << "RemoveChildFiles " << proto_.resource_id();
   for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     DriveEntry* child = resource_metadata_->GetEntryByResourceId(iter->second);
@@ -259,87 +231,18 @@ void DriveDirectory::GetChildDirectoryPaths(
 // Convert to/from proto.
 
 void DriveEntry::FromProto(const DriveEntryProto& proto) {
-  util::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info_);
-
-  // Don't copy from proto.base_name() as base_name_ is computed in
-  // SetBaseNameFromTitle().
-  title_ = proto.title();
-  resource_id_ = proto.resource_id();
-  parent_resource_id_ = proto.parent_resource_id();
-  edit_url_ = GURL(proto.edit_url());
-  download_url_ = GURL(proto.download_url());
-  upload_url_ = GURL(proto.upload_url());
-  deleted_ = proto.deleted();
+  proto_ = proto;
   SetBaseNameFromTitle();
-}
-
-void DriveEntry::ToProto(DriveEntryProto* proto) const {
-  util::ConvertPlatformFileInfoToProto(file_info_, proto->mutable_file_info());
-
-  // The base_name field is used in GetFileInfoByPathAsync(). As shown in
-  // FromProto(), the value is discarded when deserializing from proto.
-  proto->set_base_name(base_name_);
-  proto->set_title(title_);
-  proto->set_resource_id(resource_id_);
-  proto->set_parent_resource_id(parent_resource_id_);
-  proto->set_edit_url(edit_url_.spec());
-  proto->set_download_url(download_url_.spec());
-  proto->set_upload_url(upload_url_.spec());
-  proto->set_deleted(deleted_);
-}
-
-void DriveEntry::ToProtoFull(DriveEntryProto* proto) const {
-  if (AsDriveFileConst()) {
-    AsDriveFileConst()->ToProto(proto);
-  } else if (AsDriveDirectoryConst()) {
-    // Don't use DriveDirectory::ToProto() as we are only interested in the
-    // directory itself (i.e. no children).
-    AsDriveDirectoryConst()->ToProtoSelf(proto);
-  } else {
-    NOTREACHED();
-  }
-}
-
-void DriveFile::FromProto(const DriveEntryProto& proto) {
-  DCHECK(!proto.file_info().is_directory());
-
-  DriveEntry::FromProto(proto);
-
-  thumbnail_url_ = GURL(proto.file_specific_info().thumbnail_url());
-  alternate_url_ = GURL(proto.file_specific_info().alternate_url());
-  share_url_ = GURL(proto.file_specific_info().share_url());
-  content_mime_type_ = proto.file_specific_info().content_mime_type();
-  file_md5_ = proto.file_specific_info().file_md5();
-  document_extension_ = proto.file_specific_info().document_extension();
-  is_hosted_document_ = proto.file_specific_info().is_hosted_document();
-
-  // SetBaseNameFromTitle is called here, which is necessary because
-  // is_hosted_document_ and document_extension_ have changed.
-  SetBaseNameFromTitle();
-}
-
-void DriveFile::ToProto(DriveEntryProto* proto) const {
-  DriveEntry::ToProto(proto);
-  DCHECK(!proto->file_info().is_directory());
-  DriveFileSpecificInfo* file_specific_info =
-      proto->mutable_file_specific_info();
-  file_specific_info->set_thumbnail_url(thumbnail_url_.spec());
-  file_specific_info->set_alternate_url(alternate_url_.spec());
-  file_specific_info->set_share_url(share_url_.spec());
-  file_specific_info->set_content_mime_type(content_mime_type_);
-  file_specific_info->set_file_md5(file_md5_);
-  file_specific_info->set_document_extension(document_extension_);
-  file_specific_info->set_is_hosted_document(is_hosted_document_);
 }
 
 void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   DCHECK(proto.drive_entry().file_info().is_directory());
   DCHECK(!proto.drive_entry().has_file_specific_info());
 
-  FromProtoSelf(proto.drive_entry());
+  DriveEntry::FromProto(proto.drive_entry());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
-    scoped_ptr<DriveFile> file(resource_metadata_->CreateDriveFile());
+    scoped_ptr<DriveEntry> file(resource_metadata_->CreateDriveEntry());
     file->FromProto(proto.child_files(i));
     AddEntry(file.release());
   }
@@ -350,20 +253,17 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   }
 }
 
-void DriveDirectory::FromProtoSelf(const DriveEntryProto& proto) {
-  changestamp_ = proto.directory_specific_info().changestamp();
-  DriveEntry::FromProto(proto);
-}
-
 void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
-  ToProtoSelf(proto->mutable_drive_entry());
+  *proto->mutable_drive_entry() = proto_;
+  DCHECK(proto->drive_entry().file_info().is_directory());
 
   for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    DriveFile* file = resource_metadata_->GetEntryByResourceId(
-        iter->second)->AsDriveFile();
+    DriveEntry* file = resource_metadata_->GetEntryByResourceId(
+        iter->second);
     DCHECK(file);
-    file->ToProto(proto->add_child_files());
+    DCHECK(!file->proto().file_info().is_directory());
+    *proto->add_child_files() = file->proto();
   }
   for (ChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
@@ -374,26 +274,19 @@ void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
   }
 }
 
-void DriveDirectory::ToProtoSelf(DriveEntryProto* proto) const {
-  DriveEntry::ToProto(proto);
-  DCHECK(proto->file_info().is_directory());
-
-  proto->mutable_directory_specific_info()->set_changestamp(changestamp_);
-}
-
 scoped_ptr<DriveEntryProtoVector> DriveDirectory::ToProtoVector() const {
   scoped_ptr<DriveEntryProtoVector> entries(new DriveEntryProtoVector);
   // Use ToProtoFull, as we don't want to include children in |proto|.
   for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    DriveEntryProto proto;
-    resource_metadata_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
+    const DriveEntryProto& proto =
+        resource_metadata_->GetEntryByResourceId(iter->second)->proto();
     entries->push_back(proto);
   }
   for (ChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    DriveEntryProto proto;
-    resource_metadata_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
+    const DriveEntryProto& proto =
+        resource_metadata_->GetEntryByResourceId(iter->second)->proto();
     entries->push_back(proto);
   }
 

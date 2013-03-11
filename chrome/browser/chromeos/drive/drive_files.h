@@ -10,16 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
 namespace drive {
 
 class DriveDirectory;
-class DriveFile;
 class DriveResourceMetadata;
 
 // Used to read a directory from the file system.
@@ -33,62 +30,41 @@ class DriveEntry {
  public:
   virtual ~DriveEntry();
 
-  virtual DriveFile* AsDriveFile();
   virtual DriveDirectory* AsDriveDirectory();
 
-  // const versions of AsDriveFile and AsDriveDirectory.
-  const DriveFile* AsDriveFileConst() const;
-  const DriveDirectory* AsDriveDirectoryConst() const;
+  const DriveEntryProto& proto() const { return proto_; }
 
-  // Converts to/from proto. Only handles the common part (i.e. does not
-  // touch |file_specific_info|).
+  // Copies values from proto.
   void FromProto(const DriveEntryProto& proto);
-  // TODO(achuith,satorux): Should this be virtual?
-  void ToProto(DriveEntryProto* proto) const;
-
-  // Similar to ToProto() but this fills in |file_specific_info| and
-  // |directory_specific_info| based on the actual type of the entry.
-  // Used to obtain full metadata of a file or a directory as
-  // DriveEntryProto.
-  void ToProtoFull(DriveEntryProto* proto) const;
-
-  const base::PlatformFileInfo& file_info() const { return file_info_; }
 
   // This is not the full path, use GetFilePath for that.
   // Note that base_name_ gets reset by SetBaseNameFromTitle() in a number of
   // situations due to de-duplication (see AddEntry).
-  const base::FilePath::StringType& base_name() const { return base_name_; }
+  const base::FilePath::StringType& base_name() const {
+    return proto_.base_name();
+  }
   // TODO(achuith): Make this private when GDataDB no longer uses path as a key.
   void set_base_name(const base::FilePath::StringType& name) {
-    base_name_ = name;
+    proto_.set_base_name(name);
   }
 
-  const base::FilePath::StringType& title() const { return title_; }
-  void set_title(const base::FilePath::StringType& title) { title_ = title; }
+  const base::FilePath::StringType& title() const { return proto_.title(); }
+  void set_title(const base::FilePath::StringType& title) {
+    proto_.set_title(title);
+  }
 
   // The unique resource ID associated with this file system entry.
-  const std::string& resource_id() const { return resource_id_; }
-  void set_resource_id(const std::string& res_id) { resource_id_ = res_id; }
-
-  // The URL used for downloading regular files as is.
-  const GURL& download_url() const { return download_url_; }
-  void set_download_url(const GURL& url) { download_url_ = url; }
-
-  // Upload URL is used for uploading files. See drive.proto for details.
-  const GURL& upload_url() const { return upload_url_; }
-  void set_upload_url(const GURL& url) { upload_url_ = url; }
-
-  // The edit URL is used for removing files and hosted documents.
-  const GURL& edit_url() const { return edit_url_; }
+  const std::string& resource_id() const { return proto_.resource_id(); }
+  void set_resource_id(const std::string& resource_id) {
+    proto_.set_resource_id(resource_id);
+  }
 
   // The resource id of the parent folder. This piece of information is needed
   // to pair files from change feeds with their directory parents within the
   // existing file system snapshot (DriveResourceMetadata::resource_map_).
-  const std::string& parent_resource_id() const { return parent_resource_id_; }
-
-  // True if file was deleted. Used only for instances that are generated from
-  // delta feeds.
-  bool is_deleted() const { return deleted_; }
+  const std::string& parent_resource_id() const {
+    return proto_.parent_resource_id();
+  }
 
   // Returns virtual file path representing this file system entry. This path
   // corresponds to file path expected by public methods of DriveFileSystem
@@ -100,6 +76,7 @@ class DriveEntry {
   virtual void SetBaseNameFromTitle();
 
  protected:
+  friend class DriveResourceMetadata;  // For access to ctor.
   // For access to set_parent_resource_id() from AddEntry.
   friend class DriveDirectory;
 
@@ -109,79 +86,13 @@ class DriveEntry {
   // It is intended to be used by DriveDirectory::AddEntry() only.
   void set_parent_resource_id(const std::string& parent_resource_id);
 
-  base::PlatformFileInfo file_info_;
-  // Title of this file (i.e. the 'title' attribute associated with a regular
-  // file, hosted document, or collection). The title is used to derive
-  // |base_name_| but may be different from |base_name_|. For example,
-  // |base_name_| has an added .g<something> extension for hosted documents or
-  // may have an extra suffix for name de-duplication on the drive file system.
-  base::FilePath::StringType title_;
-  std::string resource_id_;
-  std::string parent_resource_id_;
-  // Files with the same title will be uniquely identified with this field
-  // so we can represent them with unique URLs/paths in File API layer.
-  // For example, two files in the same directory with the same name "Foo"
-  // will show up in the virtual directory as "Foo" and "Foo (2)".
-  GURL edit_url_;
-  GURL download_url_;
-  GURL upload_url_;
-
-  // Remaining fields are not serialized.
-
-  // Name of this file in the drive virtual file system. This can change
-  // due to de-duplication (See AddEntry).
-  base::FilePath::StringType base_name_;
+  DriveEntryProto proto_;
 
   // Weak pointer to DriveResourceMetadata.
   DriveResourceMetadata* resource_metadata_;
-  bool deleted_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveEntry);
-};
-
-// Represents "file" in a drive virtual file system. On gdata feed side,
-// this could be either a regular file or a server side document.
-class DriveFile : public DriveEntry {
- public:
-  virtual ~DriveFile();
-
-  // Converts to/from proto.
-  void FromProto(const DriveEntryProto& proto);
-  void ToProto(DriveEntryProto* proto) const;
-
-  google_apis::DriveEntryKind kind() const { return kind_; }
-  const GURL& thumbnail_url() const { return thumbnail_url_; }
-  const GURL& alternate_url() const { return alternate_url_; }
-  const GURL& share_url() const { return share_url_; }
-  const std::string& content_mime_type() const { return content_mime_type_; }
-  const std::string& file_md5() const { return file_md5_; }
-  void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
-  const std::string& document_extension() const { return document_extension_; }
-  bool is_hosted_document() const { return is_hosted_document_; }
-  void set_file_info(const base::PlatformFileInfo& info) { file_info_ = info; }
-
-  // Overrides DriveEntry::SetBaseNameFromTitle() to set |base_name_| based
-  // on the value of |title_| as well as |is_hosted_document_| and
-  // |document_extension_| for hosted documents.
-  virtual void SetBaseNameFromTitle() OVERRIDE;
-
- private:
-  friend class DriveResourceMetadata;  // For access to ctor.
-
-  explicit DriveFile(DriveResourceMetadata* resource_metadata);
-  virtual DriveFile* AsDriveFile() OVERRIDE;
-
-  google_apis::DriveEntryKind kind_;  // Not saved in proto.
-  GURL thumbnail_url_;
-  GURL alternate_url_;
-  GURL share_url_;
-  std::string content_mime_type_;
-  std::string file_md5_;
-  std::string document_extension_;
-  bool is_hosted_document_;
-
-  DISALLOW_COPY_AND_ASSIGN(DriveFile);
 };
 
 // Represents "directory" in a drive virtual file system. Maps to drive
@@ -194,20 +105,12 @@ class DriveDirectory : public DriveEntry {
   void FromProto(const DriveDirectoryProto& proto);
   void ToProto(DriveDirectoryProto* proto) const;
 
-  // Similar to FromProto() but processes the directory itself (i.e. no
-  // children). The directory specific info is propagated.
-  void FromProtoSelf(const DriveEntryProto& proto);
-
-  // Similar to ToProto() but processes the directory itself (i.e. no children).
-  // The directory specific info is propagated.
-  void ToProtoSelf(DriveEntryProto* proto) const;
-
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> ToProtoVector() const;
 
   // Returns the changestamp of this directory. See drive.proto for details.
-  int64 changestamp() const { return changestamp_; }
-  void set_changestamp(int64 changestamp) { changestamp_ = changestamp; }
+  int64 changestamp() const;
+  void set_changestamp(int64 changestamp);
 
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
@@ -258,7 +161,6 @@ class DriveDirectory : public DriveEntry {
   // Collection of children.
   ChildMap child_files_;
   ChildMap child_directories_;
-  int64 changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };

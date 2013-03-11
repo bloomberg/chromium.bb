@@ -9,14 +9,9 @@
 #include <utility>
 
 #include "base/message_loop_proxy.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/tracked_objects.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -219,8 +214,8 @@ DriveResourceMetadata::~DriveResourceMetadata() {
                                       resource_metadata_db_.release());
 }
 
-scoped_ptr<DriveFile> DriveResourceMetadata::CreateDriveFile() {
-  return scoped_ptr<DriveFile>(new DriveFile(this));
+scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntry() {
+  return scoped_ptr<DriveEntry>(new DriveEntry(this));
 }
 
 scoped_ptr<DriveDirectory> DriveResourceMetadata::CreateDriveDirectory() {
@@ -423,8 +418,7 @@ void DriveResourceMetadata::GetEntryInfoByResourceId(
 
   DriveEntry* entry = GetEntryByResourceId(resource_id);
   if (entry) {
-    entry_proto.reset(new DriveEntryProto);
-    entry->ToProtoFull(entry_proto.get());
+    entry_proto.reset(new DriveEntryProto(entry->proto()));
     error = DRIVE_FILE_OK;
     drive_file_path = entry->GetFilePath();
   } else {
@@ -447,8 +441,7 @@ void DriveResourceMetadata::GetEntryInfoByPath(
 
   DriveEntry* entry = FindEntryByPathSync(path);
   if (entry) {
-    entry_proto.reset(new DriveEntryProto);
-    entry->ToProtoFull(entry_proto.get());
+    entry_proto.reset(new DriveEntryProto(entry->proto()));
     error = DRIVE_FILE_OK;
   } else {
     error = DRIVE_FILE_ERROR_NOT_FOUND;
@@ -521,10 +514,10 @@ void DriveResourceMetadata::RefreshEntry(
   }
   DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
 
-  scoped_ptr<DriveEntryProto> result_entry_proto(new DriveEntryProto);
   // We special case root here because old_parent of root is null.
   if ((!old_parent || !new_parent) && old_entry != root_.get()) {
-    drive_entry->ToProtoFull(result_entry_proto.get());
+    scoped_ptr<DriveEntryProto> result_entry_proto(
+        new DriveEntryProto(drive_entry->proto()));
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
@@ -553,7 +546,8 @@ void DriveResourceMetadata::RefreshEntry(
 
   DVLOG(1) << "RefreshEntry " << new_entry->GetFilePath().value();
   // Note that base_name is not the same for new_entry and entry_proto.
-  new_entry->ToProtoFull(result_entry_proto.get());
+  scoped_ptr<DriveEntryProto> result_entry_proto(
+      new DriveEntryProto(new_entry->proto()));
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
@@ -796,8 +790,7 @@ void DriveResourceMetadata::SaveToDB() {
   SerializedMap serialized_resources;
   for (ResourceMap::const_iterator iter = resource_map_.begin();
       iter != resource_map_.end(); ++iter) {
-    DriveEntryProto proto;
-    iter->second->ToProtoFull(&proto);
+    const DriveEntryProto& proto = iter->second->proto();
     std::string serialized_string;
     const bool ok = proto.SerializeToString(&serialized_string);
     DCHECK(ok);
@@ -864,21 +857,11 @@ bool DriveResourceMetadata::ParseFromString(
 
 scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProto(
     const DriveEntryProto& entry_proto) {
-  scoped_ptr<DriveEntry> entry;
   // TODO(achuith): This method never fails. Add basic sanity checks for
   // resource_id, etc.
-  if (entry_proto.file_info().is_directory()) {
-    scoped_ptr<DriveDirectory> directory(CreateDriveDirectory());
-    // DriveDirectory::FromProtoSelf instead of DriveEntry::FromProto() to
-    // copy the directory specific info.
-    directory->FromProtoSelf(entry_proto);
-    entry = directory.Pass();
-  } else {
-    scoped_ptr<DriveFile> file(CreateDriveFile());
-    // Call DriveFile::FromProto.
-    file->FromProto(entry_proto);
-    entry = file.Pass();
-  }
+  scoped_ptr<DriveEntry> entry = entry_proto.file_info().is_directory() ?
+      scoped_ptr<DriveEntry>(CreateDriveDirectory()) : CreateDriveEntry();
+  entry->FromProto(entry_proto);
   return entry.Pass();
 }
 
