@@ -26,7 +26,9 @@
 namespace {
 
 // Default time in seconds between invocations of perf.
-const unsigned kPerfCommandIntervalDefaultSeconds = 12 * 60 * 60;
+// This is chosen to be relatively prime with the number of seconds in a day
+// (86400). This period is roughly 13 hours.
+const unsigned kPerfCommandIntervalDefaultSeconds = 47221;
 
 // Default time in seconds perf is run for.
 const unsigned kPerfCommandDurationDefaultSeconds = 2;
