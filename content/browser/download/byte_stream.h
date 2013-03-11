@@ -21,6 +21,9 @@ class SequencedTaskRunner;
 
 namespace content {
 
+// TODO(zork): Move this class out of content/browser/download
+// crbug.com/180833
+//
 // A byte stream is a pipe to transfer bytes between a source and a
 // sink, which may be on different threads.  It is intended to be the
 // only connection between source and sink; they need have no
