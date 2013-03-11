@@ -722,6 +722,27 @@ TEST_F(DriveFileSystemTest, SearchInSubSubdir) {
   ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
 
+TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
+  // ReadDirectoryByPath() should kick off the resource list loading.
+  scoped_ptr<DriveEntryProtoVector> entries(
+      ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
+  // The root directory should be read correctly.
+  ASSERT_TRUE(entries.get());
+  EXPECT_EQ(9U, entries->size());
+}
+
+TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
+  // ReadDirectoryByPath() should kick off the resource list loading.
+  scoped_ptr<DriveEntryProtoVector> entries(
+      ReadDirectoryByPathSync(
+          base::FilePath::FromUTF8Unsafe("drive/Directory 1")));
+  // The non root directory should also be read correctly.
+  // There was a bug (crbug.com/181487), which broke this behavior.
+  // Make sure this is fixed.
+  ASSERT_TRUE(entries.get());
+  EXPECT_EQ(2U, entries->size());
+}
+
 TEST_F(DriveFileSystemTest, FilePathTests) {
   ASSERT_TRUE(LoadRootFeedDocument("chromeos/gdata/root_feed.json"));
 

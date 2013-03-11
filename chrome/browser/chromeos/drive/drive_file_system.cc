@@ -956,7 +956,12 @@ void DriveFileSystem::ReadDirectoryByPathAfterGetEntry(
   DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    callback.Run(error, hide_hosted_docs_, scoped_ptr<DriveEntryProtoVector>());
+    // If we don't know about the directory, start loading.
+    LoadIfNeeded(DirectoryFetchInfo(),
+                 base::Bind(&DriveFileSystem::ReadDirectoryByPathAfterLoad,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            directory_path,
+                            callback));
     return;
   }
 
