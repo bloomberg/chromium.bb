@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/autofill/autocheckout_bubble.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
@@ -22,10 +23,15 @@ class AutocheckoutBubbleController;
 // The bubble is only displayed when the Autofill server hints that the current
 // page is the start of an Autocheckout flow.
 class AutocheckoutBubbleViews : public views::BubbleDelegateView,
-                                public views::ButtonListener {
+                                public views::ButtonListener,
+                                public AutocheckoutBubble {
  public:
   explicit AutocheckoutBubbleViews(
       scoped_ptr<AutocheckoutBubbleController> controller);
+
+  // AutocheckoutBubble:
+  virtual void ShowBubble() OVERRIDE;
+  virtual void HideBubble() OVERRIDE;
 
  private:
   virtual ~AutocheckoutBubbleViews();

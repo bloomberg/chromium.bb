@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOCHECKOUT_BUBBLE_CONTROLLER_H_
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 class AutofillMetrics;
@@ -19,16 +20,17 @@ namespace autofill {
 class AutocheckoutBubbleController {
  public:
   // |anchor_rect| is the anchor for the bubble UI. It is the bounds of an
-  // input element in viewport space. |callback| is invoked if the bubble is
-  // accepted. It brings up the requestAutocomplete dialog to collect user input
-  // for Autocheckout.
+  // input element in viewport space. |native_view| is the parent view of the
+  // bubble. |callback| is invoked if the bubble is accepted. It brings up the
+  // requestAutocomplete dialog to collect user input for Autocheckout.
   AutocheckoutBubbleController(const gfx::RectF& anchor_rect,
+                               const gfx::NativeView& native_view,
                                const base::Closure& callback);
   ~AutocheckoutBubbleController();
 
-  static string16 AcceptText();
-  static string16 CancelText();
-  static string16 PromptText();
+  static int AcceptTextID();
+  static int CancelTextID();
+  static int PromptTextID();
 
   void BubbleAccepted();
   void BubbleCanceled();
@@ -36,6 +38,10 @@ class AutocheckoutBubbleController {
   void BubbleDestroyed() const;
 
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
+
+  const gfx::NativeView& native_view() {
+    return native_view_;
+  }
 
  protected:
   void set_metric_logger(AutofillMetrics* metric_logger);
@@ -48,6 +54,9 @@ class AutocheckoutBubbleController {
   // |anchor_rect_| is the anchor for the bubble UI. It is the bounds of an
   // input element in viewport space.
   gfx::Rect anchor_rect_;
+
+  // |native_view| is the parent view of the bubble.
+  gfx::NativeView native_view_;
 
   // |callback_| is invoked if the bubble is accepted.
   base::Closure callback_;

@@ -194,11 +194,11 @@ class AutofillAgent : public content::RenderViewObserver,
   // Set |node| to display the given |value|.
   void SetNodeText(const string16& value, WebKit::WebInputElement* node);
 
-  // Hides any currently showing Autofill popups in the renderer or browser.
-  void HidePopups();
+  // Hides any currently showing Autofill UI in the renderer or browser.
+  void HideAutofillUi();
 
-  // Hides any currently showing Autofill popups in the browser only.
-  void HideHostPopups();
+  // Hides any currently showing Autofill UI in the browser only.
+  void HideHostAutofillUi();
 
   FormCache form_cache_;
 

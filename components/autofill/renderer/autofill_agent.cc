@@ -254,11 +254,11 @@ void AutofillAgent::ZoomLevelChanged() {
   // Any time the zoom level changes, the page's content moves, so any Autofill
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
-  HideHostPopups();
+  HideHostAutofillUi();
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
-  HidePopups();
+  HideAutofillUi();
 }
 
 void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
@@ -278,7 +278,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
 
   // Cancel any pending Autofill requests and hide any currently showing popups.
   ++autofill_query_id_;
-  HidePopups();
+  HideAutofillUi();
 
   in_flight_request_form_ = form;
   // TODO(ramankk): Include SSLStatus within form_data and update the IPC.
@@ -303,7 +303,7 @@ bool AutofillAgent::InputElementClicked(const WebInputElement& element,
 }
 
 bool AutofillAgent::InputElementLostFocus() {
-  HideHostPopups();
+  HideHostAutofillUi();
 
   return false;
 }
@@ -547,7 +547,7 @@ void AutofillAgent::CombineDataListEntriesAndShow(
 
   if (v.empty()) {
     // No suggestions, any popup currently showing is obsolete.
-    HidePopups();
+    HideAutofillUi();
     return;
   }
 
@@ -717,7 +717,7 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
        (element.selectionStart() != element.selectionEnd() ||
         element.selectionEnd() != static_cast<int>(value.length())))) {
     // Any popup currently showing is obsolete.
-    HidePopups();
+    HideAutofillUi();
     return;
   }
 
@@ -843,16 +843,16 @@ void AutofillAgent::SetNodeText(const string16& value,
   node->setEditingValue(substring);
 }
 
-void AutofillAgent::HidePopups() {
+void AutofillAgent::HideAutofillUi() {
   WebKit::WebView* web_view = render_view()->GetWebView();
   if (web_view)
     web_view->hidePopups();
 
-  HideHostPopups();
+  HideHostAutofillUi();
 }
 
-void AutofillAgent::HideHostPopups() {
-  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+void AutofillAgent::HideHostAutofillUi() {
+  Send(new AutofillHostMsg_HideAutofillUi(routing_id()));
 }
 
 }  // namespace autofill

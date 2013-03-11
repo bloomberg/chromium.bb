@@ -340,8 +340,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnDidShowAutofillSuggestions)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_DidEndTextFieldEditing,
                         OnDidEndTextFieldEditing)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillPopup,
-                        OnHideAutofillPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillUi,
+                        OnHideAutofillUi)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
                         OnShowPasswordGenerationPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_AddPasswordFormMapping,
@@ -719,9 +719,10 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
   }
 }
 
-void AutofillManager::OnHideAutofillPopup() {
+void AutofillManager::OnHideAutofillUi() {
   if (IsNativeUiEnabled())
     manager_delegate_->HideAutofillPopup();
+  manager_delegate_->HideAutocheckoutBubble();
 }
 
 void AutofillManager::OnShowPasswordGenerationPopup(

@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble.h"
+#include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -128,7 +129,18 @@ void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     const gfx::NativeView& native_view,
     const base::Closure& callback) {
-  autofill::ShowAutocheckoutBubble(bounding_box, native_view, callback);
+  HideAutocheckoutBubble();
+  autocheckout_bubble_ =
+      AutocheckoutBubble::Create(scoped_ptr<AutocheckoutBubbleController>(
+          new AutocheckoutBubbleController(bounding_box,
+                                           native_view,
+                                           callback)));
+  autocheckout_bubble_->ShowBubble();
+}
+
+void TabAutofillManagerDelegate::HideAutocheckoutBubble() {
+  if (autocheckout_bubble_)
+    autocheckout_bubble_->HideBubble();
 }
 
 void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
@@ -207,6 +219,8 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
           autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
     HideRequestAutocompleteDialog();
   }
+
+  HideAutocheckoutBubble();
 }
 
 }  // namespace autofill

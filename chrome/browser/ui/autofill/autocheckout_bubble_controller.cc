@@ -6,15 +6,16 @@
 
 #include "components/autofill/browser/autofill_metrics.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace autofill {
 
 AutocheckoutBubbleController::AutocheckoutBubbleController(
     const gfx::RectF& anchor_rect,
+    const gfx::NativeView& native_view,
     const base::Closure& callback)
     : anchor_rect_(gfx::ToEnclosingRect(anchor_rect)),
+      native_view_(native_view),
       callback_(callback),
       metric_logger_(new AutofillMetrics),
       had_user_interaction_(false) {}
@@ -22,18 +23,18 @@ AutocheckoutBubbleController::AutocheckoutBubbleController(
 AutocheckoutBubbleController::~AutocheckoutBubbleController() {}
 
 // static
-string16 AutocheckoutBubbleController::AcceptText() {
-  return l10n_util::GetStringUTF16(IDS_AUTOCHECKOUT_BUBBLE_ACCEPT);
+int AutocheckoutBubbleController::AcceptTextID() {
+  return IDS_AUTOCHECKOUT_BUBBLE_ACCEPT;
 }
 
 // static
-string16 AutocheckoutBubbleController::CancelText() {
-  return l10n_util::GetStringUTF16(IDS_AUTOCHECKOUT_BUBBLE_CANCEL);
+int AutocheckoutBubbleController::CancelTextID() {
+  return IDS_AUTOCHECKOUT_BUBBLE_CANCEL;
 }
 
 // static
-string16 AutocheckoutBubbleController::PromptText() {
-  return l10n_util::GetStringUTF16(IDS_AUTOCHECKOUT_BUBBLE_PROMPT);
+int AutocheckoutBubbleController::PromptTextID() {
+  return IDS_AUTOCHECKOUT_BUBBLE_PROMPT;
 }
 
 void AutocheckoutBubbleController::BubbleAccepted() {

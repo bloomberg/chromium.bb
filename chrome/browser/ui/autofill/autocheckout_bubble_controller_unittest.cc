@@ -53,9 +53,10 @@ class TestClosure {
 class TestAutocheckoutBubbleController :
   public autofill::AutocheckoutBubbleController {
  public:
-  TestAutocheckoutBubbleController(const gfx::RectF anchor_rect,
-                                   const base::Closure& callback)
-      : AutocheckoutBubbleController(anchor_rect, callback) {
+  explicit TestAutocheckoutBubbleController(const base::Closure& callback)
+      : AutocheckoutBubbleController(gfx::RectF(),
+                                     gfx::NativeView(),
+                                     callback) {
     set_metric_logger(new TestAutofillMetrics);
   }
   virtual ~TestAutocheckoutBubbleController() {}
@@ -73,8 +74,7 @@ namespace autofill {
 TEST(AutocheckoutBubbleControllerTest, BubbleCreationAndDestructionMetrics) {
   // Test bubble created metric.
   TestClosure closure;
-  TestAutocheckoutBubbleController controller(gfx::RectF(),
-                                              closure.GetCallback());
+  TestAutocheckoutBubbleController controller(closure.GetCallback());
 
   controller.BubbleCreated();
 
@@ -94,8 +94,7 @@ TEST(AutocheckoutBubbleControllerTest, BubbleCreationAndDestructionMetrics) {
 TEST(AutocheckoutBubbleControllerTest, BubbleAcceptedMetric) {
   // Test bubble accepted metric.
   TestClosure closure;
-  TestAutocheckoutBubbleController controller(gfx::RectF(),
-                                              closure.GetCallback());
+  TestAutocheckoutBubbleController controller(closure.GetCallback());
 
   controller.BubbleAccepted();
 
@@ -114,8 +113,7 @@ TEST(AutocheckoutBubbleControllerTest, BubbleAcceptedMetric) {
 TEST(AutocheckoutBubbleControllerTest, BubbleCanceledMetric) {
   // Test bubble dismissed metric.
   TestClosure closure;
-  TestAutocheckoutBubbleController controller(gfx::RectF(),
-                                              closure.GetCallback());
+  TestAutocheckoutBubbleController controller(closure.GetCallback());
 
   controller.BubbleCanceled();
 

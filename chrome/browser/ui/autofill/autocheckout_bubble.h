@@ -5,21 +5,27 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOCHECKOUT_BUBBLE_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOCHECKOUT_BUBBLE_H_
 
-#include "base/callback_forward.h"
-#include "ui/gfx/native_widget_types.h"
-
-namespace gfx {
-class RectF;
-}
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace autofill {
 
-// Creates and shows the the Autocheckout bubble. |anchor| is the bubble's
-// anchor on the screen. |native_view| is the parent view of the bubble.
-// |callback| is called if the bubble is accepted by the user.
-void ShowAutocheckoutBubble(const gfx::RectF& anchor,
-                            const gfx::NativeView& native_view,
-                            const base::Closure& callback);
+class AutocheckoutBubbleController;
+
+class AutocheckoutBubble : public base::SupportsWeakPtr<AutocheckoutBubble> {
+ public:
+  virtual ~AutocheckoutBubble();
+
+  // Show the Autocheckout bubble.
+  virtual void ShowBubble() = 0;
+
+  // Hide the Autocheckout bubble.
+  virtual void HideBubble() = 0;
+
+  // Creates the Autocheckout bubble. The returned bubble owns itself.
+  static base::WeakPtr<AutocheckoutBubble> Create(
+      scoped_ptr<AutocheckoutBubbleController> controller);
+};
 
 }  // namespace autofill
 

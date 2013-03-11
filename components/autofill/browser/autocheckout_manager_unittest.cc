@@ -220,6 +220,8 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
     callback.Run();
   }
 
+  virtual void HideAutocheckoutBubble() OVERRIDE {}
+
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,
       const GURL& source_url,

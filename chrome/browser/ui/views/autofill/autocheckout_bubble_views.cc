@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/autofill/autocheckout_bubble.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -21,11 +22,20 @@ AutocheckoutBubbleViews::AutocheckoutBubbleViews(
     controller_(controller.Pass()),
     ok_button_(NULL),
     cancel_button_(NULL) {
+  set_parent_window(controller_->native_view());
   controller_->BubbleCreated();
 }
 
 AutocheckoutBubbleViews::~AutocheckoutBubbleViews() {
   controller_->BubbleDestroyed();
+}
+
+void AutocheckoutBubbleViews::ShowBubble() {
+  StartFade(true);
+}
+
+void AutocheckoutBubbleViews::HideBubble() {
+  StartFade(false);
 }
 
 void AutocheckoutBubbleViews::Init() {
@@ -35,7 +45,7 @@ void AutocheckoutBubbleViews::Init() {
   // Add the message label to the first row.
   views::ColumnSet* cs = layout->AddColumnSet(1);
   views::Label* message_label = new views::Label(
-      AutocheckoutBubbleController::PromptText());
+      l10n_util::GetStringUTF16(AutocheckoutBubbleController::PromptTextID()));
 
   // Maximum width for the message field in pixels. The message text will be
   // wrapped when its width is wider than this.
@@ -75,11 +85,17 @@ void AutocheckoutBubbleViews::Init() {
                 0);
   layout->StartRow(0, 2);
   ok_button_ =
-      new views::LabelButton(this, AutocheckoutBubbleController::AcceptText());
+      new views::LabelButton(
+          this,
+          l10n_util::GetStringUTF16(
+              AutocheckoutBubbleController::AcceptTextID()));
   ok_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(ok_button_);
   cancel_button_ =
-      new views::LabelButton(this, AutocheckoutBubbleController::CancelText());
+      new views::LabelButton(
+          this,
+          l10n_util::GetStringUTF16(
+              AutocheckoutBubbleController::CancelTextID()));
   cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(cancel_button_);
 }
@@ -100,17 +116,15 @@ void AutocheckoutBubbleViews::ButtonPressed(views::Button* sender,
   GetWidget()->Close();
 }
 
-void ShowAutocheckoutBubble(const gfx::RectF& anchor,
-                            const gfx::NativeView& native_view,
-                            const base::Closure& callback) {
+// static
+base::WeakPtr<AutocheckoutBubble> AutocheckoutBubble::Create(
+    scoped_ptr<AutocheckoutBubbleController> controller) {
+  // The bubble owns itself.
   AutocheckoutBubbleViews* delegate =
-      new AutocheckoutBubbleViews(
-          scoped_ptr<AutocheckoutBubbleController>(
-              new AutocheckoutBubbleController(anchor, callback)));
-  delegate->set_parent_window(native_view);
+      new AutocheckoutBubbleViews(controller.Pass());
   views::BubbleDelegateView::CreateBubble(delegate);
   delegate->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
-  delegate->StartFade(true);
+  return delegate->AsWeakPtr();
 }
 
 }  // namespace autofill

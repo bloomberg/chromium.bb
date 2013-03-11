@@ -8,13 +8,15 @@
 
 namespace autofill {
 
+AutocheckoutBubble::~AutocheckoutBubble() {}
+
 #if !defined(TOOLKIT_VIEWS)
 // TODO(ahutter): Implement the bubble on other platforms. See
 // http://crbug.com/173416.
-void ShowAutocheckoutBubble(const gfx::RectF& anchor,
-                            const gfx::NativeView& native_view,
-                            const base::Closure& callback) {
+base::WeakPtr<AutocheckoutBubble> AutocheckoutBubble::Create(
+    scoped_ptr<AutocheckoutBubbleController> controller) {
   NOTIMPLEMENTED();
+  return base::WeakPtr<AutocheckoutBubble>();
 }
 #endif
 

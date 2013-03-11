@@ -246,7 +246,7 @@ class AutofillManager : public content::WebContentsObserver,
                                 const gfx::RectF& bounding_box,
                                 bool display_warning);
   void OnDidEndTextFieldEditing();
-  void OnHideAutofillPopup();
+  void OnHideAutofillUi();
   void OnAddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data);

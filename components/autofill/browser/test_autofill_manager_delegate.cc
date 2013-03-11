@@ -49,6 +49,8 @@ void TestAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::NativeView& native_view,
     const base::Closure& callback) {}
 
+void TestAutofillManagerDelegate::HideAutocheckoutBubble() {}
+
 void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,

@@ -119,6 +119,9 @@ class AutofillManagerDelegate {
       DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback) = 0;
 
+  // Hide the Autocheckout bubble if one is currently showing.
+  virtual void HideAutocheckoutBubble() = 0;
+
   // Called when the dialog for request autocomplete closes. (So UI code will
   // free memory, etc.)
   virtual void RequestAutocompleteDialogClosed() = 0;
