@@ -328,7 +328,8 @@ TEST_F(BrowserCommandControllerTest,
   ASSERT_TRUE(testing_profile_manager.SetUp());
 
   // Set up a profile with an off the record profile.
-  TestingProfile* profile2 = new TestingProfile();
+  TestingProfile::Builder builder;
+  TestingProfile* profile2 = builder.Build().release();
   profile2->set_incognito(true);
   TestingProfile* profile1 =
       testing_profile_manager.CreateTestingProfile("p1");
