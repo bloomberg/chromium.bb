@@ -34,6 +34,8 @@ class ErrorCode {
     //       indicate success, but it won't actually run the system call.
     //       This is very different from return ERR_ALLOWED.
     ERR_MIN_ERRNO = 0,
+    // TODO(markus): Android only supports errno up to 255
+    // (crbug.com/181647).
     ERR_MAX_ERRNO = 4095,
   };
 

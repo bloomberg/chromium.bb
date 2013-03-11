@@ -8,7 +8,9 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 
 #if defined(ANDROID)
 // Work-around for buggy headers in Android's NDK
@@ -19,6 +21,7 @@
 #include <ostream>
 
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/trap.h"
@@ -43,6 +46,14 @@ namespace {
 
 const int  kExpectedReturnValue   = 42;
 const char kSandboxDebuggingEnv[] = "CHROME_SANDBOX_DEBUGGING";
+
+inline bool IsAndroid() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
 
 // This test should execute no matter whether we have kernel support. So,
 // we make it a TEST() instead of a BPF_TEST().
@@ -214,7 +225,7 @@ ErrorCode ErrnoTestPolicy(Sandbox *, int sysno, void *) {
 #if defined(__NR_setuid32)
   case __NR_setuid32:
 #endif
-    // Return errno = 1
+    // Return errno = 1.
     return ErrorCode(1);
   case __NR_setgid:
 #if defined(__NR_setgid32)
@@ -222,6 +233,9 @@ ErrorCode ErrnoTestPolicy(Sandbox *, int sysno, void *) {
 #endif
     // Return maximum errno value (typically 4095).
     return ErrorCode(ErrorCode::ERR_MAX_ERRNO);
+  case __NR_uname:
+    // Return errno = 42;
+    return ErrorCode(42);
   default:
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
@@ -243,10 +257,28 @@ BPF_TEST(SandboxBpf, ErrnoTest, ErrnoTestPolicy) {
   BPF_ASSERT(buf[0] == '\x55');
 
   // Verify that we can return the minimum and maximum errno values.
+  errno = 0;
   BPF_ASSERT(setuid(0) == -1);
   BPF_ASSERT(errno == 1);
-  BPF_ASSERT(setgid(0) == -1);
-  BPF_ASSERT(errno == ErrorCode::ERR_MAX_ERRNO);
+
+  // On Android, errno is only supported up to 255, otherwise errno
+  // processing is skipped.
+  // We work around this (crbug.com/181647).
+  if (IsAndroid() && setgid(0) != -1) {
+    errno = 0;
+    BPF_ASSERT(setgid(0) == -ErrorCode::ERR_MAX_ERRNO);
+    BPF_ASSERT(errno == 0);
+  } else {
+    errno = 0;
+    BPF_ASSERT(setgid(0) == -1);
+    BPF_ASSERT(errno == ErrorCode::ERR_MAX_ERRNO);
+  }
+
+  // Finally, test an errno in between the minimum and maximum.
+  errno = 0;
+  struct utsname uts_buf;
+  BPF_ASSERT(uname(&uts_buf) == -1);
+  BPF_ASSERT(errno == 42);
 }
 
 // Testing the stacking of two sandboxes
