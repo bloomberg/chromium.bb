@@ -90,9 +90,15 @@ scoped_ptr<Database> Database::Create(base::FilePath path) {
     CHECK(PathService::Get(chrome::DIR_USER_DATA, &path));
     path = path.AppendASCII(kDbDir);
   }
+  scoped_ptr<Database> database;
   if (!file_util::DirectoryExists(path) && !file_util::CreateDirectory(path))
-    return scoped_ptr<Database>();
-  return scoped_ptr<Database>(new Database(path));
+    return database.Pass();
+  database.reset(new Database(path));
+
+  // If the database did not initialize correctly, return a NULL scoped_ptr.
+  if (!database->valid_)
+    database.reset();
+  return database.Pass();
 }
 
 bool Database::AddStateValue(const std::string& key, const std::string& value) {
@@ -420,69 +426,116 @@ Database::Database(const base::FilePath& path)
     : key_builder_(new KeyBuilder()),
       path_(path),
       read_options_(leveldb::ReadOptions()),
-      write_options_(leveldb::WriteOptions()) {
-  InitDBs();
+      write_options_(leveldb::WriteOptions()),
+      valid_(false) {
+  if (!InitDBs())
+    return;
   LoadRecents();
   LoadMaxValues();
   clock_ = scoped_ptr<Clock>(new SystemClock());
+  valid_ = true;
 }
 
 Database::~Database() {
 }
 
-void Database::InitDBs() {
+bool Database::InitDBs() {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  leveldb::DB* new_db = NULL;
   leveldb::Options open_options;
   open_options.create_if_missing = true;
 
+  // TODO (rdevlin.cronin): This code is ugly. Fix it.
+  recent_db_ = SafelyOpenDatabase(open_options,
+                                  kRecentDb,
+                                  true);  // fix if damaged
+  max_value_db_ = SafelyOpenDatabase(open_options,
+                                     kMaxValueDb,
+                                     true);  // fix if damaged
+  state_db_ = SafelyOpenDatabase(open_options,
+                                 kStateDb,
+                                 true);  // fix if damaged
+  active_interval_db_ = SafelyOpenDatabase(open_options,
+                                           kActiveIntervalDb,
+                                           true);  // fix if damaged
+  metric_db_ = SafelyOpenDatabase(open_options,
+                                  kMetricDb,
+                                  true);  // fix if damaged
+  event_db_ = SafelyOpenDatabase(open_options,
+                                 kEventDb,
+                                 true);  // fix if damaged
+  return recent_db_ && max_value_db_ && state_db_ &&
+         active_interval_db_ && metric_db_ && event_db_;
+}
+
+scoped_ptr<leveldb::DB> Database::SafelyOpenDatabase(
+    const leveldb::Options& options,
+    const std::string& path,
+    bool fix_if_damaged) {
 #if defined(OS_POSIX)
-  leveldb::DB::Open(open_options, path_.AppendASCII(kRecentDb).value(),
-                    &new_db);
-  recent_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options,
-                    path_.AppendASCII(kMaxValueDb).value(),
-                    &new_db);
-  max_value_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options, path_.AppendASCII(kStateDb).value(),
-                    &new_db);
-  state_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options, path_.AppendASCII(kActiveIntervalDb).value(),
-                    &new_db);
-  active_interval_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options, path_.AppendASCII(kMetricDb).value(),
-                    &new_db);
-  metric_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options, path_.AppendASCII(kEventDb).value(),
-                    &new_db);
-  event_db_ = scoped_ptr<leveldb::DB>(new_db);
+  std::string name = path_.AppendASCII(path).value();
 #elif defined(OS_WIN)
-  leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kRecentDb).value()), &new_db);
-  recent_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kMaxValueDb).value()),
-                    &new_db);
-  max_value_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kStateDb).value()), &new_db);
-  state_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kActiveIntervalDb).value()),
-                    &new_db);
-  active_interval_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kMetricDb).value()), &new_db);
-  metric_db_ = scoped_ptr<leveldb::DB>(new_db);
-  leveldb::DB::Open(open_options,
-                    WideToUTF8(path_.AppendASCII(kEventDb).value()), &new_db);
-  event_db_ = scoped_ptr<leveldb::DB>(new_db);
+  std::string name = WideToUTF8(path_.AppendASCII(path).value());
 #endif
+
+  leveldb::DB* database;
+  leveldb::Status status = leveldb::DB::Open(options, name, &database);
+  // If all goes well, return the database.
+  if (status.ok())
+    return scoped_ptr<leveldb::DB>(database);
+
+  // Return NULL and print the error if we either didn't find the database and
+  // don't want to create it, or if we don't want to try to fix it.
+  if ((status.IsNotFound() && !options.create_if_missing) || !fix_if_damaged) {
+    LOG(ERROR) << status.ToString();
+    return scoped_ptr<leveldb::DB>();
+  }
+  // Otherwise, we have an error (corruption, io error, or a not found error
+  // even if we tried to create it).
+  //
+  // First, we try again.
+  LOG(ERROR) << "Database error: " << status.ToString() << ". Trying again.";
+  status = leveldb::DB::Open(options, name, &database);
+  // If we fail on corruption, we can try to repair it.
+  if (status.IsCorruption()) {
+    LOG(ERROR) << "Database corrupt (second attempt). Trying to repair.";
+    status = leveldb::RepairDB(name, options);
+    // If the repair succeeds and we can open the database, return the
+    // database. Otherwise, continue on.
+    if (status.ok()) {
+      status = leveldb::DB::Open(options, name, &database);
+      if (status.ok())
+        return scoped_ptr<leveldb::DB>(database);
+    }
+    LOG(ERROR) << "Repair failed. Deleting database.";
+  }
+  // Next, try to delete and recreate the database. Return NULL if we fail
+  // on either of these steps.
+  status = leveldb::DestroyDB(name, options);
+  if (!status.ok()) {
+    LOG(ERROR) << "Failed to delete database. " << status.ToString();
+    return scoped_ptr<leveldb::DB>();
+  }
+  // If we don't have the create_if_missing option, add it (it's safe to
+  // assume this is okay, since we have permission to |fix_if_damaged|).
+  if (!options.create_if_missing) {
+    leveldb::Options create_options(options);
+    create_options.create_if_missing = true;
+    status = leveldb::DB::Open(create_options, name, &database);
+  } else {
+    status = leveldb::DB::Open(options, name, &database);
+  }
+  // There's nothing else we can try at this point.
+  if (status.ok())
+    return scoped_ptr<leveldb::DB>(database);
+  // Return the database if we succeeded, or NULL on failure.
+  LOG(ERROR) << "Failed to recreate database. " << status.ToString();
+  return scoped_ptr<leveldb::DB>();
 }
 
 bool Database::Close() {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   metric_db_.reset();
+  event_db_.reset();
   recent_db_.reset();
   max_value_db_.reset();
   state_db_.reset();

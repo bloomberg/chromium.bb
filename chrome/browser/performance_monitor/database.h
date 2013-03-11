@@ -251,7 +251,15 @@ class Database {
 
   explicit Database(const base::FilePath& path);
 
-  void InitDBs();
+  bool InitDBs();
+
+  // Attempts to open a database, and tries to fix it if it is corrupt or
+  // damaged (if |fix_if_damaged| is true). Returns a scoped_ptr to the
+  // database on success, or NULL on failure.
+  scoped_ptr<leveldb::DB> SafelyOpenDatabase(
+      const leveldb::Options& options,
+      const std::string& path,
+      bool fix_if_damaged);
 
   bool Close();
 
@@ -302,6 +310,10 @@ class Database {
 
   leveldb::ReadOptions read_options_;
   leveldb::WriteOptions write_options_;
+
+  // Indicates whether or not the database successfully initialized. If false,
+  // the Create() call will return NULL.
+  bool valid_;
 
   DISALLOW_COPY_AND_ASSIGN(Database);
 };
