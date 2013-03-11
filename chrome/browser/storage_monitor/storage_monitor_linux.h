@@ -43,6 +43,8 @@ typedef void (*GetDeviceInfoFunc)(const base::FilePath& device_path,
 
 namespace chrome {
 
+class MediaTransferProtocolDeviceObserverLinux;
+
 class StorageMonitorLinux
     : public StorageMonitor,
       public base::RefCountedThreadSafe<StorageMonitorLinux,
@@ -140,6 +142,9 @@ class StorageMonitorLinux
   // to notify about it's departure and notify about another one of it's mount
   // points.
   MountPriorityMap mount_priority_map_;
+
+  scoped_ptr<MediaTransferProtocolDeviceObserverLinux>
+      media_transfer_protocol_device_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorLinux);
 };

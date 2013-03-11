@@ -6,6 +6,7 @@
 
 #include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -14,8 +15,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
+#include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace chromeos {
 
@@ -103,15 +107,31 @@ bool GetDeviceInfo(const std::string& source_path,
 using content::BrowserThread;
 
 StorageMonitorCros::StorageMonitorCros() {
-  DCHECK(disks::DiskMountManager::GetInstance());
-  disks::DiskMountManager::GetInstance()->AddObserver(this);
-  CheckExistingMountPointsOnUIThread();
 }
 
 StorageMonitorCros::~StorageMonitorCros() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    device::MediaTransferProtocolManager::Shutdown();
+  }
+
   disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
   if (manager) {
     manager->RemoveObserver(this);
+  }
+}
+
+void StorageMonitorCros::Init() {
+  DCHECK(disks::DiskMountManager::GetInstance());
+  disks::DiskMountManager::GetInstance()->AddObserver(this);
+  CheckExistingMountPointsOnUIThread();
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+    scoped_refptr<base::MessageLoopProxy> loop_proxy;
+    device::MediaTransferProtocolManager::Initialize(loop_proxy);
+
+    media_transfer_protocol_device_observer_.reset(
+        new chrome::MediaTransferProtocolDeviceObserverLinux());
+    media_transfer_protocol_device_observer_->SetNotifications(receiver());
   }
 }
 
