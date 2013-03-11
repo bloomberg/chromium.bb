@@ -16,6 +16,15 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
 
+namespace {
+
+gfx::Size ToPixelSize(gfx::Size dipSize, float scale) {
+  return gfx::ToCeiledSize(gfx::ScaleSize(dipSize, scale));
+}
+
+}  // namespace
+
+
 namespace content {
 
 // Assume that somewhere along the line, someone will do width * height * 4
@@ -30,8 +39,7 @@ BackingStoreAura::BackingStoreAura(RenderWidgetHost* widget,
     : BackingStore(widget, size) {
   device_scale_factor_ =
       ui::GetScaleFactorScale(GetScaleFactorForView(widget->GetView()));
-  gfx::Size pixel_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(size, device_scale_factor_));
+  gfx::Size pixel_size = ToPixelSize(size, device_scale_factor_);
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
   bitmap_.allocPixels();
@@ -52,12 +60,10 @@ void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
   if (device_scale_factor == device_scale_factor_)
     return;
 
-  gfx::Size old_pixel_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(size(), device_scale_factor_));
+  gfx::Size old_pixel_size = ToPixelSize(size(), device_scale_factor_);
   device_scale_factor_ = device_scale_factor;
 
-  gfx::Size pixel_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(size(), device_scale_factor_));
+  gfx::Size pixel_size = ToPixelSize(size(), device_scale_factor_);
   SkBitmap new_bitmap;
   new_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
       pixel_size.width(), pixel_size.height());
@@ -79,8 +85,7 @@ void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
 size_t BackingStoreAura::MemorySize() {
   // NOTE: The computation may be different when the canvas is a subrectangle of
   // a larger bitmap.
-  return gfx::ToFlooredSize(
-      gfx::ScaleSize(size(), device_scale_factor_)).GetArea() * 4;
+  return ToPixelSize(size(), device_scale_factor_).GetArea() * 4;
 }
 
 void BackingStoreAura::PaintToBackingStore(
@@ -95,7 +100,7 @@ void BackingStoreAura::PaintToBackingStore(
   if (bitmap_rect.IsEmpty())
     return;
 
-  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(
+  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(bitmap_rect, scale_factor));
 
   const int width = pixel_bitmap_rect.width();

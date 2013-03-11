@@ -56,7 +56,7 @@ class BackingStoreAura : public BackingStore {
   SkBitmap bitmap_;
 
   scoped_ptr<SkCanvas> canvas_;
-  int device_scale_factor_;
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreAura);
 };
