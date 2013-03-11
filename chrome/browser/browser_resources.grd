@@ -280,6 +280,7 @@
         <include name="IDR_MENU_HTML" file="resources\chromeos\menu.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MOBILE_MANIFEST" file="resources\chromeos\mobile_app\manifest.json" type="BINDATA" />
         <include name="IDR_MOBILE_SETUP_PAGE_HTML" file="resources\chromeos\mobile_setup.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MOBILE_SETUP_PORTAL_PAGE_HTML" file="resources\chromeos\mobile_setup_portal.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NETWORK_MENU_CSS" file="resources\chromeos\network_menu.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NETWORK_MENU_JS" file="resources\chromeos\network_menu.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_NOTIFICATION_ICON_LINK_HTML" file="resources\chromeos\notification_icon_link.html" type="BINDATA" />

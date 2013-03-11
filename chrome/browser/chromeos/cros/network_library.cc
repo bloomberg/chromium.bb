@@ -92,12 +92,6 @@ namespace {
 // If cellular device doesn't have SIM card, then retries are never used.
 const int kDefaultSimUnlockRetriesCount = 999;
 
-// Redirect extension url for POST-ing url parameters to mobile account status
-// sites.
-const char kRedirectExtensionPage[] =
-    "chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/redirect.html?"
-    "autoPost=1";
-
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
 
@@ -905,20 +899,6 @@ bool CellularNetwork::SupportsActivation() const {
 bool CellularNetwork::NeedsActivation() const {
   return (activation_state() == ACTIVATION_STATE_NOT_ACTIVATED ||
           activation_state() == ACTIVATION_STATE_PARTIALLY_ACTIVATED);
-}
-
-GURL CellularNetwork::GetAccountInfoUrl() const {
-  if (!post_data_.length())
-    return GURL(payment_url());
-
-  GURL base_url(kRedirectExtensionPage);
-  GURL temp_url = net::AppendQueryParameter(base_url,
-                                            "post_data",
-                                            post_data_);
-  GURL redir_url = net::AppendQueryParameter(temp_url,
-                                             "formUrl",
-                                             payment_url());
-  return redir_url;
 }
 
 std::string CellularNetwork::GetNetworkTechnologyString() const {

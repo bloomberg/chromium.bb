@@ -918,11 +918,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
       cros_->FindCellularNetworkByPath(service_path);
   if (!cellular)
     return;
-
-  web_ui()->GetWebContents()->OpenURL(content::OpenURLParams(
-      cellular->GetAccountInfoUrl(), content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false));
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {

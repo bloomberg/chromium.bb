@@ -127,7 +127,6 @@ cr.define('mobile', function() {
         this.sendPostFrame_(e.origin);
       } else if (e.data.type == 'reportTransactionStatusMsg') {
         console.log('calling setTransactionStatus from onMessageReceived_');
-        $('paymentForm').classList.add('hidden');
         chrome.send('setTransactionStatus', [e.data.status]);
       }
     },

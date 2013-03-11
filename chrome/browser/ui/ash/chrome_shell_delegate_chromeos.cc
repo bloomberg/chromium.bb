@@ -131,7 +131,8 @@ void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::CellularNetwork* cellular =
       cros->FindCellularNetworkByPath(service_path);
-  if (cellular && cellular->activate_over_non_cellular_network() &&
+  if (cellular && !cellular->activated() &&
+      cellular->activate_over_non_cellular_network() &&
       (!cros->connected_network() || !cros->connected_network()->online())) {
     chromeos::NetworkTechnology technology = cellular->network_technology();
     ash::NetworkObserver::NetworkType network_type =

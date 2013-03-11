@@ -3,176 +3,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title i18n-content="title"></title>
-<style>
-body {
-   -webkit-box-flex: 1;
-   -webkit-box-orient: vertical;
-   -webkit-user-select: none;
-   display: -webkit-box;
-   height: 100%;
-   margin: 0;
-   padding: 0;
-   position: absolute;
-   width: 100%;
-}
-
-.dialog-body {
-  border: 1px #aaa solid;
-  display: -webkit-box;
-  margin-top: 0;
-  overflow: hidden;
-  position: relative;
-  -webkit-box-orient: horizontal;
-  -webkit-box-flex: 1;
-}
-
-.dialog-body-dialog {
-  border-radius: 4px;
-  margin: 15px;
-}
-
-.dialog-footer {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  margin: 15px;
-  margin-top: 0;
-}
-
-iframe {
-  overflow-x: scroll; 
-  overflow-y: scroll; 
-}
-
-.overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 10;
-  padding: 100px;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-}
-
-.opaque-overlay {
-  background: rgba(255, 255, 255, 1);
-}
-
-.tranparent-overlay {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.overlay > div {
-  background: white;
-  border-radius: 5px;
-  padding: 15px;
-  border:1px solid #bdbdbd;
-  -webkit-box-shadow:1px 1px 12px rgba(0, 0, 0, 0.15);
-}
-
-.startup {
-  width: 500px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-left:-250px;
-  margin-top:-250px;
-}
-
-#paymentForm {
-  display: -webkit-box;
-  width: 100%;
-}
-
-.logo {
-  background: url('chrome-extension://iadeocfgjdjdmpenejdbfeaocpbikmab/carrier_logo.png') no-repeat;
-  background-position: 85% 50%;
-  height: 58px;
-  margin-bottom: 20px;
-  margin-top: 20px;
-}
-
-.splitter {
-  margin-top: 10px;
-  border-bottom: 1px solid #EEE;
-  height: 1px;
-}
-
-.hidden {
-  display: none;
-}
-
-.testing-only {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-#finalMessage {
-  padding-bottom: 50px;
-}
-
-#carrierPage {
-  padding-top: 10px;
-  width: 500px;
-  height: 380px;
-  overflow-x: none; 
-  overflow-y: none; 
-}
-
-#header {
-  -webkit-padding-start: 50px;
-  position: relative;
-  top: -50%;
-}
-
-#banner {
-  background-color: #fcf6e0;
-  border: 1px solid #ccc;
-  display: -webkit-box;
-  margin-left: -22px;
-  padding: 5px;
-  width: 467px;
-  -webkit-padding-start: 70px;
-  -webkit-box-shadow:1px 1px 6px rgba(0, 0, 0, 0.2);
-}
-
-#startupMessage {
-  -webkit-padding-start: 15px;
-}
-
-#headerWrapper {
-  position: relative;
-}
-#statusHeader {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-#auxHeader {
-  font-size: 16px;
-}
-
-#errorMessage {
-  width: 500px;
-  height: 380px;
-  padding-top: 20px;
-}
-.headerCell {
-  -webkit-padding-start: 10px;
-}
-.canvasCell {
-  vertical-align: middle;
-  line-height: 0px;
-}
-
-.horizontal-spacer {
-  -webkit-box-orient: horizontal;
-  -webkit-box-flex: 1;
-}
-</style>
 <link rel="stylesheet" href="chrome://resources/css/dialogs.css"></link>
+<link rel="stylesheet" href="mobile_setup.css"></link>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
@@ -188,9 +20,9 @@ iframe {
       <div id="banner">
         <table border="0">
           <tbody><tr>
-            <td class="canvasCell"><canvas id="canvas" width="56"
+            <td class="canvas-cell"><canvas id="canvas" width="56"
                 height="56"></canvas></td>
-            <td class="headerCell">
+            <td class="header-ccell">
               <div id="statusHeader"></div>
               <div id="auxHeader"></div>
             </td>
@@ -201,7 +33,7 @@ iframe {
           id="carrierPage" frameborder="0"></iframe>
     </div>
   </div>
-  <div id="finalStatus" class="overlay tranparent-overlay hidden">
+  <div id="finalStatus" class="overlay translucent-black-overlay hidden">
     <div class="startup">
       <div class="header"><h3 id="finalHeader"></h3></div>
       <div id="finalMessage"></div>
