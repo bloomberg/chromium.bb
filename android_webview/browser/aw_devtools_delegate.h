@@ -33,6 +33,7 @@ class AwDevToolsDelegate : public content::DevToolsHttpHandlerDelegate {
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
   virtual content::RenderViewHost* CreateNewTarget() OVERRIDE;
   virtual TargetType GetTargetType(content::RenderViewHost*) OVERRIDE;
+  virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE;
 
   content::DevToolsHttpHandler* devtools_http_handler() {
     return devtools_http_handler_;

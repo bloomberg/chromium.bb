@@ -78,4 +78,9 @@ ShellDevToolsDelegate::GetTargetType(RenderViewHost*) {
   return kTargetTypeTab;
 }
 
+std::string ShellDevToolsDelegate::GetViewDescription(
+    content::RenderViewHost*) {
+  return "";
+}
+
 }  // namespace content

@@ -41,7 +41,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
       : use_bundled_frontend_resources_(use_bundled_frontend_resources) {
   }
 
-  virtual std::string GetDiscoveryPageHTML() {
+  virtual std::string GetDiscoveryPageHTML() OVERRIDE {
     // TopSites updates itself after a delay. Ask TopSites to update itself
     // when we're about to show the remote debugging landing page.
     content::BrowserThread::PostTask(
@@ -52,15 +52,15 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
   }
 
-  virtual bool BundlesFrontendResources() {
+  virtual bool BundlesFrontendResources() OVERRIDE {
     return use_bundled_frontend_resources_;
   }
 
-  virtual base::FilePath GetDebugFrontendDir() {
+  virtual base::FilePath GetDebugFrontendDir() OVERRIDE {
     return base::FilePath();
   }
 
-  virtual std::string GetPageThumbnailData(const GURL& url) {
+  virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE {
     Profile* profile =
         ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
     history::TopSites* top_sites = profile->GetTopSites();
@@ -73,12 +73,16 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return "";
   }
 
-  content::RenderViewHost* CreateNewTarget() {
+  virtual content::RenderViewHost* CreateNewTarget() OVERRIDE {
     return NULL;
   }
 
-  TargetType GetTargetType(content::RenderViewHost*) {
+  virtual TargetType GetTargetType(content::RenderViewHost*) OVERRIDE {
     return kTargetTypeTab;
+  }
+
+  virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE {
+    return "";
   }
 
  private:

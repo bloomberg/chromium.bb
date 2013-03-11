@@ -29,6 +29,7 @@ class BrowserListTabContentsProvider
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
   virtual content::RenderViewHost* CreateNewTarget() OVERRIDE;
   virtual TargetType GetTargetType(content::RenderViewHost*) OVERRIDE;
+  virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE;
 
  private:
   Profile* profile_;

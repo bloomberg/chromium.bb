@@ -407,6 +407,7 @@ struct DevToolsHttpHandlerImpl::PageInfo {
   std::string title;
   std::string thumbnail_url;
   std::string favicon_url;
+  std::string description;
   base::TimeTicks last_selected_time;
 };
 
@@ -875,6 +876,9 @@ DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh,
       page_info.favicon_url = entry->GetFavicon().url.spec();
     }
   }
+
+  page_info.description = delegate_->GetViewDescription(rvh);
+
   return page_info;
 }
 
@@ -898,6 +902,7 @@ base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
         host);
     dictionary->SetString("devtoolsFrontendUrl", devtools_frontend_url);
   }
+  dictionary->SetString("description", page_info.description);
   return dictionary;
 }
 

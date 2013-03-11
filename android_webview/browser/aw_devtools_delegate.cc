@@ -117,4 +117,8 @@ AwDevToolsDelegate::GetTargetType(content::RenderViewHost*) {
   return kTargetTypeTab;
 }
 
+std::string AwDevToolsDelegate::GetViewDescription(content::RenderViewHost*) {
+  return "";
+}
+
 }  // namespace android_webview

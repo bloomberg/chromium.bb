@@ -68,6 +68,9 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   virtual TargetType GetTargetType(RenderViewHost*) OVERRIDE {
     return kTargetTypeTab;
   }
+  virtual std::string GetViewDescription(content::RenderViewHost*) OVERRIDE {
+    return "";
+  }
 };
 
 }

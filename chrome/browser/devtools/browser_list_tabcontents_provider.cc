@@ -107,3 +107,8 @@ BrowserListTabContentsProvider::GetTargetType(content::RenderViewHost* rvh) {
 
   return kTargetTypeOther;
 }
+
+std::string BrowserListTabContentsProvider::GetViewDescription(
+    content::RenderViewHost*) {
+  return "";
+}
