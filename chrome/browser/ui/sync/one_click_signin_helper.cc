@@ -913,6 +913,10 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   if (auto_accept != AUTO_ACCEPT_NONE) {
     helper->auto_accept_ = auto_accept;
+  }
+
+  if (source != SyncPromoUI::SOURCE_UNKNOWN &&
+      helper->source_ == SyncPromoUI::SOURCE_UNKNOWN) {
     helper->source_ = source;
   }
 
