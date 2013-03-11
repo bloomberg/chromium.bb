@@ -38,13 +38,13 @@ class BrowserViewRendererImpl
  public:
   static BrowserViewRendererImpl* Create(BrowserViewRenderer::Client* client,
                                          JavaHelper* java_helper);
-  virtual ~BrowserViewRendererImpl();
-
-  // Platform methods.
+  static BrowserViewRendererImpl* FromWebContents(
+      content::WebContents* contents);
   static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
 
+  virtual ~BrowserViewRendererImpl();
+
   // BrowserViewRenderer implementation.
-  // |content_view_core| must not outlive |this| BrowserViewRenderer instance.
   virtual void SetContents(
       content::ContentViewCore* content_view_core) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
@@ -69,6 +69,9 @@ class BrowserViewRendererImpl
                           JavaHelper* java_helper);
 
  private:
+  class UserData;
+  friend class UserData;
+
   // Returns the latest locally available picture if any.
   // If none is available will synchronously request the latest one
   // and block until the result is received.
@@ -84,6 +87,9 @@ class BrowserViewRendererImpl
   void OnFrameInfoUpdated(const gfx::SizeF& content_size,
                           const gfx::Vector2dF& scroll_offset,
                           float page_scale_factor);
+
+  // Called when |web_contents_| is disconnected from |this| object.
+  void WebContentsGone();
 
   BrowserViewRenderer::Client* client_;
   BrowserViewRenderer::JavaHelper* java_helper_;

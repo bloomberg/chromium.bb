@@ -43,6 +43,8 @@ using base::android::ScopedJavaLocalRef;
 using content::Compositor;
 using content::ContentViewCore;
 
+namespace android_webview {
+
 namespace {
 
 // Provides software rendering functions from the Android glue layer.
@@ -100,15 +102,40 @@ static bool RasterizeIntoBitmap(JNIEnv* env,
   return succeeded;
 }
 
+const void* kUserDataKey = &kUserDataKey;
+
 }  // namespace
 
-namespace android_webview {
+class BrowserViewRendererImpl::UserData : public content::WebContents::Data {
+ public:
+  UserData(BrowserViewRendererImpl* ptr) : instance_(ptr) {}
+  virtual ~UserData() {
+    instance_->WebContentsGone();
+  }
+
+  static BrowserViewRendererImpl* GetInstance(content::WebContents* contents) {
+    if (!contents)
+      return NULL;
+    UserData* data = reinterpret_cast<UserData*>(
+        contents->GetUserData(kUserDataKey));
+    return data ? data->instance_ : NULL;
+  }
+
+ private:
+  BrowserViewRendererImpl* instance_;
+};
 
 // static
 BrowserViewRendererImpl* BrowserViewRendererImpl::Create(
     BrowserViewRenderer::Client* client,
     JavaHelper* java_helper) {
   return new BrowserViewRendererImpl(client, java_helper);
+}
+
+// static
+BrowserViewRendererImpl* BrowserViewRendererImpl::FromWebContents(
+    content::WebContents* contents) {
+  return UserData::GetInstance(contents);
 }
 
 BrowserViewRendererImpl::BrowserViewRendererImpl(
@@ -158,6 +185,7 @@ void BrowserViewRendererImpl::SetAwDrawSWFunctionTable(
 }
 
 void BrowserViewRendererImpl::SetContents(ContentViewCore* content_view_core) {
+  // First remove association from the prior ContentViewCore / WebContents.
   if (web_contents_) {
     ContentViewCore* previous_content_view_core =
         ContentViewCore::FromWebContents(web_contents_);
@@ -165,14 +193,16 @@ void BrowserViewRendererImpl::SetContents(ContentViewCore* content_view_core) {
       previous_content_view_core->RemoveFrameInfoCallback(
           update_frame_info_callback_);
     }
+    web_contents_->SetUserData(kUserDataKey, NULL);
+    DCHECK(!web_contents_);  // WebContentsGone should have been called.
   }
-
-  web_contents_ = content_view_core ?
-                  content_view_core->GetWebContents() : NULL;
-  view_renderer_host_->Observe(web_contents_);
 
   if (!content_view_core)
     return;
+
+  web_contents_ = content_view_core->GetWebContents();
+  web_contents_->SetUserData(kUserDataKey, new UserData(this));
+  view_renderer_host_->Observe(web_contents_);
 
   content_view_core->AddFrameInfoCallback(update_frame_info_callback_);
   dpi_scale_ = content_view_core->GetDpiScale();
@@ -180,6 +210,10 @@ void BrowserViewRendererImpl::SetContents(ContentViewCore* content_view_core) {
   view_clip_layer_->removeAllChildren();
   view_clip_layer_->addChild(content_view_core->GetLayer());
   Invalidate();
+}
+
+void BrowserViewRendererImpl::WebContentsGone() {
+  web_contents_ = NULL;
 }
 
 void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
