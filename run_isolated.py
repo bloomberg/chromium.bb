@@ -14,9 +14,11 @@ import httplib
 import json
 import logging
 import logging.handlers
+import math
 import optparse
 import os
 import Queue
+import random
 import re
 import shutil
 import stat
@@ -27,6 +29,7 @@ import threading
 import time
 import urllib
 import urllib2
+import urlparse
 import zlib
 
 
@@ -56,6 +59,12 @@ RUN_TEST_CASES_LOG = os.path.join(BASE_DIR, 'run_test_cases.log')
 # the program is still running.
 DELAY_BETWEEN_UPDATES_IN_SECS = 30
 
+# The name of the key to store the count of url attempts.
+COUNT_KEY = 'UrlOpenAttempt'
+
+# The maximum number of attempts to trying opening a url before aborting.
+MAX_URL_OPEN_ATTEMPTS = 20
+
 
 class ConfigError(ValueError):
   """Generic failure to load a .isolated file."""
@@ -65,14 +74,6 @@ class ConfigError(ValueError):
 class MappingError(OSError):
   """Failed to recreate the tree."""
   pass
-
-
-class DownloadFileOpener(urllib.FancyURLopener):
-  """This class is needed to get urlretrive to raise an exception on
-  404 errors, instead of still writing to the file with the error code.
-  """
-  def http_error_default(self, url, fp, errcode, errmsg, headers):
-    raise urllib2.HTTPError(url, errcode, errmsg, headers, fp)
 
 
 def get_flavor():
@@ -306,6 +307,76 @@ def fix_python_path(cmd):
   elif out[0].endswith('.py'):
     out.insert(0, sys.executable)
   return out
+
+
+def url_open(url, data=None):
+  """Attempts to open the given url multiple times.
+
+  |data| can be either:
+    -None for a GET request
+    -str for pre-encoded data
+    -list for data to be encoded
+    -dict for data to be encoded (COUNT_KEY will be added in this case)
+
+  If no wait_duration is given, the default wait time will exponentially
+  increase between each retry.
+
+  Returns a file-like object, where the response may be read from, or None
+  if it was unable to connect.
+  """
+  method = 'GET' if data is None else 'POST'
+
+  data = data if data is not None else {}
+  if isinstance(data, dict) and COUNT_KEY in data:
+    logging.error('%s already existed in the data passed into UlrOpen. It '
+                  'would be overwritten. Aborting UrlOpen', COUNT_KEY)
+    return None
+
+  for attempt in range(MAX_URL_OPEN_ATTEMPTS):
+    try:
+      if isinstance(data, str):
+        encoded_data = data
+      else:
+        if isinstance(data, dict):
+          data[COUNT_KEY] = attempt
+        encoded_data = urllib.urlencode(data)
+
+      if method == 'POST':
+        # Simply specifying data to urlopen makes it a POST.
+        url_response = urllib2.urlopen(url, encoded_data)
+      else:
+        url_parts = list(urlparse.urlparse(url))
+        url_parts[4] = encoded_data
+        url = urlparse.urlunparse(url_parts)
+        url_response = urllib2.urlopen(url)
+
+      logging.info('url_open(%s) succeeded', url)
+      return url_response
+    except urllib2.HTTPError as e:
+      if e.code < 500:
+        # This HTTPError means we reached the server and there was a problem
+        # with the request, so don't retry.
+        logging.exception('Able to connect to %s but an exception was '
+                          'thrown.\n%s', url, e)
+        return None
+
+      # The HTTPError was due to a server error, so retry the attempt.
+      logging.warning('Able to connect to %s on attempt %d.\nException: %s ',
+                      url, attempt, e)
+
+    except (urllib2.URLError, httplib.HTTPException) as e:
+      logging.warning('Unable to open url %s on attempt %d.\nException: %s',
+                      url, attempt, e)
+
+    # Only sleep if we are going to try again.
+    if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
+      duration = random.random() * 3 + math.pow(1.5, (attempt + 1))
+      duration = min(10, max(0.1, duration))
+      time.sleep(duration)
+
+  logging.error('Unable to open given url, %s, after %d attempts.',
+                url, MAX_URL_OPEN_ATTEMPTS)
+  return None
 
 
 class ThreadPool(object):
@@ -580,7 +651,9 @@ class Remote(object):
         try:
           zipped_source = file_or_url + item
           logging.debug('download_file(%s)', zipped_source)
-          connection = urllib2.urlopen(zipped_source)
+          connection = url_open(zipped_source)
+          if not connection:
+            raise IOError('Unable to open connection to %s' % zipped_source)
           decompressor = zlib.decompressobj()
           size = 0
           with open(dest, 'wb') as f:

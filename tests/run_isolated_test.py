@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import unittest
+import urllib2
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -140,6 +141,90 @@ class RunIsolatedTest(unittest.TestCase):
       self.assertEqual([], remote.join())
     finally:
       run_isolated.urllib2.urlopen = old_urlopen
+
+
+class UrlHelperTest(unittest.TestCase):
+  def replaceUrlOpenAndCall(self, url_open_lambda, open_url_args,
+                            expected_response):
+    try:
+      old_url_open = run_isolated.urllib2.urlopen
+      old_sleep = run_isolated.time.sleep
+
+      run_isolated.urllib2.urlopen = url_open_lambda
+      run_isolated.time.sleep = lambda x: None
+
+      response = run_isolated.url_open(**open_url_args)
+
+      self.assertEqual(None if response is None else response.read(),
+                       expected_response)
+    finally:
+      run_isolated.urllib2.urlopen = old_url_open
+      run_isolated.time.sleep = old_sleep
+
+  def testUrlOpenGETSuccess(self):
+    url = 'http://my.url.com'
+    response = 'True'
+
+    def mock_url_open(input_url):
+      self.assertTrue(input_url.startswith(url))
+
+      return StringIO.StringIO(response)
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url':url}, response)
+
+  def testUrlOpenPOSTSuccess(self):
+    url = 'http://my.url.com'
+    response = 'True'
+
+    def mock_url_open(input_url, data):
+      self.assertTrue(input_url.startswith(url))
+      self.assertEqual('%s=0' % run_isolated.COUNT_KEY, data)
+
+      return StringIO.StringIO(response)
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url':url, 'data':{}}, response)
+
+  def testUrlOpenSuccessAfterFailure(self):
+    response = 'True'
+
+    def mock_url_open(_url, data):
+      if run_isolated.COUNT_KEY + '=0' in data:
+        raise urllib2.URLError('url')
+      return StringIO.StringIO(response)
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}},
+                               response)
+
+  def testUrlOpenFailure(self):
+    def mock_url_open(_url):
+      raise urllib2.URLError('url')
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url'}, None)
+
+  def testUrlOpenHTTPErrorNoRetry(self):
+    def mock_url_open(_url, data):
+      if not run_isolated.COUNT_KEY + '=0' in data:
+        self.fail('UrlOpen was called more than once')
+      raise urllib2.HTTPError('url', 400, 'error message', None, None)
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}}, None)
+
+  def testUrlOpenHTTPErrorWithRetry(self):
+    response = 'response'
+
+    def mock_url_open(_url, data):
+      if run_isolated.COUNT_KEY + '=0' in data:
+        raise urllib2.HTTPError('url', 500, 'error message', None, None)
+
+      return StringIO.StringIO(response)
+
+    self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}},
+                               response)
+
+  def testCountKeyInData(self):
+    data = {run_isolated.COUNT_KEY: 1}
+
+    self.assertEqual(run_isolated.url_open('url', data=data), None)
 
 
 if __name__ == '__main__':

@@ -9,52 +9,32 @@ that name.
 
 import json
 import optparse
-import socket
 import sys
-import time
 import urllib
-import urllib2
 
 #from common import find_depot_tools  # pylint: disable=W0611
 #
 ## From the depot tools
 #import fix_encoding
 
-
-MAX_RETRY_ATTEMPTS = 20
-
-
-def fetch_with_retry(url):
-  """Try multiple times to connect to the swarm server and return the response,
-     or None if unable to connect.
-  """
-  for attempt in range(MAX_RETRY_ATTEMPTS):
-    try:
-      return urllib2.urlopen(url).read()
-    except (socket.error, urllib2.URLError) as e:
-      print 'Error: Calling %s threw %s' % (url, e)
-      time.sleep(0.1 + 0.5 * attempt)
-
-  # We were unable to connect to the url.
-  print('Unable to connect to the given url, %s, after %d attempts. Aborting.'
-        % (url, MAX_RETRY_ATTEMPTS))
-  return None
+import run_isolated
 
 
 def get_test_keys(swarm_base_url, test_name):
   key_data = urllib.urlencode([('name', test_name)])
   test_keys_url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
-  result = fetch_with_retry(test_keys_url)
+  result = run_isolated.url_open(test_keys_url)
   if result is None:
     return []
 
-  if 'No matching' in result:
+  result_str = result.read()
+  if 'No matching' in result_str:
     print ('Error: Unable to find any tests with the name, %s, on swarm server'
            % test_name)
     return []
 
   # TODO(csharp): return in a proper format (like json)
-  return result.split()
+  return result_str.split()
 
 
 def swarm_get_results(swarm_base_url, test_keys, wait):
@@ -65,10 +45,10 @@ def swarm_get_results(swarm_base_url, test_keys, wait):
   for test in test_keys:
     result_url = '%s/get_result?r=%s' % (swarm_base_url, test)
     while True:
-      result = fetch_with_retry(result_url)
+      result = run_isolated.url_open(result_url)
       if result is None:
         continue
-      data = json.loads(result)
+      data = json.load(result)
       if data['output']:
         outputs.append(data)
         break

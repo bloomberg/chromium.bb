@@ -12,10 +12,8 @@ as the parent of the src/ directory.
 
 import hashlib
 import json
-import math
 import optparse
 import os
-import random
 import socket
 import StringIO
 import sys
@@ -23,6 +21,8 @@ import time
 import urllib
 import urllib2
 import zipfile
+
+import run_isolated
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,38 +46,6 @@ HANDLE_EXE_PATH = os.path.join(
 
 RUN_TEST_NAME = 'run_isolated.py'
 RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
-
-# The number of times to attempt to open a url before giving up.
-MAX_URL_OPEN_ATTEMPTS = 5
-
-
-def UrlOpen(*args, **kwargs):
-  """ A wrapped call to urllib2.urlopen that automatically retries if the server
-  couldn't be reached or a server error occured (i.e. it wasn't the client's
-  fault).
-  """
-  for i in range(MAX_URL_OPEN_ATTEMPTS):
-    try:
-      return urllib2.urlopen(*args, **kwargs).read()
-    except urllib2.HTTPError as e:
-      if e.code >= 500:
-        print ('Able to connect to the url, but received a server error. '
-               'Retrying (attempt %s)\n%s' % (i, e))
-      else:
-        print 'Able to connect to the url but received an error.\n%s' % e
-        return None
-
-    except urllib2.URLError as e:
-      print ('Unable to connect to the given url. Retrying (Attempt %s)\n%s' %
-             (i, e))
-
-    # Wait a random amount of time before retrying.
-    if i + 1 != MAX_URL_OPEN_ATTEMPTS:
-      duration = random.random() * 3 + math.pow(1.5, (i + 1))
-      duration = min(10, max(0.1, duration))
-      time.sleep(duration)
-
-  return None
 
 
 class Manifest(object):
@@ -143,12 +111,13 @@ class Manifest(object):
 
     self.zip_file_hash = hashlib.sha1(zip_contents).hexdigest()
 
-    response = UrlOpen(self.data_server_has, data=self.zip_file_hash)
+    response = run_isolated.url_open(self.data_server_has,
+                                     data=self.zip_file_hash)
     if response is None:
       print 'Unable to query server for zip file presence, aborting.'
       return False
 
-    if response[0] == chr(1):
+    if response.read(1) == chr(1):
       print 'Zip file already on server, no need to reupload.'
       return True
 
@@ -160,7 +129,7 @@ class Manifest(object):
     request.add_header('Content-Type', 'application/octet-stream')
     request.add_header('Content-Length', len(zip_contents))
 
-    if UrlOpen(request) is None:
+    if run_isolated.url_open(request, data={}) is None:
       print 'Failed to upload the zip file'
       return False
 
@@ -237,13 +206,12 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   print 'Sending test requests to swarm'
   test_url = options.swarm_url + '/test'
   manifest_text = manifest.to_json()
-  data = urllib.urlencode({'request': manifest_text})
   result = None
   try:
-    result = UrlOpen(test_url, data=data)
+    result = run_isolated.url_open(test_url, data=manifest_text)
 
     # Check that we can read the output as a JSON string
-    json.loads(result)
+    json.load(result)
   except (ValueError, TypeError) as e:
     print 'Failed to send test for ' + test_name
     print 'Manifest: %s' % manifest_text
