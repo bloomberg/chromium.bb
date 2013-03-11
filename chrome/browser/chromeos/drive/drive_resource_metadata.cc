@@ -868,10 +868,11 @@ scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProto(
   // TODO(achuith): This method never fails. Add basic sanity checks for
   // resource_id, etc.
   if (entry_proto.file_info().is_directory()) {
-    entry = CreateDriveDirectory();
-    // Call DriveEntry::FromProto instead of DriveDirectory::FromProto because
-    // the proto does not include children.
-    entry->FromProto(entry_proto);
+    scoped_ptr<DriveDirectory> directory(CreateDriveDirectory());
+    // DriveDirectory::FromProtoSelf instead of DriveEntry::FromProto() to
+    // copy the directory specific info.
+    directory->FromProtoSelf(entry_proto);
+    entry = directory.Pass();
   } else {
     scoped_ptr<DriveFile> file(CreateDriveFile());
     // Call DriveFile::FromProto.

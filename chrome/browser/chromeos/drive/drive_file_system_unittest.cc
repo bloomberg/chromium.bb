@@ -586,6 +586,9 @@ TEST_F(DriveFileSystemTest, SearchRootDirectory) {
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
+
+  // The changestamp should be propagated to the root directory.
+  EXPECT_EQ(1, entry->directory_specific_info().changestamp());
 }
 
 TEST_F(DriveFileSystemTest, SearchExistingFile) {
@@ -692,6 +695,9 @@ TEST_F(DriveFileSystemTest, SearchExistingDirectory) {
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
+
+  // The changestamp should be propagated to the directory.
+  EXPECT_EQ(1, entry->directory_specific_info().changestamp());
 }
 
 TEST_F(DriveFileSystemTest, SearchInSubdir) {

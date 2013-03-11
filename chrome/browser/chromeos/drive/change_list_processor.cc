@@ -117,12 +117,13 @@ void ChangeListProcessor::ApplyNextEntryProtoAsync() {
 void ChangeListProcessor::ApplyNextEntryProto() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry_proto_map_.empty())
+  if (!entry_proto_map_.empty()) {
     ApplyNextByIterator(entry_proto_map_.begin());  // Continue.
-  else if (root_upload_url_.is_valid())
-    UpdateRootUploadUrl();  // Set root_upload_url_ before we finish.
-  else
-    OnComplete();  // Finished.
+  } else {
+    // Update the root entry and finish.
+    UpdateRootEntry(base::Bind(&ChangeListProcessor::OnComplete,
+                               weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ChangeListProcessor::ApplyNextByIterator(DriveEntryProtoMap::iterator it) {
@@ -130,6 +131,11 @@ void ChangeListProcessor::ApplyNextByIterator(DriveEntryProtoMap::iterator it) {
 
   DriveEntryProto entry_proto = it->second;
   DCHECK_EQ(it->first, entry_proto.resource_id());
+  // Add the largest changestamp if this entry is a directory.
+  if (entry_proto.file_info().is_directory()) {
+    entry_proto.mutable_directory_specific_info()->set_changestamp(
+        largest_changestamp_);
+  }
 
   // The parent of this entry may not yet be processed. We need the parent
   // to be rooted in the metadata tree before we can add the child, so process
@@ -325,10 +331,14 @@ void ChangeListProcessor::FeedToEntryProtoMap(
     // Get upload url from the root feed. Links for all other collections will
     // be handled in ConvertResourceEntryToDriveEntryProto.
     if (i == 0) {
+      // The root upload link appears in the first page of the full resource
+      // list. The link does not appear in the change list.
       const google_apis::Link* root_feed_upload_link = feed->GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
       if (root_feed_upload_link)
         root_upload_url_ = root_feed_upload_link->href();
+      // The changestamp appears in the first page of the change list.
+      // The changestamp does not appear in the full resource list.
       if (feed_changestamp)
         *feed_changestamp = feed->largest_changestamp();
       DCHECK_GE(feed->largest_changestamp(), 0);
@@ -357,43 +367,57 @@ void ChangeListProcessor::FeedToEntryProtoMap(
   }
 }
 
-void ChangeListProcessor::UpdateRootUploadUrl() {
+void ChangeListProcessor::UpdateRootEntry(const base::Closure& closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(root_upload_url_.is_valid());
+  DCHECK(!closure.is_null());
 
   resource_metadata_->GetEntryInfoByPath(
       base::FilePath(kDriveRootDirectory),
-      base::Bind(&ChangeListProcessor::OnGetRootEntryProto,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&ChangeListProcessor::UpdateRootEntryAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 closure));
 }
 
-void ChangeListProcessor::OnGetRootEntryProto(
+void ChangeListProcessor::UpdateRootEntryAfterGetEntry(
+    const base::Closure& closure,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> root_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!closure.is_null());
 
   if (error != DRIVE_FILE_OK) {
     // TODO(satorux): Need to trigger recovery if root is corrupt.
     LOG(WARNING) << "Failed to get the proto for root directory";
-    OnComplete();
+    closure.Run();
     return;
   }
   DCHECK(root_proto.get());
-  root_proto->set_upload_url(root_upload_url_.spec());
+
+  // See the comment in FeedToEntryProtoMap() about why the root upload URL
+  // is optional.
+  if (root_upload_url_.is_valid())
+    root_proto->set_upload_url(root_upload_url_.spec());
+  // The changestamp should always be updated.
+  root_proto->mutable_directory_specific_info()->set_changestamp(
+      largest_changestamp_);
+
   resource_metadata_->RefreshEntry(
       *root_proto,
-      base::Bind(&ChangeListProcessor::OnUpdateRootUploadUrl,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&ChangeListProcessor::UpdateRootEntryAfterRefreshEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 closure));
 }
 
-void ChangeListProcessor::OnUpdateRootUploadUrl(
+void ChangeListProcessor::UpdateRootEntryAfterRefreshEntry(
+    const base::Closure& closure,
     DriveFileError error,
     const base::FilePath& /* root_path */,
     scoped_ptr<DriveEntryProto> /* root_proto */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!closure.is_null());
   LOG_IF(WARNING, error != DRIVE_FILE_OK) << "Failed to refresh root directory";
 
-  OnComplete();
+  closure.Run();
 }
 
 void ChangeListProcessor::OnComplete() {

@@ -336,7 +336,7 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   DCHECK(proto.drive_entry().file_info().is_directory());
   DCHECK(!proto.drive_entry().has_file_specific_info());
 
-  DriveEntry::FromProto(proto.drive_entry());
+  FromProtoSelf(proto.drive_entry());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
     scoped_ptr<DriveFile> file(resource_metadata_->CreateDriveFile());
@@ -348,8 +348,11 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
     dir->FromProto(proto.child_directories(i));
     AddEntry(dir.release());
   }
+}
 
-  changestamp_ = proto.drive_entry().directory_specific_info().changestamp();
+void DriveDirectory::FromProtoSelf(const DriveEntryProto& proto) {
+  changestamp_ = proto.directory_specific_info().changestamp();
+  DriveEntry::FromProto(proto);
 }
 
 void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {

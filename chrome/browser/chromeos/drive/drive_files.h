@@ -194,7 +194,12 @@ class DriveDirectory : public DriveEntry {
   void FromProto(const DriveDirectoryProto& proto);
   void ToProto(DriveDirectoryProto* proto) const;
 
+  // Similar to FromProto() but processes the directory itself (i.e. no
+  // children). The directory specific info is propagated.
+  void FromProtoSelf(const DriveEntryProto& proto);
+
   // Similar to ToProto() but processes the directory itself (i.e. no children).
+  // The directory specific info is propagated.
   void ToProtoSelf(DriveEntryProto* proto) const;
 
   // Converts the children as a vector of DriveEntryProto.
