@@ -10,6 +10,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/common/extensions/api/cloud_print_private.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/net_util.h"
 #include "printing/backend/print_backend.h"
 
@@ -114,6 +115,22 @@ void CloudPrintPrivateGetPrintersFunction::CollectPrinters() {
 bool CloudPrintPrivateGetPrintersFunction::RunImpl() {
   content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
       base::Bind(&CloudPrintPrivateGetPrintersFunction::CollectPrinters, this));
+  return true;
+}
+
+
+CloudPrintPrivateGetClientIdFunction::CloudPrintPrivateGetClientIdFunction() {
+}
+
+CloudPrintPrivateGetClientIdFunction::~CloudPrintPrivateGetClientIdFunction() {
+}
+
+bool CloudPrintPrivateGetClientIdFunction::RunImpl() {
+  SetResult(Value::CreateStringValue(
+      CloudPrintTestsDelegate::instance() ?
+      CloudPrintTestsDelegate::instance()->GetClientId() :
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT)));
+  SendResponse(true);
   return true;
 }
 

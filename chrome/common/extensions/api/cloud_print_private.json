@@ -78,6 +78,25 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getClientId",
+        "description": "Gets the Client ID used to access Google service APIs.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called to return the client ID.",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string",
+                "description": "Client ID."
+              }
+            ]
+          }
+        ]
       }
     ]
   }

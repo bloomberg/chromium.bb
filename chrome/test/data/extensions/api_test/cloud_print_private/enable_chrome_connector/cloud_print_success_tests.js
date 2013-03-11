@@ -24,6 +24,13 @@ var tests = [
              chrome.test.assertNoLastError();
              chrome.test.assertEq(result, ['printer1', 'printer2']);
           }));
+  },
+  function getClientId() {
+    chrome.cloudPrintPrivate.getClientId(
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertEq("TestAPIClient", result);
+        }));
   }
 ];
 

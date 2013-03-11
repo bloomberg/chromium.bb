@@ -27,6 +27,8 @@ class CloudPrintTestsDelegate {
 
   virtual std::string GetHostName() = 0;
 
+  virtual std::string GetClientId() = 0;
+
   virtual std::vector<std::string> GetPrinters() = 0;
 
   static CloudPrintTestsDelegate* instance();
@@ -76,6 +78,20 @@ class CloudPrintPrivateGetPrintersFunction : public AsyncExtensionFunction {
 
   void CollectPrinters();
   void ReturnResult(const base::ListValue* printers);
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class CloudPrintPrivateGetClientIdFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("cloudPrintPrivate.getClientId",
+                             CLOUDPRINTPRIVATE_GETCLIENTID);
+
+  CloudPrintPrivateGetClientIdFunction();
+
+ protected:
+  virtual ~CloudPrintPrivateGetClientIdFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

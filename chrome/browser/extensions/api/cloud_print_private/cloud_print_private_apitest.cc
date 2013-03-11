@@ -67,7 +67,7 @@ class CloudPrintTestsDelegateMock : public extensions::CloudPrintTestsDelegate {
                     const std::vector<std::string>& printer_blacklist));
   MOCK_METHOD0(GetHostName, std::string());
   MOCK_METHOD0(GetPrinters, std::vector<std::string>());
-
+  MOCK_METHOD0(GetClientId, std::string());
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPrintTestsDelegateMock);
 };
@@ -88,6 +88,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCloudPrintPrivateApiTest, CloudPrintHosted) {
       .WillRepeatedly(Return("TestHostName"));
   EXPECT_CALL(cloud_print_mock, GetPrinters())
       .WillRepeatedly(Return(printers));
+
+  EXPECT_CALL(cloud_print_mock, GetClientId())
+      .WillRepeatedly(Return("TestAPIClient"));
+
   // Run this as a hosted app. Since we have overridden the cloud print service
   // URL in the command line, this URL should match the web extent for our
   // cloud print component app and it should work.
