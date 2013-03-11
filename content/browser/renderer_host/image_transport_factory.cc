@@ -556,6 +556,18 @@ class GpuProcessTransportFactory
     return context.release();
   }
 
+  // Crash given that we are unable to show any UI whatsoever. On Windows we
+  // also trigger code in breakpad causes a system process to show message box.
+  // In all cases a crash dump is generated.
+  void FatalGPUError(const char* message) {
+#if defined(OS_WIN)
+    // 0xC01E0200 corresponds to STATUS_GRAPHICS_GPU_EXCEPTION_ON_DEVICE.
+    ::RaiseException(0xC01E0200, EXCEPTION_NONCONTINUABLE, 0, NULL);
+#else
+    LOG(FATAL) << message;
+#endif
+  }
+
   class MainThreadContextProvider : public ContextProviderCommandBuffer {
    public:
     explicit MainThreadContextProvider(GpuProcessTransportFactory* factory)
@@ -624,12 +636,12 @@ class GpuProcessTransportFactory
     if (!provider->InitializeOnMainThread()) {
       // If we can't recreate contexts, we won't be able to show the UI.
       // Better crash at this point.
-      LOG(FATAL) << "Failed to initialize UI shared context.";
+      FatalGPUError("Failed to initialize UI shared context.");
     }
     if (!provider->BindToCurrentThread()) {
       // If we can't recreate contexts, we won't be able to show the UI.
       // Better crash at this point.
-      LOG(FATAL) << "Failed to make UI shared context current.";
+      FatalGPUError("Failed to make UI shared context current.");
     }
   }
 
