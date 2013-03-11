@@ -13,7 +13,7 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
+#include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -313,7 +313,7 @@ void WebNotificationTray::AnchorUpdated() {
 
 string16 WebNotificationTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(
-      IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME);
+      IDS_MESSAGE_CENTER_ACCESSIBLE_NAME);
 }
 
 void WebNotificationTray::HideBubbleWithView(
