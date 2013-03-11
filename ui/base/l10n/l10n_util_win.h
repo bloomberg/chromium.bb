@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "ui/base/ui_export.h"
 
 namespace l10n_util {
@@ -37,13 +38,24 @@ UI_EXPORT void HWNDSetRTLLayout(HWND hwnd);
 // Return true if the default font (we get from Windows) is not suitable
 // to use in the UI of the current UI (e.g. Malayalam, Bengali). If
 // override_font_family and font_size_scaler are not null, they'll be
-// filled with the font family name and the size scaler.
-UI_EXPORT bool NeedOverrideDefaultUIFont(std::wstring* override_font_family,
+// filled with the font family name and the size scaler.  The output
+// parameters are not modified if the return value is false.
+UI_EXPORT bool NeedOverrideDefaultUIFont(string16* override_font_family,
                                          double* font_size_scaler);
 
 // If the default UI font stored in |logfont| is not suitable, its family
-// and size are replaced with those stored in the per-locale resource.
+// and size are replaced with those stored in the per-locale resource. The
+// font size is adjusted based on the font scale setting in the OS preferences.
+// Windows 8 supports scale factors of 1, 1.4 and 1.8.
 UI_EXPORT void AdjustUIFont(LOGFONT* logfont);
+
+// If the default UI font stored in |logfont| is not suitable, its family
+// and size are replaced with those stored in the per-locale resource. The
+// |dpi_scale| is the ratio of the OS setting for dots per inch relative to the
+// baseline of 96 DPI.  This ratio is also used for converting sizes from
+// device independent pixels (DIP) to physical pixels. The font size is scaled
+// for use with Views and Aura which work in DIP.
+UI_EXPORT void AdjustUIFontForDIP(float dpi_scale, LOGFONT* logfont);
 
 // If the font for a given window (pointed to by HWND) is not suitable for the
 // UI in the current UI langauge, its family and size are replaced with those
