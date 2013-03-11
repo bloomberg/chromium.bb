@@ -18,9 +18,16 @@ function CommandQueue(document, canvas, saveFunction) {
   this.redo_ = [];
   this.subscribers_ = [];
 
-  this.baselineImage_ = canvas;
   this.currentImage_ = canvas;
+
+  this.baselineImage_ = document.createElement('canvas');
+  this.baselineImage_.width = this.currentImage_.width;
+  this.baselineImage_.height = this.currentImage_.height;
+  var context = this.baselineImage_.getContext('2d');
+  context.drawImage(this.currentImage_, 0, 0);
+
   this.previousImage_ = document.createElement('canvas');
+  this.previousImageAvailable_ = false;
 
   this.saveFunction_ = saveFunction;
 
@@ -122,6 +129,7 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
   // Remember one previous image so that the first undo is as fast as possible.
   this.previousImage_.width = this.currentImage_.width;
   this.previousImage_.height = this.currentImage_.height;
+  this.previousImageAvailable_ = true;
   var context = this.previousImage_.getContext('2d');
   context.drawImage(this.currentImage_, 0, 0);
 
@@ -179,7 +187,7 @@ CommandQueue.prototype.undo = function() {
     self.commit_(delay);
   }
 
-  if (this.previousImage_) {
+  if (this.previousImageAvailable_) {
     // First undo after an execute call.
     this.currentImage_.width = this.previousImage_.width;
     this.currentImage_.height = this.previousImage_.height;
@@ -189,12 +197,16 @@ CommandQueue.prototype.undo = function() {
     // Free memory.
     this.previousImage_.width = 0;
     this.previousImage_.height = 0;
+    this.previousImageAvailable_ = false;
 
     complete();
     // TODO(kaznacheev) Consider recalculating previousImage_ right here
     // by replaying the commands in the background.
   } else {
-    this.currentImage_ = this.baselineImage_;
+    this.currentImage_.width = this.baselineImage_.width;
+    this.currentImage_.height = this.baselineImage_.height;
+    var context = this.currentImage_.getContext('2d');
+    context.drawImage(this.baselineImage_, 0, 0);
 
     var replay = function(index) {
       if (index < self.undo_.length)
@@ -233,6 +245,10 @@ CommandQueue.prototype.close = function() {
   // Free memory used by the undo buffer.
   this.previousImage_.width = 0;
   this.previousImage_.height = 0;
+  this.previousImageAvailable_ = false;
+
+  this.baselineImage_.width = 0;
+  this.baselineImage_.height = 0;
 };
 
 /**
