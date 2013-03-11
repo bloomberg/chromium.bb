@@ -34,10 +34,10 @@
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #include "sandbox/win/src/sandbox.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #endif
 
@@ -338,12 +338,12 @@ void WarmUpSandbox(const GPUInfo& gpu_info,
     (void) ret;
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda))
     ExynosVideoDecodeAccelerator::PreSandboxInitialization();
   else
     OmxVideoDecodeAccelerator::PreSandboxInitialization();
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   VaapiVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
 
