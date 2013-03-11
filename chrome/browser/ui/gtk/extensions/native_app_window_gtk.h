@@ -125,6 +125,9 @@ class NativeAppWindowGtk : public NativeAppWindow,
   // True if the window shows without frame.
   bool frameless_;
 
+  // True if the window should be resizable by the user.
+  bool resizable_;
+
   // The current window cursor.  We set it to a resize cursor when over the
   // custom frame border.  We set it to NULL if we want the default cursor.
   GdkCursor* frame_cursor_;

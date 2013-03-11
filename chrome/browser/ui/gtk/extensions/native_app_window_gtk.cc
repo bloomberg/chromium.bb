@@ -48,13 +48,20 @@ NativeAppWindowGtk::NativeAppWindowGtk(ShellWindow* shell_window,
 
   // This is done to avoid a WM "feature" where setting the window size to
   // the monitor size causes the WM to set the EWMH for full screen mode.
+  int win_height = params.bounds.height();
   if (frameless_ &&
       gtk_window_util::BoundsMatchMonitorSize(window_, params.bounds)) {
-    gtk_window_set_default_size(
-        window_, params.bounds.width(), params.bounds.height() - 1);
-  } else {
-    gtk_window_set_default_size(
-        window_, params.bounds.width(), params.bounds.height());
+    win_height -= 1;
+  }
+  gtk_window_set_default_size(window_, params.bounds.width(), win_height);
+
+  resizable_ = params.resizable;
+  if (!resizable_) {
+    // If the window doesn't have a size request when we set resizable to
+    // false, GTK will shrink the window to 1x1px.
+    gtk_widget_set_size_request(GTK_WIDGET(window_),
+        params.bounds.width(), win_height);
+    gtk_window_set_resizable(window_, FALSE);
   }
 
   // make sure bounds_ and restored_bounds_ have correct values until we
@@ -227,8 +234,19 @@ void NativeAppWindowGtk::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect content_bounds = bounds;
   content_bounds.Inset(GetFrameInsets());
   gtk_window_move(window_, content_bounds.x(), content_bounds.y());
-  gtk_window_util::SetWindowSize(window_,
-      gfx::Size(bounds.width(), bounds.height()));
+  if (!resizable_) {
+    if (frameless_ &&
+        gtk_window_util::BoundsMatchMonitorSize(window_, content_bounds)) {
+      content_bounds.set_height(content_bounds.height() - 1);
+    }
+    // TODO(jeremya): set_size_request doesn't honor min/max size, so the
+    // bounds should be constrained manually.
+    gtk_widget_set_size_request(GTK_WIDGET(window_),
+        content_bounds.width(), content_bounds.height());
+  } else {
+    gtk_window_util::SetWindowSize(window_,
+        gfx::Size(bounds.width(), bounds.height()));
+  }
 }
 
 void NativeAppWindowGtk::FlashFrame(bool flash) {
@@ -356,6 +374,9 @@ gboolean NativeAppWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
     return FALSE;
   }
 
+  if (!resizable_)
+    return FALSE;
+
   // Update the cursor if we're on the custom frame border.
   GdkWindowEdge edge;
   bool has_hit_edge = GetWindowEdge(static_cast<int>(event->x),
@@ -378,6 +399,7 @@ gboolean NativeAppWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
 
 gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
                                            GdkEventButton* event) {
+  DCHECK(frameless_);
   // Make the button press coordinate relative to the browser window.
   int win_x, win_y;
   GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
@@ -386,7 +408,7 @@ gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
   GdkWindowEdge edge;
   gfx::Point point(static_cast<int>(event->x_root - win_x),
                    static_cast<int>(event->y_root - win_y));
-  bool has_hit_edge = GetWindowEdge(point.x(), point.y(), &edge);
+  bool has_hit_edge = resizable_ && GetWindowEdge(point.x(), point.y(), &edge);
   bool has_hit_titlebar =
       draggable_region_ && draggable_region_->contains(event->x, event->y);
 
@@ -409,7 +431,7 @@ gboolean NativeAppWindowGtk::OnButtonPress(GtkWidget* widget,
             window_, bounds_, event);
       }
     } else if (GDK_2BUTTON_PRESS == event->type) {
-      if (has_hit_titlebar) {
+      if (has_hit_titlebar && resizable_) {
         // Maximize/restore on double click.
         if (IsMaximized()) {
           gtk_window_util::UnMaximize(GTK_WINDOW(widget),
