@@ -11,8 +11,16 @@
 
 namespace content {
 
-AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory)
-    : shared_memory_(shared_memory) {
+AudioInputSyncWriter::AudioInputSyncWriter(
+    base::SharedMemory* shared_memory,
+    int shared_memory_segment_count)
+    : shared_memory_(shared_memory),
+      shared_memory_segment_count_(shared_memory_segment_count),
+      current_segment_id_(0) {
+  DCHECK_GT(shared_memory_segment_count, 0);
+  DCHECK_EQ(shared_memory->created_size() % shared_memory_segment_count, 0u);
+  shared_memory_segment_size_ =
+      shared_memory->created_size() / shared_memory_segment_count;
 }
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {}
@@ -22,13 +30,18 @@ void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
   socket_->Send(&bytes, sizeof(bytes));
 }
 
-uint32 AudioInputSyncWriter::Write(const void* data, uint32 size,
-                                   double volume) {
+uint32 AudioInputSyncWriter::Write(
+    const void* data, uint32 size, double volume) {
+  uint8* ptr = static_cast<uint8*>(shared_memory_->memory());
+  ptr += current_segment_id_ * shared_memory_segment_size_;
   media::AudioInputBuffer* buffer =
-      reinterpret_cast<media::AudioInputBuffer*>(shared_memory_->memory());
+      reinterpret_cast<media::AudioInputBuffer*>(ptr);
   buffer->params.volume = volume;
   buffer->params.size = size;
   memcpy(buffer->audio, data, size);
+
+  if (++current_segment_id_ >= shared_memory_segment_count_)
+    current_segment_id_ = 0;
 
   return size;
 }

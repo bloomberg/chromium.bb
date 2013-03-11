@@ -27,8 +27,10 @@ struct AudioInputRendererHost::AudioEntry {
   // The audio input stream ID in the render view.
   int stream_id;
 
-  // Shared memory for transmission of the audio data.
+  // Shared memory for transmission of the audio data. It has
+  // |shared_memory_segment_count| equal lengthed segments.
   base::SharedMemory shared_memory;
+  int shared_memory_segment_count;
 
   // The synchronous writer to be used by the controller. We have the
   // ownership of the writer.
@@ -40,6 +42,7 @@ struct AudioInputRendererHost::AudioEntry {
 
 AudioInputRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
+      shared_memory_segment_count(0),
       pending_close(false) {
 }
 
@@ -155,7 +158,8 @@ void AudioInputRendererHost::DoCompleteCreation(
 
   Send(new AudioInputMsg_NotifyStreamCreated(entry->stream_id,
       foreign_memory_handle, foreign_socket_handle,
-      entry->shared_memory.created_size()));
+      entry->shared_memory.created_size(),
+      entry->shared_memory_segment_count));
 }
 
 void AudioInputRendererHost::DoSendRecordingMessage(
@@ -209,8 +213,11 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
 }
 
 void AudioInputRendererHost::OnCreateStream(
-    int stream_id, const media::AudioParameters& params,
-    const std::string& device_id, bool automatic_gain_control) {
+    int stream_id,
+    const media::AudioParameters& params,
+    const std::string& device_id,
+    bool automatic_gain_control,
+    int shared_memory_count) {
   VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
           << stream_id << ")";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -234,18 +241,22 @@ void AudioInputRendererHost::OnCreateStream(
   // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
-  uint32 mem_size = sizeof(media::AudioInputBufferParameters) + buffer_size;
+  uint32 segment_size =
+      sizeof(media::AudioInputBufferParameters) + buffer_size;
+  entry->shared_memory_segment_count = shared_memory_count;
 
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
-  if (!entry->shared_memory.CreateAndMapAnonymous(mem_size)) {
+  if (!entry->shared_memory.CreateAndMapAnonymous(
+      segment_size * entry->shared_memory_segment_count)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;
   }
 
   scoped_ptr<AudioInputSyncWriter> writer(
-      new AudioInputSyncWriter(&entry->shared_memory));
+      new AudioInputSyncWriter(&entry->shared_memory,
+                               entry->shared_memory_segment_count));
 
   if (!writer->Init()) {
     SendErrorMessage(stream_id);

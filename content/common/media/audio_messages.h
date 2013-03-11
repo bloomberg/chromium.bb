@@ -48,19 +48,21 @@ IPC_MESSAGE_CONTROL4(AudioMsg_NotifyStreamCreated,
 
 // Tell the renderer process that an audio input stream has been created.
 // The renderer process would be given a SyncSocket that it should read
-// from from then on.
+// from from then on. It is also given number of segments in shared memory.
 #if defined(OS_WIN)
-IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyStreamCreated,
+IPC_MESSAGE_CONTROL5(AudioInputMsg_NotifyStreamCreated,
                      int /* stream id */,
                      base::SharedMemoryHandle /* handle */,
                      base::SyncSocket::Handle /* socket handle */,
-                     uint32 /* length */)
+                     uint32 /* length */,
+                     uint32 /* segment count */)
 #else
-IPC_MESSAGE_CONTROL4(AudioInputMsg_NotifyStreamCreated,
+IPC_MESSAGE_CONTROL5(AudioInputMsg_NotifyStreamCreated,
                      int /* stream id */,
                      base::SharedMemoryHandle /* handle */,
                      base::FileDescriptor /* socket handle */,
-                     uint32 /* length */)
+                     uint32 /* length */,
+                     uint32 /* segment count */)
 #endif
 
 // Notification message sent from AudioRendererHost to renderer after an output
@@ -97,11 +99,12 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_CreateStream,
                      media::AudioParameters /* params */)
 
 // Request that got sent to browser for creating an audio input stream
-IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
+IPC_MESSAGE_CONTROL5(AudioInputHostMsg_CreateStream,
                      int /* stream_id */,
                      media::AudioParameters /* params */,
                      std::string /* device_id */,
-                     bool /* automatic_gain_control */)
+                     bool /* automatic_gain_control */,
+                     uint32 /* shared memory count */)
 
 // Indicate that audio for a stream is produced by the specified render view.
 IPC_MESSAGE_CONTROL2(AudioHostMsg_AssociateStreamWithProducer,

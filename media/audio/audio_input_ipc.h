@@ -34,7 +34,8 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
   // and process the shared memory whenever data is read from the socket.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               int length) = 0;
+                               int length,
+                               int total_segments) = 0;
 
   // Called when state of an audio stream has changed.
   virtual void OnStateChanged(State state) = 0;
@@ -73,11 +74,17 @@ class MEDIA_EXPORT AudioInputIPC {
 
   // Sends a request to create an AudioInputController object in the peer
   // process, identify it by |stream_id| and configure it to use the specified
-  // audio |params|.  Once the stream has been created, the implementation must
+  // audio |params|.  The |total_segments| indidates number of equal-lengthed
+  // segments in the shared memory buffer.
+  // Once the stream has been created, the implementation must
   // generate a notification to the AudioInputIPCDelegate and call
   // OnStreamCreated().
-  virtual void CreateStream(int stream_id, const AudioParameters& params,
-      const std::string& device_id, bool automatic_gain_control) = 0;
+  virtual void CreateStream(
+      int stream_id,
+      const AudioParameters& params,
+      const std::string& device_id,
+      bool automatic_gain_control,
+      uint32 total_segments) = 0;
 
   // Starts the device on the server side.  Once the device has started,
   // or failed to start, a callback to

@@ -21,7 +21,8 @@ namespace content {
 // process.
 class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
  public:
-  explicit AudioInputSyncWriter(base::SharedMemory* shared_memory);
+  explicit AudioInputSyncWriter(base::SharedMemory* shared_memory,
+                                int shared_memory_segment_count);
 
   virtual ~AudioInputSyncWriter();
 
@@ -40,6 +41,9 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
 
  private:
   base::SharedMemory* shared_memory_;
+  uint32 shared_memory_segment_size_;
+  uint32 shared_memory_segment_count_;
+  uint32 current_segment_id_;
 
   // Socket for transmitting audio data.
   scoped_ptr<base::CancelableSyncSocket> socket_;

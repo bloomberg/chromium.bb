@@ -125,7 +125,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   void OnCreateStream(int stream_id,
                       const media::AudioParameters& params,
                       const std::string& device_id,
-                      bool automatic_gain_control);
+                      bool automatic_gain_control,
+                      int shared_memory_count);
 
   // Track that the data for the audio stream referenced by |stream_id| is
   // consumed by an entity in the render view referenced by |render_view_id|.

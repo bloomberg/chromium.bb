@@ -54,7 +54,8 @@ class PepperPlatformAudioInputImpl
   // media::AudioInputIPCDelegate.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               int length) OVERRIDE;
+                               int length,
+                               int total_segments) OVERRIDE;
   virtual void OnVolume(double volume) OVERRIDE;
   virtual void OnStateChanged(
       media::AudioInputIPCDelegate::State state) OVERRIDE;

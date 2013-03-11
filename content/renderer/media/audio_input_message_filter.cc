@@ -94,7 +94,8 @@ void AudioInputMessageFilter::OnStreamCreated(
 #else
     base::FileDescriptor socket_descriptor,
 #endif
-    uint32 length) {
+    uint32 length,
+    uint32 total_segments) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
 
 #if !defined(OS_WIN)
@@ -109,7 +110,7 @@ void AudioInputMessageFilter::OnStreamCreated(
     return;
   }
   // Forward message to the stream delegate.
-  delegate->OnStreamCreated(handle, socket_handle, length);
+  delegate->OnStreamCreated(handle, socket_handle, length, total_segments);
 }
 
 void AudioInputMessageFilter::OnStreamVolume(int stream_id, double volume) {
@@ -160,9 +161,11 @@ void AudioInputMessageFilter::RemoveDelegate(int id) {
 void AudioInputMessageFilter::CreateStream(int stream_id,
                                            const media::AudioParameters& params,
                                            const std::string& device_id,
-                                           bool automatic_gain_control) {
+                                           bool automatic_gain_control,
+                                           uint32 total_segments) {
   Send(new AudioInputHostMsg_CreateStream(
-      stream_id, params, device_id, automatic_gain_control));
+      stream_id, params, device_id, automatic_gain_control,
+      total_segments));
 }
 
 void AudioInputMessageFilter::AssociateStreamWithConsumer(int stream_id,

@@ -105,7 +105,8 @@ class MEDIA_EXPORT AudioInputDevice
   // AudioInputIPCDelegate implementation.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               int length) OVERRIDE;
+                               int length,
+                               int total_segments) OVERRIDE;
   virtual void OnVolume(double volume) OVERRIDE;
   virtual void OnStateChanged(
       AudioInputIPCDelegate::State state) OVERRIDE;

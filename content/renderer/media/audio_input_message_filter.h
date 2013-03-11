@@ -40,8 +40,12 @@ class CONTENT_EXPORT AudioInputMessageFilter
   virtual int AddDelegate(
       media::AudioInputIPCDelegate* delegate) OVERRIDE;
   virtual void RemoveDelegate(int id) OVERRIDE;
-  virtual void CreateStream(int stream_id, const media::AudioParameters& params,
-      const std::string& device_id, bool automatic_gain_control) OVERRIDE;
+  virtual void CreateStream(
+      int stream_id,
+      const media::AudioParameters& params,
+      const std::string& device_id,
+      bool automatic_gain_control,
+      uint32 total_segments) OVERRIDE;
   virtual void StartDevice(int stream_id, int session_id) OVERRIDE;
   virtual void RecordStream(int stream_id) OVERRIDE;
   virtual void CloseStream(int stream_id) OVERRIDE;
@@ -64,13 +68,15 @@ class CONTENT_EXPORT AudioInputMessageFilter
   virtual void OnChannelClosing() OVERRIDE;
 
   // Received when browser process has created an audio input stream.
-  void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
+  void OnStreamCreated(int stream_id,
+                       base::SharedMemoryHandle handle,
 #if defined(OS_WIN)
                        base::SyncSocket::Handle socket_handle,
 #else
                        base::FileDescriptor socket_descriptor,
 #endif
-                       uint32 length);
+                       uint32 length,
+                       uint32 total_segments);
 
   // Notification of volume property of an audio input stream.
   void OnStreamVolume(int stream_id, double volume);

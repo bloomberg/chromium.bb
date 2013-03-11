@@ -257,7 +257,8 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     AudioRendererSink::RenderCallback* render_callback)
     : AudioDeviceThread::Callback(audio_parameters,
                                   memory,
-                                  memory_length),
+                                  memory_length,
+                                  1),
       render_callback_(render_callback) {
 }
 
@@ -265,6 +266,7 @@ AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }
 
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
+  CHECK_EQ(total_segments_, 1);
   CHECK(shared_memory_.Map(TotalSharedMemorySizeInBytes(memory_length_)));
 
   // Calculate output and input memory size.
