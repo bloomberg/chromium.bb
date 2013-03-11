@@ -472,6 +472,12 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
+        ['OS=="android"', {
+          'dependencies': [
+            'overscroller_jni_headers',
+          ],
+        }],
+
       ],
     },
   ],
@@ -494,6 +500,20 @@
             },
           ],
           'includes': [ '../../build/grit_target.gypi' ],
+        },
+      ],
+    }],
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'overscroller_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'webkit',
+            'input_java_class': 'android/widget/OverScroller.class',
+            'input_jar_file': '<(android_sdk)/android.jar',
+          },
+          'includes': [ '../../build/jar_file_jni_generator.gypi' ],
         },
       ],
     }],

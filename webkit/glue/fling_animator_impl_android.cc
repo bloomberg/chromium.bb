@@ -7,47 +7,30 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "jni/OverScroller_jni.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
-
-using base::android::AttachCurrentThread;
-using base::android::CheckException;
-using base::android::GetApplicationContext;
-using base::android::GetClass;
-using base::android::MethodID;
-using base::android::ScopedJavaLocalRef;
 
 namespace webkit_glue {
 
 FlingAnimatorImpl::FlingAnimatorImpl()
     : is_active_(false) {
   // hold the global reference of the Java objects.
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  ScopedJavaLocalRef<jclass> cls(GetClass(env, "android/widget/OverScroller"));
-  jmethodID constructor = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "<init>", "(Landroid/content/Context;)V");
-  ScopedJavaLocalRef<jobject> tmp(env, env->NewObject(cls.obj(), constructor,
-                                                      GetApplicationContext()));
-  DCHECK(tmp.obj());
-  java_scroller_.Reset(tmp);
-
-  fling_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "fling", "(IIIIIIII)V");
-  abort_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "abortAnimation", "()V");
-  compute_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "computeScrollOffset", "()Z");
-  getX_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "getCurrX", "()I");
-  getY_method_id_ = MethodID::Get<MethodID::TYPE_INSTANCE>(
-      env, cls.obj(), "getCurrY", "()I");
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_scroller_.Reset(JNI_OverScroller::Java_OverScroller_ConstructorAWOS_ACC(
+      env,
+      base::android::GetApplicationContext()));
 }
 
 FlingAnimatorImpl::~FlingAnimatorImpl()
 {
+}
+
+//static
+bool FlingAnimatorImpl::RegisterJni(JNIEnv* env) {
+  return JNI_OverScroller::RegisterNativesImpl(env);
 }
 
 void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity)
@@ -62,13 +45,13 @@ void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity)
 
   is_active_ = true;
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
 
-  env->CallVoidMethod(java_scroller_.obj(), fling_method_id_, 0, 0,
-                      static_cast<int>(velocity.x()),
-                      static_cast<int>(velocity.y()),
-                      INT_MIN, INT_MAX, INT_MIN, INT_MAX);
-  CheckException(env);
+  JNI_OverScroller::Java_OverScroller_flingV_I_I_I_I_I_I_I_I(
+      env, java_scroller_.obj(), 0, 0,
+      static_cast<int>(velocity.x()),
+      static_cast<int>(velocity.y()),
+      INT_MIN, INT_MAX, INT_MIN, INT_MAX);
 }
 
 void FlingAnimatorImpl::CancelFling()
@@ -77,27 +60,25 @@ void FlingAnimatorImpl::CancelFling()
     return;
 
   is_active_ = false;
-  JNIEnv* env = AttachCurrentThread();
-  env->CallVoidMethod(java_scroller_.obj(), abort_method_id_);
-  CheckException(env);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  JNI_OverScroller::Java_OverScroller_abortAnimation(env, java_scroller_.obj());
 }
 
 bool FlingAnimatorImpl::UpdatePosition()
 {
-  JNIEnv* env = AttachCurrentThread();
-  bool result = env->CallBooleanMethod(java_scroller_.obj(),
-                                       compute_method_id_);
-  CheckException(env);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  bool result = JNI_OverScroller::Java_OverScroller_computeScrollOffset(
+      env,
+      java_scroller_.obj());
   return is_active_ = result;
 }
 
 gfx::Point FlingAnimatorImpl::GetCurrentPosition()
 {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   gfx::Point position(
-      env->CallIntMethod(java_scroller_.obj(), getX_method_id_),
-      env->CallIntMethod(java_scroller_.obj(), getY_method_id_));
-  CheckException(env);
+      JNI_OverScroller::Java_OverScroller_getCurrX(env, java_scroller_.obj()),
+      JNI_OverScroller::Java_OverScroller_getCurrY(env, java_scroller_.obj()));
   return position;
 }
 

@@ -29,6 +29,9 @@ class FlingAnimatorImpl : public WebKit::WebGestureCurve {
 
   virtual bool apply(double time,
                      WebKit::WebGestureCurveTarget* target);
+
+  static bool RegisterJni(JNIEnv*);
+
  private:
   void StartFling(const gfx::PointF& velocity);
   // Returns true if the animation is not yet finished.
@@ -40,11 +43,6 @@ class FlingAnimatorImpl : public WebKit::WebGestureCurve {
 
   // Java OverScroller instance and methods.
   base::android::ScopedJavaGlobalRef<jobject> java_scroller_;
-  jmethodID fling_method_id_;
-  jmethodID abort_method_id_;
-  jmethodID compute_method_id_;
-  jmethodID getX_method_id_;
-  jmethodID getY_method_id_;
 
   gfx::Point last_position_;
 

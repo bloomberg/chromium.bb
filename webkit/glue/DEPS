@@ -5,6 +5,8 @@ include_rules = [
   "+ui",
   "+webkit/tools/test_shell",  # Needed for test shell tests.
 
+  "+jni", # Needed for Android's java-generated bindings
+
   # This is not actually a directory, but npruntime_util.cc includes a file
   # from WebKit starting with this path in JSCore mode.
   "+bindings/c",
