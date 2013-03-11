@@ -156,7 +156,7 @@ static void DeliverFrameFunc(base::Closure quit_closure,
 }
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
-                       DISABLED_MacFrameSubscriberTest) {
+                       MacFrameSubscriberTest) {
   if (!IOSurfaceSupport::Initialize())
     return;
 
@@ -175,8 +175,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTest,
                                          run_loop.QuitClosure(),
                                          &frame_captured)));
 
-  // Do a resize of the window to trigger a repaint and present.
-  SetWindowBounds(shell()->window(), gfx::Rect(size_));
+  // To ensure there is always a repaint we resize the window to a weird
+  // size. This gurantees a repaint if the window is already in |size_|.
+  SetWindowBounds(shell()->window(),
+                  gfx::Rect(size_.width() / 2, size_.height() / 2));
   run_loop.Run();
   view->EndFrameSubscription();
 
