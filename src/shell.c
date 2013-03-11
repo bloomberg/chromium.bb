@@ -1174,7 +1174,8 @@ surface_resize(struct shell_surface *shsurf,
 {
 	struct weston_resize_grab *resize;
 
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN ||
+	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
 		return 0;
 
 	if (edges == 0 || edges > 15 ||
@@ -2387,7 +2388,8 @@ move_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (shsurf == NULL || shsurf->type == SHELL_SURFACE_FULLSCREEN)
+	if (shsurf == NULL || shsurf->type == SHELL_SURFACE_FULLSCREEN ||
+	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
 		return;
 
 	surface_move(shsurf, (struct weston_seat *) seat);
@@ -2406,7 +2408,8 @@ resize_binding(struct wl_seat *seat, uint32_t time, uint32_t button, void *data)
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (!shsurf || shsurf->type == SHELL_SURFACE_FULLSCREEN)
+	if (!shsurf || shsurf->type == SHELL_SURFACE_FULLSCREEN ||
+	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
 		return;
 
 	weston_surface_from_global(surface,
@@ -2665,7 +2668,8 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 		return;
 
 	surface = get_shell_surface(base_surface);
-	if (!surface || surface->type == SHELL_SURFACE_FULLSCREEN)
+	if (!surface || surface->type == SHELL_SURFACE_FULLSCREEN ||
+	    surface->type == SHELL_SURFACE_MAXIMIZED)
 		return;
 
 	surface_rotate(surface, seat);
