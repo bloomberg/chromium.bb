@@ -1206,4 +1206,13 @@ const char kRequestPathAccess[] = "RequestPathAccess";
 const char kRequestUsbAccess[] = "RequestUsbAccess";
 }  // namespace permission_broker
 
+namespace system_clock {
+const char kSystemClockInterface[] = "org.torproject.tlsdate";
+const char kSystemClockServicePath[] = "/org/torproject/tlsdate";
+const char kSystemClockServiceName[] = "org.torproject.tlsdate";
+
+// Signals.
+const char kSystemClockUpdated[] = "TimeUpdated";
+}  // namespace system_clock
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
