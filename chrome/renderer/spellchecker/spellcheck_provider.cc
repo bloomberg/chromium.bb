@@ -159,7 +159,6 @@ void SpellCheckProvider::checkTextOfParagraph(
     const WebKit::WebString& text,
     WebKit::WebTextCheckingTypeMask mask,
     WebKit::WebVector<WebKit::WebTextCheckingResult>* results) {
-  UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
 #if !defined(OS_MACOSX)
   // Since Mac has its own spell checker, this method will not be used on Mac.
 
@@ -171,6 +170,7 @@ void SpellCheckProvider::checkTextOfParagraph(
 
   spellcheck_->SpellCheckParagraph(string16(text), results);
 #endif
+  UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
 }
 
 void SpellCheckProvider::requestCheckingOfText(
