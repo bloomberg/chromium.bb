@@ -68,8 +68,10 @@ void ZoomController::DidNavigateMainFrame(
   UpdateState(std::string());
 }
 
-void ZoomController::OnZoomLevelChanged(const std::string& host) {
-  UpdateState(host);
+void ZoomController::OnZoomLevelChanged(
+    const content::HostZoomMap::ZoomLevelChange& change) {
+  if (change.mode != content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM)
+    UpdateState(change.host);
 }
 
 void ZoomController::UpdateState(const std::string& host) {

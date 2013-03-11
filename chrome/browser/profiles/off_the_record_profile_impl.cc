@@ -464,13 +464,19 @@ Profile* Profile::CreateOffTheRecordProfile() {
   return profile;
 }
 
-void OffTheRecordProfileImpl::OnZoomLevelChanged(const std::string& host) {
-  if (host.empty())
-    return;
-
+void OffTheRecordProfileImpl::OnZoomLevelChanged(
+    const HostZoomMap::ZoomLevelChange& change) {
   HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
-  HostZoomMap* parent_host_zoom_map =
-      HostZoomMap::GetForBrowserContext(profile_);
-  double level = parent_host_zoom_map->GetZoomLevel(host);
-  host_zoom_map->SetZoomLevel(host, level);
+  switch (change.mode) {
+    case HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
+       return;
+    case HostZoomMap::ZOOM_CHANGED_FOR_HOST:
+       host_zoom_map->SetZoomLevelForHost(change.host, change.zoom_level);
+       return;
+    case HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
+       host_zoom_map->SetZoomLevelForHostAndScheme(change.scheme,
+           change.host,
+           change.zoom_level);
+       return;
+  }
 }

@@ -143,8 +143,11 @@ base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
 
 class RenderViewZoomer : public RenderViewVisitor {
  public:
-  RenderViewZoomer(const std::string& host, double zoom_level)
-      : host_(host), zoom_level_(zoom_level) {
+  RenderViewZoomer(const std::string& scheme,
+                   const std::string& host,
+                   double zoom_level) : scheme_(scheme),
+                                        host_(host),
+                                        zoom_level_(zoom_level) {
   }
 
   virtual bool Visit(RenderView* render_view) OVERRIDE {
@@ -155,15 +158,19 @@ class RenderViewZoomer : public RenderViewVisitor {
     // zoom settings.
     if (document.isPluginDocument())
       return true;
-
-    if (net::GetHostOrSpecFromURL(GURL(document.url())) == host_)
+    GURL url(document.url());
+    // Empty scheme works as wildcard that matches any scheme,
+    if ((net::GetHostOrSpecFromURL(url) == host_) &&
+        (scheme_.empty() || scheme_ == url.scheme())) {
       webview->setZoomLevel(false, zoom_level_);
+    }
     return true;
   }
 
  private:
-  std::string host_;
-  double zoom_level_;
+  const std::string scheme_;
+  const std::string host_;
+  const double zoom_level_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
@@ -1085,9 +1092,10 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
 
-void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& host,
+void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,
+                                                   const std::string& host,
                                                    double zoom_level) {
-  RenderViewZoomer zoomer(host, zoom_level);
+  RenderViewZoomer zoomer(scheme, host, zoom_level);
   RenderView::ForEach(&zoomer);
 }
 

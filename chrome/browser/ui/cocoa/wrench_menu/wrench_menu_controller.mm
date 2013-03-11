@@ -75,7 +75,7 @@ class ZoomLevelObserver {
   }
 
  private:
-  void OnZoomLevelChanged(const std::string& host) {
+  void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
     WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
     wrenchMenuModel->UpdateZoomControls();
     const string16 level =

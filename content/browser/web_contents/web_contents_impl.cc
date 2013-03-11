@@ -1905,7 +1905,8 @@ double WebContentsImpl::GetZoomLevel() const {
     // Since zoom map is updated using rewritten URL, use rewritten URL
     // to get the zoom level.
     url = active_entry ? active_entry->GetURL() : GURL::EmptyGURL();
-    zoom_level = zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(url));
+    zoom_level = zoom_map->GetZoomLevelForHostAndScheme(url.scheme(),
+        net::GetHostOrSpecFromURL(url));
   }
   return zoom_level;
 }

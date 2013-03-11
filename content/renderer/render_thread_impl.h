@@ -351,7 +351,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   void Init();
 
-  void OnSetZoomLevelForCurrentURL(const std::string& host, double zoom_level);
+  void OnSetZoomLevelForCurrentURL(const std::string& scheme,
+                                   const std::string& host,
+                                   double zoom_level);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnPurgePluginListCache(bool reload_pages);

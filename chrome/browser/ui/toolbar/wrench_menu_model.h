@@ -148,7 +148,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   // |new_menu| should be set to true.
   void CreateZoomMenu(bool new_menu);
 
-  void OnZoomLevelChanged(const std::string& host);
+  void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   // Models for the special menu items with buttons.
   scoped_ptr<ui::ButtonMenuItemModel> edit_menu_item_model_;

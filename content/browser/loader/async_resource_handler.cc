@@ -184,8 +184,9 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
     const GURL& request_url = request_->url();
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
         info->GetRouteID(),
-        request_url, host_zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(
-            request_url))));
+        request_url, host_zoom_map->GetZoomLevelForHostAndScheme(
+            request_url.scheme(),
+            net::GetHostOrSpecFromURL(request_url))));
   }
 
   response->head.request_start = request_->creation_time();

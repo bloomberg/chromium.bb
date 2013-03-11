@@ -47,7 +47,7 @@ void ExpectAtDefaultZoom(content::WebContents* contents) {
 }
 
 void OnZoomLevelChanged(const base::Closure& callback,
-                        const std::string& host) {
+                        const content::HostZoomMap::ZoomLevelChange& host) {
   callback.Run();
 }
 

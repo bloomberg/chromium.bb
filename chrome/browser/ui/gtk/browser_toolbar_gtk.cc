@@ -442,7 +442,8 @@ bool BrowserToolbarGtk::IsWrenchMenuShowing() const {
 
 // BrowserToolbarGtk, private --------------------------------------------------
 
-void BrowserToolbarGtk::OnZoomLevelChanged(const std::string& host) {
+void BrowserToolbarGtk::OnZoomLevelChanged(
+    const HostZoomMap::ZoomLevelChange& change) {
   // Since BrowserToolbarGtk create a new |wrench_menu_model_| in
   // RebuildWrenchMenu(), the ordering of the observers of HostZoomMap
   // can change, and result in subtle bugs like http://crbug.com/118823.

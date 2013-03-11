@@ -157,7 +157,8 @@ class ProfileImpl : public Profile {
   void InitHostZoomMap();
 
   void OnDefaultZoomLevelChanged();
-  void OnZoomLevelChanged(const std::string& host);
+  void OnZoomLevelChanged(
+      const content::HostZoomMap::ZoomLevelChange& change);
 
   void OnInitializationCompleted(PrefService* pref_service,
                                  bool succeeded);

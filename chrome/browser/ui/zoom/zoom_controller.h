@@ -44,7 +44,7 @@ class ZoomController : public content::WebContentsObserver,
   friend class content::WebContentsUserData<ZoomController>;
   friend class ZoomControllerTest;
 
-  void OnZoomLevelChanged(const std::string& host);
+  void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   // Updates the zoom icon and zoom percentage based on current values and
   // notifies the observer if changes have occurred. |host| may be empty,

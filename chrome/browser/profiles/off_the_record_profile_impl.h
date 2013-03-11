@@ -117,7 +117,7 @@ class OffTheRecordProfileImpl : public Profile {
   void UseSystemProxy();
 #endif
 
-  void OnZoomLevelChanged(const std::string& host);
+  void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   // The real underlying profile.
   Profile* profile_;

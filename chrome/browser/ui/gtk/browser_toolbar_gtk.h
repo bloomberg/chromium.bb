@@ -113,7 +113,7 @@ class BrowserToolbarGtk : public CommandObserver,
                          bool should_restore_state);
 
  private:
-  void OnZoomLevelChanged(const std::string& host);
+  void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& host);
 
   // Connect/Disconnect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton();

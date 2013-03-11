@@ -21,8 +21,33 @@ class ResourceContext;
 // Maps hostnames to custom zoom levels.  Written on the UI thread and read on
 // any thread.  One instance per browser context. Must be created on the UI
 // thread, and it'll delete itself on the UI thread as well.
+// Zoom can be defined at three levels: default zoom, zoom for host, and zoom
+// for host with specific scheme. Setting any of the levels leaves settings
+// for other settings intact. Getting the zoom level starts at the most
+// specific setting and progresses to the less specific: first the zoom for the
+// host and scheme pair is checked, secondly the zoom for the host only and
+// lastly default zoom.
+
 class HostZoomMap {
  public:
+  // Enum that indicates what was the scope of zoom level change.
+  enum ZoomLevelChangeMode {
+    ZOOM_CHANGED_FOR_HOST,            // Zoom level changed for host.
+    ZOOM_CHANGED_FOR_SCHEME_AND_HOST, // Zoom level changed for scheme/host
+                                      // pair.
+    ZOOM_CHANGED_TEMPORARY_ZOOM,      // Temporary zoom change for specific
+                                      // renderer, no scheme/host is specified.
+  };
+
+  // Structure used to notify about zoom changes. Host and/or scheme are empty
+  // if not applicable to |mode|.
+  struct ZoomLevelChange {
+    ZoomLevelChangeMode mode;
+    std::string host;
+    std::string scheme;
+    double zoom_level;
+  };
+
   CONTENT_EXPORT static HostZoomMap* GetForBrowserContext(
       BrowserContext* browser_context);
 
@@ -30,28 +55,42 @@ class HostZoomMap {
   // thread.
   virtual void CopyFrom(HostZoomMap* copy) = 0;
 
-  // Returns the zoom level for the host or spec for a given url. The zoom
-  // level is determined by the host portion of the URL, or (in the absence of
-  // a host) the complete spec of the URL. In most cases, there is no custom
-  // zoom level, and this returns the user's default zoom level.  Otherwise,
-  // returns the saved zoom level, which may be positive (to zoom in) or
-  // negative (to zoom out).
+  // Here |host| is the host portion of URL, or (in the absence of a host)
+  // the complete spec of the URL.
+  // Returns the zoom for the specified |scheme| and |host|. See class
+  // description for details.
   //
   // This may be called on any thread.
-  virtual double GetZoomLevel(const std::string& host) const = 0;
+  virtual double GetZoomLevelForHostAndScheme(
+      const std::string& scheme,
+      const std::string& host) const = 0;
 
-  // Sets the zoom level for the host or spec for a given url to |level|.  If
-  // the level matches the current default zoom level, the host is erased
-  // from the saved preferences; otherwise the new value is written out.
+  // Here |host| is the host portion of URL, or (in the absence of a host)
+  // the complete spec of the URL.
+  // Sets the zoom level for the |host| to |level|.  If the level matches the
+  // current default zoom level, the host is erased from the saved preferences;
+  // otherwise the new value is written out.
+  // Zoom levels specified for both scheme and host are not affected.
   //
   // This should only be called on the UI thread.
-  virtual void SetZoomLevel(const std::string& host, double level) = 0;
+  virtual void SetZoomLevelForHost(const std::string& host, double level) = 0;
+
+  // Here |host| is the host portion of URL, or (in the absence of a host)
+  // the complete spec of the URL.
+  // Sets the zoom level for the |scheme|/|host| pair to |level|. No values
+  // will be erased during this operation, and this value will not be stored in
+  // the preferences.
+  //
+  // This should only be called on the UI thread.
+  virtual void SetZoomLevelForHostAndScheme(const std::string& scheme,
+                                            const std::string& host,
+                                            double level) = 0;
 
   // Get/Set the default zoom level for pages that don't override it.
   virtual double GetDefaultZoomLevel() const = 0;
   virtual void SetDefaultZoomLevel(double level) = 0;;
 
-  typedef base::Callback<void(const std::string&)> ZoomLevelChangedCallback;
+  typedef base::Callback<void(const ZoomLevelChange&)> ZoomLevelChangedCallback;
 
   // Add and remove zoom level changed callbacks.
   virtual void AddZoomLevelChangedCallback(

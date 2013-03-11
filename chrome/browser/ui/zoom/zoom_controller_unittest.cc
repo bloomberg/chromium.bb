@@ -68,5 +68,5 @@ TEST_F(ZoomControllerTest, Observe) {
       content::HostZoomMap::GetForBrowserContext(
           web_contents()->GetBrowserContext());
 
-  host_zoom_map->SetZoomLevel(std::string(), 110.0f);
+  host_zoom_map->SetZoomLevelForHost(std::string(), 110.0f);
 }

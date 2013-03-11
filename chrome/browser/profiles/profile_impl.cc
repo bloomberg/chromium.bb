@@ -584,7 +584,7 @@ void ProfileImpl::InitHostZoomMap() {
 
       bool success = i.value().GetAsDouble(&zoom_level);
       DCHECK(success);
-      host_zoom_map->SetZoomLevel(host, zoom_level);
+      host_zoom_map->SetZoomLevelForHost(host, zoom_level);
     }
   }
 
@@ -956,18 +956,20 @@ void ProfileImpl::OnDefaultZoomLevelChanged() {
       pref_change_registrar_.prefs()->GetDouble(prefs::kDefaultZoomLevel));
 }
 
-void ProfileImpl::OnZoomLevelChanged(const std::string& host) {
-  if (host.empty())
+void ProfileImpl::OnZoomLevelChanged(
+    const HostZoomMap::ZoomLevelChange& change) {
+
+  if (change.mode != HostZoomMap::ZOOM_CHANGED_FOR_HOST)
     return;
   HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
-  double level = host_zoom_map->GetZoomLevel(host);
+  double level = change.zoom_level;
   DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
   DictionaryValue* host_zoom_dictionary = update.Get();
   if (level == host_zoom_map->GetDefaultZoomLevel()) {
-    host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
+    host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
   } else {
     host_zoom_dictionary->SetWithoutPathExpansion(
-        host, Value::CreateDoubleValue(level));
+        change.host, Value::CreateDoubleValue(level));
   }
 }
 

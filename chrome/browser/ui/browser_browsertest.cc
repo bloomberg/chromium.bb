@@ -82,6 +82,7 @@
 #endif
 
 using content::InterstitialPage;
+using content::HostZoomMap;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
@@ -1369,7 +1370,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 namespace {
 
 void OnZoomLevelChanged(const base::Closure& callback,
-                        const std::string& host) {
+                        const HostZoomMap::ZoomLevelChange& host) {
   callback.Run();
 }
 

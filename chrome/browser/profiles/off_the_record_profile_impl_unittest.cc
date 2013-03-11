@@ -47,19 +47,21 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
   }
 
  private:
-  void OnZoomLevelChanged(const std::string& host) {
-    if (host.empty())
+  void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
+
+    if (change.mode != HostZoomMap::ZOOM_CHANGED_FOR_HOST)
       return;
 
     HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
-    double level = host_zoom_map->GetZoomLevel(host);
+
+    double level = change.zoom_level;
     DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
     DictionaryValue* host_zoom_dictionary = update.Get();
     if (level == host_zoom_map->GetDefaultZoomLevel()) {
-      host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
+      host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
-          host, Value::CreateDoubleValue(level));
+          change.host, Value::CreateDoubleValue(level));
     }
   }
 
@@ -131,8 +133,9 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
       HostZoomMap::GetForBrowserContext(parent_profile.get());
   ASSERT_TRUE(parent_zoom_map);
 
-  parent_zoom_map->SetZoomLevel(host, zoom_level_25);
-  ASSERT_EQ(parent_zoom_map->GetZoomLevel(host), zoom_level_25);
+  parent_zoom_map->SetZoomLevelForHost(host, zoom_level_25);
+  ASSERT_EQ(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+      zoom_level_25);
 
   // TODO(yosin) We need to wait ProfileImpl::Observe done for
   // OnZoomLevelChanged.
@@ -153,21 +156,25 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
   // Verity.
   EXPECT_NE(parent_zoom_map, child_zoom_map);
 
-  EXPECT_EQ(parent_zoom_map->GetZoomLevel(host),
-            child_zoom_map->GetZoomLevel(host)) <<
+  EXPECT_EQ(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+            child_zoom_map->GetZoomLevelForHostAndScheme("http", host)) <<
                 "Child must inherit from parent.";
 
-  child_zoom_map->SetZoomLevel(host, zoom_level_30);
-  ASSERT_EQ(child_zoom_map->GetZoomLevel(host), zoom_level_30);
+  child_zoom_map->SetZoomLevelForHost(host, zoom_level_30);
+  ASSERT_EQ(
+      child_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+      zoom_level_30);
 
-  EXPECT_NE(parent_zoom_map->GetZoomLevel(host),
-            child_zoom_map->GetZoomLevel(host)) <<
+  EXPECT_NE(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+            child_zoom_map->GetZoomLevelForHostAndScheme("http", host)) <<
                 "Child change must not propagate to parent.";
 
-  parent_zoom_map->SetZoomLevel(host, zoom_level_40);
-  ASSERT_EQ(parent_zoom_map->GetZoomLevel(host), zoom_level_40);
+  parent_zoom_map->SetZoomLevelForHost(host, zoom_level_40);
+  ASSERT_EQ(
+      parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+      zoom_level_40);
 
-  EXPECT_EQ(parent_zoom_map->GetZoomLevel(host),
-            child_zoom_map->GetZoomLevel(host)) <<
+  EXPECT_EQ(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+            child_zoom_map->GetZoomLevelForHostAndScheme("http", host)) <<
                 "Parent change should propagate to child.";
 }

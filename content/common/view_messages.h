@@ -1064,7 +1064,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
 
 // Set the zoom level for a particular url, so all render views
 // displaying this url can update their zoom levels to match.
-IPC_MESSAGE_CONTROL2(ViewMsg_SetZoomLevelForCurrentURL,
+// If scheme is empty, then only host is used for matching.
+IPC_MESSAGE_CONTROL3(ViewMsg_SetZoomLevelForCurrentURL,
+                     std::string /* scheme */,
                      std::string /* host */,
                      double /* zoom_level */)
 

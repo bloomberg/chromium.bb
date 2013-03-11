@@ -722,6 +722,7 @@ void WrenchMenuModel::UpdateZoomControls() {
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
 }
 
-void WrenchMenuModel::OnZoomLevelChanged(const std::string& host) {
+void WrenchMenuModel::OnZoomLevelChanged(
+    const content::HostZoomMap::ZoomLevelChange& change) {
   UpdateZoomControls();
 }

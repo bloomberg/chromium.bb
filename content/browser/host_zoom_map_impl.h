@@ -30,8 +30,16 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
 
   // HostZoomMap implementation:
   virtual void CopyFrom(HostZoomMap* copy) OVERRIDE;
-  virtual double GetZoomLevel(const std::string& host) const OVERRIDE;
-  virtual void SetZoomLevel(const std::string& host, double level) OVERRIDE;
+  virtual double GetZoomLevelForHostAndScheme(
+      const std::string& scheme,
+      const std::string& host) const OVERRIDE;
+  virtual void SetZoomLevelForHost(
+      const std::string& host,
+      double level) OVERRIDE;
+  virtual void SetZoomLevelForHostAndScheme(
+      const std::string& scheme,
+      const std::string& host,
+      double level) OVERRIDE;
   virtual double GetDefaultZoomLevel() const OVERRIDE;
   virtual void SetDefaultZoomLevel(double level) OVERRIDE;
   virtual void AddZoomLevelChangedCallback(
@@ -61,13 +69,17 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
                        const NotificationDetails& details) OVERRIDE;
 
  private:
+  double GetZoomLevelForHost(const std::string& host) const;
+
   typedef std::map<std::string, double> HostZoomLevels;
+  typedef std::map<std::string, HostZoomLevels> SchemeHostZoomLevels;
 
   // Callbacks called when zoom level changes.
   std::vector<ZoomLevelChangedCallback> zoom_level_changed_callbacks_;
 
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;
+  SchemeHostZoomLevels scheme_host_zoom_levels_;
   double default_zoom_level_;
 
   struct TemporaryZoomLevel {
