@@ -197,6 +197,8 @@
     {
       'target_name': 'clearkeycdmadapter',
       'type': 'none',
+      # Check whether the plugin's origin URL is valid.
+      'defines': ['CHECK_ORIGIN_URL'],
       'dependencies': [
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
         'clearkeycdm',

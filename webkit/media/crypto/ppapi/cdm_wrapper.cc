@@ -28,6 +28,11 @@
 #include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
 #include "webkit/media/crypto/ppapi/linked_ptr.h"
 
+#if defined(CHECK_ORIGIN_URL)
+#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/private/var_private.h"
+#endif  // defined(CHECK_ORIGIN_URL)
+
 namespace {
 
 bool IsMainThread() {
@@ -636,6 +641,14 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
                                     pp::VarArrayBuffer init_data) {
   PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || key_system_ == key_system);
+
+#if defined(CHECK_ORIGIN_URL)
+  pp::InstancePrivate instance_private(pp_instance());
+  pp::VarPrivate window = instance_private.GetWindowObject();
+  std::string origin = window.GetProperty("top").GetProperty("location")
+      .GetProperty("origin").AsString();
+  PP_DCHECK(origin != "null");
+#endif  // defined(CHECK_ORIGIN_URL)
 
   if (!cdm_) {
     if (!CreateCdmInstance(key_system)) {
