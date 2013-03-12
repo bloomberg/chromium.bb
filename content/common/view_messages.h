@@ -1312,6 +1312,10 @@ IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
                     gfx::Size /* size */,
                     std::vector<unsigned char> /* png */)
 
+// Tells the renderer to suspend/resume the webkit timers.
+IPC_MESSAGE_CONTROL1(ViewMsg_SetWebKitSharedTimersSuspended,
+                     bool /* suspend */)
+
 #if defined(OS_ANDROID)
 // Sent when the user clicks on the find result bar to activate a find result.
 // The point (x,y) is in fractions of the content document's width and height.

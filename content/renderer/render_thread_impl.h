@@ -360,6 +360,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
+  void OnSetWebKitSharedTimersSuspended(bool suspend);
 
   void IdleHandlerInForegroundTab();
 

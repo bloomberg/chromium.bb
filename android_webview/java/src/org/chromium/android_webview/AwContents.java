@@ -34,6 +34,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
@@ -652,15 +653,17 @@ public class AwContents {
     /**
      * @see android.webkit.WebView#pauseTimers()
      */
+    // TODO(kristianm): Remove
     public void pauseTimers() {
-        mContentViewCore.onActivityPause();
+        ContentViewStatics.setWebKitSharedTimersSuspended(true);
     }
 
     /**
      * @see android.webkit.WebView#resumeTimers()
      */
+    // TODO(kristianm): Remove
     public void resumeTimers() {
-        mContentViewCore.onActivityResume();
+        ContentViewStatics.setWebKitSharedTimersSuspended(false);
     }
 
     /**

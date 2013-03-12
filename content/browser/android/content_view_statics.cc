@@ -11,6 +11,9 @@
 #include "base/logging.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/common/android/address_parser.h"
+#include "content/common/view_messages.h"
+#include "content/public/browser/render_process_host.h"
+
 #include "jni/ContentViewStatics_jni.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -25,6 +28,18 @@ static jstring FindAddress(JNIEnv* env, jclass clazz, jstring addr) {
   if (content::address_parser::FindAddress(content_16, &result_16))
     return ConvertUTF16ToJavaString(env, result_16).Release();
   return NULL;
+}
+
+static void SetWebKitSharedTimersSuspended(JNIEnv* env,
+                                           jclass obj,
+                                           jboolean suspend) {
+  for (content::RenderProcessHost::iterator i =
+           content::RenderProcessHost::AllHostsIterator();
+       !i.IsAtEnd();
+       i.Advance()) {
+    content::RenderProcessHost* host = i.GetCurrentValue();
+    host->Send(new ViewMsg_SetWebKitSharedTimersSuspended(suspend));
+  }
 }
 
 namespace content {
