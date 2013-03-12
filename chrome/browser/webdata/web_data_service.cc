@@ -671,14 +671,6 @@ WebDatabase::State WebDataService::AddCreditCardImpl(
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  // Send GUID-based notification.
-  AutofillCreditCardChange change(AutofillCreditCardChange::ADD,
-                                  credit_card.guid(), &credit_card);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-      content::Source<WebDataService>(this),
-      content::Details<AutofillCreditCardChange>(&change));
-
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -697,15 +689,6 @@ WebDatabase::State WebDataService::UpdateCreditCardImpl(
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
-
-  // Send GUID-based notification.
-  AutofillCreditCardChange change(AutofillCreditCardChange::UPDATE,
-                                  credit_card.guid(), &credit_card);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-      content::Source<WebDataService>(this),
-      content::Details<AutofillCreditCardChange>(&change));
-
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -715,15 +698,6 @@ WebDatabase::State WebDataService::RemoveCreditCardImpl(
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
-
-  // Send GUID-based notification.
-  AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE, guid,
-                                  NULL);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-      content::Source<WebDataService>(this),
-      content::Details<AutofillCreditCardChange>(&change));
-
   return WebDatabase::COMMIT_NEEDED;
 }
 
@@ -758,16 +732,6 @@ WebDatabase::State
           chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
           content::Source<WebDataService>(this),
           content::Details<AutofillProfileChange>(&change));
-    }
-
-    for (std::vector<std::string>::iterator iter = credit_card_guids.begin();
-         iter != credit_card_guids.end(); ++iter) {
-      AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
-                                      *iter, NULL);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-          content::Source<WebDataService>(this),
-          content::Details<AutofillCreditCardChange>(&change));
     }
     // Note: It is the caller's responsibility to post notifications for any
     // changes, e.g. by calling the Refresh() method of PersonalDataManager.

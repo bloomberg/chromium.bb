@@ -32,21 +32,3 @@ bool AutofillProfileChange::operator==(
          key() == change.key() &&
          (type() != REMOVE) ? *profile() == *change.profile() : true;
 }
-
-AutofillCreditCardChange::AutofillCreditCardChange(
-  Type type, const std::string& key, const CreditCard* credit_card)
-    : GenericAutofillChange<std::string>(type, key), credit_card_(credit_card) {
-  DCHECK(type == ADD ? (credit_card && credit_card->guid() == key) : true);
-  DCHECK(type == UPDATE ? (credit_card && credit_card->guid() == key) : true);
-  DCHECK(type == REMOVE ? !credit_card : true);
-}
-
-AutofillCreditCardChange::~AutofillCreditCardChange() {
-}
-
-bool AutofillCreditCardChange::operator==(
-    const AutofillCreditCardChange& change) const {
-  return type() == change.type() &&
-         key() == change.key() &&
-         (type() != REMOVE) ? *credit_card() == *change.credit_card() : true;
-}

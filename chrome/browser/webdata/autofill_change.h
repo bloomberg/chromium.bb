@@ -65,25 +65,4 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
   const AutofillProfile* profile_;
 };
 
-// Change notification details for Autofill credit card changes.
-class AutofillCreditCardChange : public GenericAutofillChange<std::string> {
- public:
-  // The |type| input specifies the change type.  The |key| input is the key,
-  // which is expected to be the GUID identifying the |credit_card|.
-  // When |type| == ADD, |credit_card| should be non-NULL.
-  // When |type| == UPDATE, |credit_card| should be non-NULL.
-  // When |type| == REMOVE, |credit_card| should be NULL.
-  AutofillCreditCardChange(Type type,
-                           const std::string& key,
-                           const CreditCard* credit_card);
-  virtual ~AutofillCreditCardChange();
-
-  const CreditCard* credit_card() const { return credit_card_; }
-  bool operator==(const AutofillCreditCardChange& change) const;
-
- private:
-  // Weak reference, can be NULL.
-  const CreditCard* credit_card_;
-};
-
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
