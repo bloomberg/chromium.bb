@@ -1104,7 +1104,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, options, build_config, board, archive_stage, version):
+  def __init__(self, options, build_config, board, archive_stage):
     super(BuildTargetStage, self).__init__(options, build_config, board)
     self._env = {}
     if self._build_config.get('useflags'):
@@ -1118,28 +1118,8 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
     self._archive_stage = archive_stage
     self._tarball_dir = None
-    self._version = version if version else ''
 
-  def _CommunicateVersion(self):
-    """Communicates to archive_stage the image path of this stage."""
-    verinfo = manifest_version.VersionInfo.from_repo(self._build_root)
-    if self._version:
-      version = self._version
-    else:
-      version = verinfo.VersionString()
-
-    version = 'R%s-%s' % (verinfo.chrome_branch, version)
-
-    # Non-versioned builds need the build number to uniquify the image.
-    if not self._version:
-      version += '-b%s' % self._options.buildnumber
-
-    self._archive_stage.SetVersion(version)
-
-  def HandleSkip(self):
-    self._CommunicateVersion()
-
-  def __BuildImages(self):
+  def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
     images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._build_config['images']).intersection(
@@ -1150,7 +1130,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                         self._current_board,
                         list(images_to_build),
                         rootfs_verification=rootfs_verification,
-                        version=self._version,
+                        version=self._archive_stage.GetReleaseTag(),
                         disk_layout=self._build_config['disk_layout'],
                         extra_env=self._env)
 
@@ -1168,13 +1148,6 @@ class BuildTargetStage(BoardSpecificBuilderStage):
       os.remove(cbuildbot_image_link)
 
     os.symlink(latest_image, cbuildbot_image_link)
-
-  def _BuildImages(self):
-    try:
-      if self._build_config['images']:
-        self.__BuildImages()
-    finally:
-      self._CommunicateVersion()
 
   def _BuildAutotestTarballs(self):
     # Build autotest tarball, which is used in archive step. This is generated
@@ -1223,7 +1196,8 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     else:
       self._archive_stage.AutotestTarballsReady(None)
 
-    steps.append(self._BuildImages)
+    if self._build_config['images']:
+      steps.append(self._BuildImages)
     parallel.RunParallelSteps(steps)
 
     # TODO(yjhong): Remove this and instruct archive_hwqual to copy the tarball
@@ -1569,11 +1543,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
     return os.path.join(buildroot, archive_base)
 
   # This stage is intended to run in the background, in parallel with tests.
-  def __init__(self, options, build_config, board):
+  def __init__(self, options, build_config, board, release_tag):
     super(ArchiveStage, self).__init__(options, build_config, board)
-    # Set version is dependent on setting external to class.  Do not use
-    # directly.  Use GetVersion() instead.
-    self._set_version = ArchiveStage._VERSION_NOT_SET
+    self._release_tag = release_tag or ''
     self.prod_archive = self._options.buildbot and not self._options.debug
     self._archive_root = self.GetArchiveRoot(
         self._build_root, trybot=not self.prod_archive)
@@ -1595,7 +1567,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
     self._hw_test_upload_queue = multiprocessing.Queue()
 
     # Queues that are populated by other stages.
-    self._version_queue = multiprocessing.Queue()
     self._autotest_tarballs_queue = multiprocessing.Queue()
     self._full_autotest_tarball_queue = multiprocessing.Queue()
 
@@ -1603,15 +1574,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
     self._archive_path = None
     self._pkg_dir = None
 
-  def SetVersion(self, path_to_image):
-    """Sets the cros version for the given built path to an image.
-
-    This must be called in order for archive stage to finish.
-
-    Args:
-      path_to_image: Path to latest image.""
-    """
-    self._version_queue.put(path_to_image)
+    # Precalculate the version number and save it in the cache. This ensures
+    # that the function is only called once, even if we fork new processes.
+    self.GetVersion()
 
   def AutotestTarballsReady(self, autotest_tarballs):
     """Tell Archive Stage that autotest tarball is ready.
@@ -1634,15 +1599,31 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """
     self._full_autotest_tarball_queue.put(full_autotest_tarball)
 
+  @cros_build_lib.MemoizedSingleCall
   def GetVersion(self):
-    """Gets the version for the archive stage."""
-    if self._set_version == ArchiveStage._VERSION_NOT_SET:
-      version = self._version_queue.get()
-      self._set_version = version
-      # Put the version right back on the queue in case anyone else is waiting.
-      self._version_queue.put(version)
+    """Calculate the full version string, including the milestone.
 
-    return self._set_version
+    If a release tag is present, we use it. Otherwise, we look it up from the
+    checkout.
+
+    Returns: The full version number. E.g. R26-2981.0.0-b123
+    """
+    verinfo = manifest_version.VersionInfo.from_repo(self._build_root)
+    calc_version = self._release_tag or verinfo.VersionString()
+    calc_version = 'R%s-%s' % (verinfo.chrome_branch, calc_version)
+
+    # Non-versioned builds need the build number to uniquify the image.
+    if not self._release_tag:
+      calc_version += '-b%s' % self._options.buildnumber
+
+    return calc_version
+
+  def GetReleaseTag(self):
+    """Gets the release tag for the archive stage.
+
+    Returns: The unadorned version number. E.g. 2981.0.0
+    """
+    return self._release_tag
 
   def WaitForHWTestUploads(self):
     """Waits until artifacts needed for HWTest stage are uploaded.
@@ -1697,10 +1678,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   def GetDownloadUrl(self):
     """Get the URL where we can download artifacts."""
-    version = self.GetVersion()
-    if not version:
-      return None
-
     if self._options.buildbot or self._options.remote_trybot:
       upload_location = self.GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
@@ -1723,13 +1700,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """Get the Google Storage location where we should upload artifacts."""
     gsutil_archive = self._GetGSUtilArchiveDir()
     version = self.GetVersion()
-    if version:
-      return '%s/%s' % (gsutil_archive, version)
+    return '%s/%s' % (gsutil_archive, version)
 
   def GetArchivePath(self):
-    version = self.GetVersion()
-    if version:
-      return os.path.join(self.bot_archive_root, version)
+    return os.path.join(self.bot_archive_root, self.GetVersion())
 
   def _GetAutotestTarballs(self):
     """Get the paths of the autotest tarballs."""
@@ -2139,12 +2113,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
     def MarkAsLatest():
       # Update and upload LATEST file.
       version = self.GetVersion()
-      if version:
-        filename = 'LATEST-%s' % self._target_manifest_branch
-        latest_path = os.path.join(self.bot_archive_root, filename)
-        osutils.WriteFile(latest_path, version, mode='w')
-        commands.UploadArchivedFile(
-            self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug)
+      filename = 'LATEST-%s' % self._target_manifest_branch
+      latest_path = os.path.join(self.bot_archive_root, filename)
+      osutils.WriteFile(latest_path, version, mode='w')
+      commands.UploadArchivedFile(
+          self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug)
 
     try:
       BuildAndArchiveArtifacts()
@@ -2186,11 +2159,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     if self._build_config['manifest_version']:
       assert self._archive_stage, 'Archive stage missing for versioned build.'
       version = self._archive_stage.GetVersion()
-      if version:
-        generated_args.extend(['--set-version', version])
-      else:
-        # Non-debug manifest-versioned builds must actually have versions.
-        assert self._options.debug, 'Non-debug builds must have versions'
+      generated_args.extend(['--set-version', version])
 
     if self._build_config['git_sync']:
       # Git sync should never be set for pfq type builds.

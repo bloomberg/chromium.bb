@@ -401,7 +401,7 @@ class SimpleBuilder(Builder):
       for board in self.build_config['boards']:
         config = configs.get(board, self.build_config)
         archive_stage = self._GetStageInstance(stages.ArchiveStage, board,
-                                               config=config)
+                                               self.release_tag, config=config)
         self.archive_stages[board] = archive_stage
 
       # Set up a process pool to run test/archive stages in the background.
@@ -413,7 +413,7 @@ class SimpleBuilder(Builder):
           archive_stage = self.archive_stages[board]
           config = configs.get(board, self.build_config)
           self._RunStage(stages.BuildTargetStage, board, archive_stage,
-                         self.release_tag, config=config)
+                         config=config)
           self.archive_urls[board] = archive_stage.GetDownloadUrl()
 
           # Kick off task(board) in the background.

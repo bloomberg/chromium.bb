@@ -604,7 +604,7 @@ class VMTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.options, self.build_config,
-                                        self._current_board)
+                                        self._current_board, '')
     return stages.VMTestStage(self.options, self.build_config,
                               self._current_board, archive_stage)
 
@@ -648,16 +648,16 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class HWTestStageTest(AbstractStageTest):
+class HWTestStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.bot_id = 'x86-mario-release'
     self.options.log_dir = '/b/cbuild/mylogdir'
     self.build_config = config.config[self.bot_id].copy()
-    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
+    self.StartPatcher(ArchiveStageMock())
     self.suite = 'bvt'
-    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
-    self.archive_stage_mock.GetVersion().AndReturn('ver')
+    self.archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                             self._current_board, '')
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
@@ -666,7 +666,7 @@ class HWTestStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     return stages.HWTestStage(self.options, self.build_config,
-                              self._current_board, self.archive_stage_mock,
+                              self._current_board, self.archive_stage,
                               self.suite)
 
   def _RunHWTestSuite(self, debug=False, returncode=0, fails=False):
@@ -744,11 +744,7 @@ class HWTestStageTest(AbstractStageTest):
     self.build_config = config.config['lumpy-chrome-perf'].copy()
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
-    gs_upload_location = 'gs://dontcare/builder/version'
-
-    self.archive_stage_mock.GetGSUploadLocation().AndReturn(gs_upload_location)
     results_file = 'pyauto_perf.results'
-
     stages.HWTestStage._PrintFile(os.path.join(self.options.log_dir,
                                                results_file))
     with gs_unittest.GSContextMock() as gs_mock:
@@ -850,16 +846,12 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.images_root = os.path.join(self.build_root,
                                     'src/build/images/x86-generic')
     latest_image_dir = os.path.join(self.images_root, 'latest')
-    self.mox.StubOutWithMock(manifest_version.VersionInfo, 'VersionString')
-    self.mox.StubOutWithMock(manifest_version.VersionInfo, '_LoadFromFile')
     self.mox.StubOutWithMock(os, 'readlink')
     self.mox.StubOutWithMock(os, 'symlink')
     os.readlink(latest_image_dir).AndReturn('myimage')
     self.branch = '22'
     self.version = '1423.0.0'
     self.branch_version = 'R%s-%s' % (self.branch, self.version)
-    manifest_version.VersionInfo._LoadFromFile()
-    manifest_version.VersionInfo.chrome_branch = self.branch
     self.version_to_test = self.version
     self.latest_cbuildbot = '%s-cbuildbot' % latest_image_dir
     os.symlink('myimage', self.latest_cbuildbot)
@@ -886,15 +878,18 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.mox.StubOutWithMock(commands, 'BuildAutotestTarballs')
     self.mox.StubOutWithMock(commands, 'BuildFullAutotestTarball')
     self.mox.StubOutWithMock(os, 'rename')
-    self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
+    self.StartPatcher(ArchiveStageMock())
 
     # pylint: disable=E1101
     self.parallel_mock = self.StartPatcher(parallel_unittest.ParallelMock())
 
   def ConstructStage(self):
+    archive_stage = stages.ArchiveStage(self.options, self.build_config,
+                                        self._current_board,
+                                        self.version_to_test)
     return stages.BuildTargetStage(
         self.options, self.build_config, self._current_board,
-        self.archive_stage_mock, self.version_to_test)
+        archive_stage)
 
   def testAllConditionalPaths(self):
     """Enable all paths to get line coverage."""
@@ -955,9 +950,6 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                                       self._current_board,
                                       fake_autotest_dir
                                       ).AndReturn(full_autotest_tarball)
-    self.archive_stage_mock.AutotestTarballsReady(tarballs)
-    self.archive_stage_mock.FullAutotestTarballReady(full_autotest_tarball)
-    self.archive_stage_mock.SetVersion(self.branch_version)
 
     shutil.copyfile(full_autotest_tarball_path,
                     os.path.join(self.images_root, 'latest-cbuildbot',
@@ -980,11 +972,9 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                    nowithdebug=mox.IgnoreArg(),
                    packages=mox.IgnoreArg(),
                    extra_env={})
-    self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
                         disk_layout=None, rootfs_verification=True,
                         version=self.version, extra_env={})
-    self.archive_stage_mock.SetVersion(self.branch_version)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1014,12 +1004,10 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                    nowithdebug=True,
                    packages=(),
                    extra_env=proper_env)
-    self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
                         rootfs_verification=True,
                         disk_layout=None, version=self.version,
                         extra_env=proper_env)
-    self.archive_stage_mock.SetVersion(self.branch_version)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1056,7 +1044,6 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                                             test_suites_tarball_name)
     tarballs = [autotest_tarball_path, test_suites_tarball_path]
 
-    manifest_version.VersionInfo.VersionString().AndReturn(self.version)
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=True,
@@ -1078,9 +1065,6 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
     commands.BuildAutotestTarballs(self.build_root, self._current_board,
                                    fake_autotest_dir).AndReturn(tarballs)
-    self.archive_stage_mock.AutotestTarballsReady(tarballs)
-    self.archive_stage_mock.SetVersion('%s-b%s' % (self.branch_version,
-                                                   self.options.buildnumber))
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
@@ -1090,14 +1074,18 @@ class ArchiveStageMock(partial_mock.PartialMock):
   """Partial mock for Archive Stage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('GetVersion', 'WaitForBreakpadSymbols',)
+  ATTRS = ('GetVersion', 'WaitForBreakpadSymbols',
+           'WaitForHWTestUploads',)
 
   VERSION = '0.0.0.1'
 
-  def GetVersion(self, _inst):
-    return self.VERSION
+  def GetVersion(self, inst):
+    return inst._release_tag or self.VERSION
 
   def WaitForBreakpadSymbols(self, _inst):
+    return True
+
+  def WaitForHWTestUploads(self, _inst):
     return True
 
 
@@ -1133,7 +1121,7 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
 
   def ConstructStage(self):
     return stages.ArchiveStage(self.options, self._build_config,
-                               self._current_board)
+                               self._current_board, '')
 
   def testArchive(self):
     """Simple did-it-run test."""
