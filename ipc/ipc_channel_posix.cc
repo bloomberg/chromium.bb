@@ -40,6 +40,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_switches.h"
+#include "ipc/unix_domain_socket_util.h"
 
 namespace IPC {
 
@@ -137,143 +138,6 @@ class PipeMap {
 };
 
 //------------------------------------------------------------------------------
-// Verify that kMaxPipeNameLength is a decent size.
-COMPILE_ASSERT(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxPipeNameLength,
-               BAD_SUN_PATH_LENGTH);
-
-// Creates a unix domain socket bound to the specified name that is listening
-// for connections.
-bool CreateServerUnixDomainSocket(const std::string& pipe_name,
-                                  int* server_listen_fd) {
-  DCHECK(server_listen_fd);
-
-  if (pipe_name.length() == 0 || pipe_name.length() >= kMaxPipeNameLength) {
-    DLOG(ERROR) << "pipe_name.length() == " << pipe_name.length();
-    return false;
-  }
-
-  // Create socket.
-  int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (fd < 0) {
-    return false;
-  }
-
-  // Make socket non-blocking
-  if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
-    PLOG(ERROR) << "fcntl(O_NONBLOCK) " << pipe_name;
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
-  // Delete any old FS instances.
-  unlink(pipe_name.c_str());
-
-  // Make sure the path we need exists.
-  base::FilePath path(pipe_name);
-  base::FilePath dir_path = path.DirName();
-  if (!file_util::CreateDirectory(dir_path)) {
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
-  // Create unix_addr structure.
-  struct sockaddr_un unix_addr;
-  memset(&unix_addr, 0, sizeof(unix_addr));
-  unix_addr.sun_family = AF_UNIX;
-  int path_len = snprintf(unix_addr.sun_path, IPC::kMaxPipeNameLength,
-                          "%s", pipe_name.c_str());
-  DCHECK_EQ(static_cast<int>(pipe_name.length()), path_len);
-  size_t unix_addr_len = offsetof(struct sockaddr_un,
-                                       sun_path) + path_len + 1;
-
-  // Bind the socket.
-  if (bind(fd, reinterpret_cast<const sockaddr*>(&unix_addr),
-           unix_addr_len) != 0) {
-    PLOG(ERROR) << "bind " << pipe_name;
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
-  // Start listening on the socket.
-  const int listen_queue_length = 1;
-  if (listen(fd, listen_queue_length) != 0) {
-    PLOG(ERROR) << "listen " << pipe_name;
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
-  *server_listen_fd = fd;
-  return true;
-}
-
-// Accept a connection on a socket we are listening to.
-bool ServerAcceptConnection(int server_listen_fd, int* server_socket) {
-  DCHECK(server_socket);
-
-  int accept_fd = HANDLE_EINTR(accept(server_listen_fd, NULL, 0));
-  if (accept_fd < 0)
-    return false;
-  if (fcntl(accept_fd, F_SETFL, O_NONBLOCK) == -1) {
-    PLOG(ERROR) << "fcntl(O_NONBLOCK) " << accept_fd;
-    if (HANDLE_EINTR(close(accept_fd)) < 0)
-      PLOG(ERROR) << "close " << accept_fd;
-    return false;
-  }
-
-  *server_socket = accept_fd;
-  return true;
-}
-
-bool CreateClientUnixDomainSocket(const std::string& pipe_name,
-                                  int* client_socket) {
-  DCHECK(client_socket);
-  DCHECK_GT(pipe_name.length(), 0u);
-  DCHECK_LT(pipe_name.length(), kMaxPipeNameLength);
-
-  if (pipe_name.length() == 0 || pipe_name.length() >= kMaxPipeNameLength) {
-    return false;
-  }
-
-  // Create socket.
-  int fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (fd < 0) {
-    PLOG(ERROR) << "socket " << pipe_name;
-    return false;
-  }
-
-  // Make socket non-blocking
-  if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
-    PLOG(ERROR) << "fcntl(O_NONBLOCK) " << pipe_name;
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
-  // Create server side of socket.
-  struct sockaddr_un server_unix_addr;
-  memset(&server_unix_addr, 0, sizeof(server_unix_addr));
-  server_unix_addr.sun_family = AF_UNIX;
-  int path_len = snprintf(server_unix_addr.sun_path, IPC::kMaxPipeNameLength,
-                          "%s", pipe_name.c_str());
-  DCHECK_EQ(static_cast<int>(pipe_name.length()), path_len);
-  size_t server_unix_addr_len = offsetof(struct sockaddr_un,
-                                         sun_path) + path_len + 1;
-
-  if (HANDLE_EINTR(connect(fd, reinterpret_cast<sockaddr*>(&server_unix_addr),
-                           server_unix_addr_len)) != 0) {
-    PLOG(ERROR) << "connect " << pipe_name;
-    if (HANDLE_EINTR(close(fd)) < 0)
-      PLOG(ERROR) << "close " << pipe_name;
-    return false;
-  }
-
-  *client_socket = fd;
-  return true;
-}
 
 bool SocketWriteErrorIsRecoverable() {
 #if defined(OS_MACOSX)
@@ -388,12 +252,14 @@ bool Channel::ChannelImpl::CreatePipe(
   } else if (mode_ & MODE_NAMED_FLAG) {
     // Case 2 from comment above.
     if (mode_ & MODE_SERVER_FLAG) {
-      if (!CreateServerUnixDomainSocket(pipe_name_, &local_pipe)) {
+      if (!CreateServerUnixDomainSocket(base::FilePath(pipe_name_),
+                                        &local_pipe)) {
         return false;
       }
       must_unlink_ = true;
     } else if (mode_ & MODE_CLIENT_FLAG) {
-      if (!CreateClientUnixDomainSocket(pipe_name_, &local_pipe)) {
+      if (!CreateClientUnixDomainSocket(base::FilePath(pipe_name_),
+                                        &local_pipe)) {
         return false;
       }
     } else {
@@ -674,33 +540,9 @@ bool Channel::ChannelImpl::HasAcceptedConnection() const {
   return AcceptsConnections() && pipe_ != -1;
 }
 
-bool Channel::ChannelImpl::GetClientEuid(uid_t* client_euid) const {
-  DCHECK(HasAcceptedConnection());
-#if defined(OS_MACOSX) || defined(OS_OPENBSD)
-  uid_t peer_euid;
-  gid_t peer_gid;
-  if (getpeereid(pipe_, &peer_euid, &peer_gid) != 0) {
-    PLOG(ERROR) << "getpeereid " << pipe_;
-    return false;
-  }
-  *client_euid = peer_euid;
-  return true;
-#elif defined(OS_SOLARIS)
-  return false;
-#else
-  struct ucred cred;
-  socklen_t cred_len = sizeof(cred);
-  if (getsockopt(pipe_, SOL_SOCKET, SO_PEERCRED, &cred, &cred_len) != 0) {
-    PLOG(ERROR) << "getsockopt " << pipe_;
-    return false;
-  }
-  if (static_cast<unsigned>(cred_len) < sizeof(cred)) {
-    NOTREACHED() << "Truncated ucred from SO_PEERCRED?";
-    return false;
-  }
-  *client_euid = cred.uid;
-  return true;
-#endif
+bool Channel::ChannelImpl::GetPeerEuid(uid_t* peer_euid) const {
+  DCHECK(!(mode_ & MODE_SERVER) || HasAcceptedConnection());
+  return IPC::GetPeerEuid(pipe_, peer_euid);
 }
 
 void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
@@ -753,7 +595,8 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   bool send_server_hello_msg = false;
   if (fd == server_listen_pipe_) {
     int new_pipe = 0;
-    if (!ServerAcceptConnection(server_listen_pipe_, &new_pipe)) {
+    if (!ServerAcceptConnection(server_listen_pipe_, &new_pipe) ||
+        new_pipe < 0) {
       Close();
       listener()->OnChannelListenError();
     }
@@ -773,7 +616,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
     if ((mode_ & MODE_OPEN_ACCESS_FLAG) == 0) {
       // Verify that the IPC channel peer is running as the same user.
       uid_t client_euid;
-      if (!GetClientEuid(&client_euid)) {
+      if (!GetPeerEuid(&client_euid)) {
         DLOG(ERROR) << "Unable to query client euid";
         ResetToAcceptingConnectionState();
         return;
@@ -1157,8 +1000,8 @@ bool Channel::HasAcceptedConnection() const {
   return channel_impl_->HasAcceptedConnection();
 }
 
-bool Channel::GetClientEuid(uid_t* client_euid) const {
-  return channel_impl_->GetClientEuid(client_euid);
+bool Channel::GetPeerEuid(uid_t* peer_euid) const {
+  return channel_impl_->GetPeerEuid(peer_euid);
 }
 
 void Channel::ResetToAcceptingConnectionState() {

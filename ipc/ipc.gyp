@@ -58,11 +58,17 @@
         'ipc_test_base.cc',
         'ipc_test_base.h',
         'sync_socket_unittest.cc',
+        'unix_domain_socket_util_unittest.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['OS == "win" or OS == "ios"', {
+          'sources!': [
+            'unix_domain_socket_util_unittest.cc',
           ],
         }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
