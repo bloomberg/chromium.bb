@@ -17,6 +17,10 @@ class StorageMonitorLinux;
 }
 #endif
 
+namespace chrome {
+class MediaTransferProtocolDeviceObserverLinux;
+}
+
 class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
  public:
   explicit ChromeBrowserMainPartsLinux(
@@ -32,6 +36,9 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 #if !defined(OS_CHROMEOS)
   scoped_refptr<chrome::StorageMonitorLinux> storage_monitor_;
 #endif
+  scoped_ptr<chrome::MediaTransferProtocolDeviceObserverLinux>
+      media_transfer_protocol_device_observer_;
+  bool initialized_media_transfer_protocol_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);
 };

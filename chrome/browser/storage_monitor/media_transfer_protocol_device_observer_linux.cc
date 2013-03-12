@@ -127,7 +127,6 @@ MediaTransferProtocolDeviceObserverLinux()
 
   device::MediaTransferProtocolManager* mtp_manager =
       device::MediaTransferProtocolManager::GetInstance();
-  DCHECK(mtp_manager);
   mtp_manager->AddObserver(this);
   EnumerateStorages();
 }
