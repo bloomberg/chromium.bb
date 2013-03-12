@@ -1,0 +1,9 @@
+<html>
+    <head>
+    </head>
+
+    <body>
+        <h1>Enable AsynchronousSpellCheckEnabled bit, Spellchecker, and AutoCorrection. Assuming the Spellchecker will autocorrect all the 'tset' into 'test' and will auto capitalize first letter in a sentence which happens before the autocorrect. Now type 'tset' in the following DIV and hit space. Autocapitalize and autocorrection will happen in order and text gets replaced by 'Test '. Then hit 'Ctrl + Z' to undo this change. The first time it undid the autocorrection and produce 'Tset '. However the cursor position is not after the space but after the 't'.  Hit 'Ctrl + Z' again we have 'tset ' and the cursor position is after the space.  The correct behavior is that the cursor position should always be after the space when undo. </h1>
+        <div spellcheck="true" contenteditable></div>
+    </body>
+</html>
