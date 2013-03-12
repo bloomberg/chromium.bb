@@ -23,6 +23,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/host_resource.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -275,9 +276,9 @@ void ImageDataCache::Add(ImageData* image_data) {
   // Schedule a timer to invalidate this entry.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ImageDataCache::OnTimer,
-                 weak_factory_.GetWeakPtr(),
-                 image_data->pp_instance()),
+      RunWhileLocked(base::Bind(&ImageDataCache::OnTimer,
+                     weak_factory_.GetWeakPtr(),
+                     image_data->pp_instance())),
       base::TimeDelta::FromSeconds(kMaxAgeSeconds));
 }
 
