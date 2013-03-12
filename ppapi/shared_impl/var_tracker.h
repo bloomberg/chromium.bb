@@ -10,7 +10,8 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
@@ -33,16 +34,14 @@ class Var;
 // This class maintains the "track_with_no_reference_count" but doesn't do
 // anything with it other than call virtual functions. The interesting parts
 // are added by the PluginObjectVar derived from this class.
-class PPAPI_SHARED_EXPORT VarTracker
-#ifdef ENABLE_PEPPER_THREADING
-    : NON_EXPORTED_BASE(public base::NonThreadSafeDoNothing) {
-#else
-    // TODO(dmichael): Remove the thread checking when calls are allowed off the
-    // main thread (crbug.com/92909).
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
-#endif
+class PPAPI_SHARED_EXPORT VarTracker {
  public:
-  VarTracker();
+  // A SINGLE_THREADED VarTracker will use a thread-checker to make sure it's
+  // always invoked on the same thread on which it was constructed. A
+  // THREAD_SAFE VarTracker will check that the ProxyLock is held. See
+  // CheckThreadingPreconditions() for more details.
+  enum ThreadMode { SINGLE_THREADED, THREAD_SAFE };
+  explicit VarTracker(ThreadMode thread_mode);
   virtual ~VarTracker();
 
   // Called by the Var object to add a new var to the tracker.
@@ -125,6 +124,10 @@ class PPAPI_SHARED_EXPORT VarTracker
     ADD_VAR_CREATE_WITH_NO_REFERENCE
   };
 
+  // On the host-side, make sure we are called on the right thread. On the
+  // plugin side, make sure we have the proxy lock.
+  void CheckThreadingPreconditions() const;
+
   // Implementation of AddVar that allows the caller to specify whether the
   // initial refcount of the added object will be 0 or 1.
   //
@@ -171,6 +174,12 @@ class PPAPI_SHARED_EXPORT VarTracker
   // implemented by the Host and Plugin tracker separately, so that it can be
   // a real WebKit ArrayBuffer on the host side.
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) = 0;
+
+  // On the host side, we want to check that we are only called on the main
+  // thread. This is to protect us from accidentally using the tracker from
+  // other threads (especially the IO thread). On the plugin side, the tracker
+  // is protected by the proxy lock and is thread-safe, so this will be NULL.
+  scoped_ptr<base::ThreadChecker> thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(VarTracker);
 };

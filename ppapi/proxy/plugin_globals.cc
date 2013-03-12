@@ -49,40 +49,36 @@ PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 PluginGlobals::PluginGlobals()
     : ppapi::PpapiGlobals(),
       plugin_proxy_delegate_(NULL),
-      callback_tracker_(new CallbackTracker),
-      loop_for_main_thread_(
-          new MessageLoopResource(MessageLoopResource::ForMainThread())) {
-#if defined(ENABLE_PEPPER_THREADING)
-  enable_threading_ = true;
-#else
-  enable_threading_ = false;
-#endif
-
+      callback_tracker_(new CallbackTracker) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
+
+  // ResourceTracker asserts that we have the lock when we add new resources,
+  // so we lock when creating the MessageLoopResource even though there is no
+  // chance of race conditions.
+  ProxyAutoLock lock;
+  loop_for_main_thread_ =
+      new MessageLoopResource(MessageLoopResource::ForMainThread());
 }
 
 PluginGlobals::PluginGlobals(PerThreadForTest per_thread_for_test)
     : ppapi::PpapiGlobals(per_thread_for_test),
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker) {
-#if defined(ENABLE_PEPPER_THREADING)
-  enable_threading_ = true;
-#else
-  enable_threading_ = false;
-#endif
   DCHECK(!plugin_globals_);
 }
 
 PluginGlobals::~PluginGlobals() {
   DCHECK(plugin_globals_ == this || !plugin_globals_);
-  // Release the main-thread message loop. We should have the last reference
-  // count, so this will delete the MessageLoop resource. We do this before
-  // we clear plugin_globals_, because the Resource destructor tries to access
-  // this PluginGlobals.
-  DCHECK(!loop_for_main_thread_ || loop_for_main_thread_->HasOneRef());
-  loop_for_main_thread_ = NULL;
-
+  {
+    ProxyAutoLock lock;
+    // Release the main-thread message loop. We should have the last reference
+    // count, so this will delete the MessageLoop resource. We do this before
+    // we clear plugin_globals_, because the Resource destructor tries to access
+    // this PluginGlobals.
+    DCHECK(!loop_for_main_thread_ || loop_for_main_thread_->HasOneRef());
+    loop_for_main_thread_ = NULL;
+  }
   plugin_globals_ = NULL;
 }
 
@@ -131,9 +127,7 @@ void PluginGlobals::PreCacheFontForFlash(const void* logfontw) {
 }
 
 base::Lock* PluginGlobals::GetProxyLock() {
-  if (enable_threading_)
-    return &proxy_lock_;
-  return NULL;
+  return &proxy_lock_;
 }
 
 void PluginGlobals::LogWithSource(PP_Instance instance,
