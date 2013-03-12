@@ -1,9 +1,9 @@
 {
   "name": "Notifications Galore!",
   "description": "A testbed for Chrome notifications",
-  "version": "0.9",
+  "version": "0.9.1",
   "manifest_version": 2,
-  "minimum_chrome_version": "23",
+  "minimum_chrome_version": "27",
   "app": {
     "background": {
       "scripts": ["view.js", "controller.js", "main.js"]

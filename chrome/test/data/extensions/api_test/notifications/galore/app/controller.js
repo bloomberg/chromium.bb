@@ -7,73 +7,65 @@ var Galore = Galore || {};
 Galore.controller = {
   /** @constructor */
   create: function() {
-    Galore.identifier = Galore.identifier ? (Galore.identifier + 1) : 1;
     var controller = Object.create(this);
-    controller.identifier = Galore.identifier;
     controller.api = chrome;
     controller.counter = 0;
     return controller;
   },
 
   createWindow: function() {
-    this.view = Galore.view.create(function() {
-      var request = new XMLHttpRequest();
-      request.open('GET', '/data/notifications.json', true);
-      request.responseType = 'text';
-      request.onload = this.onData_.bind(this, request);
-      request.send();
-    }.bind(this));
+    chrome.storage.sync.get('settings', this.onSettingsFetched_.bind(this));
   },
 
   /** @private */
-  onData_: function(request) {
-    var data = JSON.parse(request.response);
-    var path = data[0].api || 'notifications';
-    this.api = chrome;
-    path.split('.').forEach(function(key) {
-      var before = this.api;
-      this.api = this.api && this.api[key];
-    }, this);
-    if (this.api)
-      this.onApi_(data);
-    else
-      this.view.logError('No API found - chrome.' + path + ' is undefined');
+  onSettingsFetched_: function(items) {
+    var request = new XMLHttpRequest();
+    var source = items.settings.data || '/data/' + this.getDataVersion_();
+    request.open('GET', source, true);
+    request.responseType = 'text';
+    request.onload = this.onDataFetched_.bind(this, items.settings, request);
+    request.send();
   },
 
   /** @private */
-  onApi_: function(data) {
+  onDataFetched_: function(settings, request) {
     var count = 0;
-    var globals = data[0].globals || {};
-    (data[0].events || []).forEach(function(event) {
-      this.addListener_(event);
-    }, this);
+    var data = JSON.parse(request.response);
     data.forEach(function(section) {
       (section.notificationOptions || []).forEach(function(options) {
-        var button = this.view.addNotificationButton(section.sectionName);
-        Object.keys(section.globals || globals).forEach(function (key) {
-          options[key] = options[key] || (section.globals || globals)[key];
-        });
         ++count;
         this.fetchImages_(options, function() {
-          var create = this.createNotification_.bind(this, section, options);
-          var iconUrl = options.galoreIconUrl || options.iconUrl;
-          delete options.galoreIconUrl;
-          this.view.setNotificationButtonAction(button, create);
-          this.view.setNotificationButtonIcon(button, iconUrl, options.title);
           if (--count == 0)
-            this.view.showWindow();
+            this.onImagesFetched_(settings, data);
         }.bind(this));
       }, this);
     }, this);
   },
 
   /** @private */
-  onImages_: function(button, section, options) {
-    var create = this.createNotification_.bind(this, section, options);
-    var iconUrl = options.galoreIconUrl || options.iconUrl;
-    delete options.galoreIconUrl;
-    this.view.setNotificationButtonAction(button, create);
-    this.view.setNotificationButtonIcon(button, iconUrl, options.title);
+  onImagesFetched_: function(settings, data) {
+    this.settings = settings;
+    this.view = Galore.view.create(this.settings, function() {
+      // Create buttons.
+      data.forEach(function(section) {
+        var defaults = section.globals || data[0].globals;
+        var type = section.notificationType;
+        (section.notificationOptions || []).forEach(function(options) {
+          var defaulted = this.getDefaultedOptions_(options, defaults);
+          var create = this.createNotification_.bind(this, type, defaulted);
+          this.view.addNotificationButton(section.sectionName,
+                                          defaulted.title,
+                                          defaulted.iconUrl,
+                                          create);
+        }, this);
+      }, this);
+      // Set the API entry point and use it to set event listeners.
+      this.api = this.getApi_(data);
+      if (this.api)
+        this.addListeners_(this.api, data[0].events);
+      // Display the completed and ready window.
+      this.view.showWindow();
+    }.bind(this), this.onSettingsChange_.bind(this));
   },
 
   /** @private */
@@ -109,11 +101,16 @@ Galore.controller = {
   },
 
   /** @private */
-  createNotification_: function(section, options) {
+  onSettingsChange_: function(settings) {
+    this.settings = settings;
+    chrome.storage.sync.set({settings: this.settings});
+  },
+
+  /** @private */
+  createNotification_: function(type, options) {
     var id = this.getNextId_();
-    var type = section.notificationType;
-    var priority = this.view.settings.priority;
-    var expanded = this.expandOptions_(options, id, type, priority);
+    var priority = Number(this.settings.priority || 0);
+    var expanded = this.getExpandedOptions_(options, id, type, priority);
     if (type == 'webkit')
       this.createWebKitNotification_(expanded);
     else
@@ -146,14 +143,24 @@ Galore.controller = {
   },
 
   /** @private */
-  expandOptions_: function(options, id, type, priority) {
+  getDefaultedOptions_: function(options, defaults) {
+    var defaulted = this.deepCopy_(options);
+    Object.keys(defaults || {}).forEach(function (key) {
+      defaulted[key] = options[key] || defaults[key];
+    });
+    return defaulted;
+  },
+
+  /** @private */
+  getExpandedOptions_: function(options, id, type, priority) {
     var expanded = this.deepCopy_(options);
     return this.mapStrings_(expanded, function(string) {
-      return this.expandOption_(string, id, type, priority);
+      return this.getExpandedOption_(string, id, type, priority);
     }, this);
   },
+
   /** @private */
-  expandOption_: function(option, id, type, priority) {
+  getExpandedOption_: function(option, id, type, priority) {
     if (option == '$!') {
       option = priority;  // Avoids making priorities into strings.
     } else {
@@ -193,12 +200,14 @@ Galore.controller = {
   },
 
   /** @private */
-  addListener_: function(event) {
-    var listener = this.handleEvent_.bind(this, event);
-    if (this.api[event])
-      this.api[event].addListener(listener);
-    else
-      console.log('Event ' + event + ' not defined.');
+  addListeners_: function(api, events) {
+    (events || []).forEach(function(event) {
+      var listener = this.handleEvent_.bind(this, event);
+      if (api[event])
+        api[event].addListener(listener);
+      else
+        console.log('Event ' + event + ' not defined.');
+    }, this);
   },
 
   /** @private */
@@ -206,5 +215,24 @@ Galore.controller = {
     this.view.logEvent('Notification #' + id + ': ' + event + '(' +
                        Array.prototype.slice.call(arguments, 2).join(', ') +
                        ')');
+  },
+
+  /** @private */
+  getDataVersion_: function() {
+    var version = navigator.appVersion.replace(/^.* Chrome\//, '');
+    return (version > '27.0.1433.1') ? '27.0.1433.1.json' :
+           (version > '27.0.1432.2') ? '27.0.1432.2.json' :
+           '27.0.0.0.json';
+  },
+
+  /** @private */
+  getApi_: function(data) {
+    var path = data[0].api || 'notifications';
+    var api = chrome;
+    path.split('.').forEach(function(key) { api = api && api[key]; });
+    if (!api)
+      this.view.logError('No API found - chrome.' + path + ' is undefined');
+    return api;
   }
+
 };

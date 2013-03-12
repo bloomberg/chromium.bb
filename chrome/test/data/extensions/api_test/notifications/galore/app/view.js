@@ -6,34 +6,38 @@ var Galore = Galore || {};
 
 Galore.view = {
   /** @constructor */
-  create: function(onload) {
+  create: function(settings, onload, onSettingsChange) {
     var view = Object.create(this);
     view.actions = [];
     view.sections = {};
+    view.settings = settings;
     view.onload = onload;
-    chrome.storage.sync.get('settings', function(items) {
-      view.settings = items.settings || {priority: 0};
-      view.createWindow_();
-    });
+    view.onsettings = onSettingsChange;
+    chrome.app.window.create('window.html', {
+      id: 'window',
+      frame: 'none',
+      defaultWidth: 440, minWidth: 440, maxWidth: 440,
+      defaultHeight: 640, minHeight: 640, maxHeight: 640,
+      hidden: false  // Change to true when http://crbug.com/177706 is fixed.
+    }, function(appWindow) {
+      view.window = appWindow;
+      view.addListener_(appWindow.contentWindow, 'load', 'onLoad_');
+    }.bind(this));
     return view;
   },
 
-  addNotificationButton: function(sectionTitle) {
+  addNotificationButton: function(sectionTitle,
+                                  buttonTitle,
+                                  iconUrl,
+                                  onClick) {
     var button = this.getElement_('#templates .notification').cloneNode(true);
-    this.addButtonListeners_(button);
-    this.getSection_(sectionTitle).appendChild(button);
-    return button;
-  },
-
-  setNotificationButtonAction: function(button, onClick) {
-    button.dataset.actionIndex = this.actions.push(onClick) - 1;
-  },
-
-  setNotificationButtonIcon: function(button, iconUrl, textAlternative) {
     var image = button.querySelector('img');
     image.src = iconUrl;
-    image.alt = textAlternative;
-    button.name = textAlternative;
+    image.alt = buttonTitle;
+    button.name = buttonTitle;
+    button.dataset.actionIndex = this.actions.push(onClick) - 1;
+    this.addButtonListeners_(button);
+    this.getSection_(sectionTitle).appendChild(button);
   },
 
   showWindow: function() {
@@ -55,20 +59,6 @@ Galore.view = {
   },
 
   /** @private */
-  createWindow_: function() {
-    chrome.app.window.create('window.html', {
-      id: 'window',
-      frame: 'none',
-      defaultWidth: 440, minWidth: 440, maxWidth: 440,
-      defaultHeight: 640, minHeight: 640, maxHeight: 640,
-      hidden: false  // Change to true when http://crbug.com/177706 is fixed.
-    }, function(appWindow) {
-      this.window = appWindow;
-      this.addListener_(this.window.contentWindow, 'load', 'onLoad_');
-    }.bind(this));
-  },
-
-  /** @private */
   onLoad_: function() {
     this.dataset = this.window.contentWindow.document.body.dataset;
     this.dataset.priority = this.settings.priority;
@@ -82,7 +72,7 @@ Galore.view = {
     this.setButtonAction_('#show-menu', 'toggleMenu_');
     this.setButtonAction_('#close', 'close', this.window.contentWindow);
     if (this.onload)
-      this.onload.call(this);
+      this.onload.call(this, this);
   },
 
   /**
@@ -96,7 +86,6 @@ Galore.view = {
     // Record the fact that a button in this button's group is active, which
     // allows onButtonMouseUp_ to do the right thing and CSS rules to correctly
     // set cursor types and button highlighting.
-    console.log('onButtonMouseDown_');
     var element = event.currentTarget;
     this.dataset.active = element.classList[0] || '';
     this.dragging = false;
@@ -144,7 +133,6 @@ Galore.view = {
     // mouseup happened in the same button as the mousedown.
     var element = event.currentTarget;
     var group = (element.classList[0] || 'x');
-    console.log(element, group, this.dataset.active, this.dragging);
     if (group == this.dataset.active && !this.dragging)
       this.actions[element.dataset.actionIndex].call(element, event);
   },
@@ -169,14 +157,14 @@ Galore.view = {
 
   /** @private */
   changePriority_: function(event) {
-    this.settings.priority = Number(event.currentTarget.dataset.priority) || 0;
+    this.settings.priority = event.currentTarget.dataset.priority || 0;
     this.dataset.priority = this.settings.priority;
-    chrome.storage.sync.set({settings: this.settings});
+    if (this.onsettings)
+      this.onsettings.call(this, this.settings);
   },
 
   /** @private */
   toggleMenu_: function() {
-    console.log('toogleMenu_');
     this.dataset.popup = String(this.dataset.popup != 'true');
   },
 
