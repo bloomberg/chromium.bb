@@ -71,9 +71,11 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (lost_context_callback_proxy_)
     return true;
 
-  bool result = context3d_->makeContextCurrent();
+  if (!context3d_->makeContextCurrent())
+    return false;
+
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
-  return result;
+  return true;
 }
 
 WebGraphicsContext3DCommandBufferImpl*
