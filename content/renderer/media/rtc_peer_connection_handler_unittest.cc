@@ -168,9 +168,10 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD2(TrackSignalingStateChange,
                void(RTCPeerConnectionHandler* pc_handler,
                     WebRTCPeerConnectionHandlerClient::SignalingState state));
-  MOCK_METHOD2(TrackIceStateChange,
-               void(RTCPeerConnectionHandler* pc_handler,
-                    WebRTCPeerConnectionHandlerClient::ICEState state));
+  MOCK_METHOD2(
+      TrackIceConnectionStateChange,
+      void(RTCPeerConnectionHandler* pc_handler,
+           WebRTCPeerConnectionHandlerClient::ICEConnectionState state));
 };
 
 class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {

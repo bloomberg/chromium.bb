@@ -118,17 +118,31 @@ static string GetSignalingStateString(
   return result;
 }
 
-static string GetIceStateString(
-    WebRTCPeerConnectionHandlerClient::ICEState state) {
+static string GetIceConnectionStateString(
+    WebRTCPeerConnectionHandlerClient::ICEConnectionState state) {
   string result;
   switch (state) {
-    GET_STRING_OF_STATE(ICEStateStarting)
-    GET_STRING_OF_STATE(ICEStateChecking)
-    GET_STRING_OF_STATE(ICEStateConnected)
-    GET_STRING_OF_STATE(ICEStateCompleted)
-    GET_STRING_OF_STATE(ICEStateFailed)
-    GET_STRING_OF_STATE(ICEStateDisconnected)
-    GET_STRING_OF_STATE(ICEStateClosed)
+    GET_STRING_OF_STATE(ICEConnectionStateStarting)
+    GET_STRING_OF_STATE(ICEConnectionStateChecking)
+    GET_STRING_OF_STATE(ICEConnectionStateConnected)
+    GET_STRING_OF_STATE(ICEConnectionStateCompleted)
+    GET_STRING_OF_STATE(ICEConnectionStateFailed)
+    GET_STRING_OF_STATE(ICEConnectionStateDisconnected)
+    GET_STRING_OF_STATE(ICEConnectionStateClosed)
+    default:
+      NOTREACHED();
+      break;
+  }
+  return result;
+}
+
+static string GetIceGatheringStateString(
+    WebRTCPeerConnectionHandlerClient::ICEGatheringState state) {
+  string result;
+  switch (state) {
+    GET_STRING_OF_STATE(ICEGatheringStateNew)
+    GET_STRING_OF_STATE(ICEGatheringStateGathering)
+    GET_STRING_OF_STATE(ICEGatheringStateComplete)
     default:
       NOTREACHED();
       break;
@@ -361,11 +375,6 @@ void PeerConnectionTracker::TrackCreateDataChannel(
       value);
 }
 
-void PeerConnectionTracker::TrackOnIceComplete(
-    RTCPeerConnectionHandler* pc_handler) {
-  SendPeerConnectionUpdate(pc_handler, "onIceCandidate(null)", "");
-}
-
 void PeerConnectionTracker::TrackStop(RTCPeerConnectionHandler* pc_handler) {
   SendPeerConnectionUpdate(pc_handler, "stop", "");
 }
@@ -377,12 +386,20 @@ void PeerConnectionTracker::TrackSignalingStateChange(
       pc_handler, "signalingStateChange", GetSignalingStateString(state));
 }
 
-void PeerConnectionTracker::TrackIceStateChange(
+void PeerConnectionTracker::TrackIceConnectionStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      WebRTCPeerConnectionHandlerClient::ICEState state) {
-  // TODO (jiayl): Should update this when the new IceState handling is done.
+      WebRTCPeerConnectionHandlerClient::ICEConnectionState state) {
   SendPeerConnectionUpdate(
-      pc_handler, "IceStateChange", GetIceStateString(state));
+      pc_handler, "iceConnectionStateChange",
+      GetIceConnectionStateString(state));
+}
+
+void PeerConnectionTracker::TrackIceGatheringStateChange(
+      RTCPeerConnectionHandler* pc_handler,
+      WebRTCPeerConnectionHandlerClient::ICEGatheringState state) {
+  SendPeerConnectionUpdate(
+      pc_handler, "iceGatheringStateChange",
+      GetIceGatheringStateString(state));
 }
 
 void PeerConnectionTracker::TrackSessionDescriptionCallback(

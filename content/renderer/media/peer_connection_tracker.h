@@ -107,9 +107,6 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
       RTCPeerConnectionHandler* pc_handler,
       const WebKit::WebMediaStream& stream, Source source);
 
-  // Sends an update when OnIceComplete is called.
-  virtual void TrackOnIceComplete(RTCPeerConnectionHandler* pc_handler);
-
   // Sends an update when a DataChannel is created.
   virtual void TrackCreateDataChannel(
       RTCPeerConnectionHandler* pc_handler,
@@ -123,10 +120,17 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
       RTCPeerConnectionHandler* pc_handler,
       WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state);
 
-  // Sends an update when the Ice state of a PeerConnection has changed.
-  virtual void TrackIceStateChange(
+  // Sends an update when the Ice connection state
+  // of a PeerConnection has changed.
+  virtual void TrackIceConnectionStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      WebKit::WebRTCPeerConnectionHandlerClient::ICEState state);
+      WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState state);
+
+  // Sends an update when the Ice gathering state
+  // of a PeerConnection has changed.
+  virtual void TrackIceGatheringStateChange(
+      RTCPeerConnectionHandler* pc_handler,
+      WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState state);
 
   // Sends an update when the SetSessionDescription or CreateOffer or
   // CreateAnswer callbacks are called.

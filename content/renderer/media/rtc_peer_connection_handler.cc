@@ -645,7 +645,8 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState state =
       GetWebKitIceConnectionState(new_state);
-  // TODO(perkj): Add new ice connection state to the tracker.
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackIceConnectionStateChange(this, state);
   client_->didChangeICEConnectionState(state);
 }
 
@@ -657,14 +658,12 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
     // to signal end of candidates.
     WebKit::WebRTCICECandidate null_candidate;
     client_->didGenerateICECandidate(null_candidate);
-    // Adding ice complete state to the tracker.
-    if (peer_connection_tracker_) {
-      peer_connection_tracker_->TrackOnIceComplete(this);
-    }
   }
 
   WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState state =
       GetWebKitIceGatheringState(new_state);
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackIceGatheringStateChange(this, state);
   client_->didChangeICEGatheringState(state);
 }
 

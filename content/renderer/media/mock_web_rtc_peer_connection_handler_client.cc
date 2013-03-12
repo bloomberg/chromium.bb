@@ -68,4 +68,8 @@ void MockWebRTCPeerConnectionHandlerClient::didRemoveRemoteStream(
   remote_steam_.reset();
 }
 
+void MockWebRTCPeerConnectionHandlerClient::didAddRemoteDataChannel(
+    WebKit::WebRTCDataChannelHandler*) {
+}
+
 }  // namespace content

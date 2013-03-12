@@ -32,6 +32,8 @@ class MockWebRTCPeerConnectionHandlerClient
       const WebKit::WebMediaStream& stream_descriptor) OVERRIDE;
   virtual void didRemoveRemoteStream(
       const WebKit::WebMediaStream& stream_descriptor) OVERRIDE;
+  virtual void didAddRemoteDataChannel(
+      WebKit::WebRTCDataChannelHandler*) OVERRIDE;
 
   bool renegotiate() const { return renegotiate_; }
 
