@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAddMessageToConsole) {
   CloseDevToolsWindow();
 }
 
-class RemoteDebuggingTest : public ExtensionBrowserTest {
+class DISABLED_RemoteDebuggingTest : public ExtensionBrowserTest {
 
   class ResultCatcher : public content::NotificationObserver {
    public:
@@ -680,7 +680,7 @@ class RemoteDebuggingTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, TargetList) {
+IN_PROC_BROWSER_TEST_F(DISABLED_RemoteDebuggingTest, TargetList) {
   ASSERT_TRUE(RunExtensionTest("target_list"));
 }
 
