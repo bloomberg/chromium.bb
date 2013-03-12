@@ -40,6 +40,7 @@
       'rule_name': 'isolate',
       'extension': 'isolate',
       'inputs': [
+        '<(RULE_INPUT_PATH)',
         # Disable file tracking by the build driver for now. This means the
         # project must have the proper build-time dependency for their runtime
         # dependency. This improves the runtime of the build driver since it
@@ -59,7 +60,6 @@
         'python',
         '<(DEPTH)/tools/swarm_client/isolate.py',
         '<(test_isolation_mode)',
-        '--outdir', '<(test_isolation_outdir)',
         '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
         '--variable', 'OS', '<(OS)',
         '--variable', 'chromeos', '<(chromeos)',
@@ -72,11 +72,8 @@
             '--outdir', '<(PRODUCT_DIR)/<(test_isolation_outdir)',
           ],
         }],
-        ['test_isolation_fail_on_missing == 0', {
-            'action': ['--ignore_broken_items']
-          },
-        ],
       ],
+
       'msvs_cygwin_shell': 0,
     },
   ],
