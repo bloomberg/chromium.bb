@@ -58,6 +58,7 @@
                   'chrome/common/password_|'\
                   'chrome/renderer/autofill/|'\
                   'chrome/test/data/autofill/|'\
+                  'components/autofill/|'\
                   'content/public/common/password_|'\
                   'content/public/renderer/password_|'\
                   'content/renderer/password_',
@@ -93,7 +94,8 @@
                   '|chrome/browser/common/' \
                   '|chrome/browser/favicon/' \
                   '|chrome/browser/history/' \
-                  '|chrome/browser/visitedlink/'
+                  '|chrome/browser/visitedlink/'\
+                  '|components/autofill/'
     },
     'browser_compositor': {
       'filepath': 'ui/compositor/'
