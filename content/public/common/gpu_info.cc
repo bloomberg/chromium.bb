@@ -17,6 +17,7 @@ GPUInfo::GPUInfo()
     : finalized(false),
       optimus(false),
       amd_switchable(false),
+      lenovo_dcute(false),
       can_lose_context(false),
       gpu_accessible(true),
       software_rendering(false),

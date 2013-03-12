@@ -56,7 +56,11 @@ struct CONTENT_EXPORT GPUInfo {
   // Computer has AMD Dynamic Switchable Graphics
   bool amd_switchable;
 
+  // Lenovo dCute is installed. http://crbug.com/181665.
+  bool lenovo_dcute;
+
   // Version of DisplayLink driver installed. Zero if not installed.
+  // http://crbug.com/177611.
   Version display_link_version;
 
   // Primary GPU, for exmaple, the discrete GPU in a dual GPU machine.

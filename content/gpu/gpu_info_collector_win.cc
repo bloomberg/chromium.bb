@@ -185,6 +185,24 @@ Version DisplayLinkVersion() {
 
   return Version(WideToASCII(version));
 }
+
+// Returns whether Lenovo dCute is installed.
+bool IsLenovoDCuteInstalled() {
+  base::win::RegKey key;
+
+  if (FAILED(key.Open(
+      HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))) {
+    return false;
+  }
+
+  if (FAILED(key.OpenKey(L"Lenovo", KEY_READ | KEY_WOW64_64KEY)))
+    return false;
+
+  if (FAILED(key.OpenKey(L"Lenovo dCute", KEY_READ | KEY_WOW64_64KEY)))
+    return false;
+
+  return true;
+}
 }  // namespace anonymous
 
 namespace gpu_info_collector {
@@ -514,6 +532,8 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
   HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
   gpu_info->optimus = nvd3d9wrap != NULL;
+
+  gpu_info->lenovo_dcute = IsLenovoDCuteInstalled();
 
   gpu_info->display_link_version = DisplayLinkVersion();
 
