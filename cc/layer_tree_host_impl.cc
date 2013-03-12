@@ -663,7 +663,7 @@ void LayerTreeHostImpl::removeRenderPasses(RenderPassCuller culler, FrameData& f
             int positionFromEnd = frame.renderPasses.size() - it;
             removeRenderPassesRecursive(renderPassQuad->render_pass_id, frame);
             it = frame.renderPasses.size() - positionFromEnd;
-            DCHECK(it >= 0);
+            DCHECK(frame.renderPasses.size() >= static_cast<size_t>(positionFromEnd));
         }
     }
 }

@@ -98,7 +98,7 @@ class ScopedPtrDeque {
   }
 
   scoped_ptr<T> take(iterator position) {
-    DCHECK(position <= end());
+    DCHECK(position < end());
     scoped_ptr<T> ret(*position);
     data_.erase(position);
     return ret.Pass();
