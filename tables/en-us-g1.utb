@@ -135,7 +135,7 @@ begcomp 456-346
 endcomp 456-156
 
 # the decimal digits
-incllude litdigits6Dots.uti
+include litdigits6Dots.uti
 
 # Letters are defined in en-chardefs
 
