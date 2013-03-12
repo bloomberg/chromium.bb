@@ -97,9 +97,7 @@ class AutofillPopupControllerBrowserTest
 
 // Autofill UI isn't currently hidden on window move on Mac.
 // http://crbug.com/180566
-// This tests causes an assert on the Linux Precise (dbg) builder.
-// http://crbug.com/180883
-#if !defined(OS_MACOSX) && !defined(OS_LINUX)
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
                        HidePopupOnWindowConfiguration) {
   autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
@@ -113,4 +111,4 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
   autofill_external_delegate_->WaitForPopupHidden();
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
 }
-#endif // !defined(OS_MACOSX) && !defined(OS_LINUX)
+#endif // !defined(OS_MACOSX)
