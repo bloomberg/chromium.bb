@@ -858,11 +858,15 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
       resource_pool_->resource_provider()->MapPixelBuffer(resource_id);
 
   ManagedTileState& managed_tile_state = tile->managed_state();
-  bool is_cheap_to_raster =
+  // TODO(skyostil): Post all cheap tasks as cheap and instead use the time
+  // limit to control their execution.
+  bool is_cheap_task =
+      allow_cheap_tasks_ &&
+      global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
       managed_tile_state.picture_pile_analysis.is_cheap_to_raster;
   raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
-      allow_cheap_tasks_ && is_cheap_to_raster,
+      is_cheap_task,
       base::Bind(&TileManager::RunRasterTask,
                  buffer,
                  tile->content_rect(),
@@ -873,8 +877,7 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                  tile,
                  base::Passed(&resource),
                  manage_tiles_call_count_));
-  if ((allow_cheap_tasks_ && is_cheap_to_raster) &&
-      !did_schedule_cheap_tasks_) {
+  if (is_cheap_task && !did_schedule_cheap_tasks_) {
     raster_worker_pool_->SetRunCheapTasksTimeLimit(
         base::TimeTicks::Now() +
         base::TimeDelta::FromMilliseconds(kRunCheapTasksTimeMs));
