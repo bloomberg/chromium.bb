@@ -20,6 +20,18 @@ cr.define('profile_signin_confirmation', function() {
     $('cancel-button').addEventListener('click', function() {
       chrome.send('cancel');
     });
+
+    if (args.promptForNewProfile) {
+      $('continue-button').innerText =
+          loadTimeData.getStringF('continueButtonText');
+    } else {
+      $('create-button').hidden = true;
+      $('dialog-prompt').hidden = true;
+      $('continue-button').innerText =
+          loadTimeData.getStringF('okButtonText');
+      // Right-align the buttons when only "OK" and "Cancel" are showing.
+      $('button-row').style['text-align'] = 'end';
+    }
   }
 
   return {

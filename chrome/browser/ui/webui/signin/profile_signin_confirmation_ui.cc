@@ -28,6 +28,7 @@ ProfileSigninConfirmationUI::ProfileSigninConfirmationUI(content::WebUI* web_ui)
   html_source->AddLocalizedString(
       "continueButtonText",
       IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NO);
+  html_source->AddLocalizedString("okButtonText", IDS_OK);
   html_source->AddLocalizedString(
       "cancelButtonText",
       IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_CANCEL);

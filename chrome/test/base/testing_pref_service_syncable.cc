@@ -47,6 +47,20 @@ TestingPrefServiceSyncable::TestingPrefServiceSyncable()
         new PrefNotifierImpl()) {
 }
 
+TestingPrefServiceSyncable::TestingPrefServiceSyncable(
+    TestingPrefStore* managed_prefs,
+    TestingPrefStore* user_prefs,
+    TestingPrefStore* recommended_prefs,
+    PrefRegistrySyncable* pref_registry,
+    PrefNotifierImpl* pref_notifier)
+    : TestingPrefServiceBase<PrefServiceSyncable, PrefRegistrySyncable>(
+        managed_prefs,
+        user_prefs,
+        recommended_prefs,
+        pref_registry,
+        pref_notifier) {
+}
+
 TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {
 }
 

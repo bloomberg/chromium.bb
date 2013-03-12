@@ -16,6 +16,12 @@ class TestingPrefServiceSyncable
     : public TestingPrefServiceBase<PrefServiceSyncable, PrefRegistrySyncable> {
  public:
   TestingPrefServiceSyncable();
+  TestingPrefServiceSyncable(
+      TestingPrefStore* managed_prefs,
+      TestingPrefStore* user_prefs,
+      TestingPrefStore* recommended_prefs,
+      PrefRegistrySyncable* pref_registry,
+      PrefNotifierImpl* pref_notifier);
   virtual ~TestingPrefServiceSyncable();
 
   // This is provided as a convenience; on a production PrefService
