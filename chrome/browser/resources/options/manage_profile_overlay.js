@@ -95,7 +95,7 @@ cr.define('options', function() {
 
     /**
      * Registers event handlers that are common between create and manage modes.
-     * @param {String} mode A label that specifies the type of dialog
+     * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
      * @param {function()} submitFunction The function that should be called

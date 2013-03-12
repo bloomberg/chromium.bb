@@ -456,12 +456,11 @@ function FlingConfig() {
   return new GeneralConfig(FLING_TITLE, FLING_PREFIX, FLING_FIELDS);
 }
 
-
 /**
  * WebUI instance for configuring gesture.* and overscroll.* preference values
  * used by Chrome's gesture recognition system.
  */
-var gesture_config = {
+window.gesture_config = {
   /**
    * Build and initialize the gesture configuration form.
    */

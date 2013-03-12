@@ -245,6 +245,46 @@ class JsStyleGuideTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldFailWrapperTypeCheck(line)
 
+  def ShouldFailVarNameCheck(self, line):
+    """Checks that var unix_hacker, $dollar are style errors."""
+    error = self.checker.VarNameCheck(1, line)
+    self.assertNotEqual('', error,
+        msg='Should be flagged as style error: ' + line)
+    highlight = self.GetHighlight(line, error)
+    self.assertFalse('var ' in highlight);
+
+  def ShouldPassVarNameCheck(self, line):
+    """Checks that variableNamesLikeThis aren't style errors."""
+    self.assertEqual('', self.checker.VarNameCheck(1, line),
+        msg='Should not be flagged as style error: ' + line)
+
+  def testVarNameFails(self):
+    lines = [
+        "var private_;",
+        " var _super_private",
+        "  var unix_hacker = someFunc();",
+    ]
+    for line in lines:
+      self.ShouldFailVarNameCheck(line)
+
+  def testVarNamePasses(self):
+    lines = [
+        "  var namesLikeThis = [];",
+        " for (var i = 0; i < 10; ++i) { ",
+        "for (var i in obj) {",
+        " var one, two, three;",
+        "  var magnumPI = {};",
+        " var g_browser = 'da browzer';",
+        "/** @const */ var Bla = options.Bla;",  # goog.scope() replacement.
+        " var $ = function() {",                 # For legacy reasons.
+        "  var StudlyCaps = cr.define('bla')",   # Classes.
+        " var SCARE_SMALL_CHILDREN = [",         # TODO(dbeam): add @const in
+                                                 # front of all these vars like
+        "/** @const */ CONST_VAR = 1;",          # this line has (<--).
+    ]
+    for line in lines:
+      self.ShouldPassVarNameCheck(line)
+
 
 class CssStyleGuideTest(SuperMoxTestBase):
   def setUp(self):

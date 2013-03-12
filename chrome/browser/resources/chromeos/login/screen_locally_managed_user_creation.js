@@ -34,7 +34,7 @@ cr.define('login', function() {
 
     /**
      * Screen controls.
-     * @type {array} Array of Buttons.
+     * @type {!Array} Array of Buttons.
      */
     get buttons() {
       var buttons = [];
@@ -90,8 +90,8 @@ cr.define('login', function() {
 
     /**
      * Show error message.
-     * @param {String} errorText Text to be displayed.
-     * @param {bool} recoverable Indicates if error was transiend and process
+     * @param {string} errorText Text to be displayed.
+     * @param {boolean} recoverable Indicates if error was transiend and process
      *     can be retried.
      */
     showErrorMessage: function(errorText, recoverable) {
@@ -102,7 +102,7 @@ cr.define('login', function() {
 
     /**
      * Enables one particular subpage and hides the rest.
-     * @param {String} visiblePage - name of subpage (one of 'progress',
+     * @param {string} visiblePage - name of subpage (one of 'progress',
      * 'error', 'success')
      * @private
      */

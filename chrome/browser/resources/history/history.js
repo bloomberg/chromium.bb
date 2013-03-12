@@ -97,7 +97,7 @@ function Visit(result, continued, model) {
 
 /**
  * Records the timestamp of another visit to the same URL as this visit.
- * @param {Number} timestamp The timestamp to add.
+ * @param {number} timestamp The timestamp to add.
  */
 Visit.prototype.addDuplicateTimestamp = function(timestamp) {
   this.duplicateTimestamps_.push(timestamp);

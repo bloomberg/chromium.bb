@@ -5,9 +5,6 @@
 cr.define('options', function() {
   /** @const */ var OptionsPage = options.OptionsPage;
 
-  // The GUID of the loaded credit card.
-  var guid_;
-
   /**
    * AutofillEditCreditCardOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.

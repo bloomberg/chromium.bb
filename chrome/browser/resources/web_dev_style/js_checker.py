@@ -39,7 +39,7 @@ class JSChecker(object):
   def ChromeSendCheck(self, i, line):
     """Checks for a particular misuse of 'chrome.send'."""
     return self.RegexCheck(i, line, r"chrome\.send\('[^']+'\s*(, \[\])\)",
-        'Passing an empty array to chrome.send is unnecessary.')
+        'Passing an empty array to chrome.send is unnecessary')
 
   def ConstCheck(self, i, line):
     """Check for use of the 'const' keyword."""
@@ -48,25 +48,31 @@ class JSChecker(object):
       return ''
 
     return self.RegexCheck(i, line, r'(?:^|\s|\()(const)\s',
-        'Use var instead of const.')
+        'Use /** @const */ var varName; instead of const varName;')
 
   def GetElementByIdCheck(self, i, line):
     """Checks for use of 'document.getElementById' instead of '$'."""
     return self.RegexCheck(i, line, r"(document\.getElementById)\('",
         "Use $('id'), from chrome://resources/js/util.js, instead of "
-        "document.getElementById('id'))")
+        "document.getElementById('id')")
 
   def InheritDocCheck(self, i, line):
     """Checks for use of '@inheritDoc' instead of '@override'."""
     return self.RegexCheck(i, line, r"\* (@inheritDoc)",
-        "@inheritDoc is deprecated, use @override instead.")
+        "@inheritDoc is deprecated, use @override instead")
 
   def WrapperTypeCheck(self, i, line):
     """Check for wrappers (new String()) instead of builtins (string)."""
     return self.RegexCheck(i, line,
         r"(?:/\*)?\*.*?@(?:param|return|type) ?"     # /** @param/@return/@type
         r"{[^}]*\b(String|Boolean|Number)\b[^}]*}",  # {(Boolean|Number|String)}
-        "Don't use wrapper types (i.e. new String() or @type {String}).")
+        "Don't use wrapper types (i.e. new String() or @type {String})")
+
+  def VarNameCheck(self, i, line):
+    """See the style guide. http://goo.gl/uKir6"""
+    return self.RegexCheck(i, line,
+        r"var (?!g_\w+)([a-z]*[_$][\w_$]*)(?<! \$)",
+        "Please use var namesLikeThis <http://goo.gl/uKir6>")
 
   def error_highlight(self, start, length):
     """Takes a start position and a length, and produces a row of '^'s to
@@ -196,6 +202,8 @@ class JSChecker(object):
             self.ConstCheck(i, line),
             self.GetElementByIdCheck(i, line),
             self.InheritDocCheck(i, line),
+            self.WrapperTypeCheck(i, line),
+            self.VarNameCheck(i, line),
         ])
 
       # Use closure_linter to check for several different errors

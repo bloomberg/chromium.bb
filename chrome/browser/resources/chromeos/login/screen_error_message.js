@@ -124,7 +124,7 @@ cr.define('login', function() {
 
     /**
       * Sets current state of the error screen.
-      * @param {String} state New state of the error screen.
+      * @param {string} state New state of the error screen.
       * @private
       */
     setState_: function(state) {
