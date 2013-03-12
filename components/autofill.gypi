@@ -71,6 +71,8 @@
             'autofill/common/form_field_data_predictions.h',
             'autofill/common/password_form_fill_data.cc',
             'autofill/common/password_form_fill_data.h',
+            'autofill/common/password_generation_util.cc',
+            'autofill/common/password_generation_util.h',
             'autofill/common/web_element_descriptor.cc',
             'autofill/common/web_element_descriptor.h',
           ],

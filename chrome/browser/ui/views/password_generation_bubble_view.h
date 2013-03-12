@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORD_GENERATION_BUBBLE_VIEW_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/password_generation_util.h"
+#include "components/autofill/common/password_generation_util.h"
 #include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_delegate.h"

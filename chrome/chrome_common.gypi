@@ -329,8 +329,6 @@
         'common/omaha_query_params.cc',
         'common/omaha_query_params.h',
         'common/one_click_signin_messages.h',
-        'common/password_generation_util.cc',
-        'common/password_generation_util.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
         'common/pref_names_util.cc',

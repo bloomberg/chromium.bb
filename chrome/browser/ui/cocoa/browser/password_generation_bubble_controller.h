@@ -9,7 +9,7 @@
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/styled_text_field.h"
-#include "chrome/common/password_generation_util.h"
+#include "components/autofill/common/password_generation_util.h"
 #include "content/public/common/password_form.h"
 
 namespace autofill {

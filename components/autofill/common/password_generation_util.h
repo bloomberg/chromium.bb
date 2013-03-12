@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PASSWORD_GENERATION_UTIL_H_
-#define CHROME_COMMON_PASSWORD_GENERATION_UTIL_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_PASSWORD_GENERATION_UTIL_H_
+#define COMPONENTS_AUTOFILL_COMMON_PASSWORD_GENERATION_UTIL_H_
 
 namespace password_generation {
 
@@ -72,4 +72,4 @@ enum UserAction {
 
 }  // namespace password_generation
 
-#endif  // CHROME_COMMON_PASSWORD_GENERATION_UTIL_H_
+#endif  // COMPONENTS_AUTOFILL_COMMON_PASSWORD_GENERATION_UTIL_H_

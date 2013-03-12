@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
-#include "chrome/common/password_generation_util.h"
+#include "components/autofill/common/password_generation_util.h"
 #include "content/public/common/password_form.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"

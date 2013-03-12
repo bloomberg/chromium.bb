@@ -1,7 +1,4 @@
 include_rules = [
-  # TODO(joi): Get rid of this dependency.
-  "!chrome/common/password_generation_util.h",
-
   "+content/public/common",
   "+content/public/renderer",
 ]
