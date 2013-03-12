@@ -3,9 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Moves a C++ file to a new location, updating any include paths that
-point to it, and re-ordering headers as needed.  Updates include
-guards in moved header files.  Assumes Chromium coding style.
+"""Moves C++ files to a new location, updating any include paths that
+point to them, and re-ordering headers as needed.  If multiple source
+files are specified, the destination must be a directory (and must end
+in a slash).  Updates include guards in moved header files.  Assumes
+Chromium coding style.
 
 Attempts to update paths used in .gyp(i) files, but does not reorder
 or restructure .gyp(i) files in any way.
@@ -147,23 +149,26 @@ def main():
     print 'Fatal: You must run from the root of a git checkout.'
     return 1
   args = sys.argv[1:]
-  if not len(args) in [2, 3]:
-    print ('Usage: move_source_file.py [--already-moved] FROM_PATH TO_PATH'
-           '\n\n%s' % __doc__)
-    return 1
 
   already_moved = False
-  if args[0] == '--already-moved':
+  if len(args) > 0 and args[0] == '--already-moved':
     args = args[1:]
     already_moved = True
 
-  from_path = args[0]
-  to_path = args[1]
+  if len(args) < 2:
+    print ('Usage: move_source_file.py [--already-moved] FROM_PATH... TO_PATH'
+           '\n\n%s' % __doc__)
+    return 1
 
-  to_path = MakeDestinationPath(from_path, to_path)
-  if not already_moved:
-    MoveFile(from_path, to_path)
-  UpdatePostMove(from_path, to_path)
+  if len(args) > 2 and not args[-1].endswith('/'):
+    print 'Target %s is not a directory.' % args[-1]
+    return 1
+
+  for from_path in args[:len(args)-1]:
+    to_path = MakeDestinationPath(from_path, args[-1])
+    if not already_moved:
+      MoveFile(from_path, to_path)
+    UpdatePostMove(from_path, to_path)
   return 0
 
 
