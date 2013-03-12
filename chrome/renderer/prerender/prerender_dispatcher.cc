@@ -109,6 +109,11 @@ bool PrerenderDispatcher::OnControlMessageReceived(
 void PrerenderDispatcher::add(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
+  if (prerenders_.count(extra_data.prerender_id()) != 0) {
+    // TODO(gavinp): Determine why these apparently duplicate adds occur.
+    return;
+  }
+
   prerenders_[extra_data.prerender_id()] = prerender;
 
   content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(

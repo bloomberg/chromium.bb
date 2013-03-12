@@ -312,12 +312,8 @@ class PrerenderTest : public testing::Test {
                  concurrency);
   }
 
-  bool IsEmptyPrerenderLinkManager() {
+  bool IsEmptyPrerenderLinkManager() const {
     return prerender_link_manager_->IsEmpty();
-  }
-
-  size_t CountAllLinkPrerenders() {
-    return prerender_link_manager_->prerenders_.size();
   }
 
   int last_prerender_id() const {
@@ -396,32 +392,6 @@ TEST_F(PrerenderTest, DuplicateTest) {
   EXPECT_FALSE(prerender_contents1->prerendering_has_started());
 
   ASSERT_EQ(prerender_contents, prerender_manager()->FindAndUseEntry(url));
-}
-
-// Makes sure that we do not create two running prerender entries for the same
-// launcher and prerender id.
-TEST_F(PrerenderTest, DoubleAddTest) {
-  SetConcurrency(2);
-
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url,
-          FINAL_STATUS_USED);
-  EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  EXPECT_EQ(1u, CountAllLinkPrerenders());
-
-  GURL url2("http://www.notgoogle.com/");
-  prerender_link_manager()->OnAddPrerender(kDefaultChildId,
-                                           last_prerender_id(),
-                                           url, content::Referrer(),
-                                           kSize, kDefaultRenderViewRouteId);
-  // The second add had the same launcher and prerender_id as a running
-  // prerender, so it should have done nothing.
-  EXPECT_EQ(1u, CountAllLinkPrerenders());
-  ASSERT_EQ(prerender_contents, prerender_manager()->FindAndUseEntry(url));
-  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
 // Ensure that we expire a prerendered page after the max. permitted time.
