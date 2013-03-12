@@ -55,6 +55,33 @@ TEST_F(LauncherTest, OpenBrowser) {
   ASSERT_EQ(--button_count, test.GetButtonCount());
 }
 
+// Confirm that using the menu will clear the hover attribute. To avoid another
+// browser test we check this here.
+TEST_F(LauncherTest, checkHoverAfterMenu) {
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  ASSERT_TRUE(launcher);
+  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
+  test::LauncherViewTestAPI test(launcher_view);
+  LauncherModel* model = launcher_view->model();
+
+  // Initially we have the app list and chrome icon.
+  int button_count = test.GetButtonCount();
+
+  // Add running tab.
+  LauncherItem item;
+  item.type = TYPE_TABBED;
+  item.status = STATUS_RUNNING;
+  int index = model->Add(item);
+  ASSERT_EQ(++button_count, test.GetButtonCount());
+  LauncherButton* button = test.GetButton(index);
+  button->AddState(LauncherButton::STATE_HOVERED);
+  button->ShowContextMenu(gfx::Point(), true);
+  EXPECT_FALSE(button->state() & LauncherButton::STATE_HOVERED);
+
+  // Remove it.
+  model->RemoveItemAt(index);
+}
+
 TEST_F(LauncherTest, ShowOverflowBubble) {
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);

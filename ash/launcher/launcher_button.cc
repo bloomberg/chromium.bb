@@ -164,7 +164,8 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
       icon_view_(NULL),
       bar_(new BarView(this)),
       state_(STATE_NORMAL),
-      shelf_layout_manager_(shelf_layout_manager) {
+      shelf_layout_manager_(shelf_layout_manager),
+      destroyed_flag_(NULL) {
   set_accessibility_focusable(true);
 
   const gfx::ShadowValue kShadows[] = {
@@ -178,6 +179,8 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
 }
 
 LauncherButton::~LauncherButton() {
+  if (destroyed_flag_)
+    *destroyed_flag_ = true;
 }
 
 void LauncherButton::SetShadowedImage(const gfx::ImageSkia& image) {
@@ -256,6 +259,25 @@ void LauncherButton::ClearState(State state) {
 
 gfx::Rect LauncherButton::GetIconBounds() const {
   return icon_view_->bounds();
+}
+
+void LauncherButton::ShowContextMenu(const gfx::Point& p,
+                                     bool is_mouse_gesture) {
+  if (!context_menu_controller())
+    return;
+
+  bool destroyed = false;
+  destroyed_flag_ = &destroyed;
+
+  CustomButton::ShowContextMenu(p, is_mouse_gesture);
+
+  if (!destroyed) {
+    destroyed_flag_ = NULL;
+    // The menu will not propagate mouse events while its shown. To address,
+    // the hover state gets cleared once the menu was shown (and this was not
+    // destroyed).
+    ClearState(STATE_HOVERED);
+  }
 }
 
 bool LauncherButton::OnMousePressed(const ui::MouseEvent& event) {

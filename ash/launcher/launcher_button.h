@@ -5,6 +5,7 @@
 #ifndef ASH_LAUNCHER_LAUNCHER_BUTTON_H_
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_H_
 
+#include "ash/ash_export.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
@@ -16,7 +17,7 @@ class LauncherButtonHost;
 class ShelfLayoutManager;
 
 // Button used for items on the launcher, except for the AppList.
-class LauncherButton : public views::CustomButton {
+class ASH_EXPORT LauncherButton : public views::CustomButton {
  public:
   // Used to indicate the current state of the button.
   enum State {
@@ -55,6 +56,10 @@ class LauncherButton : public views::CustomButton {
 
   // Returns the bounds of the icon.
   gfx::Rect GetIconBounds() const;
+
+  // Overrides to views::CustomButton:
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               bool is_mouse_gesture) OVERRIDE;
 
  protected:
   LauncherButton(views::ButtonListener* listener,
@@ -131,6 +136,10 @@ class LauncherButton : public views::CustomButton {
   ShelfLayoutManager* shelf_layout_manager_;
 
   gfx::ShadowValues icon_shadows_;
+
+  // If non-null the destuctor sets this to true. This is set while the menu is
+  // showing and used to detect if the menu was deleted while running.
+  bool* destroyed_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherButton);
 };
