@@ -197,6 +197,7 @@
         'browser/extensions/extension_pointer_lock_apitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/instant/instant_extended_browsertest.cc',
+        'browser/instant/instant_extended_manual_browsertest.cc',
         'browser/instant/instant_test_utils.h',
         'browser/instant/instant_test_utils.cc',
         'browser/mouseleave_browsertest.cc',

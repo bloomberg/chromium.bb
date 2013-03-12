@@ -210,6 +210,8 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
       OmniboxCommitsWhenShownFullHeight);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
+                           MANUAL_OmniboxFocusLoadsInstant);
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
