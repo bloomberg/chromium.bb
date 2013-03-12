@@ -148,6 +148,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData() {
       new AutocheckoutPageMetaData());
   end_of_flow->current_page_number = 2;
   end_of_flow->total_pages = 3;
+  end_of_flow->proceed_element_descriptor = CreateProceedElement().Pass();
   return end_of_flow.Pass();
 }
 
@@ -299,12 +300,15 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     return autofill_param.a;
   }
 
-  void CheckIpcMessageSent() {
+  void CheckFillFormsAndClickIpc() {
     EXPECT_EQ(1U, process()->sink().message_count());
     uint32 kMsgID = AutofillMsg_FillFormsAndClick::ID;
     const IPC::Message* message =
         process()->sink().GetFirstMessageMatching(kMsgID);
     EXPECT_TRUE(message);
+    AutofillParam autofill_param;
+    AutofillMsg_FillFormsAndClick::Read(message, &autofill_param);
+    EXPECT_EQ(WebElementDescriptor::ID, autofill_param.b.retrieval_method);
     ClearIpcSink();
   }
 
@@ -325,7 +329,7 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*autofill_manager_delegate_,
                 UpdateProgressBar(testing::DoubleEq(1.0/3.0))).Times(1);
     autocheckout_manager_->ShowAutocheckoutDialog(frame_url, ssl_status);
-    CheckIpcMessageSent();
+    CheckFillFormsAndClickIpc();
     EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
     EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
   }
@@ -497,7 +501,7 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
               UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  CheckIpcMessageSent();
+  CheckFillFormsAndClickIpc();
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
@@ -519,11 +523,11 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
               UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  CheckIpcMessageSent();
+  CheckFillFormsAndClickIpc();
   // Go to third page.
   EXPECT_CALL(*autofill_manager_delegate_, UpdateProgressBar(1)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
-  CheckIpcMessageSent();
+  CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }

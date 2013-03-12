@@ -469,7 +469,8 @@ void FormStructure::ParseQueryResponse(
         new autofill::WebElementDescriptor(
             *parse_handler.proceed_element_descriptor()));
   } else {
-    page_meta_data->proceed_element_descriptor.reset();
+    page_meta_data->proceed_element_descriptor.reset(
+        new autofill::WebElementDescriptor());
   }
 
   metric_logger.LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
