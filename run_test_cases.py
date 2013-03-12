@@ -51,7 +51,6 @@ KNOWN_GTEST_ENV_VARS = [
 
 # These needs to be poped out before running a test.
 GTEST_ENV_VARS_TO_REMOVE = [
-  # TODO(maruel): Handle.
   'GTEST_ALSO_RUN_DISABLED_TESTS',
   'GTEST_FILTER',
   'GTEST_OUTPUT',
@@ -745,22 +744,25 @@ class Runner(object):
     return data
 
 
-def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards, seed):
+def get_test_cases(
+    cmd, cwd, whitelist, blacklist, index, shards, seed, disabled, fails, flaky,
+    manual):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
   """
   try:
+    # List all the test cases if a whitelist is used.
     tests = list_test_cases(
         cmd,
         cwd,
         index=index,
         shards=shards,
-        disabled=False,
-        fails=False,
-        flaky=False,
+        disabled=disabled,
+        fails=fails,
+        flaky=flaky,
         pre=False,
-        manual=False,
+        manual=manual,
         seed=seed)
   except Failure, e:
     print('Failed to list test cases')
@@ -1170,17 +1172,17 @@ class OptionParserWithTestSharding(OptionParserWithLogging):
     def as_digit(variable, default):
       return int(variable) if variable.isdigit() else default
 
-    group = optparse.OptionGroup(self, 'Which shard to run')
+    group = optparse.OptionGroup(self, 'Which shard to select')
     group.add_option(
         '-I', '--index',
         type='int',
         default=as_digit(os.environ.get('GTEST_SHARD_INDEX', ''), None),
-        help='Shard index to run')
+        help='Shard index to select')
     group.add_option(
         '-S', '--shards',
         type='int',
         default=as_digit(os.environ.get('GTEST_TOTAL_SHARDS', ''), None),
-        help='Total number of shards to calculate from the --index to run')
+        help='Total number of shards to calculate from the --index to select')
     self.add_option_group(group)
 
   def parse_args(self, *args, **kwargs):
@@ -1195,7 +1197,7 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
   def __init__(self, *args, **kwargs):
     OptionParserWithTestSharding.__init__(self, *args, **kwargs)
 
-    group = optparse.OptionGroup(self, 'Which test cases to run')
+    group = optparse.OptionGroup(self, 'Which test cases to select')
     group.add_option(
         '-w', '--whitelist',
         default=[],
@@ -1214,8 +1216,7 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     group.add_option(
         '--gtest_filter',
         default=os.environ.get('GTEST_FILTER', ''),
-        help='Runs a single test, provideded to keep compatibility with '
-        'other tools')
+        help='Select test cases like google-test does, separated with ":"')
     group.add_option(
         '--seed',
         type='int',
@@ -1223,10 +1224,36 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
         help='Deterministically shuffle the test list if non-0. default: '
              '%default')
     group.add_option(
-        '--clusters',
-        type='int',
-        help='Number of test cases to cluster together, clamped to '
-             'len(test_cases) / jobs; the default is automatic')
+        '-d', '--disabled',
+        action='store_true',
+        default=int(os.environ.get('GTEST_ALSO_RUN_DISABLED_TESTS', '0')),
+        help='Include DISABLED_ tests')
+    group.add_option(
+        '--gtest_also_run_disabled_tests',
+        action='store_true',
+        dest='disabled',
+        help='same as --disabled')
+    self.add_option_group(group)
+
+    group = optparse.OptionGroup(
+        self, 'Which test cases to select; chromium-specific')
+    group.add_option(
+        '-f', '--fails',
+        action='store_true',
+        help='Include FAILS_ tests')
+    group.add_option(
+        '-F', '--flaky',
+        action='store_true',
+        help='Include FLAKY_ tests')
+    group.add_option(
+        '-m', '--manual',
+        action='store_true',
+        help='Include MANUAL_ tests')
+    group.add_option(
+        '--run-manual',
+        action='store_true',
+        dest='manual',
+        help='same as --manual')
     self.add_option_group(group)
 
   def parse_args(self, *args, **kwargs):
@@ -1264,7 +1291,11 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
           options.blacklist,
           options.index,
           options.shards,
-          options.seed)
+          options.seed,
+          options.disabled,
+          options.fails,
+          options.flaky,
+          options.manual)
 
 
 class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
@@ -1287,6 +1318,11 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
         type='int',
         default=120,
         help='Timeout for a single test case, in seconds default:%default')
+    self.add_option(
+        '--clusters',
+        type='int',
+        help='Number of test cases to cluster together, clamped to '
+             'len(test_cases) / jobs; the default is automatic')
 
 
 def process_args(argv):
@@ -1365,6 +1401,11 @@ def main(argv):
         result_file = '%s.run_test_cases' % cmd[1]
       else:
         result_file = '%s.run_test_cases' % cmd[0]
+
+  if options.disabled:
+    cmd.append('--gtest_also_run_disabled_tests')
+  if options.manual:
+    cmd.append('--run-manual')
 
   try:
     return run_test_cases(

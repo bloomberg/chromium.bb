@@ -16,28 +16,8 @@ import run_test_cases
 
 def main():
   """CLI frontend to validate arguments."""
-  parser = run_test_cases.OptionParserWithTestSharding(
+  parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
       usage='%prog <options> [gtest]')
-  parser.add_option(
-      '-d', '--disabled',
-      action='store_true',
-      help='Include DISABLED_ tests')
-  parser.add_option(
-      '-f', '--fails',
-      action='store_true',
-      help='Include FAILS_ tests')
-  parser.add_option(
-      '-F', '--flaky',
-      action='store_true',
-      help='Include FLAKY_ tests')
-  parser.add_option(
-      '-m', '--manual',
-      action='store_true',
-      help='Include MANUAL_ tests')
-  parser.add_option(
-      '-p', '--pre',
-      action='store_true',
-      help='Include PRE_ tests')
   options, args = parser.parse_args()
   if not args:
     parser.error('Please provide the executable to run')
