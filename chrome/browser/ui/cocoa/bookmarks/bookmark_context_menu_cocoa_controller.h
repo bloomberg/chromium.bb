@@ -28,9 +28,6 @@ class BookmarkNode;
   // us.
   BookmarkBarController* bookmarkBarController_;
 
-  // Bookmark model - weak, owned by the Profile of the current Browser.
-  BookmarkModel* bookmarkModel_;
-
   // Helper for receiving C++ callbacks.
   scoped_ptr<BookmarkContextMenuDelegateBridge> bridge_;
 
@@ -48,9 +45,8 @@ class BookmarkNode;
 }
 
 // Initializes the BookmarkContextMenuCocoaController for the given bookmark
-// bar |controller| and |bookmarkModel|.
-- (id)initWithBookmarkBarController:(BookmarkBarController*)controller
-                      bookmarkModel:(BookmarkModel*)bookmarkModel;
+// bar |controller|.
+- (id)initWithBookmarkBarController:(BookmarkBarController*)controller;
 
 // Returns an NSMenu customized for |node|. Works under the assumption that
 // only one menu should ever be shown at a time, and thus caches the last

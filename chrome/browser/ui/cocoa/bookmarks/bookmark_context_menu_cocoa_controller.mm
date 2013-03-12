@@ -41,29 +41,27 @@ class BookmarkContextMenuDelegateBridge :
 
 @implementation BookmarkContextMenuCocoaController
 
-- (id)initWithBookmarkBarController:(BookmarkBarController*)controller
-                      bookmarkModel:(BookmarkModel*)bookmarkModel {
+- (id)initWithBookmarkBarController:(BookmarkBarController*)controller {
   if ((self = [super init])) {
     bookmarkBarController_ = controller;
-    bookmarkModel_ = bookmarkModel;
     bridge_.reset(new BookmarkContextMenuDelegateBridge(self));
   }
   return self;
 }
 
-// Re-created |bookmarkContextMenuController_| and |menuController_| based on
-// the current value of |bookmarkNode_|.
-- (void)createMenuControllers {
+// Re-creates |bookmarkContextMenuController_| and |menuController_| based on
+// |bookmarkModel| and the current value of |bookmarkNode_|.
+- (void)createMenuControllers:(BookmarkModel*)bookmarkModel {
   const BookmarkNode* parent = NULL;
   std::vector<const BookmarkNode*> nodes;
-  if (bookmarkNode_ == bookmarkModel_->other_node()) {
+  if (bookmarkNode_ == bookmarkModel->other_node()) {
     nodes.push_back(bookmarkNode_);
-    parent = bookmarkModel_->bookmark_bar_node();
-  } else if (bookmarkNode_ != bookmarkModel_->bookmark_bar_node()) {
+    parent = bookmarkModel->bookmark_bar_node();
+  } else if (bookmarkNode_ != bookmarkModel->bookmark_bar_node()) {
     nodes.push_back(bookmarkNode_);
     parent = bookmarkNode_->parent();
   } else {
-    parent = bookmarkModel_->bookmark_bar_node();
+    parent = bookmarkModel->bookmark_bar_node();
     nodes.push_back(parent);
   }
 
@@ -80,13 +78,18 @@ class BookmarkContextMenuDelegateBridge :
 }
 
 - (NSMenu*)menuForBookmarkNode:(const BookmarkNode*)node {
+  // Depending on timing, the model may not yet have been loaded.
+  BookmarkModel* bookmarkModel = [bookmarkBarController_ bookmarkModel];
+  if (!bookmarkModel || !bookmarkModel->IsLoaded())
+    return nil;
+
   if (!node)
-    node = bookmarkModel_->bookmark_bar_node();
+    node = bookmarkModel->bookmark_bar_node();
 
   // Rebuild the menu if it's for a different node than the last request.
   if (!menuController_ || node != bookmarkNode_) {
     bookmarkNode_ = node;
-    [self createMenuControllers];
+    [self createMenuControllers:bookmarkModel];
   }
   return [menuController_ menu];
 }

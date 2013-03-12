@@ -278,6 +278,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     // might uses folderImage_.  So make sure it happens after
     // folderImage_ is loaded.
     [[self animatableView] setResizeDelegate:resizeDelegate];
+
+    contextMenuController_.reset(
+        [[BookmarkContextMenuCocoaController alloc]
+            initWithBookmarkBarController:self]);
   }
   return self;
 }
@@ -1963,10 +1967,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if (!model->IsLoaded())
     return;
 
-  contextMenuController_.reset(
-      [[BookmarkContextMenuCocoaController alloc]
-          initWithBookmarkBarController:self
-                          bookmarkModel:bookmarkModel_]);
   // If this is a rebuild request while we have a folder open, close it.
   // TODO(mrossetti): Eliminate the need for this because it causes the folder
   // menu to disappear after a cut/copy/paste/delete change.
