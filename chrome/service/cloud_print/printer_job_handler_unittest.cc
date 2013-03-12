@@ -656,7 +656,8 @@ MockPrintSystem::MockPrintSystem()
 
 // This test simulates an end-to-end printing of a document
 // but tests only non-failure cases.
-TEST_F(PrinterJobHandlerTest, HappyPathTest) {
+// Disabled - http://crbug.com/184245
+TEST_F(PrinterJobHandlerTest, DISABLED_HappyPathTest) {
   factory_.SetFakeResponse(JobListURI(kJobFetchReasonStartup),
                            JobListResponse(1), true);
   factory_.SetFakeResponse(JobListURI(kJobFetchReasonQueryMore),
