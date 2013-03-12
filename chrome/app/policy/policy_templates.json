@@ -1323,7 +1323,7 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
-          If you leave this policy not set any server will be accepted for integrated authentication.''',
+          If you leave this policy not set Chrome will try to detect if a server is on the Intranet and only then will it respond to IWA requests.  If a server is detected as Internet then IWA requests from it will be ignored by Chrome.''',
         },
         {
           'name': 'AuthNegotiateDelegateWhitelist',
@@ -1341,7 +1341,7 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
-          If you leave this policy not set any server will be accepted for integrated authentication.''',
+          If you leave this policy not set Chrome will not delegate user credentials even if a server is detected as Intranet.''',
         },
         {
           'name': 'GSSAPILibraryName',
