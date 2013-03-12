@@ -25,7 +25,7 @@ class AudioStreamIndicator
                                int stream_id,
                                bool playing);
 
-  // This method should be called on the UI thread.
+  // This method should be called on the IO thread.
   bool IsPlayingAudio(content::WebContents* contents);
 
  private:
