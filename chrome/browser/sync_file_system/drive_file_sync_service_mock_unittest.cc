@@ -356,7 +356,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         &sync_service_->origin_to_changes_map_[url.origin()];
     (*path_to_change)[url.path()] = DriveFileSyncService::RemoteChange(
         changestamp, resource_id, md5_checksum,
-        sync_type, url, file_change,
+        base::Time(), sync_type, url, file_change,
         inserted_to_queue.first);
   }
 
@@ -458,7 +458,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
       const std::string& remote_file_md5) {
     return sync_service_->AppendRemoteChangeInternal(
         origin, path, is_deleted, resource_id,
-        changestamp, remote_file_md5,
+        changestamp, remote_file_md5, base::Time(),
         DriveFileSyncService::REMOTE_SYNC_TYPE_INCREMENTAL);
   }
 

@@ -691,7 +691,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
 
   // If remote file's hash value is different from the expected one, conflict
   // might have occurred.
-  if (remote_file_md5 != entry->file_md5()) {
+  if (!remote_file_md5.empty() && remote_file_md5 != entry->file_md5()) {
     DVLOG(2) << "Conflict detected before uploading existing file";
     callback.Run(google_apis::HTTP_CONFLICT, std::string(), std::string());
     return;

@@ -151,6 +151,7 @@ class DriveFileSyncService
     int64 changestamp;
     std::string resource_id;
     std::string md5_checksum;
+    base::Time updated_time;
     RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
     FileChange change;
@@ -160,6 +161,7 @@ class DriveFileSyncService
     RemoteChange(int64 changestamp,
                  const std::string& resource_id,
                  const std::string& md5_checksum,
+                 const base::Time& updated_time,
                  RemoteSyncType sync_type,
                  const fileapi::FileSystemURL& url,
                  const FileChange& change,
@@ -198,6 +200,9 @@ class DriveFileSyncService
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
     LOCAL_SYNC_OPERATION_FAIL,
   };
+
+  typedef base::Callback<void(const base::Time& time,
+                              SyncStatusCode status)> UpdatedTimeCallback;
 
   DriveFileSyncService(Profile* profile,
                        const base::FilePath& base_dir,
@@ -253,6 +258,15 @@ class DriveFileSyncService
       scoped_ptr<ApplyLocalChangeParam> param,
       google_apis::GDataErrorCode error);
   void HandleConflictForLocalSync(
+      scoped_ptr<ApplyLocalChangeParam> param);
+  void ResolveConflictForLocalSync(
+      scoped_ptr<ApplyLocalChangeParam> param,
+      const base::Time& remote_updated_time,
+      SyncStatusCode status);
+  void StartOverLocalSync(
+      scoped_ptr<ApplyLocalChangeParam> param,
+      SyncStatusCode status);
+  void ResolveConflictToRemoteForLocalSync(
       scoped_ptr<ApplyLocalChangeParam> param);
 
   void DidInitializeMetadataStore(scoped_ptr<TaskToken> token,
@@ -335,6 +349,15 @@ class DriveFileSyncService
   void FinalizeRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param,
       SyncStatusCode status);
+  void HandleConflictForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      const base::Time& remote_updated_time,
+      SyncStatusCode status);
+  void ResolveConflictToLocalForRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param);
+  void StartOverRemoteSync(
+      scoped_ptr<ProcessRemoteChangeParam> param,
+      SyncStatusCode status);
 
   // Returns true if |pending_changes_| was updated.
   bool AppendRemoteChange(const GURL& origin,
@@ -350,9 +373,19 @@ class DriveFileSyncService
                                   const std::string& resource_id,
                                   int64 changestamp,
                                   const std::string& remote_file_md5,
+                                  const base::Time& updated_time,
                                   RemoteSyncType sync_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
+
+  void MarkConflict(
+      const fileapi::FileSystemURL& url,
+      DriveMetadata* drive_metadata,
+      const SyncStatusCallback& callback);
+  void DidGetRemoteFileMetadataForRemoteUpdatedTime(
+      const UpdatedTimeCallback& callback,
+      SyncStatusCode status,
+      const SyncFileMetadata& metadata);
 
   // This returns false if no change is found for the |url|.
   bool GetPendingChangeForFileSystemURL(const fileapi::FileSystemURL& url,
