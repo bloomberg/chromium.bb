@@ -73,7 +73,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include immediate_fields_parsing_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include relative_fields_actions
+  include relative_fields_decoder_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include relative_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

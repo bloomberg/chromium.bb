@@ -56,24 +56,8 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include immediate_fields_parsing_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  # rel8 actions are used in relative jumps with 8-bit offset.
-  action rel8_operand {
-    Rel8Operand(current_position + 1, data, jump_dests, size,
-                &instruction_info_collected);
-  }
-  # rel16 actions are used in relative jums with 16-bit offset.
-  #
-  # Such instructions should not be included in the validator's DFA, but we can
-  # not just exlude them because they are refenced in relative_fields_parsing
-  # ragel machine.  Ensure compilations error in case of accidental usage.
-  action rel16_operand {
-    #error rel16_operand should never be used in nacl
-  }
-  # rel32 actions are used in relative calls and jumps with 32-bit offset.
-  action rel32_operand {
-    Rel32Operand(current_position + 1, data, jump_dests, size,
-                 &instruction_info_collected);
-  }
+  include relative_fields_validator_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include relative_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include cpuid_actions

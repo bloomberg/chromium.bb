@@ -791,7 +791,7 @@
 }%%
 
 %%{
-  machine relative_fields_actions;
+  machine relative_fields_decoder_actions;
 
   action rel8_operand {
     SET_MODRM_BASE(REG_RIP);
@@ -813,6 +813,30 @@
     SET_MODRM_SCALE(0);
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(current_position - 3);
+  }
+}%%
+
+%%{
+  machine relative_fields_validator_actions;
+
+  # rel8 actions are used in relative jumps with 8-bit offset.
+  action rel8_operand {
+    Rel8Operand(current_position + 1, data, jump_dests, size,
+                &instruction_info_collected);
+  }
+
+  # rel16 actions are used in relative jumps with 16-bit offset.
+  # Such instructions should not be included in the validator's DFA, but we can
+  # not just exlude them because they are refenced in relative_fields_parsing
+  # ragel machine.  Ensure compilations error in case of accidental usage.
+  action rel16_operand {
+    #error rel16_operand should never be used in nacl
+  }
+
+  # rel32 actions are used in relative calls and jumps with 32-bit offset.
+  action rel32_operand {
+    Rel32Operand(current_position + 1, data, jump_dests, size,
+                 &instruction_info_collected);
   }
 }%%
 
