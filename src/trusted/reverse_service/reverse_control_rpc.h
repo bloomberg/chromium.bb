@@ -20,5 +20,7 @@
 #define NACL_REVERSE_CONTROL_POST_MESSAGE     "post_message:C:i"
 #define NACL_REVERSE_CONTROL_CREATE_PROCESS   "create_process::ihh"
 #define NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE  "request_quota_for_write:Cll:l"
+#define NACL_REVERSE_CONTROL_CREATE_PROCESS_INTERLOCKED \
+  "create_process_interlocked::hhi"
 
 #endif

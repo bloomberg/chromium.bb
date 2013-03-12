@@ -8,11 +8,15 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -53,6 +57,11 @@ class ReverseEmulate : public nacl::ReverseInterface {
   virtual int CreateProcess(nacl::DescWrapper** out_sock_addr,
                             nacl::DescWrapper** out_app_addr);
 
+  virtual void CreateProcessFunctorResult(
+      nacl::CreateProcessFunctorInterface* functor);
+
+  virtual void FinalizeProcess(int32_t pid);
+
   // Request quota for a write to a file.
   virtual int64_t RequestQuotaForWrite(nacl::string file_id,
                                        int64_t offset,
@@ -64,6 +73,14 @@ class ReverseEmulate : public nacl::ReverseInterface {
   }
 
  private:
+  int32_t ReserveProcessSlot();
+  void SaveToProcessSlot(int32_t pid,
+                         nacl::SelLdrLauncherStandalone *launcher);
+  bool FreeProcessSlot(int32_t pid);
+
+  NaClMutex mu_;
+  std::vector<std::pair<bool, nacl::SelLdrLauncherStandalone*> > subprocesses_;
+
   NACL_DISALLOW_COPY_AND_ASSIGN(ReverseEmulate);
 };
 
@@ -74,17 +91,6 @@ typedef std::map<nacl::string, string> KeyToFileMap;
 KeyToFileMap g_key_to_file;
 
 nacl::scoped_ptr_refcount<nacl::ReverseService> g_reverse_service;
-
-typedef std::map<NaClHandle, nacl::SelLdrLauncherStandalone*>
-  HandleToLauncherMap;
-
-/*
- * TODO(phosek): Rather than using global ctor, SelLdrLauncher shall inherit
- * from RefCountBase class and we shall use nacl::scoped_ptr_refcount to
- * automatically manage the reference and dispose it once it's no longer
- * being used (http://code.google.com/p/nativeclient/issues/detail?id=3050).
- */
-HandleToLauncherMap g_handle_to_launcher;
 
 /*
  * TODO(phosek): These variables should be instance variables of Reverse
@@ -144,7 +150,9 @@ bool ReverseEmulateInit(NaClSrpcChannel* command_channel,
 
 void ReverseEmulateFini() {
   CHECK(g_reverse_service != NULL);
+  NaClLog(1, "Waiting for service threads to exit...\n");
   g_reverse_service->WaitForServiceThreadsToExit();
+  NaClLog(1, "...service threads done\n");
   g_reverse_service.reset(NULL);
   NaClMutexDtor(&g_exit_mu);
   NaClCondVarDtor(&g_exit_cv);
@@ -185,21 +193,29 @@ bool HandlerWaitForExit(NaClCommandLoop* ncl,
   UNREFERENCED_PARAMETER(ncl);
   UNREFERENCED_PARAMETER(args);
 
-  NaClXMutexLock(&g_exit_mu);
+  nacl::MutexLocker take(&g_exit_mu);
   while (!g_exited) {
     NaClXCondVarWait(&g_exit_cv, &g_exit_mu);
   }
-  NaClXMutexUnlock(&g_exit_mu);
 
   return true;
 }
 
 ReverseEmulate::ReverseEmulate() {
   NaClLog(1, "ReverseEmulate::ReverseEmulate\n");
+  NaClXMutexCtor(&mu_);
 }
 
 ReverseEmulate::~ReverseEmulate() {
   NaClLog(1, "ReverseEmulate::~ReverseEmulate\n");
+  for (size_t ix = 0; ix < subprocesses_.size(); ++ix) {
+    if (subprocesses_[ix].first) {
+      delete subprocesses_[ix].second;
+      subprocesses_[ix].second = NULL;
+      subprocesses_[ix].first = false;
+    }
+  }
+  NaClMutexDtor(&mu_);
 }
 
 void ReverseEmulate::Log(nacl::string message) {
@@ -248,56 +264,119 @@ bool ReverseEmulate::CloseManifestEntry(int32_t desc) {
 
 void ReverseEmulate::ReportCrash() {
   NaClLog(1, "ReverseEmulate::ReportCrash\n");
-  NaClXMutexLock(&g_exit_mu);
+  nacl::MutexLocker take(&g_exit_mu);
   g_exited = true;
   NaClXCondVarBroadcast(&g_exit_cv);
-  NaClXMutexUnlock(&g_exit_mu);
 }
 
 void ReverseEmulate::ReportExitStatus(int exit_status) {
   NaClLog(1, "ReverseEmulate::ReportExitStatus (exit_status=%d)\n",
           exit_status);
-  NaClXMutexLock(&g_exit_mu);
+  nacl::MutexLocker take(&g_exit_mu);
   g_exited = true;
   NaClXCondVarBroadcast(&g_exit_cv);
-  NaClXMutexUnlock(&g_exit_mu);
 }
 
 void ReverseEmulate::DoPostMessage(nacl::string message) {
   NaClLog(1, "ReverseEmulate::DoPostMessage (message=%s)\n", message.c_str());
 }
 
+class CreateProcessBinder : public nacl::CreateProcessFunctorInterface {
+ public:
+  CreateProcessBinder(nacl::DescWrapper** out_sock_addr,
+                      nacl::DescWrapper** out_app_addr,
+                      int32_t* out_pid)
+      : sock_addr_(out_sock_addr)
+      , app_addr_(out_app_addr)
+      , pid_(out_pid) {}
+  void Results(nacl::DescWrapper* res_sock_addr,
+               nacl::DescWrapper* res_app_addr,
+               int32_t pid) {
+    if (pid >= 0) {
+      *sock_addr_ = res_sock_addr;
+      *app_addr_ = res_app_addr;
+    } else {
+      *sock_addr_ = NULL;
+      *app_addr_ = NULL;
+    }
+    *pid_ = pid;
+  }
+ private:
+  nacl::DescWrapper** sock_addr_;
+  nacl::DescWrapper** app_addr_;
+  int32_t* pid_;
+};
+
+// DEPRECATED
 int ReverseEmulate::CreateProcess(nacl::DescWrapper** out_sock_addr,
                                   nacl::DescWrapper** out_app_addr) {
   NaClLog(1, "ReverseEmulate::CreateProcess)\n");
+
+  int32_t pid;
+
+  CreateProcessBinder binder(out_sock_addr, out_app_addr, &pid);
+  CreateProcessFunctorResult(&binder);
+  // race condition here, since we did not take a ref on *out_sock_addr etc
+  // so until the response is sent, some other thread might unref it.
+
+  return (pid < 0) ? pid : 0;
+}
+
+void ReverseEmulate::CreateProcessFunctorResult(
+    nacl::CreateProcessFunctorInterface* functor) {
+  NaClLog(1, "ReverseEmulate::CreateProcessFunctorResult)\n");
   vector<nacl::string> command_prefix;
   vector<nacl::string> sel_ldr_argv;
   vector<nacl::string> app_argv;
 
-  nacl::SelLdrLauncherStandalone* launcher =
-    new nacl::SelLdrLauncherStandalone();
+  nacl::scoped_ptr<nacl::SelLdrLauncherStandalone> launcher(
+      new nacl::SelLdrLauncherStandalone());  // should be from launcher_factory
   if (!launcher->StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL,
             "ReverseEmulate::CreateProcess: failed to launch sel_ldr\n");
   }
-  g_handle_to_launcher[launcher->child_process()] = launcher;
-
   if (!launcher->ConnectBootstrapSocket()) {
     NaClLog(LOG_ERROR,
             "ReverseEmulate::CreateProcess:"
             " failed to connect boostrap socket\n");
-    return -NACL_ABI_EAGAIN;
+    functor->Results(NULL, NULL, -NACL_ABI_EAGAIN);
+    return;
   }
 
   if (!launcher->RetrieveSockAddr()) {
     NaClLog(LOG_ERROR,
             "ReverseEmulate::CreateProcess: failed to obtain socket addr\n");
-    return -NACL_ABI_EAGAIN;
+    functor->Results(NULL, NULL, -NACL_ABI_EAGAIN);
+    return;
   }
-  *out_sock_addr = launcher->socket_addr();
-  *out_app_addr = launcher->socket_addr();
+  // We use a 2-phase allocate-then-store scheme so that the process
+  // slot does not actually hold a copy of the launcher object pointer
+  // while we might need to use launcher->secure_sock_addr() or
+  // launcher->socket_addr().  This is because otherwise the untrusted
+  // code, by guessing pid values, could invoke FinalizeProcess to
+  // cause the launcher to be deleted, causing the
+  // launcher->socket_addr() etc expressions to use deallocated
+  // memory.
+  //
+  // This race condition is not currently a real threat.  We use
+  // ReverseEmulate with sel_universal, under which we run tests.  All
+  // tests are written by the NaCl team and are not malicious.
+  // However, this may change in the future, e.g., use sel_universal
+  // to analyze in-the-wild NaCl modules.
+  int32_t pid = ReserveProcessSlot();
+  if (pid < 0) {
+    functor->Results(NULL, NULL, -NACL_ABI_EAGAIN);
+  }
 
-  return 0;
+  functor->Results(launcher->secure_socket_addr(),
+                   launcher->socket_addr(), pid);
+  SaveToProcessSlot(pid, launcher.release());
+}
+
+void ReverseEmulate::FinalizeProcess(int32_t pid) {
+  if (!FreeProcessSlot(pid)) {
+    NaClLog(LOG_WARNING, "FinalizeProcess(%d) failed\n", pid);
+  }
 }
 
 int64_t ReverseEmulate::RequestQuotaForWrite(nacl::string file_id,
@@ -307,4 +386,60 @@ int64_t ReverseEmulate::RequestQuotaForWrite(nacl::string file_id,
           NACL_PRId64", length=%"NACL_PRId64")\n", file_id.c_str(), offset,
           length);
   return length;
+}
+
+int32_t ReverseEmulate::ReserveProcessSlot() {
+  nacl::MutexLocker take(&mu_);
+
+  if (subprocesses_.size() > INT32_MAX) {
+    return -NACL_ABI_EAGAIN;
+  }
+  int32_t pid;
+  int32_t container_size = static_cast<int32_t>(subprocesses_.size());
+  for (pid = 0; pid < container_size; ++pid) {
+    if (!subprocesses_[pid].first) {
+      break;
+    }
+  }
+  if (pid == container_size) {
+    // need to grow
+    if (pid == INT32_MAX) {
+      // but cannot!
+      return -NACL_ABI_EAGAIN;
+    }
+    subprocesses_.resize(container_size + 1);
+  }
+  subprocesses_[pid].first = true;   // allocated/reserved...
+  subprocesses_[pid].second = NULL;  // ... but still not yet in use
+  return pid;
+}
+
+void ReverseEmulate::SaveToProcessSlot(
+    int32_t pid,
+    nacl::SelLdrLauncherStandalone *launcher) {
+  nacl::MutexLocker take(&mu_);
+
+  CHECK(subprocesses_[pid].first);
+  CHECK(subprocesses_[pid].second == NULL);
+
+  subprocesses_[pid].second = launcher;
+}
+
+bool ReverseEmulate::FreeProcessSlot(int32_t pid) {
+  if (pid < 0) {
+    return false;
+  }
+  nacl::MutexLocker take(&mu_);
+  CHECK(subprocesses_.size() <= INT32_MAX);
+  int32_t container_size = static_cast<int32_t>(subprocesses_.size());
+  if (pid > container_size) {
+    return false;
+  }
+  if (!subprocesses_[pid].first || subprocesses_[pid].second == NULL) {
+    return false;
+  }
+  subprocesses_[pid].first = false;
+  delete subprocesses_[pid].second;
+  subprocesses_[pid].second = NULL;
+  return true;
 }

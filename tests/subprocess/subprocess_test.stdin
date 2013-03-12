@@ -1,0 +1,4 @@
+reverse_service_add_manifest_mapping subprogram ${subprogram}
+reverse_service_add_manifest_mapping irt ${irt_nexe}
+rpc start_test * i(-1)
+rpc test_status * i(-3) i(-4)

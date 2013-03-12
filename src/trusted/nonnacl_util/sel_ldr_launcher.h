@@ -148,7 +148,7 @@ class SelLdrLauncherBase {
 class SelLdrLauncherStandalone : public SelLdrLauncherBase {
  public:
   SelLdrLauncherStandalone();
-  ~SelLdrLauncherStandalone();
+  virtual ~SelLdrLauncherStandalone();
 
   virtual bool Start(const char* url);
 
@@ -166,12 +166,18 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
   // |application_argv| specifies the arguments to be passed to the nexe.
   // If subprocess creation fails, returns false and both child_process_ and
   // channel_ are set to NACL_INVALID_HANDLE.
-  bool StartViaCommandLine(const std::vector<nacl::string>& prefix,
-                           const std::vector<nacl::string>& sel_ldr_argv,
-                           const std::vector<nacl::string>& application_argv);
+  virtual bool StartViaCommandLine(
+      const std::vector<nacl::string>& prefix,
+      const std::vector<nacl::string>& sel_ldr_argv,
+      const std::vector<nacl::string>& application_argv);
 
   // Returns the child process handle.
   NaClHandle child_process() const { return child_process_; }
+
+ protected:
+  // On Windows, child_process_ is a handle for the process.  On Unix,
+  // child_process_ is a process ID.
+  NaClHandle child_process_;
 
  private:
   // Builds a command line out of the prepopulated args.
@@ -198,10 +204,6 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
   // Kill the child process.  The channel() remains valid, but nobody
   // is talking on the other end.  Returns true if successful.
   bool KillChildProcess();
-
-  // On Windows, child_process_ is a handle for the process.  On Unix,
-  // child_process_ is a process ID.
-  NaClHandle child_process_;
 
   // The following members are used to initialize and build the command line.
   // The detailed magic is in BuildCommandLine() but roughly we run

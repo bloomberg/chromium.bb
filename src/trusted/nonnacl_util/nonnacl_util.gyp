@@ -20,9 +20,31 @@
     'target_conditions': [
       ['target_base=="sel_ldr_launcher"', {
         'sources': [
+          'launcher_factory.cc',
           'sel_ldr_launcher.h',
           'sel_ldr_launcher_base.cc',
           'sel_ldr_launcher_standalone.cc',
+        ],
+        'conditions':[
+          ['OS=="win"', {
+            'sources': [
+              'win/sel_ldr_launcher_win.cc',
+            ],
+          }],
+          ['OS=="linux"', {
+            'sources': [
+              'posix/sel_ldr_launcher_posix.cc',
+              'posix/sel_ldr_launcher_zygote_posix.cc',
+              'posix/get_plugin_dirname.cc',
+            ],
+          }],
+          ['OS=="mac"', {
+            'sources': [
+              'posix/sel_ldr_launcher_posix.cc',
+              'posix/sel_ldr_launcher_zygote_posix.cc',
+              'osx/get_plugin_dirname.mm',
+            ],
+          }]
         ],
         'cflags!': [
           '-Wextra',
@@ -47,6 +69,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
+        '<(DEPTH)/native_client/src/shared/serialization/serialization.gyp:serialization',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:env_cleanser',
@@ -78,6 +101,11 @@
             'win_target': 'x64',
           },
           'dependencies': [
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc64',
+            '<(DEPTH)/native_client/src/shared/serialization/serialization.gyp:serialization64',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:env_cleanser64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:nacl_error_code64',
           ],

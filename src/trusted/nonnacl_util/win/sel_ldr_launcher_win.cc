@@ -125,7 +125,7 @@ bool SelLdrLauncherStandalone::StartViaCommandLine(
   startup_info.cb = sizeof startup_info;
   memset(&process_infomation, 0, sizeof process_infomation);
   if (!CreateProcessA(NULL, const_cast<char*>(str.c_str()),
-                      NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL,
+                      NULL, NULL, TRUE, 0, NULL, NULL,
                       &startup_info,
                       &process_infomation)) {
     return false;

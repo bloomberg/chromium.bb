@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
@@ -30,6 +31,9 @@
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+
+#include "native_client/src/trusted/nonnacl_util/launcher_factory.h"
+#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher_zygote.h"
 
 using std::ifstream;
 using std::map;
@@ -221,15 +225,25 @@ int raii_main(int argc, char* argv[]) {
     ss_stderr << "2:" << fd;
     sel_ldr_argv.push_back(ss_stderr.str());
   }
+  nacl::Zygote zygote;
+  if (!zygote.Init()) {
+    NaClLog(LOG_FATAL, "sel_universal: cannot spawn zygote process\n");
+  }
+  NaClLog(4, "sel_universal: zygote.Init() okay\n");
+  nacl::SelLdrLauncherStandaloneFactory launcher_factory(&zygote);
+  NaClLog(4, "sel_universal: launcher_factory ctor() okay\n");
+
   // Start sel_ldr with the given application and arguments.
-  nacl::SelLdrLauncherStandalone launcher;
+  nacl::SelLdrLauncherStandalone* launcher =
+      launcher_factory.MakeSelLdrLauncherStandalone();
+  NaClLog(4, "sel_universal: MakeSelLdrLauncherStandalone() okay\n");
   nacl::DescWrapperFactory factory;  // DescWrapper "namespace"
 
-  if (!launcher.StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
+  if (!launcher->StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 
-  if (!launcher.SetupCommand(&command_channel)) {
+  if (!launcher->SetupCommand(&command_channel)) {
     NaClLog(LOG_ERROR, "sel_universal: set up command failed\n");
     exit(1);
   }
@@ -240,7 +254,7 @@ int raii_main(int argc, char* argv[]) {
     exit(1);
   }
 
-  if (!launcher.LoadModule(&command_channel, host_file)) {
+  if (!launcher->LoadModule(&command_channel, host_file)) {
     NaClLog(LOG_ERROR, "sel_universal: load module failed\n");
     exit(1);
   }
@@ -254,7 +268,7 @@ int raii_main(int argc, char* argv[]) {
       exit(1);
     }
 
-    if (!launcher.LoadIrt(&command_channel, irt)) {
+    if (!launcher->LoadIrt(&command_channel, irt)) {
       NaClLog(LOG_ERROR, "sel_universal: load irt failed\n");
       exit(1);
     }
@@ -263,17 +277,17 @@ int raii_main(int argc, char* argv[]) {
   }
 
   if (uses_reverse_service) {
-    ReverseEmulateInit(&command_channel, &launcher);
+    ReverseEmulateInit(&command_channel, launcher);  // launcher factory
   }
 
-  if (!launcher.StartModule(&command_channel)) {
+  if (!launcher->StartModule(&command_channel)) {
     NaClLog(LOG_ERROR,
             "sel_universal: start module failed\n");
     exit(1);
   }
 
   if (app_channel) {
-    if (!launcher.SetupAppChannel(&channel)) {
+    if (!launcher->SetupAppChannel(&channel)) {
       NaClLog(LOG_ERROR,
               "sel_universal: set up app channel failed\n");
       exit(1);
@@ -282,7 +296,7 @@ int raii_main(int argc, char* argv[]) {
 
   NaClCommandLoop loop(channel.client,
                        &channel,
-                       launcher.socket_addr()->desc());
+                       launcher->socket_addr()->desc());
 
   // Sample built-in commands accepted by sel_universal:
   //

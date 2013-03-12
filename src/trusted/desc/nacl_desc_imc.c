@@ -60,7 +60,9 @@ int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
 static void NaClDescImcConnectedDescDtor(struct NaClRefCount *vself) {
   struct NaClDescImcConnectedDesc *self = ((struct NaClDescImcConnectedDesc *)
                                            vself);
-  (void) NaClClose(self->h);
+  if (self->h != NACL_INVALID_HANDLE) {
+    (void) NaClClose(self->h);
+  }
   self->h = NACL_INVALID_HANDLE;
   vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
   (*vself->vtbl->Dtor)(vself);

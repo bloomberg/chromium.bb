@@ -152,10 +152,12 @@ void ManifestTest(NaClSrpcRpc *rpc,
       NaClSrpcInvokeBySignature(&ns_channel, NACL_NAME_SERVICE_LOOKUP,
                                 "ManifestNameService", O_RDWR,
                                 &status, &manifest)) {
-    fprintf(stderr, "nameservice lookup failed, status %d\n", status);
+    fprintf(stderr, "nameservice lookup RPC failed\n");
   }
   StringBufferPrintf(&sb, "Got manifest descriptor %d\n", manifest);
-  if (-1 != manifest) {
+  if (-1 == manifest) {
+    fprintf(stderr, "nameservice lookup failed: status %d\n", status);
+  } else {
     /* connect to manifest name server */
     int manifest_conn;
     struct NaClSrpcChannel manifest_channel;

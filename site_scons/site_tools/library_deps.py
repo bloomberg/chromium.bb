@@ -9,6 +9,15 @@
 # list of dependent libraries that must be included after that library, in
 # the list of libraries.
 LIBRARY_DEPENDENCIES_DEFAULT = {
+    'arm_validator_core': [
+        'cpu_features',
+        ],
+    'debug_stub': [
+        'sel',
+        ],
+    'nonnacl_util': [
+        'serialization',
+        ],
     'platform': [
         'gio',
         ],
@@ -31,9 +40,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'gio',
         'validators',
         ],
-    'debug_stub': [
-        'sel',
-        ],
     'sel_main_chrome': [
         'sel',
         'debug_stub',
@@ -47,9 +53,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         ],
     'testrunner_browser': [
         'ppapi',
-        ],
-    'arm_validator_core': [
-        'cpu_features',
         ],
     }
 

@@ -145,8 +145,8 @@ static void NaClKernelServiceCreateProcessRpc(
   struct NaClKernelService  *nksp =
     (struct NaClKernelService *) rpc->channel->server_instance_data;
   int                       status;
-  struct NaClDesc           *sock_addr;
-  struct NaClDesc           *app_addr;
+  struct NaClDesc           *sock_addr = NULL;
+  struct NaClDesc           *app_addr = NULL;
   UNREFERENCED_PARAMETER(in_args);
 
   NaClLog(4, "NaClKernelServiceCreateProcessRpc: creating process\n");
@@ -165,6 +165,10 @@ static void NaClKernelServiceCreateProcessRpc(
           status, (uintptr_t) sock_addr, (uintptr_t) app_addr);
   rpc->result = NACL_SRPC_RESULT_OK;
   (*done_cls->Run)(done_cls);
+  if (0 == status) {
+    NaClDescUnref(sock_addr);
+    NaClDescUnref(app_addr);
+  }
 }
 
 struct NaClSrpcHandlerDesc const kNaClKernelServiceHandlers[] = {

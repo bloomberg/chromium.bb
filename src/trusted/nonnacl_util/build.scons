@@ -14,6 +14,7 @@ if env.Bit('mac'):
     env.FilterOut(CCFLAGS=['-pedantic'])
 
 nonnacl_util_inputs = [
+  'launcher_factory.cc',
   'sel_ldr_launcher_base.cc',
   'sel_ldr_launcher_standalone.cc',
 ]
@@ -25,11 +26,13 @@ if env.Bit('windows'):
 elif env.Bit('linux'):
   nonnacl_util_inputs += [
       'posix/sel_ldr_launcher_posix.cc',
+      'posix/sel_ldr_launcher_zygote_posix.cc',
       'posix/get_plugin_dirname.cc',
   ]
 elif env.Bit('mac'):
   nonnacl_util_inputs += [
       'posix/sel_ldr_launcher_posix.cc',
+      'posix/sel_ldr_launcher_zygote_posix.cc',
       'osx/get_plugin_dirname.mm',
   ]
 

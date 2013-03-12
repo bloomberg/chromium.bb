@@ -742,6 +742,8 @@ tests_to_disable_qemu = set([
     # http://code.google.com/p/nativeclient/issues/detail?id=2142
     'run_nacl_semaphore_test',
     'run_nacl_tls_unittest',
+    # subprocess needs to also have qemu prefix, which isn't supported
+    'run_subprocess_test',
     # The next 2 tests seem flaky on QEMU
     'run_srpc_manifest_file_test',
     'run_srpc_message_untrusted_test',
@@ -3196,6 +3198,7 @@ irt_variant_tests = [
     'tests/srpc_message/nacl.scons',
     'tests/stack_alignment/nacl.scons',
     'tests/stubout_mode/nacl.scons',
+    'tests/subprocess/nacl.scons',
     'tests/sysbasic/nacl.scons',
     'tests/syscall_return_regs/nacl.scons',
     'tests/syscall_return_sandboxing/nacl.scons',
