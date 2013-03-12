@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -32,6 +35,42 @@ void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
     MessageLoop::current()->Quit();
 }
 
+class ProfileRemovalObserver : public ProfileInfoCacheObserver {
+ public:
+  ProfileRemovalObserver() {
+    g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(
+        this);
+  }
+
+  virtual ~ProfileRemovalObserver() {
+    g_browser_process->profile_manager()->GetProfileInfoCache().RemoveObserver(
+        this);
+  }
+
+  std::string last_used_profile_name() { return last_used_profile_name_; }
+
+  // ProfileInfoCacheObserver overrides:
+  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE {}
+  virtual void OnProfileWillBeRemoved(
+      const base::FilePath& profile_path) OVERRIDE {
+    last_used_profile_name_ = g_browser_process->local_state()->GetString(
+        prefs::kProfileLastUsed);
+  }
+  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
+                                   const string16& profile_name) OVERRIDE {}
+  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
+                                    const string16& old_profile_name)
+      OVERRIDE {}
+  virtual void OnProfileAvatarChanged(const base::FilePath& profile_path)
+      OVERRIDE {}
+
+ private:
+  std::string last_used_profile_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileRemovalObserver);
+};
+
+
 } // namespace
 
 // This file contains tests for the ProfileManager that require a heavyweight
@@ -43,10 +82,12 @@ class ProfileManagerBrowserTest : public InProcessBrowserTest {
 };
 
 #if defined(OS_MACOSX)
+
 // Delete single profile and make sure a new one is created.
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  ProfileRemovalObserver observer;
 
   // We should start out with 1 profile.
   ASSERT_EQ(cache.GetNumberOfProfiles(), 1U);
@@ -68,19 +109,18 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   // Make sure that last used profile preference is set correctly.
   Profile* last_used = ProfileManager::GetLastUsedProfile();
   EXPECT_EQ(new_profile_path, last_used->GetPath());
+
+  // Make sure the last used profile was set correctly before the notification
+  // was sent.
+  std::string last_used_profile_name =
+      last_used->GetPath().BaseName().MaybeAsASCII();
+  EXPECT_EQ(last_used_profile_name, observer.last_used_profile_name());
 }
 
 // Delete all profiles in a multi profile setup and make sure a new one is
 // created.
-
-#if defined(OS_MACOSX)
 // Crashes/CHECKs. See crbug.com/104851
-#define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
-#else
-#define MAYBE_DeleteAllProfiles DeleteAllProfiles
-#endif
-
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
 
@@ -119,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   Profile* last_used = ProfileManager::GetLastUsedProfile();
   EXPECT_EQ(new_profile_path, last_used->GetPath());
 }
-#endif // OS_MACOSX
+#endif  // OS_MACOSX
 
 // Times out (http://crbug.com/159002)
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,

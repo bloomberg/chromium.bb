@@ -995,9 +995,14 @@ void ProfileManager::ScheduleProfileForDeletion(
 
   // If we're deleting the last profile, then create a new profile in its
   // place.
+  PrefService* local_state = g_browser_process->local_state();
   ProfileInfoCache& cache = GetProfileInfoCache();
   if (cache.GetNumberOfProfiles() == 1) {
     base::FilePath new_path = GenerateNextProfileDirectoryPath();
+    // Make sure the last used profile path is pointing at it. This way the
+    // correct last used profile is set for any notification observers.
+    local_state->SetString(
+        prefs::kProfileLastUsed, new_path.BaseName().MaybeAsASCII());
 
     // TODO(robertshield): This desktop type needs to come from the invoker,
     // currently that involves plumbing this through web UI.
@@ -1009,19 +1014,18 @@ void ProfileManager::ScheduleProfileForDeletion(
                        string16(),
                        string16(),
                        false);
-  }
-
-  // Update the last used profile pref before closing browser windows. This way
-  // the correct last used profile is set for any notification observers.
-  PrefService* local_state = g_browser_process->local_state();
-  std::string last_profile = local_state->GetString(prefs::kProfileLastUsed);
-  if (profile_dir.BaseName().MaybeAsASCII() == last_profile) {
-    for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-      base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
-      if (cur_path != profile_dir) {
-        local_state->SetString(
-            prefs::kProfileLastUsed, cur_path.BaseName().MaybeAsASCII());
-        break;
+  } else {
+    // Update the last used profile pref before closing browser windows. This
+    // way the correct last used profile is set for any notification observers.
+    std::string last_profile = local_state->GetString(prefs::kProfileLastUsed);
+    if (profile_dir.BaseName().MaybeAsASCII() == last_profile) {
+      for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+        base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
+        if (cur_path != profile_dir) {
+          local_state->SetString(
+              prefs::kProfileLastUsed, cur_path.BaseName().MaybeAsASCII());
+          break;
+        }
       }
     }
   }
