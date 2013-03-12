@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
+#include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -43,9 +43,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "third_party/icu/public/i18n/unicode/regex.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
@@ -67,89 +65,6 @@ const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 const int kInvalidProcessId = -1;
 
 }  // namespace
-
-// This class fetches GAIA cookie on IO thread on behalf of SigninManager which
-// only lives on the UI thread.
-class SigninManagerCookieHelper
-    : public base::RefCountedThreadSafe<SigninManagerCookieHelper> {
- public:
-  explicit SigninManagerCookieHelper(
-      net::URLRequestContextGetter* request_context_getter);
-
-  // Starts the fetching process, which will notify its completion via
-  // callback.
-  void StartFetchingGaiaCookiesOnUIThread(
-      const base::Callback<void(const net::CookieList& cookies)>& callback);
-
- private:
-  friend class base::RefCountedThreadSafe<SigninManagerCookieHelper>;
-  ~SigninManagerCookieHelper();
-
-  // Fetch the GAIA cookies. This must be called in the IO thread.
-  void FetchGaiaCookiesOnIOThread();
-
-  // Callback for fetching cookies. This must be called in the IO thread.
-  void OnGaiaCookiesFetched(const net::CookieList& cookies);
-
-  // Notifies the completion callback. This must be called in the UI thread.
-  void NotifyOnUIThread(const net::CookieList& cookies);
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  // This only mutates on the UI thread.
-  base::Callback<void(const net::CookieList& cookies)> completion_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SigninManagerCookieHelper);
-};
-
-SigninManagerCookieHelper::SigninManagerCookieHelper(
-    net::URLRequestContextGetter* request_context_getter)
-    : request_context_getter_(request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-SigninManagerCookieHelper::~SigninManagerCookieHelper() {
-}
-
-void SigninManagerCookieHelper::StartFetchingGaiaCookiesOnUIThread(
-    const base::Callback<void(const net::CookieList& cookies)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(completion_callback_.is_null());
-
-  completion_callback_ = callback;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread, this));
-}
-
-void SigninManagerCookieHelper::FetchGaiaCookiesOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  scoped_refptr<net::CookieMonster> cookie_monster =
-      request_context_getter_->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
-  if (cookie_monster) {
-    cookie_monster->GetAllCookiesForURLAsync(
-        GURL(GaiaUrls::GetInstance()->gaia_origin_url()),
-        base::Bind(&SigninManagerCookieHelper::OnGaiaCookiesFetched, this));
-  } else {
-    OnGaiaCookiesFetched(net::CookieList());
-  }
-}
-
-void SigninManagerCookieHelper::OnGaiaCookiesFetched(
-    const net::CookieList& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SigninManagerCookieHelper::NotifyOnUIThread, this, cookies));
-}
-
-void SigninManagerCookieHelper::NotifyOnUIThread(
-    const net::CookieList& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::ResetAndReturn(&completion_callback_).Run(cookies);
-}
 
 // Under the covers, we use a dummy chrome-extension ID to serve the purposes
 // outlined in the .h file comment for this string.
