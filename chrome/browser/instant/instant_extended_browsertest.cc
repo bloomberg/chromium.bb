@@ -6,6 +6,10 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -1090,4 +1094,76 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_TransientEntryRemoved) {
   const content::NavigationEntry* committed_entry =
       active_tab->GetController().GetLastCommittedEntry();
   EXPECT_TRUE(EndsWith(committed_entry->GetURL().spec(), "#q=query", true));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, RestrictedItemReadback) {
+  // Initialize Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Get a handle to the NTP and the current state of the JS.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
+  content::WebContents* preview_tab = instant()->ntp()->contents();
+  EXPECT_TRUE(preview_tab);
+
+  // Manufacture a few autocomplete results and get them down to the page.
+  std::vector<InstantAutocompleteResult> autocomplete_results;
+  for (int i = 0; i < 3; ++i) {
+    std::string description(base::StringPrintf("Test Description %d", i));
+    std::string url(base::StringPrintf("http://www.testurl%d.com", i));
+
+    InstantAutocompleteResult res;
+    res.provider = ASCIIToUTF16(AutocompleteProvider::TypeToString(
+        AutocompleteProvider::TYPE_BUILTIN));
+    res.type = ASCIIToUTF16(AutocompleteMatch::TypeToString(
+        AutocompleteMatch::SEARCH_WHAT_YOU_TYPED)),
+    res.description = ASCIIToUTF16(description);
+    res.destination_url = ASCIIToUTF16(url);
+    res.transition = content::PAGE_TRANSITION_TYPED;
+    res.relevance = 42 + i;
+
+    autocomplete_results.push_back(res);
+  }
+  instant()->overlay()->SendAutocompleteResults(autocomplete_results);
+
+  // Apparently, one needs to access nativeSuggestions before
+  // apiHandle.setRestrictedValue can work.
+  EXPECT_TRUE(ExecuteScript("var foo = apiHandle.nativeSuggestions;"));
+
+  const char kQueryString[] = "Hippos go berzerk!";
+
+  // First set the query text to a non restricted value and ensure it can be
+  // read back.
+  std::ostringstream stream;
+  stream << "apiHandle.setValue('" << kQueryString << "');";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+
+  std::string result;
+  EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
+                              "apiHandle.value",
+                              &result));
+  EXPECT_EQ(kQueryString, result);
+
+  // Set the query text to the first restricted autocomplete item.
+  int rid = 0;
+  stream.str(std::string());
+  stream << "apiHandle.setRestrictedValue(" << rid << ")";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+
+  // Expect that we now receive the empty string when reading the value back.
+  EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
+                              "apiHandle.value",
+                              &result));
+  EXPECT_EQ("", result);
+
+  // Now set the query text to a non restricted value and ensure that the
+  // visibility has been reset and the string can again be read back.
+  stream.str(std::string());
+  stream << "apiHandle.setValue('" << kQueryString << "');";
+  EXPECT_TRUE(ExecuteScript(stream.str()));
+
+  EXPECT_TRUE(GetStringFromJS(instant()->GetOverlayContents(),
+                              "apiHandle.value",
+                              &result));
+  EXPECT_EQ(kQueryString, result);
 }

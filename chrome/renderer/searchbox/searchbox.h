@@ -28,7 +28,14 @@ class SearchBox : public content::RenderViewObserver,
   virtual ~SearchBox();
 
   // Sends ChromeViewHostMsg_SetSuggestions to the browser.
+  // If |suggestions| is non-empty and the first element in |suggestions| is of
+  // type INSTANT_COMPLETE_REPLACE then this method will also update the current
+  // query text.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
+
+  // Clears the current query text, used to ensure that restricted query strings
+  // are not retained.
+  void ClearQuery();
 
   // Sends ChromeViewHostMsg_ShowInstantOverlay to the browser.
   void ShowInstantOverlay(InstantShownReason reason,
@@ -134,6 +141,13 @@ class SearchBox : public content::RenderViewObserver,
   string16 omnibox_font_;
   size_t omnibox_font_size_;
   std::vector<InstantMostVisitedItem> most_visited_items_;
+
+  // URL to Restricted Id mapping.
+  // TODO(dcblack): Unify this logic to work with both Most Visited and
+  // history suggestions.  (crbug/175768)
+  std::map<string16, int> url_to_restricted_id_map_;
+  std::map<int, string16> restricted_id_to_url_map_;
+  int last_restricted_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

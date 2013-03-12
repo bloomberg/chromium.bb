@@ -873,6 +873,9 @@ v8::Handle<v8::Value>
   std::vector<InstantSuggestion> suggestions;
   suggestions.push_back(InstantSuggestion(text, behavior, type));
   SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  // Clear the SearchBox's query text explicitly since this is a restricted
+  // value.
+  SearchBox::Get(render_view)->ClearQuery();
 
   return v8::Undefined();
 }
@@ -919,6 +922,9 @@ v8::Handle<v8::Value>
   std::vector<InstantSuggestion> suggestions;
   suggestions.push_back(InstantSuggestion(text, behavior, type));
   SearchBox::Get(render_view)->SetSuggestions(suggestions);
+  // Clear the SearchBox's query text explicitly since this is a restricted
+  // value.
+  SearchBox::Get(render_view)->ClearQuery();
 
   return v8::Undefined();
 }

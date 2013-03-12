@@ -248,6 +248,7 @@ if (!chrome.embeddedSearch) {
       this.setValue = function(text, type) {
         SetQuery(text, type);
       };
+      // Must access nativeSuggestions before calling setRestrictedValue.
       this.setRestrictedValue = function(autocompleteResultId) {
         SetQueryFromAutocompleteResult(autocompleteResultId);
       };

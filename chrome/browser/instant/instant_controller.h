@@ -198,6 +198,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ExtendedModeIsOn);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, MostVisited);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, RestrictedItemReadback);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            OmniboxTextUponFocusedCommittedSERP);

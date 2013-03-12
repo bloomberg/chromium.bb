@@ -23,7 +23,8 @@ SearchBox::SearchBox(content::RenderView* render_view)
       last_results_base_(0),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
-      omnibox_font_size_(0) {
+      omnibox_font_size_(0),
+      last_restricted_id_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -40,6 +41,10 @@ void SearchBox::SetSuggestions(
   // Explicitly allow empty vector to be sent to the browser.
   render_view()->Send(new ChromeViewHostMsg_SetSuggestions(
       render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions));
+}
+
+void SearchBox::ClearQuery() {
+  query_.clear();
 }
 
 void SearchBox::ShowInstantOverlay(InstantShownReason reason,
