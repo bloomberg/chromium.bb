@@ -1396,7 +1396,9 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 }
 
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
-  return chrome::search::IsInstantNTP(source);
+  const content::NavigationEntry* entry =
+      source->GetController().GetActiveEntry();
+  return chrome::search::NavEntryIsInstantNTP(source, entry);
 }
 
 void Browser::SetFocusToLocationBar(bool select_all) {
