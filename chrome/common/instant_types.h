@@ -152,12 +152,17 @@ struct ThemeBackgroundInfo {
   uint16 image_height;
 };
 
-// A most visited item.
-struct MostVisitedItem {
-  // URL of the most visited page.
+struct InstantMostVisitedItem {
+  InstantMostVisitedItem() : most_visited_item_id(0) {}
+
+  // A private identifier used on the browser side when retrieving assets.
+  uint64 most_visited_item_id;
+
+  // The URL of the Most Visited item.
   GURL url;
 
-  // Title of the most visited page.
+  // The title of the Most Visited page.  May be empty, in which case the |url|
+  // is used as the title.
   string16 title;
 };
 

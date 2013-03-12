@@ -90,10 +90,10 @@ class InstantPage : public content::WebContentsObserver {
                                WindowOpenDisposition disposition) = 0;
 
     // Called when the SearchBox wants to delete a Most Visited item.
-    virtual void DeleteMostVisitedItem(const GURL& url) = 0;
+    virtual void DeleteMostVisitedItem(uint64 most_visited_item_id) = 0;
 
     // Called when the SearchBox wants to undo a Most Visited deletion.
-    virtual void UndoMostVisitedDeletion(const GURL& url) = 0;
+    virtual void UndoMostVisitedDeletion(uint64 most_visited_item_id) = 0;
 
     // Called when the SearchBox wants to undo all Most Visited deletions.
     virtual void UndoAllMostVisitedDeletions() = 0;
@@ -171,7 +171,7 @@ class InstantPage : public content::WebContentsObserver {
   void KeyCaptureChanged(bool is_key_capture_enabled);
 
   // Tells the page about new Most Visited data.
-  void SendMostVisitedItems(const std::vector<MostVisitedItem>& items);
+  void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
 
  protected:
   explicit InstantPage(Delegate* delegate);
@@ -228,8 +228,8 @@ class InstantPage : public content::WebContentsObserver {
                            const GURL& url,
                            content::PageTransition transition,
                            WindowOpenDisposition disposition);
-  void OnDeleteMostVisitedItem(const GURL& url);
-  void OnUndoMostVisitedDeletion(const GURL& url);
+  void OnDeleteMostVisitedItem(uint64 most_visited_item_id);
+  void OnUndoMostVisitedDeletion(uint64 most_visited_item_id);
   void OnUndoAllMostVisitedDeletions();
 
   Delegate* const delegate_;

@@ -10,6 +10,8 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_io_context.h"
+#include "chrome/browser/instant/instant_service.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
@@ -80,15 +82,21 @@ std::string FaviconSource::GetSource() {
 }
 
 void FaviconSource::StartDataRequest(
-    const std::string& path,
+    const std::string& raw_path,
     bool is_incognito,
     const content::URLDataSource::GotDataCallback& callback) {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!favicon_service || path.empty()) {
+  if (!favicon_service || raw_path.empty()) {
     SendDefaultResponse(callback);
     return;
   }
+
+  // Translate to regular path if |raw_path| is of the form
+  // chrome-search://favicon/<most_visited_item_id>, where
+  // "most_visited_item_id" is a uint64.
+  std::string path = InstantService::MaybeTranslateInstantPathOnUI(profile_,
+                                                                   raw_path);
 
   DCHECK_EQ(16, gfx::kFaviconSize);
   int size_in_dip = 16;
@@ -219,8 +227,10 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
 }
 
 bool FaviconSource::ShouldServiceRequest(const net::URLRequest* request) const {
-  if (request->url().SchemeIs(chrome::kChromeSearchScheme))
-    return InstantIOContext::ShouldServiceRequest(request);
+  if (request->url().SchemeIs(chrome::kChromeSearchScheme)) {
+    return InstantService::IsInstantPath(request->url()) &&
+        InstantIOContext::ShouldServiceRequest(request);
+  }
   return URLDataSource::ShouldServiceRequest(request);
 }
 

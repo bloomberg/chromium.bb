@@ -249,11 +249,11 @@ class InstantController : public InstantPage::Delegate,
 
   // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.
-  virtual void DeleteMostVisitedItem(const GURL& url) OVERRIDE;
+  virtual void DeleteMostVisitedItem(uint64 most_visited_item_id) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to undo a
   // Most Visited deletion.
-  virtual void UndoMostVisitedDeletion(const GURL& url) OVERRIDE;
+  virtual void UndoMostVisitedDeletion(uint64 most_visited_item_id) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to undo all
   // Most Visited deletions.
@@ -347,7 +347,7 @@ class InstantController : public InstantPage::Delegate,
 
   // Sends a collection of MostVisitedItems to the renderer process via
   // the appropriate InstantPage subclass.
-  void SendMostVisitedItems(const std::vector<MostVisitedItem>& items);
+  void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
 
   chrome::BrowserInstantController* const browser_;
 

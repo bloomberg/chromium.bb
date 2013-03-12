@@ -63,6 +63,28 @@ void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
   frame->executeScript(WebKit::WebScriptSource(script));
 }
 
+v8::Handle<v8::String> GenerateThumbnailURL(uint64 most_visited_item_id) {
+  return UTF8ToV8String(
+      StringPrintf("chrome-search://thumb/%s",
+                   base::Uint64ToString(most_visited_item_id).c_str()));
+}
+
+v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
+  return UTF8ToV8String(
+      StringPrintf("chrome-search://favicon/%s",
+                   base::Uint64ToString(most_visited_item_id).c_str()));
+}
+
+const GURL MostVisitedItemIDToURL(
+    const std::vector<InstantMostVisitedItem>& most_visited_items,
+    uint64 most_visited_item_id) {
+  for (size_t i = 0; i < most_visited_items.size(); ++i) {
+    if (most_visited_items[i].most_visited_item_id == most_visited_item_id)
+      return most_visited_items[i].url;
+  }
+  return GURL();
+}
+
 }  // namespace
 
 namespace extensions_v8 {
@@ -730,8 +752,9 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateNewTabPage(
   GURL destination_url;
   content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
   if (args[0]->IsNumber()) {
-    destination_url = GURL(SearchBox::Get(render_view)->MostVisitedItemIDToURL(
-        args[0]->Uint32Value()));
+    destination_url = MostVisitedItemIDToURL(
+        SearchBox::Get(render_view)->GetMostVisitedItems(),
+        args[0]->Uint32Value());
   } else {
     destination_url = GURL(V8ValueToUTF16(args[0]));
   }
@@ -931,20 +954,16 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShowOverlay(
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
-
+  if (!render_view)
+    return v8::Undefined();
   DVLOG(1) << render_view << " GetMostVisitedItems";
 
-  const std::vector<MostVisitedItem>& items =
-      SearchBox::Get(render_view)->GetMostVisitedItems();
-  v8::Handle<v8::Array> items_array = v8::Array::New(items.size());
-  for (size_t i = 0; i < items.size(); ++i) {
+  const SearchBox* search_box = SearchBox::Get(render_view);
 
-    const string16 url = UTF8ToUTF16(items[i].url.spec());
-    const string16 host = UTF8ToUTF16(items[i].url.host());
-    int most_visited_item_id =
-        SearchBox::Get(render_view)->URLToMostVisitedItemID(url);
-
+  const std::vector<InstantMostVisitedItem>& instant_mv_items =
+      search_box->GetMostVisitedItems();
+  v8::Handle<v8::Array> v8_mv_items = v8::Array::New(instant_mv_items.size());
+  for (size_t i = 0; i < instant_mv_items.size(); ++i) {
     // We set the "dir" attribute of the title, so that in RTL locales, a LTR
     // title is rendered left-to-right and truncated from the right. For
     // example, the title of http://msdn.microsoft.com/en-us/default.aspx is
@@ -957,33 +976,31 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
     // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
     // "ltr".
     std::string direction;
-    if (base::i18n::StringContainsStrongRTLChars(items[i].title))
+    if (base::i18n::StringContainsStrongRTLChars(instant_mv_items[i].title))
       direction = kRTLHtmlTextDirection;
     else
       direction = kLTRHtmlTextDirection;
 
-    string16 title = items[i].title;
+    string16 title = instant_mv_items[i].title;
     if (title.empty())
-      title = url;
+      title = UTF8ToUTF16(instant_mv_items[i].url.spec());
 
     v8::Handle<v8::Object> item = v8::Object::New();
     item->Set(v8::String::New("rid"),
-              v8::Int32::New(most_visited_item_id));
+              v8::Int32::New(instant_mv_items[i].most_visited_item_id));
     item->Set(v8::String::New("thumbnailUrl"),
-              UTF16ToV8String(SearchBox::Get(render_view)->
-                              GenerateThumbnailUrl(most_visited_item_id)));
+              GenerateThumbnailURL(instant_mv_items[i].most_visited_item_id));
     item->Set(v8::String::New("faviconUrl"),
-              UTF16ToV8String(SearchBox::Get(render_view)->
-                              GenerateFaviconUrl(most_visited_item_id)));
+              GenerateFaviconURL(instant_mv_items[i].most_visited_item_id));
     item->Set(v8::String::New("title"),
               UTF16ToV8String(title));
-    item->Set(v8::String::New("domain"), UTF16ToV8String(host));
-    item->Set(v8::String::New("direction"),
-              UTF8ToV8String(direction));
+    item->Set(v8::String::New("domain"),
+              UTF8ToV8String(instant_mv_items[i].url.host()));
+    item->Set(v8::String::New("direction"), UTF8ToV8String(direction));
 
-    items_array->Set(i, item);
+    v8_mv_items->Set(i, item);
   }
-  return items_array;
+  return v8_mv_items;
 }
 
 // static

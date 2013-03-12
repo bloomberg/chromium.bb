@@ -49,13 +49,14 @@ class SearchBox : public content::RenderViewObserver,
                      content::PageTransition transition,
                      WindowOpenDisposition disposition);
 
-  // Sends ChromeViewHostMsg_InstantDeleteMostVisitedItem to the browser.
-  void DeleteMostVisitedItem(int most_visited_item_id);
+  // Sends ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem to the browser.
+  void DeleteMostVisitedItem(uint64 most_visited_item_id);
 
-  // Sends ChromeViewHostMsg_InstantUndoMostVisitedDeletion to the browser.
-  void UndoMostVisitedDeletion(int most_visited_item_id);
+  // Sends ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion to the browser.
+  void UndoMostVisitedDeletion(uint64 most_visited_item_id);
 
-  // Sends ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions to the browser.
+  // Sends ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions to the
+  // browser.
   void UndoAllMostVisitedDeletions();
 
   const string16& query() const { return query_; }
@@ -82,13 +83,7 @@ class SearchBox : public content::RenderViewObserver,
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
 
   // Most Visited items.
-  const std::vector<MostVisitedItem>& GetMostVisitedItems();
-
-  // Secure Urls.
-  int URLToMostVisitedItemID(const string16 url);
-  string16 MostVisitedItemIDToURL(int most_visited_item_id);
-  string16 GenerateThumbnailUrl(int most_visited_item_id);
-  string16 GenerateFaviconUrl(int most_visited_item_id);
+  const std::vector<InstantMostVisitedItem>& GetMostVisitedItems() const;
 
  private:
   // Overridden from content::RenderViewObserver:
@@ -115,7 +110,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnFontInformationReceived(const string16& omnibox_font,
                                  size_t omnibox_font_size);
   void OnGrantChromeSearchAccessFromOrigin(const GURL& origin_url);
-  void OnMostVisitedChanged(const std::vector<MostVisitedItem>& items);
+  void OnMostVisitedChanged(const std::vector<InstantMostVisitedItem>& items);
 
   // Returns the current zoom factor of the render view or 1 on failure.
   double GetZoom() const;
@@ -138,13 +133,7 @@ class SearchBox : public content::RenderViewObserver,
   bool display_instant_results_;
   string16 omnibox_font_;
   size_t omnibox_font_size_;
-  std::vector<MostVisitedItem> most_visited_items_;
-
-  // TODO(dcblack): Unify this logic to work with both Most Visited and
-  // history suggestions. http://crbug.com/175768
-  std::map<string16, int> url_to_most_visited_item_id_map_;
-  std::map<int, string16> most_visited_item_id_to_url_map_;
-  int last_most_visited_item_id_;
+  std::vector<InstantMostVisitedItem> most_visited_items_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

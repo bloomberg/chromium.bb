@@ -12,16 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-namespace {
-
-// Prefix for a thumbnail URL.
-const char kThumbnailUrlPrefix[] = "chrome-search://thumb/";
-
-// Prefix for a thumbnail URL.
-const char kFaviconUrlPrefix[] = "chrome-search://favicon/";
-
-}
-
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<SearchBox>(render_view),
@@ -33,8 +23,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
       last_results_base_(0),
       is_key_capture_enabled_(false),
       display_instant_results_(false),
-      omnibox_font_size_(0),
-      last_most_visited_item_id_(0) {
+      omnibox_font_size_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -84,20 +73,19 @@ void SearchBox::NavigateToURL(const GURL& url,
       url, transition, disposition));
 }
 
-void SearchBox::DeleteMostVisitedItem(int most_visited_item_id) {
-  string16 url = MostVisitedItemIDToURL(most_visited_item_id);
-  render_view()->Send(new ChromeViewHostMsg_InstantDeleteMostVisitedItem(
-      render_view()->GetRoutingID(), GURL(url)));
+void SearchBox::DeleteMostVisitedItem(uint64 most_visited_item_id) {
+  render_view()->Send(new ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
+      render_view()->GetRoutingID(), most_visited_item_id));
 }
 
-void SearchBox::UndoMostVisitedDeletion(int most_visited_item_id) {
-  string16 url = MostVisitedItemIDToURL(most_visited_item_id);
-  render_view()->Send(new ChromeViewHostMsg_InstantUndoMostVisitedDeletion(
-      render_view()->GetRoutingID(), GURL(url)));
+void SearchBox::UndoMostVisitedDeletion(uint64 most_visited_item_id) {
+  render_view()->Send(new ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
+      render_view()->GetRoutingID(), most_visited_item_id));
 }
 
 void SearchBox::UndoAllMostVisitedDeletions() {
-  render_view()->Send(new ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions(
+  render_view()->Send(
+      new ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
       render_view()->GetRoutingID()));
 }
 
@@ -164,7 +152,7 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin,
         OnGrantChromeSearchAccessFromOrigin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_InstantMostVisitedItemsChanged,
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -352,7 +340,7 @@ void SearchBox::Reset() {
 }
 
 void SearchBox::OnMostVisitedChanged(
-    const std::vector<MostVisitedItem>& items) {
+    const std::vector<InstantMostVisitedItem>& items) {
   most_visited_items_ = items;
 
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
@@ -361,35 +349,7 @@ void SearchBox::OnMostVisitedChanged(
   }
 }
 
-const std::vector<MostVisitedItem>& SearchBox::GetMostVisitedItems() {
+const std::vector<InstantMostVisitedItem>&
+SearchBox::GetMostVisitedItems() const {
   return most_visited_items_;
-}
-
-int SearchBox::URLToMostVisitedItemID(string16 url) {
-  if (url_to_most_visited_item_id_map_[url])
-    return url_to_most_visited_item_id_map_[url];
-
-  last_most_visited_item_id_++;
-  url_to_most_visited_item_id_map_[url] = last_most_visited_item_id_;
-  most_visited_item_id_to_url_map_[last_most_visited_item_id_] = url;
-
-  return last_most_visited_item_id_;
-}
-
-string16 SearchBox::MostVisitedItemIDToURL(int most_visited_item_id) {
-  return most_visited_item_id_to_url_map_[most_visited_item_id];
-}
-
-string16 SearchBox::GenerateThumbnailUrl(int most_visited_item_id) {
-  std::ostringstream ostr;
-  ostr << kThumbnailUrlPrefix << most_visited_item_id;
-  GURL url = GURL(ostr.str());
-  return UTF8ToUTF16(url.spec());
-}
-
-string16 SearchBox::GenerateFaviconUrl(int most_visited_item_id) {
-  std::ostringstream ostr;
-  ostr << kFaviconUrlPrefix << most_visited_item_id;
-  GURL url = GURL(ostr.str());
-  return UTF8ToUTF16(url.spec());
 }

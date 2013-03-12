@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_IO_CONTEXT_
 #define CHROME_BROWSER_INSTANT_INSTANT_IO_CONTEXT_
 
+#include <map>
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+
+class GURL;
 
 namespace content {
 class ResourceContext;
@@ -46,9 +50,27 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
   static void ClearInstantProcessesOnIO(
       scoped_refptr<InstantIOContext> instant_io_context);
 
+  // Associates the |most_visited_item_id| with the |url|.
+  static void AddMostVisitedItemIDOnIO(
+      scoped_refptr<InstantIOContext> instant_io_context,
+      uint64 most_visited_item_id, const GURL& url);
+
+  // Deletes the Most Visited item IDs contained in |deleted_ids| from the url
+  // mapping.  If |all_history| is true, then ignores |deleted_ids| and
+  // deletes all mappings.
+  static void DeleteMostVisitedURLsOnIO(
+      scoped_refptr<InstantIOContext> instant_io_context,
+      std::vector<uint64> deleted_ids, bool all_history);
+
   // Determine if this chrome-search: request is coming from an Instant render
   // process.
   static bool ShouldServiceRequest(const net::URLRequest* request);
+
+  // Returns true if the |most_visited_item_id| is known, and |url| is set.
+  // Returns false otherwise.
+  static bool GetURLForMostVisitedItemId(
+      const net::URLRequest* request,
+      uint64 most_visited_item_id, GURL* url);
 
  protected:
    virtual ~InstantIOContext();
@@ -60,10 +82,17 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
   // |process_ids_|.
   bool IsInstantProcess(int process_id) const;
 
+  bool GetURLForMostVisitedItemId(uint64 most_visited_item_id, GURL* url);
+
   // The process IDs associated with Instant processes.  Mirror of the process
   // IDs in InstantService.  Duplicated here for synchronous access on the IO
   // thread.
   std::set<int> process_ids_;
+
+  // The Most Visited item IDs map associated with Instant processes.  Mirror of
+  // the Most Visited item ID map in InstantService.  Duplicated here for
+  // synchronous access on the IO thread.
+  std::map<uint64, GURL> most_visited_item_id_to_url_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantIOContext);
 };

@@ -49,6 +49,13 @@ class ThumbnailSource : public content::URLDataSource {
   // ThumbnailService.
   scoped_refptr<thumbnails::ThumbnailService> thumbnail_service_;
 
+  // Transient copy of the request in play. Valid between
+  // ShouldServiceRequest() and StartDataRequest().
+  mutable const net::URLRequest* current_request_;
+
+  // Only used when servicing requests on the UI thread.
+  Profile* const profile_;
+
   DISALLOW_COPY_AND_ASSIGN(ThumbnailSource);
 };
 

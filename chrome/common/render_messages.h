@@ -167,7 +167,8 @@ IPC_STRUCT_TRAITS_BEGIN(InstantAutocompleteResult)
   IPC_STRUCT_TRAITS_MEMBER(relevance)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(MostVisitedItem)
+IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
+  IPC_STRUCT_TRAITS_MEMBER(most_visited_item_id)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(title)
 IPC_STRUCT_TRAITS_END()
@@ -342,16 +343,16 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyCaptureChanged,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxGrantChromeSearchAccessFromOrigin,
                     GURL /* origin_url */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_InstantMostVisitedItemsChanged,
-                    std::vector<MostVisitedItem> /* items */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
+                    std::vector<InstantMostVisitedItem> /* items */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_InstantDeleteMostVisitedItem,
-                    GURL /* url */)
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
+                    uint64 /* most_visited_item_id */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_InstantUndoMostVisitedDeletion,
-                    GURL /* url */)
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
+                    uint64 /* most_visited_item_id */)
 
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions)
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions)
 
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.

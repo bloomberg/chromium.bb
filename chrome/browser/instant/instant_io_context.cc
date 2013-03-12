@@ -7,6 +7,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_request_info.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -19,6 +20,15 @@ InstantIOContext* GetDataForResourceContext(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return base::UserDataAdapter<InstantIOContext>::Get(
       context, InstantIOContext::kInstantIOContextKeyName);
+}
+
+InstantIOContext* GetDataForRequest(const net::URLRequest* request) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!info)
+    return NULL;
+
+  return GetDataForResourceContext(info->GetContext());
 }
 
 }  // namespace
@@ -65,14 +75,38 @@ void InstantIOContext::ClearInstantProcessesOnIO(
 }
 
 // static
+void InstantIOContext::AddMostVisitedItemIDOnIO(
+    scoped_refptr<InstantIOContext> instant_io_context,
+    uint64 most_visited_item_id, const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  instant_io_context->most_visited_item_id_to_url_map_[most_visited_item_id] =
+      url;
+}
+
+// static
+void InstantIOContext::DeleteMostVisitedURLsOnIO(
+    scoped_refptr<InstantIOContext> instant_io_context,
+    std::vector<uint64> deleted_ids, bool all_history) {
+  if (all_history) {
+    instant_io_context->most_visited_item_id_to_url_map_.clear();
+    return;
+  }
+
+  for (size_t i = 0; i < deleted_ids.size(); ++i) {
+    instant_io_context->most_visited_item_id_to_url_map_.erase(
+        instant_io_context->most_visited_item_id_to_url_map_.find(
+            deleted_ids[i]));
+  }
+}
+
+// static
 bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!info)
     return false;
 
-  InstantIOContext* instant_io_context =
-      GetDataForResourceContext(info->GetContext());
+  InstantIOContext* instant_io_context = GetDataForRequest(request);
   if (!instant_io_context)
     return false;
 
@@ -84,7 +118,34 @@ bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
   return false;
 }
 
+// static
+bool InstantIOContext::GetURLForMostVisitedItemId(
+    const net::URLRequest* request,
+    uint64 most_visited_item_id,
+    GURL* url) {
+  InstantIOContext* instant_io_context = GetDataForRequest(request);
+  if (!instant_io_context) {
+    *url = GURL();
+    return false;
+  }
+
+  return instant_io_context->GetURLForMostVisitedItemId(most_visited_item_id,
+                                                        url);
+}
+
 bool InstantIOContext::IsInstantProcess(int process_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return process_ids_.count(process_id) != 0;
+}
+
+bool InstantIOContext::GetURLForMostVisitedItemId(uint64 most_visited_item_id,
+                                                  GURL* url) {
+  std::map<uint64, GURL>::iterator it =
+      most_visited_item_id_to_url_map_.find(most_visited_item_id);
+  if (it != most_visited_item_id_to_url_map_.end()) {
+    *url = it->second;
+    return true;
+  }
+  *url = GURL();
+  return false;
 }

@@ -330,14 +330,14 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('mostVisited', GetMostVisitedItemsWrapper);
       this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
 
-      this.deleteMostVisitedItem = function(restrictId) {
-        DeleteMostVisitedItem(restrictId);
+      this.deleteMostVisitedItem = function(restrictedId) {
+        DeleteMostVisitedItem(restrictedId);
       };
       this.undoAllMostVisitedDeletions = function() {
         UndoAllMostVisitedDeletions();
       };
-      this.undoMostVisitedDeletion = function(restrictId) {
-        UndoMostVisitedDeletion(restrictId);
+      this.undoMostVisitedDeletion = function(restrictedId) {
+        UndoMostVisitedDeletion(restrictedId);
       };
       this.navigateContentWindow = function(destination, disposition) {
         NavigateNewTabPage(destination, disposition);
