@@ -1657,7 +1657,7 @@
     # throughout the codebase.
     'defines' : ['USE_SKIA'],
     'conditions': [
-      ['asan==1', {
+      ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
         ],
