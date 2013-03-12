@@ -520,8 +520,8 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
       html_start == std::string::npos)
     return;
 
-  DCHECK_GE(start_index, html_start);
-  DCHECK_GE(end_index, html_start);
+  if (start_index < html_start || end_index < start_index)
+    return;
 
   std::vector<size_t> offsets;
   offsets.push_back(start_index - html_start);
