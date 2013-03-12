@@ -20,10 +20,11 @@ Galore.controller = {
   /** @private */
   onSettingsFetched_: function(items) {
     var request = new XMLHttpRequest();
-    var source = items.settings.data || '/data/' + this.getDataVersion_();
+    var settings = items.settings || {};
+    var source = settings.data || '/data/' + this.getDataVersion_();
     request.open('GET', source, true);
     request.responseType = 'text';
-    request.onload = this.onDataFetched_.bind(this, items.settings, request);
+    request.onload = this.onDataFetched_.bind(this, settings, request);
     request.send();
   },
 
