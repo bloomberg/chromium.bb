@@ -126,7 +126,8 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
     // If there are two adjacent overlapping windows, separate them by the
     // minimum major_length necessary.
     std::vector<VisiblePanelPositionInfo>::iterator second = first + 1;
-    int separation = (*first).major_length + kPanelIdealSpacing;
+    int separation = (*first).major_length / 2 + (*second).major_length / 2 +
+                     kPanelIdealSpacing;
     int overlap = (*first).major_pos + separation - (*second).major_pos;
     (*first).major_pos = std::max((*first).min_major,
                                   (*first).major_pos - overlap / 2);
@@ -460,23 +461,18 @@ void PanelLayoutManager::Relayout() {
                                                    icon_bounds);
     gfx::Point icon_origin = icon_bounds.origin();
     VisiblePanelPositionInfo position_info;
-    if (horizontal) {
-      position_info.min_major = std::max(panel_start_bounds, icon_origin.x() +
-          icon_bounds.width() - panel->bounds().width());
-      position_info.max_major = std::min(icon_origin.x(), panel_end_bounds -
-          panel->bounds().width());
-      position_info.major_pos = icon_origin.x() + icon_bounds.width() / 2 -
-          panel->bounds().width() / 2;
-      position_info.major_length = panel->bounds().width();
-    } else {
-      position_info.min_major = std::max(panel_start_bounds, icon_origin.y() +
-          icon_bounds.height() - panel->bounds().height());
-      position_info.max_major = std::min(icon_origin.y(), panel_end_bounds -
-          panel->bounds().height());
-      position_info.major_pos = icon_origin.y() + icon_bounds.height() / 2 -
-          panel->bounds().height() / 2;
-      position_info.major_length = panel->bounds().height();
-    }
+    int icon_start = horizontal ? icon_origin.x() : icon_origin.y();
+    int icon_end = icon_start + (horizontal ? icon_bounds.width() :
+                                 icon_bounds.height());
+    position_info.major_length = horizontal ?
+        panel->bounds().width() : panel->bounds().height();
+    position_info.min_major = std::max(
+        panel_start_bounds + position_info.major_length / 2,
+        icon_end - position_info.major_length / 2);
+    position_info.max_major = std::min(
+        icon_start + position_info.major_length / 2,
+        panel_end_bounds - position_info.major_length / 2);
+    position_info.major_pos = (icon_start + icon_end) / 2;
     position_info.window = panel;
     visible_panels.push_back(position_info);
   }
@@ -489,8 +485,9 @@ void PanelLayoutManager::Relayout() {
   std::sort(visible_panels.begin(), visible_panels.end(), CompareWindowMajor);
   size_t first_overlapping_panel = 0;
   for (size_t i = 1; i < visible_panels.size(); ++i) {
-    if (visible_panels[i - 1].major_pos + visible_panels[i - 1].major_length
-        < visible_panels[i].major_pos) {
+    if (visible_panels[i - 1].major_pos +
+        visible_panels[i - 1].major_length / 2 < visible_panels[i].major_pos -
+        visible_panels[i].major_length / 2) {
       FanOutPanels(visible_panels.begin() + first_overlapping_panel,
                    visible_panels.begin() + i);
       first_overlapping_panel = i;
@@ -502,9 +499,11 @@ void PanelLayoutManager::Relayout() {
   for (size_t i = 0; i < visible_panels.size(); ++i) {
     gfx::Rect bounds = visible_panels[i].window->bounds();
     if (horizontal)
-      bounds.set_x(visible_panels[i].major_pos);
+      bounds.set_x(visible_panels[i].major_pos -
+                   visible_panels[i].major_length / 2);
     else
-      bounds.set_y(visible_panels[i].major_pos);
+      bounds.set_y(visible_panels[i].major_pos -
+                   visible_panels[i].major_length / 2);
     switch (alignment) {
       case SHELF_ALIGNMENT_BOTTOM:
         bounds.set_y(launcher_bounds.y() - bounds.height());

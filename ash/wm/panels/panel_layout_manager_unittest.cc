@@ -415,15 +415,32 @@ TEST_F(PanelLayoutManagerTest, FanWindows) {
   scoped_ptr<aura::Window> w3(CreatePanelWindow(bounds));
 
   launcher_view_test()->RunMessageLoopUntilAnimationsDone();
-  int window_x1 = w1->GetBoundsInRootWindow().x();
-  int window_x2 = w2->GetBoundsInRootWindow().x();
-  int window_x3 = w3->GetBoundsInRootWindow().x();
+  int window_x1 = w1->GetBoundsInRootWindow().CenterPoint().x();
+  int window_x2 = w2->GetBoundsInRootWindow().CenterPoint().x();
+  int window_x3 = w3->GetBoundsInRootWindow().CenterPoint().x();
   Launcher* launcher = Launcher::ForPrimaryDisplay();
   int icon_x1 = launcher->GetScreenBoundsOfItemIconForWindow(w1.get()).x();
   int icon_x2 = launcher->GetScreenBoundsOfItemIconForWindow(w2.get()).x();
   EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);
   int spacing = window_x2 - window_x1;
   EXPECT_GT(spacing, icon_x2 - icon_x1);
+}
+
+TEST_F(PanelLayoutManagerTest, FanLargeWindow) {
+  gfx::Rect small_bounds(0, 0, 201, 201);
+  gfx::Rect large_bounds(0, 0, 501, 201);
+  scoped_ptr<aura::Window> w1(CreatePanelWindow(small_bounds));
+  scoped_ptr<aura::Window> w2(CreatePanelWindow(large_bounds));
+  scoped_ptr<aura::Window> w3(CreatePanelWindow(small_bounds));
+
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+  int window_x1 = w1->GetBoundsInRootWindow().CenterPoint().x();
+  int window_x2 = w2->GetBoundsInRootWindow().CenterPoint().x();
+  int window_x3 = w3->GetBoundsInRootWindow().CenterPoint().x();
+  // The distances may not be equidistant with a large panel but the panels
+  // should be in the correct order with respect to their midpoints.
+  EXPECT_GT(window_x2, window_x1);
+  EXPECT_GT(window_x3, window_x2);
 }
 
 TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
