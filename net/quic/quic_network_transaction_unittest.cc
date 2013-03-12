@@ -454,5 +454,67 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   EXPECT_EQ("hello!", response_data);
 }
 
+TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
+  HttpStreamFactory::set_use_alternate_protocols(true);
+  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.google.com/");
+  request.load_flags = 0;
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-length: 11\r\n"),
+    MockRead(kQuicAlternateProtocolHttpHeader),
+    MockRead("hello world"),
+
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead("Content-length: 6\r\n"),
+    MockRead(kQuicAlternateProtocolHttpHeader),
+    MockRead("hello!"),
+  };
+
+  StaticSocketDataProvider first_transaction(
+      data_reads, arraysize(data_reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&first_transaction);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+
+  CreateSession();
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(session_));
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello world", response_data);
+
+  trans.reset(new HttpNetworkTransaction(session_));
+
+  rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello!", response_data);
+}
+
 }  // namespace test
 }  // namespace net

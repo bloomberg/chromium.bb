@@ -188,7 +188,8 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     *alternate_url = UpgradeUrlToHttps(original_url, alternate.port);
   } else {
     DCHECK_EQ(QUIC_1, alternate.protocol);
-    if (!session_->params().enable_quic)
+    if (!session_->params().enable_quic ||
+        !original_url.SchemeIs("http"))
       return kNoAlternateProtocol;
     // TODO(rch):  Figure out how to make QUIC iteract with PAC
     // scripts.  By not re-writing the URL, we will query the PAC script

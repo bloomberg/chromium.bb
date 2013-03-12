@@ -45,6 +45,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      const BoundNetLog& stream_net_log,
                                      const CompletionCallback& callback) {
   CHECK(stream_);
+  DCHECK_EQ("http", request_info->url.scheme());
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
