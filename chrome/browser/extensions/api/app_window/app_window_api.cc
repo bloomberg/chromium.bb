@@ -34,7 +34,6 @@ const char kInvalidWindowId[] =
     "The window id can not be more than 256 characters long.";
 }
 
-const char kPanelTypeOption[] = "panel";
 const char kNoneFrameOption[] = "none";
 const char kHtmlFrameOption[] = "experimental-html";
 
@@ -172,8 +171,7 @@ bool AppWindowCreateFunction::RunImpl() {
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableExperimentalExtensionApis)) {
-      if (options->type.get()) {
-        if (*options->type == kPanelTypeOption)
+      if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
           create_params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
       }
     }

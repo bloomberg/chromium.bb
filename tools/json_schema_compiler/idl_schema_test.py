@@ -93,6 +93,12 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertTrue(func is not None)
     self.assertTrue(func['nocompile'])
 
+  def testNoDocOnEnum(self):
+    schema = self.idl_basics
+    enum_with_nodoc = getType(schema, 'EnumTypeWithNoDoc')
+    self.assertTrue(enum_with_nodoc is not None)
+    self.assertTrue(enum_with_nodoc['nodoc'])
+
   def testInternalNamespace(self):
     idl_basics  = self.idl_basics
     self.assertEquals('idl_basics', idl_basics['namespace'])
