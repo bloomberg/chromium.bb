@@ -15,6 +15,9 @@ namespace extensions {
 template <typename T>
 class ScopedPersistent {
  public:
+  ScopedPersistent() {
+  }
+
   explicit ScopedPersistent(v8::Handle<T> handle) {
     reset(handle);
   }

@@ -29,11 +29,16 @@ class V8SchemaRegistry {
   v8::Handle<v8::Object> GetSchema(const std::string& api);
 
  private:
+  // Gets the separate context that backs the registry, creating a new one if
+  // if necessary.
+  v8::Persistent<v8::Context> GetOrCreateContext();
+
   // Cache of schemas.
   typedef std::map<std::string, v8::Persistent<v8::Object> > SchemaCache;
   SchemaCache schema_cache_;
 
   // Single per-instance v8::Context to create v8::Values.
+  // Created lazily via GetOrCreateContext.
   ScopedPersistent<v8::Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SchemaRegistry);

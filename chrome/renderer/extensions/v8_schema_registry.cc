@@ -13,19 +13,18 @@ using content::V8ValueConverter;
 
 namespace extensions {
 
-V8SchemaRegistry::V8SchemaRegistry() : context_(v8::Context::New()) {}
+V8SchemaRegistry::V8SchemaRegistry() {}
 
 V8SchemaRegistry::~V8SchemaRegistry() {
-  v8::Isolate* isolate = context_->GetIsolate();
   for (SchemaCache::iterator i = schema_cache_.begin();
-      i != schema_cache_.end(); ++i) {
-    i->second.Dispose(isolate);
+       i != schema_cache_.end(); ++i) {
+    i->second.Dispose(i->second->CreationContext()->GetIsolate());
   }
 }
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
     const std::set<std::string>& apis) {
-  v8::Context::Scope context_scope(context_.get());
+  v8::Context::Scope context_scope(GetOrCreateContext());
   v8::Handle<v8::Array> v8_apis(v8::Array::New(apis.size()));
   size_t api_index = 0;
   for (std::set<std::string>::const_iterator i = apis.begin(); i != apis.end();
@@ -44,15 +43,23 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
       ExtensionAPI::GetSharedInstance()->GetSchema(api);
   CHECK(schema) << api;
 
+  v8::Persistent<v8::Context> context = GetOrCreateContext();
+  v8::Context::Scope context_scope(context);
+
   scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
-  v8::Persistent<v8::Object> v8_schema =
-      v8::Persistent<v8::Object>::New(
-          context_->GetIsolate(),
-          v8::Handle<v8::Object>::Cast(
-              v8_value_converter->ToV8Value(schema, context_.get())));
-  CHECK(!v8_schema.IsEmpty());
+  v8::Handle<v8::Value> value = v8_value_converter->ToV8Value(schema, context);
+  CHECK(!value.IsEmpty());
+
+  v8::Persistent<v8::Object> v8_schema = v8::Persistent<v8::Object>::New(
+      context->GetIsolate(), v8::Handle<v8::Object>::Cast(value));
   schema_cache_[api] = v8_schema;
   return v8_schema;
+}
+
+v8::Persistent<v8::Context> V8SchemaRegistry::GetOrCreateContext() {
+  if (context_.get().IsEmpty())
+    context_.reset(v8::Context::New());
+  return context_.get();
 }
 
 }  // namespace extensions
