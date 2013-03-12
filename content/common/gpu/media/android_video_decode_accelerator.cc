@@ -346,7 +346,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK(output_picture_buffers_.empty());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
-    RETURN_ON_FAILURE(buffers[i].size() != size_,
+    RETURN_ON_FAILURE(buffers[i].size() == size_,
                       "Invalid picture buffer size was passed.",
                       INVALID_ARGUMENT);
     output_picture_buffers_.insert(std::make_pair(buffers[i].id(), buffers[i]));
