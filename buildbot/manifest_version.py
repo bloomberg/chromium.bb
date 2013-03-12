@@ -8,6 +8,7 @@ A library to generate and store the manifests for cros builders to use.
 
 import cPickle
 import fnmatch
+import glob
 import logging
 import os
 import re
@@ -426,18 +427,32 @@ class BuildSpecsManager(object):
     """Checks out manifest versions into the manifest directory."""
     RefreshManifestCheckout(self.manifest_dir, self.manifest_repo)
 
-  def InitializeManifestVariables(self, version_info):
+  def InitializeManifestVariables(self, version_info, version=None):
     """Initializes manifest-related instance variables.
 
     Args:
       version_info: Info class for version information of cros.
+      version: Requested version. If None, build the latest version.
+
+    Returns:
+      Whether the requested version was found.
     """
     working_dir = os.path.join(self.manifest_dir, self.rel_working_dir)
-    dir_pfx = version_info.chrome_branch
     self.specs_for_builder = os.path.join(working_dir, 'build-name',
                                           '%(builder)s')
     specs_for_build = self.specs_for_builder % {'builder': self.build_name}
-    self.all_specs_dir = os.path.join(working_dir, 'buildspecs', dir_pfx)
+    buildspecs = os.path.join(working_dir, 'buildspecs')
+    dir_pfx = version_info.chrome_branch
+
+    # If version is specified, find out what Chrome branch it is on.
+    if version is not None:
+      dirs = glob.glob(os.path.join(buildspecs, '*', version + '.xml'))
+      if len(dirs) == 0:
+        return False
+      assert len(dirs) <= 1, 'More than one spec found for %s' % version
+      dir_pfx = os.path.basename(os.path.dirname(dirs[0]))
+
+    self.all_specs_dir = os.path.join(buildspecs, dir_pfx)
     self.pass_dir = os.path.join(specs_for_build,
                                  BuilderStatus.STATUS_PASSED, dir_pfx)
     self.fail_dir = os.path.join(specs_for_build,
@@ -450,6 +465,7 @@ class BuildSpecsManager(object):
       self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
       if self._latest_status is None:
         self.latest_unprocessed = self.latest
+    return True
 
   def GetCurrentVersionInfo(self):
     """Returns the current version info from the version file."""
@@ -564,15 +580,14 @@ class BuildSpecsManager(object):
     if version:
       # We need to first set up some variables. This is harmless even if we
       # don't have the manifests checked out yet.
-      self.InitializeManifestVariables(version_info)
       # We don't need to reload the manifests repository if we already have the
       # manifest.
-      if os.path.exists(self.GetLocalManifest(version)):
+      if self.InitializeManifestVariables(version_info, version):
         should_initialize_manifest_repo = False
 
     if should_initialize_manifest_repo:
       self.RefreshManifestCheckout()
-      self.InitializeManifestVariables(version_info)
+      self.InitializeManifestVariables(version_info, version)
 
     self.current_version = version
     return self.GetLocalManifest(self.current_version)
