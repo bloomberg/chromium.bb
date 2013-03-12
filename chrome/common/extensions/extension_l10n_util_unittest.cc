@@ -27,49 +27,6 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-// crbug.com/108429: Crashing on Windows Vista bots.
-#if defined(OS_WIN)
-#define GetValidLocalesEmptyLocaleFolder \
-  DISABLED_GetValidLocalesEmptyLocaleFolder
-#define GetValidLocalesWithValidLocaleNoMessagesFile \
-  DISABLED_GetValidLocalesWithValidLocaleNoMessagesFile
-#define GetValidLocalesWithUnsupportedLocale \
-  DISABLED_GetValidLocalesWithUnsupportedLocale
-#define GetValidLocalesWithValidLocalesAndMessagesFile \
-  DISABLED_GetValidLocalesWithValidLocalesAndMessagesFile
-#define LoadMessageCatalogsValidFallback \
-  DISABLED_LoadMessageCatalogsValidFallback
-#define LoadMessageCatalogsMissingFiles DISABLED_LoadMessageCatalogsMissingFiles
-#define LoadMessageCatalogsBadJSONFormat \
-  DISABLED_LoadMessageCatalogsBadJSONFormat
-#define LoadMessageCatalogsDuplicateKeys \
-  DISABLED_LoadMessageCatalogsDuplicateKeys
-#define LocalizeEmptyManifest DISABLED_LocalizeEmptyManifest
-#define LocalizeManifestWithoutNameMsgAndEmptyDescription \
-  DISABLED_LocalizeManifestWithoutNameMsgAndEmptyDescription
-#define LocalizeManifestWithNameMsgAndEmptyDescription \
-  DISABLED_LocalizeManifestWithNameMsgAndEmptyDescription
-#define LocalizeManifestWithBadNameMsg DISABLED_LocalizeManifestWithBadNameMsg
-#define LocalizeManifestWithNameDescriptionDefaultTitleMsgs \
-  DISABLED_LocalizeManifestWithNameDescriptionDefaultTitleMsgs
-#define LocalizeManifestWithNameDescriptionOmniboxMsgs \
-  DISABLED_LocalizeManifestWithNameDescriptionOmniboxMsgs
-#define LocalizeManifestWithNameDescriptionFileHandlerTitle \
-  DISABLED_LocalizeManifestWithNameDescriptionFileHandlerTitle
-#define ShouldRelocalizeManifestWithNullManifest \
-  DISABLED_ShouldRelocalizeManifestWithNullManifest
-#define ShouldRelocalizeManifestEmptyManifest \
-  DISABLED_ShouldRelocalizeManifestEmptyManifest
-#define ShouldRelocalizeManifestWithDefaultLocale \
-  DISABLED_ShouldRelocalizeManifestWithDefaultLocale
-#define ShouldRelocalizeManifestWithCurrentLocale \
-  DISABLED_ShouldRelocalizeManifestWithCurrentLocale
-#define ShouldRelocalizeManifestSameCurrentLocale \
-  DISABLED_ShouldRelocalizeManifestSameCurrentLocale
-#define ShouldRelocalizeManifestDifferentCurrentLocale \
-  DISABLED_ShouldRelocalizeManifestDifferentCurrentLocale
-#endif
-
 TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());

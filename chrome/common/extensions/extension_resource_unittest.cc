@@ -114,10 +114,6 @@ TEST(ExtensionResourceTest, ResourcesOutsideOfPath) {
 #endif
 }
 
-// crbug.com/108721. Disabled on Windows due to crashing on Vista.
-#if defined(OS_WIN)
-#define CreateWithAllResourcesOnDisk DISABLED_CreateWithAllResourcesOnDisk
-#endif
 TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());

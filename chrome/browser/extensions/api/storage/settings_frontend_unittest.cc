@@ -184,11 +184,6 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   //EXPECT_FALSE(file_util::PathExists(temp_dir_.path()));
 }
 
-#if defined(OS_WIN)
-// Failing on vista dbg. http://crbug.com/111100, http://crbug.com/108724
-#define QuotaLimitsEnforcedCorrectlyForSyncAndLocal \
-  DISABLED_QuotaLimitsEnforcedCorrectlyForSyncAndLocal
-#endif
 TEST_F(ExtensionSettingsFrontendTest,
        QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
   const std::string id = "ext";
@@ -262,10 +257,6 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
       ValueStore::DEFAULTS, "WontError", *megabyte)->HasError());
 }
 
-#if defined(OS_WIN)
-// Failing on vista dbg. http://crbug.com/111100, http://crbug.com/108724
-#define UnlimitedStorageForLocalButNotSync DISABLED_UnlimitedStorageForLocalButNotSync
-#endif
 TEST_F(ExtensionSettingsFrontendTest,
        UnlimitedStorageForLocalButNotSync) {
   const std::string id = "ext";
