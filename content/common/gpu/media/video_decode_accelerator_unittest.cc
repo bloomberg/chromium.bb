@@ -985,11 +985,7 @@ int main(int argc, char **argv) {
   content::RenderingHelper::InitializePlatform();
 
 #if defined(OS_WIN)
-  base::WaitableEvent event(true, false);
-  content::DXVAVideoDecodeAccelerator::PreSandboxInitialization(
-      base::Bind(&base::WaitableEvent::Signal,
-                 base::Unretained(&event)));
-  event.Wait();
+  content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda))
