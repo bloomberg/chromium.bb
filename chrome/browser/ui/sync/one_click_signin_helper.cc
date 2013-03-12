@@ -611,11 +611,13 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
     if (!manager)
       return false;
 
-    if (!manager->IsSigninProcess(
+    // Only allow the dedicated signin process to sign the user into
+    // Chrome without intervention, because it doesn't load any untrusted
+    // pages.  In the interstitial case, since chrome will display a modal
+    // dialog, we don't need to make this check.
+    if (can_offer_for == CAN_OFFER_FOR_ALL &&
+        !manager->IsSigninProcess(
             web_contents->GetRenderProcessHost()->GetID())) {
-      // We only allow the dedicated signin process to sign the user into
-      // Chrome without intervention, because it doesn't load any untrusted
-      // pages.
       return false;
     }
 
