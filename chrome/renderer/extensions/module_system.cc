@@ -48,10 +48,19 @@ ModuleSystem::~ModuleSystem() {
 void ModuleSystem::Invalidate() {
   if (!is_valid())
     return;
+
+  // Clear the module system properties from the global context. It's polite,
+  // and we use this as a signal in lazy handlers that we no longer exist.
+  v8::Handle<v8::Object> global = v8_context()->Global();
+  global->DeleteHiddenValue(v8::String::New(kModulesField));
+  global->DeleteHiddenValue(v8::String::New(kModuleSystem));
+
+  // Invalidate all of the successfully required handlers we own.
   for (NativeHandlerMap::iterator it = native_handler_map_.begin();
        it != native_handler_map_.end(); ++it) {
     it->second->Invalidate();
   }
+
   ObjectBackedNativeHandler::Invalidate();
 }
 
@@ -127,8 +136,16 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     v8::Handle<v8::String> module_name) {
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> global(v8_context()->Global());
-  v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(
-      global->GetHiddenValue(v8::String::New(kModulesField))));
+
+  // The module system might have been deleted. This can happen if a different
+  // context keeps a reference to us, but our frame is destroyed (e.g.
+  // background page keeps reference to chrome object in a closed popup).
+  v8::Handle<v8::Value> modules_value =
+      global->GetHiddenValue(v8::String::New(kModulesField));
+  if (modules_value.IsEmpty() || modules_value->IsUndefined())
+    return ThrowException("Extension view no longer exists");
+
+  v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(modules_value));
   v8::Handle<v8::Value> exports(modules->Get(module_name));
   if (!exports->IsUndefined())
     return handle_scope.Close(exports);
