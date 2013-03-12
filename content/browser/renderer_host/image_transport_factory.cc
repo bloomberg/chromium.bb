@@ -42,7 +42,7 @@
 #include "content/browser/renderer_host/software_output_device_win.h"
 #include "ui/surface/accelerated_surface_win.h"
 #elif defined(USE_X11)
-#include "content/browser/renderer_host/software_output_device_linux.h"
+#include "content/browser/renderer_host/software_output_device_x11.h"
 #endif
 
 namespace content {
@@ -694,8 +694,8 @@ class SoftwareTransportFactory : public DefaultTransportFactory {
     return new cc::OutputSurface(
         software_device.PassAs<cc::SoftwareOutputDevice>());
 #elif defined(USE_X11)
-    scoped_ptr<SoftwareOutputDeviceLinux> software_device(
-        new SoftwareOutputDeviceLinux(compositor));
+    scoped_ptr<SoftwareOutputDeviceX11> software_device(
+        new SoftwareOutputDeviceX11(compositor));
     return new cc::OutputSurface(
         software_device.PassAs<cc::SoftwareOutputDevice>());
 #else

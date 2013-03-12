@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/software_output_device_linux.h"
+#include "content/browser/renderer_host/software_output_device_x11.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -14,7 +14,7 @@
 
 namespace content {
 
-SoftwareOutputDeviceLinux::SoftwareOutputDeviceLinux(ui::Compositor* compositor)
+SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(ui::Compositor* compositor)
     : compositor_(compositor),
       display_(ui::GetXDisplay()),
       gc_(NULL),
@@ -25,14 +25,14 @@ SoftwareOutputDeviceLinux::SoftwareOutputDeviceLinux(ui::Compositor* compositor)
   gc_ = XCreateGC(display_, compositor_->widget(), 0, NULL);
 }
 
-SoftwareOutputDeviceLinux::~SoftwareOutputDeviceLinux() {
+SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   XFreeGC(display_, gc_);
   ClearImage();
 }
 
-void SoftwareOutputDeviceLinux::ClearImage() {
+void SoftwareOutputDeviceX11::ClearImage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (image_) {
@@ -44,7 +44,7 @@ void SoftwareOutputDeviceLinux::ClearImage() {
   }
 }
 
-void SoftwareOutputDeviceLinux::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDeviceX11::Resize(const gfx::Size& viewport_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   cc::SoftwareOutputDevice::Resize(viewport_size);
@@ -62,7 +62,7 @@ void SoftwareOutputDeviceLinux::Resize(const gfx::Size& viewport_size) {
                         32, 4 * viewport_size_.width());
 }
 
-void SoftwareOutputDeviceLinux::EndPaint(cc::SoftwareFrameData* frame_data) {
+void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(device_);
   DCHECK(frame_data == NULL);
