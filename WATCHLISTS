@@ -53,9 +53,6 @@
                   'chrome/browser/ui/views/autofill/|'\
                   'chrome/browser/ui/webui/options/autofill_|'\
                   'chrome/browser/webdata/|'\
-                  'chrome/common/autofill_|'\
-                  'chrome/common/form_|'\
-                  'chrome/common/password_|'\
                   'chrome/renderer/autofill/|'\
                   'chrome/test/data/autofill/|'\
                   'components/autofill/|'\
@@ -94,7 +91,6 @@
                   '|chrome/browser/common/' \
                   '|chrome/browser/favicon/' \
                   '|chrome/browser/history/' \
-                  '|chrome/browser/visitedlink/'\
                   '|components/autofill/'
     },
     'browser_compositor': {
