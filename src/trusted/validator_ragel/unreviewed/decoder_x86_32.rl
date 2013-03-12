@@ -8,8 +8,8 @@
  * Full-blown decoder for ia32 case.  Can be used to decode instruction sequence
  * and process it, but right now is only used in tests.
  *
- * The code is in [hand-written] “parse_instruction.rl” and in [auto-generated]
- * “decoder_x86_32_instruction.rl” file.  This file only includes tiny amount
+ * The code is in [hand-written] "parse_instruction.rl" and in [auto-generated]
+ * "decoder_x86_32_instruction.rl" file.  This file only includes tiny amount
  * of the glue code.
  */
 
@@ -23,7 +23,7 @@
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
 /*
- * These prefixes are not useful in IA32 mode, but they will “cleaned up” by
+ * These prefixes are not useful in IA32 mode, but they will "cleaned up" by
  * decoder's cleanup procedure anyway.  Do nothing when that happens.
  */
 #define SET_REX_PREFIX(P)

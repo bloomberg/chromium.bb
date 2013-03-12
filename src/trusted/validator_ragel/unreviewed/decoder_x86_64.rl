@@ -8,8 +8,8 @@
  * Full-blown decoder for amd64 case.  Can be used to decode instruction
  * sequence and process it, but right now is only used in tests.
  *
- * The code is in [hand-written] “parse_instruction.rl” and in [auto-generated]
- * “decoder_x86_64_instruction.rl” file.  This file only includes tiny amount
+ * The code is in [hand-written] "parse_instruction.rl" and in [auto-generated]
+ * "decoder_x86_64_instruction.rl" file.  This file only includes tiny amount
  * of the glue code.
  */
 
@@ -24,9 +24,9 @@
 #include "native_client/src/trusted/validator_ragel/unreviewed/decoder_internal.h"
 
 /*
- * These prefixes are only useful in AMD64 mode, but they will “cleaned up” by
+ * These prefixes are only useful in AMD64 mode, but they will "cleaned up" by
  * decoder's cleanup procedure in IA32 mode anyway.  That's why we define them
- * twice: “real” version here and “do-nothing” in decoder_x86_32.rl.
+ * twice: "real" version here and "do-nothing" in decoder_x86_32.rl.
  */
 #define SET_REX_PREFIX(P) instruction.prefix.rex = (P)
 #define SET_VEX_PREFIX2(P) vex_prefix2 = (P)

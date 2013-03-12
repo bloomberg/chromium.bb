@@ -179,20 +179,20 @@ static FORCEINLINE uint8_t RegisterFromIS4(uint8_t is4) {
  * 6.3.1.3.2 in C99 specification).
  *
  * Note that these operations are safe but slightly unusual: they come very
- * close to the edge of what “well-behaved C program is not supposed to do”,
- * but they stay on the “safe” side of this boundary.  Specifically: this
- * behavior triggers “implementation-defined behavior” (see 6.2.1.2 in C90
+ * close to the edge of what "well-behaved C program is not supposed to do",
+ * but they stay on the "safe" side of this boundary.  Specifically: this
+ * behavior triggers "implementation-defined behavior" (see 6.2.1.2 in C90
  * specification and 6.3.1.3.3 in C99 specification) which sounds suspiciously
- * similar to the dreaded “undefined behavior”, but in reality these two are
- * quite different: any program which triggers “undefined behavior” is not a
- * valid C program at all, but program which triggers “implementation-defined
- * behavior” is quite valid C program.  What this program actually *does*
+ * similar to the dreaded "undefined behavior", but in reality these two are
+ * quite different: any program which triggers "undefined behavior" is not a
+ * valid C program at all, but program which triggers "implementation-defined
+ * behavior" is quite valid C program.  What this program actually *does*
  * depends on the specification of a given C compiler: each particular
  * implementation must decide for itself what it'll do in this particular case
  * and *stick* *to* *it*.  If the implementation uses two's-complement negative
  * numbers (and all the implementation which can compile this code *must*
- * support two's-complement arythmetic—see 7.18.1.1 in C99 specification) then
- * the easiest thing to do is to do what we need here—this is what all known
+ * support two's-complement arythmetic - see 7.18.1.1 in C99 specification) then
+ * the easiest thing to do is to do what we need here - this is what all known
  * compilers for all known platforms are actually doing.
  */
 static FORCEINLINE uint64_t SignExtend8Bit(uint64_t value) {

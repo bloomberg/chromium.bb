@@ -10,7 +10,7 @@
  * Note: this file includes many different machines which are supposed to be
  * used together to implement decoding.
  *
- * E.g. modrm_parsing_ia32 implements “ModR/M style memory access” used in ia32
+ * E.g. modrm_parsing_ia32 implements "ModR/M style memory access" used in ia32
  * mode, but actions it uses may come from modrm_actions_ia32 or, alternatively,
  * the higher-level machine may have it's own unique implementation of actions.
  */
