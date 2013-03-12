@@ -7,10 +7,8 @@
 
 namespace cc {
 
-template<typename T> 
-T RoundUp(T n, T mul)
-{
-    return ((n + mul - 1) / mul) * mul;
+template <typename T> T RoundUp(T n, T mul) {
+  return ((n + mul - 1) / mul) * mul;
 }
 
 }  // namespace cc
