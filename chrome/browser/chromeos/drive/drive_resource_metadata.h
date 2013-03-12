@@ -230,11 +230,6 @@ class DriveResourceMetadataInterface {
 // Storage for Drive Metadata.
 class DriveResourceMetadata : public DriveResourceMetadataInterface {
  public:
-  // Map of resource id and serialized DriveEntry.
-  typedef std::map<std::string, std::string> SerializedMap;
-  // Map of resource id strings to DriveEntry*.
-  typedef std::map<std::string, DriveEntry*> ResourceMap;
-
   // |root_resource_id| is the resource id for the root directory.
   explicit DriveResourceMetadata(const std::string& root_resource_id);
   virtual ~DriveResourceMetadata();
@@ -318,6 +313,29 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   DriveEntry* GetEntryByResourceId(const std::string& resource_id);
 
  private:
+  // TODO(hashimoto): Remove DriveDirectory to remove this friend declaration.
+  friend class DriveDirectory;  // For access for child_maps_.
+
+  // Map of resource id strings to DriveEntry*.
+  typedef std::map<std::string, DriveEntry*> ResourceMap;
+
+  // Map from base_name to resource id of child.
+  typedef std::map<base::FilePath::StringType, std::string> ChildMap;
+
+  // Map from resource id to ChildMap.
+  typedef std::map<std::string, ChildMap> ChildMaps;
+
+  // TODO(hashimoto): Remove ChildMap related accessor methods.
+  // Convenient method to access a ChildMap.
+  // This method is not marked const in order to set up a ChildMap when needed.
+  const ChildMap& child_map(const std::string& resource_id) {
+    return child_maps_[resource_id];
+  }
+  ChildMap* mutable_child_map(const std::string& resource_id) {
+    return &child_maps_[resource_id];
+  }
+  ChildMaps* mutable_child_maps() { return &child_maps_; }
+
   // Clears root_ and the resource map.
   void ClearRoot();
 
@@ -364,6 +382,8 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   ResourceMap resource_map_;
+
+  ChildMaps child_maps_;
 
   scoped_ptr<DriveDirectory> root_;  // Stored in the serialized proto.
 

@@ -523,9 +523,9 @@ void DriveResourceMetadata::GetChildDirectories(
 void DriveResourceMetadata::GetDescendantDirectoryPaths(
     const DriveDirectory& directory,
     std::set<base::FilePath>* child_directories) {
-  for (DriveDirectory::ChildMap::const_iterator iter =
-           directory.children_.begin();
-       iter != directory.children_.end(); ++iter) {
+  const ChildMap& children = child_maps_[directory.resource_id()];
+  for (ChildMap::const_iterator iter = children.begin();
+       iter != children.end(); ++iter) {
     DriveDirectory* dir =
         GetEntryByResourceId(iter->second)->AsDriveDirectory();
     if (dir) {

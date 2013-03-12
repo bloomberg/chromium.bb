@@ -137,11 +137,6 @@ class DriveDirectory : public DriveEntry {
   void RemoveChildFiles();
   void RemoveChildDirectories();
 
-  // Map between base_name and resource_id of files and directories.
-  typedef std::map<base::FilePath::StringType, std::string> ChildMap;
-  // Collection of children.
-  ChildMap children_;
-
   // Weak pointer to DriveResourceMetadata.
   DriveResourceMetadata* resource_metadata_;
 
