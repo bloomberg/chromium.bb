@@ -130,10 +130,6 @@ void InProcessBrowserTest::SetUp() {
 
   host_resolver_ = new net::RuleBasedHostResolverProc(NULL);
 
-  // Something inside the browser does this lookup implicitly. Make it fail
-  // to avoid external dependency. It won't break the tests.
-  host_resolver_->AddSimulatedFailure("*.google.com");
-
   // See http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
   // We don't want the test code to use it.
   host_resolver_->AddSimulatedFailure("wpad");
