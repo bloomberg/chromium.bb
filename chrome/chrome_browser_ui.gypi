@@ -1581,6 +1581,8 @@
         'browser/ui/views/frame/taskbar_decorator.cc',
         'browser/ui/views/frame/taskbar_decorator.h',
         'browser/ui/views/frame/taskbar_decorator_win.cc',
+        'browser/ui/views/frame/top_container_view.cc',
+        'browser/ui/views/frame/top_container_view.h',
         'browser/ui/views/fullscreen_exit_bubble_views.cc',
         'browser/ui/views/fullscreen_exit_bubble_views.h',
         'browser/ui/views/global_error_bubble_view.cc',

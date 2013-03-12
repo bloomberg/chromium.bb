@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/instant_overlay_controller_views.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -214,10 +215,6 @@ void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
 
 // Returned from BrowserView::GetClassName.
 const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
-// static
-const int BrowserView::kTabstripIndex = 0;
-const int BrowserView::kInfoBarIndex = 1;
-const int BrowserView::kToolbarIndex = 2;
 
 namespace {
 
@@ -424,6 +421,7 @@ BrowserView::BrowserView(Browser* browser)
           views::ViewStorage::GetInstance()->CreateStorageID()),
       frame_(NULL),
       browser_(browser),
+      top_container_(NULL),
       active_bookmark_bar_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
@@ -972,8 +970,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
 }
 
 void BrowserView::MaybeStackImmersiveRevealAtTop() {
-  if (immersive_mode_controller_)
-    immersive_mode_controller_->MaybeStackViewAtTop();
+  immersive_mode_controller_->MaybeStackViewAtTop();
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -2027,25 +2024,13 @@ void BrowserView::Init() {
 
   LoadAccelerators();
 
-  // TabStrip takes ownership of the controller.
-  BrowserTabStripController* tabstrip_controller =
-      new BrowserTabStripController(browser_.get(),
-                                    browser_->tab_strip_model());
-  tabstrip_ = new TabStrip(tabstrip_controller);
-  AddChildViewAt(tabstrip_, kTabstripIndex);
-  tabstrip_controller->InitFromModel(tabstrip_);
-
   infobar_container_ = new InfoBarContainerView(this,
                                                 browser()->search_model());
-  AddChildViewAt(infobar_container_, kInfoBarIndex);
+  AddChildView(infobar_container_);
 
   contents_container_ = new views::WebView(browser_->profile());
   contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
   contents_ = new ContentsContainer(contents_container_);
-
-  toolbar_ = new ToolbarView(browser_.get());
-  AddChildViewAt(toolbar_, kToolbarIndex);
-  toolbar_->Init();
 
   overlay_controller_.reset(
       new InstantOverlayControllerViews(browser(), contents_));
@@ -2073,6 +2058,23 @@ void BrowserView::Init() {
   set_contents_view(contents_split_);
 
   status_bubble_.reset(new StatusBubbleViews(contents_));
+
+  // Top container holds tab strip and toolbar and lives at the front of the
+  // view hierarchy.
+  top_container_ = new TopContainerView(this);
+  AddChildView(top_container_);
+
+  // TabStrip takes ownership of the controller.
+  BrowserTabStripController* tabstrip_controller =
+      new BrowserTabStripController(browser_.get(),
+                                    browser_->tab_strip_model());
+  tabstrip_ = new TabStrip(tabstrip_controller);
+  top_container_->AddChildView(tabstrip_);
+  tabstrip_controller->InitFromModel(tabstrip_);
+
+  toolbar_ = new ToolbarView(browser_.get());
+  top_container_->AddChildView(toolbar_);
+  toolbar_->Init();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Create a custom JumpList and add it to an observer of TabRestoreService
