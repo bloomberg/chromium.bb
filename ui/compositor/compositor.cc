@@ -162,6 +162,8 @@ class DefaultContextFactory::DefaultContextProvider
         destroyed_(false) {}
 
   virtual bool InitializeOnMainThread() OVERRIDE {
+    if (context3d_)
+      return true;
     context3d_.reset(factory_->CreateOffscreenContext());
     return !!context3d_;
   }
