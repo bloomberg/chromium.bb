@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
 import android.text.Selection;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -51,8 +52,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForPageScaleFactor(1);
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testUnselectHidesHandle() throws Throwable {
         startActivityWithTestUrl(TEXTAREA_FILENAME);
         clickNodeToShowInsertionHandle(TEXTAREA_ID);
@@ -62,8 +67,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testDragInsertionHandle() throws Throwable {
         startActivityWithTestUrl(TEXTAREA_FILENAME);
 
@@ -81,8 +90,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForHandleNear(dragToX, dragToY);
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testPasteAtInsertionHandle() throws Throwable {
         startActivityWithTestUrl(TEXTAREA_FILENAME);
 
@@ -100,8 +113,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(waitForHandleShowingEquals(false));
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testDragInsertionHandleInputText() throws Throwable {
         startActivityWithTestUrl(INPUT_TEXT_FILENAME);
 
@@ -127,8 +144,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForHandleNear(initialX, initialY);
     }
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testDragInsertionHandleInputTextOutsideBounds() throws Throwable {
         startActivityWithTestUrl(INPUT_TEXT_FILENAME);
 
