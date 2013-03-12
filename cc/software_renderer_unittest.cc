@@ -34,7 +34,7 @@ public:
     void initializeRenderer() {
         m_outputSurface = FakeOutputSurface::CreateSoftware(make_scoped_ptr(new SoftwareOutputDevice));
         resource_provider_ = ResourceProvider::Create(m_outputSurface.get());
-        m_renderer = SoftwareRenderer::create(this, m_outputSurface.get(), resourceProvider());
+        m_renderer = SoftwareRenderer::Create(this, m_outputSurface.get(), resourceProvider());
     }
 
     ResourceProvider* resourceProvider() const { return resource_provider_.get(); }

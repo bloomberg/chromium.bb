@@ -1091,7 +1091,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     else if (outputSurface->context3d())
         m_renderer = GLRenderer::create(this, outputSurface.get(), resourceProvider.get());
     else if (outputSurface->software_device())
-        m_renderer = SoftwareRenderer::create(this, outputSurface.get(), resourceProvider.get());
+        m_renderer = SoftwareRenderer::Create(this, outputSurface.get(), resourceProvider.get());
     if (!m_renderer)
         return false;
 
