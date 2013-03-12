@@ -1144,15 +1144,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// Times out on mac, fails on linux.
-// http://crbug.com/119779
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_NavigateFromOtherTabToSingletonOptions DISABLED_NavigateFromOtherTabToSingletonOptions
-#else
-#define MAYBE_NavigateFromOtherTabToSingletonOptions NavigatorFrameOtherTabToSingletonOptions
-#endif
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       MAYBE_NavigateFromOtherTabToSingletonOptions) {
+                       NavigateFromOtherTabToSingletonOptions) {
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -1169,13 +1162,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
 
-  {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
-    observer.Wait();
-  }
+  // This load should simply cause a tab switch.
+  chrome::ShowSettings(browser());
+
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(GetSettingsURL(),
             ShortenUberURL(browser()->tab_strip_model()->
