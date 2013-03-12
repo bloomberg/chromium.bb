@@ -508,6 +508,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
 
   # We need to unzip the test results tarball first because we cannot update
   # a compressed tarball.
+  gzipped_test_tarball = os.path.abspath(gzipped_test_tarball)
   cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball],
                             debug_level=logging.DEBUG)
   test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
@@ -570,8 +571,8 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
       # Append the processed file to archive.
       filename = ArchiveFile(processed_file_path, archive_dir)
       stack_trace_filenames.append(filename)
-  cmd = ['tar', 'uf', test_tarball, '--directory=%s' % temp_dir, '.']
-  cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG)
+  cmd = ['tar', 'uf', test_tarball, '.']
+  cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG, cwd=temp_dir)
   cros_build_lib.RunCommand('%s -c %s > %s'
                             % (gzip, test_tarball, gzipped_test_tarball),
                             shell=True, debug_level=logging.DEBUG)
