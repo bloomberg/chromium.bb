@@ -11,9 +11,9 @@
 #import "chrome/browser/ui/cocoa/location_bar/button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/common/extensions/feature_switch.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 using extensions::FeatureSwitch;
 

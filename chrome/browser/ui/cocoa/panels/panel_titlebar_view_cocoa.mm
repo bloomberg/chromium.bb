@@ -11,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/common/password_generation_util.h"
 #include "components/autofill/browser/password_generator.h"
 #include "components/autofill/common/autofill_messages.h"
@@ -21,6 +20,7 @@
 #include "content/public/common/password_form.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 

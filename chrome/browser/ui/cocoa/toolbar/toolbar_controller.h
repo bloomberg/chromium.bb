@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_member.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
@@ -85,7 +85,7 @@ class NotificationBridge;
   scoped_nsobject<AutocompleteTextField> locationBarRetainer_;
 
   // Tracking area for mouse enter/exit/moved in the toolbar.
-  ScopedCrTrackingArea trackingArea_;
+  ui::ScopedCrTrackingArea trackingArea_;
 
   // We retain/release the hover button since interaction with the
   // button may make it go away (e.g. delete menu option over a

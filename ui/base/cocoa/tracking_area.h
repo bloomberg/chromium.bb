@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TRACKING_AREA_H_
-#define CHROME_BROWSER_UI_COCOA_TRACKING_AREA_H_
+#ifndef UI_BASE_COCOA_TRACKING_AREA_H_
+#define UI_BASE_COCOA_TRACKING_AREA_H_
 
 #import <AppKit/AppKit.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "ui/base/ui_export.h"
 
 @class CrTrackingAreaOwnerProxy;
 
@@ -36,9 +37,11 @@
 
 // Scoper //////////////////////////////////////////////////////////////////////
 
+namespace ui {
+
 // Use an instance of this class to call |-clearOwner| on the |tracking_area_|
 // when this goes out of scope.
-class ScopedCrTrackingArea {
+class UI_EXPORT ScopedCrTrackingArea {
  public:
   // Takes ownership of |tracking_area| without retaining it.
   explicit ScopedCrTrackingArea(CrTrackingArea* tracking_area = nil);
@@ -56,4 +59,6 @@ class ScopedCrTrackingArea {
   DISALLOW_COPY_AND_ASSIGN(ScopedCrTrackingArea);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_TRACKING_AREA_H_
+}  // namespace ui
+
+#endif  // UI_BASE_COCOA_TRACKING_AREA_H_

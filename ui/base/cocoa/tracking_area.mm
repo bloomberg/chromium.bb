@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tracking_area.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 #include "base/logging.h"
 
@@ -109,6 +109,8 @@
 
 // Scoper //////////////////////////////////////////////////////////////////////
 
+namespace ui {
+
 ScopedCrTrackingArea::ScopedCrTrackingArea(CrTrackingArea* tracking_area)
     : tracking_area_(tracking_area) {
 }
@@ -124,3 +126,5 @@ void ScopedCrTrackingArea::reset(CrTrackingArea* tracking_area) {
 CrTrackingArea* ScopedCrTrackingArea::get() const {
   return tracking_area_.get();
 }
+
+}  // namespace ui

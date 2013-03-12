@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 @class BookmarkBarController;
 @class BookmarkBarFolderView;
@@ -112,7 +112,7 @@
   BookmarkBarFolderController* folderController_;
 
   // Implement basic menu scrolling through this tracking area.
-  ScopedCrTrackingArea scrollTrackingArea_;
+  ui::ScopedCrTrackingArea scrollTrackingArea_;
 
   // Timer to continue scrolling as needed.  We own the timer but
   // don't release it when done (we invalidate it).

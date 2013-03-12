@@ -7,13 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/ui/cocoa/tracking_area.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 // A push button for use in a constrained window. Specialized constrained
 // windows that need a push button should use this class instead of NSButton.
 @interface ConstrainedWindowButton : NSButton {
  @private
-  ScopedCrTrackingArea trackingArea_;
+  ui::ScopedCrTrackingArea trackingArea_;
 }
 
 @end

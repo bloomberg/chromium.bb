@@ -8,7 +8,7 @@
 #include "base/mac/scoped_block.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 namespace content {
 class WebContents;
@@ -37,7 +37,7 @@ class WebContents;
   BOOL isMouseInside_;
 
   // Used to prevent the bubble from auto-closing while the mouse is inside it.
-  ScopedCrTrackingArea trackingArea_;
+  ui::ScopedCrTrackingArea trackingArea_;
 }
 
 // Creates the bubble for a parent window but does not show it.

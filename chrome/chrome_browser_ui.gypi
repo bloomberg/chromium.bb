@@ -809,8 +809,6 @@
         'browser/ui/cocoa/toolbar/toolbar_controller.mm',
         'browser/ui/cocoa/toolbar/toolbar_view.h',
         'browser/ui/cocoa/toolbar/toolbar_view.mm',
-        'browser/ui/cocoa/tracking_area.h',
-        'browser/ui/cocoa/tracking_area.mm',
         'browser/ui/cocoa/ui_localizer.h',
         'browser/ui/cocoa/ui_localizer.mm',
         'browser/ui/cocoa/url_drop_target.h',

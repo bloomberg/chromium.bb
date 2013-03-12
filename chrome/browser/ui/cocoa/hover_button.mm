@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/hover_button.h"
 
-#import "chrome/browser/ui/cocoa/tracking_area.h"
-
 @implementation HoverButton
 
 @synthesize hoverState = hoverState_;

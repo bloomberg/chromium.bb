@@ -99,6 +99,8 @@
         'base/cocoa/fullscreen_window_manager.mm',
         'base/cocoa/nib_loading.h',
         'base/cocoa/nib_loading.mm',
+        'base/cocoa/tracking_area.h',
+        'base/cocoa/tracking_area.mm',
         'base/cocoa/underlay_opengl_hosting_window.h',
         'base/cocoa/underlay_opengl_hosting_window.mm',
         'base/cocoa/window_size_constants.h',

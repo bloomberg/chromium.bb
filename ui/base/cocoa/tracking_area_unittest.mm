@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/tracking_area.h"
+#import "ui/base/cocoa/tracking_area.h"
+#import "ui/base/test/ui_cocoa_test_helper.h"
 
 // A test object that counts the number of times a message is sent to it.
 @interface TestTrackingAreaOwner : NSObject {
@@ -21,6 +21,8 @@
   ++messageCount_;
 }
 @end
+
+namespace ui {
 
 class CrTrackingAreaTest : public CocoaTest {
  public:
@@ -95,3 +97,5 @@ TEST_F(CrTrackingAreaTest, ScoperReset) {
   [[trackingArea_ owner] performMessage];
   EXPECT_EQ(2U, [owner_ messageCount]);
 }
+
+}  // namespace ui

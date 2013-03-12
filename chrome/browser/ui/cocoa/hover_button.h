@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_HOVER_BUTTON_
+#define CHROME_BROWSER_UI_COCOA_HOVER_BUTTON_
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/tracking_area.h"
-
+#import "ui/base/cocoa/tracking_area.h"
 
 // A button that changes when you hover over it and click it.
 @interface HoverButton : NSButton {
@@ -23,7 +25,7 @@
 
  @private
   // Tracking area for button mouseover states.
-  ScopedCrTrackingArea trackingArea_;
+  ui::ScopedCrTrackingArea trackingArea_;
 }
 
 @property(nonatomic) HoverState hoverState;
@@ -36,4 +38,7 @@
 // when you close a tab so the tab to the left of it takes its place, and
 // drag the button without moving the mouse before you press the button down.
 - (void)checkImageState;
+
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_HOVER_BUTTON_
