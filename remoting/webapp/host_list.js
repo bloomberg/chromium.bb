@@ -252,16 +252,25 @@ remoting.HostList.prototype.display = function() {
 
   this.errorMsg_.parentNode.hidden = (this.lastError_ == '');
 
+  // The local host cannot be stopped or started if the host controller is not
+  // implemented for this platform. Additionally, it cannot be started if there
+  // is an error (in many error states, the start operation will fail anyway,
+  // but even if it succeeds, the chance of a related but hard-to-diagnose
+  // future error is high).
   var state = this.localHostState_;
   var enabled = (state == remoting.HostController.State.STARTING) ||
       (state == remoting.HostController.State.STARTED);
-  var supported = (state != remoting.HostController.State.NOT_IMPLEMENTED);
+  var canChangeLocalHostState =
+      (state != remoting.HostController.State.NOT_IMPLEMENTED) &&
+      (enabled || this.lastError_ == '');
+
   remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
-  document.getElementById('daemon-control').hidden = !supported;
-  var element = document.getElementById('host-list-empty-hosting-supported');
-  element.hidden = !supported;
+  var element = document.getElementById('daemon-control');
+  element.hidden = !canChangeLocalHostState;
+  element = document.getElementById('host-list-empty-hosting-supported');
+  element.hidden = !canChangeLocalHostState;
   element = document.getElementById('host-list-empty-hosting-unsupported');
-  element.hidden = supported;
+  element.hidden = canChangeLocalHostState;
 };
 
 /**
