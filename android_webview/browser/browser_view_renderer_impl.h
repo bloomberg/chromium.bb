@@ -57,6 +57,9 @@ class BrowserViewRendererImpl
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void OnAttachedToWindow(int width, int height) OVERRIDE;
   virtual void OnDetachedFromWindow() OVERRIDE;
+  virtual bool IsAttachedToWindow() OVERRIDE;
+  virtual bool IsViewVisible() OVERRIDE;
+  virtual gfx::Rect GetScreenRect() OVERRIDE;
 
   // content::Compositor::Client implementation.
   virtual void ScheduleComposite() OVERRIDE;
@@ -110,6 +113,7 @@ class BrowserViewRendererImpl
   // Last View scroll before hardware rendering is triggered.
   gfx::Point hw_rendering_scroll_;
 
+  bool view_attached_;
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;

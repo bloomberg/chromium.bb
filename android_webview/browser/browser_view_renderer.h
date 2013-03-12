@@ -6,11 +6,14 @@
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 struct AwDrawGLInfo;
 
 namespace content {
 class ContentViewCore;
+class WebContents;
 }
 
 namespace gfx {
@@ -32,6 +35,9 @@ class BrowserViewRenderer {
      // via the EnableOnNewPicture method.
      virtual void OnNewPicture(
          const base::android::JavaRef<jobject>& picture) = 0;
+
+     // Called to get view's absolute location on the screen.
+     virtual gfx::Point GetLocationOnScreen() = 0;
 
    protected:
      virtual ~Client() {}
@@ -86,6 +92,11 @@ class BrowserViewRenderer {
   virtual void OnSizeChanged(int width, int height) = 0;
   virtual void OnAttachedToWindow(int width, int height) = 0;
   virtual void OnDetachedFromWindow() = 0;
+
+  // Android views hierarchy gluing.
+  virtual bool IsAttachedToWindow() = 0;
+  virtual bool IsViewVisible() = 0;
+  virtual gfx::Rect GetScreenRect() = 0;
 
   virtual ~BrowserViewRenderer() {}
 };

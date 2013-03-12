@@ -136,6 +136,7 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
       view_clip_layer_(cc::Layer::Create()),
       transform_layer_(cc::Layer::Create()),
       scissor_clip_layer_(cc::Layer::Create()),
+      view_attached_(false),
       view_visible_(false),
       compositor_visible_(false),
       is_composite_pending_(false),
@@ -409,13 +410,27 @@ void BrowserViewRendererImpl::OnSizeChanged(int width, int height) {
 }
 
 void BrowserViewRendererImpl::OnAttachedToWindow(int width, int height) {
+  view_attached_ = true;
   view_size_ = gfx::Size(width, height);
   view_clip_layer_->SetBounds(view_size_);
 }
 
 void BrowserViewRendererImpl::OnDetachedFromWindow() {
+  view_attached_ = false;
   view_visible_ = false;
   SetCompositorVisibility(false);
+}
+
+bool BrowserViewRendererImpl::IsAttachedToWindow() {
+  return view_attached_;
+}
+
+bool BrowserViewRendererImpl::IsViewVisible() {
+  return view_visible_;
+}
+
+gfx::Rect BrowserViewRendererImpl::GetScreenRect() {
+  return gfx::Rect(client_->GetLocationOnScreen(), view_size_);
 }
 
 void BrowserViewRendererImpl::ScheduleComposite() {

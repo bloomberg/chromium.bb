@@ -1219,6 +1219,13 @@ public class AwContents {
         return mContainerView.performLongClick();
     }
 
+    @CalledByNative
+    private int[] getLocationOnScreen() {
+        int[] result = new int[2];
+        mContainerView.getLocationOnScreen(result);
+        return result;
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------

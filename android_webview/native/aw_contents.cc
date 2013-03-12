@@ -21,6 +21,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
@@ -670,6 +671,18 @@ void AwContents::FocusFirstNode(JNIEnv* env, jobject obj) {
 
 jint AwContents::ReleasePopupWebContents(JNIEnv* env, jobject obj) {
   return reinterpret_cast<jint>(pending_contents_.release());
+}
+
+gfx::Point AwContents::GetLocationOnScreen() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null()) return gfx::Point();
+  std::vector<int> location;
+  base::android::JavaIntArrayToIntVector(
+      env,
+      Java_AwContents_getLocationOnScreen(env, obj.obj()).obj(),
+      &location);
+  return gfx::Point(location[0], location[1]);
 }
 
 ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,
