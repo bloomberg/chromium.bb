@@ -108,9 +108,10 @@ void CancelDriveDownloadOnUIThread(
     void* profile_id, const base::FilePath& drive_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveSystemService* system_service = GetSystemService(profile_id);
-  if (system_service)
-    system_service->drive_service()->CancelForFilePath(drive_file_path);
+  DriveFileSystemInterface* file_system = GetFileSystemOnUIThread(profile_id);
+  if (file_system) {
+    file_system->CancelGetFile(drive_file_path);
+  }
 }
 
 // Helper function to call DriveFileSystem::GetEntryInfoByResourceId.

@@ -165,6 +165,7 @@ void FakeDriveService::CancelAll() {
 
 bool FakeDriveService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  last_cancelled_file_ = file_path;
   return true;
 }
 

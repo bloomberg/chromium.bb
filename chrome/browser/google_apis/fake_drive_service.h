@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
 #define CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
 
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 
@@ -62,6 +63,12 @@ class FakeDriveService : public DriveServiceInterface {
   // by GetAboutResource().
   int about_resource_load_count() const {
     return about_resource_load_count_;
+  }
+
+  // Returns the file path whose operation is cancelled just before this method
+  // invocation.
+  const base::FilePath& last_cancelled_file() const {
+    return last_cancelled_file_;
   }
 
   // Returns the (fake) URL for the link.
@@ -192,6 +199,7 @@ class FakeDriveService : public DriveServiceInterface {
   int account_metadata_load_count_;
   int about_resource_load_count_;
   bool offline_;
+  base::FilePath last_cancelled_file_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };

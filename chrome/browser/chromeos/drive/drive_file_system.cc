@@ -716,6 +716,14 @@ void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
                         entry_proto.Pass());
 }
 
+void DriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
+  // Currently the task is managed on DriveServiceInterface, so we directly
+  // call its method here.
+  // Note: the task management will be moved to DriveScheduler, an the we
+  // can cancel the job via the |scheduler_|.
+  drive_service_->CancelForFilePath(drive_file_path);
+}
+
 void DriveFileSystem::OnGetFileFromCache(
     const GetFileFromCacheParams& in_params,
     DriveFileError error,
