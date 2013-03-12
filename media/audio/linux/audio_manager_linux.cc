@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
@@ -19,9 +20,7 @@
 #include "media/audio/linux/alsa_input.h"
 #include "media/audio/linux/alsa_output.h"
 #include "media/audio/linux/alsa_wrapper.h"
-#if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
-#endif
 #include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
@@ -44,6 +43,13 @@ static const char* kInvalidAudioInputDevices[] = {
   "pulse",
   "dmix",
   "surround",
+};
+
+enum LinuxAudioIO {
+  kPulse,
+  kAlsa,
+  kCras,
+  kAudioIOMax  // Must always be last!
 };
 
 // static
@@ -321,18 +327,18 @@ AudioInputStream* AudioManagerLinux::MakeInputStream(
 AudioManager* CreateAudioManager() {
 #if defined(USE_CRAS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
+    UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax);
     return new AudioManagerCras();
   }
 #endif
 
-#if defined(USE_PULSEAUDIO)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePulseAudio)) {
-    AudioManager* manager = AudioManagerPulse::Create();
-    if (manager)
-      return manager;
+  AudioManager* manager = AudioManagerPulse::Create();
+  if (manager) {
+    UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kPulse, kAudioIOMax);
+    return manager;
   }
-#endif
 
+  UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kAlsa, kAudioIOMax);
   return new AudioManagerLinux();
 }
 
