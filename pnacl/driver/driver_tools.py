@@ -1074,7 +1074,11 @@ def ArchMerge(filename, must_match):
 def CheckTranslatorPrerequisites():
   """ Assert that the scons artifacts for running the sandboxed translator
       exist: sel_universal, and sel_ldr. """
-  for var in ['SEL_UNIVERSAL', 'SEL_LDR', 'BOOTSTRAP_LDR']:
+  reqs = ['SEL_UNIVERSAL', 'SEL_LDR']
+  # Linux also requires the nacl bootstrap helper.
+  if GetBuildOS() == 'linux':
+    reqs.append('BOOTSTRAP_LDR')
+  for var in reqs:
     needed_file = env.getone(var)
     if not pathtools.exists(needed_file):
       Log.Fatal('Could not find %s [%s]', var, needed_file)

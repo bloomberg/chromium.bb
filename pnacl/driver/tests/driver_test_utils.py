@@ -30,6 +30,17 @@ def _SetupLinuxHostDir(env, nacl_dir):
   dir_64 = dir_template % 'x86_64'
   env.set('BASE_HOST', dir_32 if os.path.exists(dir_32) else dir_64)
 
+def SetupNaClDir(env):
+  test_dir = os.path.abspath(dirname(__file__))
+  nacl_dir = dirname(dirname(dirname(test_dir)))
+  env.set('BASE_NACL', nacl_dir)
+
+def SetupToolchainDir(env):
+  test_dir = os.path.abspath(dirname(__file__))
+  nacl_dir = dirname(dirname(dirname(test_dir)))
+  toolchain_dir = os.path.join(nacl_dir, 'toolchain')
+  env.set('BASE_TOOLCHAIN', toolchain_dir)
+
 def SetupHostDir(env):
   # Some of the tools require 'BASE_HOST' to be set, because they end up
   # running one of the host binaries.
@@ -49,7 +60,6 @@ def SetupHostDir(env):
                           'host_%s' % host_arch)
   env.set('BASE_HOST', host_dir)
 
-
 # A collection of override methods that mock driver_env.Environment.
 
 # One thing is we prevent having to read a driver.conf file,
@@ -61,8 +71,9 @@ def TestEnvReset(self):
   # The overrides.
   self.set('LIBMODE', 'newlib')
   self.set('PNACL_RUNNING_UNITTESTS', '1')
+  SetupNaClDir(self)
+  SetupToolchainDir(self)
   SetupHostDir(self)
-
 
 def ApplyTestEnvOverrides(env):
   """Register all the override methods and reset the env to a testable state.

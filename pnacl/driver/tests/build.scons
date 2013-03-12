@@ -6,9 +6,24 @@
 
 Import('env')
 
+# Depends on the opt-host version of sel_ldr and sel_universal.
+if 'TRUSTED_ENV' not in env or env['OPTIMIZATION_LEVEL'] == 'dbg':
+  Return()
+
+sel_universal = env['TRUSTED_ENV'].File(
+    '${STAGING_DIR}/${PROGPREFIX}sel_universal${PROGSUFFIX}')
+sel_ldr = env.GetSelLdr()
+
 node = env.CommandTest('pnacl_driver_tests.out',
                        command=['${PYTHON}',
-                       env.File('driver_tests.py')],
+                                env.File('driver_tests.py'),
+                                '--platform=' + env.GetPlatform()],
                        direct_emulation=False)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_pnacl_driver_tests')
 
+# The pnacl-translate driver does a sanity check that sel_ldr and
+# sel_universal are built when '--pnacl-sb' is specified.
+# We may also want it to run the sandboxed translator all the way through
+# to check if the sandboxed LLC got the right input.
+env.Depends(node, sel_ldr)
+env.Depends(node, sel_universal)

@@ -1109,9 +1109,10 @@ AVAILABLE_PLATFORMS = {
     }
 
 # Look up the platform name from the command line arguments.
-def GetPlatform():
+def GetPlatform(self):
   return ARGUMENTS.get('platform', 'x86-32')
 
+pre_base_env.AddMethod(GetPlatform)
 
 # Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
 def DecodePlatform(platform):
@@ -1154,7 +1155,7 @@ DeclareBit('target_arm', 'Tools being built will process arm binaries')
 
 def MakeArchSpecificEnv():
   env = pre_base_env.Clone()
-  platform = GetPlatform()
+  platform = env.GetPlatform()
   info = DecodePlatform(platform)
 
   env.Replace(BUILD_FULLARCH=platform)
@@ -1181,7 +1182,7 @@ def MakeArchSpecificEnv():
   if env.Bit('target_arm_arm') or env.Bit('target_arm_thumb2'):
     env.SetBits('target_arm')
 
-  env.Replace(BUILD_ISA_NAME=GetPlatform())
+  env.Replace(BUILD_ISA_NAME=env.GetPlatform())
 
   if env.Bit('target_arm') or env.Bit('target_mips32'):
     if not env.Bit('native_code'):
@@ -2735,7 +2736,7 @@ def MakeLinuxEnv():
   elif linux_env.Bit('build_mips32'):
     SetupLinuxEnvMips(linux_env)
   else:
-    Banner('Strange platform: %s' % GetPlatform())
+    Banner('Strange platform: %s' % env.GetPlatform())
 
   # These are desireable options for every Linux platform:
   # _FORTIFY_SOURCE: general paranoia "hardening" option for library functions
@@ -3494,7 +3495,7 @@ def AddImplicitLibs(env):
                         'crti.o',
                         'crtn.o']
       # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
-      if GetPlatform() == 'x86-32':
+      if env.GetPlatform() == 'x86-32':
         implicit_libs.append(os.path.join('32', 'crt1.o'))
 
   if implicit_libs != []:

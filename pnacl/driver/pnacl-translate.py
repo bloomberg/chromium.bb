@@ -124,43 +124,29 @@ EXTRA_ENV = {
   'LLC_FLAGS_MIPS32': '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data',
 
   # LLC flags which set the target and output type.
-  # These are handled separately by libLTO.
-  'LLC_FLAGS_TARGET' : '-mcpu=${LLC_MCPU} ' +
-                       '-mtriple=${TRIPLE} ' +
-                       '-filetype=${filetype}',
+  'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${filetype}',
+
   # Append additional non-default flags here.
-  'LLC_FLAGS_EXTRA' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
+  'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
+                      '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                       '${OPT_LEVEL == 0 ? -disable-fp-elim}',
 
   # Opt level from command line (if any)
   'OPT_LEVEL' : '',
 
-  # slower translation == faster code
-  'LLC_FLAGS_SLOW':
-  # Due to a quadratic algorithm used for tail merging
-  # capping it at 50 helps speed up translation
-                     '-tail-merge-threshold=50',
-
   # faster translation == slower code
   'LLC_FLAGS_FAST' : '${LLC_FLAGS_FAST_%ARCH%}',
 
-  'LLC_FLAGS_FAST_X8632':
-                          '-O0 ' +
-  # This, surprisingly, makes a measurable difference
+  'LLC_FLAGS_FAST_X8632': '-O0 ' +
+                          # This, surprisingly, makes a measurable difference
                           '-tail-merge-threshold=20',
-  'LLC_FLAGS_FAST_X8664':
-                          '-O0 ' +
+  'LLC_FLAGS_FAST_X8664': '-O0 ' +
                           '-tail-merge-threshold=20',
-  'LLC_FLAGS_FAST_ARM':
-  # due to slow turn around times ARM settings have not been explored in depth
-                          '-O0 ' +
+  'LLC_FLAGS_FAST_ARM':   '-O0 ' +
                           '-tail-merge-threshold=20',
   'LLC_FLAGS_FAST_MIPS32': '-fast-isel -tail-merge-threshold=20',
 
-  'LLC_FLAGS': '${LLC_FLAGS_TARGET} ' +
-               '${LLC_FLAGS_COMMON} ' +
-               '${LLC_FLAGS_%ARCH%} ' +
-               '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST} : ${LLC_FLAGS_SLOW}} ' +
+  'LLC_FLAGS': '${LLC_FLAGS_TARGET} ${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} ' +
                '${LLC_FLAGS_EXTRA}',
 
   # CPU that is representative of baseline feature requirements for NaCl
@@ -169,14 +155,15 @@ EXTRA_ENV = {
   # Note: this may be different from the in-browser translator, which may
   # do auto feature detection based on CPUID, but constrained by what is
   # accepted by NaCl validators.
-  'LLC_MCPU'        : '${LLC_MCPU_%ARCH%}',
+  'LLC_MCPU'        : '-mcpu=${LLC_MCPU_%ARCH%}',
   'LLC_MCPU_ARM'    : 'cortex-a8',
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
   'LLC_MCPU_MIPS32' : 'mips32r2',
 
   # Note: this is only used in the unsandboxed case
-  'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
+  'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
+                    '${input} -o ${output} ' +
                     '-metadata-text ${output}.meta',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
@@ -199,7 +186,8 @@ TranslatorPatterns = [
   ( '(-ffunction-sections)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(--gc-sections)',       "env.append('LD_FLAGS', $0)"),
   ( '(-mattr=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
-  ( '-mcpu=(.*)', "env.set('LLC_MCPU', $0)"),
+  ( '(-mcpu=.*)', "env.set('LLC_MCPU', '')\n"
+                  "env.append('LLC_FLAGS_EXTRA', $0)"),
   # Allow overriding the -O level.
   ( '-O([0-3])', "env.set('OPT_LEVEL', $0)"),
 
@@ -465,9 +453,6 @@ def ToggleDefaultCommandlineLD(inputs, infile):
 
 
 def RequiresNonStandardLLCCommandline():
-  if env.getbool('FAST_TRANSLATION'):
-    return ('FAST_TRANSLATION', True)
-
   extra_flags = env.get('LLC_FLAGS_EXTRA')
   if extra_flags != []:
     reason = 'Has additional llc flags: %s' % extra_flags
@@ -523,10 +508,9 @@ def RunLLCSandboxed():
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
-  flags = env.get('LLC_FLAGS')
   if not driver_tools.IsBitcode(infile):
     Log.Fatal('Input to sandboxed translator must be bitcode')
-  script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
+  script = MakeSelUniversalScriptForLLC(infile, outfile)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
     '-- ${LLC_SB}')
   _, stdout, _  = driver_tools.Run(command,
@@ -544,14 +528,19 @@ def RunLLCSandboxed():
   needed_libs = [ lib for lib in needed_str.split(r'\n') if lib]
   return is_shared, soname, needed_libs
 
-def BuildLLCCommandLine(flags):
+def BuildOverrideLLCCommandLine():
+  extra_flags = env.get('LLC_FLAGS_EXTRA')
+  # The mcpu is not part of the default flags, so append that too.
+  mcpu = env.getone('LLC_MCPU')
+  if mcpu:
+    extra_flags.append(mcpu)
   # command_line is a NUL (\x00) terminated sequence.
   kTerminator = '\0'
-  command_line = kTerminator.join(['llc'] + flags) + kTerminator
+  command_line = kTerminator.join(extra_flags) + kTerminator
   command_line_escaped = command_line.replace(kTerminator, '\\x00')
   return len(command_line), command_line_escaped
 
-def MakeSelUniversalScriptForLLC(infile, outfile, flags):
+def MakeSelUniversalScriptForLLC(infile, outfile):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
   stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
@@ -559,8 +548,8 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   if UseDefaultCommandlineLLC():
     script.append('rpc StreamInit h(objfile) * s()')
   else:
-    cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
-    script.append('rpc StreamInitWithCommandLine h(objfile) C(%d,%s) * s()' %
+    cmdline_len, cmdline_escaped = BuildOverrideLLCCommandLine()
+    script.append('rpc StreamInitWithOverrides h(objfile) C(%d,%s) * s()' %
                   (cmdline_len, cmdline_escaped))
   # specify filename, chunk size and rate in bits/s
   script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))

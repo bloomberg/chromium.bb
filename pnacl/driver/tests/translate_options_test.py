@@ -1,0 +1,259 @@
+#!/usr/bin/python
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Tests of the pnacl driver.
+
+This tests that pnacl-translate options pass through to LLC correctly,
+and are overridden correctly.
+"""
+
+from driver_env import env
+import driver_log
+import driver_test_utils
+import driver_tools
+
+import cStringIO
+import os
+import re
+import sys
+import tempfile
+import unittest
+
+class DriverExitException(Exception):
+  pass
+
+def FakeExit(i):
+  raise DriverExitException('Stubbed out DriverExit!')
+
+def MakeFakeStdStream():
+  fake_out = cStringIO.StringIO()
+  fake_err = cStringIO.StringIO()
+  backup_stdout = sys.stdout
+  backup_stderr = sys.stderr
+  sys.stdout = fake_out
+  sys.stderr = fake_err
+  return (fake_out, fake_err, backup_stdout, backup_stderr)
+
+def RestoreStdStream(fake_out, fake_err,
+                     backup_stdout, backup_stderr):
+  sys.stdout = backup_stdout
+  sys.stderr = backup_stderr
+  # For some reason, cStringIO.StringIO() returns the same object
+  # for fake_out, on each iteration.  So, if we close() it we could
+  # end up getting a closed object and write to closed object
+  # in the next iteration.
+  fake_out.reset()
+  fake_out.truncate()
+  fake_err.reset()
+  fake_err.truncate()
+
+def GetPlatformToTest():
+  for arg in sys.argv:
+    if arg.startswith('--platform='):
+      return arg.split('=')[1]
+  raise Exception('Unknown platform')
+
+class TestLLCOptions(unittest.TestCase):
+
+  def setUp(self):
+    driver_test_utils.ApplyTestEnvOverrides(env)
+    self.platform = GetPlatformToTest()
+    self.tempfiles = []
+
+  def getTemp(self, **kwargs):
+    # Set delete=False, so that we can close the files and
+    # re-open them.  Windows sometimes does not allow you to
+    # re-open an already opened temp file.
+    t = tempfile.NamedTemporaryFile(delete=False, **kwargs)
+    self.tempfiles.append(t)
+    return t
+
+  def tearDown(self):
+    for t in self.tempfiles:
+      if not t.closed:
+        t.close()
+      os.remove(t.name)
+    # Wipe other temp files that are normally wiped by DriverExit.
+    # We don't want anything to exit, so we do not call DriverExit manually.
+    driver_log.TempFiles.wipe()
+
+  def getFakePexe(self):
+    # Even --dry-run requires a file to exist, so make a fake pexe.
+    # It even cares that the file is really bitcode.
+    with self.getTemp(suffix='.ll') as t:
+      with self.getTemp(suffix='.pexe') as p:
+        t.write('''
+define i32 @main() {
+  ret i32 0
+}
+''')
+        t.close()
+        p.close()
+        driver_tools.RunDriver('as', [t.name, '-o', p.name])
+        return p
+
+
+  def checkLLCTranslateFlags(self, pexe, arch, flags,
+                             expected_flags):
+    ''' Given a |pexe| the |arch| for translation and additional pnacl-translate
+    |flags|, check that the commandline for LLC really contains the
+    |expected_flags|.  This ensures that the pnacl-translate script
+    does not drop certain flags accidentally. '''
+    temp_output = self.getTemp()
+    temp_output.close()
+    # Major hack to capture the output.
+    # RunDriver() prints a bunch of things to stdout, which we need to capture.
+    # Another major hack is to prevent DriverExit() from aborting the test.'
+    # The test will surely DriverLog.Fatal() because dry-run currently
+    # does not handle anything that involves invoking a subprocess and
+    # grepping the stdout/stderr since it never actually invokes
+    # the subprocess. Unfortunately, pnacl-translate does grep the output of
+    # the sandboxed LLC run, so we can only go that far with --dry-run.
+    (fake_out, fake_err, backup_stdout, backup_stderr) = MakeFakeStdStream()
+    backup_exit = sys.exit
+    sys.exit = FakeExit
+    try:
+      self.assertRaises(DriverExitException,
+                        driver_tools.RunDriver,
+                        'translate',
+                        ['--pnacl-driver-verbose',
+                         '--dry-run',
+                         '-arch', arch,
+                         pexe.name,
+                         '-o', temp_output.name] + flags)
+    finally:
+      out = sys.stdout.getvalue()
+      err = sys.stderr.getvalue()
+      RestoreStdStream(fake_out, fake_err,
+                       backup_stdout, backup_stderr)
+      sys.exit = backup_exit
+    for f in expected_flags:
+      self.assertTrue(re.search(f, err),
+                      msg='Searching for regex %s in %s' % (f, err))
+    return
+
+
+  #### Individual tests.
+
+  def test_no_overrides(self):
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      if self.platform == 'arm':
+        expected_triple_cpu = ['-mtriple=arm.*', '-mcpu=cortex.*']
+      elif self.platform == 'x86-32':
+        expected_triple_cpu = ['-mtriple=i686.*', '-mcpu=pentium.*']
+      elif self.platform == 'x86-64':
+        expected_triple_cpu = ['-mtriple=x86_64.*', '-mcpu=core.*']
+      else:
+        raise Exception('Unknown platform')
+      # Test that certain defaults are set, when no flags are given.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          [],
+          expected_triple_cpu)
+      # Test that the default StreamInit is used, when no flags are given.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb'],
+          ['StreamInit h'])
+
+  def test_overrideO0(self):
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      # Test that you get O0 when you ask for O0.
+      # You also get no frame pointer elimination.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['-O0'],
+          ['-O0 ', '-disable-fp-elim '])
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['-O0', '--pnacl-sb'],
+          ['StreamInitWithOverrides.*-O0.*-disable-fp-elim.*-mcpu=.*'])
+
+  def test_overrideTranslateFast(self):
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      # Test that you get O0 when you ask for -translate-fast.
+      # In this case... you don't get no frame pointer elimination.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['-translate-fast'],
+          ['-O0'])
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['-translate-fast', '--pnacl-sb'],
+          ['StreamInitWithOverrides.*-O0.*-mcpu=.*'])
+
+  def test_overrideTLSUseCall(self):
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      # Test that you -mtls-use-call, etc. when you ask for it.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['-mtls-use-call', '-fdata-sections', '-ffunction-sections'],
+          ['-mtls-use-call', '-fdata-sections', '-ffunction-sections'])
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          ['-mtls-use-call', '-fdata-sections', '-ffunction-sections',
+           '--pnacl-sb'],
+          ['StreamInitWithOverrides.*-mtls-use-call' +
+           '.*-fdata-sections.*-ffunction-sections'])
+
+  def test_overrideMCPU(self):
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      if self.platform == 'arm':
+        mcpu_pattern = '-mcpu=cortex-a15'
+      elif self.platform == 'x86-32':
+        mcpu_pattern = '-mcpu=atom'
+      elif self.platform == 'x86-64':
+        mcpu_pattern = '-mcpu=corei7'
+      else:
+        raise Exception('Unknown platform')
+      # Test that you get the -mcpu that you ask for.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          [mcpu_pattern],
+          [mcpu_pattern])
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          [mcpu_pattern, '--pnacl-sb'],
+          ['StreamInitWithOverrides.*' + mcpu_pattern])
+
+  def test_overrideMAttr(self):
+    if driver_test_utils.CanRunHost():
+      pexe = self.getFakePexe()
+      if self.platform == 'arm':
+        mattr_flags, mattr_pat = '-mattr=+hwdiv', r'-mattr=\+hwdiv'
+      elif self.platform == 'x86-32' or self.platform == 'x86-64':
+        mattr_flags, mattr_pat = '-mattr=+avx2,+sse41', r'-mattr=\+avx2,\+sse41'
+      else:
+        raise Exception('Unknown platform')
+      # Test that you get the -mattr=.* that you ask for.
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          [mattr_flags],
+          [mattr_pat])
+      self.checkLLCTranslateFlags(
+          pexe,
+          self.platform,
+          [mattr_flags, '--pnacl-sb'],
+          ['StreamInitWithOverrides.*' + mattr_pat + '.*-mcpu=.*'])
+
+
+if __name__ == '__main__':
+  unittest.main()
