@@ -218,6 +218,8 @@ void InstalledLoader::LoadAllExtensions() {
   }
 
   for (size_t i = 0; i < extensions_info->size(); ++i) {
+    if (extensions_info->at(i)->extension_location == Manifest::COMMAND_LINE)
+      continue;
     Load(*extensions_info->at(i), should_write_prefs);
   }
 
