@@ -13,6 +13,8 @@
 
 var WebView = require('webView').WebView;
 
+var forEach = require('utils').forEach;
+
 /** @type {Array.<string>} */
 var PERMISSION_TYPES = ['media', 'geolocation', 'pointerLock'];
 
@@ -37,7 +39,7 @@ WebView.prototype.maybeSetupPermissionEvent_ = function() {
   this.objectNode_.addEventListener('-internal-permissionrequest', function(e) {
     var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    EXPOSED_PERMISSION_EVENT_ATTRIBS.forEach(function(attribName) {
+    forEach(EXPOSED_PERMISSION_EVENT_ATTRIBS, function(i, attribName) {
       if (detail[attribName] !== 'undefined')
         evt[attribName] = detail[attribName];
     });

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 var contentWatcherNative = requireNative("contentWatcherNative");
+var forEach = require('utils').forEach;
 
-// Returns the indices in |css_selectors| that match any element on the page.
-exports.FindMatchingSelectors = function(css_selectors) {
+// Returns the indices in |cssSelectors| that match any element on the page.
+exports.FindMatchingSelectors = function(cssSelectors) {
   var result = []
-  css_selectors.forEach(function(selector, index) {
+  forEach(cssSelectors, function(index, selector) {
     try {
       if (document.querySelector(selector) != null)
         result.push(index);

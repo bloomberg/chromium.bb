@@ -4,18 +4,19 @@
 
 require('json_schema');
 require('event_bindings');
-var schemaRegistry = requireNative('schema_registry');
-var sendRequest = require('sendRequest').sendRequest;
-var utils = require('utils');
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var chrome = requireNative('chrome').GetChrome();
-var schemaUtils = require('schemaUtils');
-var process = requireNative('process');
-var manifestVersion = process.GetManifestVersion();
-var extensionId = process.GetExtensionId();
-var contextType = process.GetContextType();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var forEach = require('utils').forEach;
 var GetAvailability = requireNative('v8_context').GetAvailability;
 var logging = requireNative('logging');
+var process = requireNative('process');
+var contextType = process.GetContextType();
+var extensionId = process.GetExtensionId();
+var manifestVersion = process.GetManifestVersion();
+var schemaRegistry = requireNative('schema_registry');
+var schemaUtils = require('schemaUtils');
+var sendRequest = require('sendRequest').sendRequest;
+var utils = require('utils');
 
 // Stores the name and definition of each API function, with methods to
 // modify their behaviour (such as a custom way to handle requests to the
@@ -164,7 +165,7 @@ Binding.prototype = {
 
   // TODO(kalman/cduvall): Refactor this so |runHooks_| is not needed.
   runHooks_: function(api) {
-    this.customHooks_.forEach(function(hook) {
+    forEach(this.customHooks_, function(i, hook) {
       if (!isSchemaNodeSupported(this.schema_, platform, manifestVersion))
         return;
 
@@ -208,7 +209,7 @@ Binding.prototype = {
 
     // Add types to global schemaValidator
     if (schema.types) {
-      schema.types.forEach(function(t) {
+      forEach(schema.types, function(i, t) {
         if (!isSchemaNodeSupported(t, platform, manifestVersion))
           return;
 
@@ -242,7 +243,7 @@ Binding.prototype = {
 
     // Setup Functions.
     if (schema.functions) {
-      schema.functions.forEach(function(functionDef) {
+      forEach(schema.functions, function(i, functionDef) {
         if (functionDef.name in mod) {
           throw new Error('Function ' + functionDef.name +
                           ' already defined in ' + schema.namespace);
@@ -309,7 +310,7 @@ Binding.prototype = {
 
     // Setup Events
     if (schema.events) {
-      schema.events.forEach(function(eventDef) {
+      forEach(schema.events, function(i, eventDef) {
         if (eventDef.name in mod) {
           throw new Error('Event ' + eventDef.name +
                           ' already defined in ' + schema.namespace);
@@ -345,7 +346,7 @@ Binding.prototype = {
       if (!properties)
         return;
 
-      utils.forEach(properties, function(propertyName, propertyDef) {
+      forEach(properties, function(propertyName, propertyDef) {
         if (propertyName in m)
           return;  // TODO(kalman): be strict like functions/events somehow.
         if (!isSchemaNodeSupported(propertyDef, platform, manifestVersion))

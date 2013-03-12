@@ -9,6 +9,7 @@ var binding = require('binding').Binding.create('app.runtime');
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var chrome = requireNative('chrome').GetChrome();
 var fileSystemHelpers = requireNative('file_system_natives');
+var forEach = require('utils').forEach;
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
 var appNatives = requireNative('app_runtime');
 var DeserializeString = appNatives.DeserializeString;
@@ -38,7 +39,7 @@ chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
         }
       }
     };
-    launchData.items.forEach(function(item) {
+    forEach(launchData.items, function(i, item) {
       var fs = GetIsolatedFileSystem(item.fileSystemId);
       fs.root.getFile(item.baseName, {}, function(fileEntry) {
         itemLoaded(null, { entry: fileEntry, type: item.mimeType });

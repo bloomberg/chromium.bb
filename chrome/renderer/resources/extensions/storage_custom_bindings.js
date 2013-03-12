@@ -6,6 +6,7 @@
 
 var binding = require('binding').Binding.create('storage');
 
+var forEach = require('utils').forEach;
 var normalizeArgumentsAndValidate =
     require('schemaUtils').normalizeArgumentsAndValidate
 var sendRequest = require('sendRequest').sendRequest;
@@ -26,7 +27,7 @@ binding.registerCustomType('storage.StorageArea', function() {
     // even generate) for other APIs that need to do this. Same for other
     // callers of registerCustomType().
     var self = this;
-    function bindApiFunction(functionName) {
+    function bindApiFunction(i, functionName) {
       self[functionName] = function() {
         var funSchema = this.functionSchemas[functionName];
         var args = Array.prototype.slice.call(arguments);
@@ -39,7 +40,7 @@ binding.registerCustomType('storage.StorageArea', function() {
       };
     }
     var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];
-    apiFunctions.forEach(bindApiFunction);
+    forEach(apiFunctions, bindApiFunction);
   }
 
   return StorageArea;

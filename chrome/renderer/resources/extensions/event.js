@@ -11,6 +11,7 @@
   var AttachFilteredEvent = eventBindingsNatives.AttachFilteredEvent;
   var DetachFilteredEvent = eventBindingsNatives.DetachFilteredEvent;
   var MatchAgainstEventFilter = eventBindingsNatives.MatchAgainstEventFilter;
+  var forEach = require('utils').forEach;
   var sendRequest = require('sendRequest').sendRequest;
   var utils = require('utils');
   var validate = require('schemaUtils').validate;
@@ -398,7 +399,7 @@
     function validateRules(rules, conditions, actions) {
       var conditionsSchema = buildArrayOfChoicesSchema(conditions);
       var actionsSchema = buildArrayOfChoicesSchema(actions);
-      rules.forEach(function(rule) {
+      forEach(rules, function(i, rule) {
         validate([rule.conditions], [conditionsSchema]);
         validate([rule.actions], [actionsSchema]);
       })

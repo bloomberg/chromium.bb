@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var forEach = require('utils').forEach;
+
 // Expose a function to watch the HTML tag creation via Mutation Observers.
 function watchForTag(tagName, cb) {
   if (!document.body)
@@ -15,7 +17,7 @@ function watchForTag(tagName, cb) {
 
   // Observe the tags added later.
   var documentObserver = new WebKitMutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
+    forEach(mutations, function(i, mutation) {
       for (var i = 0, addedNode; addedNode = mutation.addedNodes[i]; i++) {
         if (addedNode.tagName == tagName) {
           cb(addedNode);

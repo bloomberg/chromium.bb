@@ -6,16 +6,17 @@
 
 var binding = require('binding').Binding.create('fileSystem');
 
+var entryIdManager = require('entryIdManager');
 var fileSystemNatives = requireNative('file_system_natives');
+var forEach = require('utils').forEach;
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
 var lastError = require('lastError');
-var entryIdManager = require('entryIdManager');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var fileSystem = bindingsAPI.compiledApi;
 
-  function bindFileEntryFunction(functionName) {
+  function bindFileEntryFunction(i, functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(fileEntry, callback) {
       var fileSystemName = fileEntry.filesystem.name;
@@ -23,10 +24,10 @@ binding.registerCustomHook(function(bindingsAPI) {
       return [fileSystemName, relativePath, callback];
     });
   }
-  ['getDisplayPath', 'getWritableEntry', 'isWritableEntry']
-      .forEach(bindFileEntryFunction);
+  forEach(['getDisplayPath', 'getWritableEntry', 'isWritableEntry'],
+          bindFileEntryFunction);
 
-  function bindFileEntryCallback(functionName) {
+  function bindFileEntryCallback(i, functionName) {
     apiFunctions.setCustomCallback(functionName,
         function(name, request, response) {
       if (request.callback && response) {
@@ -57,7 +58,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       }
     });
   }
-  ['getWritableEntry', 'chooseEntry'].forEach(bindFileEntryCallback);
+  forEach(['getWritableEntry', 'chooseEntry'], bindFileEntryCallback);
 
   apiFunctions.setHandleRequest('getEntryId', function(fileEntry) {
     return entryIdManager.getEntryId(fileEntry);

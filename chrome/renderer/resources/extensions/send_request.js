@@ -4,6 +4,7 @@
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var DCHECK = requireNative('logging').DCHECK;
+var forEach = require('utils').forEach;
 var json = require('json');
 var lastError = require('lastError');
 var natives = requireNative('sendRequest');
@@ -33,11 +34,11 @@ chromeHidden.handleResponse = function(requestId, name,
         chromesForLastError.push(chromeForCallback);
     }
 
-    chromesForLastError.forEach(function(c) {lastError.clear(c)});
+    forEach(chromesForLastError, function(i, c) {lastError.clear(c)});
     if (!success) {
       if (!error)
         error = "Unknown error.";
-      chromesForLastError.forEach(function(c) {lastError.set(error, c)});
+      forEach(chromesForLastError, function(i, c) {lastError.set(error, c)});
     }
 
     if (request.customCallback) {
@@ -67,7 +68,7 @@ chromeHidden.handleResponse = function(requestId, name,
     }
   } finally {
     delete requests[requestId];
-    chromesForLastError.forEach(function(c) {lastError.clear(c)});
+    forEach(chromesForLastError, function(i, c) {lastError.clear(c)});
   }
 };
 

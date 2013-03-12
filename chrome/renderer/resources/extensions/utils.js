@@ -4,10 +4,20 @@
 
 var chrome = requireNative('chrome').GetChrome();
 
-function forEach(dict, f) {
-  for (var key in dict) {
-    if (dict.hasOwnProperty(key))
-      f(key, dict[key]);
+function forEach(obj, f, self) {
+  // For arrays, make sure the indices are numbers not strings - and in that
+  // case this method can be more efficient by assuming the array isn't sparse.
+  //
+  // Note: not (instanceof Array) because the array might come from a different
+  // context than our own.
+  if (obj.constructor && obj.constructor.name == 'Array') {
+    for (var i = 0; i < obj.length; i++)
+      f.call(self, i, obj[i]);
+  } else {
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key))
+        f.call(self, key, obj[key]);
+    }
   }
 }
 

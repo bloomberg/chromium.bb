@@ -7,6 +7,7 @@
 var binding = require('binding').Binding.create('extension');
 
 var extensionNatives = requireNative('extension');
+var forEach = require('utils').forEach;
 var GetExtensionViews = extensionNatives.GetExtensionViews;
 var runtimeNatives = requireNative('runtime');
 var OpenChannelToExtension = runtimeNatives.OpenChannelToExtension;
@@ -78,7 +79,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     // Events
     'onConnect', 'onConnectExternal', 'onMessage', 'onMessageExternal'
   ];
-  mayNeedAlias.forEach(function(alias) {
+  forEach(mayNeedAlias, function(i, alias) {
     // Checking existence isn't enough since some functions are disabled via
     // getters that throw exceptions. Assume that any getter is such a function.
     if (chrome.runtime.hasOwnProperty(alias) &&
