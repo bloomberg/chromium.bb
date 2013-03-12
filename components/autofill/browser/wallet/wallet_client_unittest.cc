@@ -251,7 +251,7 @@ const char kGetFullWalletValidRequest[] =
         "\"cart\":"
         "{"
             "\"currency_code\":\"currency_code\","
-            "\"total_price\":\"currency_code\""
+            "\"total_price\":\"total_price\""
         "},"
         "\"encrypted_otp\":\"encrypted_one_time_pad\","
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
@@ -260,13 +260,50 @@ const char kGetFullWalletValidRequest[] =
         "\"risk_params\":\"\","
         "\"selected_address_id\":\"shipping_address_id\","
         "\"selected_instrument_id\":\"instrument_id\","
-        "\"session_material\":\"session_material\""
+        "\"session_material\":\"session_material\","
+        "\"supported_risk_challenge\":"
+        "["
+        "]"
+    "}";
+
+const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
+    "{"
+        "\"cart\":"
+        "{"
+            "\"currency_code\":\"currency_code\","
+            "\"total_price\":\"total_price\""
+        "},"
+        "\"encrypted_otp\":\"encrypted_one_time_pad\","
+        "\"feature\":\"REQUEST_AUTOCOMPLETE\","
+        "\"google_transaction_id\":\"google_transaction_id\","
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"\","
+        "\"selected_address_id\":\"shipping_address_id\","
+        "\"selected_instrument_id\":\"instrument_id\","
+        "\"session_material\":\"session_material\","
+        "\"supported_risk_challenge\":"
+        "["
+            "\"VERIFY_CVC\""
+        "]"
     "}";
 
 const char kGetWalletItemsValidRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\""
+        "\"risk_params\":\"\","
+        "\"supported_risk_challenge\":"
+        "["
+        "]"
+    "}";
+
+const char kGetWalletItemsWithRiskCapabilitiesValidRequest[] =
+    "{"
+        "\"merchant_domain\":\"https://example.com/\","
+        "\"risk_params\":\"\","
+        "\"supported_risk_challenge\":"
+        "["
+            "\"RELOGIN\""
+        "]"
     "}";
 
 const char kSaveAddressValidRequest[] =
@@ -535,7 +572,8 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
+  wallet_client.GetWalletItems(GURL(kMerchantUrl),
+                               std::vector<WalletClient::RiskCapability>());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
@@ -565,7 +603,8 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
+  wallet_client.GetWalletItems(GURL(kMerchantUrl),
+                               std::vector<WalletClient::RiskCapability>());
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
@@ -593,13 +632,16 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  Cart cart("currency_code", "currency_code");
-  wallet_client.GetFullWallet("instrument_id",
-                              "shipping_address_id",
-                              GURL(kMerchantUrl),
-                              cart,
-                              "google_transaction_id",
-                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  Cart cart("total_price", "currency_code");
+  WalletClient::FullWalletRequest full_wallet_request(
+      "instrument_id",
+      "shipping_address_id",
+      GURL(kMerchantUrl),
+      cart,
+      "google_transaction_id",
+      DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+      std::vector<WalletClient::RiskCapability>());
+  wallet_client.GetFullWallet(full_wallet_request);
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -615,6 +657,38 @@ TEST_F(WalletClientTest, GetFullWalletSuccess) {
   EXPECT_EQ(1U, observer.full_wallets_received());
 }
 
+TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
+  MockWalletClientObserver observer;
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext(), &observer);
+  std::vector<WalletClient::RiskCapability> risk_capabilities;
+  risk_capabilities.push_back(WalletClient::VERIFY_CVC);
+  Cart cart("total_price", "currency_code");
+  WalletClient::FullWalletRequest full_wallet_request(
+      "instrument_id",
+      "shipping_address_id",
+      GURL(kMerchantUrl),
+      cart,
+      "google_transaction_id",
+      DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+      risk_capabilities);
+  wallet_client.GetFullWallet(full_wallet_request);
+
+  net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
+  ASSERT_TRUE(encryption_fetcher);
+  encryption_fetcher->set_response_code(net::HTTP_OK);
+  encryption_fetcher->SetResponseString(
+      "session_material|encrypted_one_time_pad");
+  encryption_fetcher->delegate()->OnURLFetchComplete(encryption_fetcher);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kGetFullWalletWithRiskCapabilitesValidRequest,
+                         kGetFullWalletValidResponse);
+  EXPECT_EQ(1U, observer.full_wallets_received());
+}
+
 TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
   MockWalletClientObserver observer;
   EXPECT_CALL(observer,
@@ -623,13 +697,16 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  Cart cart("currency_code", "currency_code");
-  wallet_client.GetFullWallet("instrument_id",
-                              "shipping_address_id",
-                              GURL(kMerchantUrl),
-                              cart,
-                              "google_transaction_id",
-                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  Cart cart("total_price", "currency_code");
+  WalletClient::FullWalletRequest full_wallet_request(
+      "instrument_id",
+      "shipping_address_id",
+      GURL(kMerchantUrl),
+      cart,
+      "google_transaction_id",
+      DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+      std::vector<WalletClient::RiskCapability>());
+  wallet_client.GetFullWallet(full_wallet_request);
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -647,13 +724,16 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  Cart cart("currency_code", "currency_code");
-  wallet_client.GetFullWallet("instrument_id",
-                              "shipping_address_id",
-                              GURL(kMerchantUrl),
-                              cart,
-                              "google_transaction_id",
-                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  Cart cart("total_price", "currency_code");
+  WalletClient::FullWalletRequest full_wallet_request(
+      "instrument_id",
+      "shipping_address_id",
+      GURL(kMerchantUrl),
+      cart,
+      "google_transaction_id",
+      DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+      std::vector<WalletClient::RiskCapability>());
+  wallet_client.GetFullWallet(full_wallet_request);
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -672,13 +752,16 @@ TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  Cart cart("currency_code", "currency_code");
-  wallet_client.GetFullWallet("instrument_id",
-                              "shipping_address_id",
-                              GURL(kMerchantUrl),
-                              cart,
-                              "google_transaction_id",
-                              DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  Cart cart("total_price", "currency_code");
+  WalletClient::FullWalletRequest full_wallet_request(
+      "instrument_id",
+      "shipping_address_id",
+      GURL(kMerchantUrl),
+      cart,
+      "google_transaction_id",
+      DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+      std::vector<WalletClient::RiskCapability>());
+  wallet_client.GetFullWallet(full_wallet_request);
 
   net::TestURLFetcher* encryption_fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(encryption_fetcher);
@@ -826,14 +909,31 @@ TEST_F(WalletClientTest, GetWalletItems) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kGetWalletItemsValidRequest, GetData(fetcher));
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(kGetWalletItemsValidResponse);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  wallet_client.GetWalletItems(GURL(kMerchantUrl),
+                               std::vector<WalletClient::RiskCapability>());
 
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kGetWalletItemsValidRequest,
+                         kGetWalletItemsValidResponse);
+  EXPECT_EQ(1U, observer.wallet_items_received());
+}
+
+TEST_F(WalletClientTest, GetWalletItemsWithRiskCapabilites) {
+  MockWalletClientObserver observer;
+  net::TestURLFetcherFactory factory;
+
+  std::vector<WalletClient::RiskCapability> risk_capabilities;
+  risk_capabilities.push_back(WalletClient::RELOGIN);
+
+  WalletClient wallet_client(profile_.GetRequestContext(), &observer);
+  wallet_client.GetWalletItems(GURL(kMerchantUrl),
+                               risk_capabilities);
+
+  VerifyAndFinishRequest(factory,
+                         net::HTTP_OK,
+                         kGetWalletItemsWithRiskCapabilitiesValidRequest,
+                         kGetWalletItemsValidResponse);
   EXPECT_EQ(1U, observer.wallet_items_received());
 }
 
@@ -1384,7 +1484,8 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
   EXPECT_FALSE(wallet_client.HasRequestInProgress());
 
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
+  wallet_client.GetWalletItems(GURL(kMerchantUrl),
+                               std::vector<WalletClient::RiskCapability>());
   EXPECT_TRUE(wallet_client.HasRequestInProgress());
 
   VerifyAndFinishRequest(factory,
@@ -1401,11 +1502,13 @@ TEST_F(WalletClientTest, PendingRequest) {
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
   ASSERT_EQ(0U, wallet_client.pending_requests_.size());
 
+  std::vector<WalletClient::RiskCapability> risk_capabilities;
+
   // Shouldn't queue the first request.
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
   EXPECT_EQ(0U, wallet_client.pending_requests_.size());
 
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
   EXPECT_EQ(1U, wallet_client.pending_requests_.size());
 
   VerifyAndFinishRequest(factory,
@@ -1428,9 +1531,11 @@ TEST_F(WalletClientTest, CancelPendingRequests) {
   WalletClient wallet_client(profile_.GetRequestContext(), &observer);
   ASSERT_EQ(0U, wallet_client.pending_requests_.size());
 
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
-  wallet_client.GetWalletItems(GURL(kMerchantUrl));
+  std::vector<WalletClient::RiskCapability> risk_capabilities;
+
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
+  wallet_client.GetWalletItems(GURL(kMerchantUrl), risk_capabilities);
   EXPECT_EQ(2U, wallet_client.pending_requests_.size());
 
   wallet_client.CancelPendingRequests();

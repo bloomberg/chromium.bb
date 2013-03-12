@@ -13,14 +13,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/browser/wallet/cart.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client.h"
 #include "components/autofill/browser/wallet/encryption_escrow_client_observer.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/common/autocheckout_status.h"
+#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-
-class GURL;
 
 namespace net {
 class URLFetcher;
@@ -31,7 +31,6 @@ namespace autofill {
 namespace wallet {
 
 class Address;
-class Cart;
 class FullWallet;
 class Instrument;
 class WalletClientObserver;
@@ -68,6 +67,50 @@ class WalletClient
     : public net::URLFetcherDelegate,
       public EncryptionEscrowClientObserver {
  public:
+  // The Risk challenges supported by users of WalletClient.
+  enum RiskCapability {
+    RELOGIN,
+    VERIFY_CVC,
+  };
+
+  struct FullWalletRequest {
+   public:
+    FullWalletRequest(const std::string& instrument_id,
+                      const std::string& address_id,
+                      const GURL& source_url,
+                      const Cart& cart,
+                      const std::string& google_transaction_id,
+                      autofill::DialogType dialog_type,
+                      const std::vector<RiskCapability> risk_capabilities);
+    ~FullWalletRequest();
+
+    // The ID of the backing instrument. Should have been selected by the user
+    // in some UI.
+    std::string instrument_id;
+
+    // The ID of the shipping address. Should have been selected by the user
+    // in some UI.
+    std::string address_id;
+
+    // The URL that Online Wallet usage is being initiated on.
+    GURL source_url;
+
+    // Cart information.
+    Cart cart;
+
+    // The transaction ID from GetWalletItems.
+    std::string google_transaction_id;
+
+    // Which usage of WalletClient this is.
+    autofill::DialogType dialog_type;
+
+    // The Risk challenges supported by the user of WalletClient
+    std::vector<RiskCapability> risk_capabilities;
+
+   private:
+    DISALLOW_ASSIGN(FullWalletRequest);
+  };
+
   // |context_getter| is reference counted so it has no lifetime or ownership
   // requirements. |observer| must outlive |this|.
   WalletClient(net::URLRequestContextGetter* context_getter,
@@ -77,8 +120,10 @@ class WalletClient
 
   // GetWalletItems retrieves the user's online wallet. The WalletItems
   // returned may require additional action such as presenting legal documents
-  // to the user to be accepted.
-  void GetWalletItems(const GURL& source_url);
+  // to the user to be accepted. |risk_capabilities| are the Risk challenges
+  // supported by the users of WalletClient.
+  void GetWalletItems(const GURL& source_url,
+                      const std::vector<RiskCapability>& risk_capabilities);
 
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
@@ -96,18 +141,8 @@ class WalletClient
                               const std::string& card_verification_number,
                               const std::string& obfuscated_gaia_id);
 
-  // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
-  // |adddress_id| should have been selected by the user in some UI,
-  // |merchant_domain| should come from the BrowserContext, the |cart|
-  // information will have been provided by the browser, |dialog_type| indicates
-  // which dialog requests the full wallet, RequestAutocomplete or Autocheckout,
-  // and |google_transaction_id| is the same one that GetWalletItems returns.
-  void GetFullWallet(const std::string& instrument_id,
-                     const std::string& address_id,
-                     const GURL& source_url,
-                     const Cart& cart,
-                     const std::string& google_transaction_id,
-                     autofill::DialogType dialog_type);
+  // GetFullWallet retrieves the a FullWallet for the user.
+  void GetFullWallet(const FullWalletRequest& full_wallet_request);
 
   // SaveAddress saves a new shipping address.
   void SaveAddress(const Address& address, const GURL& source_url);

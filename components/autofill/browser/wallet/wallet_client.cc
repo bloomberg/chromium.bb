@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "components/autofill/browser/wallet/cart.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 #include "components/autofill/browser/wallet/wallet_client_observer.h"
@@ -18,7 +17,6 @@
 #include "components/autofill/browser/wallet/wallet_service_url.h"
 #include "crypto/random.h"
 #include "google_apis/google_api_keys.h"
-#include "googleurl/src/gurl.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -59,12 +57,24 @@ std::string DialogTypeToFeatureString(autofill::DialogType dialog_type) {
   return "NOT_POSSIBLE";
 }
 
+std::string RiskCapabilityToString(
+    WalletClient::RiskCapability risk_capability) {
+  switch (risk_capability) {
+    case WalletClient::RELOGIN:
+      return "RELOGIN";
+    case WalletClient::VERIFY_CVC:
+      return "VERIFY_CVC";
+  }
+  NOTREACHED();
+  return "NOT_POSSIBLE";
+}
+
 // Gets and parses required actions from a SaveToWallet response. Returns
 // false if any unknown required actions are seen and true otherwise.
 void GetRequiredActionsForSaveToWallet(
     const base::DictionaryValue& dict,
     std::vector<RequiredAction>* required_actions) {
-  const ListValue* required_action_list;
+  const base::ListValue* required_action_list;
   if (!dict.GetList("required_action", &required_action_list))
     return;
 
@@ -97,6 +107,7 @@ const char kInstrumentEscrowHandleKey[] = "instrument_escrow_handle";
 const char kInstrumentPhoneNumberKey[] = "instrument_phone_number";
 const char kMerchantDomainKey[] = "merchant_domain";
 const char kReasonKey[] = "reason";
+const char kRiskCapabilitiesKey[] = "supported_risk_challenge";
 const char kRiskParamsKey[] = "risk_params";
 const char kSelectedAddressIdKey[] = "selected_address_id";
 const char kSelectedInstrumentIdKey[] = "selected_instrument_id";
@@ -109,6 +120,23 @@ const char kUpgradedInstrumentIdKey[] = "upgraded_instrument_id";
 
 }  // namespace
 
+WalletClient::FullWalletRequest::FullWalletRequest(
+    const std::string& instrument_id,
+    const std::string& address_id,
+    const GURL& source_url,
+    const Cart& cart,
+    const std::string& google_transaction_id,
+    autofill::DialogType dialog_type,
+    const std::vector<RiskCapability> risk_capabilities)
+    : instrument_id(instrument_id),
+      address_id(address_id),
+      source_url(source_url),
+      cart(cart),
+      google_transaction_id(google_transaction_id),
+      dialog_type(dialog_type),
+      risk_capabilities(risk_capabilities) {}
+
+WalletClient::FullWalletRequest::~FullWalletRequest() {}
 
 WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
                            WalletClientObserver* observer)
@@ -145,13 +173,13 @@ void WalletClient::AcceptLegalDocuments(
   request_dict.SetString(kGoogleTransactionIdKey, google_transaction_id);
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
-  ListValue* docs_list = new ListValue();
+  scoped_ptr<base::ListValue> docs_list(new base::ListValue());
   for (std::vector<std::string>::const_iterator it = document_ids.begin();
        it != document_ids.end();
        ++it) {
     docs_list->AppendString(*it);
   }
-  request_dict.Set(kAcceptedLegalDocumentKey, docs_list);
+  request_dict.Set(kAcceptedLegalDocumentKey, docs_list.release());
 
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);
@@ -184,21 +212,11 @@ void WalletClient::AuthenticateInstrument(
       card_verification_number, obfuscated_gaia_id);
 }
 
-void WalletClient::GetFullWallet(const std::string& instrument_id,
-                                 const std::string& address_id,
-                                 const GURL& source_url,
-                                 const Cart& cart,
-                                 const std::string& google_transaction_id,
-                                 autofill::DialogType dialog_type) {
+void WalletClient::GetFullWallet(const FullWalletRequest& full_wallet_request) {
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::GetFullWallet,
                                       base::Unretained(this),
-                                      instrument_id,
-                                      address_id,
-                                      source_url,
-                                      cart,
-                                      google_transaction_id,
-                                      dialog_type));
+                                      full_wallet_request));
     return;
   }
 
@@ -208,25 +226,43 @@ void WalletClient::GetFullWallet(const std::string& instrument_id,
 
   pending_request_body_.SetString(kApiKeyKey, google_apis::GetAPIKey());
   pending_request_body_.SetString(kRiskParamsKey, GetRiskParams());
-  pending_request_body_.SetString(kSelectedInstrumentIdKey, instrument_id);
-  pending_request_body_.SetString(kSelectedAddressIdKey, address_id);
-  pending_request_body_.SetString(kMerchantDomainKey,
-                                  source_url.GetWithEmptyPath().spec());
+  pending_request_body_.SetString(kSelectedInstrumentIdKey,
+                                  full_wallet_request.instrument_id);
+  pending_request_body_.SetString(kSelectedAddressIdKey,
+                                  full_wallet_request.address_id);
+  pending_request_body_.SetString(
+      kMerchantDomainKey,
+      full_wallet_request.source_url.GetWithEmptyPath().spec());
   pending_request_body_.SetString(kGoogleTransactionIdKey,
-                                  google_transaction_id);
-  pending_request_body_.Set(kCartKey, cart.ToDictionary().release());
-  pending_request_body_.SetString(kFeatureKey,
-                                  DialogTypeToFeatureString(dialog_type));
+                                  full_wallet_request.google_transaction_id);
+  pending_request_body_.Set(kCartKey,
+                            full_wallet_request.cart.ToDictionary().release());
+  pending_request_body_.SetString(
+      kFeatureKey,
+      DialogTypeToFeatureString(full_wallet_request.dialog_type));
+
+  scoped_ptr<base::ListValue> risk_capabilities_list(new base::ListValue());
+  for (std::vector<RiskCapability>::const_iterator it =
+           full_wallet_request.risk_capabilities.begin();
+       it != full_wallet_request.risk_capabilities.end();
+       ++it) {
+    risk_capabilities_list->AppendString(RiskCapabilityToString(*it));
+  }
+  pending_request_body_.Set(kRiskCapabilitiesKey,
+                            risk_capabilities_list.release());
 
   crypto::RandBytes(&(one_time_pad_[0]), one_time_pad_.size());
   encryption_escrow_client_.EncryptOneTimePad(one_time_pad_);
 }
 
-void WalletClient::GetWalletItems(const GURL& source_url) {
+void WalletClient::GetWalletItems(
+    const GURL& source_url,
+    const std::vector<RiskCapability>& risk_capabilities) {
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::GetWalletItems,
                                       base::Unretained(this),
-                                      source_url));
+                                      source_url,
+                                      risk_capabilities));
     return;
   }
 
@@ -238,6 +274,15 @@ void WalletClient::GetWalletItems(const GURL& source_url) {
   request_dict.SetString(kRiskParamsKey, GetRiskParams());
   request_dict.SetString(kMerchantDomainKey,
                          source_url.GetWithEmptyPath().spec());
+
+  scoped_ptr<base::ListValue> risk_capabilities_list(new base::ListValue());
+  for (std::vector<RiskCapability>::const_iterator it =
+           risk_capabilities.begin();
+       it != risk_capabilities.end();
+       ++it) {
+    risk_capabilities_list->AppendString(RiskCapabilityToString(*it));
+  }
+  request_dict.Set(kRiskCapabilitiesKey, risk_capabilities_list.release());
 
   std::string post_body;
   base::JSONWriter::Write(&request_dict, &post_body);

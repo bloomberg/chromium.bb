@@ -304,8 +304,12 @@ void AutofillDialogControllerImpl::Show() {
   GetManager()->AddObserver(this);
 
   // Request sugar info after the view is showing to simplify code for now.
-  if (IsPayingWithWallet())
-    wallet_client_.GetWalletItems(source_url_);
+  if (IsPayingWithWallet()) {
+    // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
+    wallet_client_.GetWalletItems(
+        source_url_,
+        std::vector<wallet::WalletClient::RiskCapability>());
+  }
 }
 
 void AutofillDialogControllerImpl::Hide() {
@@ -989,8 +993,12 @@ void AutofillDialogControllerImpl::Observe(
       content::Details<content::LoadCommittedDetails>(details).ptr();
   if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     EndSignInFlow();
-    if (IsPayingWithWallet())
-      wallet_client_.GetWalletItems(source_url_);
+    if (IsPayingWithWallet()) {
+      // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
+      wallet_client_.GetWalletItems(
+          source_url_,
+          std::vector<wallet::WalletClient::RiskCapability>());
+    }
   }
 }
 
@@ -1103,8 +1111,12 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   view_->UpdateAccountChooser();
   view_->UpdateNotificationArea();
 
-  if (IsPayingWithWallet() && !wallet_items_)
-    wallet_client_.GetWalletItems(source_url_);
+  if (IsPayingWithWallet() && !wallet_items_) {
+    // TODO(dbeam): Add Risk capabilites once the UI supports risk challenges.
+    wallet_client_.GetWalletItems(
+        source_url_,
+        std::vector<wallet::WalletClient::RiskCapability>());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
