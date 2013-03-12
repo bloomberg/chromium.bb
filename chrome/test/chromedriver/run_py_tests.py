@@ -33,12 +33,24 @@ def Skip(func):
 class ChromeDriverBaseTest(unittest.TestCase):
   """Base class for testing chromedriver functionalities."""
 
-  def setUp(self):
-    self._driver = None
+  def __init__(self, *args, **kwargs):
+    super(ChromeDriverBaseTest, self).__init__(*args, **kwargs)
+    self._drivers = []
 
   def tearDown(self):
-    if self._driver:
-      self._driver.Quit()
+    for driver in self._drivers:
+      try:
+        driver.Quit()
+      except chromedriver.ChromeDriverException:
+        pass
+
+  def CreateDriver(self, **kwargs):
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
+                                       chrome_binary=_CHROME_BINARY,
+                                       android_package=_ANDROID_PACKAGE,
+                                       **kwargs)
+    self._drivers += [driver]
+    return driver
 
 
 class ChromeDriverTest(ChromeDriverBaseTest):
@@ -58,10 +70,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     return ChromeDriverTest._http_server.GetUrl() + file_path
 
   def setUp(self):
-    self._driver = chromedriver.ChromeDriver(
-        _CHROMEDRIVER_LIB,
-        chrome_binary=_CHROME_BINARY,
-        android_package=_ANDROID_PACKAGE)
+    self._driver = self.CreateDriver()
 
   def testStartStop(self):
     pass
@@ -398,6 +407,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertTrue(self._driver.IsLoading())
     sync_server.RespondWithContent('<html>new window</html>')
     self._driver.ExecuteScript('return 1')  # Shouldn't hang.
+
+  def testPopups(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    old_handles = self._driver.GetWindowHandles()
+    self._driver.ExecuteScript('window.open("about:blank")')
+    new_window_handle = self._WaitForNewWindow(old_handles)
+    self.assertNotEqual(None, new_window_handle)
 
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):

@@ -16,6 +16,8 @@ import optparse
 import os
 import sys
 
+import cpp_source
+
 
 def main():
   parser = optparse.OptionParser()
@@ -24,7 +26,7 @@ def main():
       help='Path to directory where the cc/h js file should be created')
   options, args = parser.parse_args()
 
-  scripts = {}
+  global_string_map = {}
   for js_file in args:
     base_name = os.path.basename(js_file)[:-3].title().replace('_', '')
     func_name = base_name[0].lower() + base_name[1:]
@@ -33,48 +35,10 @@ def main():
       contents = f.read()
     script = 'function() { %s; return %s.apply(null, arguments) }' % (
         contents, func_name)
-    scripts[script_name] = script
+    global_string_map[script_name] = script
 
-  copyright = '\n'.join([
-      '// Copyright (c) 2012 The Chromium Authors. All rights reserved.',
-      '// Use of this source code is governed by a BSD-style license that '
-          'can be',
-      '// found in the LICENSE file.'])
-
-  # Write header file.
-  externs = []
-  for name in scripts.iterkeys():
-    externs += ['extern const char %s[];' % name]
-  header = '\n'.join([
-      copyright,
-      '',
-      '#ifndef CHROME_TEST_CHROMEDRIVER_JS_H_',
-      '#define CHROME_TEST_CHROMEDRIVER_JS_H_',
-      '#pragma once',
-      '',
-      '\n'.join(externs),
-      '',
-      '#endif  // CHROME_TEST_CHROMEDRIVER_JS_H_'])
-
-  with open(os.path.join(options.directory, 'js.h'), 'w') as f:
-    f.write(header)
-
-  # Write cc file.
-  declarations = []
-  for name, script in scripts.iteritems():
-    lines = []
-    for line in script.split('\n'):
-      lines += ['    "%s\\n"' % line.replace('\\', '\\\\').replace('"', '\\"')]
-    declarations += ['const char %s[] = \n%s;' % (name, '\n'.join(lines))]
-  cc = '\n'.join([
-      copyright,
-      '',
-      '#include "chrome/test/chromedriver/js.h"',
-      '',
-      '\n'.join(declarations)])
-
-  with open(os.path.join(options.directory, 'js.cc'), 'w') as f:
-    f.write(cc)
+  cpp_source.WriteSource('js', 'chrome/test/chromedriver',
+                         options.directory, global_string_map)
 
 
 if __name__ == '__main__':

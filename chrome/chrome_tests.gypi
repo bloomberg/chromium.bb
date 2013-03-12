@@ -740,6 +740,8 @@
       'sources': [
         '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.cc',
         '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/js.h',
+        '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/user_data_dir.cc',
+        '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/user_data_dir.h',
         '../third_party/webdriver/atoms.cc',
         '../third_party/webdriver/atoms.h',
         'test/chromedriver/basic_types.cc',
@@ -829,6 +831,7 @@
         {
           'action_name': 'embed_js_in_cpp',
           'inputs': [
+            'test/chromedriver/cpp_source.py',
             'test/chromedriver/embed_js_in_cpp.py',
             'test/chromedriver/js/add_cookie.js',
             'test/chromedriver/js/call_function.js',
@@ -853,6 +856,27 @@
                       'test/chromedriver/js/is_option_element_toggleable.js',
           ],
           'message': 'Generating sources for embedding js in chromedriver',
+        },
+        {
+          'action_name': 'embed_user_data_dir_in_cpp',
+          'inputs': [
+            'test/chromedriver/cpp_source.py',
+            'test/chromedriver/embed_user_data_dir_in_cpp.py',
+            'test/chromedriver/preferences.txt',
+            'test/chromedriver/local_state.txt',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/user_data_dir.cc',
+            '<(INTERMEDIATE_DIR)/chrome/test/chromedriver/user_data_dir.h',
+          ],
+          'action': [ 'python',
+                      'test/chromedriver/embed_user_data_dir_in_cpp.py',
+                      '--directory',
+                      '<(INTERMEDIATE_DIR)/chrome/test/chromedriver',
+                      'test/chromedriver/preferences.txt',
+                      'test/chromedriver/local_state.txt',
+          ],
+          'message': 'Generating sources for embedding user data dir in chromedriver',
         },
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

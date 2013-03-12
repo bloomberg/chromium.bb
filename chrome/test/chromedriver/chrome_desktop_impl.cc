@@ -9,6 +9,8 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
@@ -22,6 +24,7 @@
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/user_data_dir.h"
 
 ChromeDesktopImpl::ChromeDesktopImpl(
     URLRequestContextGetter* context_getter,
@@ -33,14 +36,17 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
   base::CloseProcessHandle(process_);
 }
 
-Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
-                                 const base::ListValue* chrome_args,
-                                 const base::ListValue* chrome_extensions) {
-  base::FilePath program = chrome_exe;
+Status ChromeDesktopImpl::Launch(const base::FilePath& exe,
+                                 const base::ListValue* args,
+                                 const base::ListValue* extensions,
+                                 const base::DictionaryValue* prefs,
+                                 const base::DictionaryValue* local_state) {
+  base::FilePath program = exe;
   if (program.empty()) {
     if (!FindChrome(&program))
       return Status(kUnknownError, "cannot find Chrome binary");
   }
+  LOG(INFO) << "Using chrome from " << program.value();
 
   CommandLine command(program);
   command.AppendSwitchASCII("remote-debugging-port",
@@ -48,23 +54,30 @@ Status ChromeDesktopImpl::Launch(const base::FilePath& chrome_exe,
   command.AppendSwitch("no-first-run");
   command.AppendSwitch("enable-logging");
   command.AppendSwitchASCII("logging-level", "1");
-  if (!user_data_dir_.CreateUniqueTempDir())
-    return Status(kUnknownError, "cannot create temp dir for user data dir");
-  command.AppendSwitchPath("user-data-dir", user_data_dir_.path());
   command.AppendArg("data:text/html;charset=utf-8,");
 
-  if (chrome_args) {
-    Status status = internal::ProcessCommandLineArgs(chrome_args, &command);
+  if (args) {
+    Status status = internal::ProcessCommandLineArgs(args, &command);
     if (status.IsError())
       return status;
   }
 
-  if (chrome_extensions) {
+  if (!command.HasSwitch("user-data-dir")) {
+    if (!user_data_dir_.CreateUniqueTempDir())
+      return Status(kUnknownError, "cannot create temp dir for user data dir");
+    command.AppendSwitchPath("user-data-dir", user_data_dir_.path());
+    Status status = internal::PrepareUserDataDir(
+        user_data_dir_.path(), prefs, local_state);
+    if (status.IsError())
+      return status;
+  }
+
+  if (extensions) {
     if (!extension_dir_.CreateUniqueTempDir())
       return Status(kUnknownError,
                     "cannot create temp dir for unpacking extensions");
     Status status = internal::ProcessExtensions(
-        chrome_extensions, extension_dir_.path(), &command);
+        extensions, extension_dir_.path(), &command);
     if (status.IsError())
       return status;
   }
@@ -164,6 +177,63 @@ Status ProcessExtensions(const base::ListValue* extensions,
     command->AppendSwitchNative("load-extension", extension_paths_value);
   }
 
+  return Status(kOk);
+}
+
+Status WritePrefsFile(
+    const std::string& template_string,
+    const base::DictionaryValue* custom_prefs,
+    const base::FilePath& path) {
+  int code;
+  std::string error_msg;
+  scoped_ptr<base::Value> template_value(base::JSONReader::ReadAndReturnError(
+          template_string, 0, &code, &error_msg));
+  base::DictionaryValue* prefs;
+  if (!template_value || !template_value->GetAsDictionary(&prefs)) {
+    return Status(kUnknownError,
+                  "cannot parse internal JSON template: " + error_msg);
+  }
+
+  if (custom_prefs)
+    prefs->MergeDictionary(custom_prefs);
+
+  std::string prefs_str;
+  base::JSONWriter::Write(prefs, &prefs_str);
+  if (static_cast<int>(prefs_str.length()) != file_util::WriteFile(
+          path, prefs_str.c_str(), prefs_str.length())) {
+    return Status(kUnknownError, "failed to write prefs file");
+  }
+  return Status(kOk);
+}
+
+Status PrepareUserDataDir(
+    const base::FilePath& user_data_dir,
+    const base::DictionaryValue* custom_prefs,
+    const base::DictionaryValue* custom_local_state) {
+  base::FilePath default_dir = user_data_dir.AppendASCII("Default");
+  if (!file_util::CreateDirectory(default_dir))
+    return Status(kUnknownError, "cannot create default profile directory");
+
+  Status status = WritePrefsFile(
+      kPreferences,
+      custom_prefs,
+      default_dir.AppendASCII("Preferences"));
+  if (status.IsError())
+    return status;
+
+  status = WritePrefsFile(
+      kLocalState,
+      custom_local_state,
+      user_data_dir.AppendASCII("Local State"));
+  if (status.IsError())
+    return status;
+
+  // Write empty "First Run" file, otherwise Chrome will wipe the default
+  // profile that was written.
+  if (file_util::WriteFile(
+          user_data_dir.AppendASCII("First Run"), "", 0) != 0) {
+    return Status(kUnknownError, "failed to write first run file");
+  }
   return Status(kOk);
 }
 

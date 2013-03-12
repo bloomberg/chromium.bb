@@ -5,7 +5,10 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_DESKTOP_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_DESKTOP_IMPL_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/process.h"
 #include "chrome/test/chromedriver/chrome_impl.h"
@@ -16,6 +19,7 @@ class Status;
 class URLRequestContextGetter;
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 class ListValue;
 }
@@ -27,9 +31,11 @@ class ChromeDesktopImpl : public ChromeImpl {
                     const SyncWebSocketFactory& socket_factory);
   virtual ~ChromeDesktopImpl();
 
-  virtual Status Launch(const base::FilePath& chrome_exe,
-                        const base::ListValue* chrome_args,
-                        const base::ListValue* chrome_extensions);
+  virtual Status Launch(const base::FilePath& exe,
+                        const base::ListValue* args,
+                        const base::ListValue* extensions,
+                        const base::DictionaryValue* prefs,
+                        const base::DictionaryValue* local_state);
 
   // Overriden from Chrome:
   virtual std::string GetOperatingSystemName() OVERRIDE;
@@ -49,6 +55,10 @@ Status ProcessCommandLineArgs(const base::ListValue* args,
 Status ProcessExtensions(const base::ListValue* extensions,
                          const base::FilePath& temp_dir,
                          CommandLine* command);
+Status PrepareUserDataDir(
+    const base::FilePath& user_data_dir,
+    const base::DictionaryValue* custom_prefs,
+    const base::DictionaryValue* custom_local_state);
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DESKTOP_IMPL_H_

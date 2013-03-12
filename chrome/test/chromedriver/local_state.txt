@@ -1,0 +1,7 @@
+{
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}

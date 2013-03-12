@@ -53,8 +53,12 @@ Status ExecuteNewSession(
   int port = 33081;
   std::string android_package;
 
-  if (params.GetString("desiredCapabilities.chromeOptions.android_package",
-                       &android_package)) {
+  const base::DictionaryValue* desired_caps;
+  if (!params.GetDictionary("desiredCapabilities", &desired_caps))
+    return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
+
+  if (desired_caps->GetString("chromeOptions.android_package",
+                              &android_package)) {
     scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl(
         context_getter, port, socket_factory));
     status = chrome_android->Launch(android_package);
@@ -62,8 +66,7 @@ Status ExecuteNewSession(
   } else {
     base::FilePath::StringType path_str;
     base::FilePath chrome_exe;
-    if (params.GetString("desiredCapabilities.chromeOptions.binary",
-                         &path_str)) {
+    if (desired_caps->GetString("chromeOptions.binary", &path_str)) {
       chrome_exe = base::FilePath(path_str);
       if (!file_util::PathExists(chrome_exe)) {
         std::string message = base::StringPrintf(
@@ -75,23 +78,38 @@ Status ExecuteNewSession(
 
     const base::Value* args = NULL;
     const base::ListValue* args_list = NULL;
-    if (params.Get("desiredCapabilities.chromeOptions.args", &args) &&
+    if (desired_caps->Get("chromeOptions.args", &args) &&
         !args->GetAsList(&args_list)) {
-        return Status(kUnknownError,
-                      "command line arguments for chrome must be a list");
+      return Status(kUnknownError,
+                    "command line arguments for chrome must be a list");
+    }
+
+    const base::Value* prefs = NULL;
+    const base::DictionaryValue* prefs_dict = NULL;
+    if (desired_caps->Get("chromeOptions.prefs", &prefs) &&
+        !prefs->GetAsDictionary(&prefs_dict)) {
+      return Status(kUnknownError, "'prefs' must be a dictionary");
+    }
+
+    const base::Value* local_state = NULL;
+    const base::DictionaryValue* local_state_dict = NULL;
+    if (desired_caps->Get("chromeOptions.localState", &local_state) &&
+        !prefs->GetAsDictionary(&prefs_dict)) {
+      return Status(kUnknownError, "'localState' must be a dictionary");
     }
 
     const base::Value* extensions = NULL;
     const base::ListValue* extensions_list = NULL;
-    if (params.Get("desiredCapabilities.chromeOptions.extensions", &extensions)
+    if (desired_caps->Get("chromeOptions.extensions", &extensions)
         && !extensions->GetAsList(&extensions_list)) {
-        return Status(kUnknownError,
-                      "chrome extensions must be a list");
+      return Status(kUnknownError,
+                    "chrome extensions must be a list");
     }
 
     scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
         context_getter, port, socket_factory));
-    status = chrome_desktop->Launch(chrome_exe, args_list, extensions_list);
+    status = chrome_desktop->Launch(chrome_exe, args_list, extensions_list,
+                                    prefs_dict, local_state_dict);
     chrome.reset(chrome_desktop.release());
   }
   if (status.IsError())

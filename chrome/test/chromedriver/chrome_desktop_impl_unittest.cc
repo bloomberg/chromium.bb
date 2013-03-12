@@ -130,3 +130,28 @@ TEST(ProcessExtensions, MultipleExtensions) {
   ASSERT_TRUE(file_util::PathExists(base::FilePath(ext_path_list[0])));
   ASSERT_TRUE(file_util::PathExists(base::FilePath(ext_path_list[1])));
 }
+
+TEST(PrepareUserDataDir, CustomPrefs) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  CommandLine command(CommandLine::NO_PROGRAM);
+  base::DictionaryValue prefs;
+  prefs.SetString("myPrefsKey", "ok");
+  base::DictionaryValue local_state;
+  local_state.SetString("myLocalKey", "ok");
+  Status status = internal::PrepareUserDataDir(
+      temp_dir.path(), &prefs, &local_state);
+  ASSERT_EQ(kOk, status.code());
+
+  base::FilePath prefs_file =
+      temp_dir.path().AppendASCII("Default").AppendASCII("Preferences");
+  std::string prefs_str;
+  ASSERT_TRUE(file_util::ReadFileToString(prefs_file, &prefs_str));
+  ASSERT_TRUE(prefs_str.find("myPrefsKey") != std::string::npos);
+
+  base::FilePath local_state_file = temp_dir.path().AppendASCII("Local State");
+  std::string local_state_str;
+  ASSERT_TRUE(file_util::ReadFileToString(local_state_file, &local_state_str));
+  ASSERT_TRUE(local_state_str.find("myLocalKey") != std::string::npos);
+}
