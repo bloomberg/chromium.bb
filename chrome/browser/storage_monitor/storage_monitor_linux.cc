@@ -20,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
@@ -162,7 +161,8 @@ string16 GetDeviceName(struct udev_device* device,
       "RemovableDeviceNotificationsLinux.device_file_system_uuid_available",
       !device_label.empty());
 
-  const string16 name = GetFullProductName(vendor_name, model_name);
+  const string16 name = MediaStorageUtil::GetFullProductName(vendor_name,
+                                                             model_name);
 
   const string16 device_label_utf16 =
       (!device_label.empty() && IsStringUTF8(device_label)) ?
@@ -244,7 +244,7 @@ void GetDeviceInfo(const base::FilePath& device_path,
   if (device_id) {
     MediaStorageUtil::Type type = MediaStorageUtil::FIXED_MASS_STORAGE;
     if (is_removable) {
-      if (IsMediaDevice(mount_point.value()))
+      if (MediaStorageUtil::HasDcim(mount_point.value()))
         type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
       else
         type = MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
@@ -481,9 +481,11 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
   mount_priority_map_[mount_device][mount_point] = removable;
 
   if (removable) {
-    receiver()->ProcessAttach(StorageInfo(
-        device_id, GetDisplayNameForDevice(partition_size_in_bytes, name),
-        mount_point.value()));
+    string16 display_name = MediaStorageUtil::GetDisplayNameForDevice(
+        partition_size_in_bytes, name);
+
+    receiver()->ProcessAttach(StorageInfo(device_id, display_name,
+                                          mount_point.value()));
   }
 }
 

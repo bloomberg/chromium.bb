@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -83,10 +82,10 @@ string16 ConstructGalleryNameFromMetadata(
     const string16& vendor_name,
     const string16& model_name,
     uint64 size_in_bytes) {
-  return chrome::GetDisplayNameForDevice(
+  return MediaStorageUtil::GetDisplayNameForDevice(
       size_in_bytes,
-      chrome::GetFullProductName(UTF16ToUTF8(vendor_name),
-                                 UTF16ToUTF8(model_name)));
+      MediaStorageUtil::GetFullProductName(UTF16ToUTF8(vendor_name),
+                                           UTF16ToUTF8(model_name)));
 
 }
 

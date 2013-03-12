@@ -6,7 +6,7 @@
 
 #include "base/mac/mac_util.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
+#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -153,7 +153,7 @@ void StorageMonitorMac::UpdateDisk(const DiskInfoMac& info,
     MediaStorageUtil::RecordDeviceInfoHistogram(true, info.device_id(),
                                                 info.device_name());
     if (ShouldPostNotificationForDisk(info)) {
-      string16 display_name = GetDisplayNameForDevice(
+      string16 display_name = MediaStorageUtil::GetDisplayNameForDevice(
           info.total_size_in_bytes(), info.device_name());
       receiver()->ProcessAttach(StorageInfo(
           info.device_id(), display_name, info.mount_point().value()));

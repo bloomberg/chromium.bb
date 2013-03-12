@@ -7,7 +7,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -78,8 +77,9 @@ DiskInfoMac DiskInfoMac::BuildDiskInfoOnFileThread(CFDictionaryRef dict) {
   if (!volume_name.empty()) {
     info.device_name_ = volume_name;
   } else {
-    info.device_name_ = GetFullProductName(UTF16ToUTF8(vendor_name),
-                                           UTF16ToUTF8(model_name));
+    info.device_name_ = MediaStorageUtil::GetFullProductName(
+        UTF16ToUTF8(vendor_name),
+        UTF16ToUTF8(model_name));
   }
   info.model_name_ = UTF16ToUTF8(model_name);
 
@@ -106,7 +106,8 @@ DiskInfoMac DiskInfoMac::BuildDiskInfoOnFileThread(CFDictionaryRef dict) {
           dict, kDADiskDescriptionMediaRemovableKey);
   bool is_removable = is_removable_ref && CFBooleanGetValue(is_removable_ref);
   // Checking for DCIM only matters on removable devices.
-  bool has_dcim = is_removable && IsMediaDevice(info.mount_point_.value());
+  bool has_dcim =
+      is_removable && MediaStorageUtil::HasDcim(info.mount_point_.value());
   info.type_ = GetDeviceType(is_removable, has_dcim);
   if (!unique_id.empty())
     info.device_id_ = MediaStorageUtil::MakeDeviceId(info.type_, unique_id);

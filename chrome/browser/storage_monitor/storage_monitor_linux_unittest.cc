@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
@@ -130,7 +129,7 @@ std::string GetDeviceId(const std::string& device) {
 string16 GetDeviceNameWithSizeDetails(const std::string& device) {
   for (size_t i = 0; i < arraysize(kTestDeviceData); ++i) {
     if (device == kTestDeviceData[i].device_path) {
-      return GetDisplayNameForDevice(
+      return MediaStorageUtil::GetDisplayNameForDevice(
           kTestDeviceData[i].partition_size_in_bytes,
           ASCIIToUTF16(kTestDeviceData[i].device_name));
     }

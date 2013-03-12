@@ -12,7 +12,6 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -263,7 +262,7 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
 
   chrome::MediaStorageUtil::Type type =
       chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-  if (chrome::IsMediaDevice(device_path.value()))
+  if (MediaStorageUtil::HasDcim(device_path.value()))
     type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   std::string device_id =
       chrome::MediaStorageUtil::MakeDeviceId(type, unique_id);
@@ -382,8 +381,9 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     return;
 
   if (notifications_) {
-    string16 display_name =
-        GetDisplayNameForDevice(info.total_size_in_bytes, info.name);
+    string16 display_name = MediaStorageUtil::GetDisplayNameForDevice(
+        info.total_size_in_bytes, info.name);
+
     notifications_->ProcessAttach(StorageInfo(info.device_id, display_name,
                                               device_path.value()));
   }

@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/storage_monitor/media_device_notifications_utils.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
@@ -54,7 +53,8 @@ string16 GetDeviceName(const disks::DiskMountManager::Disk& disk,
   if (!device_label.empty() && IsStringUTF8(device_label))
     return UTF8ToUTF16(device_label);
 
-  return chrome::GetFullProductName(disk.vendor_name(), disk.product_name());
+  return chrome::MediaStorageUtil::GetFullProductName(disk.vendor_name(),
+                                                      disk.product_name());
 }
 
 // Constructs a device id using uuid or manufacturer (vendor and product) id
@@ -105,6 +105,7 @@ bool GetDeviceInfo(const std::string& source_path,
 }  // namespace
 
 using content::BrowserThread;
+using chrome::StorageInfo;
 
 StorageMonitorCros::StorageMonitorCros() {
 }
@@ -205,7 +206,7 @@ void StorageMonitorCros::OnFormatEvent(
 
 bool StorageMonitorCros::GetStorageInfoForPath(
     const base::FilePath& path,
-    chrome::StorageInfo* device_info) const {
+    StorageInfo* device_info) const {
   if (!path.IsAbsolute())
     return false;
 
@@ -235,7 +236,7 @@ void StorageMonitorCros::CheckMountedPathOnFileThread(
     const disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  bool has_dcim = chrome::IsMediaDevice(mount_info.mount_path);
+  bool has_dcim = chrome::MediaStorageUtil::HasDcim(mount_info.mount_path);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -279,9 +280,11 @@ void StorageMonitorCros::AddMountedPathOnUIThread(
 
   std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(type,
                                                                  unique_id);
+
   chrome::StorageInfo object_info(
       device_id,
-      chrome::GetDisplayNameForDevice(storage_size_in_bytes, device_label),
+      chrome::MediaStorageUtil::GetDisplayNameForDevice(storage_size_in_bytes,
+                                                        device_label),
       mount_info.mount_path,
       storage_label,
       vendor_name,

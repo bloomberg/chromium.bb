@@ -1067,7 +1067,6 @@
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
         'browser/storage_monitor/image_capture_device_manager_unittest.mm',
-        'browser/storage_monitor/media_device_notifications_utils_unittest.cc',
         'browser/storage_monitor/media_storage_util_unittest.cc',
         'browser/storage_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',
         'browser/storage_monitor/mock_removable_storage_observer.cc',

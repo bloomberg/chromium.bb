@@ -1841,8 +1841,6 @@
         'browser/storage_monitor/image_capture_device.mm',
         'browser/storage_monitor/image_capture_device_manager.h',
         'browser/storage_monitor/image_capture_device_manager.mm',
-        'browser/storage_monitor/media_device_notifications_utils.cc',
-        'browser/storage_monitor/media_device_notifications_utils.h',
         'browser/storage_monitor/media_storage_util.cc',
         'browser/storage_monitor/media_storage_util.h',
         'browser/storage_monitor/media_transfer_protocol_device_observer_linux.cc',
