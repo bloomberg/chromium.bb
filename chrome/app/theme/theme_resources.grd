@@ -63,6 +63,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_H" file="win/app_window_minimize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="win/app_window_minimize_active.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_AUDIO_EQUALIZER_COLUMN" file="common/audio_equalizer_column.png" />
       <!-- TODO(estade): Replace these placeholder resources with real ones. -->
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON" file="autofill_dialog_menu_button_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_DIALOG_MENU_BUTTON_P" file="autofill_dialog_menu_button_pressed.png" />
