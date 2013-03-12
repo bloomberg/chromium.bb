@@ -37,32 +37,6 @@ typedef base::Callback<
     void(const ScopedVector<google_apis::ResourceList>& feed_list,
          DriveFileError error)> LoadFeedListCallback;
 
-// Holds information needed to fetch contents of a directory.
-// This object is copyable.
-class DirectoryFetchInfo {
- public:
-  DirectoryFetchInfo() : changestamp_(0) {}
-  DirectoryFetchInfo(const std::string& resource_id,
-                     int64 changestamp)
-      : resource_id_(resource_id),
-        changestamp_(changestamp) {
-  }
-
-  // Returns true if the object is empty.
-  bool empty() const { return resource_id_.empty(); }
-
-  // Resource ID of the directory.
-  const std::string& resource_id() const { return resource_id_; }
-
-  // Changestamp of the directory. The changestamp is used to determine if
-  // the directory contents should be fetched.
-  int64 changestamp() const { return changestamp_; }
-
- private:
-  const std::string resource_id_;
-  const int64 changestamp_;
-};
-
 // ChangeListLoader is used to load feeds from WAPI (codename for
 // Documents List API) and load the cached proto file.
 class ChangeListLoader {
@@ -84,11 +58,20 @@ class ChangeListLoader {
   // |callback| must not be null.
   void LoadFromCache(const FileOperationCallback& callback);
 
-  // Starts retrieving feed for a directory specified by |directory_resource_id|
-  // from the server. Upon completion, |callback| is invoked.
-  // |callback| must not be null.
-  void LoadDirectoryFromServer(const std::string& directory_resource_id,
-                               const FileOperationCallback& callback);
+  // Initiates the directory contents loading. This function first obtains
+  // the changestamp from the server in order to set the per-directory
+  // changestamp for the directory.
+  //
+  // Upon completion, |callback| is invoked. On success, the changestamp of
+  // the directory is updated. |callback| must not be null.
+  //
+  // Note that This function initiates the loading without comparing the
+  // directory changestamp against the server changestamp. The primary
+  // purpose of this function is to update parts of entries in the directory
+  // which can stale over time, such as thumbnail URLs.
+  void LoadDirectoryFromServer(
+      const std::string& directory_resource_id,
+      const FileOperationCallback& callback);
 
   // Starts retrieving search results for |search_query| from the server.
   // If |next_feed| is set, this is the feed url that will be fetched.
@@ -111,8 +94,8 @@ class ChangeListLoader {
   // TODO(satorux): Implement the "fast-fetch" behavior.
   //
   // |callback| must not be null.
-  void ReloadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                                const FileOperationCallback& callback);
+  void LoadFromServerIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
+                              const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // Record file statistics as UMA histograms.
@@ -137,17 +120,31 @@ class ChangeListLoader {
   // Starts root feed load from the server, with details specified in |params|.
   void LoadFromServer(scoped_ptr<LoadFeedParams> params);
 
-  // Part of LoadDirectoryFromServer(). Called after
-  // LoadFromServer() is complete.
-  void LoadDirectoryFromServerAfterLoad(
+  // Part of LoadDirectoryFromServer() Callled when
+  // DriveScheduler::GetAboutResource() is complete. Calls
+  // DoLoadDirectoryFromServer() to initiate the directory contents loading.
+  void LoadDirectoryFromServerAfterGetAbout(
       const std::string& directory_resource_id,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource);
+
+  // Initiates the directory contents loading, based on
+  // |directory_fetch_info|.
+  void DoLoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
+                                 const FileOperationCallback& callback);
+
+  // Part of DoLoadDirectoryFromServer(). Called after
+  // LoadFromServer() is complete.
+  void DoLoadDirectoryFromServerAfterLoad(
+      const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       const ScopedVector<google_apis::ResourceList>& resource_list,
       DriveFileError error);
 
-  // Part of LoadDirectoryFromServer(). Called after
+  // Part of DoLoadDirectoryFromServer(). Called after
   // DriveResourceMetadata::RefreshDirectory() is complete.
-  void LoadDirectoryFromServerAfterRefresh(
+  void DoLoadDirectoryFromServerAfterRefresh(
       const FileOperationCallback& callback,
       DriveFileError error,
       const base::FilePath& directory_path);
@@ -160,11 +157,11 @@ class ChangeListLoader {
   void ContinueWithInitializedResourceMetadata(LoadRootFeedParams* params,
                                                DriveFileError error);
 
-  // Helper callback for handling results of metadata retrieval initiated
-  // from ReloadFromServerIfNeeded(). This method calls
+  // Part of LoadFromServerIfNeeded() Callled when
+  // DriveScheduler::GetAboutResource() is complete. This method calls
   // CompareChangestampsAndLoadIfNeeded() to make a decision about whether or
   // not to fetch the change list.
-  void OnGetAboutResource(
+  void LoadFromServerIfNeededAfterGetAbout(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,

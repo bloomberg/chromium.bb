@@ -35,6 +35,32 @@ typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 typedef std::map<std::string /* resource_id */, DriveEntryProto>
     DriveEntryProtoMap;
 
+// Holds information needed to fetch contents of a directory.
+// This object is copyable.
+class DirectoryFetchInfo {
+ public:
+  DirectoryFetchInfo() : changestamp_(0) {}
+  DirectoryFetchInfo(const std::string& resource_id,
+                     int64 changestamp)
+      : resource_id_(resource_id),
+        changestamp_(changestamp) {
+  }
+
+  // Returns true if the object is empty.
+  bool empty() const { return resource_id_.empty(); }
+
+  // Resource ID of the directory.
+  const std::string& resource_id() const { return resource_id_; }
+
+  // Changestamp of the directory. The changestamp is used to determine if
+  // the directory contents should be fetched.
+  int64 changestamp() const { return changestamp_; }
+
+ private:
+  const std::string resource_id_;
+  const int64 changestamp_;
+};
+
 // File type on the drive file system can be either a regular file or
 // a hosted document.
 enum DriveFileType {
@@ -175,10 +201,17 @@ class DriveResourceMetadataInterface {
       const DriveEntryProto& entry_proto,
       const GetEntryInfoWithFilePathCallback& callback) = 0;
 
-  // Removes all child files of |directory| and replaces them with
-  // |entry_proto_map|. |callback| is called with the directory path.
+  // Removes all child files of the directory pointed by
+  // |directory_fetch_info| and replaces them with
+  // |entry_proto_map|. The changestamp of the directory will be updated per
+  // |directory_fetch_info|. |callback| is called with the directory path.
   // |callback| must not be null.
-  virtual void RefreshDirectory(const std::string& directory_resource_id,
+  //
+  // TODO(satorux): For "fast fetch" crbug.com/178348, this function should
+  // be able to update child directories too. The existing directories should
+  // remain as-is, but the new directories should be added with changestamp
+  // set to zero, which will be fast fetched.
+  virtual void RefreshDirectory(const DirectoryFetchInfo& directory_fetch_info,
                                 const DriveEntryProtoMap& entry_proto_map,
                                 const FileMoveCallback& callback) = 0;
 
@@ -249,7 +282,7 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   virtual void RefreshEntry(
       const DriveEntryProto& entry_proto,
       const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
-  virtual void RefreshDirectory(const std::string& directory_resource_id,
+  virtual void RefreshDirectory(const DirectoryFetchInfo& directory_fetch_info,
                                 const DriveEntryProtoMap& entry_proto_map,
                                 const FileMoveCallback& callback) OVERRIDE;
   virtual void GetChildDirectories(

@@ -262,7 +262,7 @@ DriveFileSystem::DriveFileSystem(
 void DriveFileSystem::Reload() {
   ResetResourceMetadata();
 
-  change_list_loader_->ReloadFromServerIfNeeded(
+  change_list_loader_->LoadFromServerIfNeeded(
       DirectoryFetchInfo(),
       base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -315,7 +315,7 @@ void DriveFileSystem::CheckForUpdatesWithDirectoryFetchInfo(
   DVLOG(1) << "CheckForUpdates";
 
   if (resource_metadata_->loaded() && !change_list_loader_->refreshing()) {
-    change_list_loader_->ReloadFromServerIfNeeded(
+    change_list_loader_->LoadFromServerIfNeeded(
         directory_fetch_info,
         base::Bind(&DriveFileSystem::OnUpdateChecked,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -1362,7 +1362,7 @@ void DriveFileSystem::OnCacheLoaded(
 
   if (error != DRIVE_FILE_OK) {
     // If cache cannot be loaded, try to load from server directly.
-    change_list_loader_->ReloadFromServerIfNeeded(
+    change_list_loader_->LoadFromServerIfNeeded(
         directory_fetch_info,
         base::Bind(&DriveFileSystem::NotifyInitialLoadFinishedAndRun,
                    weak_ptr_factory_.GetWeakPtr(),

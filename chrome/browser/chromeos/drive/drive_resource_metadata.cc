@@ -429,13 +429,15 @@ void DriveResourceMetadata::RefreshEntry(
 }
 
 void DriveResourceMetadata::RefreshDirectory(
-    const std::string& directory_resource_id,
+    const DirectoryFetchInfo& directory_fetch_info,
     const DriveEntryProtoMap& entry_proto_map,
     const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  DCHECK(!directory_fetch_info.empty());
 
-  DriveEntry* directory_entry = GetEntryByResourceId(directory_resource_id);
+  DriveEntry* directory_entry = GetEntryByResourceId(
+      directory_fetch_info.resource_id());
 
   if (!directory_entry) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
@@ -448,6 +450,7 @@ void DriveResourceMetadata::RefreshDirectory(
     return;
   }
 
+  directory->set_changestamp(directory_fetch_info.changestamp());
   directory->RemoveChildFiles();
   // Add files from entry_proto_map.
   for (DriveEntryProtoMap::const_iterator it = entry_proto_map.begin();

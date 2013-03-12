@@ -781,6 +781,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
 
 TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/dir1"));
+  const int64 kChangestamp = 123;
 
   // Read the directory.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -808,12 +809,14 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(dir1_proto.get());
+  // The changestamp should be initially zero.
+  EXPECT_EQ(0, dir1_proto->directory_specific_info().changestamp());
 
   // Update the directory with an empty map.
   base::FilePath file_path;
   DriveEntryProtoMap entry_map;
   resource_metadata_->RefreshDirectory(
-      dir1_proto->resource_id(),
+      DirectoryFetchInfo(dir1_proto->resource_id(), kChangestamp),
       entry_map,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error,
@@ -821,6 +824,17 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(kDirectoryPath, file_path);
+
+  // Get the directory again.
+  resource_metadata_->GetEntryInfoByPath(
+      kDirectoryPath,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &dir1_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(dir1_proto.get());
+  // The new changestamp should be set.
+  EXPECT_EQ(kChangestamp, dir1_proto->directory_specific_info().changestamp());
 
   // Read the directory again.
   resource_metadata_->ReadDirectoryByPath(
@@ -841,6 +855,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
 
 TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   base::FilePath kDirectoryPath(FILE_PATH_LITERAL("drive/dir1"));
+  const int64 kChangestamp = 123;
 
   // Read the directory.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
@@ -868,6 +883,8 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(dir1_proto.get());
+  // The changestamp should be initially zero.
+  EXPECT_EQ(0, dir1_proto->directory_specific_info().changestamp());
 
   // Create a map with a new file.
   DriveEntryProto new_file;
@@ -880,7 +897,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   // Update the directory with the map.
   base::FilePath file_path;
   resource_metadata_->RefreshDirectory(
-      dir1_proto->resource_id(),
+      DirectoryFetchInfo(dir1_proto->resource_id(), kChangestamp),
       entry_map,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error,
@@ -888,6 +905,17 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(kDirectoryPath, file_path);
+
+  // Get the directory again.
+  resource_metadata_->GetEntryInfoByPath(
+      kDirectoryPath,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &dir1_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_TRUE(dir1_proto.get());
+  // The new changestamp should be set.
+  EXPECT_EQ(kChangestamp, dir1_proto->directory_specific_info().changestamp());
 
   // Read the directory again.
   resource_metadata_->ReadDirectoryByPath(

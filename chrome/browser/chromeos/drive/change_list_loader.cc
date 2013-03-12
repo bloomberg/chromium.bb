@@ -245,7 +245,7 @@ void ChangeListLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ChangeListLoader::ReloadFromServerIfNeeded(
+void ChangeListLoader::LoadFromServerIfNeeded(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -277,13 +277,13 @@ void ChangeListLoader::ReloadFromServerIfNeeded(
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   scheduler_->GetAboutResource(
-      base::Bind(&ChangeListLoader::OnGetAboutResource,
+      base::Bind(&ChangeListLoader::LoadFromServerIfNeededAfterGetAbout,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback));
 }
 
-void ChangeListLoader::OnGetAboutResource(
+void ChangeListLoader::LoadFromServerIfNeededAfterGetAbout(
     const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
@@ -293,7 +293,6 @@ void ChangeListLoader::OnGetAboutResource(
   DCHECK(refreshing_);
 
   int64 remote_changestamp = 0;
-  // When about resource successfully fetched, parse the latest change id.
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
     DCHECK(about_resource);
     remote_changestamp = about_resource->largest_change_id();
@@ -382,25 +381,63 @@ void ChangeListLoader::LoadDirectoryFromServer(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  // First fetch the latest changestamp to see if this directory needs to be
+  // updated.
+  scheduler_->GetAboutResource(
+      base::Bind(
+          &ChangeListLoader::LoadDirectoryFromServerAfterGetAbout,
+          weak_ptr_factory_.GetWeakPtr(),
+          directory_resource_id,
+          callback));
+}
+
+void ChangeListLoader::LoadDirectoryFromServerAfterGetAbout(
+      const std::string& directory_resource_id,
+      const FileOperationCallback& callback,
+      google_apis::GDataErrorCode status,
+      scoped_ptr<google_apis::AboutResource> about_resource) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  int64 remote_changestamp = 0;
+  if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
+    DCHECK(about_resource);
+    remote_changestamp = about_resource->largest_change_id();
+  }
+
+  const DirectoryFetchInfo directory_fetch_info(directory_resource_id,
+                                                remote_changestamp);
+  DoLoadDirectoryFromServer(directory_fetch_info, callback);
+}
+
+void ChangeListLoader::DoLoadDirectoryFromServer(
+    const DirectoryFetchInfo& directory_fetch_info,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(!directory_fetch_info.empty());
+
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
-      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterLoad,
+      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
-                 directory_resource_id,
+                 directory_fetch_info,
                  callback)));
-  params->directory_resource_id = directory_resource_id;
+  params->directory_resource_id = directory_fetch_info.resource_id();
   LoadFromServer(params.Pass());
 }
 
-void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
-    const std::string& directory_resource_id,
+void ChangeListLoader::DoLoadDirectoryFromServerAfterLoad(
+    const DirectoryFetchInfo& directory_fetch_info,
     const FileOperationCallback& callback,
     const ScopedVector<google_apis::ResourceList>& resource_list,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  DCHECK(!directory_fetch_info.empty());
 
   if (error != DRIVE_FILE_OK) {
-    LOG(ERROR) << "Failed to load directory: " << directory_resource_id
+    LOG(ERROR) << "Failed to load directory: "
+               << directory_fetch_info.resource_id()
                << ": " << error;
     callback.Run(error);
     return;
@@ -411,14 +448,14 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
   ChangeListProcessor change_list_processor(resource_metadata_);
   change_list_processor.FeedToEntryProtoMap(resource_list, NULL, NULL);
   resource_metadata_->RefreshDirectory(
-      directory_resource_id,
+      directory_fetch_info,
       change_list_processor.entry_proto_map(),
-      base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
+      base::Bind(&ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
+void ChangeListLoader::DoLoadDirectoryFromServerAfterRefresh(
     const FileOperationCallback& callback,
     DriveFileError error,
     const base::FilePath& directory_path) {
