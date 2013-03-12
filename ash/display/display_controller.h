@@ -197,6 +197,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
       const DisplayLayout& layout,
       bool override);
 
+  void OnFadeOutForSwapDisplayFinished();
+
   class DisplayChangeLimiter {
    public:
     DisplayChangeLimiter();

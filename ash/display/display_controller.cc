@@ -559,8 +559,21 @@ void DisplayController::SwapPrimaryDisplay() {
     limiter_->SetThrottleTimeout(kSwapDisplayThrottleTimeoutMs);
   }
 
-  if (Shell::GetScreen()->GetNumDisplays() > 1)
+  if (Shell::GetScreen()->GetNumDisplays() > 1) {
+#if defined(OS_CHROMEOS)
+    internal::OutputConfiguratorAnimation* animation =
+        Shell::GetInstance()->output_configurator_animation();
+    if (animation) {
+      animation->StartFadeOutAnimation(base::Bind(
+          &DisplayController::OnFadeOutForSwapDisplayFinished,
+          base::Unretained(this)));
+    } else {
+      SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+    }
+#else
     SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+#endif
+  }
 }
 
 void DisplayController::SetPrimaryDisplayId(int64 id) {
@@ -813,6 +826,13 @@ void DisplayController::RegisterLayoutForDisplayIdPairInternal(
   pair.second = id2;
   if (override || paired_layouts_.find(pair) == paired_layouts_.end())
     paired_layouts_[pair] = layout;
+}
+
+void DisplayController::OnFadeOutForSwapDisplayFinished() {
+#if defined(OS_CHROMEOS)
+  SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+  Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
+#endif
 }
 
 }  // namespace ash
