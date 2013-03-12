@@ -78,7 +78,6 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 }
 
 DownloadPrefs::~DownloadPrefs() {
-  SaveAutoOpenState();
 }
 
 // static
