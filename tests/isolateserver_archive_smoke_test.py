@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import binascii
+import logging
 import os
 import subprocess
 import sys
@@ -95,4 +96,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  if len(sys.argv) > 1 and sys.argv[1].startswith('http'):
+    ISOLATE_SERVER = sys.argv.pop(1)
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   unittest.main()
