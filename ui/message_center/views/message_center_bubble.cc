@@ -208,6 +208,11 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
   }
 
  private:
+  // Overridden from views::View:
+  virtual void ChildVisibilityChanged(views::View* child) {
+    InvalidateLayout();
+  }
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
@@ -403,7 +408,7 @@ class MessageCenterView : public views::View {
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE {
-      scroller_->SizeToPreferredSize();
+    scroller_->SizeToPreferredSize();
     views::View::Layout();
     if (GetWidget())
       GetWidget()->GetRootView()->SchedulePaint();
