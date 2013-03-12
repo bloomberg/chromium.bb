@@ -456,7 +456,7 @@ cr.define('bmm', function() {
         // before deciding if we should exit edit mode.
         var doc = e.target.ownerDocument;
         window.setTimeout(function() {
-          var activeElement = doc.activeElement;
+          var activeElement = doc.hasFocus() && doc.activeElement;
           if (activeElement != urlInput && activeElement != labelInput) {
             listItem.editing = false;
           }
