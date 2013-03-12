@@ -1500,7 +1500,7 @@ void LayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time 
 
     AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
     for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
-        (*iter).second->animate(monotonicSeconds);
+        (*iter).second->Animate(monotonicSeconds);
 
     m_client->setNeedsRedrawOnImplThread();
     setBackgroundTickingEnabled(!m_visible && !m_animationRegistrar->active_animation_controllers().empty());
@@ -1515,7 +1515,7 @@ void LayerTreeHostImpl::updateAnimationState()
     scoped_ptr<AnimationEventsVector> events(make_scoped_ptr(new AnimationEventsVector));
     AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
     for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
-        (*iter).second->updateState(events.get());
+        (*iter).second->UpdateState(events.get());
 
     if (!events->empty())
         m_client->postAnimationEventsToMainThreadOnImplThread(events.Pass(), m_lastAnimationTime);

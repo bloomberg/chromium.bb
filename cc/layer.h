@@ -254,9 +254,9 @@ public:
     // Set the priority of all desired textures in this layer.
     virtual void setTexturePriorities(const PriorityCalculator&) { }
 
-    bool addAnimation(scoped_ptr<Animation>);
-    void pauseAnimation(int animationId, double timeOffset);
-    void removeAnimation(int animationId);
+    bool AddAnimation(scoped_ptr<Animation>);
+    void PauseAnimation(int animationId, double timeOffset);
+    void RemoveAnimation(int animationId);
 
     void suspendAnimations(double monotonicTime);
     void resumeAnimations(double monotonicTime);

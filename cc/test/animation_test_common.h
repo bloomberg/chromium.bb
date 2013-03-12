@@ -23,9 +23,9 @@ public:
     explicit FakeFloatAnimationCurve(double duration);
     virtual ~FakeFloatAnimationCurve();
 
-    virtual double duration() const OVERRIDE;
-    virtual float getValue(double now) const OVERRIDE;
-    virtual scoped_ptr<cc::AnimationCurve> clone() const OVERRIDE;
+    virtual double Duration() const OVERRIDE;
+    virtual float GetValue(double now) const OVERRIDE;
+    virtual scoped_ptr<cc::AnimationCurve> Clone() const OVERRIDE;
 
 private:
     double m_duration;
@@ -36,10 +36,10 @@ public:
     FakeTransformTransition(double duration);
     virtual ~FakeTransformTransition();
 
-    virtual double duration() const OVERRIDE;
-    virtual gfx::Transform getValue(double time) const OVERRIDE;
+    virtual double Duration() const OVERRIDE;
+    virtual gfx::Transform GetValue(double time) const OVERRIDE;
 
-    virtual scoped_ptr<cc::AnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<cc::AnimationCurve> Clone() const OVERRIDE;
 
 private:
     double m_duration;
@@ -50,10 +50,10 @@ public:
     FakeFloatTransition(double duration, float from, float to);
     virtual ~FakeFloatTransition();
 
-    virtual double duration() const OVERRIDE;
-    virtual float getValue(double time) const OVERRIDE;
+    virtual double Duration() const OVERRIDE;
+    virtual float GetValue(double time) const OVERRIDE;
 
-    virtual scoped_ptr<cc::AnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<cc::AnimationCurve> Clone() const OVERRIDE;
 
 private:
     double m_duration;

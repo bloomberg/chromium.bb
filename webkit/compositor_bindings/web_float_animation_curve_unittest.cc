@@ -126,7 +126,7 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
       cc::EaseTimingFunction::create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->getValue(time), curve->getValue(time));
+    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
   }
 }
 
@@ -156,7 +156,7 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
       cc::EaseInTimingFunction::create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->getValue(time), curve->getValue(time));
+    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
   }
 }
 
@@ -172,7 +172,7 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
       cc::EaseOutTimingFunction::create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->getValue(time), curve->getValue(time));
+    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
   }
 }
 
@@ -188,7 +188,7 @@ TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction) {
       cc::EaseInOutTimingFunction::create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->getValue(time), curve->getValue(time));
+    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
   }
 }
 
@@ -207,7 +207,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
       cc::CubicBezierTimingFunction::create(x1, y1, x2, y2));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->getValue(time), curve->getValue(time));
+    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
   }
 }
 
@@ -222,7 +222,7 @@ TEST(WebFloatAnimationCurveTest, DefaultTimingFunction) {
       cc::EaseTimingFunction::create());
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->getValue(time), curve->getValue(time));
+    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->getValue(time));
   }
 }
 

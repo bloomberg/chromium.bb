@@ -178,25 +178,24 @@ void WebLayerImpl::setAnimationDelegate(WebAnimationDelegate* delegate) {
 }
 
 bool WebLayerImpl::addAnimation(WebAnimation* animation) {
-  return layer_->addAnimation(static_cast<WebAnimationImpl*>(animation)
-                                  ->cloneToAnimation());
+  return layer_->AddAnimation(
+      static_cast<WebAnimationImpl*>(animation)->cloneToAnimation());
 }
 
 void WebLayerImpl::removeAnimation(int animation_id) {
-  layer_->removeAnimation(animation_id);
+  layer_->RemoveAnimation(animation_id);
 }
 
 void WebLayerImpl::removeAnimation(
     int animation_id,
     WebAnimation::TargetProperty target_property) {
-  layer_->layerAnimationController()
-      ->removeAnimation(
-          animation_id,
-          static_cast<Animation::TargetProperty>(target_property));
+  layer_->layerAnimationController()->RemoveAnimation(
+      animation_id,
+      static_cast<Animation::TargetProperty>(target_property));
 }
 
 void WebLayerImpl::pauseAnimation(int animation_id, double time_offset) {
-  layer_->pauseAnimation(animation_id, time_offset);
+  layer_->PauseAnimation(animation_id, time_offset);
 }
 
 void WebLayerImpl::suspendAnimations(double monotonic_time) {

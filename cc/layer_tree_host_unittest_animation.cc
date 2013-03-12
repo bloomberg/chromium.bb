@@ -254,29 +254,29 @@ public:
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
     Animation* animation =
-        controller->getAnimation(0, Animation::Opacity);
+        controller->GetAnimation(0, Animation::Opacity);
     if (!animation)
       return;
 
     const FloatAnimationCurve* curve =
-        animation->curve()->toFloatAnimationCurve();
-    float startOpacity = curve->getValue(0);
-    float endOpacity = curve->getValue(curve->duration());
+        animation->curve()->ToFloatAnimationCurve();
+    float startOpacity = curve->GetValue(0);
+    float endOpacity = curve->GetValue(curve->Duration());
     float linearly_interpolated_opacity =
         0.25 * endOpacity + 0.75 * startOpacity;
-    double time = curve->duration() * 0.25;
+    double time = curve->Duration() * 0.25;
     // If the linear timing function associated with this animation was not
     // picked up, then the linearly interpolated opacity would be different
     // because of the default ease timing function.
-    EXPECT_FLOAT_EQ(linearly_interpolated_opacity, curve->getValue(time));
+    EXPECT_FLOAT_EQ(linearly_interpolated_opacity, curve->GetValue(time));
 
     LayerAnimationController* controller_impl =
         host_impl->rootLayer()->layerAnimationController();
     Animation* animation_impl =
-        controller_impl->getAnimation(0, Animation::Opacity);
+        controller_impl->GetAnimation(0, Animation::Opacity);
 
-    controller->removeAnimation(animation->id());
-    controller_impl->removeAnimation(animation_impl->id());
+    controller->RemoveAnimation(animation->id());
+    controller_impl->RemoveAnimation(animation_impl->id());
     endTest();
   }
 
@@ -304,9 +304,9 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
     Animation* animation =
-        controller->getAnimation(0, Animation::Opacity);
-    main_start_time_ = animation->startTime();
-    controller->removeAnimation(animation->id());
+        controller->GetAnimation(0, Animation::Opacity);
+    main_start_time_ = animation->start_time();
+    controller->RemoveAnimation(animation->id());
 
     if (impl_start_time_ > 0)
       endTest();
@@ -318,12 +318,12 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
     LayerAnimationController* controller =
         impl_host->rootLayer()->layerAnimationController();
     Animation* animation =
-        controller->getAnimation(0, Animation::Opacity);
+        controller->GetAnimation(0, Animation::Opacity);
     if (!animation)
       return;
 
-    impl_start_time_ = animation->startTime();
-    controller->removeAnimation(animation->id());
+    impl_start_time_ = animation->start_time();
+    controller->RemoveAnimation(animation->id());
 
     if (main_start_time_ > 0)
       endTest();
@@ -354,9 +354,9 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents :
     LayerAnimationController* controller =
         m_layerTreeHost->rootLayer()->layerAnimationController();
     Animation* animation =
-        controller->getAnimation(0, Animation::Opacity);
+        controller->GetAnimation(0, Animation::Opacity);
     if (animation)
-      controller->removeAnimation(animation->id());
+      controller->RemoveAnimation(animation->id());
     endTest();
   }
 
@@ -425,9 +425,9 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation :
       // Any valid AnimationCurve will do here.
       scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
       scoped_ptr<Animation> animation(
-          Animation::create(curve.Pass(), 1, 1,
+          Animation::Create(curve.Pass(), 1, 1,
                                   Animation::Opacity));
-      layer->layerAnimationController()->addAnimation(animation.Pass());
+      layer->layerAnimationController()->AddAnimation(animation.Pass());
 
       // We add the animation *before* attaching the layer to the tree.
       m_layerTreeHost->rootLayer()->addChild(layer);

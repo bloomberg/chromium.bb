@@ -812,7 +812,7 @@ void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
   // Until this layer has a compositor (and hence cc_layer_ has a
   // LayerTreeHost), addAnimation will fail.
   if (GetCompositor())
-    cc_layer_->addAnimation(animation.Pass());
+    cc_layer_->AddAnimation(animation.Pass());
   else
     pending_threaded_animations_.push_back(animation.Pass());
 }
@@ -836,7 +836,7 @@ struct HasAnimationId {
 void Layer::RemoveThreadedAnimation(int animation_id) {
   DCHECK(cc_layer_);
   if (pending_threaded_animations_.size() == 0) {
-    cc_layer_->removeAnimation(animation_id);
+    cc_layer_->RemoveAnimation(animation_id);
     return;
   }
 
@@ -853,7 +853,7 @@ void Layer::SendPendingThreadedAnimations() {
            pending_threaded_animations_.begin();
        it != pending_threaded_animations_.end();
        ++it)
-    cc_layer_->addAnimation(pending_threaded_animations_.take(it));
+    cc_layer_->AddAnimation(pending_threaded_animations_.take(it));
 
   pending_threaded_animations_.clear();
 

@@ -22,11 +22,11 @@ TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
 TransformAnimationCurveAdapter::~TransformAnimationCurveAdapter() {
 }
 
-double TransformAnimationCurveAdapter::duration() const {
+double TransformAnimationCurveAdapter::Duration() const {
   return duration_.InSecondsF();
 }
 
-scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::clone() const {
+scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::Clone() const {
   scoped_ptr<TransformAnimationCurveAdapter> to_return(
       new TransformAnimationCurveAdapter(tween_type_,
                                          initial_value_,
@@ -35,7 +35,7 @@ scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::clone() const {
   return to_return.PassAs<cc::AnimationCurve>();
 }
 
-gfx::Transform TransformAnimationCurveAdapter::getValue(
+gfx::Transform TransformAnimationCurveAdapter::GetValue(
     double t) const {
   if (t >= duration_.InSecondsF())
     return target_value_;

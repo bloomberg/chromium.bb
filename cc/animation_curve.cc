@@ -8,26 +8,23 @@
 
 namespace cc {
 
-const FloatAnimationCurve* AnimationCurve::toFloatAnimationCurve() const
-{
-    DCHECK(type() == AnimationCurve::Float);
-    return static_cast<const FloatAnimationCurve*>(this);
+const FloatAnimationCurve* AnimationCurve::ToFloatAnimationCurve() const {
+  DCHECK(Type() == AnimationCurve::Float);
+  return static_cast<const FloatAnimationCurve*>(this);
 }
 
-AnimationCurve::Type FloatAnimationCurve::type() const
-{
-    return Float;
+AnimationCurve::CurveType FloatAnimationCurve::Type() const {
+  return Float;
 }
 
-const TransformAnimationCurve* AnimationCurve::toTransformAnimationCurve() const
-{
-    DCHECK(type() == AnimationCurve::Transform);
-    return static_cast<const TransformAnimationCurve*>(this);
+const TransformAnimationCurve* AnimationCurve::ToTransformAnimationCurve()
+    const {
+  DCHECK(Type() == AnimationCurve::Transform);
+  return static_cast<const TransformAnimationCurve*>(this);
 }
 
-AnimationCurve::Type TransformAnimationCurve::type() const
-{
-    return Transform;
+AnimationCurve::CurveType TransformAnimationCurve::Type() const {
+  return Transform;
 }
 
 }  // namespace cc

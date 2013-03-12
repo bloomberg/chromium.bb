@@ -962,9 +962,9 @@ class LayerTreeHostContextTestDontUseLostResources :
     scoped_refptr<ScrollbarLayer> scrollbar_ = ScrollbarLayer::Create(
         FakeWebScrollbar::Create().PassAs<WebKit::WebScrollbar>(),
         FakeScrollbarThemePainter::Create(paint_scrollbar)
-        .PassAs<ScrollbarThemePainter>(),
+            .PassAs<ScrollbarThemePainter>(),
         FakeWebScrollbarThemeGeometry::create(has_thumb)
-        .PassAs<WebKit::WebScrollbarThemeGeometry>(),
+            .PassAs<WebKit::WebScrollbarThemeGeometry>(),
         content_->id());
     scrollbar_->setBounds(gfx::Size(10, 10));
     scrollbar_->setAnchorPoint(gfx::PointF());

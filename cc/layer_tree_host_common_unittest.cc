@@ -4835,7 +4835,7 @@ TEST(LayerTreeHostCommonTest, verifyContentsScaleForAnimatingLayer)
     EXPECT_CONTENTS_SCALE_EQ(1, childScale);
 
     // Remove the animation, now it can save a raster scale.
-    childScale->layerAnimationController()->removeAnimation(animationId);
+    childScale->layerAnimationController()->RemoveAnimation(animationId);
 
     LayerTreeHostCommon::calculateDrawProperties(parent.get(), parent->bounds(), 1, 1, dummyMaxTextureSize, false, renderSurfaceLayerList);
 

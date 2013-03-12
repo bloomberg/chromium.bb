@@ -17,11 +17,11 @@ FloatAnimationCurveAdapter::FloatAnimationCurveAdapter(
       duration_(duration) {
 }
 
-double FloatAnimationCurveAdapter::duration() const {
+double FloatAnimationCurveAdapter::Duration() const {
   return duration_.InSecondsF();
 }
 
-scoped_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::clone() const {
+scoped_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::Clone() const {
   scoped_ptr<FloatAnimationCurveAdapter> to_return(
       new FloatAnimationCurveAdapter(tween_type_,
                                      initial_value_,
@@ -30,7 +30,7 @@ scoped_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::clone() const {
   return to_return.PassAs<cc::AnimationCurve>();
 }
 
-float FloatAnimationCurveAdapter::getValue(double t) const {
+float FloatAnimationCurveAdapter::GetValue(double t) const {
   if (t >= duration_.InSecondsF())
     return target_value_;
   if (t <= 0.0)

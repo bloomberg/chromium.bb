@@ -882,12 +882,12 @@ TEST(LayerLayerTreeHostTest, destroyHostWithNonNullRootLayer)
 
 static bool addTestAnimation(Layer* layer)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(0, 0.3f, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 0.7f, scoped_ptr<TimingFunction>()));
-    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), 0, 0, Animation::Opacity));
+    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::Create());
+    curve->AddKeyframe(FloatKeyframe::Create(0.0, 0.3f, scoped_ptr<TimingFunction>()));
+    curve->AddKeyframe(FloatKeyframe::Create(1.0, 0.7f, scoped_ptr<TimingFunction>()));
+    scoped_ptr<Animation> animation(Animation::Create(curve.PassAs<AnimationCurve>(), 0, 0, Animation::Opacity));
 
-    return layer->addAnimation(animation.Pass());
+    return layer->AddAnimation(animation.Pass());
 }
 
 TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutAnimationRegistrar)
@@ -899,7 +899,7 @@ TEST(LayerLayerTreeHostTest, shouldNotAddAnimationWithoutAnimationRegistrar)
     EXPECT_FALSE(addTestAnimation(layer.get()));
 
     scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
-    layer->layerAnimationController()->setAnimationRegistrar(registrar.get());
+    layer->layerAnimationController()->SetAnimationRegistrar(registrar.get());
 
     // Case 2: with an AnimationRegistrar, the animation should be accepted.
     EXPECT_TRUE(addTestAnimation(layer.get()));

@@ -138,7 +138,7 @@ void MockLayerTreeHostImpl::updateAnimationState()
     bool hasUnfinishedAnimation = false;
     AnimationRegistrar::AnimationControllerMap::const_iterator iter = activeAnimationControllers().begin();
     for (; iter != activeAnimationControllers().end(); ++iter) {
-        if (iter->second->hasActiveAnimation()) {
+        if (iter->second->HasActiveAnimation()) {
             hasUnfinishedAnimation = true;
             break;
         }

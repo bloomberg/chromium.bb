@@ -413,7 +413,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
     }
     set_effective_start_time(base::TimeTicks());
     scoped_ptr<cc::Animation> animation = CreateCCAnimation();
-    animation->setNeedsSynchronizedStartTime(true);
+    animation->set_needs_synchronized_start_time(true);
     delegate->AddThreadedAnimation(animation.Pass());
   }
 
@@ -462,7 +462,7 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
                                        target_,
                                        duration()));
     scoped_ptr<cc::Animation> animation(
-        cc::Animation::create(animation_curve.Pass(),
+        cc::Animation::Create(animation_curve.Pass(),
                               animation_id(),
                               animation_group_id(),
                               cc::Animation::Opacity));

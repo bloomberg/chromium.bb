@@ -23,9 +23,9 @@ class TransformAnimationCurveAdapter :public cc::TransformAnimationCurve {
   virtual ~TransformAnimationCurveAdapter();
 
   // TransformAnimationCurve implementation.
-  virtual double duration() const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> clone() const OVERRIDE;
-  virtual gfx::Transform getValue(double t) const OVERRIDE;
+  virtual double Duration() const OVERRIDE;
+  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+  virtual gfx::Transform GetValue(double t) const OVERRIDE;
 
  private:
   Tween::Type tween_type_;

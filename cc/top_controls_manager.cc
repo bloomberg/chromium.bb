@@ -141,7 +141,7 @@ void TopControlsManager::Animate(base::TimeTicks monotonic_time) {
     return;
 
   double time = (monotonic_time - base::TimeTicks()).InMillisecondsF();
-  float new_offset = top_controls_animation_->getValue(time);
+  float new_offset = top_controls_animation_->GetValue(time);
   gfx::Vector2dF scroll_vector(0.f, -(new_offset - controls_top_offset_));
   ScrollInternal(scroll_vector);
   client_->setNeedsRedraw();
@@ -162,16 +162,16 @@ float TopControlsManager::RootScrollLayerTotalScrollY() {
 }
 
 void TopControlsManager::SetupAnimation(AnimationDirection direction) {
-  top_controls_animation_ = KeyframedFloatAnimationCurve::create();
+  top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
   double start_time =
       (base::TimeTicks::Now() - base::TimeTicks()).InMillisecondsF();
-  top_controls_animation_->addKeyframe(
-      FloatKeyframe::create(start_time, controls_top_offset_,
+  top_controls_animation_->AddKeyframe(
+      FloatKeyframe::Create(start_time, controls_top_offset_,
                             scoped_ptr<TimingFunction>()));
   float max_ending_offset =
       (direction == SHOWING_CONTROLS ? 1 : -1) * top_controls_height_;
-  top_controls_animation_->addKeyframe(
-      FloatKeyframe::create(start_time + kShowHideMaxDurationMs,
+  top_controls_animation_->AddKeyframe(
+      FloatKeyframe::Create(start_time + kShowHideMaxDurationMs,
                             controls_top_offset_ + max_ending_offset,
                             EaseTimingFunction::create()));
   animation_direction_ = direction;
@@ -209,7 +209,7 @@ bool TopControlsManager::IsAnimationCompleteAtTime(base::TimeTicks time) {
     return true;
 
   double time_ms = (time - base::TimeTicks()).InMillisecondsF();
-  float new_offset = top_controls_animation_->getValue(time_ms);
+  float new_offset = top_controls_animation_->GetValue(time_ms);
 
   if ((animation_direction_ == SHOWING_CONTROLS && new_offset >= 0) ||
       (animation_direction_ == HIDING_CONTROLS

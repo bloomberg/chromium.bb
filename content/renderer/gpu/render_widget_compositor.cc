@@ -395,7 +395,7 @@ void RenderWidgetCompositor::didStopFlinging() {
 
 void RenderWidgetCompositor::registerForAnimations(WebKit::WebLayer* layer) {
   cc::Layer* cc_layer = static_cast<WebKit::WebLayerImpl*>(layer)->layer();
-  cc_layer->layerAnimationController()->setAnimationRegistrar(
+  cc_layer->layerAnimationController()->SetAnimationRegistrar(
       layer_tree_host_->animationRegistrar());
 }
 

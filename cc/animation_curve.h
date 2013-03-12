@@ -18,39 +18,39 @@ class TransformOperations;
 // An animation curve is a function that returns a value given a time.
 // There are currently only two types of curve, float and transform.
 class CC_EXPORT AnimationCurve {
-public:
-    enum Type { Float, Transform };
+ public:
+  enum CurveType { Float, Transform };
 
-    virtual ~AnimationCurve() { }
+  virtual ~AnimationCurve() {}
 
-    virtual double duration() const = 0;
-    virtual Type type() const = 0;
-    virtual scoped_ptr<AnimationCurve> clone() const = 0;
+  virtual double Duration() const = 0;
+  virtual CurveType Type() const = 0;
+  virtual scoped_ptr<AnimationCurve> Clone() const = 0;
 
-    const FloatAnimationCurve* toFloatAnimationCurve() const;
-    const TransformAnimationCurve* toTransformAnimationCurve() const;
+  const FloatAnimationCurve* ToFloatAnimationCurve() const;
+  const TransformAnimationCurve* ToTransformAnimationCurve() const;
 };
 
 class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
-public:
-    virtual ~FloatAnimationCurve() { }
+ public:
+  virtual ~FloatAnimationCurve() {}
 
-    virtual float getValue(double t) const = 0;
+  virtual float GetValue(double t) const = 0;
 
-    // Partial Animation implementation.
-    virtual Type type() const OVERRIDE;
+  // Partial Animation implementation.
+  virtual CurveType Type() const OVERRIDE;
 };
 
 class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
-public:
-    virtual ~TransformAnimationCurve() { }
+ public:
+  virtual ~TransformAnimationCurve() {}
 
-    virtual gfx::Transform getValue(double t) const = 0;
+  virtual gfx::Transform GetValue(double t) const = 0;
 
-    // Partial Animation implementation.
-    virtual Type type() const OVERRIDE;
+  // Partial Animation implementation.
+  virtual CurveType Type() const OVERRIDE;
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif  // CC_ANIMATION_CURVE_H_

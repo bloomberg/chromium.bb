@@ -63,7 +63,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* treeImpl, int id)
     m_layerTreeImpl->RegisterLayer(this);
     AnimationRegistrar* registrar = m_layerTreeImpl->animationRegistrar();
     m_layerAnimationController = registrar->GetAnimationControllerForId(m_layerId);
-    m_layerAnimationController->addObserver(this);
+    m_layerAnimationController->AddObserver(this);
 }
 
 LayerImpl::~LayerImpl()
@@ -72,7 +72,7 @@ LayerImpl::~LayerImpl()
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif
     m_layerTreeImpl->UnregisterLayer(this);
-    m_layerAnimationController->removeObserver(this);
+    m_layerAnimationController->RemoveObserver(this);
 }
 
 void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
@@ -365,7 +365,7 @@ void LayerImpl::pushPropertiesTo(LayerImpl* layer)
 
     layer->setStackingOrderChanged(m_stackingOrderChanged);
 
-    m_layerAnimationController->pushAnimationUpdatesTo(layer->layerAnimationController());
+    m_layerAnimationController->PushAnimationUpdatesTo(layer->layerAnimationController());
 
     // Reset any state that should be cleared for the next update.
     m_stackingOrderChanged = false;
@@ -739,7 +739,7 @@ float LayerImpl::opacity() const
 
 bool LayerImpl::opacityIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(Animation::Opacity);
+    return m_layerAnimationController->IsAnimatingProperty(Animation::Opacity);
 }
 
 void LayerImpl::setPosition(const gfx::PointF& position)
@@ -786,7 +786,7 @@ const gfx::Transform& LayerImpl::transform() const
 
 bool LayerImpl::transformIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(Animation::Transform);
+    return m_layerAnimationController->IsAnimatingProperty(Animation::Transform);
 }
 
 void LayerImpl::setContentBounds(const gfx::Size& contentBounds)

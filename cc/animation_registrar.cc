@@ -13,7 +13,7 @@ AnimationRegistrar::~AnimationRegistrar()
 {
     AnimationControllerMap copy = all_animation_controllers_;
     for (AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter)
-        (*iter).second->setAnimationRegistrar(NULL);
+        (*iter).second->SetAnimationRegistrar(NULL);
 }
 
 scoped_refptr<LayerAnimationController>
@@ -21,8 +21,8 @@ AnimationRegistrar::GetAnimationControllerForId(int id)
 {
     scoped_refptr<LayerAnimationController> toReturn;
     if (!ContainsKey(all_animation_controllers_, id)) {
-        toReturn = LayerAnimationController::create(id);
-        toReturn->setAnimationRegistrar(this);
+        toReturn = LayerAnimationController::Create(id);
+        toReturn->SetAnimationRegistrar(this);
         all_animation_controllers_[id] = toReturn.get();
     } else
         toReturn = all_animation_controllers_[id];

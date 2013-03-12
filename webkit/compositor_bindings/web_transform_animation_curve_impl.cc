@@ -14,7 +14,7 @@
 namespace WebKit {
 
 WebTransformAnimationCurveImpl::WebTransformAnimationCurveImpl()
-    : curve_(cc::KeyframedTransformAnimationCurve::create()) {}
+    : curve_(cc::KeyframedTransformAnimationCurve::Create()) {}
 
 WebTransformAnimationCurveImpl::~WebTransformAnimationCurveImpl() {}
 
@@ -32,7 +32,7 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
   const cc::TransformOperations& transform_operations =
       static_cast<const webkit::WebTransformOperationsImpl&>(keyframe.value())
       .AsTransformOperations();
-  curve_->addKeyframe(cc::TransformKeyframe::create(
+  curve_->AddKeyframe(cc::TransformKeyframe::Create(
       keyframe.time(), transform_operations, createTimingFunction(type)));
 }
 
@@ -44,7 +44,7 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe,
   const cc::TransformOperations& transform_operations =
       static_cast<const webkit::WebTransformOperationsImpl&>(keyframe.value())
       .AsTransformOperations();
-  curve_->addKeyframe(cc::TransformKeyframe::create(
+  curve_->AddKeyframe(cc::TransformKeyframe::Create(
       keyframe.time(),
       transform_operations,
       cc::CubicBezierTimingFunction::create(x1, y1, x2, y2)
@@ -58,7 +58,7 @@ WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(
 
 scoped_ptr<cc::AnimationCurve>
 WebTransformAnimationCurveImpl::cloneToAnimationCurve() const {
-  return curve_->clone();
+  return curve_->Clone();
 }
 
 }  // namespace WebKit

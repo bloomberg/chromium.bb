@@ -17,7 +17,7 @@ class CC_EXPORT TimingFunction : public FloatAnimationCurve {
   virtual ~TimingFunction();
 
   // Partial implementation of FloatAnimationCurve.
-  virtual double duration() const OVERRIDE;
+  virtual double Duration() const OVERRIDE;
 
  protected:
   TimingFunction();
@@ -30,8 +30,8 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
   virtual ~CubicBezierTimingFunction();
 
   // Partial implementation of FloatAnimationCurve.
-  virtual float getValue(double time) const OVERRIDE;
-  virtual scoped_ptr<AnimationCurve> clone() const OVERRIDE;
+  virtual float GetValue(double time) const OVERRIDE;
+  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
 
  protected:
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2);

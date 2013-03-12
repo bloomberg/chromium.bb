@@ -12,7 +12,7 @@
 namespace WebKit {
 
 WebFloatAnimationCurveImpl::WebFloatAnimationCurveImpl()
-    : curve_(cc::KeyframedFloatAnimationCurve::create()) {}
+    : curve_(cc::KeyframedFloatAnimationCurve::Create()) {}
 
 WebFloatAnimationCurveImpl::~WebFloatAnimationCurveImpl() {}
 
@@ -26,7 +26,7 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe) {
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
                                      TimingFunctionType type) {
-  curve_->addKeyframe(cc::FloatKeyframe::create(
+  curve_->AddKeyframe(cc::FloatKeyframe::Create(
       keyframe.time, keyframe.value, createTimingFunction(type)));
 }
 
@@ -35,7 +35,7 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
                                      double y1,
                                      double x2,
                                      double y2) {
-  curve_->addKeyframe(cc::FloatKeyframe::create(
+  curve_->AddKeyframe(cc::FloatKeyframe::Create(
       keyframe.time,
       keyframe.value,
       cc::CubicBezierTimingFunction::create(x1, y1, x2, y2)
@@ -43,12 +43,12 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe,
 }
 
 float WebFloatAnimationCurveImpl::getValue(double time) const {
-  return curve_->getValue(time);
+  return curve_->GetValue(time);
 }
 
 scoped_ptr<cc::AnimationCurve>
 WebFloatAnimationCurveImpl::cloneToAnimationCurve() const {
-  return curve_->clone();
+  return curve_->Clone();
 }
 
 }  // namespace WebKit

@@ -91,9 +91,9 @@ private:
 
     virtual ~FakeLayerAnimationController() { }
 
-    virtual void pushAnimationUpdatesTo(LayerAnimationController* controllerImpl) OVERRIDE
+    virtual void PushAnimationUpdatesTo(LayerAnimationController* controllerImpl) OVERRIDE
     {
-        LayerAnimationController::pushAnimationUpdatesTo(controllerImpl);
+        LayerAnimationController::PushAnimationUpdatesTo(controllerImpl);
         m_synchronizedAnimations = true;
     }
 

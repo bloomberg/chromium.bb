@@ -84,7 +84,7 @@ TimingFunction::TimingFunction() {
 TimingFunction::~TimingFunction() {
 }
 
-double TimingFunction::duration() const {
+double TimingFunction::Duration() const {
     return 1.0;
 }
 
@@ -104,17 +104,18 @@ CubicBezierTimingFunction::CubicBezierTimingFunction(double x1, double y1,
 CubicBezierTimingFunction::~CubicBezierTimingFunction() {
 }
 
-float CubicBezierTimingFunction::getValue(double x) const {
+float CubicBezierTimingFunction::GetValue(double x) const {
   SkScalar value = SkUnitCubicInterp(x1_, y1_, x2_, y2_, x);
   return SkScalarToFloat(value);
 }
 
-scoped_ptr<AnimationCurve> CubicBezierTimingFunction::clone() const {
+scoped_ptr<AnimationCurve> CubicBezierTimingFunction::Clone() const {
   return make_scoped_ptr(
       new CubicBezierTimingFunction(*this)).PassAs<AnimationCurve>();
 }
 
-// These numbers come from http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
+// These numbers come from
+// http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
 scoped_ptr<TimingFunction> EaseTimingFunction::create() {
   return CubicBezierTimingFunction::create(
       0.25, 0.1, 0.25, 1).PassAs<TimingFunction>();

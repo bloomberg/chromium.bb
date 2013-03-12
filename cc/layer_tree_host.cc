@@ -876,8 +876,8 @@ void LayerTreeHost::animateLayers(base::TimeTicks time)
 
     AnimationRegistrar::AnimationControllerMap copy = m_animationRegistrar->active_animation_controllers();
     for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin(); iter != copy.end(); ++iter) {
-        (*iter).second->animate(monotonicTime);
-        (*iter).second->updateState(0);
+        (*iter).second->Animate(monotonicTime);
+        (*iter).second->UpdateState(NULL);
     }
 }
 
@@ -887,7 +887,7 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
         return;
 
     for (size_t eventIndex = 0; eventIndex < events.size(); ++eventIndex) {
-        if (layer->id() == events[eventIndex].layerId) {
+        if (layer->id() == events[eventIndex].layer_id) {
             switch (events[eventIndex].type) {
             case AnimationEvent::Started:
                 layer->notifyAnimationStarted(events[eventIndex], wallClockTime.ToDoubleT());

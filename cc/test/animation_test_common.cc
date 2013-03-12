@@ -26,45 +26,45 @@ static int nextAnimationId = 0;
 template <class Target>
 int addOpacityTransition(Target& target, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
+    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::Create());
 
     scoped_ptr<TimingFunction> func;
     if (!useTimingFunction)
         func = EaseTimingFunction::create();
     if (duration > 0)
-        curve->addKeyframe(FloatKeyframe::create(0, startOpacity, func.Pass()));
-    curve->addKeyframe(FloatKeyframe::create(duration, endOpacity, scoped_ptr<cc::TimingFunction>()));
+        curve->AddKeyframe(FloatKeyframe::Create(0, startOpacity, func.Pass()));
+    curve->AddKeyframe(FloatKeyframe::Create(duration, endOpacity, scoped_ptr<cc::TimingFunction>()));
 
     int id = nextAnimationId++;
 
-    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), id, 0, Animation::Opacity));
-    animation->setNeedsSynchronizedStartTime(true);
+    scoped_ptr<Animation> animation(Animation::Create(curve.PassAs<AnimationCurve>(), id, 0, Animation::Opacity));
+    animation->set_needs_synchronized_start_time(true);
 
-    target.addAnimation(animation.Pass());
+    target.AddAnimation(animation.Pass());
     return id;
 }
 
 template <class Target>
 int addAnimatedTransform(Target& target, double duration, int deltaX, int deltaY)
 {
-    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::Create());
 
     if (duration > 0) {
         TransformOperations startOperations;
         startOperations.AppendTranslate(deltaX, deltaY, 0);
-        curve->addKeyframe(TransformKeyframe::create(0, startOperations, scoped_ptr<cc::TimingFunction>()));
+        curve->AddKeyframe(TransformKeyframe::Create(0, startOperations, scoped_ptr<cc::TimingFunction>()));
     }
 
     TransformOperations operations;
     operations.AppendTranslate(deltaX, deltaY, 0);
-    curve->addKeyframe(TransformKeyframe::create(duration, operations, scoped_ptr<cc::TimingFunction>()));
+    curve->AddKeyframe(TransformKeyframe::Create(duration, operations, scoped_ptr<cc::TimingFunction>()));
 
     int id = nextAnimationId++;
 
-    scoped_ptr<Animation> animation(Animation::create(curve.PassAs<AnimationCurve>(), id, 0, Animation::Transform));
-    animation->setNeedsSynchronizedStartTime(true);
+    scoped_ptr<Animation> animation(Animation::Create(curve.PassAs<AnimationCurve>(), id, 0, Animation::Transform));
+    animation->set_needs_synchronized_start_time(true);
 
-    target.addAnimation(animation.Pass());
+    target.AddAnimation(animation.Pass());
     return id;
 }
 
@@ -82,17 +82,17 @@ FakeFloatAnimationCurve::~FakeFloatAnimationCurve()
 {
 }
 
-double FakeFloatAnimationCurve::duration() const
+double FakeFloatAnimationCurve::Duration() const
 {
     return m_duration;
 }
 
-float FakeFloatAnimationCurve::getValue(double now) const
+float FakeFloatAnimationCurve::GetValue(double now) const
 {
     return 0;
 }
 
-scoped_ptr<cc::AnimationCurve> FakeFloatAnimationCurve::clone() const
+scoped_ptr<cc::AnimationCurve> FakeFloatAnimationCurve::Clone() const
 {
     return make_scoped_ptr(new FakeFloatAnimationCurve).PassAs<cc::AnimationCurve>();
 }
@@ -106,17 +106,17 @@ FakeTransformTransition::~FakeTransformTransition()
 {
 }
 
-double FakeTransformTransition::duration() const
+double FakeTransformTransition::Duration() const
 {
     return m_duration;
 }
 
-gfx::Transform FakeTransformTransition::getValue(double time) const
+gfx::Transform FakeTransformTransition::GetValue(double time) const
 {
     return gfx::Transform();
 }
 
-scoped_ptr<cc::AnimationCurve> FakeTransformTransition::clone() const
+scoped_ptr<cc::AnimationCurve> FakeTransformTransition::Clone() const
 {
     return make_scoped_ptr(new FakeTransformTransition(*this)).PassAs<cc::AnimationCurve>();
 }
@@ -133,12 +133,12 @@ FakeFloatTransition::~FakeFloatTransition()
 {
 }
 
-double FakeFloatTransition::duration() const
+double FakeFloatTransition::Duration() const
 {
     return m_duration;
 }
 
-float FakeFloatTransition::getValue(double time) const
+float FakeFloatTransition::GetValue(double time) const
 {
     time /= m_duration;
     if (time >= 1)
@@ -170,7 +170,7 @@ bool FakeLayerAnimationValueObserver::IsActive() const
     return true;
 }
 
-scoped_ptr<cc::AnimationCurve> FakeFloatTransition::clone() const
+scoped_ptr<cc::AnimationCurve> FakeFloatTransition::Clone() const
 {
     return make_scoped_ptr(new FakeFloatTransition(*this)).PassAs<cc::AnimationCurve>();
 }
