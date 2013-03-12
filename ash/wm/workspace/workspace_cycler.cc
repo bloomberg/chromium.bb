@@ -129,11 +129,11 @@ void WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
     SetState(NOT_CYCLING_TRACKING_SCROLL);
 
   if (ui::IsNaturalScrollEnabled()) {
-    scroll_x_ += event->x_offset();
-    scroll_y_ += event->y_offset();
+    scroll_x_ += event->x_offset_ordinal();
+    scroll_y_ += event->y_offset_ordinal();
   } else {
-    scroll_x_ -= event->x_offset();
-    scroll_y_ -= event->y_offset();
+    scroll_x_ -= event->x_offset_ordinal();
+    scroll_y_ -= event->y_offset_ordinal();
   }
 
   if (state_ == NOT_CYCLING_TRACKING_SCROLL) {
@@ -152,9 +152,9 @@ void WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
       SetState(STARTING_CYCLING);
   }
 
-  if (state_ == CYCLING && event->y_offset() != 0.0f) {
+  if (state_ == CYCLING && event->y_offset_ordinal() != 0.0f) {
     DCHECK(animator_.get());
-    animator_->AnimateCyclingByScrollDelta(event->y_offset());
+    animator_->AnimateCyclingByScrollDelta(event->y_offset_ordinal());
     event->SetHandled();
   }
 }

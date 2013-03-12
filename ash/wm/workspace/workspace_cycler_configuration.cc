@@ -14,17 +14,17 @@ namespace {
 ListValue* g_shallower_than_selected_y_offsets = NULL;
 ListValue* g_deeper_than_selected_y_offsets = NULL;
 double g_selected_y_offset = 40;
-double g_selected_scale = 0.95;
-double g_min_scale = 0.9;
+double g_selected_scale = 1.0;
+double g_min_scale = 1.0;
 double g_max_scale = 1.0;
 double g_min_brightness = -0.4;
 double g_background_opacity = 0.8;
 double g_desktop_workspace_brightness = -0.4;
-double g_distance_to_initiate_cycling = 10;
-double g_scroll_amount_to_cycle_to_next_workspace = 10;
-double g_cycler_step_animation_duration_ratio = 10;
-double g_start_cycler_animation_duration = 100;
-double g_stop_cycler_animation_duration = 100;
+double g_distance_to_initiate_cycling = 4.0;
+double g_scroll_amount_to_cycle_to_next_workspace = 4.0;
+double g_cycler_step_animation_duration_ratio = 4.0;
+double g_start_cycler_animation_duration = 100.0;
+double g_stop_cycler_animation_duration = 250.0;
 
 }  // namespace
 
