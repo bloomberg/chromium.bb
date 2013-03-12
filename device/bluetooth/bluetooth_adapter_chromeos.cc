@@ -141,15 +141,6 @@ void BluetoothAdapterChromeOS::TrackDefaultAdapter() {
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BluetoothAdapterChromeOS::FindAdapter(const std::string& address) {
-  VLOG(1) << "Using adapter " << address;
-  track_default_ = false;
-  DBusThreadManager::Get()->GetBluetoothManagerClient()->
-      FindAdapter(address,
-                  base::Bind(&BluetoothAdapterChromeOS::AdapterCallback,
-                             weak_ptr_factory_.GetWeakPtr()));
-}
-
 void BluetoothAdapterChromeOS::AdapterCallback(
     const dbus::ObjectPath& adapter_path,
     bool success) {

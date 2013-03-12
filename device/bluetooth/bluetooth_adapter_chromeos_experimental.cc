@@ -73,8 +73,4 @@ void BluetoothAdapterChromeOSExperimental::ReadLocalOutOfBandPairingData(
 void BluetoothAdapterChromeOSExperimental::TrackDefaultAdapter() {
 }
 
-void BluetoothAdapterChromeOSExperimental::FindAdapter(
-    const std::string& address) {
-}
-
 }  // namespace chromeos

@@ -74,13 +74,9 @@ class BluetoothAdapterChromeOS
   // and tracks future changes to it.
   void TrackDefaultAdapter();
 
-  // Obtains the object paht for the adapter named by |address| from the
-  // Bluetooth Daemon.
-  void FindAdapter(const std::string& address);
-
-  // Called by dbus:: in response to the method call sent by both
-  // DefaultAdapter() and FindAdapter(), |object_path| will contain the
-  // dbus object path of the requested adapter when |success| is true.
+  // Called by dbus:: in response to the method call sent by DefaultAdapter().
+  // |object_path| will contain the dbus object path of the requested adapter
+  // when |success| is true.
   void AdapterCallback(const dbus::ObjectPath& adapter_path, bool success);
 
   // BluetoothManagerClient::Observer override.

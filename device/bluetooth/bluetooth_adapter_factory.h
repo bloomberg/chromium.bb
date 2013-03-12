@@ -35,9 +35,6 @@ class BluetoothAdapterFactory {
   // but may or may not have been initialized.
   // It returns NULL if no adapter has been created at the time.
   static scoped_refptr<BluetoothAdapter> MaybeGetAdapter();
-
-  // Creates an instance for a specific adapter at address |address|.
-  static BluetoothAdapter* Create(const std::string& address);
 };
 
 }  // namespace device

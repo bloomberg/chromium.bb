@@ -60,10 +60,6 @@ class BluetoothAdapterChromeOSExperimental
   // and tracks future changes to it.
   void TrackDefaultAdapter();
 
-  // Obtains the object paht for the adapter named by |address| from the
-  // Bluetooth Daemon.
-  void FindAdapter(const std::string& address);
-
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapterChromeOSExperimental> weak_ptr_factory_;

@@ -104,26 +104,4 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::MaybeGetAdapter() {
   return scoped_refptr<BluetoothAdapter>(default_adapter.Get());
 }
 
-// static
-BluetoothAdapter* BluetoothAdapterFactory::Create(const std::string& address) {
-  BluetoothAdapter* adapter = NULL;
-#if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableExperimentalBluetooth)) {
-    chromeos::BluetoothAdapterChromeOSExperimental* adapter_chromeos =
-        new chromeos::BluetoothAdapterChromeOSExperimental;
-    adapter_chromeos->FindAdapter(address);
-    adapter = adapter_chromeos;
-  } else {
-    chromeos::BluetoothAdapterChromeOS* adapter_chromeos =
-        new chromeos::BluetoothAdapterChromeOS;
-    adapter_chromeos->FindAdapter(address);
-    adapter = adapter_chromeos;
-  }
-#elif defined(OS_WIN)
-  adapter = new BluetoothAdapterWin(base::Bind(&RunAdapterCallbacks));
-#endif
-  return adapter;
-}
-
 }  // namespace device
