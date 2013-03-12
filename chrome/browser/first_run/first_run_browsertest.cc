@@ -122,7 +122,9 @@ class FirstRunMasterPrefsBrowserTest : public FirstRunIntegrationBrowserTest {
 
 // TODO(tapted): Investigate why this fails on Linux bots but does not
 // reproduce locally. See http://crbug.com/178062 .
-#if defined(OS_LINUX)
+// TODO(tapted): Investigate why this fails on mac_asan flakily
+// http://crbug.com/181499 .
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 #define MAYBE_WaitForImport DISABLED_WaitForImport
 #else
 #define MAYBE_WaitForImport WaitForImport
