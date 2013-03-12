@@ -23,6 +23,10 @@ MEDIA_EXPORT extern const char kAudioBufferSize[];
 MEDIA_EXPORT extern const char kUseCras[];
 #endif
 
+#if defined(USE_PULSEAUDIO)
+MEDIA_EXPORT extern const char kUsePulseAudio[];
+#endif
+
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
 #endif
