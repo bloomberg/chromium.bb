@@ -90,6 +90,35 @@ class DriveResourceMetadataTest : public testing::Test {
       bool is_directory,
       const std::string& parent_resource_id);
 
+  // Gets the entry info by path synchronously. Returns NULL on failure.
+  scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
+      const base::FilePath& file_path) {
+    DriveFileError error = DRIVE_FILE_OK;
+    scoped_ptr<DriveEntryProto> entry_proto;
+    resource_metadata_->GetEntryInfoByPath(
+        file_path,
+        base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                   &error, &entry_proto));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_TRUE(error == DRIVE_FILE_OK || !entry_proto);
+    return entry_proto.Pass();
+  }
+
+  // Reads the directory contents by path synchronously. Returns NULL on
+  // failure.
+  scoped_ptr<DriveEntryProtoVector> ReadDirectoryByPathSync(
+      const base::FilePath& directory_path) {
+    DriveFileError error = DRIVE_FILE_OK;
+    scoped_ptr<DriveEntryProtoVector> entries;
+    resource_metadata_->ReadDirectoryByPath(
+        directory_path,
+        base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                   &error, &entries));
+    google_apis::test_util::RunBlockingPoolTask();
+    EXPECT_TRUE(error == DRIVE_FILE_OK || !entries);
+    return entries.Pass();
+  }
+
   scoped_ptr<DriveResourceMetadataInterface> resource_metadata_;
 
  private:
@@ -653,12 +682,8 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Get file9.
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file9", entry_proto->base_name());
   ASSERT_TRUE(!entry_proto->file_info().is_directory());
@@ -684,26 +709,16 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   EXPECT_EQ(updated_md5, entry_proto->file_specific_info().file_md5());
 
   // Make sure we get the same thing from GetEntryInfoByPath.
-  entry_proto.reset();
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file100", entry_proto->base_name());
   ASSERT_TRUE(!entry_proto->file_info().is_directory());
   EXPECT_EQ(updated_md5, entry_proto->file_specific_info().file_md5());
 
   // Get dir2.
-  entry_proto.reset();
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir2"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir2"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("dir2", entry_proto->base_name());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
@@ -727,23 +742,14 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   EXPECT_EQ("resource_id:dir2", entry_proto->resource_id());
 
   // Make sure the children have moved over. Test file6.
-  entry_proto.reset();
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100/file6"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100/file6"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file6", entry_proto->base_name());
 
   // Make sure dir2 no longer exists.
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir2"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir2"));
   EXPECT_FALSE(entry_proto.get());
 }
 
@@ -754,12 +760,8 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Get root.
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
@@ -785,12 +787,8 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
 
   // Make sure the children have moved over. Test file9.
   entry_proto.reset();
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file9", entry_proto->base_name());
 }
@@ -802,12 +800,8 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   // Read the directory.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
-  resource_metadata_->ReadDirectoryByPath(
-      base::FilePath(kDirectoryPath),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entries = ReadDirectoryByPathSync(
+      base::FilePath(kDirectoryPath));
   ASSERT_TRUE(entries.get());
   // "file4", "file5", "dir3" should exist in drive/dir1.
   ASSERT_EQ(3U, entries->size());
@@ -818,12 +812,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
 
   // Get the directory.
   scoped_ptr<DriveEntryProto> dir1_proto;
-  resource_metadata_->GetEntryInfoByPath(
-      kDirectoryPath,
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &dir1_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  dir1_proto = GetEntryInfoByPathSync(kDirectoryPath);
   ASSERT_TRUE(dir1_proto.get());
   // The changestamp should be initially kTestChangestamp.
   EXPECT_EQ(kTestChangestamp,
@@ -843,24 +832,15 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_EmtpyMap) {
   EXPECT_EQ(kDirectoryPath, file_path);
 
   // Get the directory again.
-  resource_metadata_->GetEntryInfoByPath(
-      kDirectoryPath,
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &dir1_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  dir1_proto = GetEntryInfoByPathSync(kDirectoryPath);
   ASSERT_TRUE(dir1_proto.get());
   // The new changestamp should be set.
   EXPECT_EQ(kNewChangestamp,
             dir1_proto->directory_specific_info().changestamp());
 
   // Read the directory again.
-  resource_metadata_->ReadDirectoryByPath(
-      base::FilePath(kDirectoryPath),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entries = ReadDirectoryByPathSync(
+      base::FilePath(kDirectoryPath));
   ASSERT_TRUE(entries.get());
   // "file4", "file5" should be gone now, as RefreshDirectory() was called
   // with an empty map. "dir3" should still remain, as RefreshDirectory()
@@ -878,12 +858,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   // Read the directory.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
-  resource_metadata_->ReadDirectoryByPath(
-      base::FilePath(kDirectoryPath),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entries = ReadDirectoryByPathSync(kDirectoryPath);
   ASSERT_TRUE(entries.get());
   // "file4", "file5", "dir3" should exist in drive/dir1.
   ASSERT_EQ(3U, entries->size());
@@ -894,12 +869,7 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
 
   // Get the directory.
   scoped_ptr<DriveEntryProto> dir1_proto;
-  resource_metadata_->GetEntryInfoByPath(
-      kDirectoryPath,
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &dir1_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  dir1_proto = GetEntryInfoByPathSync(kDirectoryPath);
   ASSERT_TRUE(dir1_proto.get());
   // The changestamp should be initially kTestChangestamp.
   EXPECT_EQ(kTestChangestamp,
@@ -926,24 +896,14 @@ TEST_F(DriveResourceMetadataTest, RefreshDirectory_NonEmptyMap) {
   EXPECT_EQ(kDirectoryPath, file_path);
 
   // Get the directory again.
-  resource_metadata_->GetEntryInfoByPath(
-      kDirectoryPath,
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &dir1_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  dir1_proto = GetEntryInfoByPathSync(kDirectoryPath);
   ASSERT_TRUE(dir1_proto.get());
   // The new changestamp should be set.
   EXPECT_EQ(kNewChangestamp,
             dir1_proto->directory_specific_info().changestamp());
 
   // Read the directory again.
-  resource_metadata_->ReadDirectoryByPath(
-      base::FilePath(kDirectoryPath),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entries = ReadDirectoryByPathSync(kDirectoryPath);
   ASSERT_TRUE(entries.get());
   // "file4", "file5" should be gone now, and "new_file" should now be added.
   ASSERT_EQ(2U, entries->size());
@@ -1074,16 +1034,9 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
 }
 
 TEST_F(DriveResourceMetadataTest, RemoveAll) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  scoped_ptr<DriveEntryProtoVector> entries;
-
   // root has children.
-  resource_metadata_->ReadDirectoryByPath(
-      base::FilePath::FromUTF8Unsafe("drive"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  scoped_ptr<DriveEntryProtoVector> entries;
+  entries = ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
   ASSERT_TRUE(entries.get());
   ASSERT_FALSE(entries->empty());
 
@@ -1095,24 +1048,14 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // root should continue to exist.
-  resource_metadata_->GetEntryInfoByPath(
-      base::FilePath::FromUTF8Unsafe("drive"),
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error, &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entry_proto = GetEntryInfoByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
   EXPECT_EQ(kTestRootResourceId, entry_proto->resource_id());
 
   // root should have no children.
-  resource_metadata_->ReadDirectoryByPath(
-      base::FilePath::FromUTF8Unsafe("drive"),
-      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
-                 &error, &entries));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  entries = ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
   ASSERT_TRUE(entries.get());
   EXPECT_TRUE(entries->empty());
 }
