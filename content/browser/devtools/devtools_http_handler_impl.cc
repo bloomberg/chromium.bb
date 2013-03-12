@@ -451,14 +451,8 @@ static bool ParseJsonPath(
 void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  // Trim /json and ?jsonp=...
+  // Trim /json
   std::string path = info.path.substr(5);
-  std::string jsonp;
-  size_t jsonp_pos = path.find("?jsonp=");
-  if (jsonp_pos != std::string::npos) {
-    jsonp = path.substr(jsonp_pos + 7);
-    path = path.substr(0, jsonp_pos);
-  }
 
   // Trim fragment and query
   size_t query_pos = path.find("?");
@@ -475,8 +469,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     SendJson(connection_id,
              net::HTTP_NOT_FOUND,
              NULL,
-             "Malformed query: " + info.path,
-             jsonp);
+             "Malformed query: " + info.path);
     return;
   }
 
@@ -490,7 +483,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                       content::GetContentClient()->GetProduct());
     version.SetString("User-Agent",
                       webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
-    SendJson(connection_id, net::HTTP_OK, &version, "", jsonp);
+    SendJson(connection_id, net::HTTP_OK, &version, "");
     return;
   }
 
@@ -510,7 +503,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     std::string host = info.headers["Host"];
     for (PageList::iterator i = page_list.begin(); i != page_list.end(); ++i)
       json_pages_list.Append(SerializePageInfo(i->first, host));
-    SendJson(connection_id, net::HTTP_OK, &json_pages_list, "", jsonp);
+    SendJson(connection_id, net::HTTP_OK, &json_pages_list, "");
     return;
   }
 
@@ -520,13 +513,12 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
                NULL,
-               "Could not create new page",
-               jsonp);
+               "Could not create new page");
       return;
     }
     std::string host = info.headers["Host"];
     scoped_ptr<base::DictionaryValue> dictionary(SerializePageInfo(rvh, host));
-    SendJson(connection_id, net::HTTP_OK, dictionary.get(), "", jsonp);
+    SendJson(connection_id, net::HTTP_OK, dictionary.get(), "");
     return;
   }
 
@@ -537,28 +529,26 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
       SendJson(connection_id,
                net::HTTP_NOT_FOUND,
                NULL,
-               "No such target id: " + target_id,
-               jsonp);
+               "No such target id: " + target_id);
       return;
     }
 
     if (command == "activate") {
       rvh->GetDelegate()->Activate();
-      SendJson(connection_id, net::HTTP_OK, NULL, "Target activated", jsonp);
+      SendJson(connection_id, net::HTTP_OK, NULL, "Target activated");
       return;
     }
 
     if (command == "close") {
       rvh->ClosePage();
-      SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing", jsonp);
+      SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing");
       return;
     }
   }
   SendJson(connection_id,
            net::HTTP_NOT_FOUND,
            NULL,
-           "Unknown command: " + command,
-           jsonp);
+           "Unknown command: " + command);
   return;
 }
 
@@ -717,8 +707,7 @@ void DevToolsHttpHandlerImpl::StopHandlerThread() {
 void DevToolsHttpHandlerImpl::SendJson(int connection_id,
                                        net::HttpStatusCode status_code,
                                        base::Value* value,
-                                       const std::string& message,
-                                       const std::string& jsonp) {
+                                       const std::string& message) {
   if (!thread_.get())
     return;
 
@@ -736,20 +725,7 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
   std::string response;
   std::string mime_type = "application/json; charset=UTF-8";
 
-  // Wrap jsonp if necessary.
-  if (!jsonp.empty()) {
-    mime_type = "text/javascript; charset=UTF-8";
-    response = StringPrintf("%s(%s, %d, %s);",
-                            jsonp.c_str(),
-                            json_value.empty() ? "undefined"
-                                               : json_value.c_str(),
-                            status_code,
-                            json_message.c_str());
-    // JSONP always returns 200.
-    status_code = net::HTTP_OK;
-  } else {
-    response = StringPrintf("%s%s", json_value.c_str(), message.c_str());
-  }
+  response = StringPrintf("%s%s", json_value.c_str(), message.c_str());
 
   thread_->message_loop()->PostTask(
       FROM_HERE,

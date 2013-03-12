@@ -94,8 +94,7 @@ class DevToolsHttpHandlerImpl
   void SendJson(int connection_id,
                 net::HttpStatusCode status_code,
                 base::Value* value,
-                const std::string& message,
-                const std::string& jsonp);
+                const std::string& message);
   void Send200(int connection_id,
                const std::string& data,
                const std::string& mime_type);
