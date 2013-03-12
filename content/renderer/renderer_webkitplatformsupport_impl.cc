@@ -878,10 +878,11 @@ WebKit::WebGraphicsContext3D* RendererWebKitPlatformSupportImpl::
     shared_offscreen_context_ =
         RenderThreadImpl::current()->OffscreenContextProviderForMainThread();
   }
-  if (!shared_offscreen_context_->InitializeOnMainThread())
+  if (!shared_offscreen_context_->InitializeOnMainThread() ||
+      !shared_offscreen_context_->BindToCurrentThread()) {
+    shared_offscreen_context_ = NULL;
     return NULL;
-  if (!shared_offscreen_context_->BindToCurrentThread())
-    return NULL;
+  }
   return shared_offscreen_context_->Context3d();
 }
 
