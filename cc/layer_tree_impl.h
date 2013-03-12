@@ -86,7 +86,7 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayer(scoped_ptr<LayerImpl>);
   scoped_ptr<LayerImpl> DetachLayerTree();
 
-  void pushPropertiesTo(LayerTreeImpl*);
+  void PushPropertiesTo(LayerTreeImpl*);
 
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {

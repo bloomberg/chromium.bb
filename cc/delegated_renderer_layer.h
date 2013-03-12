@@ -16,10 +16,10 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
  public:
   static scoped_refptr<DelegatedRendererLayer> Create();
 
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* impl) OVERRIDE;
-  virtual bool drawsContent() const OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* impl) OVERRIDE;
+  virtual bool DrawsContent() const OVERRIDE;
 
   // Set the size at which the frame should be displayed, with the origin at the
   // layer's origin. This must always contain at least the layer's bounds. A

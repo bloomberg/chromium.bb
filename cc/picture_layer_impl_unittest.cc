@@ -19,7 +19,7 @@ namespace {
 
 class TestablePictureLayerImpl : public PictureLayerImpl {
  public:
-  static scoped_ptr<TestablePictureLayerImpl> create(
+  static scoped_ptr<TestablePictureLayerImpl> Create(
       LayerTreeImpl* treeImpl,
       int id,
       scoped_refptr<PicturePileImpl> pile)
@@ -48,7 +48,7 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
       scoped_refptr<PicturePileImpl> pile)
       : PictureLayerImpl(treeImpl, id) {
     pile_ = pile;
-    setBounds(pile_->size());
+    SetBounds(pile_->size());
     CreateTilingSet();
   }
 };
@@ -185,8 +185,8 @@ class PictureLayerImplTest : public testing::Test {
     pending_tree->DetachLayerTree();
 
     scoped_ptr<TestablePictureLayerImpl> pending_layer =
-        TestablePictureLayerImpl::create(pending_tree, id_, pile);
-    pending_layer->setDrawsContent(true);
+        TestablePictureLayerImpl::Create(pending_tree, id_, pile);
+    pending_layer->SetDrawsContent(true);
     pending_tree->SetRootLayer(pending_layer.PassAs<LayerImpl>());
   }
 
@@ -206,10 +206,10 @@ class PictureLayerImplTest : public testing::Test {
   void SetContentsScaleOnBothLayers(float scale, bool animating_transform) {
     float result_scale_x, result_scale_y;
     gfx::Size result_bounds;
-    pending_layer_->calculateContentsScale(
+    pending_layer_->CalculateContentsScale(
         scale, animating_transform,
         &result_scale_x, &result_scale_y, &result_bounds);
-    active_layer_->calculateContentsScale(
+    active_layer_->CalculateContentsScale(
         scale, animating_transform,
         &result_scale_x, &result_scale_y, &result_bounds);
   }
@@ -232,7 +232,7 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.activeTree()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
     float result_scale_x, result_scale_y;
     gfx::Size result_bounds;
-    active_layer_->calculateContentsScale(
+    active_layer_->CalculateContentsScale(
         1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
     // Add 1x1 rects at the centers of each tile, then re-record pile contents
@@ -492,7 +492,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsWithNoRecording) {
   host_impl_.setDeviceScaleFactor(1.f);
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
 
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
   EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
@@ -520,7 +520,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   host_impl_.setDeviceScaleFactor(1.7f);
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(3.2f, 3.2f, 3.2f);
 
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.3f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
@@ -532,7 +532,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
 
   // If we change the layer's CSS scale factor, then we should not get new
   // tilings.
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.8f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
@@ -545,7 +545,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   // If we change the page scale factor, then we should get new tilings.
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(2.2f, 2.2f, 2.2f);
 
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.8f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(4u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
@@ -558,7 +558,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   // If we change the device scale factor, then we should get new tilings.
   host_impl_.setDeviceScaleFactor(1.4f);
 
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.9f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(6u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
@@ -573,7 +573,7 @@ TEST_F(PictureLayerImplTest, ManageTilingsCreatesTilings) {
   host_impl_.setDeviceScaleFactor(2.2f);
   host_impl_.pendingTree()->SetPageScaleFactorAndLimits(1.4f, 1.4f, 1.4f);
 
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.9f, false, &result_scale_x, &result_scale_y, &result_bounds);
   ASSERT_EQ(6u, pending_layer_->tilings().num_tilings());
   EXPECT_FLOAT_EQ(
@@ -663,7 +663,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(4u, active_layer_->tilings().num_tilings());
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
-  active_layer_->calculateContentsScale(
+  active_layer_->CalculateContentsScale(
       1.1f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
   // Because the pending layer's ideal scale is still 1.0, our tilings fall
@@ -674,7 +674,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
 
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
-  pending_layer_->calculateContentsScale(
+  pending_layer_->CalculateContentsScale(
       1.1f, false, &result_scale_x, &result_scale_y, &result_bounds);
 
   // Our 1.0 tiling now falls outside the range between our ideal scale and our

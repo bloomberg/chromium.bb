@@ -521,7 +521,7 @@ void PluginInstance::CommitBackingTexture() {
   if (fullscreen_container_)
     fullscreen_container_->Invalidate();
   else if (texture_layer_)
-    texture_layer_->setNeedsDisplay();
+    texture_layer_->SetNeedsDisplay();
 }
 
 void PluginInstance::InstanceCrashed() {
@@ -1715,10 +1715,10 @@ void PluginInstance::UpdateLayer() {
     texture_layer_ = NULL;
   } else {
     DCHECK(bound_graphics_3d_.get());
-    texture_layer_ = cc::TextureLayer::create(this);
+    texture_layer_ = cc::TextureLayer::Create(this);
     web_layer_.reset(new WebKit::WebLayerImpl(texture_layer_));
     container_->setWebLayer(web_layer_.get());
-    texture_layer_->setContentsOpaque(bound_graphics_3d_->IsOpaque());
+    texture_layer_->SetContentsOpaque(bound_graphics_3d_->IsOpaque());
   }
 }
 

@@ -25,22 +25,23 @@ class PaintTimeCounter;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<HeadsUpDisplayLayerImpl> create(LayerTreeImpl* treeImpl, int id)
+    static scoped_ptr<HeadsUpDisplayLayerImpl> Create(LayerTreeImpl* treeImpl, int id)
     {
         return make_scoped_ptr(new HeadsUpDisplayLayerImpl(treeImpl, id));
     }
     virtual ~HeadsUpDisplayLayerImpl();
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
-    virtual void willDraw(ResourceProvider*) OVERRIDE;
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
-    void updateHudTexture(ResourceProvider*);
-    virtual void didDraw(ResourceProvider*) OVERRIDE;
+    virtual void WillDraw(ResourceProvider*) OVERRIDE;
+    virtual void AppendQuads(QuadSink* quad_sink,
+                             AppendQuadsData* append_quads_data) OVERRIDE;
+    void updateHudTexture(ResourceProvider* resource_provider);
+    virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
 
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void DidLoseOutputSurface() OVERRIDE;
 
-    virtual bool layerIsAlwaysDamaged() const OVERRIDE;
+    virtual bool LayerIsAlwaysDamaged() const OVERRIDE;
 
 private:
     class Graph {
@@ -62,7 +63,7 @@ private:
 
     HeadsUpDisplayLayerImpl(LayerTreeImpl* treeImpl, int id);
 
-    virtual const char* layerTypeAsString() const OVERRIDE;
+    virtual const char* LayerTypeAsString() const OVERRIDE;
 
     void updateHudContents();
     void drawHudContents(SkCanvas* canvas) const;

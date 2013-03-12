@@ -9,7 +9,7 @@
 
 namespace cc {
 
-scoped_refptr<PictureImageLayer> PictureImageLayer::create()
+scoped_refptr<PictureImageLayer> PictureImageLayer::Create()
 {
   return make_scoped_refptr(new PictureImageLayer());
 }
@@ -24,13 +24,13 @@ PictureImageLayer::~PictureImageLayer()
   clearClient();
 }
 
-scoped_ptr<LayerImpl> PictureImageLayer::createLayerImpl(
+scoped_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
     LayerTreeImpl* treeImpl) {
-  return PictureImageLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+  return PictureImageLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
-bool PictureImageLayer::drawsContent() const {
-  return !bitmap_.isNull() && PictureLayer::drawsContent();
+bool PictureImageLayer::DrawsContent() const {
+  return !bitmap_.isNull() && PictureLayer::DrawsContent();
 }
 
 void PictureImageLayer::setBitmap(const SkBitmap& bitmap)
@@ -43,7 +43,7 @@ void PictureImageLayer::setBitmap(const SkBitmap& bitmap)
       return;
 
   bitmap_ = bitmap;
-  setNeedsDisplay();
+  SetNeedsDisplay();
 }
 
 void PictureImageLayer::paintContents(

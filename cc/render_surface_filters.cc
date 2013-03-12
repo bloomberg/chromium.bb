@@ -319,7 +319,7 @@ WebKit::WebFilterOperations RenderSurfaceFilters::Optimize(
     const WebKit::WebFilterOperation& op = filters.at(i);
 
     // If the filter is a color matrix, we may be able to combine it with
-    // following filter(s) that also are color matrices.
+    // following Filter(s) that also are color matrices.
     SkScalar matrix[20];
     if (GetColorMatrix(op, matrix)) {
       if (have_accumulated_color_matrix) {

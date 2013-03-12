@@ -90,7 +90,7 @@ FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resourceManager)
     setTileSize(tileSize());
     setTextureFormat(GL_RGBA);
     setBorderTexelOption(LayerTilingData::NoBorderTexels);
-    setIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from drawsContent() for other reasons.
+    SetIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from DrawsContent() for other reasons.
 }
 
 FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(PrioritizedResourceManager* resourceManager)
@@ -106,26 +106,26 @@ FakeTiledLayer::~FakeTiledLayer()
 {
 }
 
-void FakeTiledLayer::setNeedsDisplayRect(const gfx::RectF& rect)
+void FakeTiledLayer::SetNeedsDisplayRect(const gfx::RectF& rect)
 {
     m_lastNeedsDisplayRect = rect;
-    TiledLayer::setNeedsDisplayRect(rect);
+    TiledLayer::SetNeedsDisplayRect(rect);
 }
 
-void FakeTiledLayer::setTexturePriorities(const PriorityCalculator& calculator)
+void FakeTiledLayer::SetTexturePriorities(const PriorityCalculator& calculator)
 {
     // Ensure there is always a target render surface available. If none has been
     // set (the layer is an orphan for the test), then just set a surface on itself.
-    bool missingTargetRenderSurface = !renderTarget();
+    bool missingTargetRenderSurface = !render_target();
 
     if (missingTargetRenderSurface)
-        createRenderSurface();
+        CreateRenderSurface();
 
-    TiledLayer::setTexturePriorities(calculator);
+    TiledLayer::SetTexturePriorities(calculator);
 
     if (missingTargetRenderSurface) {
-        clearRenderSurface();
-        drawProperties().render_target = 0;
+        ClearRenderSurface();
+        draw_properties().render_target = 0;
     }
 }
 
@@ -134,14 +134,14 @@ cc::PrioritizedResourceManager* FakeTiledLayer::resourceManager() const
     return m_resourceManager;
 }
 
-void FakeTiledLayer::updateContentsScale(float idealContentsScale)
+void FakeTiledLayer::updateContentsScale(float ideal_contents_scale)
 {
-    calculateContentsScale(
-        idealContentsScale,
+    CalculateContentsScale(
+        ideal_contents_scale,
         false,  // animating_transform_to_screen
-        &drawProperties().contents_scale_x,
-        &drawProperties().contents_scale_y,
-        &drawProperties().content_bounds);
+        &draw_properties().contents_scale_x,
+        &draw_properties().contents_scale_y,
+        &draw_properties().content_bounds);
 }
 
 cc::LayerUpdater* FakeTiledLayer::updater() const
@@ -152,18 +152,18 @@ cc::LayerUpdater* FakeTiledLayer::updater() const
 void FakeTiledLayerWithScaledBounds::setContentBounds(const gfx::Size& contentBounds)
 {
     m_forcedContentBounds = contentBounds;
-    drawProperties().content_bounds = m_forcedContentBounds;
+    draw_properties().content_bounds = m_forcedContentBounds;
 }
 
-void FakeTiledLayerWithScaledBounds::calculateContentsScale(
-    float idealContentsScale,
-    bool animatingTransformToScreen,
-    float* contentsScaleX,
-    float* contentsScaleY,
+void FakeTiledLayerWithScaledBounds::CalculateContentsScale(
+    float ideal_contents_scale,
+    bool animating_transform_to_screen,
+    float* contents_scale_x,
+    float* contents_scale_y,
     gfx::Size* contentBounds)
 {
-    *contentsScaleX = static_cast<float>(m_forcedContentBounds.width()) / bounds().width();
-    *contentsScaleY = static_cast<float>(m_forcedContentBounds.height()) / bounds().height();
+    *contents_scale_x = static_cast<float>(m_forcedContentBounds.width()) / bounds().width();
+    *contents_scale_y = static_cast<float>(m_forcedContentBounds.height()) / bounds().height();
     *contentBounds = m_forcedContentBounds;
 }
 

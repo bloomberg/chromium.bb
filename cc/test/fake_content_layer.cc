@@ -12,23 +12,23 @@ namespace cc {
 FakeContentLayer::FakeContentLayer(ContentLayerClient* client)
     : ContentLayer(client),
       update_count_(0) {
-  setAnchorPoint(gfx::PointF(0, 0));
-  setBounds(gfx::Size(1, 1));
-  setIsDrawable(true);
+  SetAnchorPoint(gfx::PointF(0, 0));
+  SetBounds(gfx::Size(1, 1));
+  SetIsDrawable(true);
 }
 
 FakeContentLayer::~FakeContentLayer() {}
 
-scoped_ptr<LayerImpl> FakeContentLayer::createLayerImpl(
+scoped_ptr<LayerImpl> FakeContentLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return FakeContentLayerImpl::Create(tree_impl, m_layerId).PassAs<LayerImpl>();
+  return FakeContentLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-void FakeContentLayer::update(
-    ResourceUpdateQueue& queue,
+void FakeContentLayer::Update(
+    ResourceUpdateQueue* queue,
     const OcclusionTracker* occlusion,
     RenderingStats* stats) {
-  ContentLayer::update(queue, occlusion, stats);
+  ContentLayer::Update(queue, occlusion, stats);
   update_count_++;
 }
 

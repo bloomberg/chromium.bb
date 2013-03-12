@@ -19,7 +19,7 @@ class LayerUpdater;
 
 class CC_EXPORT ContentLayerPainter : public LayerPainter {
 public:
-    static scoped_ptr<ContentLayerPainter> create(ContentLayerClient*);
+    static scoped_ptr<ContentLayerPainter> Create(ContentLayerClient*);
 
     virtual void Paint(SkCanvas*, gfx::Rect contentRect, gfx::RectF* opaque) OVERRIDE;
 
@@ -34,16 +34,16 @@ private:
 // A layer that renders its contents into an SkCanvas.
 class CC_EXPORT ContentLayer : public TiledLayer {
 public:
-    static scoped_refptr<ContentLayer> create(ContentLayerClient*);
+    static scoped_refptr<ContentLayer> Create(ContentLayerClient*);
 
     void clearClient() { m_client = 0; }
 
-    virtual bool drawsContent() const OVERRIDE;
-    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
-    virtual bool needMoreUpdates() OVERRIDE;
+    virtual bool DrawsContent() const OVERRIDE;
+    virtual void SetTexturePriorities(const PriorityCalculator&) OVERRIDE;
+    virtual void Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*) OVERRIDE;
+    virtual bool NeedMoreUpdates() OVERRIDE;
 
-    virtual void setContentsOpaque(bool) OVERRIDE;
+    virtual void SetContentsOpaque(bool) OVERRIDE;
 
 protected:
     explicit ContentLayer(ContentLayerClient*);

@@ -20,16 +20,16 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
   virtual ~SolidColorLayerImpl();
 
   // LayerImpl overrides.
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  virtual void appendQuads(QuadSink& quad_sink,
-                           AppendQuadsData& append_quads_data) OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
 
  protected:
   SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  virtual const char* layerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const OVERRIDE;
 
   const int tile_size_;
 };

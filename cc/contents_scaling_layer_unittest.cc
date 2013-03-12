@@ -16,13 +16,13 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
       : ContentsScalingLayer() {
   }
 
-  virtual void setNeedsDisplayRect(const gfx::RectF& dirtyRect) OVERRIDE {
+  virtual void SetNeedsDisplayRect(const gfx::RectF& dirtyRect) OVERRIDE {
     m_lastNeedsDisplayRect = dirtyRect;
-    ContentsScalingLayer::setNeedsDisplayRect(dirtyRect);
+    ContentsScalingLayer::SetNeedsDisplayRect(dirtyRect);
   }
 
   void resetNeedsDisplay() {
-      m_needsDisplay = false;
+      needs_display_ = false;
   }
 
   const gfx::RectF& lastNeedsDisplayRect() const {
@@ -31,12 +31,12 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
 
   void updateContentsScale(float contentsScale) {
       // Simulate calcDrawProperties.
-      calculateContentsScale(
+      CalculateContentsScale(
           contentsScale,
           false,  // animating_transform_to_screen
-          &drawProperties().contents_scale_x,
-          &drawProperties().contents_scale_y,
-          &drawProperties().content_bounds);
+          &draw_properties().contents_scale_x,
+          &draw_properties().contents_scale_y,
+          &draw_properties().content_bounds);
   }
 
  private:
@@ -63,28 +63,28 @@ TEST(ContentsScalingLayerTest, checkContentsBounds) {
   scoped_refptr<MockContentsScalingLayer> testLayer =
       make_scoped_refptr(new MockContentsScalingLayer());
 
-  scoped_refptr<Layer> root = Layer::create();
-  root->addChild(testLayer);
+  scoped_refptr<Layer> root = Layer::Create();
+  root->AddChild(testLayer);
 
-  testLayer->setBounds(gfx::Size(320, 240));
+  testLayer->SetBounds(gfx::Size(320, 240));
   calcDrawProps(root, 1.0);
-  EXPECT_FLOAT_EQ(1.0, testLayer->contentsScaleX());
-  EXPECT_FLOAT_EQ(1.0, testLayer->contentsScaleY());
-  EXPECT_EQ(320, testLayer->contentBounds().width());
-  EXPECT_EQ(240, testLayer->contentBounds().height());
+  EXPECT_FLOAT_EQ(1.0, testLayer->contents_scale_x());
+  EXPECT_FLOAT_EQ(1.0, testLayer->contents_scale_y());
+  EXPECT_EQ(320, testLayer->content_bounds().width());
+  EXPECT_EQ(240, testLayer->content_bounds().height());
 
   calcDrawProps(root, 2.0);
-  EXPECT_EQ(640, testLayer->contentBounds().width());
-  EXPECT_EQ(480, testLayer->contentBounds().height());
+  EXPECT_EQ(640, testLayer->content_bounds().width());
+  EXPECT_EQ(480, testLayer->content_bounds().height());
 
-  testLayer->setBounds(gfx::Size(10, 20));
+  testLayer->SetBounds(gfx::Size(10, 20));
   calcDrawProps(root, 2.0);
-  EXPECT_EQ(20, testLayer->contentBounds().width());
-  EXPECT_EQ(40, testLayer->contentBounds().height());
+  EXPECT_EQ(20, testLayer->content_bounds().width());
+  EXPECT_EQ(40, testLayer->content_bounds().height());
 
   calcDrawProps(root, 1.33f);
-  EXPECT_EQ(14, testLayer->contentBounds().width());
-  EXPECT_EQ(27, testLayer->contentBounds().height());
+  EXPECT_EQ(14, testLayer->content_bounds().width());
+  EXPECT_EQ(27, testLayer->content_bounds().height());
 }
 
 }  // namespace

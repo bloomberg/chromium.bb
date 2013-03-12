@@ -15,21 +15,21 @@ SolidColorLayerImpl::SolidColorLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 SolidColorLayerImpl::~SolidColorLayerImpl() {}
 
-scoped_ptr<LayerImpl> SolidColorLayerImpl::createLayerImpl(
+scoped_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return SolidColorLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void SolidColorLayerImpl::appendQuads(QuadSink& quad_sink,
-                                      AppendQuadsData& append_quads_data) {
+void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
+                                      AppendQuadsData* append_quads_data) {
   SharedQuadState* shared_quad_state =
-      quad_sink.useSharedQuadState(createSharedQuadState());
-  appendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+      quad_sink->useSharedQuadState(CreateSharedQuadState());
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.
-  int width = contentBounds().width();
-  int height = contentBounds().height();
+  int width = content_bounds().width();
+  int height = content_bounds().height();
   for (int x = 0; x < width; x += tile_size_) {
     for (int y = 0; y < height; y += tile_size_) {
       gfx::Rect solidTileRect(x,
@@ -37,13 +37,13 @@ void SolidColorLayerImpl::appendQuads(QuadSink& quad_sink,
                               std::min(width - x, tile_size_),
                               std::min(height - y, tile_size_));
       scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
-      quad->SetNew(shared_quad_state, solidTileRect, backgroundColor());
-      quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+      quad->SetNew(shared_quad_state, solidTileRect, background_color());
+      quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
     }
   }
 }
 
-const char* SolidColorLayerImpl::layerTypeAsString() const {
+const char* SolidColorLayerImpl::LayerTypeAsString() const {
   return "SolidColorLayer";
 }
 

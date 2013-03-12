@@ -12,10 +12,10 @@ FakeDelegatedRendererLayer::FakeDelegatedRendererLayer() {}
 
 FakeDelegatedRendererLayer::~FakeDelegatedRendererLayer() {}
 
-scoped_ptr<LayerImpl> FakeDelegatedRendererLayer::createLayerImpl(
+scoped_ptr<LayerImpl> FakeDelegatedRendererLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return FakeDelegatedRendererLayerImpl::Create(
-      tree_impl, m_layerId).PassAs<LayerImpl>();
+      tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

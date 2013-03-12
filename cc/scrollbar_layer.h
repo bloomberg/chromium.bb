@@ -20,7 +20,7 @@ class ScrollbarThemeComposite;
 
 class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
  public:
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
   static scoped_refptr<ScrollbarLayer> Create(
@@ -35,20 +35,20 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   WebKit::WebScrollbar::Orientation Orientation() const;
 
   // Layer interface
-  virtual void setTexturePriorities(const PriorityCalculator& priority_calc)
+  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void update(ResourceUpdateQueue& queue,
+  virtual void Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion,
                       RenderingStats* stats) OVERRIDE;
-  virtual void setLayerTreeHost(LayerTreeHost* host) OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void calculateContentsScale(float ideal_contents_scale,
+  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void CalculateContentsScale(float ideal_contents_scale,
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,
                                       gfx::Size* contentBounds) OVERRIDE;
 
-  virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
+  virtual ScrollbarLayer* ToScrollbarLayer() OVERRIDE;
 
  protected:
   ScrollbarLayer(

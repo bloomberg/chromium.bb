@@ -82,12 +82,12 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
   } else {
-    texture_layer_ = cc::TextureLayer::create(0);
+    texture_layer_ = cc::TextureLayer::Create(NULL);
     layer_ = texture_layer_;
   }
 
-  layer_->setContentsOpaque(true);
-  layer_->setIsDrawable(true);
+  layer_->SetContentsOpaque(true);
+  layer_->SetIsDrawable(true);
 
   host_->SetView(this);
   SetContentViewCore(content_view_core);
@@ -556,8 +556,8 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   if (content_view_core_)
     content_view_core_->DidProduceRendererFrame();
 
-  texture_layer_->setNeedsDisplay();
-  texture_layer_->setBounds(size);
+  texture_layer_->SetNeedsDisplay();
+  texture_layer_->SetBounds(size);
   texture_size_in_layer_ = size;
   current_mailbox_ = mailbox;
   ack_callback.Run();

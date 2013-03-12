@@ -26,14 +26,14 @@ public:
     // If this texture layer requires special preparation logic for each frame driven by
     // the compositor, pass in a non-nil client. Pass in a nil client pointer if texture updates
     // are driven by an external process.
-    static scoped_refptr<TextureLayer> create(TextureLayerClient*);
+    static scoped_refptr<TextureLayer> Create(TextureLayerClient*);
 
     // Used when mailbox names are specified instead of texture IDs.
-    static scoped_refptr<TextureLayer> createForMailbox();
+    static scoped_refptr<TextureLayer> CreateForMailbox();
 
     void clearClient() { m_client = 0; }
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
     // Sets whether this texture should be Y-flipped at draw time. Defaults to true.
     void setFlipped(bool);
@@ -60,15 +60,15 @@ public:
 
     void willModifyTexture();
 
-    virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
+    virtual void SetNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
 
-    virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
-    virtual bool drawsContent() const OVERRIDE;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
-    virtual bool blocksPendingCommit() const OVERRIDE;
+    virtual void SetLayerTreeHost(LayerTreeHost*) OVERRIDE;
+    virtual bool DrawsContent() const OVERRIDE;
+    virtual void Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*) OVERRIDE;
+    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual bool BlocksPendingCommit() const OVERRIDE;
 
-    virtual bool canClipSelf() const OVERRIDE;
+    virtual bool CanClipSelf() const OVERRIDE;
 
 protected:
     TextureLayer(TextureLayerClient*, bool usesMailbox);

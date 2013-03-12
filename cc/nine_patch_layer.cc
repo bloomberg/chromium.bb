@@ -21,19 +21,19 @@ NinePatchLayer::NinePatchLayer()
 
 NinePatchLayer::~NinePatchLayer() {}
 
-scoped_ptr<LayerImpl> NinePatchLayer::createLayerImpl(
+scoped_ptr<LayerImpl> NinePatchLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return NinePatchLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void NinePatchLayer::setTexturePriorities(
+void NinePatchLayer::SetTexturePriorities(
     const PriorityCalculator& priority_calc) {
   if (resource_ && !resource_->texture()->resourceManager()) {
     // Release the resource here, as it is no longer tied to a resource manager.
     resource_.reset();
     if (!bitmap_.isNull())
       CreateResource();
-  } else if (m_needsDisplay && bitmap_dirty_ && drawsContent()) {
+  } else if (needs_display_ && bitmap_dirty_ && DrawsContent()) {
     CreateResource();
   }
 
@@ -43,7 +43,7 @@ void NinePatchLayer::setTexturePriorities(
     // FIXME: Need to support swizzle in the shader for
     // !PlatformColor::sameComponentOrder(texture_format)
     GLenum texture_format =
-        layerTreeHost()->rendererCapabilities().bestTextureFormat;
+        layer_tree_host()->rendererCapabilities().bestTextureFormat;
     resource_->texture()->setDimensions(
         gfx::Size(bitmap_.width(), bitmap_.height()), texture_format);
   }
@@ -53,10 +53,10 @@ void NinePatchLayer::SetBitmap(const SkBitmap& bitmap, gfx::Rect aperture) {
   bitmap_ = bitmap;
   image_aperture_ = aperture;
   bitmap_dirty_ = true;
-  setNeedsDisplay();
+  SetNeedsDisplay();
 }
 
-void NinePatchLayer::update(ResourceUpdateQueue& queue,
+void NinePatchLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion,
                             RenderingStats* stats) {
   CreateUpdaterIfNeeded();
@@ -69,7 +69,7 @@ void NinePatchLayer::update(ResourceUpdateQueue& queue,
                                                    contentRect,
                                                    contentRect,
                                                    gfx::Vector2d());
-    queue.appendFullUpload(upload);
+    queue->appendFullUpload(upload);
     bitmap_dirty_ = false;
   }
 }
@@ -85,24 +85,24 @@ void NinePatchLayer::CreateResource() {
   DCHECK(!bitmap_.isNull());
   CreateUpdaterIfNeeded();
   updater_->setBitmap(bitmap_);
-  m_needsDisplay = false;
+  needs_display_ = false;
 
   if (!resource_) {
     resource_ = updater_->createResource(
-        layerTreeHost()->contentsTextureManager());
+        layer_tree_host()->contentsTextureManager());
   }
 }
 
-bool NinePatchLayer::drawsContent() const {
+bool NinePatchLayer::DrawsContent() const {
   bool draws = !bitmap_.isNull() &&
-               Layer::drawsContent() &&
+               Layer::DrawsContent() &&
                bitmap_.width() &&
                bitmap_.height();
   return draws;
 }
 
-void NinePatchLayer::pushPropertiesTo(LayerImpl* layer) {
-  Layer::pushPropertiesTo(layer);
+void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
+  Layer::PushPropertiesTo(layer);
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
   if (resource_) {

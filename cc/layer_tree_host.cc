@@ -121,7 +121,7 @@ bool LayerTreeHost::initializeProxy(scoped_ptr<Proxy> proxy)
 LayerTreeHost::~LayerTreeHost()
 {
     if (m_rootLayer)
-        m_rootLayer->setLayerTreeHost(0);
+        m_rootLayer->SetLayerTreeHost(0);
     DCHECK(m_proxy);
     DCHECK(m_proxy->IsMainThread());
     TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
@@ -348,12 +348,12 @@ void LayerTreeHost::updateHudLayer()
 {
     if (m_debugState.showHudInfo()) {
         if (!m_hudLayer)
-            m_hudLayer = HeadsUpDisplayLayer::create();
+            m_hudLayer = HeadsUpDisplayLayer::Create();
 
         if (m_rootLayer && !m_hudLayer->parent())
-            m_rootLayer->addChild(m_hudLayer);
+            m_rootLayer->AddChild(m_hudLayer);
     } else if (m_hudLayer) {
-        m_hudLayer->removeFromParent();
+        m_hudLayer->RemoveFromParent();
         m_hudLayer = 0;
     }
 }
@@ -472,13 +472,13 @@ void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
         return;
 
     if (m_rootLayer)
-        m_rootLayer->setLayerTreeHost(0);
+        m_rootLayer->SetLayerTreeHost(0);
     m_rootLayer = rootLayer;
     if (m_rootLayer)
-        m_rootLayer->setLayerTreeHost(this);
+        m_rootLayer->SetLayerTreeHost(this);
 
     if (m_hudLayer)
-        m_hudLayer->removeFromParent();
+        m_hudLayer->RemoveFromParent();
 
     setNeedsFullTreeSync();
 }
@@ -604,7 +604,7 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
     {
         Layer* rootScroll = findFirstScrollableLayer(rootLayer);
         if (rootScroll)
-            rootScroll->setImplTransform(m_implTransform);
+            rootScroll->SetImplTransform(m_implTransform);
 
         updateHudLayer();
 
@@ -624,7 +624,7 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
     }
 
     for (size_t i = 0; i < updateList.size(); ++i)
-        updateList[i]->clearRenderSurface();
+        updateList[i]->ClearRenderSurface();
 }
 
 void LayerTreeHost::triggerPrepaint()
@@ -652,12 +652,12 @@ void LayerTreeHost::setPrioritiesForLayers(const LayerList& updateList)
     LayerIteratorType end = LayerIteratorType::end(&updateList);
     for (LayerIteratorType it = LayerIteratorType::begin(&updateList); it != end; ++it) {
         if (it.representsItself())
-            it->setTexturePriorities(calculator);
+            it->SetTexturePriorities(calculator);
         else if (it.representsTargetRenderSurface()) {
-            if (it->maskLayer())
-                it->maskLayer()->setTexturePriorities(calculator);
-            if (it->replicaLayer() && it->replicaLayer()->maskLayer())
-                it->replicaLayer()->maskLayer()->setTexturePriorities(calculator);
+            if (it->mask_layer())
+                it->mask_layer()->SetTexturePriorities(calculator);
+            if (it->replica_layer() && it->replica_layer()->mask_layer())
+                it->replica_layer()->mask_layer()->SetTexturePriorities(calculator);
         }
     }
 }
@@ -686,12 +686,12 @@ size_t LayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& updateLi
     // Start iteration at 1 to skip the root surface as it does not have a texture cost.
     for (size_t i = 1; i < updateList.size(); ++i) {
         Layer* renderSurfaceLayer = updateList[i].get();
-        RenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
+        RenderSurface* renderSurface = renderSurfaceLayer->render_surface();
 
         size_t bytes = Resource::MemorySizeBytes(renderSurface->content_rect().size(), GL_RGBA);
         contentsTextureBytes += bytes;
 
-        if (renderSurfaceLayer->backgroundFilters().isEmpty())
+        if (renderSurfaceLayer->background_filters().isEmpty())
             continue;
 
         if (bytes > maxBackgroundTextureBytes)
@@ -711,16 +711,16 @@ bool LayerTreeHost::paintMasksForRenderSurface(Layer* renderSurfaceLayer, Resour
     RenderingStats* stats = m_debugState.recordRenderingStats() ? &m_renderingStats : NULL;
 
     bool needMoreUpdates = false;
-    Layer* maskLayer = renderSurfaceLayer->maskLayer();
+    Layer* maskLayer = renderSurfaceLayer->mask_layer();
     if (maskLayer) {
-        maskLayer->update(queue, 0, stats);
-        needMoreUpdates |= maskLayer->needMoreUpdates();
+        maskLayer->Update(&queue, 0, stats);
+        needMoreUpdates |= maskLayer->NeedMoreUpdates();
     }
 
-    Layer* replicaMaskLayer = renderSurfaceLayer->replicaLayer() ? renderSurfaceLayer->replicaLayer()->maskLayer() : 0;
+    Layer* replicaMaskLayer = renderSurfaceLayer->replica_layer() ? renderSurfaceLayer->replica_layer()->mask_layer() : 0;
     if (replicaMaskLayer) {
-        replicaMaskLayer->update(queue, 0, stats);
-        needMoreUpdates |= replicaMaskLayer->needMoreUpdates();
+        replicaMaskLayer->Update(&queue, 0, stats);
+        needMoreUpdates |= replicaMaskLayer->NeedMoreUpdates();
     }
     return needMoreUpdates;
 }
@@ -732,7 +732,7 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
 
     bool needMoreUpdates = false;
     bool recordMetricsForFrame = m_settings.showOverdrawInTracing && base::debug::TraceLog::GetInstance() && base::debug::TraceLog::GetInstance()->IsEnabled();
-    OcclusionTracker occlusionTracker(m_rootLayer->renderSurface()->content_rect(), recordMetricsForFrame);
+    OcclusionTracker occlusionTracker(m_rootLayer->render_surface()->content_rect(), recordMetricsForFrame);
     occlusionTracker.set_minimum_tracking_size(m_settings.minimumOcclusionTrackingSize);
 
     prioritizeTextures(renderSurfaceLayerList, occlusionTracker.OverdrawMetrics());
@@ -744,12 +744,12 @@ bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, 
         occlusionTracker.EnterLayer(it);
 
         if (it.representsTargetRenderSurface()) {
-            DCHECK(it->renderSurface()->draw_opacity() || it->renderSurface()->draw_opacity_is_animating());
+            DCHECK(it->render_surface()->draw_opacity() || it->render_surface()->draw_opacity_is_animating());
             needMoreUpdates |= paintMasksForRenderSurface(*it, queue);
         } else if (it.representsItself()) {
             DCHECK(!it->bounds().IsEmpty());
-            it->update(queue, &occlusionTracker, stats);
-            needMoreUpdates |= it->needMoreUpdates();
+            it->Update(&queue, &occlusionTracker, stats);
+            needMoreUpdates |= it->NeedMoreUpdates();
         }
 
         occlusionTracker.LeaveLayer(it);
@@ -775,7 +775,7 @@ void LayerTreeHost::applyScrollAndScale(const ScrollAndScaleSet& info)
         if (layer == rootScrollLayer)
             rootScrollDelta += info.scrolls[i].scrollDelta;
         else
-            layer->setScrollOffset(layer->scrollOffset() + info.scrolls[i].scrollDelta);
+            layer->SetScrollOffset(layer->scroll_offset() + info.scrolls[i].scrollDelta);
     }
     if (!rootScrollDelta.IsZero() || info.pageScaleDelta != 1)
         m_client->applyScrollAndScale(rootScrollDelta, info.pageScaleDelta);
@@ -855,7 +855,7 @@ bool LayerTreeHost::blocksPendingCommit() const
 {
     if (!m_rootLayer)
         return false;
-    return m_rootLayer->blocksPendingCommitRecursive();
+    return m_rootLayer->BlocksPendingCommitRecursive();
 }
 
 scoped_ptr<base::Value> LayerTreeHost::asValue() const
@@ -890,15 +890,15 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
         if (layer->id() == events[eventIndex].layer_id) {
             switch (events[eventIndex].type) {
             case AnimationEvent::Started:
-                layer->notifyAnimationStarted(events[eventIndex], wallClockTime.ToDoubleT());
+                layer->NotifyAnimationStarted(events[eventIndex], wallClockTime.ToDoubleT());
                 break;
 
             case AnimationEvent::Finished:
-                layer->notifyAnimationFinished(wallClockTime.ToDoubleT());
+                layer->NotifyAnimationFinished(wallClockTime.ToDoubleT());
                 break;
 
             case AnimationEvent::PropertyUpdate:
-                layer->notifyAnimationPropertyUpdate(events[eventIndex]);
+                layer->NotifyAnimationPropertyUpdate(events[eventIndex]);
                 break;
 
             default:

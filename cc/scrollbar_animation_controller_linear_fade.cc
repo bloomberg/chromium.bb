@@ -31,7 +31,7 @@ ScrollbarAnimationControllerLinearFade::~ScrollbarAnimationControllerLinearFade(
 bool ScrollbarAnimationControllerLinearFade::animate(base::TimeTicks now)
 {
     float opacity = opacityAtTime(now);
-    m_scrollLayer->setScrollbarOpacity(opacity);
+    m_scrollLayer->SetScrollbarOpacity(opacity);
     return opacity;
 }
 

@@ -133,9 +133,9 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
       java_helper_(java_helper),
       view_renderer_host_(new ViewRendererHost(NULL, this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(compositor_(Compositor::Create(this))),
-      view_clip_layer_(cc::Layer::create()),
-      transform_layer_(cc::Layer::create()),
-      scissor_clip_layer_(cc::Layer::create()),
+      view_clip_layer_(cc::Layer::Create()),
+      transform_layer_(cc::Layer::Create()),
+      scissor_clip_layer_(cc::Layer::Create()),
       view_visible_(false),
       compositor_visible_(false),
       is_composite_pending_(false),
@@ -151,8 +151,8 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
   DCHECK(java_helper);
 
   // Define the view hierarchy.
-  transform_layer_->addChild(view_clip_layer_);
-  scissor_clip_layer_->addChild(transform_layer_);
+  transform_layer_->AddChild(view_clip_layer_);
+  scissor_clip_layer_->AddChild(transform_layer_);
   compositor_->SetRootLayer(scissor_clip_layer_);
 
   RendererPictureMap::CreateInstance();
@@ -195,8 +195,8 @@ void BrowserViewRendererImpl::SetContents(ContentViewCore* content_view_core) {
   content_view_core->AddFrameInfoCallback(update_frame_info_callback_);
   dpi_scale_ = content_view_core->GetDpiScale();
 
-  view_clip_layer_->removeAllChildren();
-  view_clip_layer_->addChild(content_view_core->GetLayer());
+  view_clip_layer_->RemoveAllChildren();
+  view_clip_layer_->AddChild(content_view_core->GetLayer());
   Invalidate();
 }
 
@@ -238,12 +238,12 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
     // scissoring or background transparency need to be handled.
     // The Android framework will composite us afterwards.
     compositor_->SetHasTransparentBackground(false);
-    view_clip_layer_->setMasksToBounds(false);
-    transform_layer_->setTransform(gfx::Transform());
-    scissor_clip_layer_->setMasksToBounds(false);
-    scissor_clip_layer_->setPosition(gfx::PointF());
-    scissor_clip_layer_->setBounds(gfx::Size());
-    scissor_clip_layer_->setSublayerTransform(gfx::Transform());
+    view_clip_layer_->SetMasksToBounds(false);
+    transform_layer_->SetTransform(gfx::Transform());
+    scissor_clip_layer_->SetMasksToBounds(false);
+    scissor_clip_layer_->SetPosition(gfx::PointF());
+    scissor_clip_layer_->SetBounds(gfx::Size());
+    scissor_clip_layer_->SetSublayerTransform(gfx::Transform());
 
   } else {
     compositor_->SetHasTransparentBackground(true);
@@ -252,9 +252,9 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
                         draw_info->clip_right - draw_info->clip_left,
                         draw_info->clip_bottom - draw_info->clip_top);
 
-    scissor_clip_layer_->setPosition(clip_rect.origin());
-    scissor_clip_layer_->setBounds(clip_rect.size());
-    scissor_clip_layer_->setMasksToBounds(true);
+    scissor_clip_layer_->SetPosition(clip_rect.origin());
+    scissor_clip_layer_->SetBounds(clip_rect.size());
+    scissor_clip_layer_->SetMasksToBounds(true);
 
     // The compositor clipping architecture enforces us to have the clip layer
     // as an ancestor of the area we want to clip, but this makes the transform
@@ -262,7 +262,7 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
     // position offset needs to be undone before applying the transform.
     gfx::Transform undo_clip_position;
     undo_clip_position.Translate(-clip_rect.x(), -clip_rect.y());
-    scissor_clip_layer_->setSublayerTransform(undo_clip_position);
+    scissor_clip_layer_->SetSublayerTransform(undo_clip_position);
 
     gfx::Transform transform;
     transform.matrix().setColMajorf(draw_info->transform);
@@ -273,9 +273,9 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
     // or override the translation in the compositor, not the one coming from
     // the Android View System, as it could be out of bounds for overscrolling.
     transform.Translate(hw_rendering_scroll_.x(), hw_rendering_scroll_.y());
-    transform_layer_->setTransform(transform);
+    transform_layer_->SetTransform(transform);
 
-    view_clip_layer_->setMasksToBounds(true);
+    view_clip_layer_->SetMasksToBounds(true);
   }
 
   compositor_->Composite();
@@ -405,12 +405,12 @@ void BrowserViewRendererImpl::OnVisibilityChanged(bool view_visible,
 
 void BrowserViewRendererImpl::OnSizeChanged(int width, int height) {
   view_size_ = gfx::Size(width, height);
-  view_clip_layer_->setBounds(view_size_);
+  view_clip_layer_->SetBounds(view_size_);
 }
 
 void BrowserViewRendererImpl::OnAttachedToWindow(int width, int height) {
   view_size_ = gfx::Size(width, height);
-  view_clip_layer_->setBounds(view_size_);
+  view_clip_layer_->SetBounds(view_size_);
 }
 
 void BrowserViewRendererImpl::OnDetachedFromWindow() {

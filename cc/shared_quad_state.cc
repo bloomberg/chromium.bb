@@ -6,7 +6,7 @@
 
 namespace cc {
 
-SharedQuadState::SharedQuadState() : is_clipped(false), opacity(0) {}
+SharedQuadState::SharedQuadState() : is_clipped(false), opacity(0.f) {}
 
 SharedQuadState::~SharedQuadState() {}
 

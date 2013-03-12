@@ -74,7 +74,7 @@ bool LayerTreeHostCommon::renderSurfaceContributesToTarget(LayerType* layer, int
     //
     // Otherwise, the layer just contributes itself to the target surface.
 
-    return layer->renderSurface() && layer->id() != targetSurfaceLayerID;
+    return layer->render_surface() && layer->id() != targetSurfaceLayerID;
 }
 
 template<typename LayerType>
@@ -83,11 +83,11 @@ LayerType* LayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int lay
     if (rootLayer->id() == layerId)
         return rootLayer;
 
-    if (rootLayer->maskLayer() && rootLayer->maskLayer()->id() == layerId)
-        return rootLayer->maskLayer();
+    if (rootLayer->mask_layer() && rootLayer->mask_layer()->id() == layerId)
+        return rootLayer->mask_layer();
 
-    if (rootLayer->replicaLayer() && rootLayer->replicaLayer()->id() == layerId)
-        return rootLayer->replicaLayer();
+    if (rootLayer->replica_layer() && rootLayer->replica_layer()->id() == layerId)
+        return rootLayer->replica_layer();
 
     for (size_t i = 0; i < rootLayer->children().size(); ++i) {
         if (LayerType* found = findLayerInSubtree(getChildAsRawPtr(rootLayer->children(), i), layerId))
@@ -101,11 +101,11 @@ void LayerTreeHostCommon::callFunctionForSubtree(LayerType* rootLayer)
 {
     Function()(rootLayer);
    
-    if (LayerType* maskLayer = rootLayer->maskLayer())
+    if (LayerType* maskLayer = rootLayer->mask_layer())
         Function()(maskLayer);
-    if (LayerType* replicaLayer = rootLayer->replicaLayer()) {
+    if (LayerType* replicaLayer = rootLayer->replica_layer()) {
         Function()(replicaLayer);
-        if (LayerType* maskLayer = replicaLayer->maskLayer())
+        if (LayerType* maskLayer = replicaLayer->mask_layer())
             Function()(maskLayer);
     }
 

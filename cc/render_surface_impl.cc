@@ -44,7 +44,7 @@ RenderSurfaceImpl::~RenderSurfaceImpl() {}
 gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   gfx::RectF drawable_content_rect =
       MathUtil::mapClippedRect(draw_transform_, content_rect_);
-  if (owning_layer_->hasReplica()) {
+  if (owning_layer_->has_replica()) {
     drawable_content_rect.Union(
         MathUtil::mapClippedRect(replica_draw_transform_, content_rect_));
   }
@@ -55,7 +55,7 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
 std::string RenderSurfaceImpl::Name() const {
   return base::StringPrintf("RenderSurfaceImpl(id=%i,owner=%s)",
                             owning_layer_->id(),
-                            owning_layer_->debugName().data());
+                            owning_layer_->debug_name().data());
 }
 
 static std::string IndentString(int indent) {
@@ -148,11 +148,11 @@ bool RenderSurfaceImpl::SurfacePropertyChanged() const {
   //   layer that propagates its change to the owning layer).
   //
   DCHECK(owning_layer_);
-  return surface_property_changed_ || owning_layer_->layerPropertyChanged();
+  return surface_property_changed_ || owning_layer_->LayerPropertyChanged();
 }
 
 bool RenderSurfaceImpl::SurfacePropertyChangedOnlyFromDescendant() const {
-  return surface_property_changed_ && !owning_layer_->layerPropertyChanged();
+  return surface_property_changed_ && !owning_layer_->LayerPropertyChanged();
 }
 
 void RenderSurfaceImpl::AddContributingDelegatedRenderPassLayer(
@@ -198,7 +198,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                                     AppendQuadsData* append_quads_data,
                                     bool for_replica,
                                     RenderPass::Id render_pass_id) {
-  DCHECK(!for_replica || owning_layer_->hasReplica());
+  DCHECK(!for_replica || owning_layer_->has_replica());
 
   const gfx::Transform& draw_transform =
       for_replica ? replica_draw_transform_ : draw_transform_;
@@ -211,19 +211,19 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                             is_clipped_,
                             draw_opacity_);
 
-  if (owning_layer_->showDebugBorders()) {
+  if (owning_layer_->ShowDebugBorders()) {
     SkColor color = for_replica ?
                     DebugColors::SurfaceReplicaBorderColor() :
                     DebugColors::SurfaceBorderColor();
     float width = for_replica ?
                   DebugColors::SurfaceReplicaBorderWidth(
-                      owning_layer_->layerTreeImpl()) :
+                      owning_layer_->layer_tree_impl()) :
                   DebugColors::SurfaceBorderWidth(
-                      owning_layer_->layerTreeImpl());
+                      owning_layer_->layer_tree_impl());
     scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
         DebugBorderDrawQuad::Create();
     debug_border_quad->SetNew(shared_quad_state, content_rect_, color, width);
-    quad_sink->append(debug_border_quad.PassAs<DrawQuad>(), *append_quads_data);
+    quad_sink->append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
   }
 
   // FIXME: By using the same RenderSurfaceImpl for both the content and its
@@ -233,15 +233,15 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
   // is to introduce yet another RenderSurfaceImpl to draw the layer and its
   // reflection in. For now we only apply a separate reflection mask if the
   // contents don't have a mask of their own.
-  LayerImpl* mask_layer = owning_layer_->maskLayer();
+  LayerImpl* mask_layer = owning_layer_->mask_layer();
   if (mask_layer &&
-      (!mask_layer->drawsContent() || mask_layer->bounds().IsEmpty()))
+      (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))
     mask_layer = NULL;
 
   if (!mask_layer && for_replica) {
-    mask_layer = owning_layer_->replicaLayer()->maskLayer();
+    mask_layer = owning_layer_->replica_layer()->mask_layer();
     if (mask_layer &&
-        (!mask_layer->drawsContent() || mask_layer->bounds().IsEmpty()))
+        (!mask_layer->DrawsContent() || mask_layer->bounds().IsEmpty()))
       mask_layer = NULL;
   }
 
@@ -249,9 +249,9 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
   if (mask_layer) {
     gfx::Vector2dF owning_layer_draw_scale =
         MathUtil::computeTransform2dScaleComponents(
-            owning_layer_->drawTransform(), 1.f);
+            owning_layer_->draw_transform(), 1.f);
     gfx::SizeF unclipped_surface_size = gfx::ScaleSize(
-        owning_layer_->contentBounds(),
+        owning_layer_->content_bounds(),
         owning_layer_draw_scale.x(),
         owning_layer_draw_scale.y());
     // This assumes that the owning layer clips its subtree when a mask is
@@ -269,7 +269,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
   }
 
   ResourceProvider::ResourceId mask_resource_id =
-      mask_layer ? mask_layer->contentsResourceId() : 0;
+      mask_layer ? mask_layer->ContentsResourceId() : 0;
   gfx::Rect contents_changed_since_last_frame =
       ContentsChanged() ? content_rect_ : gfx::Rect();
 
@@ -283,8 +283,8 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                mask_uv_rect,
                owning_layer_->filters(),
                owning_layer_->filter(),
-               owning_layer_->backgroundFilters());
-  quad_sink->append(quad.PassAs<DrawQuad>(), *append_quads_data);
+               owning_layer_->background_filters());
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
 }  // namespace cc

@@ -8,7 +8,7 @@
 
 namespace cc {
 
-scoped_refptr<VideoLayer> VideoLayer::create(VideoFrameProvider* provider)
+scoped_refptr<VideoLayer> VideoLayer::Create(VideoFrameProvider* provider)
 {
     return make_scoped_refptr(new VideoLayer(provider));
 }
@@ -23,9 +23,9 @@ VideoLayer::~VideoLayer()
 {
 }
 
-scoped_ptr<LayerImpl> VideoLayer::createLayerImpl(LayerTreeImpl* treeImpl)
+scoped_ptr<LayerImpl> VideoLayer::CreateLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return VideoLayerImpl::create(treeImpl, m_layerId, m_provider).PassAs<LayerImpl>();
+    return VideoLayerImpl::Create(treeImpl, id(), m_provider).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

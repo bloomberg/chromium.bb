@@ -15,7 +15,7 @@ class FakeDelegatedRendererLayer : public DelegatedRendererLayer {
     return make_scoped_refptr(new FakeDelegatedRendererLayer());
   }
 
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
  protected:

@@ -15,7 +15,7 @@ namespace WebKit {
 
 WebNinePatchLayerImpl::WebNinePatchLayerImpl()
     : layer_(new WebLayerImpl(NinePatchLayer::Create())) {
-  layer_->layer()->setIsDrawable(true);
+  layer_->layer()->SetIsDrawable(true);
 }
 
 WebNinePatchLayerImpl::~WebNinePatchLayerImpl() {}

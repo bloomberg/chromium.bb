@@ -30,27 +30,27 @@ void ImageLayer::SetBitmap(const SkBitmap& bitmap) {
     return;
 
   bitmap_ = bitmap;
-  setNeedsDisplay();
+  SetNeedsDisplay();
 }
 
-void ImageLayer::setTexturePriorities(const PriorityCalculator& priority_calc) {
+void ImageLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
   // Update the tile data before creating all the layer's tiles.
   updateTileSizeAndTilingOption();
 
-  TiledLayer::setTexturePriorities(priority_calc);
+  TiledLayer::SetTexturePriorities(priority_calc);
 }
 
-void ImageLayer::update(ResourceUpdateQueue& queue,
+void ImageLayer::Update(ResourceUpdateQueue* queue,
                         const OcclusionTracker* occlusion,
                         RenderingStats* stats) {
   createUpdaterIfNeeded();
-  if (m_needsDisplay) {
+  if (needs_display_) {
     updater_->setBitmap(bitmap_);
     updateTileSizeAndTilingOption();
-    invalidateContentRect(gfx::Rect(gfx::Point(), contentBounds()));
-    m_needsDisplay = false;
+    invalidateContentRect(gfx::Rect(content_bounds()));
+    needs_display_ = false;
   }
-  TiledLayer::update(queue, occlusion, stats);
+  TiledLayer::Update(queue, occlusion, stats);
 }
 
 void ImageLayer::createUpdaterIfNeeded() {
@@ -59,7 +59,7 @@ void ImageLayer::createUpdaterIfNeeded() {
 
   updater_ = ImageLayerUpdater::create();
   GLenum texture_format =
-      layerTreeHost()->rendererCapabilities().bestTextureFormat;
+      layer_tree_host()->rendererCapabilities().bestTextureFormat;
   setTextureFormat(texture_format);
 }
 
@@ -67,7 +67,7 @@ LayerUpdater* ImageLayer::updater() const {
   return updater_.get();
 }
 
-void ImageLayer::calculateContentsScale(float ideal_contents_scale,
+void ImageLayer::CalculateContentsScale(float ideal_contents_scale,
                                         bool animating_transform_to_screen,
                                         float* contents_scale_x,
                                         float* contents_scale_y,
@@ -77,8 +77,8 @@ void ImageLayer::calculateContentsScale(float ideal_contents_scale,
   *contentBounds = gfx::Size(bitmap_.width(), bitmap_.height());
 }
 
-bool ImageLayer::drawsContent() const {
-  return !bitmap_.isNull() && TiledLayer::drawsContent();
+bool ImageLayer::DrawsContent() const {
+  return !bitmap_.isNull() && TiledLayer::DrawsContent();
 }
 
 float ImageLayer::ImageContentsScaleX() const {

@@ -16,19 +16,19 @@ PictureImageLayerImpl::PictureImageLayerImpl(LayerTreeImpl* treeImpl, int id)
 PictureImageLayerImpl::~PictureImageLayerImpl() {
 }
 
-const char* PictureImageLayerImpl::layerTypeAsString() const {
+const char* PictureImageLayerImpl::LayerTypeAsString() const {
   return "PictureImageLayer";
 }
 
-scoped_ptr<LayerImpl> PictureImageLayerImpl::createLayerImpl(
+scoped_ptr<LayerImpl> PictureImageLayerImpl::CreateLayerImpl(
     LayerTreeImpl* treeImpl) {
-  return PictureImageLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+  return PictureImageLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
-void PictureImageLayerImpl::getDebugBorderProperties(
+void PictureImageLayerImpl::GetDebugBorderProperties(
     SkColor* color, float* width) const {
   *color = DebugColors::ImageLayerBorderColor();
-  *width = DebugColors::ImageLayerBorderWidth(layerTreeImpl());
+  *width = DebugColors::ImageLayerBorderWidth(layer_tree_impl());
 }
 
 void PictureImageLayerImpl::CalculateRasterContentsScale(

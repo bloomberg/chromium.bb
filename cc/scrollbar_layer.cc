@@ -17,7 +17,7 @@
 
 namespace cc {
 
-scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl(
+scoped_ptr<LayerImpl> ScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return ScrollbarLayerImpl::Create(
       tree_impl,
@@ -48,7 +48,7 @@ ScrollbarLayer::ScrollbarLayer(
       scroll_layer_id_(scrollLayerId),
       texture_format_(GL_INVALID_ENUM) {
   if (!scrollbar_->isOverlay())
-    setShouldScrollOnMainThread(true);
+    SetShouldScrollOnMainThread(true);
 }
 
 ScrollbarLayer::~ScrollbarLayer() {}
@@ -58,7 +58,7 @@ void ScrollbarLayer::SetScrollLayerId(int id) {
     return;
 
   scroll_layer_id_ = id;
-  setNeedsFullTreeSync();
+  SetNeedsFullTreeSync();
 }
 
 WebKit::WebScrollbar::Orientation ScrollbarLayer::Orientation() const {
@@ -66,16 +66,16 @@ WebKit::WebScrollbar::Orientation ScrollbarLayer::Orientation() const {
 }
 
 int ScrollbarLayer::MaxTextureSize() {
-  DCHECK(layerTreeHost());
-  return layerTreeHost()->rendererCapabilities().maxTextureSize;
+  DCHECK(layer_tree_host());
+  return layer_tree_host()->rendererCapabilities().maxTextureSize;
 }
 
 float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
-  if (layerTreeHost()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solidColorScrollbars)
     return scale;
 
-  // If the scaled contentBounds() is bigger than the max texture size of the
-  // device, we need to clamp it by rescaling, since contentBounds() is used
+  // If the scaled content_bounds() is bigger than the max texture size of the
+  // device, we need to clamp it by rescaling, since content_bounds() is used
   // below to set the texture size.
   gfx::Size scaled_bounds = computeContentBoundsForScale(scale, scale);
   if (scaled_bounds.width() > MaxTextureSize() ||
@@ -88,12 +88,12 @@ float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   return scale;
 }
 
-void ScrollbarLayer::calculateContentsScale(float ideal_contents_scale,
+void ScrollbarLayer::CalculateContentsScale(float ideal_contents_scale,
                                             bool animating_transform_to_screen,
                                             float* contents_scale_x,
                                             float* contents_scale_y,
                                             gfx::Size* contentBounds) {
-  ContentsScalingLayer::calculateContentsScale(
+  ContentsScalingLayer::CalculateContentsScale(
       ClampScaleToMaxTextureSize(ideal_contents_scale),
       animating_transform_to_screen,
       contents_scale_x,
@@ -103,8 +103,8 @@ void ScrollbarLayer::calculateContentsScale(float ideal_contents_scale,
   DCHECK_LE(contentBounds->height(), MaxTextureSize());
 }
 
-void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer) {
-  ContentsScalingLayer::pushPropertiesTo(layer);
+void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
+  ContentsScalingLayer::PushPropertiesTo(layer);
 
   ScrollbarLayerImpl* scrollbar_layer = static_cast<ScrollbarLayerImpl*>(layer);
 
@@ -131,7 +131,7 @@ void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->set_thumb_resource_id(0);
 }
 
-ScrollbarLayer* ScrollbarLayer::toScrollbarLayer() {
+ScrollbarLayer* ScrollbarLayer::ToScrollbarLayer() {
   return this;
 }
 
@@ -238,22 +238,22 @@ class ScrollbarThumbPainter : public LayerPainter {
   DISALLOW_COPY_AND_ASSIGN(ScrollbarThumbPainter);
 };
 
-void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host) {
-  if (!host || host != layerTreeHost()) {
+void ScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
+  if (!host || host != layer_tree_host()) {
     back_track_updater_ = NULL;
     back_track_.reset();
     thumb_updater_ = NULL;
     thumb_.reset();
   }
 
-  ContentsScalingLayer::setLayerTreeHost(host);
+  ContentsScalingLayer::SetLayerTreeHost(host);
 }
 
 void ScrollbarLayer::CreateUpdaterIfNeeded() {
-  if (layerTreeHost()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solidColorScrollbars)
     return;
 
-  texture_format_ = layerTreeHost()->rendererCapabilities().bestTextureFormat;
+  texture_format_ = layer_tree_host()->rendererCapabilities().bestTextureFormat;
 
   if (!back_track_updater_) {
     back_track_updater_ = CachingBitmapContentLayerUpdater::Create(
@@ -265,7 +265,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   }
   if (!back_track_) {
     back_track_ = back_track_updater_->createResource(
-        layerTreeHost()->contentsTextureManager());
+        layer_tree_host()->contentsTextureManager());
   }
 
   // Only create two-part track if we think the two parts could be different in
@@ -281,7 +281,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
     }
     if (!fore_track_) {
       fore_track_ = fore_track_updater_->createResource(
-          layerTreeHost()->contentsTextureManager());
+          layer_tree_host()->contentsTextureManager());
     }
   }
 
@@ -293,7 +293,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   }
   if (!thumb_) {
     thumb_ = thumb_updater_->createResource(
-        layerTreeHost()->contentsTextureManager());
+        layer_tree_host()->contentsTextureManager());
   }
 }
 
@@ -302,7 +302,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
                                 gfx::Rect rect,
                                 ResourceUpdateQueue* queue,
                                 RenderingStats* stats) {
-  if (layerTreeHost()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solidColorScrollbars)
     return;
 
   // Skip painting and uploading if there are no invalidations and
@@ -321,8 +321,8 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
   gfx::Rect painted_opaque_rect;
   painter->prepareToUpdate(rect,
                            rect.size(),
-                           contentsScaleX(),
-                           contentsScaleY(),
+                           contents_scale_x(),
+                           contents_scale_y(),
                            painted_opaque_rect,
                            stats);
   if (!painter->pixelsDidChange() &&
@@ -333,7 +333,7 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
   }
 
   bool partial_updates_allowed =
-      layerTreeHost()->settings().maxPartialTextureUpdates > 0;
+      layer_tree_host()->settings().maxPartialTextureUpdates > 0;
   if (!partial_updates_allowed)
     resource->texture()->returnBackingTexture();
 
@@ -343,34 +343,34 @@ void ScrollbarLayer::UpdatePart(CachingBitmapContentLayerUpdater* painter,
 
 gfx::Rect ScrollbarLayer::ScrollbarLayerRectToContentRect(
     gfx::Rect layer_rect) const {
-  // Don't intersect with the bounds as in layerRectToContentRect() because
+  // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
   gfx::RectF content_rect = gfx::ScaleRect(layer_rect,
-                                           contentsScaleY(),
-                                           contentsScaleY());
+                                           contents_scale_y(),
+                                           contents_scale_y());
   return gfx::ToEnclosingRect(content_rect);
 }
 
-void ScrollbarLayer::setTexturePriorities(
+void ScrollbarLayer::SetTexturePriorities(
     const PriorityCalculator& priority_calc) {
-  if (layerTreeHost()->settings().solidColorScrollbars)
+  if (layer_tree_host()->settings().solidColorScrollbars)
     return;
 
-  if (contentBounds().IsEmpty())
+  if (content_bounds().IsEmpty())
     return;
-  DCHECK_LE(contentBounds().width(), MaxTextureSize());
-  DCHECK_LE(contentBounds().height(), MaxTextureSize());
+  DCHECK_LE(content_bounds().width(), MaxTextureSize());
+  DCHECK_LE(content_bounds().height(), MaxTextureSize());
 
   CreateUpdaterIfNeeded();
 
-  bool draws_to_root = !renderTarget()->parent();
+  bool draws_to_root = !render_target()->parent();
   if (back_track_) {
-    back_track_->texture()->setDimensions(contentBounds(), texture_format_);
+    back_track_->texture()->setDimensions(content_bounds(), texture_format_);
     back_track_->texture()->setRequestPriority(
         PriorityCalculator::uiPriority(draws_to_root));
   }
   if (fore_track_) {
-    fore_track_->texture()->setDimensions(contentBounds(), texture_format_);
+    fore_track_->texture()->setDimensions(content_bounds(), texture_format_);
     fore_track_->texture()->setRequestPriority(
         PriorityCalculator::uiPriority(draws_to_root));
   }
@@ -384,15 +384,15 @@ void ScrollbarLayer::setTexturePriorities(
   }
 }
 
-void ScrollbarLayer::update(ResourceUpdateQueue& queue,
+void ScrollbarLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion,
                             RenderingStats* stats) {
-  ContentsScalingLayer::update(queue, occlusion, stats);
+  ContentsScalingLayer::Update(queue, occlusion, stats);
 
-  dirty_rect_.Union(m_updateRect);
-  if (contentBounds().IsEmpty())
+  dirty_rect_.Union(update_rect_);
+  if (content_bounds().IsEmpty())
     return;
-  if (visibleContentRect().IsEmpty())
+  if (visible_content_rect().IsEmpty())
     return;
 
   CreateUpdaterIfNeeded();
@@ -402,13 +402,13 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue,
   UpdatePart(back_track_updater_.get(),
              back_track_.get(),
              content_rect,
-             &queue,
+             queue,
              stats);
   if (fore_track_ && fore_track_updater_) {
     UpdatePart(fore_track_updater_.get(),
                fore_track_.get(),
                content_rect,
-               &queue,
+               queue,
                stats);
   }
 
@@ -421,7 +421,7 @@ void ScrollbarLayer::update(ResourceUpdateQueue& queue,
     UpdatePart(thumb_updater_.get(),
                thumb_.get(),
                origin_thumb_rect,
-               &queue,
+               queue,
                stats);
   }
 

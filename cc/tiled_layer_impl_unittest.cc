@@ -30,17 +30,17 @@ public:
     // visibility of the entire layer size.
     scoped_ptr<TiledLayerImpl> createLayer(const gfx::Size& tileSize, const gfx::Size& layerSize, LayerTilingData::BorderTexelOption borderTexels)
     {
-        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(m_hostImpl.activeTree(), 1);
+        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::Create(m_hostImpl.activeTree(), 1);
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(tileSize, borderTexels);
         tiler->setBounds(layerSize);
         layer->setTilingData(*tiler);
         layer->setSkipsDraw(false);
-        layer->drawProperties().visible_content_rect = gfx::Rect(gfx::Point(), layerSize);
-        layer->drawProperties().opacity = 1;
-        layer->setBounds(layerSize);
-        layer->setContentBounds(layerSize);
-        layer->createRenderSurface();
-        layer->drawProperties().render_target = layer.get();
+        layer->draw_properties().visible_content_rect = gfx::Rect(gfx::Point(), layerSize);
+        layer->draw_properties().opacity = 1;
+        layer->SetBounds(layerSize);
+        layer->SetContentBounds(layerSize);
+        layer->CreateRenderSurface();
+        layer->draw_properties().render_target = layer.get();
 
         ResourceProvider::ResourceId resourceId = 1;
         for (int i = 0; i < tiler->numTilesX(); ++i)
@@ -53,12 +53,12 @@ public:
     void getQuads(QuadList& quads, SharedQuadStateList& sharedStates, gfx::Size tileSize, const gfx::Size& layerSize, LayerTilingData::BorderTexelOption borderTexelOption, const gfx::Rect& visibleContentRect)
     {
         scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, borderTexelOption);
-        layer->drawProperties().visible_content_rect = visibleContentRect;
-        layer->setBounds(layerSize);
+        layer->draw_properties().visible_content_rect = visibleContentRect;
+        layer->SetBounds(layerSize);
 
         MockQuadCuller quadCuller(quads, sharedStates);
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
     }
 
 protected:
@@ -78,7 +78,7 @@ TEST_F(TiledLayerImplTest, emptyQuadList)
         scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         const unsigned numTiles = numTilesX * numTilesY;
         EXPECT_EQ(quadCuller.quadList().size(), numTiles);
     }
@@ -86,11 +86,11 @@ TEST_F(TiledLayerImplTest, emptyQuadList)
     // Layer with empty visible layer rect produces no quads
     {
         scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
-        layer->drawProperties().visible_content_rect = gfx::Rect();
+        layer->draw_properties().visible_content_rect = gfx::Rect();
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 
@@ -99,11 +99,11 @@ TEST_F(TiledLayerImplTest, emptyQuadList)
         scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
 
         gfx::Rect outsideBounds(gfx::Point(-100, -100), gfx::Size(50, 50));
-        layer->drawProperties().visible_content_rect = outsideBounds;
+        layer->draw_properties().visible_content_rect = outsideBounds;
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 
@@ -114,7 +114,7 @@ TEST_F(TiledLayerImplTest, emptyQuadList)
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 }
@@ -132,7 +132,7 @@ TEST_F(TiledLayerImplTest, checkerboarding)
     {
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         EXPECT_EQ(0u, data.numMissingTiles);
 
@@ -148,7 +148,7 @@ TEST_F(TiledLayerImplTest, checkerboarding)
     {
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         EXPECT_LT(0u, data.numMissingTiles);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
@@ -196,7 +196,7 @@ public:
     void coverageVisibleRectIntersectsBounds(LayerTilingData::BorderTexelOption borders)
     {
         gfx::Size layerSize(220, 210);
-        gfx::Rect visibleContentRect(gfx::Point(), layerSize);
+        gfx::Rect visibleContentRect(layerSize);
         QuadList quads;
         SharedQuadStateList sharedStates;
         getQuads(quads, sharedStates, gfx::Size(100, 100), layerSize, LayerTilingData::NoBorderTexels, visibleContentRect);

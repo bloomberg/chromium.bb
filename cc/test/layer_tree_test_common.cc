@@ -202,7 +202,7 @@ private:
 // Implementation of LayerTreeHost callback interface.
 class ThreadedMockLayerTreeHostClient : public MockLayerImplTreeHostClient {
 public:
-    static scoped_ptr<ThreadedMockLayerTreeHostClient> create(TestHooks* testHooks)
+    static scoped_ptr<ThreadedMockLayerTreeHostClient> Create(TestHooks* testHooks)
     {
         return make_scoped_ptr(new ThreadedMockLayerTreeHostClient(testHooks));
     }
@@ -354,13 +354,13 @@ void ThreadedTest::postSetVisibleToMainThread(bool visible)
 
 void ThreadedTest::doBeginTest()
 {
-    m_client = ThreadedMockLayerTreeHostClient::create(this);
+    m_client = ThreadedMockLayerTreeHostClient::Create(this);
 
     scoped_ptr<cc::Thread> implCCThread(NULL);
     if (m_implThread)
         implCCThread = cc::ThreadImpl::createForDifferentThread(m_implThread->message_loop_proxy());
     m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), m_settings, implCCThread.Pass());
-    ASSERT_TRUE(m_layerTreeHost.get());
+    ASSERT_TRUE(m_layerTreeHost);
 
     m_started = true;
     m_beginning = true;
@@ -380,8 +380,8 @@ void ThreadedTest::doBeginTest()
 void ThreadedTest::setupTree()
 {
     if (!m_layerTreeHost->rootLayer()) {
-        scoped_refptr<Layer> rootLayer = Layer::create();
-        rootLayer->setBounds(gfx::Size(1, 1));
+        scoped_refptr<Layer> rootLayer = Layer::Create();
+        rootLayer->SetBounds(gfx::Size(1, 1));
         m_layerTreeHost->setRootLayer(rootLayer);
     }
 
@@ -506,7 +506,7 @@ void ThreadedTest::runTest(bool threaded)
     m_mainCCThread->postDelayedTask(m_timeout.callback(), 5000);
     MessageLoop::current()->Run();
     if (m_layerTreeHost.get() && m_layerTreeHost->rootLayer())
-        m_layerTreeHost->rootLayer()->setLayerTreeHost(0);
+        m_layerTreeHost->rootLayer()->SetLayerTreeHost(0);
     m_layerTreeHost.reset();
 
     m_timeout.Cancel();

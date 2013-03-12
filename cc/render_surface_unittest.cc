@@ -39,27 +39,27 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(hostImpl.activeTree(), 1);
-    owningLayer->createRenderSurface();
-    ASSERT_TRUE(owningLayer->renderSurface());
-    RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.activeTree(), 1);
+    owningLayer->CreateRenderSurface();
+    ASSERT_TRUE(owningLayer->render_surface());
+    RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
     gfx::Rect testRect = gfx::Rect(gfx::Point(3, 4), gfx::Size(5, 6));
-    owningLayer->resetAllChangeTrackingForSubtree();
+    owningLayer->ResetAllChangeTrackingForSubtree();
 
     // Currently, the contentRect, clipRect, and owningLayer->layerPropertyChanged() are
     // the only sources of change.
     EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->SetClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_CHANGED(renderSurface->SetContentRect(testRect));
 
-    owningLayer->setOpacity(0.5f);
+    owningLayer->SetOpacity(0.5f);
     EXPECT_TRUE(renderSurface->SurfacePropertyChanged());
-    owningLayer->resetAllChangeTrackingForSubtree();
+    owningLayer->ResetAllChangeTrackingForSubtree();
 
     // Setting the surface properties to the same values again should not be considered "change".
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetContentRect(testRect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(hostImpl.activeTree(), 2);
+    scoped_ptr<LayerImpl> dummyMask = LayerImpl::Create(hostImpl.activeTree(), 2);
     gfx::Transform dummyMatrix;
     dummyMatrix.Translate(1.0, 2.0);
 
@@ -75,15 +75,15 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.activeTree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(hostImpl.activeTree(), 2);
-    owningLayer->createRenderSurface();
-    ASSERT_TRUE(owningLayer->renderSurface());
-    owningLayer->drawProperties().render_target = owningLayer.get();
-    RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.activeTree(), 2);
+    owningLayer->CreateRenderSurface();
+    ASSERT_TRUE(owningLayer->render_surface());
+    owningLayer->draw_properties().render_target = owningLayer.get();
+    RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
 
-    rootLayer->addChild(owningLayer.Pass());
+    rootLayer->AddChild(owningLayer.Pass());
 
     gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
     gfx::Rect clipRect = gfx::Rect(gfx::Point(5, 5), gfx::Size(40, 40));
@@ -127,15 +127,15 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.activeTree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(hostImpl.activeTree(), 2);
-    owningLayer->createRenderSurface();
-    ASSERT_TRUE(owningLayer->renderSurface());
-    owningLayer->drawProperties().render_target = owningLayer.get();
-    RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.activeTree(), 2);
+    owningLayer->CreateRenderSurface();
+    ASSERT_TRUE(owningLayer->render_surface());
+    owningLayer->draw_properties().render_target = owningLayer.get();
+    RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
 
-    rootLayer->addChild(owningLayer.Pass());
+    rootLayer->AddChild(owningLayer.Pass());
 
     gfx::Rect contentRect = gfx::Rect(gfx::Point(), gfx::Size(50, 50));
     gfx::Transform origin;

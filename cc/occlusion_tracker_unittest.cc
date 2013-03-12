@@ -33,12 +33,12 @@ public:
     {
     }
 
-    virtual bool drawsContent() const OVERRIDE { return true; }
-    virtual Region visibleContentOpaqueRegion() const OVERRIDE
+    virtual bool DrawsContent() const OVERRIDE { return true; }
+    virtual Region VisibleContentOpaqueRegion() const OVERRIDE
     {
         if (m_overrideOpaqueContentsRect)
-            return gfx::IntersectRects(m_opaqueContentsRect, visibleContentRect());
-        return Layer::visibleContentOpaqueRegion();
+            return gfx::IntersectRects(m_opaqueContentsRect, visible_content_rect());
+        return Layer::VisibleContentOpaqueRegion();
     }
     void setOpaqueContentsRect(const gfx::Rect& opaqueContentsRect)
     {
@@ -61,14 +61,14 @@ public:
         : LayerImpl(treeImpl, id)
         , m_overrideOpaqueContentsRect(false)
     {
-        setDrawsContent(true);
+        SetDrawsContent(true);
     }
 
-    virtual Region visibleContentOpaqueRegion() const OVERRIDE
+    virtual Region VisibleContentOpaqueRegion() const OVERRIDE
     {
         if (m_overrideOpaqueContentsRect)
-            return gfx::IntersectRects(m_opaqueContentsRect, visibleContentRect());
-        return LayerImpl::visibleContentOpaqueRegion();
+            return gfx::IntersectRects(m_opaqueContentsRect, visible_content_rect());
+        return LayerImpl::VisibleContentOpaqueRegion();
     }
     void setOpaqueContentsRect(const gfx::Rect& opaqueContentsRect)
     {
@@ -81,7 +81,7 @@ private:
     gfx::Rect m_opaqueContentsRect;
 };
 
-static inline bool layerImplDrawTransformIsUnknown(const Layer* layer) { return layer->drawTransformIsAnimating(); }
+static inline bool layerImplDrawTransformIsUnknown(const Layer* layer) { return layer->draw_transform_is_animating(); }
 static inline bool layerImplDrawTransformIsUnknown(const LayerImpl*) { return false; }
 
 template<typename LayerType, typename RenderSurfaceType>
@@ -94,12 +94,12 @@ public:
 
     bool occludedLayer(const LayerType* layer, const gfx::Rect& contentRect, bool* hasOcclusionFromOutsideTargetSurface = 0) const
     {
-        return this->Occluded(layer->renderTarget(), contentRect, layer->drawTransform(), layerImplDrawTransformIsUnknown(layer), layer->isClipped(), layer->clipRect(), hasOcclusionFromOutsideTargetSurface);
+        return this->Occluded(layer->render_target(), contentRect, layer->draw_transform(), layerImplDrawTransformIsUnknown(layer), layer->is_clipped(), layer->clip_rect(), hasOcclusionFromOutsideTargetSurface);
     }
     // Gives an unoccluded sub-rect of |contentRect| in the content space of the layer. Simple wrapper around unoccludedContentRect.
     gfx::Rect unoccludedLayerContentRect(const LayerType* layer, const gfx::Rect& contentRect, bool* hasOcclusionFromOutsideTargetSurface = 0) const
     {
-        return this->UnoccludedContentRect(layer->renderTarget(), contentRect, layer->drawTransform(), layerImplDrawTransformIsUnknown(layer), layer->isClipped(), layer->clipRect(), hasOcclusionFromOutsideTargetSurface);
+        return this->UnoccludedContentRect(layer->render_target(), contentRect, layer->draw_transform(), layerImplDrawTransformIsUnknown(layer), layer->is_clipped(), layer->clip_rect(), hasOcclusionFromOutsideTargetSurface);
     }
 };
 
@@ -115,7 +115,7 @@ struct OcclusionTrackerTestMainThreadTypes {
 
     static LayerPtrType createLayer(HostType*)
     {
-        return Layer::create();
+        return Layer::Create();
     }
     static ContentLayerPtrType createContentLayer(HostType*) { return make_scoped_refptr(new ContentLayerType()); }
 
@@ -149,7 +149,7 @@ struct OcclusionTrackerTestImplThreadTypes {
     typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> TestLayerIterator;
     typedef OcclusionTrackerImpl OcclusionTrackerType;
 
-    static LayerPtrType createLayer(HostType* host) { return LayerImpl::create(host, nextLayerImplId++); }
+    static LayerPtrType createLayer(HostType* host) { return LayerImpl::Create(host, nextLayerImplId++); }
     static ContentLayerPtrType createContentLayer(HostType* host) { return make_scoped_ptr(new ContentLayerType(host, nextLayerImplId++)); }
     static int nextLayerImplId;
 
@@ -209,7 +209,7 @@ protected:
         typename Types::LayerPtrType layer(Types::createLayer(getHost()));
         typename Types::LayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
-        parent->addChild(Types::passLayerPtr(layer));
+        parent->AddChild(Types::passLayerPtr(layer));
         return layerPtr;
     }
 
@@ -218,7 +218,7 @@ protected:
         typename Types::LayerType* layer = createLayer(parent, transform, position, bounds);
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5));
-        layer->setFilters(filters);
+        layer->SetFilters(filters);
         return layer;
     }
 
@@ -229,16 +229,16 @@ protected:
         setProperties(layerPtr, transform, position, bounds);
 
         if (m_opaqueLayers)
-            layerPtr->setContentsOpaque(opaque);
+            layerPtr->SetContentsOpaque(opaque);
         else {
-            layerPtr->setContentsOpaque(false);
+            layerPtr->SetContentsOpaque(false);
             if (opaque)
                 layerPtr->setOpaqueContentsRect(gfx::Rect(gfx::Point(), bounds));
             else
                 layerPtr->setOpaqueContentsRect(gfx::Rect());
         }
 
-        parent->addChild(Types::passLayerPtr(layer));
+        parent->AddChild(Types::passLayerPtr(layer));
         return layerPtr;
     }
 
@@ -265,7 +265,7 @@ protected:
         typename Types::ContentLayerType* layer = createDrawingLayer(parent, transform, position, bounds, opaque);
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5));
-        layer->setFilters(filters);
+        layer->SetFilters(filters);
         return layer;
     }
 
@@ -274,7 +274,7 @@ protected:
         DCHECK(root == m_root.get());
         int dummyMaxTextureSize = 512;
 
-        DCHECK(!root->renderSurface());
+        DCHECK(!root->render_surface());
 
         LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, false, m_renderSurfaceLayerListImpl, false);
 
@@ -286,7 +286,7 @@ protected:
         DCHECK(root == m_root.get());
         int dummyMaxTextureSize = 512;
 
-        DCHECK(!root->renderSurface());
+        DCHECK(!root->render_surface());
 
         LayerTreeHostCommon::calculateDrawProperties(root, root->bounds(), 1, 1, dummyMaxTextureSize, false, m_renderSurfaceLayerList);
 
@@ -349,11 +349,11 @@ protected:
 private:
     void setBaseProperties(typename Types::LayerType* layer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
     {
-        layer->setTransform(transform);
-        layer->setSublayerTransform(gfx::Transform());
-        layer->setAnchorPoint(gfx::PointF(0, 0));
-        layer->setPosition(position);
-        layer->setBounds(bounds);
+        layer->SetTransform(transform);
+        layer->SetSublayerTransform(gfx::Transform());
+        layer->SetAnchorPoint(gfx::PointF(0, 0));
+        layer->SetPosition(position);
+        layer->SetBounds(bounds);
     }
 
     void setProperties(Layer* layer, const gfx::Transform& transform, const gfx::PointF& position, const gfx::Size& bounds)
@@ -365,29 +365,29 @@ private:
     {
         setBaseProperties(layer, transform, position, bounds);
 
-        layer->setContentBounds(layer->bounds());
+        layer->SetContentBounds(layer->bounds());
     }
 
     void setReplica(Layer* owningLayer, scoped_refptr<Layer> layer)
     {
-        owningLayer->setReplicaLayer(layer.get());
+        owningLayer->SetReplicaLayer(layer.get());
         m_replicaLayers.push_back(layer);
     }
 
     void setReplica(LayerImpl* owningLayer, scoped_ptr<LayerImpl> layer)
     {
-        owningLayer->setReplicaLayer(layer.Pass());
+        owningLayer->SetReplicaLayer(layer.Pass());
     }
 
     void setMask(Layer* owningLayer, scoped_refptr<Layer> layer)
     {
-        owningLayer->setMaskLayer(layer.get());
+        owningLayer->SetMaskLayer(layer.get());
         m_maskLayers.push_back(layer);
     }
 
     void setMask(LayerImpl* owningLayer, scoped_ptr<LayerImpl> layer)
     {
-        owningLayer->setMaskLayer(layer.Pass());
+        owningLayer->SetMaskLayer(layer.Pass());
     }
 
     FakeImplProxy m_proxy;
@@ -468,7 +468,7 @@ protected:
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
         typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(30, 30), gfx::Size(500, 500), true);
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -553,7 +553,7 @@ protected:
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::Point(0, 0), gfx::Size(200, 200));
         typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -596,7 +596,7 @@ protected:
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
         typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -639,9 +639,9 @@ protected:
         childTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
-        child->setMasksToBounds(true);
+        child->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, gfx::PointF(10, 10), gfx::Size(500, 500), true);
         this->calcDrawEtc(parent);
 
@@ -706,7 +706,7 @@ protected:
         gfx::Transform layer1Matrix;
         layer1Matrix.Scale(2, 2);
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(parent, layer1Matrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
-        layer1->setForceRenderSurface(true);
+        layer1->SetForceRenderSurface(true);
 
         gfx::Transform layer2Matrix;
         layer2Matrix.Translate(25, 25);
@@ -744,9 +744,9 @@ protected:
 
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200));
         typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
-        child->setMasksToBounds(true);
+        child->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, gfx::PointF(10, 10), gfx::Size(500, 500), true);
         // |child2| makes |parent|'s surface get considered by OcclusionTracker first, instead of |child|'s. This exercises different code in
         // leaveToTargetRenderSurface, as the target surface has already been seen.
@@ -853,13 +853,13 @@ protected:
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(1000, 1000));
         typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::LayerType* child = this->createLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500));
-        child->setMasksToBounds(true);
+        child->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, layerTransform, gfx::PointF(0, 0), gfx::Size(500, 500), true);
         this->calcDrawEtc(root);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
-        gfx::Rect clippedLayerInChild = MathUtil::mapClippedRect(layerTransform, layer->visibleContentRect());
+        gfx::Rect clippedLayerInChild = MathUtil::mapClippedRect(layerTransform, layer->visible_content_rect());
 
         this->visitLayer(layer, occlusion);
         this->enterContributingSurface(child, occlusion);
@@ -893,9 +893,9 @@ protected:
 
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(1000, 1000));
         typename Types::ContentLayerType* parent = this->createDrawingLayer(root, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::ContentLayerType* child = this->createDrawingLayer(parent, childTransform, gfx::PointF(30, 30), gfx::Size(500, 500), false);
-        child->setMasksToBounds(true);
+        child->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child, this->identityMatrix, gfx::PointF(10, 10), gfx::Size(500, 500), true);
         typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child, this->identityMatrix, gfx::PointF(10, 450), gfx::Size(500, 60), true);
         this->calcDrawEtc(root);
@@ -981,7 +981,7 @@ protected:
         childTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* child1 = this->createSurface(parent, childTransform, gfx::PointF(30, 30), gfx::Size(10, 10));
         typename Types::LayerType* child2 = this->createSurface(parent, childTransform, gfx::PointF(20, 40), gfx::Size(10, 10));
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child1, this->identityMatrix, gfx::PointF(-10, -10), gfx::Size(510, 510), true);
@@ -1076,7 +1076,7 @@ protected:
         child2Transform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* child1 = this->createSurface(parent, child1Transform, gfx::PointF(30, 20), gfx::Size(10, 10));
         typename Types::LayerType* child2 = this->createDrawingSurface(parent, child2Transform, gfx::PointF(20, 40), gfx::Size(10, 10), false);
         typename Types::ContentLayerType* layer1 = this->createDrawingLayer(child1, this->identityMatrix, gfx::PointF(-10, -20), gfx::Size(510, 510), true);
@@ -1155,22 +1155,22 @@ protected:
         layerTransform.Translate(-250, -250);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::ContentLayerType* blurLayer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
         typename Types::ContentLayerType* opaqueLayer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
         typename Types::ContentLayerType* opacityLayer = this->createDrawingLayer(parent, layerTransform, gfx::PointF(30, 30), gfx::Size(500, 500), true);
 
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
-        blurLayer->setFilters(filters);
+        blurLayer->SetFilters(filters);
 
         filters.clear();
         filters.append(WebKit::WebFilterOperation::createGrayscaleFilter(0.5));
-        opaqueLayer->setFilters(filters);
+        opaqueLayer->SetFilters(filters);
 
         filters.clear();
         filters.append(WebKit::WebFilterOperation::createOpacityFilter(0.5));
-        opacityLayer->setFilters(filters);
+        opacityLayer->SetFilters(filters);
 
         this->calcDrawEtc(parent);
 
@@ -1255,7 +1255,7 @@ protected:
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 170));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 100), gfx::Size(50, 50), true);
         this->createReplicaLayer(surface, this->identityMatrix, gfx::PointF(50, 50), gfx::Size());
         this->calcDrawEtc(parent);
@@ -1312,7 +1312,7 @@ protected:
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::ContentLayerType* clip = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(200, 100), gfx::Size(100, 100), false);
-        clip->setMasksToBounds(true);
+        clip->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(clip, this->identityMatrix, gfx::PointF(-200, -100), gfx::Size(200, 200), false);
         this->calcDrawEtc(parent);
 
@@ -1389,7 +1389,7 @@ protected:
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::ContentLayerType* clip = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(100, 100), gfx::Size(100, 100), false);
-        clip->setMasksToBounds(true);
+        clip->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingSurface(clip, this->identityMatrix, gfx::PointF(-100, -100), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
@@ -1472,7 +1472,7 @@ protected:
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::ContentLayerType* clip = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(50, 50), gfx::Size(200, 200), false);
-        clip->setMasksToBounds(true);
+        clip->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingSurface(clip, this->identityMatrix, gfx::PointF(-50, -50), gfx::Size(200, 200), true);
         this->calcDrawEtc(parent);
 
@@ -1746,7 +1746,7 @@ protected:
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::ContentLayerType* child1 = this->createDrawingLayer(parent, translationToBack, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, translationToFront, gfx::PointF(50, 50), gfx::Size(100, 100), true);
-        parent->setPreserves3D(true);
+        parent->SetPreserves3d(true);
 
         this->calcDrawEtc(parent);
 
@@ -1779,8 +1779,8 @@ protected:
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, gfx::PointF(100, 100), gfx::Size(200, 200), true);
-        container->setPreserves3D(true);
-        layer->setPreserves3D(true);
+        container->SetPreserves3d(true);
+        layer->SetPreserves3d(true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1811,8 +1811,8 @@ protected:
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 100));
         typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 500));
         typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, gfx::PointF(0, 0), gfx::Size(500, 500), true);
-        container->setPreserves3D(true);
-        layer->setPreserves3D(true);
+        container->SetPreserves3d(true);
+        layer->SetPreserves3d(true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1841,8 +1841,8 @@ protected:
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, gfx::PointF(0, 0), gfx::Size(100, 100), true);
-        parent->setPreserves3D(true);
-        layer->setPreserves3D(true);
+        parent->SetPreserves3d(true);
+        layer->SetPreserves3d(true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1871,10 +1871,10 @@ protected:
         transform.Translate(-50, -50);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, transform, gfx::PointF(0, 0), gfx::Size(100, 100), true);
-        parent->setPreserves3D(true);
-        layer->setPreserves3D(true);
+        parent->SetPreserves3d(true);
+        layer->SetPreserves3d(true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
@@ -1913,13 +1913,13 @@ protected:
         typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300), false);
         typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(250, 0), gfx::Size(50, 300), true);
 
-        addOpacityTransitionToController(*layer->layerAnimationController(), 10, 0, 1, false);
-        addOpacityTransitionToController(*surface->layerAnimationController(), 10, 0, 1, false);
+        addOpacityTransitionToController(*layer->layer_animation_controller(), 10, 0, 1, false);
+        addOpacityTransitionToController(*surface->layer_animation_controller(), 10, 0, 1, false);
         this->calcDrawEtc(parent);
 
-        EXPECT_TRUE(layer->drawOpacityIsAnimating());
-        EXPECT_FALSE(surface->drawOpacityIsAnimating());
-        EXPECT_TRUE(surface->renderSurface()->draw_opacity_is_animating());
+        EXPECT_TRUE(layer->draw_opacity_is_animating());
+        EXPECT_FALSE(surface->draw_opacity_is_animating());
+        EXPECT_TRUE(surface->render_surface()->draw_opacity_is_animating());
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
@@ -1978,13 +1978,13 @@ protected:
         typename Types::ContentLayerType* parent2 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300), false);
         typename Types::ContentLayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(250, 0), gfx::Size(50, 300), true);
 
-        addOpacityTransitionToController(*layer->layerAnimationController(), 10, 1, 0, false);
-        addOpacityTransitionToController(*surface->layerAnimationController(), 10, 1, 0, false);
+        addOpacityTransitionToController(*layer->layer_animation_controller(), 10, 1, 0, false);
+        addOpacityTransitionToController(*surface->layer_animation_controller(), 10, 1, 0, false);
         this->calcDrawEtc(parent);
 
-        EXPECT_TRUE(layer->drawOpacityIsAnimating());
-        EXPECT_FALSE(surface->drawOpacityIsAnimating());
-        EXPECT_TRUE(surface->renderSurface()->draw_opacity_is_animating());
+        EXPECT_TRUE(layer->draw_opacity_is_animating());
+        EXPECT_FALSE(surface->draw_opacity_is_animating());
+        EXPECT_TRUE(surface->render_surface()->draw_opacity_is_animating());
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
@@ -2042,20 +2042,20 @@ protected:
         typename Types::ContentLayerType* surfaceChild2 = this->createDrawingLayer(surface, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 300), true);
         typename Types::ContentLayerType* surface2 = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(50, 300), true);
 
-        addAnimatedTransformToController(*layer->layerAnimationController(), 10, 30, 0);
-        addAnimatedTransformToController(*surface->layerAnimationController(), 10, 30, 0);
-        addAnimatedTransformToController(*surfaceChild->layerAnimationController(), 10, 30, 0);
+        addAnimatedTransformToController(*layer->layer_animation_controller(), 10, 30, 0);
+        addAnimatedTransformToController(*surface->layer_animation_controller(), 10, 30, 0);
+        addAnimatedTransformToController(*surfaceChild->layer_animation_controller(), 10, 30, 0);
         this->calcDrawEtc(parent);
 
-        EXPECT_TRUE(layer->drawTransformIsAnimating());
-        EXPECT_TRUE(layer->screenSpaceTransformIsAnimating());
-        EXPECT_TRUE(surface->renderSurface()->target_surface_transforms_are_animating());
-        EXPECT_TRUE(surface->renderSurface()->screen_space_transforms_are_animating());
+        EXPECT_TRUE(layer->draw_transform_is_animating());
+        EXPECT_TRUE(layer->screen_space_transform_is_animating());
+        EXPECT_TRUE(surface->render_surface()->target_surface_transforms_are_animating());
+        EXPECT_TRUE(surface->render_surface()->screen_space_transforms_are_animating());
         // The surface owning layer doesn't animate against its own surface.
-        EXPECT_FALSE(surface->drawTransformIsAnimating());
-        EXPECT_TRUE(surface->screenSpaceTransformIsAnimating());
-        EXPECT_TRUE(surfaceChild->drawTransformIsAnimating());
-        EXPECT_TRUE(surfaceChild->screenSpaceTransformIsAnimating());
+        EXPECT_FALSE(surface->draw_transform_is_animating());
+        EXPECT_TRUE(surface->screen_space_transform_is_animating());
+        EXPECT_TRUE(surfaceChild->draw_transform_is_animating());
+        EXPECT_TRUE(surfaceChild->screen_space_transform_is_animating());
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
 
@@ -2163,7 +2163,7 @@ protected:
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::ContentLayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(500, 300), false);
         surface->setOpaqueContentsRect(gfx::Rect(0, 0, 400, 200));
         this->calcDrawEtc(parent);
@@ -2388,7 +2388,7 @@ protected:
         // This test verifies that the surface cliprect does not end up empty and clip away the entire unoccluded rect.
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(80, 200));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* surface = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), true);
         typename Types::LayerType* surfaceChild = this->createDrawingSurface(surface, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), false);
         typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 50), true);
@@ -2450,7 +2450,7 @@ protected:
         // Filters make the layer own a surface.
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(10));
-        filteredSurface->setBackgroundFilters(filters);
+        filteredSurface->SetBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.
         int outsetTop, outsetRight, outsetBottom, outsetLeft;
@@ -2564,7 +2564,7 @@ protected:
         // Makes two surfaces that completely cover |parent|. The occlusion both above and below the filters will be reduced by each of them.
         typename Types::ContentLayerType* root = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(75, 75));
         typename Types::LayerType* parent = this->createSurface(root, scaleByHalf, gfx::PointF(0, 0), gfx::Size(150, 150));
-        parent->setMasksToBounds(true);
+        parent->SetMasksToBounds(true);
         typename Types::LayerType* filteredSurface1 = this->createDrawingLayer(parent, scaleByHalf, gfx::PointF(0, 0), gfx::Size(300, 300), false);
         typename Types::LayerType* filteredSurface2 = this->createDrawingLayer(parent, scaleByHalf, gfx::PointF(0, 0), gfx::Size(300, 300), false);
         typename Types::LayerType* occludingLayerAbove = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(100, 100), gfx::Size(50, 50), true);
@@ -2572,8 +2572,8 @@ protected:
         // Filters make the layers own surfaces.
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(1));
-        filteredSurface1->setBackgroundFilters(filters);
-        filteredSurface2->setBackgroundFilters(filters);
+        filteredSurface1->SetBackgroundFilters(filters);
+        filteredSurface2->SetBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.
         int outsetTop, outsetRight, outsetBottom, outsetLeft;
@@ -2614,7 +2614,7 @@ protected:
         // We stick the filtered surface inside a clipping surface so that we can make sure the clip is honored when exposing pixels for
         // the background filter.
         typename Types::LayerType* clippingSurface = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 70), false);
-        clippingSurface->setMasksToBounds(true);
+        clippingSurface->SetMasksToBounds(true);
         typename Types::LayerType* filteredSurface = this->createDrawingLayer(clippingSurface, this->identityMatrix, gfx::PointF(50, 50), gfx::Size(50, 50), false);
         this->createReplicaLayer(filteredSurface, this->identityMatrix, gfx::PointF(150, 0), gfx::Size());
         typename Types::LayerType* occludingLayer1 = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 50), true);
@@ -2626,7 +2626,7 @@ protected:
         // Filters make the layer own a surface. This filter is large enough that it goes outside the bottom of the clippingSurface.
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(12));
-        filteredSurface->setBackgroundFilters(filters);
+        filteredSurface->SetBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.
         int outsetTop, outsetRight, outsetBottom, outsetLeft;
@@ -2758,7 +2758,7 @@ protected:
         // Filters make the layer own a surface.
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(3));
-        filteredSurface->setBackgroundFilters(filters);
+        filteredSurface->SetBackgroundFilters(filters);
 
         this->calcDrawEtc(parent);
 
@@ -2806,7 +2806,7 @@ protected:
         // Filters make the layer own a surface.
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(3));
-        filteredSurface->setBackgroundFilters(filters);
+        filteredSurface->SetBackgroundFilters(filters);
 
         this->calcDrawEtc(parent);
 
@@ -2867,7 +2867,7 @@ protected:
         // Filters make the layer own a surface.
         WebKit::WebFilterOperations filters;
         filters.append(WebKit::WebFilterOperation::createBlurFilter(3));
-        filteredSurface->setBackgroundFilters(filters);
+        filteredSurface->SetBackgroundFilters(filters);
 
         // Save the distance of influence for the blur effect.
         int outsetTop, outsetRight, outsetBottom, outsetLeft;
@@ -2957,7 +2957,7 @@ protected:
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400));
         typename Types::LayerType* small = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200), false);
         typename Types::LayerType* large = this->createDrawingLayer(small, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400), false);
-        small->setMasksToBounds(true);
+        small->SetMasksToBounds(true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 100, 100));
@@ -3004,9 +3004,9 @@ protected:
         typename Types::LayerType* smaller = this->createDrawingSurface(smallest, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), false);
         typename Types::LayerType* small = this->createDrawingSurface(smaller, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200), false);
         typename Types::LayerType* large = this->createDrawingLayer(small, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400), false);
-        smallest->setMasksToBounds(true);
-        smaller->setMasksToBounds(true);
-        small->setMasksToBounds(true);
+        smallest->SetMasksToBounds(true);
+        smaller->SetMasksToBounds(true);
+        small->SetMasksToBounds(true);
         this->calcDrawEtc(parent);
 
         TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));

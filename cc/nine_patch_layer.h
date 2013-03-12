@@ -20,13 +20,13 @@ class CC_EXPORT NinePatchLayer : public Layer {
  public:
   static scoped_refptr<NinePatchLayer> Create();
 
-  virtual bool drawsContent() const OVERRIDE;
-  virtual void setTexturePriorities(const PriorityCalculator& priority_calc)
+  virtual bool DrawsContent() const OVERRIDE;
+  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void update(ResourceUpdateQueue& queue,
+  virtual void Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion,
                       RenderingStats* stats) OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
   // aperture is in the pixel space of the bitmap resource and refers to
   // the center patch of the ninepatch (which is unused in this
@@ -39,7 +39,7 @@ class CC_EXPORT NinePatchLayer : public Layer {
  private:
   NinePatchLayer();
   virtual ~NinePatchLayer();
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
   void CreateUpdaterIfNeeded();

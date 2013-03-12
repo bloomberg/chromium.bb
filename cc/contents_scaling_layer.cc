@@ -20,7 +20,7 @@ ContentsScalingLayer::ContentsScalingLayer()
 ContentsScalingLayer::~ContentsScalingLayer() {
 }
 
-void ContentsScalingLayer::calculateContentsScale(
+void ContentsScalingLayer::CalculateContentsScale(
     float ideal_contents_scale,
     bool animating_transform_to_screen,
     float* contents_scale_x,
@@ -33,18 +33,18 @@ void ContentsScalingLayer::calculateContentsScale(
       ideal_contents_scale);
 }
 
-void ContentsScalingLayer::update(
-    ResourceUpdateQueue& queue,
+void ContentsScalingLayer::Update(
+    ResourceUpdateQueue* queue,
     const OcclusionTracker* occlusion,
     RenderingStats* stats) {
-  if (drawProperties().contents_scale_x == last_update_contents_scale_x_ &&
-      drawProperties().contents_scale_y == last_update_contents_scale_y_)
+  if (draw_properties().contents_scale_x == last_update_contents_scale_x_ &&
+      draw_properties().contents_scale_y == last_update_contents_scale_y_)
     return;
   
-  last_update_contents_scale_x_ = drawProperties().contents_scale_x;
-  last_update_contents_scale_y_ = drawProperties().contents_scale_y;
+  last_update_contents_scale_x_ = draw_properties().contents_scale_x;
+  last_update_contents_scale_y_ = draw_properties().contents_scale_y;
   // Invalidate the whole layer if scale changed.
-  setNeedsDisplayRect(gfx::Rect(bounds()));
+  SetNeedsDisplayRect(gfx::Rect(bounds()));
 }
 
 }  // namespace cc

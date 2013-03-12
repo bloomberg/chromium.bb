@@ -20,13 +20,13 @@ namespace {
 
 class TestLayer : public Layer {
 public:
-    static scoped_refptr<TestLayer> create() { return make_scoped_refptr(new TestLayer()); }
+    static scoped_refptr<TestLayer> Create() { return make_scoped_refptr(new TestLayer()); }
 
     int m_countRepresentingTargetSurface;
     int m_countRepresentingContributingSurface;
     int m_countRepresentingItself;
 
-    virtual bool drawsContent() const OVERRIDE { return m_drawsContent; }
+    virtual bool DrawsContent() const OVERRIDE { return m_drawsContent; }
     void setDrawsContent(bool drawsContent) { m_drawsContent = drawsContent; }
 
 private:
@@ -34,9 +34,9 @@ private:
         : Layer()
         , m_drawsContent(true)
     {
-        setBounds(gfx::Size(100, 100));
-        setPosition(gfx::Point());
-        setAnchorPoint(gfx::Point());
+        SetBounds(gfx::Size(100, 100));
+        SetPosition(gfx::Point());
+        SetAnchorPoint(gfx::Point());
     }
     virtual ~TestLayer()
     {
@@ -57,7 +57,7 @@ void resetCounts(std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
 {
     for (unsigned surfaceIndex = 0; surfaceIndex < renderSurfaceLayerList.size(); ++surfaceIndex) {
         TestLayer* renderSurfaceLayer = static_cast<TestLayer*>(renderSurfaceLayerList[surfaceIndex].get());
-        RenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
+        RenderSurface* renderSurface = renderSurfaceLayer->render_surface();
 
         renderSurfaceLayer->m_countRepresentingTargetSurface = -1;
         renderSurfaceLayer->m_countRepresentingContributingSurface = -1;
@@ -113,18 +113,18 @@ TEST(LayerIteratorTest, emptyTree)
 
 TEST(LayerIteratorTest, simpleTree)
 {
-    scoped_refptr<TestLayer> rootLayer = TestLayer::create();
-    scoped_refptr<TestLayer> first = TestLayer::create();
-    scoped_refptr<TestLayer> second = TestLayer::create();
-    scoped_refptr<TestLayer> third = TestLayer::create();
-    scoped_refptr<TestLayer> fourth = TestLayer::create();
+    scoped_refptr<TestLayer> rootLayer = TestLayer::Create();
+    scoped_refptr<TestLayer> first = TestLayer::Create();
+    scoped_refptr<TestLayer> second = TestLayer::Create();
+    scoped_refptr<TestLayer> third = TestLayer::Create();
+    scoped_refptr<TestLayer> fourth = TestLayer::Create();
 
-    rootLayer->createRenderSurface();
+    rootLayer->CreateRenderSurface();
 
-    rootLayer->addChild(first);
-    rootLayer->addChild(second);
-    rootLayer->addChild(third);
-    rootLayer->addChild(fourth);
+    rootLayer->AddChild(first);
+    rootLayer->AddChild(second);
+    rootLayer->AddChild(third);
+    rootLayer->AddChild(fourth);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     LayerTreeHostCommon::calculateDrawProperties(rootLayer.get(), rootLayer->bounds(), 1, 1, 256, false, renderSurfaceLayerList);
@@ -147,26 +147,26 @@ TEST(LayerIteratorTest, simpleTree)
 
 TEST(LayerIteratorTest, complexTree)
 {
-    scoped_refptr<TestLayer> rootLayer = TestLayer::create();
-    scoped_refptr<TestLayer> root1 = TestLayer::create();
-    scoped_refptr<TestLayer> root2 = TestLayer::create();
-    scoped_refptr<TestLayer> root3 = TestLayer::create();
-    scoped_refptr<TestLayer> root21 = TestLayer::create();
-    scoped_refptr<TestLayer> root22 = TestLayer::create();
-    scoped_refptr<TestLayer> root23 = TestLayer::create();
-    scoped_refptr<TestLayer> root221 = TestLayer::create();
-    scoped_refptr<TestLayer> root231 = TestLayer::create();
+    scoped_refptr<TestLayer> rootLayer = TestLayer::Create();
+    scoped_refptr<TestLayer> root1 = TestLayer::Create();
+    scoped_refptr<TestLayer> root2 = TestLayer::Create();
+    scoped_refptr<TestLayer> root3 = TestLayer::Create();
+    scoped_refptr<TestLayer> root21 = TestLayer::Create();
+    scoped_refptr<TestLayer> root22 = TestLayer::Create();
+    scoped_refptr<TestLayer> root23 = TestLayer::Create();
+    scoped_refptr<TestLayer> root221 = TestLayer::Create();
+    scoped_refptr<TestLayer> root231 = TestLayer::Create();
 
-    rootLayer->createRenderSurface();
+    rootLayer->CreateRenderSurface();
 
-    rootLayer->addChild(root1);
-    rootLayer->addChild(root2);
-    rootLayer->addChild(root3);
-    root2->addChild(root21);
-    root2->addChild(root22);
-    root2->addChild(root23);
-    root22->addChild(root221);
-    root23->addChild(root231);
+    rootLayer->AddChild(root1);
+    rootLayer->AddChild(root2);
+    rootLayer->AddChild(root3);
+    root2->AddChild(root21);
+    root2->AddChild(root22);
+    root2->AddChild(root23);
+    root22->AddChild(root221);
+    root23->AddChild(root231);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     LayerTreeHostCommon::calculateDrawProperties(rootLayer.get(), rootLayer->bounds(), 1, 1, 256, false, renderSurfaceLayerList);
@@ -197,32 +197,32 @@ TEST(LayerIteratorTest, complexTree)
 
 TEST(LayerIteratorTest, complexTreeMultiSurface)
 {
-    scoped_refptr<TestLayer> rootLayer = TestLayer::create();
-    scoped_refptr<TestLayer> root1 = TestLayer::create();
-    scoped_refptr<TestLayer> root2 = TestLayer::create();
-    scoped_refptr<TestLayer> root3 = TestLayer::create();
-    scoped_refptr<TestLayer> root21 = TestLayer::create();
-    scoped_refptr<TestLayer> root22 = TestLayer::create();
-    scoped_refptr<TestLayer> root23 = TestLayer::create();
-    scoped_refptr<TestLayer> root221 = TestLayer::create();
-    scoped_refptr<TestLayer> root231 = TestLayer::create();
+    scoped_refptr<TestLayer> rootLayer = TestLayer::Create();
+    scoped_refptr<TestLayer> root1 = TestLayer::Create();
+    scoped_refptr<TestLayer> root2 = TestLayer::Create();
+    scoped_refptr<TestLayer> root3 = TestLayer::Create();
+    scoped_refptr<TestLayer> root21 = TestLayer::Create();
+    scoped_refptr<TestLayer> root22 = TestLayer::Create();
+    scoped_refptr<TestLayer> root23 = TestLayer::Create();
+    scoped_refptr<TestLayer> root221 = TestLayer::Create();
+    scoped_refptr<TestLayer> root231 = TestLayer::Create();
 
-    rootLayer->createRenderSurface();
-    rootLayer->renderSurface()->SetContentRect(gfx::Rect(gfx::Point(), rootLayer->bounds()));
+    rootLayer->CreateRenderSurface();
+    rootLayer->render_surface()->SetContentRect(gfx::Rect(gfx::Point(), rootLayer->bounds()));
 
-    rootLayer->addChild(root1);
-    rootLayer->addChild(root2);
-    rootLayer->addChild(root3);
+    rootLayer->AddChild(root1);
+    rootLayer->AddChild(root2);
+    rootLayer->AddChild(root3);
     root2->setDrawsContent(false);
-    root2->setOpacity(0.5);
-    root2->setForceRenderSurface(true); // Force the layer to own a new surface.
-    root2->addChild(root21);
-    root2->addChild(root22);
-    root2->addChild(root23);
-    root22->setOpacity(0.5);
-    root22->addChild(root221);
-    root23->setOpacity(0.5);
-    root23->addChild(root231);
+    root2->SetOpacity(0.5);
+    root2->SetForceRenderSurface(true); // Force the layer to own a new surface.
+    root2->AddChild(root21);
+    root2->AddChild(root22);
+    root2->AddChild(root23);
+    root22->SetOpacity(0.5);
+    root22->AddChild(root221);
+    root23->SetOpacity(0.5);
+    root23->AddChild(root231);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     LayerTreeHostCommon::calculateDrawProperties(rootLayer.get(), rootLayer->bounds(), 1, 1, 256, false, renderSurfaceLayerList);

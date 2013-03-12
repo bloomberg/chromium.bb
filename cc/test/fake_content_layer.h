@@ -16,14 +16,14 @@ class FakeContentLayer : public ContentLayer {
     return make_scoped_refptr(new FakeContentLayer(client)); 
   }
 
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
   size_t update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
-  virtual void update(
-      ResourceUpdateQueue& queue,
+  virtual void Update(
+      ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion,
       RenderingStats* stats) OVERRIDE;
 

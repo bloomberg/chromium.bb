@@ -30,29 +30,29 @@ IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
     if (!m_ioSurfaceTextureId)
         return;
 
-    OutputSurface* outputSurface = layerTreeImpl()->output_surface();
+    OutputSurface* outputSurface = layer_tree_impl()->output_surface();
     // FIXME: Implement this path for software compositing.
     WebKit::WebGraphicsContext3D* context3d = outputSurface->context3d();
     if (context3d)
         context3d->deleteTexture(m_ioSurfaceTextureId);
 }
 
-scoped_ptr<LayerImpl> IOSurfaceLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+scoped_ptr<LayerImpl> IOSurfaceLayerImpl::CreateLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return IOSurfaceLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+    return IOSurfaceLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
-void IOSurfaceLayerImpl::pushPropertiesTo(LayerImpl* layer)
+void IOSurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer)
 {
-    LayerImpl::pushPropertiesTo(layer);
+    LayerImpl::PushPropertiesTo(layer);
 
     IOSurfaceLayerImpl* ioSurfaceLayer = static_cast<IOSurfaceLayerImpl*>(layer);
     ioSurfaceLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
 }
 
-void IOSurfaceLayerImpl::willDraw(ResourceProvider* resourceProvider)
+void IOSurfaceLayerImpl::WillDraw(ResourceProvider* resourceProvider)
 {
-    LayerImpl::willDraw(resourceProvider);
+    LayerImpl::WillDraw(resourceProvider);
 
     if (m_ioSurfaceChanged) {
         WebKit::WebGraphicsContext3D* context3d = resourceProvider->GraphicsContext3D();
@@ -86,26 +86,26 @@ void IOSurfaceLayerImpl::willDraw(ResourceProvider* resourceProvider)
     }
 }
 
-void IOSurfaceLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
+void IOSurfaceLayerImpl::AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData)
 {
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
-    appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
+    SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
+    AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
-    gfx::Rect quadRect(gfx::Point(), contentBounds());
-    gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+    gfx::Rect quadRect(gfx::Point(), content_bounds());
+    gfx::Rect opaqueRect(contents_opaque() ? quadRect : gfx::Rect());
     scoped_ptr<IOSurfaceDrawQuad> quad = IOSurfaceDrawQuad::Create();
     quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_ioSurfaceSize, m_ioSurfaceTextureId, IOSurfaceDrawQuad::FLIPPED);
-    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+    quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
-void IOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const
+void IOSurfaceLayerImpl::DumpLayerProperties(std::string* str, int indent) const
 {
-    str->append(indentString(indent));
+    str->append(IndentString(indent));
     base::StringAppendF(str, "iosurface id: %u texture id: %u\n", m_ioSurfaceId, m_ioSurfaceTextureId);
-    LayerImpl::dumpLayerProperties(str, indent);
+    LayerImpl::DumpLayerProperties(str, indent);
 }
 
-void IOSurfaceLayerImpl::didLoseOutputSurface()
+void IOSurfaceLayerImpl::DidLoseOutputSurface()
 {
     // We don't have a valid texture ID in the new context; however,
     // the IOSurface is still valid.
@@ -122,7 +122,7 @@ void IOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const gfx:
     m_ioSurfaceSize = size;
 }
 
-const char* IOSurfaceLayerImpl::layerTypeAsString() const
+const char* IOSurfaceLayerImpl::LayerTypeAsString() const
 {
     return "IOSurfaceLayer";
 }

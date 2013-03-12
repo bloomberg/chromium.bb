@@ -37,7 +37,7 @@ SolidColorDrawQuad* addQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(sharedState, rect, color);
   SolidColorDrawQuad* quadPtr = quad.get();
-  quadSink.append(quad.PassAs<DrawQuad>(), data);
+  quadSink.append(quad.PassAs<DrawQuad>(), &data);
   return quadPtr;
 }
 
@@ -52,7 +52,7 @@ SolidColorDrawQuad* addClippedQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(sharedState, rect, color);
   SolidColorDrawQuad* quadPtr = quad.get();
-  quadSink.append(quad.PassAs<DrawQuad>(), data);
+  quadSink.append(quad.PassAs<DrawQuad>(), &data);
   return quadPtr;
 }
 
@@ -68,7 +68,7 @@ void addRenderPassQuad(TestRenderPass* toPass,
   quad->SetNew(sharedState, outputRect, contributingPass->id, false, 0,
                outputRect, gfx::RectF(), WebKit::WebFilterOperations(),
                skia::RefPtr<SkImageFilter>(), WebKit::WebFilterOperations());
-  quadSink.append(quad.PassAs<DrawQuad>(), data);
+  quadSink.append(quad.PassAs<DrawQuad>(), &data);
 }
 
 }  // namespace cc

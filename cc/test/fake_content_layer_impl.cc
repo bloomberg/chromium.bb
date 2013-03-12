@@ -17,7 +17,7 @@ bool FakeContentLayerImpl::HaveResourceForTileAt(int i, int j) {
   return hasResourceIdForTileAt(i, j);
 }
 
-void FakeContentLayerImpl::didLoseOutputSurface() {
+void FakeContentLayerImpl::DidLoseOutputSurface() {
   ++lost_output_surface_count_;
 }
 

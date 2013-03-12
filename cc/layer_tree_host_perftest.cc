@@ -111,17 +111,17 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 
   virtual void buildTree() OVERRIDE {
     LayerTreeHostPerfTestJsonReader::buildTree();
-    m_scrollable = m_layerTreeHost->rootLayer()->children()[1];
-    ASSERT_TRUE(m_scrollable);
+    scrollable_ = m_layerTreeHost->rootLayer()->children()[1];
+    ASSERT_TRUE(scrollable_);
   }
 
   virtual void layout() OVERRIDE {
     static const gfx::Vector2d delta = gfx::Vector2d(0, 10);
-    m_scrollable->setScrollOffset(m_scrollable->scrollOffset() + delta);
+    scrollable_->SetScrollOffset(scrollable_->scroll_offset() + delta);
   }
 
  private:
-  scoped_refptr<Layer> m_scrollable;
+  scoped_refptr<Layer> scrollable_;
 };
 
 TEST_F(ScrollingLayerTreePerfTest, LongScrollablePage) {

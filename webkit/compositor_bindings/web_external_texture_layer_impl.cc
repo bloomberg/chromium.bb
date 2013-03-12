@@ -20,10 +20,10 @@ WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
     : client_(client) {
   scoped_refptr<TextureLayer> layer;
   if (client_)
-    layer = TextureLayer::create(this);
+    layer = TextureLayer::Create(this);
   else
-    layer = TextureLayer::create(0);
-  layer->setIsDrawable(true);
+    layer = TextureLayer::Create(NULL);
+  layer->SetIsDrawable(true);
   layer_.reset(new WebLayerImpl(layer));
 }
 
@@ -48,7 +48,7 @@ void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect) {
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque) {
-  static_cast<TextureLayer*>(layer_->layer())->setContentsOpaque(opaque);
+  static_cast<TextureLayer*>(layer_->layer())->SetContentsOpaque(opaque);
 }
 
 void WebExternalTextureLayerImpl::setPremultipliedAlpha(

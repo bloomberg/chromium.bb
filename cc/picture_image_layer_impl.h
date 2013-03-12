@@ -11,14 +11,14 @@ namespace cc {
 
 class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
  public:
-  static scoped_ptr<PictureImageLayerImpl> create(LayerTreeImpl* treeImpl,
+  static scoped_ptr<PictureImageLayerImpl> Create(LayerTreeImpl* treeImpl,
                                                   int id) {
     return make_scoped_ptr(new PictureImageLayerImpl(treeImpl, id));
   }
   virtual ~PictureImageLayerImpl();
 
-  virtual const char* layerTypeAsString() const OVERRIDE;
-  virtual scoped_ptr<LayerImpl> createLayerImpl(
+  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* treeImpl) OVERRIDE;
 
  protected:
@@ -28,7 +28,7 @@ class CC_EXPORT PictureImageLayerImpl : public PictureLayerImpl {
       bool animating_transform_to_screen,
       float* raster_contents_scale,
       float* low_res_raster_contents_scale) OVERRIDE;
-  virtual void getDebugBorderProperties(
+  virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PictureImageLayerImpl);

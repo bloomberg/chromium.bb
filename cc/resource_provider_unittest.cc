@@ -61,7 +61,7 @@ struct Texture {
 // contents as well as information about sync points.
 class ContextSharedData {
 public:
-    static scoped_ptr<ContextSharedData> create() { return make_scoped_ptr(new ContextSharedData()); }
+    static scoped_ptr<ContextSharedData> Create() { return make_scoped_ptr(new ContextSharedData()); }
 
     unsigned insertSyncPoint() { return m_nextSyncPoint++; }
 
@@ -113,7 +113,7 @@ private:
 
 class ResourceProviderContext : public TestWebGraphicsContext3D {
 public:
-    static scoped_ptr<ResourceProviderContext> create(ContextSharedData* sharedData) { return make_scoped_ptr(new ResourceProviderContext(Attributes(), sharedData)); }
+    static scoped_ptr<ResourceProviderContext> Create(ContextSharedData* sharedData) { return make_scoped_ptr(new ResourceProviderContext(Attributes(), sharedData)); }
 
     virtual unsigned insertSyncPoint()
     {
@@ -308,8 +308,8 @@ private:
 class ResourceProviderTest : public testing::TestWithParam<ResourceProvider::ResourceType> {
 public:
     ResourceProviderTest()
-        : m_sharedData(ContextSharedData::create())
-        , m_outputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
+        : m_sharedData(ContextSharedData::Create())
+        , m_outputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::Create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
         , m_resourceProvider(ResourceProvider::Create(m_outputSurface.get()))
     {
         m_resourceProvider->set_default_resource_type(GetParam());
@@ -449,7 +449,7 @@ TEST_P(ResourceProviderTest, TransferResources)
     if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::Create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::Create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
@@ -566,7 +566,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
     if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::Create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::Create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);
@@ -619,7 +619,7 @@ TEST_P(ResourceProviderTest, TextureFilters)
     if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<OutputSurface> childOutputSurface(FakeOutputSurface::Create3d(ResourceProviderContext::Create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::Create(childOutputSurface.get()));
 
     gfx::Size size(1, 1);

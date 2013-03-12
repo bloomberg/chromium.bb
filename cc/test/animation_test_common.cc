@@ -192,7 +192,7 @@ int addOpacityTransitionToLayer(cc::Layer& layer, double duration, float startOp
 
 int addOpacityTransitionToLayer(cc::LayerImpl& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
-    return addOpacityTransition(*layer.layerAnimationController(), duration, startOpacity, endOpacity, useTimingFunction);
+    return addOpacityTransition(*layer.layer_animation_controller(), duration, startOpacity, endOpacity, useTimingFunction);
 }
 
 int addAnimatedTransformToLayer(cc::Layer& layer, double duration, int deltaX, int deltaY)
@@ -202,7 +202,7 @@ int addAnimatedTransformToLayer(cc::Layer& layer, double duration, int deltaX, i
 
 int addAnimatedTransformToLayer(cc::LayerImpl& layer, double duration, int deltaX, int deltaY)
 {
-    return addAnimatedTransform(*layer.layerAnimationController(), duration, deltaX, deltaY);
+    return addAnimatedTransform(*layer.layer_animation_controller(), duration, deltaX, deltaY);
 }
 
 }  // namespace cc

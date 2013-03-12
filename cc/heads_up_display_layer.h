@@ -13,12 +13,12 @@ namespace cc {
 
 class CC_EXPORT HeadsUpDisplayLayer : public Layer {
 public:
-    static scoped_refptr<HeadsUpDisplayLayer> create();
+    static scoped_refptr<HeadsUpDisplayLayer> Create();
 
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
-    virtual bool drawsContent() const OVERRIDE;
+    virtual void Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*) OVERRIDE;
+    virtual bool DrawsContent() const OVERRIDE;
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
 protected:
     HeadsUpDisplayLayer();

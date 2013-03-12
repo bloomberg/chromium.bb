@@ -17,8 +17,8 @@ class TestLayer : public Layer {
     return make_scoped_refptr(new TestLayer());
   }
 
-  virtual void update(
-      ResourceUpdateQueue& update_queue,
+  virtual void Update(
+      ResourceUpdateQueue* update_queue,
       const OcclusionTracker* occlusion,
       RenderingStats* stats) OVERRIDE {
     if (!occlusion)
@@ -40,7 +40,7 @@ class TestLayer : public Layer {
 
  private:
   TestLayer() : Layer() {
-    setIsDrawable(true);
+    SetIsDrawable(true);
   }
   virtual ~TestLayer() { }
 
@@ -85,15 +85,15 @@ class LayerTreeHostOcclusionTest : public ThreadedTest {
   void SetLayerPropertiesForTesting(
       TestLayer* layer, TestLayer* parent, const gfx::Transform& transform,
       const gfx::PointF& position, const gfx::Size& bounds, bool opaque) const {
-    layer->removeAllChildren();
+    layer->RemoveAllChildren();
     if (parent)
-      parent->addChild(layer);
-    layer->setTransform(transform);
-    layer->setPosition(position);
-    layer->setBounds(bounds);
-    layer->setContentsOpaque(opaque);
+      parent->AddChild(layer);
+    layer->SetTransform(transform);
+    layer->SetPosition(position);
+    layer->SetBounds(bounds);
+    layer->SetContentsOpaque(opaque);
 
-    layer->setAnchorPoint(gfx::PointF());
+    layer->SetAnchorPoint(gfx::PointF());
   }
 
  protected:
@@ -123,8 +123,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
         grand_child_.get(), child_.get(), identity_matrix_,
         gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
     
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 10, 190));
@@ -153,8 +153,8 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
         grand_child_.get(), child_.get(), identity_matrix_,
         gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
 
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
@@ -185,8 +185,8 @@ class LayerTreeHostOcclusionTestOcclusionTwoChildren :
         child2_.get(), root_.get(), identity_matrix_,
         gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
 
     grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
@@ -219,9 +219,9 @@ class LayerTreeHostOcclusionTestOcclusionMask :
         grand_child_.get(), child_.get(), identity_matrix_,
         gfx::PointF(-10.f, -10.f), gfx::Size(500, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
-    child_->setMaskLayer(mask_.get());
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
+    child_->SetMaskLayer(mask_.get());
 
     child_->set_expected_occlusion(gfx::Rect(0, 0, 180, 180));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
@@ -253,9 +253,9 @@ class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
         child2_.get(), root_.get(), identity_matrix_,
         gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
-    child_->setMaskLayer(mask_.get());
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
+    child_->SetMaskLayer(mask_.get());
   
     grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
@@ -288,9 +288,9 @@ class LayerTreeHostOcclusionTestOcclusionOpacity :
         grand_child_.get(), child_.get(), identity_matrix_,
         gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
-    child_->setOpacity(0.5f);
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
+    child_->SetOpacity(0.5f);
 
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
@@ -322,9 +322,9 @@ class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
         child2_.get(), root_.get(), identity_matrix_,
         gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setForceRenderSurface(true);
-    child_->setOpacity(0.5f);
+    child_->SetMasksToBounds(true);
+    child_->SetForceRenderSurface(true);
+    child_->SetOpacity(0.5f);
 
     grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
@@ -366,8 +366,8 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
         child2_.get(), root_.get(), identity_matrix_,
         gfx::PointF(10.f, 70.f), gfx::Size(500, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setFilters(filters);
+    child_->SetMasksToBounds(true);
+    child_->SetFilters(filters);
 
     grand_child_->set_expected_occlusion(gfx::Rect(40, 330, 130, 190));
     child_->set_expected_occlusion(UnionRegions(
@@ -410,8 +410,8 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
         child2_.get(), root_.get(), identity_matrix_,
         gfx::PointF(10.f, 70.f), gfx::Size(500, 500), true);
 
-    child_->setMasksToBounds(true);
-    child_->setFilters(filters);
+    child_->SetMasksToBounds(true);
+    child_->SetFilters(filters);
 
     child_->set_expected_occlusion(gfx::Rect(10, 330, 160, 170));
     root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
@@ -442,14 +442,14 @@ class LayerTreeHostOcclusionTestManySurfaces :
             layers.back().get(), NULL, identity_matrix_,
             gfx::PointF(0.f, 0.f),
             gfx::Size(root_width, root_height), true);
-        layers.back()->createRenderSurface();
+        layers.back()->CreateRenderSurface();
       } else {
         SetLayerPropertiesForTesting(
             layers.back().get(), layers[layers.size() - 2].get(),
             identity_matrix_,
             gfx::PointF(1.f, 1.f),
             gfx::Size(root_width-i, root_height-i), true);
-        layers.back()->setForceRenderSurface(true);
+        layers.back()->SetForceRenderSurface(true);
       }
     }
 

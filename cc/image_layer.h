@@ -18,13 +18,13 @@ class CC_EXPORT ImageLayer : public TiledLayer {
  public:
   static scoped_refptr<ImageLayer> Create();
 
-  virtual bool drawsContent() const OVERRIDE;
-  virtual void setTexturePriorities(const PriorityCalculator& priority_calc)
+  virtual bool DrawsContent() const OVERRIDE;
+  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
       OVERRIDE;
-  virtual void update(ResourceUpdateQueue& queue,
+  virtual void Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion,
                       RenderingStats* stats) OVERRIDE;
-  virtual void calculateContentsScale(float ideal_contents_scale,
+  virtual void CalculateContentsScale(float ideal_contents_scale,
                                       bool animating_transform_to_screen,
                                       float* contents_scale_x,
                                       float* contents_scale_y,

@@ -19,22 +19,22 @@ struct RenderingStats;
 
 class CC_EXPORT PictureLayer : public ContentsScalingLayer {
  public:
-  static scoped_refptr<PictureLayer> create(ContentLayerClient* client);
+  static scoped_refptr<PictureLayer> Create(ContentLayerClient* client);
 
   void clearClient() { client_ = 0; }
 
   // Implement Layer interface
-  virtual bool drawsContent() const OVERRIDE;
-  virtual scoped_ptr<LayerImpl> createLayerImpl(
+  virtual bool DrawsContent() const OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* treeImpl) OVERRIDE;
-  virtual void setLayerTreeHost(LayerTreeHost* host) OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void setNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
-  virtual void update(
-      ResourceUpdateQueue& queue,
+  virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void SetNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
+  virtual void Update(
+      ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion,
       RenderingStats* stats) OVERRIDE;
-  virtual void setIsMask(bool is_mask) OVERRIDE;
+  virtual void SetIsMask(bool is_mask) OVERRIDE;
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);

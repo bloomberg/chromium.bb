@@ -19,7 +19,7 @@ namespace WebKit {
 
 WebImageLayerImpl::WebImageLayerImpl() {
   if (usingPictureLayer())
-    layer_.reset(new WebLayerImplFixedBounds(cc::PictureImageLayer::create()));
+    layer_.reset(new WebLayerImplFixedBounds(cc::PictureImageLayer::Create()));
   else
     layer_.reset(new WebLayerImpl(cc::ImageLayer::Create()));
 }

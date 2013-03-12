@@ -90,14 +90,14 @@ public:
     using cc::TiledLayer::numPaintedTiles;
     using cc::TiledLayer::idlePaintRect;
 
-    virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
+    virtual void SetNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
     const gfx::RectF& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
 
-    virtual void setTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
+    virtual void SetTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
 
     virtual cc::PrioritizedResourceManager* resourceManager() const OVERRIDE;
     FakeLayerUpdater* fakeLayerUpdater() { return m_fakeUpdater.get(); }
-    gfx::RectF updateRect() { return m_updateRect; }
+    gfx::RectF updateRect() { return update_rect_; }
 
     // Simulate calcDrawProperties.
     void updateContentsScale(float idealContentsScale);
@@ -118,12 +118,11 @@ public:
     explicit FakeTiledLayerWithScaledBounds(cc::PrioritizedResourceManager*);
 
     void setContentBounds(const gfx::Size& contentBounds);
-    virtual void calculateContentsScale(
-        float idealContentsScale,
-        bool animatingTransformToScreen,
-        float* contentsScaleX,
-        float* contentsScaleY,
-        gfx::Size* contentBounds) OVERRIDE;
+    virtual void CalculateContentsScale(float idealContentsScale,
+                                        bool animatingTransformToScreen,
+                                        float* contentsScaleX,
+                                        float* contentsScaleY,
+                                        gfx::Size* contentBounds) OVERRIDE;
 
 protected:
     virtual ~FakeTiledLayerWithScaledBounds();

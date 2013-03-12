@@ -27,8 +27,8 @@ public:
     return last_update_partial_upload_size_;
   }
 
-  virtual void update(
-      ResourceUpdateQueue& queue,
+  virtual void Update(
+      ResourceUpdateQueue* queue,
       const OcclusionTracker* occlusion,
       RenderingStats* stats) OVERRIDE;
 

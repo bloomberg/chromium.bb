@@ -27,14 +27,14 @@ TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::Create(hostImpl.activeTree(), 1);
-    layer->drawProperties().visible_content_rect = visibleContentRect;
-    layer->setBounds(layerSize);
-    layer->setContentBounds(layerSize);
-    layer->createRenderSurface();
-    layer->drawProperties().render_target = layer.get();
+    layer->draw_properties().visible_content_rect = visibleContentRect;
+    layer->SetBounds(layerSize);
+    layer->SetContentBounds(layerSize);
+    layer->CreateRenderSurface();
+    layer->draw_properties().render_target = layer.get();
 
     AppendQuadsData data;
-    layer->appendQuads(quadCuller, data);
+    layer->AppendQuads(&quadCuller, &data);
 
     LayerTestCommon::verifyQuadsExactlyCoverRect(quadCuller.quadList(), visibleContentRect);
 }
@@ -50,15 +50,15 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::Create(hostImpl.activeTree(), 1);
-    layer->drawProperties().visible_content_rect = visibleContentRect;
-    layer->setBounds(layerSize);
-    layer->setContentBounds(layerSize);
-    layer->setBackgroundColor(testColor);
-    layer->createRenderSurface();
-    layer->drawProperties().render_target = layer.get();
+    layer->draw_properties().visible_content_rect = visibleContentRect;
+    layer->SetBounds(layerSize);
+    layer->SetContentBounds(layerSize);
+    layer->SetBackgroundColor(testColor);
+    layer->CreateRenderSurface();
+    layer->draw_properties().render_target = layer.get();
 
     AppendQuadsData data;
-    layer->appendQuads(quadCuller, data);
+    layer->AppendQuads(&quadCuller, &data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
     EXPECT_EQ(SolidColorDrawQuad::MaterialCast(quadCuller.quadList()[0])->color, testColor);
@@ -75,15 +75,15 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
     scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::Create(hostImpl.activeTree(), 1);
-    layer->drawProperties().visible_content_rect = visibleContentRect;
-    layer->setBounds(layerSize);
-    layer->setContentBounds(layerSize);
-    layer->drawProperties().opacity = opacity;
-    layer->createRenderSurface();
-    layer->drawProperties().render_target = layer.get();
+    layer->draw_properties().visible_content_rect = visibleContentRect;
+    layer->SetBounds(layerSize);
+    layer->SetContentBounds(layerSize);
+    layer->draw_properties().opacity = opacity;
+    layer->CreateRenderSurface();
+    layer->draw_properties().render_target = layer.get();
 
     AppendQuadsData data;
-    layer->appendQuads(quadCuller, data);
+    layer->AppendQuads(&quadCuller, &data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
     EXPECT_EQ(opacity, SolidColorDrawQuad::MaterialCast(quadCuller.quadList()[0])->opacity());
@@ -98,11 +98,11 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
     gfx::Rect visibleContentRect = gfx::Rect(gfx::Point(), layerSize);
 
     scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
-    layer->setBounds(layerSize);
-    layer->setForceRenderSurface(true);
+    layer->SetBounds(layerSize);
+    layer->SetForceRenderSurface(true);
 
-    scoped_refptr<Layer> root = Layer::create();
-    root->addChild(layer);
+    scoped_refptr<Layer> root = Layer::Create();
+    root->AddChild(layer);
 
     std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
     LayerTreeHostCommon::calculateDrawProperties(
@@ -114,45 +114,45 @@ TEST(SolidColorLayerImplTest, verifyOpaqueRect)
         false,
         renderSurfaceLayerList);
 
-    EXPECT_FALSE(layer->contentsOpaque());
-    layer->setBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));
-    EXPECT_TRUE(layer->contentsOpaque());
+    EXPECT_FALSE(layer->contents_opaque());
+    layer->SetBackgroundColor(SkColorSetARGBInline(255, 10, 20, 30));
+    EXPECT_TRUE(layer->contents_opaque());
 
     {
         scoped_ptr<SolidColorLayerImpl> layerImpl = SolidColorLayerImpl::Create(hostImpl.activeTree(), layer->id());
-        layer->pushPropertiesTo(layerImpl.get());
+        layer->PushPropertiesTo(layerImpl.get());
 
         // The impl layer should call itself opaque as well.
-        EXPECT_TRUE(layerImpl->contentsOpaque());
+        EXPECT_TRUE(layerImpl->contents_opaque());
 
         // Impl layer has 1 opacity, and the color is opaque, so the opaqueRect should be the full tile.
-        layerImpl->drawProperties().opacity = 1;
+        layerImpl->draw_properties().opacity = 1;
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layerImpl->appendQuads(quadCuller, data);
+        layerImpl->AppendQuads(&quadCuller, &data);
 
         ASSERT_EQ(quadCuller.quadList().size(), 1U);
         EXPECT_EQ(visibleContentRect.ToString(), quadCuller.quadList()[0]->opaque_rect.ToString());
     }
 
-    EXPECT_TRUE(layer->contentsOpaque());
-    layer->setBackgroundColor(SkColorSetARGBInline(254, 10, 20, 30));
-    EXPECT_FALSE(layer->contentsOpaque());
+    EXPECT_TRUE(layer->contents_opaque());
+    layer->SetBackgroundColor(SkColorSetARGBInline(254, 10, 20, 30));
+    EXPECT_FALSE(layer->contents_opaque());
 
     {
         scoped_ptr<SolidColorLayerImpl> layerImpl = SolidColorLayerImpl::Create(hostImpl.activeTree(), layer->id());
-        layer->pushPropertiesTo(layerImpl.get());
+        layer->PushPropertiesTo(layerImpl.get());
 
         // The impl layer should callnot itself opaque anymore.
-        EXPECT_FALSE(layerImpl->contentsOpaque());
+        EXPECT_FALSE(layerImpl->contents_opaque());
 
         // Impl layer has 1 opacity, but the color is not opaque, so the opaque_rect should be empty.
-        layerImpl->drawProperties().opacity = 1;
+        layerImpl->draw_properties().opacity = 1;
 
         MockQuadCuller quadCuller;
         AppendQuadsData data;
-        layerImpl->appendQuads(quadCuller, data);
+        layerImpl->AppendQuads(&quadCuller, &data);
 
         ASSERT_EQ(quadCuller.quadList().size(), 1U);
         EXPECT_EQ(gfx::Rect().ToString(), quadCuller.quadList()[0]->opaque_rect.ToString());

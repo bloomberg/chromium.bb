@@ -15,23 +15,24 @@ namespace cc {
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<TextureLayerImpl> create(LayerTreeImpl* treeImpl, int id, bool usesMailbox)
+    static scoped_ptr<TextureLayerImpl> Create(LayerTreeImpl* treeImpl, int id, bool usesMailbox)
     {
         return make_scoped_ptr(new TextureLayerImpl(treeImpl, id, usesMailbox));
     }
     virtual ~TextureLayerImpl();
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl*) OVERRIDE;
+    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
 
-    virtual void willDraw(ResourceProvider*) OVERRIDE;
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
-    virtual void didDraw(ResourceProvider*) OVERRIDE;
+    virtual void WillDraw(ResourceProvider*) OVERRIDE;
+    virtual void AppendQuads(QuadSink* quad_sink,
+                             AppendQuadsData* append_quads_data) OVERRIDE;
+    virtual void DidDraw(ResourceProvider*) OVERRIDE;
 
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void DidLoseOutputSurface() OVERRIDE;
 
-    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-    virtual void didBecomeActive() OVERRIDE;
+    virtual void DumpLayerProperties(std::string*, int indent) const OVERRIDE;
+    virtual void DidBecomeActive() OVERRIDE;
 
     unsigned textureId() const { return m_textureId; }
     void setTextureId(unsigned id) { m_textureId = id; }
@@ -44,14 +45,14 @@ public:
     // |  |
     // 0--3
     void setVertexOpacity(const float vertexOpacity[4]);
-    virtual bool canClipSelf() const OVERRIDE;
+    virtual bool CanClipSelf() const OVERRIDE;
 
     void setTextureMailbox(const TextureMailbox&);
 
 private:
     TextureLayerImpl(LayerTreeImpl* treeImpl, int id, bool usesMailbox);
 
-    virtual const char* layerTypeAsString() const OVERRIDE;
+    virtual const char* LayerTypeAsString() const OVERRIDE;
     void freeTextureMailbox();
 
     unsigned m_textureId;

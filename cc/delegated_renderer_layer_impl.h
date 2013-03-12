@@ -22,21 +22,21 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   virtual ~DelegatedRendererLayerImpl();
 
   // LayerImpl overrides.
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
-  virtual bool hasDelegatedContent() const OVERRIDE;
-  virtual bool hasContributingDelegatedRenderPasses() const OVERRIDE;
-  virtual RenderPass::Id firstContributingRenderPassId() const OVERRIDE;
-  virtual RenderPass::Id nextContributingRenderPassId(
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl*) OVERRIDE;
+  virtual bool HasDelegatedContent() const OVERRIDE;
+  virtual bool HasContributingDelegatedRenderPasses() const OVERRIDE;
+  virtual RenderPass::Id FirstContributingRenderPassId() const OVERRIDE;
+  virtual RenderPass::Id NextContributingRenderPassId(
       RenderPass::Id previous) const OVERRIDE;
-  virtual void didLoseOutputSurface() OVERRIDE;
-  virtual void appendQuads(
-      QuadSink& quad_sink, AppendQuadsData& append_quads_data) OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
 
   void AppendContributingRenderPasses(RenderPassSink* render_pass_sink);
 
-  virtual void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
-                            gfx::RectF damage_in_frame,
-                            TransferableResourceArray* resources_for_ack);
+  void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
+                    gfx::RectF damage_in_frame,
+                    TransferableResourceArray* resources_for_ack);
 
   void SetDisplaySize(gfx::Size size);
 
@@ -74,7 +74,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       gfx::Size frame_size) const;
 
   // LayerImpl overrides.
-  virtual const char* layerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const OVERRIDE;
 
   ScopedPtrVector<RenderPass> render_passes_in_draw_order_;
   base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;

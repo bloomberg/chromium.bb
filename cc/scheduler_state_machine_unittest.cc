@@ -136,7 +136,7 @@ TEST(SchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain
     EXPECT_TRUE(state.commitPending());
 }
 
-TEST(SchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw)
+TEST(SchedulerStateMachineTest, TestsetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw)
 {
     SchedulerSettings defaultSchedulerSettings;
     SchedulerStateMachine state(defaultSchedulerSettings);
@@ -476,7 +476,7 @@ TEST(SchedulerStateMachineTest, TestCanRedrawWithWaitingForFirstDrawMakesProgres
     EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
+TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost)
 {
     SchedulerSettings defaultSchedulerSettings;
     StateMachine state(defaultSchedulerSettings);

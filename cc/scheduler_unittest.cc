@@ -206,9 +206,9 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition)
     client.reset();
 }
 
-class SchedulerClientThatSetNeedsDrawInsideDraw : public FakeSchedulerClient {
+class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
 public:
-    SchedulerClientThatSetNeedsDrawInsideDraw()
+    SchedulerClientThatsetNeedsDrawInsideDraw()
         : m_scheduler(0) { }
 
     void setScheduler(Scheduler* scheduler) { m_scheduler = scheduler; }
@@ -242,7 +242,7 @@ protected:
 // 2. the scheduler drawing twice inside a single tick
 TEST(SchedulerTest, RequestRedrawInsideDraw)
 {
-    SchedulerClientThatSetNeedsDrawInsideDraw client;
+    SchedulerClientThatsetNeedsDrawInsideDraw client;
     scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
     SchedulerSettings defaultSchedulerSettings;
     scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)), defaultSchedulerSettings);
@@ -270,7 +270,7 @@ TEST(SchedulerTest, RequestRedrawInsideDraw)
 // Test that requesting redraw inside a failed draw doesn't lose the request.
 TEST(SchedulerTest, RequestRedrawInsideFailedDraw)
 {
-    SchedulerClientThatSetNeedsDrawInsideDraw client;
+    SchedulerClientThatsetNeedsDrawInsideDraw client;
     scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
     SchedulerSettings defaultSchedulerSettings;
     scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)), defaultSchedulerSettings);
@@ -310,9 +310,9 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw)
     EXPECT_FALSE(timeSource->active());
 }
 
-class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
+class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
 public:
-    SchedulerClientThatSetNeedsCommitInsideDraw()
+    SchedulerClientThatsetNeedsCommitInsideDraw()
         : m_scheduler(0) { }
 
     void setScheduler(Scheduler* scheduler) { m_scheduler = scheduler; }
@@ -344,7 +344,7 @@ protected:
 // happen inside a scheduledActionDrawAndSwap
 TEST(SchedulerTest, RequestCommitInsideDraw)
 {
-    SchedulerClientThatSetNeedsCommitInsideDraw client;
+    SchedulerClientThatsetNeedsCommitInsideDraw client;
     scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
     SchedulerSettings defaultSchedulerSettings;
     scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)), defaultSchedulerSettings);
@@ -373,7 +373,7 @@ TEST(SchedulerTest, RequestCommitInsideDraw)
 // Tests that when a draw fails then the pending commit should not be dropped.
 TEST(SchedulerTest, RequestCommitInsideFailedDraw)
 {
-    SchedulerClientThatSetNeedsDrawInsideDraw client;
+    SchedulerClientThatsetNeedsDrawInsideDraw client;
     scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
     SchedulerSettings defaultSchedulerSettings;
     scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)), defaultSchedulerSettings);
@@ -416,7 +416,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw)
 TEST(SchedulerTest, NoBeginFrameWhenDrawFails)
 {
     scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    SchedulerClientThatSetNeedsCommitInsideDraw client;
+    SchedulerClientThatsetNeedsCommitInsideDraw client;
     scoped_ptr<FakeFrameRateController> controller(new FakeFrameRateController(timeSource));
     FakeFrameRateController* controllerPtr = controller.get();
     SchedulerSettings defaultSchedulerSettings;

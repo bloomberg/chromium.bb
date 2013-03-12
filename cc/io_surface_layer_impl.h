@@ -13,7 +13,7 @@ namespace cc {
 
 class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<IOSurfaceLayerImpl> create(LayerTreeImpl* treeImpl, int id)
+    static scoped_ptr<IOSurfaceLayerImpl> Create(LayerTreeImpl* treeImpl, int id)
     {
         return make_scoped_ptr(new IOSurfaceLayerImpl(treeImpl, id));
     }
@@ -21,20 +21,21 @@ public:
 
     void setIOSurfaceProperties(unsigned ioSurfaceId, const gfx::Size&);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
 
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+    virtual void AppendQuads(QuadSink* quad_sink,
+                             AppendQuadsData* append_quads_data) OVERRIDE;
 
-    virtual void willDraw(ResourceProvider*) OVERRIDE;
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual void WillDraw(ResourceProvider*) OVERRIDE;
+    virtual void DidLoseOutputSurface() OVERRIDE;
 
-    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
+    virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
 
 private:
     IOSurfaceLayerImpl(LayerTreeImpl* treeImpl, int id);
 
-    virtual const char* layerTypeAsString() const OVERRIDE;
+    virtual const char* LayerTypeAsString() const OVERRIDE;
 
     unsigned m_ioSurfaceId;
     gfx::Size m_ioSurfaceSize;

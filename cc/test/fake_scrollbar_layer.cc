@@ -23,23 +23,23 @@ FakeScrollbarLayer::FakeScrollbarLayer(
       update_count_(0),
       last_update_full_upload_size_(0),
       last_update_partial_upload_size_(0) {
-  setAnchorPoint(gfx::PointF(0, 0));
-  setBounds(gfx::Size(1, 1));
-  setIsDrawable(true);
+  SetAnchorPoint(gfx::PointF(0, 0));
+  SetBounds(gfx::Size(1, 1));
+  SetIsDrawable(true);
 }
 
 FakeScrollbarLayer::~FakeScrollbarLayer() {}
 
-void FakeScrollbarLayer::update(
-    ResourceUpdateQueue& queue,
+void FakeScrollbarLayer::Update(
+    ResourceUpdateQueue* queue,
     const OcclusionTracker* occlusion,
     RenderingStats* stats) {
-  size_t full = queue.fullUploadSize();
-  size_t partial = queue.partialUploadSize();
-  ScrollbarLayer::update(queue, occlusion, stats);
+  size_t full = queue->fullUploadSize();
+  size_t partial = queue->partialUploadSize();
+  ScrollbarLayer::Update(queue, occlusion, stats);
   update_count_++;
-  last_update_full_upload_size_ = queue.fullUploadSize() - full;
-  last_update_partial_upload_size_ = queue.partialUploadSize() - partial;
+  last_update_full_upload_size_ = queue->fullUploadSize() - full;
+  last_update_partial_upload_size_ = queue->partialUploadSize() - partial;
 }
 
 }  // namespace cc

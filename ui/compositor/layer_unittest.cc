@@ -641,9 +641,9 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_TRUE(l1->IsDrawn());
   EXPECT_TRUE(l2->IsDrawn());
   EXPECT_TRUE(l3->IsDrawn());
-  EXPECT_TRUE(l1->cc_layer()->drawsContent());
-  EXPECT_TRUE(l2->cc_layer()->drawsContent());
-  EXPECT_TRUE(l3->cc_layer()->drawsContent());
+  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l2->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l3->cc_layer()->DrawsContent());
 
   compositor()->SetRootLayer(l1.get());
 
@@ -653,25 +653,25 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_FALSE(l1->IsDrawn());
   EXPECT_FALSE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
-  EXPECT_FALSE(l1->cc_layer()->drawsContent());
-  EXPECT_FALSE(l2->cc_layer()->drawsContent());
-  EXPECT_FALSE(l3->cc_layer()->drawsContent());
+  EXPECT_FALSE(l1->cc_layer()->DrawsContent());
+  EXPECT_FALSE(l2->cc_layer()->DrawsContent());
+  EXPECT_FALSE(l3->cc_layer()->DrawsContent());
 
   l3->SetVisible(false);
   EXPECT_FALSE(l1->IsDrawn());
   EXPECT_FALSE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
-  EXPECT_FALSE(l1->cc_layer()->drawsContent());
-  EXPECT_FALSE(l2->cc_layer()->drawsContent());
-  EXPECT_FALSE(l3->cc_layer()->drawsContent());
+  EXPECT_FALSE(l1->cc_layer()->DrawsContent());
+  EXPECT_FALSE(l2->cc_layer()->DrawsContent());
+  EXPECT_FALSE(l3->cc_layer()->DrawsContent());
 
   l1->SetVisible(true);
   EXPECT_TRUE(l1->IsDrawn());
   EXPECT_TRUE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
-  EXPECT_TRUE(l1->cc_layer()->drawsContent());
-  EXPECT_TRUE(l2->cc_layer()->drawsContent());
-  EXPECT_FALSE(l3->cc_layer()->drawsContent());
+  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l2->cc_layer()->DrawsContent());
+  EXPECT_FALSE(l3->cc_layer()->DrawsContent());
 }
 
 // Checks that stacking-related methods behave as advertised.

@@ -87,7 +87,7 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   return root_layer_.Pass();
 }
 
-void LayerTreeImpl::pushPropertiesTo(LayerTreeImpl* target_tree) {
+void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->SetPageScaleFactorAndLimits(
       page_scale_factor(), min_page_scale_factor(), max_page_scale_factor());
   target_tree->SetPageScaleDelta(
@@ -178,7 +178,7 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
   LayerImpl* clip_layer = NULL;
   if (root_scroll_layer_)
     clip_layer = root_scroll_layer_->parent();
-  if (clip_layer && clip_layer->masksToBounds()) {
+  if (clip_layer && clip_layer->masks_to_bounds()) {
     view_bounds = clip_layer->bounds();
   } else {
     view_bounds = gfx::ScaleSize(device_viewport_size(),
@@ -200,7 +200,7 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   // having a vertical scrollbar but no horizontal overflow.
   max_scroll.ClampToMin(gfx::Vector2dF());
 
-  root_scroll_layer_->setMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
+  root_scroll_layer_->SetMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }
 
 gfx::Transform LayerTreeImpl::ImplTransform() const {
@@ -211,7 +211,7 @@ gfx::Transform LayerTreeImpl::ImplTransform() const {
 
 struct UpdateTilePrioritiesForLayer {
   void operator()(LayerImpl *layer) {
-    layer->updateTilePriorities();
+    layer->UpdateTilePriorities();
   }
 };
 
@@ -234,7 +234,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
     return;
 
   if (root_scroll_layer_) {
-    root_scroll_layer_->setImplTransform(ImplTransform());
+    root_scroll_layer_->SetImplTransform(ImplTransform());
     // Setting the impl transform re-sets this.
     needs_update_draw_properties_ = false;
   }
@@ -264,7 +264,7 @@ static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
     DCHECK(current);
     for (size_t i = 0; i < current->children().size(); ++i)
         ClearRenderSurfacesOnLayerImplRecursive(current->children()[i]);
-    current->clearRenderSurface();
+    current->ClearRenderSurface();
 }
 
 void LayerTreeImpl::ClearRenderSurfaces() {
@@ -283,7 +283,7 @@ bool LayerTreeImpl::AreVisibleResourcesReady() const {
   LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list_);
   for (LayerIteratorType it = LayerIteratorType::begin(
            &render_surface_layer_list_); it != end; ++it) {
-    if (it.representsItself() && !(*it)->areVisibleResourcesReady())
+    if (it.representsItself() && !(*it)->AreVisibleResourcesReady())
       return false;
   }
 
@@ -324,7 +324,7 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pendingTree) {
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {
-  layer->didBecomeActive();
+  layer->DidBecomeActive();
   for (size_t i = 0; i < layer->children().size(); ++i)
     DidBecomeActiveRecursive(layer->children()[i]);
 }

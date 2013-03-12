@@ -40,15 +40,15 @@ BrowserPluginCompositingHelper::~BrowserPluginCompositingHelper() {
 
 void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
   if (enable && !texture_layer_) {
-    texture_layer_ = cc::TextureLayer::createForMailbox();
-    texture_layer_->setIsDrawable(true);
-    texture_layer_->setContentsOpaque(true);
+    texture_layer_ = cc::TextureLayer::CreateForMailbox();
+    texture_layer_->SetIsDrawable(true);
+    texture_layer_->SetContentsOpaque(true);
 
     background_layer_ = cc::SolidColorLayer::Create();
-    background_layer_->setMasksToBounds(true);
-    background_layer_->setBackgroundColor(
+    background_layer_->SetMasksToBounds(true);
+    background_layer_->SetBackgroundColor(
         SkColorSetARGBInline(255, 255, 255, 255));
-    background_layer_->addChild(texture_layer_);
+    background_layer_->AddChild(texture_layer_);
     web_layer_.reset(new WebKit::WebLayerImpl(background_layer_));
   }
 
@@ -200,7 +200,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     // it by the device scale factor.
     gfx::Size device_scale_adjusted_size = gfx::ToFlooredSize(
         gfx::ScaleSize(buffer_size_, 1.0f / device_scale_factor));
-    texture_layer_->setBounds(device_scale_adjusted_size);
+    texture_layer_->SetBounds(device_scale_adjusted_size);
   }
 
   bool current_mailbox_valid = !mailbox_name.empty();
@@ -220,13 +220,13 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   }
   texture_layer_->setTextureMailbox(cc::TextureMailbox(mailbox_name,
                                                        callback));
-  texture_layer_->setNeedsDisplay();
+  texture_layer_->SetNeedsDisplay();
   last_mailbox_valid_ = current_mailbox_valid;
 }
 
 void BrowserPluginCompositingHelper::UpdateVisibility(bool visible) {
   if (texture_layer_)
-    texture_layer_->setIsDrawable(visible);
+    texture_layer_->SetIsDrawable(visible);
 }
 
 }  // namespace content

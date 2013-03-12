@@ -69,16 +69,16 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     : public LayerTreeHostDelegatedTest {
  public:
   virtual void setupTree() OVERRIDE {
-    root_ = Layer::create();
-    root_->setAnchorPoint(gfx::PointF());
-    root_->setBounds(gfx::Size(10, 10));
+    root_ = Layer::Create();
+    root_->SetAnchorPoint(gfx::PointF());
+    root_->SetBounds(gfx::Size(10, 10));
 
     delegated_ = FakeDelegatedRendererLayer::Create();
-    delegated_->setAnchorPoint(gfx::PointF());
-    delegated_->setBounds(gfx::Size(10, 10));
-    delegated_->setIsDrawable(true);
+    delegated_->SetAnchorPoint(gfx::PointF());
+    delegated_->SetBounds(gfx::Size(10, 10));
+    delegated_->SetIsDrawable(true);
 
-    root_->addChild(delegated_);
+    root_->AddChild(delegated_);
     m_layerTreeHost->setRootLayer(root_);
     LayerTreeHostDelegatedTest::setupTree();
   }
@@ -187,7 +187,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 4:
         // Should damage the full viewport.
-        delegated_->setBounds(gfx::Size(2, 2));
+        delegated_->SetBounds(gfx::Size(2, 2));
         break;
       case 5:
         // Should create zero damage.
@@ -195,7 +195,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 6:
         // Should damage the full layer.
-        delegated_->setBounds(gfx::Size(6, 6));
+        delegated_->SetBounds(gfx::Size(6, 6));
         delegated_->SetFrameData(CreateFrameData(gfx::Rect(0, 0, 5, 5),
                                                  gfx::Rect(1, 1, 2, 2)));
         break;

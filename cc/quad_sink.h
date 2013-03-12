@@ -24,7 +24,7 @@ public:
     virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState>) = 0;
 
     // Returns true if the quad is added to the list, and false if the quad is entirely culled.
-    virtual bool append(scoped_ptr<DrawQuad> passDrawQuad, AppendQuadsData&) = 0;
+    virtual bool append(scoped_ptr<DrawQuad> passDrawQuad, AppendQuadsData*) = 0;
 };
 
 }

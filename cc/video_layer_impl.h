@@ -25,17 +25,18 @@ class VideoFrameProviderClientImpl;
 
 class CC_EXPORT VideoLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<VideoLayerImpl> create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider);
+    static scoped_ptr<VideoLayerImpl> Create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider);
     virtual ~VideoLayerImpl();
 
     // LayerImpl implementation.
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
-    virtual void willDraw(ResourceProvider*) OVERRIDE;
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
-    virtual void didDraw(ResourceProvider*) OVERRIDE;
-    virtual void didBecomeActive() OVERRIDE;
-    virtual void didLoseOutputSurface() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl*) OVERRIDE;
+    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual void WillDraw(ResourceProvider*) OVERRIDE;
+    virtual void AppendQuads(QuadSink* quad_sink,
+                             AppendQuadsData* append_quads_data) OVERRIDE;
+    virtual void DidDraw(ResourceProvider*) OVERRIDE;
+    virtual void DidBecomeActive() OVERRIDE;
+    virtual void DidLoseOutputSurface() OVERRIDE;
 
     void setNeedsRedraw();
 
@@ -55,7 +56,7 @@ public:
 private:
     VideoLayerImpl(LayerTreeImpl*, int);
 
-    virtual const char* layerTypeAsString() const OVERRIDE;
+    virtual const char* LayerTypeAsString() const OVERRIDE;
 
     void willDrawInternal(ResourceProvider*);
     bool allocatePlaneData(ResourceProvider*);

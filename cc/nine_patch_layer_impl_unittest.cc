@@ -42,11 +42,11 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
     scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.activeTree(), 1);
-    layer->drawProperties().visible_content_rect = visibleContentRect;
-    layer->setBounds(layerSize);
-    layer->setContentBounds(layerSize);
-    layer->createRenderSurface();
-    layer->drawProperties().render_target = layer.get();
+    layer->draw_properties().visible_content_rect = visibleContentRect;
+    layer->SetBounds(layerSize);
+    layer->SetContentBounds(layerSize);
+    layer->CreateRenderSurface();
+    layer->draw_properties().render_target = layer.get();
     layer->SetLayout(bitmapSize, apertureRect);
     layer->SetResourceId(1);
 
@@ -54,10 +54,10 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     // the shared draw transform.
     gfx::Transform transform;
     transform.Scale(10, 10);
-    layer->drawProperties().target_space_transform = transform;
+    layer->draw_properties().target_space_transform = transform;
 
     AppendQuadsData data;
-    layer->appendQuads(quadCuller, data);
+    layer->AppendQuads(&quadCuller, &data);
 
     // Verify quad rects
     const QuadList& quads = quadCuller.quadList();
@@ -103,16 +103,16 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
     scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.activeTree(), 1);
-    layer->drawProperties().visible_content_rect = visibleContentRect;
-    layer->setBounds(layerSize);
-    layer->setContentBounds(layerSize);
-    layer->createRenderSurface();
-    layer->drawProperties().render_target = layer.get();
+    layer->draw_properties().visible_content_rect = visibleContentRect;
+    layer->SetBounds(layerSize);
+    layer->SetContentBounds(layerSize);
+    layer->CreateRenderSurface();
+    layer->draw_properties().render_target = layer.get();
     layer->SetLayout(bitmapSize, apertureRect);
     layer->SetResourceId(1);
 
     AppendQuadsData data;
-    layer->appendQuads(quadCuller, data);
+    layer->AppendQuads(&quadCuller, &data);
 
     // Verify corner rects fill the layer and don't overlap
     const QuadList& quads = quadCuller.quadList();

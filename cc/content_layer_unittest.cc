@@ -39,7 +39,7 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
     gfx::Rect opaqueRectInLayerSpace(5, 5, 20, 20);
     gfx::RectF opaqueRectInContentSpace = gfx::ScaleRect(opaqueRectInLayerSpace, contentsScale, contentsScale);
     MockContentLayerClient client(opaqueRectInLayerSpace);
-    scoped_refptr<BitmapContentLayerUpdater> updater = BitmapContentLayerUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainter>());
+    scoped_refptr<BitmapContentLayerUpdater> updater = BitmapContentLayerUpdater::create(ContentLayerPainter::Create(&client).PassAs<LayerPainter>());
 
     gfx::Rect resultingOpaqueRect;
     updater->prepareToUpdate(contentRect, gfx::Size(256, 256), contentsScale, contentsScale, resultingOpaqueRect, NULL);

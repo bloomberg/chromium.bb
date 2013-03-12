@@ -28,25 +28,25 @@ class CC_EXPORT NinePatchLayerImpl : public LayerImpl {
   void SetResourceId(unsigned id) { resource_id_ = id; }
   void SetLayout(gfx::Size image_bounds, gfx::Rect aperture);
 
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
-  virtual void willDraw(ResourceProvider* resource_provider) OVERRIDE;
-  virtual void appendQuads(QuadSink& quad_sink,
-                           AppendQuadsData& append_quads_data) OVERRIDE;
-  virtual void didDraw(ResourceProvider* FIXMENAME) OVERRIDE;
-  virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
-  virtual void dumpLayerProperties(std::string* str, int indent) const OVERRIDE;
-  virtual void didLoseOutputSurface() OVERRIDE;
+  virtual void WillDraw(ResourceProvider* resource_provider) OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
+  virtual void DidDraw(ResourceProvider* FIXMENAME) OVERRIDE;
+  virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
+  virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
 
-  virtual base::DictionaryValue* layerTreeAsJson() const OVERRIDE;
+  virtual base::DictionaryValue* LayerTreeAsJson() const OVERRIDE;
 
  protected:
   NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  virtual const char* layerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const OVERRIDE;
 
   // The size of the NinePatch bitmap in pixels.
   gfx::Size image_bounds_;

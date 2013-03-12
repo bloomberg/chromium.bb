@@ -43,24 +43,24 @@ class QuadCullerTest : public testing::Test
 public:
     QuadCullerTest()
         : m_hostImpl(&m_proxy)
-        , m_layerId(1)
+        , layer_id_(1)
     {
     }
 
     scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::Transform& drawTransform, const gfx::Rect& layerRect, float opacity, bool opaque, const gfx::Rect& layerOpaqueRect, std::vector<LayerImpl*>& surfaceLayerList)
     {
-        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(m_hostImpl.activeTree(), m_layerId++);
+        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::Create(m_hostImpl.activeTree(), layer_id_++);
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
         tiler->setBounds(layerRect.size());
         layer->setTilingData(*tiler);
         layer->setSkipsDraw(false);
-        layer->drawProperties().target_space_transform = drawTransform;
-        layer->drawProperties().screen_space_transform = drawTransform;
-        layer->drawProperties().visible_content_rect = layerRect;
-        layer->drawProperties().opacity = opacity;
-        layer->setContentsOpaque(opaque);
-        layer->setBounds(layerRect.size());
-        layer->setContentBounds(layerRect.size());
+        layer->draw_properties().target_space_transform = drawTransform;
+        layer->draw_properties().screen_space_transform = drawTransform;
+        layer->draw_properties().visible_content_rect = layerRect;
+        layer->draw_properties().opacity = opacity;
+        layer->SetContentsOpaque(opaque);
+        layer->SetBounds(layerRect.size());
+        layer->SetContentBounds(layerRect.size());
 
         ResourceProvider::ResourceId resourceId = 1;
         for (int i = 0; i < tiler->numTilesX(); ++i)
@@ -69,19 +69,19 @@ public:
                 layer->pushTileProperties(i, j, resourceId++, tileOpaqueRect, false);
             }
 
-        gfx::Rect rectInTarget = MathUtil::mapClippedRect(layer->drawTransform(), layer->visibleContentRect());
+        gfx::Rect rectInTarget = MathUtil::mapClippedRect(layer->draw_transform(), layer->visible_content_rect());
         if (!parent) {
-            layer->createRenderSurface();
-            layer->renderSurface()->SetContentRect(rectInTarget);
+            layer->CreateRenderSurface();
+            layer->render_surface()->SetContentRect(rectInTarget);
             surfaceLayerList.push_back(layer.get());
-            layer->renderSurface()->layer_list().push_back(layer.get());
+            layer->render_surface()->layer_list().push_back(layer.get());
         } else {
-            layer->drawProperties().render_target = parent->renderTarget();
-            parent->renderSurface()->layer_list().push_back(layer.get());
-            rectInTarget.Union(MathUtil::mapClippedRect(parent->drawTransform(), parent->visibleContentRect()));
-            parent->renderSurface()->SetContentRect(rectInTarget);
+            layer->draw_properties().render_target = parent->render_target();
+            parent->render_surface()->layer_list().push_back(layer.get());
+            rectInTarget.Union(MathUtil::mapClippedRect(parent->draw_transform(), parent->visible_content_rect()));
+            parent->render_surface()->SetContentRect(rectInTarget);
         }
-        layer->drawProperties().drawable_content_rect = rectInTarget;
+        layer->draw_properties().drawable_content_rect = rectInTarget;
 
         return layer.Pass();
     }
@@ -91,7 +91,7 @@ public:
         occlusionTracker.EnterLayer(it);
         QuadCuller quadCuller(quadList, sharedStateList, layer, occlusionTracker, false, false);
         AppendQuadsData data;
-        layer->appendQuads(quadCuller, data);
+        layer->AppendQuads(&quadCuller, &data);
         occlusionTracker.LeaveLayer(it);
         ++it;
     }
@@ -99,7 +99,7 @@ public:
 protected:
     FakeImplProxy m_proxy;
     FakeLayerTreeHostImpl m_hostImpl;
-    int m_layerId;
+    int layer_id_;
 };
 
 #define DECLARE_AND_INITIALIZE_TEST_QUADS               \

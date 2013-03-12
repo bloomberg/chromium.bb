@@ -22,7 +22,7 @@ public:
 
     // QuadSink implementation.
     virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState>) OVERRIDE;
-    virtual bool append(scoped_ptr<DrawQuad>, AppendQuadsData&) OVERRIDE;
+    virtual bool append(scoped_ptr<DrawQuad>, AppendQuadsData*) OVERRIDE;
 
 private:
     QuadList& m_quadList;

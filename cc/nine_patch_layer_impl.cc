@@ -18,17 +18,17 @@ NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 NinePatchLayerImpl::~NinePatchLayerImpl() {}
 
-ResourceProvider::ResourceId NinePatchLayerImpl::contentsResourceId() const {
+ResourceProvider::ResourceId NinePatchLayerImpl::ContentsResourceId() const {
   return 0;
 }
 
-scoped_ptr<LayerImpl> NinePatchLayerImpl::createLayerImpl(
+scoped_ptr<LayerImpl> NinePatchLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return NinePatchLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void NinePatchLayerImpl::pushPropertiesTo(LayerImpl* layer) {
-  LayerImpl::pushPropertiesTo(layer);
+void NinePatchLayerImpl::PushPropertiesTo(LayerImpl* layer) {
+  LayerImpl::PushPropertiesTo(layer);
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
   if (!resource_id_)
@@ -38,7 +38,7 @@ void NinePatchLayerImpl::pushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetLayout(image_bounds_, image_aperture_);
 }
 
-void NinePatchLayerImpl::willDraw(ResourceProvider* resource_provider) {}
+void NinePatchLayerImpl::WillDraw(ResourceProvider* resource_provider) {}
 
 static gfx::RectF NormalizedRect(float x,
                                  float y,
@@ -57,14 +57,14 @@ void NinePatchLayerImpl::SetLayout(gfx::Size image_bounds, gfx::Rect aperture) {
   image_aperture_ = aperture;
 }
 
-void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
-                                     AppendQuadsData& append_quads_data) {
+void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
+                                     AppendQuadsData* append_quads_data) {
   if (!resource_id_)
     return;
 
   SharedQuadState* shared_quad_state =
-      quad_sink.useSharedQuadState(createSharedQuadState());
-  appendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+      quad_sink->useSharedQuadState(CreateSharedQuadState());
+  AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
 
   static const bool flipped = false;
   static const bool premultiplied_alpha = true;
@@ -173,7 +173,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uv_top_left.origin(),
                uv_top_left.bottom_right(),
                vertex_opacity, flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -184,7 +184,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uv_top_right.origin(),
                uv_top_right.bottom_right(),
                vertex_opacity, flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -196,7 +196,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uv_bottom_left.bottom_right(),
                vertex_opacity,
                flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -208,7 +208,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uv_bottom_right.bottom_right(),
                vertex_opacity,
                flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -220,7 +220,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uvTop.bottom_right(),
                vertex_opacity,
                flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -232,7 +232,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uvLeft.bottom_right(),
                vertex_opacity,
                flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -244,7 +244,7 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uvRight.bottom_right(),
                vertex_opacity,
                flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 
   quad = TextureDrawQuad::Create();
   quad->SetNew(shared_quad_state,
@@ -256,31 +256,31 @@ void NinePatchLayerImpl::appendQuads(QuadSink& quad_sink,
                uvBottom.bottom_right(),
                vertex_opacity,
                flipped);
-  quad_sink.append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
-void NinePatchLayerImpl::didDraw(ResourceProvider* resource_provider) {}
+void NinePatchLayerImpl::DidDraw(ResourceProvider* resource_provider) {}
 
-void NinePatchLayerImpl::didLoseOutputSurface() {
+void NinePatchLayerImpl::DidLoseOutputSurface() {
   resource_id_ = 0;
 }
 
-const char* NinePatchLayerImpl::layerTypeAsString() const {
+const char* NinePatchLayerImpl::LayerTypeAsString() const {
   return "NinePatchLayer";
 }
 
-void NinePatchLayerImpl::dumpLayerProperties(std::string* str, int indent)
+void NinePatchLayerImpl::DumpLayerProperties(std::string* str, int indent)
     const {
-  str->append(indentString(indent));
+  str->append(IndentString(indent));
   base::StringAppendF(
       str, "imageAperture: %s\n", image_aperture_.ToString().c_str());
   base::StringAppendF(
       str, "image_bounds: %s\n", image_bounds_.ToString().c_str());
-  LayerImpl::dumpLayerProperties(str, indent);
+  LayerImpl::DumpLayerProperties(str, indent);
 }
 
-base::DictionaryValue* NinePatchLayerImpl::layerTreeAsJson() const {
-  base::DictionaryValue* result = LayerImpl::layerTreeAsJson();
+base::DictionaryValue* NinePatchLayerImpl::LayerTreeAsJson() const {
+  base::DictionaryValue* result = LayerImpl::LayerTreeAsJson();
 
   base::ListValue* list = new base::ListValue;
   list->AppendInteger(image_aperture_.origin().x());

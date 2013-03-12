@@ -23,7 +23,7 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
       scoped_ptr<ScrollbarGeometryFixedThumb> geometry);
   virtual ~ScrollbarLayerImpl();
 
-  virtual ScrollbarLayerImpl* toScrollbarLayer() OVERRIDE;
+  virtual ScrollbarLayerImpl* ToScrollbarLayer() OVERRIDE;
   int scroll_layer_id() const { return scroll_layer_id_; }
   void set_scroll_layer_id(int id) { scroll_layer_id_ = id; }
 
@@ -52,14 +52,14 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   virtual WebKit::WebScrollbar::Orientation Orientation() const OVERRIDE;
 
-  virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* tree_impl)
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
 
-  virtual void appendQuads(QuadSink& quad_sink,
-                           AppendQuadsData& append_quads_data) OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
 
-  virtual void didLoseOutputSurface() OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
 
  protected:
   ScrollbarLayerImpl(LayerTreeImpl* tree_impl,
@@ -96,7 +96,7 @@ class CC_EXPORT ScrollbarLayerImpl : public ScrollbarLayerImplBase {
 
   };
 
-  virtual const char* layerTypeAsString() const OVERRIDE;
+  virtual const char* LayerTypeAsString() const OVERRIDE;
 
   gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;
 

@@ -21,8 +21,8 @@ protected:
 
 class DrawsContentLayer : public Layer {
 public:
-    static scoped_refptr<DrawsContentLayer> create() { return make_scoped_refptr(new DrawsContentLayer()); }
-    virtual bool drawsContent() const OVERRIDE { return true; }
+    static scoped_refptr<DrawsContentLayer> Create() { return make_scoped_refptr(new DrawsContentLayer()); }
+    virtual bool DrawsContent() const OVERRIDE { return true; }
 
 private:
     DrawsContentLayer() : Layer() { }
@@ -34,16 +34,16 @@ private:
 class HudWithRootLayerChange : public HeadsUpDisplayTest {
 public:
     HudWithRootLayerChange()
-        : m_rootLayer1(DrawsContentLayer::create())
-        , m_rootLayer2(DrawsContentLayer::create())
+        : m_rootLayer1(DrawsContentLayer::Create())
+        , m_rootLayer2(DrawsContentLayer::Create())
         , m_numCommits(0)
     {
     }
 
     virtual void beginTest() OVERRIDE
     {
-        m_rootLayer1->setBounds(gfx::Size(30, 30));
-        m_rootLayer2->setBounds(gfx::Size(30, 30));
+        m_rootLayer1->SetBounds(gfx::Size(30, 30));
+        m_rootLayer2->SetBounds(gfx::Size(30, 30));
 
         postSetNeedsCommitToMainThread();
     }

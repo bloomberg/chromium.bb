@@ -11,7 +11,7 @@
 
 namespace cc {
 
-scoped_refptr<PictureLayer> PictureLayer::create(ContentLayerClient* client) {
+scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
   return make_scoped_refptr(new PictureLayer(client));
 }
 
@@ -25,16 +25,16 @@ PictureLayer::PictureLayer(ContentLayerClient* client) :
 PictureLayer::~PictureLayer() {
 }
 
-bool PictureLayer::drawsContent() const {
-  return Layer::drawsContent() && client_;
+bool PictureLayer::DrawsContent() const {
+  return Layer::DrawsContent() && client_;
 }
 
-scoped_ptr<LayerImpl> PictureLayer::createLayerImpl(LayerTreeImpl* treeImpl) {
-  return PictureLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* treeImpl) {
+  return PictureLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
-void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
-  Layer::pushPropertiesTo(base_layer);
+void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
+  Layer::PushPropertiesTo(base_layer);
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   layer_impl->SetIsMask(is_mask_);
@@ -46,8 +46,8 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SyncFromActiveLayer();
 }
 
-void PictureLayer::setLayerTreeHost(LayerTreeHost* host) {
-  Layer::setLayerTreeHost(host);
+void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
+  Layer::SetLayerTreeHost(host);
   if (host) {
     pile_->SetMinContentsScale(host->settings().minimumContentsScale);
     pile_->SetTileGridSize(host->settings().defaultTileSize);
@@ -55,17 +55,18 @@ void PictureLayer::setLayerTreeHost(LayerTreeHost* host) {
   }
 }
 
-void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
+void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
   gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
   if (!rect.IsEmpty()) {
     // Clamp invalidation to the layer bounds.
     rect.Intersect(gfx::Rect(bounds()));
     pending_invalidation_.Union(rect);
   }
-  Layer::setNeedsDisplayRect(layer_rect);
+  Layer::SetNeedsDisplayRect(layer_rect);
 }
 
-void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
+void PictureLayer::Update(ResourceUpdateQueue*,
+                          const OcclusionTracker*,
                           RenderingStats* stats) {
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
@@ -78,16 +79,16 @@ void PictureLayer::update(ResourceUpdateQueue&, const OcclusionTracker*,
   pending_invalidation_.Clear();
 
   gfx::Rect visible_layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(visibleContentRect(), 1.f / contentsScaleX()));
+      gfx::ScaleRect(visible_content_rect(), 1.f / contents_scale_x()));
   devtools_instrumentation::ScopedPaintLayer paint_layer(id());
   pile_->Update(client_,
-                backgroundColor(),
+                background_color(),
                 pile_invalidation_,
                 visible_layer_rect,
                 stats);
 }
 
-void PictureLayer::setIsMask(bool is_mask) {
+void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
 }
 

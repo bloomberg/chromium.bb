@@ -25,7 +25,7 @@ class FakeContentLayerImpl : public TiledLayerImpl {
   }
   void reset_lost_output_surface_count() { lost_output_surface_count_ = 0; }
 
-  virtual void didLoseOutputSurface() OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
 
  private:
   explicit FakeContentLayerImpl(LayerTreeImpl* tree_impl, int id);

@@ -49,364 +49,434 @@ struct RenderingStats;
 // this class.
 class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueObserver {
-public:
-    typedef std::vector<scoped_refptr<Layer> > LayerList;
-
-    static scoped_refptr<Layer> create();
-
-    int id() const;
-
-    Layer* rootLayer();
-    Layer* parent() { return m_parent; }
-    const Layer* parent() const { return m_parent; }
-    void addChild(scoped_refptr<Layer>);
-    void insertChild(scoped_refptr<Layer>, size_t index);
-    void replaceChild(Layer* reference, scoped_refptr<Layer> newLayer);
-    void removeFromParent();
-    void removeAllChildren();
-    void setChildren(const LayerList&);
-
-    const LayerList& children() const { return m_children; }
-    Layer* childAt(size_t index);
-
-    void setAnchorPoint(const gfx::PointF&);
-    gfx::PointF anchorPoint() const { return m_anchorPoint; }
-
-    void setAnchorPointZ(float);
-    float anchorPointZ() const { return m_anchorPointZ; }
-
-    virtual void setBackgroundColor(SkColor);
-    SkColor backgroundColor() const { return m_backgroundColor; }
-
-    // A layer's bounds are in logical, non-page-scaled pixels (however, the
-    // root layer's bounds are in physical pixels).
-    void setBounds(const gfx::Size&);
-    const gfx::Size& bounds() const { return m_bounds; }
-
-    void setMasksToBounds(bool);
-    bool masksToBounds() const { return m_masksToBounds; }
-
-    void setMaskLayer(Layer*);
-    Layer* maskLayer() { return m_maskLayer.get(); }
-    const Layer* maskLayer() const { return m_maskLayer.get(); }
-
-    virtual void setNeedsDisplayRect(const gfx::RectF& dirtyRect);
-    void setNeedsDisplay() { setNeedsDisplayRect(gfx::RectF(gfx::PointF(), bounds())); }
-
-    void setOpacity(float);
-    float opacity() const;
-    bool opacityIsAnimating() const;
-
-    void setFilters(const WebKit::WebFilterOperations&);
-    const WebKit::WebFilterOperations& filters() const { return m_filters; }
-
-    void setFilter(const skia::RefPtr<SkImageFilter>& filter);
-    skia::RefPtr<SkImageFilter> filter() const { return m_filter; }
-
-    // Background filters are filters applied to what is behind this layer, when they are viewed through non-opaque
-    // regions in this layer. They are used through the WebLayer interface, and are not exposed to HTML.
-    void setBackgroundFilters(const WebKit::WebFilterOperations&);
-    const WebKit::WebFilterOperations& backgroundFilters() const { return m_backgroundFilters; }
-
-    virtual void setContentsOpaque(bool);
-    bool contentsOpaque() const { return m_contentsOpaque; }
-
-    void setPosition(const gfx::PointF&);
-    gfx::PointF position() const { return m_position; }
-
-    void setIsContainerForFixedPositionLayers(bool);
-    bool isContainerForFixedPositionLayers() const { return m_isContainerForFixedPositionLayers; }
-
-    void setFixedToContainerLayer(bool);
-    bool fixedToContainerLayer() const { return m_fixedToContainerLayer; }
-
-    void setSublayerTransform(const gfx::Transform&);
-    const gfx::Transform& sublayerTransform() const { return m_sublayerTransform; }
-
-    void setTransform(const gfx::Transform&);
-    const gfx::Transform& transform() const;
-    bool transformIsAnimating() const;
-
-    DrawProperties<Layer, RenderSurface>& drawProperties() { return m_drawProperties; }
-    const DrawProperties<Layer, RenderSurface>& drawProperties() const { return m_drawProperties; }
-
-    // The following are shortcut accessors to get various information from m_drawProperties
-    const gfx::Transform& drawTransform() const { return m_drawProperties.target_space_transform; }
-    const gfx::Transform& screenSpaceTransform() const { return m_drawProperties.screen_space_transform; }
-    float drawOpacity() const { return m_drawProperties.opacity; }
-    bool drawOpacityIsAnimating() const { return m_drawProperties.opacity_is_animating; }
-    bool drawTransformIsAnimating() const { return m_drawProperties.target_space_transform_is_animating; }
-    bool screenSpaceTransformIsAnimating() const { return m_drawProperties.screen_space_transform_is_animating; }
-    bool screenSpaceOpacityIsAnimating() const { return m_drawProperties.screen_space_opacity_is_animating; }
-    bool canUseLCDText() const { return m_drawProperties.can_use_lcd_text; }
-    bool isClipped() const { return m_drawProperties.is_clipped; }
-    const gfx::Rect& clipRect() const { return m_drawProperties.clip_rect; }
-    const gfx::Rect& drawableContentRect() const { return m_drawProperties.drawable_content_rect; }
-    const gfx::Rect& visibleContentRect() const { return m_drawProperties.visible_content_rect; }
-    Layer* renderTarget() { DCHECK(!m_drawProperties.render_target || m_drawProperties.render_target->renderSurface()); return m_drawProperties.render_target; }
-    const Layer* renderTarget() const { DCHECK(!m_drawProperties.render_target || m_drawProperties.render_target->renderSurface()); return m_drawProperties.render_target; }
-    RenderSurface* renderSurface() const { return m_drawProperties.render_surface.get(); }
-
-    void setScrollOffset(gfx::Vector2d);
-    gfx::Vector2d scrollOffset() const { return m_scrollOffset; }
-
-    void setMaxScrollOffset(gfx::Vector2d);
-    gfx::Vector2d maxScrollOffset() const { return m_maxScrollOffset; }
-
-    void setScrollable(bool);
-    bool scrollable() const { return m_scrollable; }
-
-    void setShouldScrollOnMainThread(bool);
-    bool shouldScrollOnMainThread() const { return m_shouldScrollOnMainThread; }
-
-    void setHaveWheelEventHandlers(bool);
-    bool haveWheelEventHandlers() const { return m_haveWheelEventHandlers; }
-
-    void setNonFastScrollableRegion(const Region&);
-    const Region& nonFastScrollableRegion() const { return m_nonFastScrollableRegion; }
-
-    void setTouchEventHandlerRegion(const Region&);
-    const Region& touchEventHandlerRegion() const { return m_touchEventHandlerRegion; }
-
-    void setLayerScrollClient(WebKit::WebLayerScrollClient* layerScrollClient) { m_layerScrollClient = layerScrollClient; }
-
-    void setDrawCheckerboardForMissingTiles(bool);
-    bool drawCheckerboardForMissingTiles() const { return m_drawCheckerboardForMissingTiles; }
-
-    bool forceRenderSurface() const { return m_forceRenderSurface; }
-    void setForceRenderSurface(bool);
-
-    gfx::Vector2d scrollDelta() const { return gfx::Vector2d(); }
-
-    void setImplTransform(const gfx::Transform&);
-    const gfx::Transform& implTransform() const { return m_implTransform; }
-
-    void setDoubleSided(bool);
-    bool doubleSided() const { return m_doubleSided; }
-
-    void setPreserves3D(bool preserve3D) { m_preserves3D = preserve3D; }
-    bool preserves3D() const { return m_preserves3D; }
-
-    void setUseParentBackfaceVisibility(bool useParentBackfaceVisibility) { m_useParentBackfaceVisibility = useParentBackfaceVisibility; }
-    bool useParentBackfaceVisibility() const { return m_useParentBackfaceVisibility; }
-
-    virtual void setLayerTreeHost(LayerTreeHost*);
-
-    bool hasDelegatedContent() const { return false; }
-    bool hasContributingDelegatedRenderPasses() const { return false; }
-
-    void setIsDrawable(bool);
-
-    void setReplicaLayer(Layer*);
-    Layer* replicaLayer() { return m_replicaLayer.get(); }
-    const Layer* replicaLayer() const { return m_replicaLayer.get(); }
-
-    bool hasMask() const { return !!m_maskLayer; }
-    bool hasReplica() const { return !!m_replicaLayer; }
-    bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
-
-    // These methods typically need to be overwritten by derived classes.
-    virtual bool drawsContent() const;
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) { }
-    virtual bool needMoreUpdates();
-    virtual void setIsMask(bool) { }
-
-    void setDebugName(const std::string&);
-
-    virtual void pushPropertiesTo(LayerImpl*);
-
-    void clearRenderSurface() { m_drawProperties.render_surface.reset(); }
-    void createRenderSurface();
-
-    // The contentsScale converts from logical, non-page-scaled pixels to target pixels.
-    // The contentsScale is 1 for the root layer as it is already in physical pixels.
-    // By default contentsScale is forced to be 1 except for subclasses of ContentsScalingLayer.
-    float contentsScaleX() const { return m_drawProperties.contents_scale_x; }
-    float contentsScaleY() const { return m_drawProperties.contents_scale_y; }
-    gfx::Size contentBounds() const { return m_drawProperties.content_bounds; }
-    virtual void calculateContentsScale(
-        float idealContentsScale,
-        bool animatingTransformToScreen,
-        float* contentsScaleX,
-        float* contentsScaleY,
-        gfx::Size* contentBounds);
-
-    // The scale at which contents should be rastered, to match the scale at
-    // which they will drawn to the screen. This scale is a component of the
-    // contentsScale() but does not include page/device scale factors.
-    float rasterScale() const { return m_rasterScale; }
-    void setRasterScale(float scale);
-
-    // When true, the rasterScale() will be set by the compositor. If false, it
-    // will use whatever value is given to it by the embedder.
-    bool automaticallyComputeRasterScale() { return m_automaticallyComputeRasterScale; }
-    void setAutomaticallyComputeRasterScale(bool);
-
-    void forceAutomaticRasterScaleToBeRecomputed();
-
-    // When true, the layer's contents are not scaled by the current page scale factor.
-    // setBoundsContainPageScale recursively sets the value on all child layers.
-    void setBoundsContainPageScale(bool);
-    bool boundsContainPageScale() const { return m_boundsContainPageScale; }
-
-    LayerTreeHost* layerTreeHost() const { return m_layerTreeHost; }
-
-    // Set the priority of all desired textures in this layer.
-    virtual void setTexturePriorities(const PriorityCalculator&) { }
-
-    bool AddAnimation(scoped_ptr<Animation>);
-    void PauseAnimation(int animationId, double timeOffset);
-    void RemoveAnimation(int animationId);
-
-    void suspendAnimations(double monotonicTime);
-    void resumeAnimations(double monotonicTime);
-
-    LayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
-    void setLayerAnimationController(scoped_refptr<LayerAnimationController>);
-    scoped_refptr<LayerAnimationController> releaseLayerAnimationController();
-
-    void setLayerAnimationDelegate(WebKit::WebAnimationDelegate* layerAnimationDelegate) { m_layerAnimationDelegate = layerAnimationDelegate; }
-
-    bool hasActiveAnimation() const;
-
-    virtual void notifyAnimationStarted(const AnimationEvent&, double wallClockTime);
-    virtual void notifyAnimationFinished(double wallClockTime);
-    virtual void notifyAnimationPropertyUpdate(const AnimationEvent& event);
-
-    void addLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver);
-    void removeLayerAnimationEventObserver(LayerAnimationEventObserver* animationObserver);
-
-    virtual Region visibleContentOpaqueRegion() const;
-
-    virtual ScrollbarLayer* toScrollbarLayer();
-
-    gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
-
-    // In impl-side painting, this returns true if this layer type is not
-    // compatible with the main thread running freely, such as a double-buffered
-    // canvas that doesn't want to be triple-buffered across all three trees.
-    virtual bool blocksPendingCommit() const;
-    // Returns true if anything in this tree blocksPendingCommit.
-    bool blocksPendingCommitRecursive() const;
-
-    virtual bool canClipSelf() const;
-
-    // Constructs a LayerImpl of the correct runtime type for this Layer type.
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl);
-
-    bool needsDisplayForTesting() const { return m_needsDisplay; }
-    void resetNeedsDisplayForTesting() { m_needsDisplay = false; }
-
-protected:
-    friend class LayerImpl;
-    friend class TreeSynchronizer;
-    virtual ~Layer();
-
-    Layer();
-
-    void setNeedsCommit();
-    void setNeedsFullTreeSync();
-
-    // This flag is set when layer need repainting/updating.
-    bool m_needsDisplay;
-
-    // Tracks whether this layer may have changed stacking order with its siblings.
-    bool m_stackingOrderChanged;
-
-    // The update rect is the region of the compositor resource that was actually updated by the compositor.
-    // For layers that may do updating outside the compositor's control (i.e. plugin layers), this information
-    // is not available and the update rect will remain empty.
-    // Note this rect is in layer space (not content space).
-    gfx::RectF m_updateRect;
-
-    scoped_refptr<Layer> m_maskLayer;
-
-    int m_layerId;
-
-    // When true, the layer is about to perform an update. Any commit requests
-    // will be handled implcitly after the update completes.
-    bool m_ignoreSetNeedsCommit;
-
-private:
-    friend class base::RefCounted<Layer>;
-
-    void setParent(Layer*);
-    bool hasAncestor(Layer*) const;
-    bool descendantIsFixedToContainerLayer() const;
-
-    // Returns the index of the child or -1 if not found.
-    int indexOfChild(const Layer*);
-
-    // This should only be called from removeFromParent.
-    void removeChildOrDependent(Layer*);
-
-    // LayerAnimationValueObserver implementation.
-    virtual void OnOpacityAnimated(float) OVERRIDE;
-    virtual void OnTransformAnimated(const gfx::Transform&) OVERRIDE;
-    virtual bool IsActive() const OVERRIDE;
-
-    LayerList m_children;
-    Layer* m_parent;
-
-    // Layer instances have a weak pointer to their LayerTreeHost.
-    // This pointer value is nil when a Layer is not in a tree and is
-    // updated via setLayerTreeHost() if a layer moves between trees.
-    LayerTreeHost* m_layerTreeHost;
-
-    ObserverList<LayerAnimationEventObserver> m_layerAnimationObservers;
-
-    scoped_refptr<LayerAnimationController> m_layerAnimationController;
-
-    // Layer properties.
-    gfx::Size m_bounds;
-
-    gfx::Vector2d m_scrollOffset;
-    gfx::Vector2d m_maxScrollOffset;
-    bool m_scrollable;
-    bool m_shouldScrollOnMainThread;
-    bool m_haveWheelEventHandlers;
-    Region m_nonFastScrollableRegion;
-    Region m_touchEventHandlerRegion;
-    gfx::PointF m_position;
-    gfx::PointF m_anchorPoint;
-    SkColor m_backgroundColor;
-    std::string m_debugName;
-    float m_opacity;
-    skia::RefPtr<SkImageFilter> m_filter;
-    WebKit::WebFilterOperations m_filters;
-    WebKit::WebFilterOperations m_backgroundFilters;
-    float m_anchorPointZ;
-    bool m_isContainerForFixedPositionLayers;
-    bool m_fixedToContainerLayer;
-    bool m_isDrawable;
-    bool m_masksToBounds;
-    bool m_contentsOpaque;
-    bool m_doubleSided;
-    bool m_preserves3D;
-    bool m_useParentBackfaceVisibility;
-    bool m_drawCheckerboardForMissingTiles;
-    bool m_forceRenderSurface;
-
-    gfx::Transform m_transform;
-    gfx::Transform m_sublayerTransform;
-
-    // Replica layer used for reflections.
-    scoped_refptr<Layer> m_replicaLayer;
-
-    // Transient properties.
-    float m_rasterScale;
-    bool m_automaticallyComputeRasterScale;
-    bool m_boundsContainPageScale;
-
-    gfx::Transform m_implTransform;
-
-    WebKit::WebAnimationDelegate* m_layerAnimationDelegate;
-    WebKit::WebLayerScrollClient* m_layerScrollClient;
-
-    DrawProperties<Layer, RenderSurface> m_drawProperties;
+ public:
+  typedef std::vector<scoped_refptr<Layer> > LayerList;
+
+  static scoped_refptr<Layer> Create();
+
+  int id() const { return layer_id_; }
+
+  Layer* RootLayer();
+  Layer* parent() { return parent_; }
+  const Layer* parent() const { return parent_; }
+  void AddChild(scoped_refptr<Layer> child);
+  void InsertChild(scoped_refptr<Layer> child, size_t index);
+  void ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer);
+  void RemoveFromParent();
+  void RemoveAllChildren();
+  void SetChildren(const LayerList& children);
+
+  const LayerList& children() const { return children_; }
+  Layer* child_at(size_t index) { return children_[index].get(); }
+
+  void SetAnchorPoint(gfx::PointF anchor_point);
+  gfx::PointF anchor_point() const { return anchor_point_; }
+
+  void SetAnchorPointZ(float anchor_point_z);
+  float anchor_point_z() const { return anchor_point_z_; }
+
+  virtual void SetBackgroundColor(SkColor background_color);
+  SkColor background_color() const { return background_color_; }
+
+  // A layer's bounds are in logical, non-page-scaled pixels (however, the
+  // root layer's bounds are in physical pixels).
+  void SetBounds(gfx::Size bounds);
+  gfx::Size bounds() const { return bounds_; }
+
+  void SetMasksToBounds(bool masks_to_bounds);
+  bool masks_to_bounds() const { return masks_to_bounds_; }
+
+  void SetMaskLayer(Layer* mask_layer);
+  Layer* mask_layer() { return mask_layer_.get(); }
+  const Layer* mask_layer() const { return mask_layer_.get(); }
+
+  virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect);
+  void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::RectF(bounds())); }
+
+  void SetOpacity(float opacity);
+  float opacity() const { return opacity_; }
+  bool OpacityIsAnimating() const;
+
+  void SetFilters(const WebKit::WebFilterOperations& filters);
+  const WebKit::WebFilterOperations& filters() const { return filters_; }
+
+  void SetFilter(const skia::RefPtr<SkImageFilter>& filter);
+  skia::RefPtr<SkImageFilter> filter() const { return filter_; }
+
+  // Background filters are filters applied to what is behind this layer, when
+  // they are viewed through non-opaque regions in this layer. They are used
+  // through the WebLayer interface, and are not exposed to HTML.
+  void SetBackgroundFilters(const WebKit::WebFilterOperations& filters);
+  const WebKit::WebFilterOperations& background_filters() const {
+    return background_filters_;
+  }
+
+  virtual void SetContentsOpaque(bool opaque);
+  bool contents_opaque() const { return contents_opaque_; }
+
+  void SetPosition(gfx::PointF position);
+  gfx::PointF position() const { return position_; }
+
+  void SetIsContainerForFixedPositionLayers(bool container);
+  bool is_container_for_fixed_position_layers() const {
+    return is_container_for_fixed_position_layers_;
+  }
+
+  void SetFixedToContainerLayer(bool fixed_to_container_layer);
+  bool fixed_to_container_layer() const { return fixed_to_container_layer_; }
+
+  void SetSublayerTransform(const gfx::Transform& sublayer_transform);
+  const gfx::Transform& sublayer_transform() const {
+    return sublayer_transform_;
+  }
+
+  void SetTransform(const gfx::Transform& transform);
+  const gfx::Transform& transform() const { return transform_; }
+  bool TransformIsAnimating() const;
+
+  DrawProperties<Layer, RenderSurface>& draw_properties() {
+    return draw_properties_;
+  }
+  const DrawProperties<Layer, RenderSurface>& draw_properties() const {
+    return draw_properties_;
+  }
+
+  // The following are shortcut accessors to get various information from
+  // draw_properties_
+  const gfx::Transform& draw_transform() const {
+    return draw_properties_.target_space_transform;
+  }
+  const gfx::Transform& screen_space_transform() const {
+    return draw_properties_.screen_space_transform;
+  }
+  float draw_opacity() const { return draw_properties_.opacity; }
+  bool draw_opacity_is_animating() const {
+    return draw_properties_.opacity_is_animating;
+  }
+  bool draw_transform_is_animating() const {
+    return draw_properties_.target_space_transform_is_animating;
+  }
+  bool screen_space_transform_is_animating() const {
+    return draw_properties_.screen_space_transform_is_animating;
+  }
+  bool screen_space_opacity_is_animating() const {
+    return draw_properties_.screen_space_opacity_is_animating;
+  }
+  bool can_use_lcd_text() const { return draw_properties_.can_use_lcd_text; }
+  bool is_clipped() const { return draw_properties_.is_clipped; }
+  gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
+  gfx::Rect drawable_content_rect() const {
+    return draw_properties_.drawable_content_rect;
+  }
+  gfx::Rect visible_content_rect() const {
+    return draw_properties_.visible_content_rect;
+  }
+  Layer* render_target() {
+    DCHECK(!draw_properties_.render_target ||
+           draw_properties_.render_target->render_surface());
+    return draw_properties_.render_target;
+  }
+  const Layer* render_target() const {
+    DCHECK(!draw_properties_.render_target ||
+           draw_properties_.render_target->render_surface());
+    return draw_properties_.render_target;
+  }
+  RenderSurface* render_surface() const {
+    return draw_properties_.render_surface.get();
+  }
+
+  void SetScrollOffset(gfx::Vector2d scroll_offset);
+  gfx::Vector2d scroll_offset() const { return scroll_offset_; }
+
+  void SetMaxScrollOffset(gfx::Vector2d max_scroll_offset);
+  gfx::Vector2d max_scroll_offset() const { return max_scroll_offset_; }
+
+  void SetScrollable(bool scrollable);
+  bool scrollable() const { return scrollable_; }
+
+  void SetShouldScrollOnMainThread(bool should_scroll_on_main_thread);
+  bool should_scroll_on_main_thread() const {
+    return should_scroll_on_main_thread_;
+  }
+
+  void SetHaveWheelEventHandlers(bool have_wheel_event_handlers);
+  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
+
+  void SetNonFastScrollableRegion(const Region& non_fast_scrollable_region);
+  const Region& non_fast_scrollable_region() const {
+    return non_fast_scrollable_region_;
+  }
+
+  void SetTouchEventHandlerRegion(const Region& touch_event_handler_region);
+  const Region& touch_event_handler_region() const {
+    return touch_event_handler_region_;
+  }
+
+  void set_layer_scroll_client(WebKit::WebLayerScrollClient* client) {
+    layer_scroll_client_ = client;
+  }
+
+  void SetDrawCheckerboardForMissingTiles(bool checkerboard);
+  bool DrawCheckerboardForMissingTiles() const {
+    return draw_checkerboard_for_missing_tiles_;
+  }
+
+  void SetForceRenderSurface(bool force_render_surface);
+  bool force_render_surface() const { return force_render_surface_; }
+
+  gfx::Vector2d scroll_delta() const { return gfx::Vector2d(); }
+
+  void SetImplTransform(const gfx::Transform& transform);
+  const gfx::Transform& impl_transform() const { return impl_transform_; }
+
+  void SetDoubleSided(bool double_sided);
+  bool double_sided() const { return double_sided_; }
+
+  void SetPreserves3d(bool preserves_3d) { preserves_3d_ = preserves_3d; }
+  bool preserves_3d() const { return preserves_3d_; }
+
+  void set_use_parent_backface_visibility(bool use) {
+    use_parent_backface_visibility_ = use;
+  }
+  bool use_parent_backface_visibility() const {
+    return use_parent_backface_visibility_;
+  }
+
+  virtual void SetLayerTreeHost(LayerTreeHost* host);
+
+  bool HasDelegatedContent() const { return false; }
+  bool HasContributingDelegatedRenderPasses() const { return false; }
+
+  void SetIsDrawable(bool is_drawable);
+
+  void SetReplicaLayer(Layer* layer);
+  Layer* replica_layer() { return replica_layer_.get(); }
+  const Layer* replica_layer() const { return replica_layer_.get(); }
+
+  bool has_mask() const { return !!mask_layer_; }
+  bool has_replica() const { return !!replica_layer_; }
+  bool replica_has_mask() const {
+    return replica_layer_ && (mask_layer_ || replica_layer_->mask_layer_);
+  }
+
+  // These methods typically need to be overwritten by derived classes.
+  virtual bool DrawsContent() const;
+  virtual void Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* occlusion,
+                      RenderingStats* stats) {}
+  virtual bool NeedMoreUpdates();
+  virtual void SetIsMask(bool is_mask) {}
+
+  void SetDebugName(const std::string& debug_name);
+
+  virtual void PushPropertiesTo(LayerImpl* layer);
+
+  void ClearRenderSurface() { draw_properties_.render_surface.reset(); }
+  void CreateRenderSurface();
+
+  // The contentsScale converts from logical, non-page-scaled pixels to target
+  // pixels. The contentsScale is 1 for the root layer as it is already in
+  // physical pixels. By default contentsScale is forced to be 1 except for
+  // subclasses of ContentsScalingLayer.
+  float contents_scale_x() const { return draw_properties_.contents_scale_x; }
+  float contents_scale_y() const { return draw_properties_.contents_scale_y; }
+  gfx::Size content_bounds() const { return draw_properties_.content_bounds; }
+
+  virtual void CalculateContentsScale(float ideal_contents_scale,
+                                      bool animating_transform_to_screen,
+                                      float* contents_scale_x,
+                                      float* contents_scale_y,
+                                      gfx::Size* content_bounds);
+
+  // The scale at which contents should be rastered, to match the scale at
+  // which they will drawn to the screen. This scale is a component of the
+  // contentsScale() but does not include page/device scale factors.
+  void SetRasterScale(float scale);
+  float raster_scale() const { return raster_scale_; }
+
+  // When true, the RasterScale() will be set by the compositor. If false, it
+  // will use whatever value is given to it by the embedder.
+  bool automatically_compute_raster_scale() {
+    return automatically_compute_raster_scale_;
+  }
+  void SetAutomaticallyComputeRasterScale(bool automatic);
+
+  void ForceAutomaticRasterScaleToBeRecomputed();
+
+  // When true, the layer's contents are not scaled by the current page scale
+  // factor. SetBoundsContainPageScale() recursively sets the value on all
+  // child layers.
+  void SetBoundsContainPageScale(bool bounds_contain_page_scale);
+  bool bounds_contain_page_scale() const { return bounds_contain_page_scale_; }
+
+  LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
+
+  // Set the priority of all desired textures in this layer.
+  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc) {}
+
+  bool AddAnimation(scoped_ptr<Animation> animation);
+  void PauseAnimation(int animation_id, double time_offset);
+  void RemoveAnimation(int animation_id);
+
+  void SuspendAnimations(double monotonic_time);
+  void ResumeAnimations(double monotonic_time);
+
+  LayerAnimationController* layer_animation_controller() {
+    return layer_animation_controller_.get();
+  }
+  void SetLayerAnimationController(
+      scoped_refptr<LayerAnimationController> controller);
+  scoped_refptr<LayerAnimationController> ReleaseLayerAnimationController();
+
+  void set_layer_animation_delegate(WebKit::WebAnimationDelegate* delegate) {
+    layer_animation_delegate_ = delegate;
+  }
+
+  bool HasActiveAnimation() const;
+
+  virtual void NotifyAnimationStarted(const AnimationEvent& event,
+                                      double wall_clock_time);
+  virtual void NotifyAnimationFinished(double wall_clock_time);
+  virtual void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
+
+  void AddLayerAnimationEventObserver(
+      LayerAnimationEventObserver* animation_observer);
+  void RemoveLayerAnimationEventObserver(
+      LayerAnimationEventObserver* animation_observer);
+
+  virtual Region VisibleContentOpaqueRegion() const;
+
+  virtual ScrollbarLayer* ToScrollbarLayer();
+
+  gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
+
+  // In impl-side painting, this returns true if this layer type is not
+  // compatible with the main thread running freely, such as a double-buffered
+  // canvas that doesn't want to be triple-buffered across all three trees.
+  virtual bool BlocksPendingCommit() const;
+  // Returns true if anything in this tree blocksPendingCommit.
+  bool BlocksPendingCommitRecursive() const;
+
+  virtual bool CanClipSelf() const;
+
+  // Constructs a LayerImpl of the correct runtime type for this Layer type.
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
+
+  bool NeedsDisplayForTesting() const { return needs_display_; }
+  void ResetNeedsDisplayForTesting() { needs_display_ = false; }
+
+ protected:
+  friend class LayerImpl;
+  friend class TreeSynchronizer;
+  virtual ~Layer();
+
+  Layer();
+
+  void SetNeedsCommit();
+  void SetNeedsFullTreeSync();
+
+  // This flag is set when layer need repainting/updating.
+  bool needs_display_;
+
+  // Tracks whether this layer may have changed stacking order with its
+  // siblings.
+  bool stacking_order_changed_;
+
+  // The update rect is the region of the compositor resource that was
+  // actually updated by the compositor. For layers that may do updating
+  // outside the compositor's control (i.e. plugin layers), this information
+  // is not available and the update rect will remain empty.
+  // Note this rect is in layer space (not content space).
+  gfx::RectF update_rect_;
+
+  scoped_refptr<Layer> mask_layer_;
+
+  int layer_id_;
+
+  // When true, the layer is about to perform an update. Any commit requests
+  // will be handled implcitly after the update completes.
+  bool ignore_set_needs_commit_;
+
+ private:
+  friend class base::RefCounted<Layer>;
+
+  void SetParent(Layer* layer);
+  bool HasAncestor(Layer* ancestor) const;
+  bool DescendantIsFixedToContainerLayer() const;
+
+  // Returns the index of the child or -1 if not found.
+  int IndexOfChild(const Layer* reference);
+
+  // This should only be called from RemoveFromParent().
+  void RemoveChildOrDependent(Layer* child);
+
+  // LayerAnimationValueObserver implementation.
+  virtual void OnOpacityAnimated(float opacity) OVERRIDE;
+  virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+
+  LayerList children_;
+  Layer* parent_;
+
+  // Layer instances have a weak pointer to their LayerTreeHost.
+  // This pointer value is nil when a Layer is not in a tree and is
+  // updated via SetLayerTreeHost() if a layer moves between trees.
+  LayerTreeHost* layer_tree_host_;
+
+  ObserverList<LayerAnimationEventObserver> layer_animation_observers_;
+
+  scoped_refptr<LayerAnimationController> layer_animation_controller_;
+
+  // Layer properties.
+  gfx::Size bounds_;
+
+  gfx::Vector2d scroll_offset_;
+  gfx::Vector2d max_scroll_offset_;
+  bool scrollable_;
+  bool should_scroll_on_main_thread_;
+  bool have_wheel_event_handlers_;
+  Region non_fast_scrollable_region_;
+  Region touch_event_handler_region_;
+  gfx::PointF position_;
+  gfx::PointF anchor_point_;
+  SkColor background_color_;
+  std::string debug_name_;
+  float opacity_;
+  skia::RefPtr<SkImageFilter> filter_;
+  WebKit::WebFilterOperations filters_;
+  WebKit::WebFilterOperations background_filters_;
+  float anchor_point_z_;
+  bool is_container_for_fixed_position_layers_;
+  bool fixed_to_container_layer_;
+  bool is_drawable_;
+  bool masks_to_bounds_;
+  bool contents_opaque_;
+  bool double_sided_;
+  bool preserves_3d_;
+  bool use_parent_backface_visibility_;
+  bool draw_checkerboard_for_missing_tiles_;
+  bool force_render_surface_;
+
+  gfx::Transform transform_;
+  gfx::Transform sublayer_transform_;
+
+  // Replica layer used for reflections.
+  scoped_refptr<Layer> replica_layer_;
+
+  // Transient properties.
+  float raster_scale_;
+  bool automatically_compute_raster_scale_;
+  bool bounds_contain_page_scale_;
+
+  gfx::Transform impl_transform_;
+
+  WebKit::WebAnimationDelegate* layer_animation_delegate_;
+  WebKit::WebLayerScrollClient* layer_scroll_client_;
+
+  DrawProperties<Layer, RenderSurface> draw_properties_;
+
+  DISALLOW_COPY_AND_ASSIGN(Layer);
 };
-
-void sortLayers(std::vector<scoped_refptr<Layer> >::iterator, std::vector<scoped_refptr<Layer> >::iterator, void*);
 
 }  // namespace cc
 

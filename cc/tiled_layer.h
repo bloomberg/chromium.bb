@@ -19,23 +19,15 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
 public:
     enum TilingOption { AlwaysTile, NeverTile, AutoTile };
 
-    virtual void setIsMask(bool) OVERRIDE;
-
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
-
-    virtual bool blocksPendingCommit() const OVERRIDE;
-
-    virtual bool drawsContent() const OVERRIDE;
-
-    virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
-
-    virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
-
-    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-
-    virtual Region visibleContentOpaqueRegion() const OVERRIDE;
-
-    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
+    virtual void SetIsMask(bool) OVERRIDE;
+    virtual void PushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual bool BlocksPendingCommit() const OVERRIDE;
+    virtual bool DrawsContent() const OVERRIDE;
+    virtual void SetNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
+    virtual void SetLayerTreeHost(LayerTreeHost*) OVERRIDE;
+    virtual void SetTexturePriorities(const PriorityCalculator&) OVERRIDE;
+    virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
+    virtual void Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*) OVERRIDE;
 
 protected:
     TiledLayer();
@@ -71,7 +63,7 @@ protected:
     const PrioritizedResource* resourceAtForTesting(int, int) const;
 
 private:
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
     void createTilerIfNeeded();
     void setTilingOption(TilingOption);
@@ -81,10 +73,10 @@ private:
 
     void markOcclusionsAndRequestTextures(int left, int top, int right, int bottom, const OcclusionTracker*);
 
-    bool updateTiles(int left, int top, int right, int bottom, ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*, bool& didPaint);
+    bool updateTiles(int left, int top, int right, int bottom, ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*, bool& didPaint);
     bool haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions);
     gfx::Rect markTilesForUpdate(int left, int top, int right, int bottom, bool ignoreOcclusions);
-    void updateTileTextures(const gfx::Rect& paintRect, int left, int top, int right, int bottom, ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*);
+    void updateTileTextures(const gfx::Rect& paintRect, int left, int top, int right, int bottom, ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*);
     void updateScrollPrediction();
 
     UpdatableTile* tileAt(int, int) const;

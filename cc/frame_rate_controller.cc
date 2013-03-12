@@ -14,7 +14,7 @@ namespace cc {
 
 class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
 public:
-    static scoped_ptr<FrameRateControllerTimeSourceAdapter> create(FrameRateController* frameRateController) {
+    static scoped_ptr<FrameRateControllerTimeSourceAdapter> Create(FrameRateController* frameRateController) {
         return make_scoped_ptr(new FrameRateControllerTimeSourceAdapter(frameRateController));
     }
     virtual ~FrameRateControllerTimeSourceAdapter() {}
@@ -41,7 +41,7 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
     , m_thread(0)
     , m_weakFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this))
 {
-    m_timeSourceClientAdapter = FrameRateControllerTimeSourceAdapter::create(this);
+    m_timeSourceClientAdapter = FrameRateControllerTimeSourceAdapter::Create(this);
     m_timeSource->setClient(m_timeSourceClientAdapter.get());
 }
 

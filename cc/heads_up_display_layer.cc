@@ -10,7 +10,7 @@
 
 namespace cc {
 
-scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
+scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create()
 {
     return make_scoped_refptr(new HeadsUpDisplayLayer());
 }
@@ -18,20 +18,20 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
 {
-    setBounds(gfx::Size(256, 256));
+    SetBounds(gfx::Size(256, 256));
 }
 
 HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
 {
 }
 
-void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*)
+void HeadsUpDisplayLayer::Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*)
 {
-    const LayerTreeDebugState& debugState = layerTreeHost()->debugState();
-    int maxTextureSize = layerTreeHost()->rendererCapabilities().maxTextureSize;
+    const LayerTreeDebugState& debugState = layer_tree_host()->debugState();
+    int maxTextureSize = layer_tree_host()->rendererCapabilities().maxTextureSize;
 
-    int deviceViewportInLayoutPixelsWidth = layerTreeHost()->deviceViewportSize().width() / layerTreeHost()->deviceScaleFactor();
-    int deviceViewportInLayoutPixelsHeight = layerTreeHost()->deviceViewportSize().height() / layerTreeHost()->deviceScaleFactor();
+    int deviceViewportInLayoutPixelsWidth = layer_tree_host()->deviceViewportSize().width() / layer_tree_host()->deviceScaleFactor();
+    int deviceViewportInLayoutPixelsHeight = layer_tree_host()->deviceViewportSize().height() / layer_tree_host()->deviceScaleFactor();
 
     gfx::Size bounds;
     gfx::Transform matrix;
@@ -46,18 +46,18 @@ void HeadsUpDisplayLayer::update(ResourceUpdateQueue&, const OcclusionTracker*, 
         matrix.Translate(deviceViewportInLayoutPixelsWidth - 256, 0);
     }
 
-    setBounds(bounds);
-    setTransform(matrix);
+    SetBounds(bounds);
+    SetTransform(matrix);
 }
 
-bool HeadsUpDisplayLayer::drawsContent() const
+bool HeadsUpDisplayLayer::DrawsContent() const
 {
     return true;
 }
 
-scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl(LayerTreeImpl* treeImpl)
+scoped_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return HeadsUpDisplayLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
+    return HeadsUpDisplayLayerImpl::Create(treeImpl, layer_id_).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

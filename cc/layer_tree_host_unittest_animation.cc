@@ -20,7 +20,7 @@ class LayerTreeHostAnimationTest : public ThreadedTest {
  public:
   virtual void setupTree() OVERRIDE {
     ThreadedTest::setupTree();
-    m_layerTreeHost->rootLayer()->setLayerAnimationDelegate(this);
+    m_layerTreeHost->rootLayer()->set_layer_animation_delegate(this);
   }
 };
 
@@ -252,7 +252,7 @@ public:
       LayerTreeHostImpl* host_impl,
       base::TimeTicks monotonicTime) OVERRIDE {
     LayerAnimationController* controller =
-        m_layerTreeHost->rootLayer()->layerAnimationController();
+        m_layerTreeHost->rootLayer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     if (!animation)
@@ -271,7 +271,7 @@ public:
     EXPECT_FLOAT_EQ(linearly_interpolated_opacity, curve->GetValue(time));
 
     LayerAnimationController* controller_impl =
-        host_impl->rootLayer()->layerAnimationController();
+        host_impl->rootLayer()->layer_animation_controller();
     Animation* animation_impl =
         controller_impl->GetAnimation(0, Animation::Opacity);
 
@@ -302,7 +302,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
 
   virtual void notifyAnimationStarted(double time) OVERRIDE {
     LayerAnimationController* controller =
-        m_layerTreeHost->rootLayer()->layerAnimationController();
+        m_layerTreeHost->rootLayer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     main_start_time_ = animation->start_time();
@@ -316,7 +316,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
       LayerTreeHostImpl* impl_host,
       bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
-        impl_host->rootLayer()->layerAnimationController();
+        impl_host->rootLayer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     if (!animation)
@@ -352,7 +352,7 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents :
 
   virtual void notifyAnimationFinished(double time) OVERRIDE {
     LayerAnimationController* controller =
-        m_layerTreeHost->rootLayer()->layerAnimationController();
+        m_layerTreeHost->rootLayer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     if (animation)
@@ -376,7 +376,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity :
   }
 
   virtual void setupTree() OVERRIDE {
-    update_check_layer_->setOpacity(0);
+    update_check_layer_->SetOpacity(0);
     m_layerTreeHost->setRootLayer(update_check_layer_);
     LayerTreeHostAnimationTest::setupTree();
   }
@@ -390,7 +390,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity :
   }
 
   virtual void afterTest() OVERRIDE {
-    // update() should have been called once, proving that the layer was not
+    // Update() should have been called once, proving that the layer was not
     // skipped.
     EXPECT_EQ(1, update_check_layer_->update_count());
 
@@ -419,18 +419,18 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation :
 
   virtual void didCommit() OVERRIDE {
     if (m_layerTreeHost->commitNumber() == 1) {
-      scoped_refptr<Layer> layer = Layer::create();
-      layer->setLayerAnimationDelegate(this);
+      scoped_refptr<Layer> layer = Layer::Create();
+      layer->set_layer_animation_delegate(this);
 
       // Any valid AnimationCurve will do here.
       scoped_ptr<AnimationCurve> curve(EaseTimingFunction::create());
       scoped_ptr<Animation> animation(
           Animation::Create(curve.Pass(), 1, 1,
                                   Animation::Opacity));
-      layer->layerAnimationController()->AddAnimation(animation.Pass());
+      layer->layer_animation_controller()->AddAnimation(animation.Pass());
 
       // We add the animation *before* attaching the layer to the tree.
-      m_layerTreeHost->rootLayer()->addChild(layer);
+      m_layerTreeHost->rootLayer()->AddChild(layer);
     }
   }
 
@@ -515,7 +515,7 @@ class LayerTreeHostAnimationTestContinuousAnimate :
   }
 
   virtual void layout() OVERRIDE {
-    m_layerTreeHost->rootLayer()->setNeedsDisplay();
+    m_layerTreeHost->rootLayer()->SetNeedsDisplay();
   }
 
   virtual void commitCompleteOnThread(LayerTreeHostImpl*) OVERRIDE {

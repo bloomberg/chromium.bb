@@ -364,8 +364,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
       last_ended_frame_(0),
       disable_schedule_composite_(false),
       compositor_lock_(NULL) {
-  root_web_layer_ = cc::Layer::create();
-  root_web_layer_->setAnchorPoint(gfx::PointF(0.f, 0.f));
+  root_web_layer_ = cc::Layer::Create();
+  root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
@@ -440,9 +440,9 @@ void Compositor::SetRootLayer(Layer* root_layer) {
   root_layer_ = root_layer;
   if (root_layer_ && !root_layer_->GetCompositor())
     root_layer_->SetCompositor(this);
-  root_web_layer_->removeAllChildren();
+  root_web_layer_->RemoveAllChildren();
   if (root_layer_)
-    root_web_layer_->addChild(root_layer_->cc_layer());
+    root_web_layer_->AddChild(root_layer_->cc_layer());
 }
 
 void Compositor::SetHostHasTransparentBackground(
@@ -492,7 +492,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
     host_->setViewportSize(size_in_pixel, size_in_pixel);
-    root_web_layer_->setBounds(size_in_pixel);
+    root_web_layer_->SetBounds(size_in_pixel);
   }
   if (device_scale_factor_ != scale) {
     device_scale_factor_ = scale;

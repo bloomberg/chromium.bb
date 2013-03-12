@@ -210,8 +210,8 @@ gfx::RectF DamageTracker::TrackDamageFromSurfaceMask(
   // Currently, if there is any change to the mask, we choose to damage the
   // entire surface. This could potentially be optimized later, but it is not
   // expected to be a common case.
-  if (target_surface_mask_layer->layerPropertyChanged() ||
-      !target_surface_mask_layer->updateRect().IsEmpty()) {
+  if (target_surface_mask_layer->LayerPropertyChanged() ||
+      !target_surface_mask_layer->update_rect().IsEmpty()) {
     damage_rect = gfx::RectF(gfx::PointF(),
                              target_surface_mask_layer->bounds());
   }
@@ -242,9 +242,9 @@ static bool LayerNeedsToRedrawOntoItsTargetSurface(LayerImpl* layer) {
   // However, if the layer DOES own a surface, then the SurfacePropertyChanged 
   // flag should not be used here, because that flag represents whether the
   // layer's surface has changed.
-  if (layer->renderSurface())
-    return layer->layerPropertyChanged();
-  return layer->layerPropertyChanged() || layer->layerSurfacePropertyChanged();
+  if (layer->render_surface())
+    return layer->LayerPropertyChanged();
+  return layer->LayerPropertyChanged() || layer->LayerSurfacePropertyChanged();
 }
 
 void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
@@ -272,8 +272,8 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
       RemoveRectFromCurrentFrame(layer->id(), &layer_is_new);
 
   gfx::RectF rect_in_target_space = MathUtil::mapClippedRect(
-      layer->drawTransform(),
-      gfx::RectF(gfx::PointF(), layer->contentBounds()));
+      layer->draw_transform(),
+      gfx::RectF(gfx::PointF(), layer->content_bounds()));
   SaveRectForNextFrame(layer->id(), rect_in_target_space);
 
   if (layer_is_new || LayerNeedsToRedrawOntoItsTargetSurface(layer)) {
@@ -284,13 +284,13 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
     // The layer's old region is now exposed on the target surface, too.
     // Note old_rect_in_target_space is already in target space.
     target_damage_rect->Union(old_rect_in_target_space);
-  } else if (!layer->updateRect().IsEmpty()) {
+  } else if (!layer->update_rect().IsEmpty()) {
     // If the layer properties haven't changed, then the the target surface is
     // only affected by the layer's update area, which could be empty.
     gfx::RectF update_content_rect =
-        layer->layerRectToContentRect(layer->updateRect());
+        layer->LayerRectToContentRect(layer->update_rect());
     gfx::RectF update_rect_in_target_space =
-        MathUtil::mapClippedRect(layer->drawTransform(), update_content_rect);
+        MathUtil::mapClippedRect(layer->draw_transform(), update_content_rect);
     target_damage_rect->Union(update_rect_in_target_space);
   }
 }
@@ -312,7 +312,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
   //      as well, and that damage should propagate to the target surface.
   //
 
-  RenderSurfaceImpl* render_surface = layer->renderSurface();
+  RenderSurfaceImpl* render_surface = layer->render_surface();
 
   bool surface_is_new = false;
   gfx::RectF old_surface_rect = RemoveRectFromCurrentFrame(layer->id(),
@@ -326,7 +326,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
   gfx::RectF damage_rect_in_local_space;
   if (surface_is_new ||
       render_surface->SurfacePropertyChanged() ||
-      layer->layerSurfacePropertyChanged()) {
+      layer->LayerSurfacePropertyChanged()) {
     // The entire surface contributes damage.
     damage_rect_in_local_space = render_surface->content_rect();
 
@@ -346,7 +346,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
         MathUtil::mapClippedRect(draw_transform, damage_rect_in_local_space);
     target_damage_rect->Union(damage_rect_in_target_space);
 
-    if (layer->replicaLayer()) {
+    if (layer->replica_layer()) {
       const gfx::Transform& replica_draw_transform =
           render_surface->replica_draw_transform();
       target_damage_rect->Union(MathUtil::mapClippedRect(
@@ -356,8 +356,8 @@ void DamageTracker::ExtendDamageForRenderSurface(
 
   // If there was damage on the replica's mask, then the target surface receives
   // that damage as well.
-  if (layer->replicaLayer() && layer->replicaLayer()->maskLayer()) {
-    LayerImpl* replica_mask_layer = layer->replicaLayer()->maskLayer();
+  if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
+    LayerImpl* replica_mask_layer = layer->replica_layer()->mask_layer();
 
     bool replica_is_new = false;
     RemoveRectFromCurrentFrame(replica_mask_layer->id(), &replica_is_new);
@@ -372,8 +372,8 @@ void DamageTracker::ExtendDamageForRenderSurface(
     // In the current implementation, a change in the replica mask damages the
     // entire replica region.
     if (replica_is_new ||
-        replica_mask_layer->layerPropertyChanged() ||
-        !replica_mask_layer->updateRect().IsEmpty())
+        replica_mask_layer->LayerPropertyChanged() ||
+        !replica_mask_layer->update_rect().IsEmpty())
       target_damage_rect->Union(replica_mask_layer_rect);
   }
 
@@ -383,10 +383,10 @@ void DamageTracker::ExtendDamageForRenderSurface(
   // those pixels from the surface with only the contents of layers below this
   // one in them. This means we need to redraw any pixels in the surface being
   // used for the blur in this layer this frame.
-  if (layer->backgroundFilters().hasFilterThatMovesPixels()) {
+  if (layer->background_filters().hasFilterThatMovesPixels()) {
     ExpandDamageRectInsideRectWithFilters(target_damage_rect,
                                           surface_rect_in_target_space,
-                                          layer->backgroundFilters());
+                                          layer->background_filters());
   }
 }
 

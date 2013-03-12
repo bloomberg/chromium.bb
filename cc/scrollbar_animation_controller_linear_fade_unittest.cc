@@ -24,13 +24,13 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_scrollLayer = LayerImpl::create(m_hostImpl.activeTree(), 1);
+        m_scrollLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
         scoped_ptr<ScrollbarGeometryFixedThumb> geometry(ScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometry::create(false)));
         m_scrollbarLayer = ScrollbarLayerImpl::Create(m_hostImpl.activeTree(), 2, geometry.Pass());
 
-        m_scrollLayer->setMaxScrollOffset(gfx::Vector2d(50, 50));
-        m_scrollLayer->setBounds(gfx::Size(50, 50));
-        m_scrollLayer->setHorizontalScrollbarLayer(m_scrollbarLayer.get());
+        m_scrollLayer->SetMaxScrollOffset(gfx::Vector2d(50, 50));
+        m_scrollLayer->SetBounds(gfx::Size(50, 50));
+        m_scrollLayer->SetHorizontalScrollbarLayer(m_scrollbarLayer.get());
 
         m_scrollbarController = ScrollbarAnimationControllerLinearFade::create(m_scrollLayer.get(), 2, 3);
     }

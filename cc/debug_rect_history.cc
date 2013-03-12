@@ -56,11 +56,11 @@ void DebugRectHistory::savePaintRects(LayerImpl* layer)
     // regardless of whether this layer is skipped for actual drawing or not. Therefore
     // we traverse recursively over all layers, not just the render surface list.
 
-    if (!layer->updateRect().IsEmpty() && layer->drawsContent()) {
-        float widthScale = layer->contentBounds().width() / static_cast<float>(layer->bounds().width());
-        float heightScale = layer->contentBounds().height() / static_cast<float>(layer->bounds().height());
-        gfx::RectF updateContentRect = gfx::ScaleRect(layer->updateRect(), widthScale, heightScale);
-        m_debugRects.push_back(DebugRect(PaintRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), updateContentRect)));
+    if (!layer->update_rect().IsEmpty() && layer->DrawsContent()) {
+        float widthScale = layer->content_bounds().width() / static_cast<float>(layer->bounds().width());
+        float heightScale = layer->content_bounds().height() / static_cast<float>(layer->bounds().height());
+        gfx::RectF updateContentRect = gfx::ScaleRect(layer->update_rect(), widthScale, heightScale);
+        m_debugRects.push_back(DebugRect(PaintRectType, MathUtil::mapClippedRect(layer->screen_space_transform(), updateContentRect)));
     }
 
     for (unsigned i = 0; i < layer->children().size(); ++i)
@@ -71,7 +71,7 @@ void DebugRectHistory::savePropertyChangedRects(const std::vector<LayerImpl*>& r
 {
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
         LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
+        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->render_surface();
         DCHECK(renderSurface);
 
         const std::vector<LayerImpl*>& layerList = renderSurface->layer_list();
@@ -81,11 +81,11 @@ void DebugRectHistory::savePropertyChangedRects(const std::vector<LayerImpl*>& r
             if (LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerImpl>(layer, renderSurfaceLayer->id()))
                 continue;
 
-            if (layer->layerIsAlwaysDamaged())
+            if (layer->LayerIsAlwaysDamaged())
                 continue;
 
-            if (layer->layerPropertyChanged() || layer->layerSurfacePropertyChanged())
-                m_debugRects.push_back(DebugRect(PropertyChangedRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), gfx::RectF(gfx::PointF(), layer->contentBounds()))));
+            if (layer->LayerPropertyChanged() || layer->LayerSurfacePropertyChanged())
+                m_debugRects.push_back(DebugRect(PropertyChangedRectType, MathUtil::mapClippedRect(layer->screen_space_transform(), gfx::RectF(gfx::PointF(), layer->content_bounds()))));
         }
     }
 }
@@ -94,7 +94,7 @@ void DebugRectHistory::saveSurfaceDamageRects(const std::vector<LayerImpl* >& re
 {
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
         LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
+        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->render_surface();
         DCHECK(renderSurface);
 
         m_debugRects.push_back(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screen_space_transform(), renderSurface->damage_tracker()->current_damage_rect())));
@@ -105,12 +105,12 @@ void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& rend
 {
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
         LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
+        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->render_surface();
         DCHECK(renderSurface);
 
         m_debugRects.push_back(DebugRect(ScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->screen_space_transform(), renderSurface->content_rect())));
 
-        if (renderSurfaceLayer->replicaLayer())
+        if (renderSurfaceLayer->replica_layer())
             m_debugRects.push_back(DebugRect(ReplicaScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->replica_screen_space_transform(), renderSurface->content_rect())));
     }
 }

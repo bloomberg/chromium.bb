@@ -19,18 +19,18 @@ DelegatedRendererLayer::DelegatedRendererLayer()
 
 DelegatedRendererLayer::~DelegatedRendererLayer() {}
 
-scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl(
+scoped_ptr<LayerImpl> DelegatedRendererLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return DelegatedRendererLayerImpl::Create(
-      tree_impl, m_layerId).PassAs<LayerImpl>();
+      tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-bool DelegatedRendererLayer::drawsContent() const {
-  return Layer::drawsContent() && !frame_size_.IsEmpty();
+bool DelegatedRendererLayer::DrawsContent() const {
+  return Layer::DrawsContent() && !frame_size_.IsEmpty();
 }
 
-void DelegatedRendererLayer::pushPropertiesTo(LayerImpl* impl) {
-  Layer::pushPropertiesTo(impl);
+void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
+  Layer::PushPropertiesTo(impl);
 
   DelegatedRendererLayerImpl* delegated_impl =
       static_cast<DelegatedRendererLayerImpl*>(impl);
@@ -59,7 +59,7 @@ void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
   if (display_size_ == size)
     return;
   display_size_ = size;
-  setNeedsCommit();
+  SetNeedsCommit();
 }
 
 void DelegatedRendererLayer::SetFrameData(
@@ -89,7 +89,7 @@ void DelegatedRendererLayer::SetFrameData(
   } else {
     frame_size_ = gfx::Size();
   }
-  setNeedsCommit();
+  SetNeedsCommit();
 }
 
 void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(

@@ -21,9 +21,9 @@ class VideoLayerImpl;
 // A Layer that contains a Video element.
 class CC_EXPORT VideoLayer : public Layer {
 public:
-    static scoped_refptr<VideoLayer> create(VideoFrameProvider*);
+    static scoped_refptr<VideoLayer> Create(VideoFrameProvider*);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
 private:
     explicit VideoLayer(VideoFrameProvider*);

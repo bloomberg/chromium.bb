@@ -267,8 +267,8 @@ void LayerSorter::CreateGraphNodes(LayerList::iterator first,
   for (LayerList::const_iterator it = first; it < last; it++) {
     nodes_.push_back(GraphNode(*it));
     GraphNode& node = nodes_.at(nodes_.size() - 1);
-    RenderSurfaceImpl* render_surface = node.layer->renderSurface();
-    if (!node.layer->drawsContent() && !render_surface)
+    RenderSurfaceImpl* render_surface = node.layer->render_surface();
+    if (!node.layer->DrawsContent() && !render_surface)
       continue;
 
     DVLOG(2) << "Layer " << node.layer->id() <<
@@ -282,9 +282,9 @@ void LayerSorter::CreateGraphNodes(LayerList::iterator first,
       layer_width = render_surface->content_rect().width();
       layer_height = render_surface->content_rect().height();
     } else {
-      draw_transform = node.layer->drawTransform();
-      layer_width = node.layer->contentBounds().width();
-      layer_height = node.layer->contentBounds().height();
+      draw_transform = node.layer->draw_transform();
+      layer_width = node.layer->content_bounds().width();
+      layer_height = node.layer->content_bounds().height();
     }
 
     node.shape = LayerShape(layer_width, layer_height, draw_transform);
@@ -305,11 +305,11 @@ void LayerSorter::CreateGraphEdges() {
 
   for (size_t na = 0; na < nodes_.size(); na++) {
     GraphNode& node_a = nodes_[na];
-    if (!node_a.layer->drawsContent() && !node_a.layer->renderSurface())
+    if (!node_a.layer->DrawsContent() && !node_a.layer->render_surface())
       continue;
     for (size_t nb = na + 1; nb < nodes_.size(); nb++) {
       GraphNode& node_b = nodes_[nb];
-      if (!node_b.layer->drawsContent() && !node_b.layer->renderSurface())
+      if (!node_b.layer->DrawsContent() && !node_b.layer->render_surface())
         continue;
       float weight = 0.f;
       ABCompareResult overlap_result = CheckOverlap(&node_a.shape,

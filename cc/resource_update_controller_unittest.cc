@@ -350,7 +350,7 @@ protected:
 
 class FakeResourceUpdateController : public cc::ResourceUpdateController {
 public:
-    static scoped_ptr<FakeResourceUpdateController> create(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
+    static scoped_ptr<FakeResourceUpdateController> Create(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     {
         return make_scoped_ptr(new FakeResourceUpdateController(client, thread, queue.Pass(), resourceProvider));
     }
@@ -390,7 +390,7 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         implThreadAndMainThreadBlocked(&m_proxy);
-    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
+    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::Create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
         controller->Now() + base::TimeDelta::FromMilliseconds(1));
@@ -437,7 +437,7 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         implThreadAndMainThreadBlocked(&m_proxy);
-    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
+    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::Create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
         controller->Now() + base::TimeDelta::FromMilliseconds(1));
@@ -476,7 +476,7 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         implThreadAndMainThreadBlocked(&m_proxy);
-    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
+    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::Create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
         controller->Now() + base::TimeDelta::FromMilliseconds(1));

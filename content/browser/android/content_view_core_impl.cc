@@ -163,7 +163,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      root_layer_(cc::Layer::create()),
+      root_layer_(cc::Layer::Create()),
       tab_crashed_(false),
       input_events_delivered_at_vsync_(input_events_delivered_at_vsync),
       renderer_frame_pending_(false),
@@ -644,11 +644,11 @@ gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
-  root_layer_->addChild(layer);
+  root_layer_->AddChild(layer);
 }
 
 void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
-  layer->removeFromParent();
+  layer->RemoveFromParent();
 }
 
 void ContentViewCoreImpl::DidProduceRendererFrame() {

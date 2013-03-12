@@ -112,8 +112,8 @@ Layer::~Layer() {
     layer_mask_back_link_->SetMaskLayer(NULL);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
-  cc_layer_->removeLayerAnimationEventObserver(this);
-  cc_layer_->removeFromParent();
+  cc_layer_->RemoveLayerAnimationEventObserver(this);
+  cc_layer_->RemoveFromParent();
 }
 
 Compositor* Layer::GetCompositor() {
@@ -143,7 +143,7 @@ void Layer::Add(Layer* child) {
     child->parent_->Remove(child);
   child->parent_ = this;
   children_.push_back(child);
-  cc_layer_->addChild(child->cc_layer_);
+  cc_layer_->AddChild(child->cc_layer_);
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
   child->UpdateIsDrawn();
   if (GetCompositor())
@@ -156,7 +156,7 @@ void Layer::Remove(Layer* child) {
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = NULL;
-  child->cc_layer_->removeFromParent();
+  child->cc_layer_->RemoveFromParent();
 }
 
 void Layer::StackAtTop(Layer* child) {
@@ -224,11 +224,11 @@ gfx::Rect Layer::GetTargetBounds() const {
 }
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
-  cc_layer_->setMasksToBounds(masks_to_bounds);
+  cc_layer_->SetMasksToBounds(masks_to_bounds);
 }
 
 bool Layer::GetMasksToBounds() const {
-  return cc_layer_->masksToBounds();
+  return cc_layer_->masks_to_bounds();
 }
 
 void Layer::SetOpacity(float opacity) {
@@ -299,7 +299,7 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
   if (layer_mask_)
     layer_mask_->layer_mask_back_link_ = NULL;
   layer_mask_ = layer_mask;
-  cc_layer_->setMaskLayer(
+  cc_layer_->SetMaskLayer(
       layer_mask ? layer_mask->cc_layer() : NULL);
   // We need to reference the linked object so that it can properly break the
   // link to us when it gets deleted.
@@ -341,7 +341,7 @@ void Layer::SetLayerFilters() {
         layer_brightness_));
   }
 
-  cc_layer_->setFilters(filters);
+  cc_layer_->SetFilters(filters);
 }
 
 void Layer::SetLayerBackgroundFilters() {
@@ -359,7 +359,7 @@ void Layer::SetLayerBackgroundFilters() {
         background_blur_radius_));
   }
 
-  cc_layer_->setBackgroundFilters(filters);
+  cc_layer_->SetBackgroundFilters(filters);
 }
 
 float Layer::GetTargetOpacity() const {
@@ -391,7 +391,7 @@ void Layer::UpdateIsDrawn() {
     return;
 
   is_drawn_ = updated_is_drawn;
-  cc_layer_->setIsDrawable(is_drawn_ && type_ != LAYER_NOT_DRAWN);
+  cc_layer_->SetIsDrawable(is_drawn_ && type_ != LAYER_NOT_DRAWN);
 
   for (size_t i = 0; i < children_.size(); ++i) {
     children_[i]->UpdateIsDrawn();
@@ -424,7 +424,7 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 
   fills_bounds_opaquely_ = fills_bounds_opaquely;
 
-  cc_layer_->setContentsOpaque(fills_bounds_opaquely);
+  cc_layer_->SetContentsOpaque(fills_bounds_opaquely);
 }
 
 void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
@@ -432,13 +432,13 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     texture_layer_->willModifyTexture();
   // TODO(piman): delegated_renderer_layer_ cleanup.
 
-  cc_layer_->removeAllChildren();
+  cc_layer_->RemoveAllChildren();
   if (parent_) {
     DCHECK(parent_->cc_layer_);
-    parent_->cc_layer_->replaceChild(cc_layer_, new_layer);
+    parent_->cc_layer_->ReplaceChild(cc_layer_, new_layer);
   }
-  cc_layer_->removeLayerAnimationEventObserver(this);
-  new_layer->setOpacity(cc_layer_->opacity());
+  cc_layer_->RemoveLayerAnimationEventObserver(this);
+  new_layer->SetOpacity(cc_layer_->opacity());
 
   cc_layer_= new_layer;
   content_layer_ = NULL;
@@ -446,15 +446,15 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   texture_layer_ = NULL;
   delegated_renderer_layer_ = NULL;
 
-  cc_layer_->addLayerAnimationEventObserver(this);
+  cc_layer_->AddLayerAnimationEventObserver(this);
   for (size_t i = 0; i < children_.size(); ++i) {
     DCHECK(children_[i]->cc_layer_);
-    cc_layer_->addChild(children_[i]->cc_layer_);
+    cc_layer_->AddChild(children_[i]->cc_layer_);
   }
-  cc_layer_->setAnchorPoint(gfx::PointF());
-  cc_layer_->setContentsOpaque(fills_bounds_opaquely_);
-  cc_layer_->setForceRenderSurface(force_render_surface_);
-  cc_layer_->setIsDrawable(IsDrawn());
+  cc_layer_->SetAnchorPoint(gfx::PointF());
+  cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
+  cc_layer_->SetForceRenderSurface(force_render_surface_);
+  cc_layer_->SetIsDrawable(IsDrawn());
 }
 
 void Layer::SetExternalTexture(Texture* texture) {
@@ -467,13 +467,13 @@ void Layer::SetExternalTexture(Texture* texture) {
     // Switch to a different type of layer.
     if (has_texture) {
       scoped_refptr<cc::TextureLayer> new_layer =
-          cc::TextureLayer::create(this);
+          cc::TextureLayer::Create(this);
       new_layer->setFlipped(texture_->flipped());
       SwitchToLayer(new_layer);
       texture_layer_ = new_layer;
     } else {
       scoped_refptr<cc::ContentLayer> new_layer =
-          cc::ContentLayer::create(this);
+          cc::ContentLayer::Create(this);
       SwitchToLayer(new_layer);
       content_layer_ = new_layer;
     }
@@ -496,7 +496,7 @@ void Layer::SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
       delegated_renderer_layer_ = new_layer;
     } else {
       scoped_refptr<cc::ContentLayer> new_layer =
-          cc::ContentLayer::create(this);
+          cc::ContentLayer::Create(this);
       SwitchToLayer(new_layer);
       content_layer_ = new_layer;
     }
@@ -548,7 +548,7 @@ void Layer::SendDamagedRects() {
           sk_damaged.height());
 
       gfx::Rect damaged_in_pixel = ConvertRectToPixel(this, damaged);
-      cc_layer_->setNeedsDisplayRect(damaged_in_pixel);
+      cc_layer_->SetNeedsDisplayRect(damaged_in_pixel);
     }
     damaged_region_.setEmpty();
   }
@@ -614,7 +614,7 @@ void Layer::SetForceRenderSurface(bool force) {
     return;
 
   force_render_surface_ = force;
-  cc_layer_->setForceRenderSurface(force_render_surface_);
+  cc_layer_->SetForceRenderSurface(force_render_surface_);
 }
 
 void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {
@@ -641,8 +641,8 @@ void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
-  child->cc_layer_->removeFromParent();
-  cc_layer_->insertChild(child->cc_layer_, dest_i);
+  child->cc_layer_->RemoveFromParent();
+  cc_layer_->InsertChild(child->cc_layer_, dest_i);
 }
 
 bool Layer::ConvertPointForAncestor(const Layer* ancestor,
@@ -714,7 +714,7 @@ void Layer::SetTransformImmediately(const gfx::Transform& transform) {
 }
 
 void Layer::SetOpacityImmediately(float opacity) {
-  cc_layer_->setOpacity(opacity);
+  cc_layer_->SetOpacity(opacity);
   ScheduleDraw();
 }
 
@@ -739,7 +739,7 @@ void Layer::SetGrayscaleImmediately(float grayscale) {
 void Layer::SetColorImmediately(SkColor color) {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
   // WebColor is equivalent to SkColor, per WebColor.h.
-  solid_color_layer_->setBackgroundColor(static_cast<WebKit::WebColor>(color));
+  solid_color_layer_->SetBackgroundColor(static_cast<WebKit::WebColor>(color));
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
 }
 
@@ -804,7 +804,7 @@ SkColor Layer::GetColorForAnimation() const {
   // The NULL check is here since this is invoked regardless of whether we have
   // been configured as LAYER_SOLID_COLOR.
   return solid_color_layer_.get() ?
-      solid_color_layer_->backgroundColor() : SK_ColorBLACK;
+      solid_color_layer_->background_color() : SK_ColorBLACK;
 }
 
 void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
@@ -866,13 +866,13 @@ void Layer::CreateWebLayer() {
     solid_color_layer_ = cc::SolidColorLayer::Create();
     cc_layer_ = solid_color_layer_.get();
   } else {
-    content_layer_ = cc::ContentLayer::create(this);
+    content_layer_ = cc::ContentLayer::Create(this);
     cc_layer_ = content_layer_.get();
   }
-  cc_layer_->setAnchorPoint(gfx::PointF());
-  cc_layer_->setContentsOpaque(true);
-  cc_layer_->setIsDrawable(type_ != LAYER_NOT_DRAWN);
-  cc_layer_->addLayerAnimationEventObserver(this);
+  cc_layer_->SetAnchorPoint(gfx::PointF());
+  cc_layer_->SetContentsOpaque(true);
+  cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
+  cc_layer_->AddLayerAnimationEventObserver(this);
 }
 
 void Layer::RecomputeTransform() {
@@ -890,7 +890,7 @@ void Layer::RecomputeTransform() {
   translate.Translate(bounds_.x(), bounds_.y());
   transform.ConcatTransform(translate);
   transform.ConcatTransform(scale_translate);
-  cc_layer_->setTransform(transform);
+  cc_layer_->SetTransform(transform);
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
@@ -914,7 +914,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
         ConvertSizeToPixel(this, delegated_frame_size_in_dip_));
     size.ClampToMax(delegated_frame_size_in_dip_);
   }
-  cc_layer_->setBounds(ConvertSizeToPixel(this, size));
+  cc_layer_->SetBounds(ConvertSizeToPixel(this, size));
 }
 
 }  // namespace ui

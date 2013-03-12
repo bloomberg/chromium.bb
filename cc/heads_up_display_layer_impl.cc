@@ -80,14 +80,14 @@ HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl()
 {
 }
 
-scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return HeadsUpDisplayLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
+    return HeadsUpDisplayLayerImpl::Create(treeImpl, id()).PassAs<LayerImpl>();
 }
 
-void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
+void HeadsUpDisplayLayerImpl::WillDraw(ResourceProvider* resourceProvider)
 {
-    LayerImpl::willDraw(resourceProvider);
+    LayerImpl::WillDraw(resourceProvider);
 
     if (!m_hudTexture)
         m_hudTexture = ScopedResource::create(resourceProvider);
@@ -108,15 +108,15 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
     }
 }
 
-void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
+void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData)
 {
     if (!m_hudTexture->id())
         return;
 
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
+    SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
 
     gfx::Rect quadRect(gfx::Point(), bounds());
-    gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+    gfx::Rect opaqueRect(contents_opaque() ? quadRect : gfx::Rect());
     bool premultipliedAlpha = true;
     gfx::PointF uv_top_left(0.f, 0.f);
     gfx::PointF uv_bottom_right(1.f, 1.f);
@@ -124,7 +124,7 @@ void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& a
     bool flipped = false;
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
     quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_hudTexture->id(), premultipliedAlpha, uv_top_left, uv_bottom_right, vertex_opacity, flipped);
-    quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+    quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
 void HeadsUpDisplayLayerImpl::updateHudTexture(ResourceProvider* resourceProvider)
@@ -149,14 +149,14 @@ void HeadsUpDisplayLayerImpl::updateHudTexture(ResourceProvider* resourceProvide
     const SkBitmap* bitmap = &m_hudCanvas->getDevice()->accessBitmap(false);
     SkAutoLockPixels locker(*bitmap);
 
-    gfx::Rect layerRect(gfx::Point(), bounds());
+    gfx::Rect layerRect(bounds());
     DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
     resourceProvider->SetPixels(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, gfx::Vector2d());
 }
 
-void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)
+void HeadsUpDisplayLayerImpl::DidDraw(ResourceProvider* resourceProvider)
 {
-    LayerImpl::didDraw(resourceProvider);
+    LayerImpl::DidDraw(resourceProvider);
 
     if (!m_hudTexture->id())
         return;
@@ -167,33 +167,33 @@ void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)
     DCHECK(!resourceProvider->InUseByConsumer(m_hudTexture->id()));
 }
 
-void HeadsUpDisplayLayerImpl::didLoseOutputSurface()
+void HeadsUpDisplayLayerImpl::DidLoseOutputSurface()
 {
     m_hudTexture.reset();
 }
 
-bool HeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
+bool HeadsUpDisplayLayerImpl::LayerIsAlwaysDamaged() const
 {
     return true;
 }
 
 void HeadsUpDisplayLayerImpl::updateHudContents()
 {
-    const LayerTreeDebugState& debugState = layerTreeImpl()->debug_state();
+    const LayerTreeDebugState& debugState = layer_tree_impl()->debug_state();
 
     // Don't update numbers every frame so text is readable.
-    base::TimeTicks now = layerTreeImpl()->CurrentFrameTime();
+    base::TimeTicks now = layer_tree_impl()->CurrentFrameTime();
     if (base::TimeDelta(now - m_timeOfLastGraphUpdate).InSecondsF() > 0.25f) {
         m_timeOfLastGraphUpdate = now;
 
         if (debugState.showFPSCounter) {
-            FrameRateCounter* fpsCounter = layerTreeImpl()->frame_rate_counter();
+            FrameRateCounter* fpsCounter = layer_tree_impl()->frame_rate_counter();
             m_fpsGraph.value = fpsCounter->getAverageFPS();
             fpsCounter->getMinAndMaxFPS(m_fpsGraph.min, m_fpsGraph.max);
         }
 
         if (debugState.continuousPainting) {
-            PaintTimeCounter* paintTimeCounter = layerTreeImpl()->paint_time_counter();
+            PaintTimeCounter* paintTimeCounter = layer_tree_impl()->paint_time_counter();
             base::TimeDelta latest, min, max;
 
             if (paintTimeCounter->End())
@@ -206,7 +206,7 @@ void HeadsUpDisplayLayerImpl::updateHudContents()
         }
 
         if (debugState.showMemoryStats()) {
-            MemoryHistory* memoryHistory = layerTreeImpl()->memory_history();
+            MemoryHistory* memoryHistory = layer_tree_impl()->memory_history();
             if (memoryHistory->End())
                 m_memoryEntry = **memoryHistory->End();
             else
@@ -220,20 +220,20 @@ void HeadsUpDisplayLayerImpl::updateHudContents()
 
 void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas) const
 {
-    const LayerTreeDebugState& debugState = layerTreeImpl()->debug_state();
+    const LayerTreeDebugState& debugState = layer_tree_impl()->debug_state();
 
     if (debugState.showHudRects())
-        drawDebugRects(canvas, layerTreeImpl()->debug_rect_history());
+        drawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
 
     if (debugState.showPlatformLayerTree)
         drawPlatformLayerTree(canvas);
 
     SkRect area = SkRect::MakeEmpty();
     if (debugState.continuousPainting)
-        area = drawPaintTimeDisplay(canvas, layerTreeImpl()->paint_time_counter(), 0, 0);
+        area = drawPaintTimeDisplay(canvas, layer_tree_impl()->paint_time_counter(), 0, 0);
     // Don't show the FPS display when continuous painting is enabled, because it would show misleading numbers.
     else if (debugState.showFPSCounter)
-        area = drawFPSDisplay(canvas, layerTreeImpl()->frame_rate_counter(), 0, 0);
+        area = drawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
 
     if (debugState.showMemoryStats())
         drawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
@@ -284,7 +284,7 @@ void HeadsUpDisplayLayerImpl::drawPlatformLayerTree(SkCanvas* canvas) const
     SkPaint paint = createPaint();
     drawGraphBackground(canvas, &paint, SkRect::MakeXYWH(0, 0, bounds().width(), bounds().height()));
 
-    std::string layerTree = layerTreeImpl()->layer_tree_as_text();
+    std::string layerTree = layer_tree_impl()->layer_tree_as_text();
     std::vector<std::string> lines;
     base::SplitString(layerTree, '\n', &lines);
 
@@ -481,7 +481,7 @@ SkRect HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, const Pai
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory) const
 {
     const std::vector<DebugRect>& debugRects = debugRectHistory->debugRects();
-    float rectScale = 1 / layerTreeImpl()->device_scale_factor();
+    float rectScale = 1 / layer_tree_impl()->device_scale_factor();
     SkPaint paint = createPaint();
 
     canvas->save();
@@ -496,37 +496,37 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
         case PaintRectType:
             strokeColor = DebugColors::PaintRectBorderColor();
             fillColor = DebugColors::PaintRectFillColor();
-            strokeWidth = DebugColors::PaintRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::PaintRectBorderWidth(layer_tree_impl());
             break;
         case PropertyChangedRectType:
             strokeColor = DebugColors::PropertyChangedRectBorderColor();
             fillColor = DebugColors::PropertyChangedRectFillColor();
-            strokeWidth = DebugColors::PropertyChangedRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::PropertyChangedRectBorderWidth(layer_tree_impl());
             break;
         case SurfaceDamageRectType:
             strokeColor = DebugColors::SurfaceDamageRectBorderColor();
             fillColor = DebugColors::SurfaceDamageRectFillColor();
-            strokeWidth = DebugColors::SurfaceDamageRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::SurfaceDamageRectBorderWidth(layer_tree_impl());
             break;
         case ReplicaScreenSpaceRectType:
             strokeColor = DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor();
             fillColor = DebugColors::ScreenSpaceSurfaceReplicaRectFillColor();
-            strokeWidth = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth(layer_tree_impl());
             break;
         case ScreenSpaceRectType:
             strokeColor = DebugColors::ScreenSpaceLayerRectBorderColor();
             fillColor = DebugColors::ScreenSpaceLayerRectFillColor();
-            strokeWidth = DebugColors::ScreenSpaceLayerRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::ScreenSpaceLayerRectBorderWidth(layer_tree_impl());
             break;
         case OccludingRectType:
             strokeColor = DebugColors::OccludingRectBorderColor();
             fillColor = DebugColors::OccludingRectFillColor();
-            strokeWidth = DebugColors::OccludingRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::OccludingRectBorderWidth(layer_tree_impl());
             break;
         case NonOccludingRectType:
             strokeColor = DebugColors::NonOccludingRectBorderColor();
             fillColor = DebugColors::NonOccludingRectFillColor();
-            strokeWidth = DebugColors::NonOccludingRectBorderWidth(layerTreeImpl());
+            strokeWidth = DebugColors::NonOccludingRectBorderWidth(layer_tree_impl());
             break;
         }
 
@@ -545,7 +545,7 @@ void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory*
     canvas->restore();
 }
 
-const char* HeadsUpDisplayLayerImpl::layerTypeAsString() const
+const char* HeadsUpDisplayLayerImpl::LayerTypeAsString() const
 {
     return "HeadsUpDisplayLayer";
 }

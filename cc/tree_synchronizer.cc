@@ -26,8 +26,8 @@ void collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_
     for (ScopedPtrVector<LayerImpl>::iterator it = children.begin(); it != children.end(); ++it)
         collectExistingLayerImplRecursive(oldLayers, children.take(it));
 
-    collectExistingLayerImplRecursive(oldLayers, layerImpl->takeMaskLayer());
-    collectExistingLayerImplRecursive(oldLayers, layerImpl->takeReplicaLayer());
+    collectExistingLayerImplRecursive(oldLayers, layerImpl->TakeMaskLayer());
+    collectExistingLayerImplRecursive(oldLayers, layerImpl->TakeReplicaLayer());
 
     int id = layerImpl->id();
     oldLayers.set(id, layerImpl.Pass());
@@ -67,7 +67,7 @@ scoped_ptr<LayerImpl> reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, Scop
     scoped_ptr<LayerImpl> layerImpl = oldLayers.take(layer->id());
 
     if (!layerImpl)
-        layerImpl = layer->createLayerImpl(treeImpl);
+        layerImpl = layer->CreateLayerImpl(treeImpl);
 
     newLayers[layer->id()] = layerImpl.get();
     return layerImpl.Pass();
@@ -81,16 +81,16 @@ scoped_ptr<LayerImpl> synchronizeTreesRecursiveInternal(RawPtrLayerImplMap& newL
 
     scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer, treeImpl);
 
-    layerImpl->clearChildList();
+    layerImpl->ClearChildList();
     for (size_t i = 0; i < layer->children().size(); ++i)
-        layerImpl->addChild(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->childAt(i), treeImpl));
+        layerImpl->AddChild(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->child_at(i), treeImpl));
 
-    layerImpl->setMaskLayer(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->maskLayer(), treeImpl));
-    layerImpl->setReplicaLayer(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->replicaLayer(), treeImpl));
+    layerImpl->SetMaskLayer(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->mask_layer(), treeImpl));
+    layerImpl->SetReplicaLayer(synchronizeTreesRecursiveInternal(newLayers, oldLayers, layer->replica_layer(), treeImpl));
 
     // Remove all dangling pointers. The pointers will be setup later in updateScrollbarLayerPointersRecursive phase
-    layerImpl->setHorizontalScrollbarLayer(0);
-    layerImpl->setVerticalScrollbarLayer(0);
+    layerImpl->SetHorizontalScrollbarLayer(NULL);
+    layerImpl->SetVerticalScrollbarLayer(NULL);
 
     return layerImpl.Pass();
 }
@@ -112,9 +112,9 @@ void updateScrollbarLayerPointersRecursiveInternal(const RawPtrLayerImplMap& new
         return;
 
     for (size_t i = 0; i < layer->children().size(); ++i)
-        updateScrollbarLayerPointersRecursiveInternal<LayerType, ScrollbarLayerType>(newLayers, layer->childAt(i));
+        updateScrollbarLayerPointersRecursiveInternal<LayerType, ScrollbarLayerType>(newLayers, layer->child_at(i));
 
-    ScrollbarLayerType* scrollbarLayer = layer->toScrollbarLayer();
+    ScrollbarLayerType* scrollbarLayer = layer->ToScrollbarLayer();
     if (!scrollbarLayer)
         return;
 
@@ -127,9 +127,9 @@ void updateScrollbarLayerPointersRecursiveInternal(const RawPtrLayerImplMap& new
     DCHECK(scrollLayerImpl);
 
     if (scrollbarLayer->Orientation() == WebKit::WebScrollbar::Horizontal)
-        scrollLayerImpl->setHorizontalScrollbarLayer(scrollbarLayerImpl);
+        scrollLayerImpl->SetHorizontalScrollbarLayer(scrollbarLayerImpl);
     else
-        scrollLayerImpl->setVerticalScrollbarLayer(scrollbarLayerImpl);
+        scrollLayerImpl->SetVerticalScrollbarLayer(scrollbarLayerImpl);
 }
 
 void updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer* layer)
@@ -151,16 +151,16 @@ void pushPropertiesInternal(LayerType* layer, LayerImpl* layerImpl)
     }
 
     DCHECK_EQ(layer->id(), layerImpl->id());
-    layer->pushPropertiesTo(layerImpl);
+    layer->PushPropertiesTo(layerImpl);
 
-    pushPropertiesInternal(layer->maskLayer(), layerImpl->maskLayer());
-    pushPropertiesInternal(layer->replicaLayer(), layerImpl->replicaLayer());
+    pushPropertiesInternal(layer->mask_layer(), layerImpl->mask_layer());
+    pushPropertiesInternal(layer->replica_layer(), layerImpl->replica_layer());
 
     const ScopedPtrVector<LayerImpl>& implChildren = layerImpl->children();
     DCHECK_EQ(layer->children().size(), implChildren.size());
 
     for (size_t i = 0; i < layer->children().size(); ++i) {
-        pushPropertiesInternal(layer->childAt(i), implChildren[i]);
+        pushPropertiesInternal(layer->child_at(i), implChildren[i]);
     }
 }
 

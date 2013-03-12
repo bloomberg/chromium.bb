@@ -42,7 +42,7 @@ SurfaceTextureTransportClient::~SurfaceTextureTransportClient() {
 
 scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
   // Use a SurfaceTexture to stream frames to the UI thread.
-  video_layer_ = cc::VideoLayer::create(this);
+  video_layer_ = cc::VideoLayer::Create(this);
 
   surface_texture_ = new SurfaceTextureBridge(0);
   surface_texture_->SetFrameAvailableCallback(
@@ -67,7 +67,7 @@ SurfaceTextureTransportClient::GetCompositingSurface(int surface_id) {
 
 void SurfaceTextureTransportClient::SetSize(const gfx::Size& size) {
   surface_texture_->SetDefaultBufferSize(size.width(), size.height());
-  video_layer_->setBounds(size);
+  video_layer_->SetBounds(size);
   video_frame_ = NULL;
 }
 
@@ -101,7 +101,7 @@ void SurfaceTextureTransportClient::PutCurrentFrame(
 }
 
 void SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable() {
-  video_layer_->setNeedsDisplay();
+  video_layer_->SetNeedsDisplay();
 }
 
 } // namespace content

@@ -27,7 +27,7 @@
 namespace cc {
 
 // static
-scoped_ptr<VideoLayerImpl> VideoLayerImpl::create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
+scoped_ptr<VideoLayerImpl> VideoLayerImpl::Create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
 {
     scoped_ptr<VideoLayerImpl> layer(new VideoLayerImpl(treeImpl, id));
     layer->setProviderClientImpl(VideoFrameProviderClientImpl::Create(provider));
@@ -53,11 +53,11 @@ VideoLayerImpl::~VideoLayerImpl()
         // on the VideoFrameProviderClientImpl, but we stop when the first
         // LayerImpl (the one on the pending tree) is destroyed since we know
         // the main thread is blocked for this commit.
-        DCHECK(layerTreeImpl()->proxy()->IsImplThread());
-        DCHECK(layerTreeImpl()->proxy()->IsMainThreadBlocked());
+        DCHECK(layer_tree_impl()->proxy()->IsImplThread());
+        DCHECK(layer_tree_impl()->proxy()->IsMainThreadBlocked());
         m_providerClientImpl->Stop();
     }
-    freePlaneData(layerTreeImpl()->resource_provider());
+    freePlaneData(layer_tree_impl()->resource_provider());
 
 #ifndef NDEBUG
     for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i)
@@ -66,20 +66,20 @@ VideoLayerImpl::~VideoLayerImpl()
 #endif
 }
 
-scoped_ptr<LayerImpl> VideoLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
+scoped_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(LayerTreeImpl* treeImpl)
 {
     return scoped_ptr<LayerImpl>(new VideoLayerImpl(treeImpl, id()));
 }
 
-void VideoLayerImpl::pushPropertiesTo(LayerImpl* layer)
+void VideoLayerImpl::PushPropertiesTo(LayerImpl* layer)
 {
-    LayerImpl::pushPropertiesTo(layer);
+    LayerImpl::PushPropertiesTo(layer);
 
     VideoLayerImpl* other = static_cast<VideoLayerImpl*>(layer);
     other->setProviderClientImpl(m_providerClientImpl);
 }
 
-void VideoLayerImpl::didBecomeActive()
+void VideoLayerImpl::DidBecomeActive()
 {
     m_providerClientImpl->set_active_video_layer(this);
 }
@@ -118,9 +118,9 @@ size_t VideoLayerImpl::numPlanes() const
     return media::VideoFrame::NumPlanes(m_frame->format());
 }
 
-void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
+void VideoLayerImpl::WillDraw(ResourceProvider* resourceProvider)
 {
-    LayerImpl::willDraw(resourceProvider);
+    LayerImpl::WillDraw(resourceProvider);
 
 
     // Explicitly acquire and release the provider mutex so it can be held from
@@ -192,19 +192,19 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
         m_externalTextureResource = resourceProvider->CreateResourceFromExternalTexture(m_frame->texture_id());
 }
 
-void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
+void VideoLayerImpl::AppendQuads(QuadSink* quadSink, AppendQuadsData* appendQuadsData)
 {
     if (!m_frame)
         return;
 
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
-    appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
+    SharedQuadState* sharedQuadState = quadSink->useSharedQuadState(CreateSharedQuadState());
+    AppendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     // FIXME: When we pass quads out of process, we need to double-buffer, or
     // otherwise synchonize use of all textures in the quad.
 
-    gfx::Rect quadRect(gfx::Point(), contentBounds());
-    gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+    gfx::Rect quadRect(content_bounds());
+    gfx::Rect opaqueRect(contents_opaque() ? quadRect : gfx::Rect());
     gfx::Rect visibleRect = m_frame->visible_rect();
     gfx::Size codedSize = m_frame->coded_size();
 
@@ -230,7 +230,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         solidColorDrawQuad->SetAll(
             sharedQuadState, quadRect, quadRect, quadRect, false,
             SK_ColorTRANSPARENT);
-        quadSink.append(solidColorDrawQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->append(solidColorDrawQuad.PassAs<DrawQuad>(), appendQuadsData);
         return;
     }
 #endif
@@ -244,7 +244,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         gfx::SizeF texScale(texWidthScale, texHeightScale);
         scoped_ptr<YUVVideoDrawQuad> yuvVideoQuad = YUVVideoDrawQuad::Create();
         yuvVideoQuad->SetNew(sharedQuadState, quadRect, opaqueRect, texScale, yPlane, uPlane, vPlane);
-        quadSink.append(yuvVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->append(yuvVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_RGBA: {
@@ -257,7 +257,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         bool flipped = false;
         scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::Create();
         textureQuad->SetNew(sharedQuadState, quadRect, opaqueRect, plane.resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, opacity, flipped);
-        quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_2D: {
@@ -269,14 +269,14 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         bool flipped = false;
         scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::Create();
         textureQuad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, premultipliedAlpha, uvTopLeft, uvBottomRight, opacity, flipped);
-        quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_RECTANGLE_ARB: {
         gfx::Size visibleSize(visibleRect.width(), visibleRect.height());
         scoped_ptr<IOSurfaceDrawQuad> ioSurfaceQuad = IOSurfaceDrawQuad::Create();
         ioSurfaceQuad->SetNew(sharedQuadState, quadRect, opaqueRect, visibleSize, m_frame->texture_id(), IOSurfaceDrawQuad::UNFLIPPED);
-        quadSink.append(ioSurfaceQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->append(ioSurfaceQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_EXTERNAL_OES: {
@@ -285,7 +285,7 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         transform.Scale(texWidthScale, texHeightScale);
         scoped_ptr<StreamVideoDrawQuad> streamVideoQuad = StreamVideoDrawQuad::Create();
         streamVideoQuad->SetNew(sharedQuadState, quadRect, opaqueRect, m_frame->texture_id(), transform);
-        quadSink.append(streamVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
+        quadSink->append(streamVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
         break;
     }
     default:
@@ -294,9 +294,9 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     }
 }
 
-void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
+void VideoLayerImpl::DidDraw(ResourceProvider* resourceProvider)
 {
-    LayerImpl::didDraw(resourceProvider);
+    LayerImpl::DidDraw(resourceProvider);
 
     if (!m_frame)
         return;
@@ -423,14 +423,14 @@ void VideoLayerImpl::freeUnusedPlaneData(ResourceProvider* resourceProvider)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
-void VideoLayerImpl::didLoseOutputSurface()
+void VideoLayerImpl::DidLoseOutputSurface()
 {
-    freePlaneData(layerTreeImpl()->resource_provider());
+    freePlaneData(layer_tree_impl()->resource_provider());
 }
 
 void VideoLayerImpl::setNeedsRedraw()
 {
-    layerTreeImpl()->SetNeedsRedraw();
+    layer_tree_impl()->SetNeedsRedraw();
 }
 
 void VideoLayerImpl::setProviderClientImpl(scoped_refptr<VideoFrameProviderClientImpl> providerClientImpl)
@@ -438,7 +438,7 @@ void VideoLayerImpl::setProviderClientImpl(scoped_refptr<VideoFrameProviderClien
     m_providerClientImpl = providerClientImpl;
 }
 
-const char* VideoLayerImpl::layerTypeAsString() const
+const char* VideoLayerImpl::LayerTypeAsString() const
 {
     return "VideoLayer";
 }

@@ -115,7 +115,7 @@ jobject CompositorImpl::GetSurface(int surface_id) {
 }
 
 CompositorImpl::CompositorImpl(Compositor::Client* client)
-    : root_layer_(cc::Layer::create()),
+    : root_layer_(cc::Layer::Create()),
       has_transparent_background_(false),
       window_(NULL),
       surface_id_(0),
@@ -133,8 +133,8 @@ void CompositorImpl::Composite() {
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
-  root_layer_->removeAllChildren();
-  root_layer_->addChild(root_layer);
+  root_layer_->RemoveAllChildren();
+  root_layer_->AddChild(root_layer);
 }
 
 void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
@@ -222,7 +222,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   size_ = size;
   if (host_)
     host_->setViewportSize(size, size);
-  root_layer_->setBounds(size);
+  root_layer_->SetBounds(size);
 }
 
 void CompositorImpl::SetHasTransparentBackground(bool flag) {

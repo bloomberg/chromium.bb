@@ -212,41 +212,41 @@ TEST(LayerSorterTest, VerifyExistingOrderingPreservedWhenNoZDiff) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
 
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::create(host_impl.activeTree(), 1);
-  scoped_ptr<LayerImpl> layer2 = LayerImpl::create(host_impl.activeTree(), 2);
-  scoped_ptr<LayerImpl> layer3 = LayerImpl::create(host_impl.activeTree(), 3);
-  scoped_ptr<LayerImpl> layer4 = LayerImpl::create(host_impl.activeTree(), 4);
-  scoped_ptr<LayerImpl> layer5 = LayerImpl::create(host_impl.activeTree(), 5);
+  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.activeTree(), 1);
+  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.activeTree(), 2);
+  scoped_ptr<LayerImpl> layer3 = LayerImpl::Create(host_impl.activeTree(), 3);
+  scoped_ptr<LayerImpl> layer4 = LayerImpl::Create(host_impl.activeTree(), 4);
+  scoped_ptr<LayerImpl> layer5 = LayerImpl::Create(host_impl.activeTree(), 5);
 
   gfx::Transform BehindMatrix;
   BehindMatrix.Translate3d(0.0, 0.0, 2.0);
   gfx::Transform FrontMatrix;
   FrontMatrix.Translate3d(0.0, 0.0, 1.0);
 
-  layer1->setBounds(gfx::Size(10, 10));
-  layer1->setContentBounds(gfx::Size(10, 10));
-  layer1->drawProperties().target_space_transform = BehindMatrix;
-  layer1->setDrawsContent(true);
+  layer1->SetBounds(gfx::Size(10, 10));
+  layer1->SetContentBounds(gfx::Size(10, 10));
+  layer1->draw_properties().target_space_transform = BehindMatrix;
+  layer1->SetDrawsContent(true);
 
-  layer2->setBounds(gfx::Size(20, 20));
-  layer2->setContentBounds(gfx::Size(20, 20));
-  layer2->drawProperties().target_space_transform = BehindMatrix;
-  layer2->setDrawsContent(true);
+  layer2->SetBounds(gfx::Size(20, 20));
+  layer2->SetContentBounds(gfx::Size(20, 20));
+  layer2->draw_properties().target_space_transform = BehindMatrix;
+  layer2->SetDrawsContent(true);
 
-  layer3->setBounds(gfx::Size(30, 30));
-  layer3->setContentBounds(gfx::Size(30, 30));
-  layer3->drawProperties().target_space_transform = FrontMatrix;
-  layer3->setDrawsContent(true);
+  layer3->SetBounds(gfx::Size(30, 30));
+  layer3->SetContentBounds(gfx::Size(30, 30));
+  layer3->draw_properties().target_space_transform = FrontMatrix;
+  layer3->SetDrawsContent(true);
 
-  layer4->setBounds(gfx::Size(40, 40));
-  layer4->setContentBounds(gfx::Size(40, 40));
-  layer4->drawProperties().target_space_transform = FrontMatrix;
-  layer4->setDrawsContent(true);
+  layer4->SetBounds(gfx::Size(40, 40));
+  layer4->SetContentBounds(gfx::Size(40, 40));
+  layer4->draw_properties().target_space_transform = FrontMatrix;
+  layer4->SetDrawsContent(true);
 
-  layer5->setBounds(gfx::Size(50, 50));
-  layer5->setContentBounds(gfx::Size(50, 50));
-  layer5->drawProperties().target_space_transform = BehindMatrix;
-  layer5->setDrawsContent(true);
+  layer5->SetBounds(gfx::Size(50, 50));
+  layer5->SetContentBounds(gfx::Size(50, 50));
+  layer5->draw_properties().target_space_transform = BehindMatrix;
+  layer5->SetDrawsContent(true);
 
   std::vector<LayerImpl*> layer_list;
   layer_list.push_back(layer1.get());
@@ -277,8 +277,8 @@ TEST(LayerSorterTest, VerifyConcidentLayerPrecisionLossResultsInDocumentOrder) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
 
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::create(host_impl.activeTree(), 1);
-  scoped_ptr<LayerImpl> layer2 = LayerImpl::create(host_impl.activeTree(), 2);
+  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.activeTree(), 1);
+  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.activeTree(), 2);
 
   // Layer 1 should occur before layer 2 in paint.  However, due to numeric
   // issues in the sorter, it will put the layers in the wrong order
@@ -295,15 +295,15 @@ TEST(LayerSorterTest, VerifyConcidentLayerPrecisionLossResultsInDocumentOrder) {
   FrontMatrix.RotateAboutXAxis(38.5);
   FrontMatrix.RotateAboutYAxis(77.0);
 
-  layer1->setBounds(gfx::Size(10, 10));
-  layer1->setContentBounds(gfx::Size(10, 10));
-  layer1->drawProperties().target_space_transform = BehindMatrix;
-  layer1->setDrawsContent(true);
+  layer1->SetBounds(gfx::Size(10, 10));
+  layer1->SetContentBounds(gfx::Size(10, 10));
+  layer1->draw_properties().target_space_transform = BehindMatrix;
+  layer1->SetDrawsContent(true);
 
-  layer2->setBounds(gfx::Size(10, 10));
-  layer2->setContentBounds(gfx::Size(10, 10));
-  layer2->drawProperties().target_space_transform = FrontMatrix;
-  layer2->setDrawsContent(true);
+  layer2->SetBounds(gfx::Size(10, 10));
+  layer2->SetContentBounds(gfx::Size(10, 10));
+  layer2->draw_properties().target_space_transform = FrontMatrix;
+  layer2->SetDrawsContent(true);
 
   std::vector<LayerImpl*> layer_list;
   layer_list.push_back(layer1.get());

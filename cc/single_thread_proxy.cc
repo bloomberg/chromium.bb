@@ -269,7 +269,7 @@ void SingleThreadProxy::Stop() {
         layer_tree_host_impl_->resourceProvider());
     layer_tree_host_impl_.reset();
   }
-  layer_tree_host_ = 0;
+  layer_tree_host_ = NULL;
 }
 
 void SingleThreadProxy::setNeedsRedrawOnImplThread() {

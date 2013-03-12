@@ -124,7 +124,7 @@ private:
         , m_targetRenderSurfaceLayerIndex(0)
     {
         for (size_t i = 0; i < renderSurfaceLayerList->size(); ++i) {
-            if (!(*renderSurfaceLayerList)[i]->renderSurface()) {
+            if (!(*renderSurfaceLayerList)[i]->render_surface()) {
                 NOTREACHED();
                 m_actions.end(*this);
                 return;
@@ -145,7 +145,7 @@ private:
     inline bool currentLayerRepresentsContributingRenderSurface() const { return LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerType>(currentLayer(), targetRenderSurfaceLayer()->id()); }
     inline bool currentLayerRepresentsTargetRenderSurface() const { return m_currentLayerIndex == LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface; }
 
-    inline RenderSurfaceType* targetRenderSurface() const { return targetRenderSurfaceLayer()->renderSurface(); }
+    inline RenderSurfaceType* targetRenderSurface() const { return targetRenderSurfaceLayer()->render_surface(); }
     inline const LayerList& targetRenderSurfaceChildren() const { return targetRenderSurface()->layer_list(); }
 
     IteratorActionType m_actions;

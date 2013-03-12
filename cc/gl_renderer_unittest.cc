@@ -67,11 +67,11 @@ public:
         : m_hostImpl(&m_proxy)
         , m_setFullRootLayerDamageCount(0)
         , m_lastCallWasSetVisibility(0)
-        , m_rootLayer(LayerImpl::create(m_hostImpl.activeTree(), 1))
+        , m_rootLayer(LayerImpl::Create(m_hostImpl.activeTree(), 1))
         , m_memoryAllocationLimitBytes(PrioritizedResourceManager::defaultMemoryAllocationLimit())
     {
-        m_rootLayer->createRenderSurface();
-        RenderPass::Id renderPassId = m_rootLayer->renderSurface()->RenderPassId();
+        m_rootLayer->CreateRenderSurface();
+        RenderPass::Id renderPassId = m_rootLayer->render_surface()->RenderPassId();
         scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
         root_render_pass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
         m_renderPassesInDrawOrder.push_back(root_render_pass.Pass());

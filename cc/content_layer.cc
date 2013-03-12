@@ -20,7 +20,7 @@ ContentLayerPainter::ContentLayerPainter(ContentLayerClient* client)
 {
 }
 
-scoped_ptr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerClient* client)
+scoped_ptr<ContentLayerPainter> ContentLayerPainter::Create(ContentLayerClient* client)
 {
     return make_scoped_ptr(new ContentLayerPainter(client));
 }
@@ -38,7 +38,7 @@ void ContentLayerPainter::Paint(SkCanvas* canvas, gfx::Rect contentRect, gfx::Re
                                 pixelsPerSec / 1000000, 10, 210, 30);
 }
 
-scoped_refptr<ContentLayer> ContentLayer::create(ContentLayerClient* client)
+scoped_refptr<ContentLayer> ContentLayer::Create(ContentLayerClient* client)
 {
     return make_scoped_refptr(new ContentLayer(client));
 }
@@ -53,32 +53,32 @@ ContentLayer::~ContentLayer()
 {
 }
 
-bool ContentLayer::drawsContent() const
+bool ContentLayer::DrawsContent() const
 {
-    return TiledLayer::drawsContent() && m_client;
+    return TiledLayer::DrawsContent() && m_client;
 }
 
-void ContentLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
+void ContentLayer::SetTexturePriorities(const PriorityCalculator& priorityCalc)
 {
     // Update the tile data before creating all the layer's tiles.
     updateTileSizeAndTilingOption();
 
-    TiledLayer::setTexturePriorities(priorityCalc);
+    TiledLayer::SetTexturePriorities(priorityCalc);
 }
 
-void ContentLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats* stats)
+void ContentLayer::Update(ResourceUpdateQueue* queue, const OcclusionTracker* occlusion, RenderingStats* stats)
 {
     {
-        base::AutoReset<bool> ignoreSetNeedsCommit(&m_ignoreSetNeedsCommit, true);
+        base::AutoReset<bool> ignoreSetNeedsCommit(&ignore_set_needs_commit_, true);
 
         createUpdaterIfNeeded();
     }
 
-    TiledLayer::update(queue, occlusion, stats);
-    m_needsDisplay = false;
+    TiledLayer::Update(queue, occlusion, stats);
+    needs_display_ = false;
 }
 
-bool ContentLayer::needMoreUpdates()
+bool ContentLayer::NeedMoreUpdates()
 {
     return needsIdlePaint();
 }
@@ -92,22 +92,22 @@ void ContentLayer::createUpdaterIfNeeded()
 {
     if (m_updater)
         return;
-    scoped_ptr<LayerPainter> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainter>();
-    if (layerTreeHost()->settings().acceleratePainting)
+    scoped_ptr<LayerPainter> painter = ContentLayerPainter::Create(m_client).PassAs<LayerPainter>();
+    if (layer_tree_host()->settings().acceleratePainting)
         m_updater = SkPictureContentLayerUpdater::create(painter.Pass());
-    else if (layerTreeHost()->settings().perTilePaintingEnabled)
+    else if (layer_tree_host()->settings().perTilePaintingEnabled)
         m_updater = BitmapSkPictureContentLayerUpdater::create(painter.Pass());
     else
         m_updater = BitmapContentLayerUpdater::create(painter.Pass());
-    m_updater->setOpaque(contentsOpaque());
+    m_updater->setOpaque(contents_opaque());
 
-    unsigned textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
+    unsigned textureFormat = layer_tree_host()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
 }
 
-void ContentLayer::setContentsOpaque(bool opaque)
+void ContentLayer::SetContentsOpaque(bool opaque)
 {
-    Layer::setContentsOpaque(opaque);
+    Layer::SetContentsOpaque(opaque);
     if (m_updater)
         m_updater->setOpaque(opaque);
 }

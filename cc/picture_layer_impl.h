@@ -21,29 +21,29 @@ class QuadSink;
 class CC_EXPORT PictureLayerImpl : public LayerImpl,
                                    public PictureLayerTilingClient {
 public:
-  static scoped_ptr<PictureLayerImpl> create(LayerTreeImpl* treeImpl, int id)
+  static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* treeImpl, int id)
   {
       return make_scoped_ptr(new PictureLayerImpl(treeImpl, id));
   }
   virtual ~PictureLayerImpl();
 
   // LayerImpl overrides.
-  virtual const char* layerTypeAsString() const OVERRIDE;
-  virtual scoped_ptr<LayerImpl> createLayerImpl(
+  virtual const char* LayerTypeAsString() const OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* treeImpl) OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
-  virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
-  virtual void updateTilePriorities() OVERRIDE;
-  virtual void didBecomeActive() OVERRIDE;
-  virtual void didLoseOutputSurface() OVERRIDE;
-  virtual void calculateContentsScale(
-      float ideal_contents_scale,
-      bool animating_transform_to_screen,
-      float* contents_scale_x,
-      float* contents_scale_y,
-      gfx::Size* content_bounds) OVERRIDE;
-  virtual skia::RefPtr<SkPicture> getPicture() OVERRIDE;
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void AppendQuads(QuadSink* quad_sink,
+                           AppendQuadsData* append_quads_data) OVERRIDE;
+  virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
+  virtual void UpdateTilePriorities() OVERRIDE;
+  virtual void DidBecomeActive() OVERRIDE;
+  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void CalculateContentsScale(float ideal_contents_scale,
+                                      bool animating_transform_to_screen,
+                                      float* contents_scale_x,
+                                      float* contents_scale_y,
+                                      gfx::Size* content_bounds) OVERRIDE;
+  virtual skia::RefPtr<SkPicture> GetPicture() OVERRIDE;
 
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
@@ -64,9 +64,9 @@ public:
 
   // Mask-related functions
   void SetIsMask(bool is_mask);
-  virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
+  virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
 
-  virtual bool areVisibleResourcesReady() const OVERRIDE;
+  virtual bool AreVisibleResourcesReady() const OVERRIDE;
 
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
 
@@ -86,7 +86,7 @@ protected:
   PictureLayerImpl* ActiveTwin() const;
   float MinimumContentsScale() const;
 
-  virtual void getDebugBorderProperties(
+  virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
 
   scoped_ptr<PictureLayerTilingSet> tilings_;
