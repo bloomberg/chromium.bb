@@ -120,6 +120,9 @@ class RdpClientWindow
   // Invoked to report connect/disconnect events.
   EventHandler* event_handler_;
 
+  // Contains the requested dimensions of the screen.
+  SkISize screen_size_;
+
   // The endpoint to connect to.
   net::IPEndPoint server_endpoint_;
 

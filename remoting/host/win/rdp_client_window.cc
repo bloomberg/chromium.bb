@@ -13,6 +13,7 @@ namespace remoting {
 RdpClientWindow::RdpClientWindow(const net::IPEndPoint& server_endpoint,
                                  EventHandler* event_handler)
     : event_handler_(event_handler),
+      screen_size_(SkISize::Make(0, 0)),
       server_endpoint_(server_endpoint) {
 }
 
@@ -27,7 +28,8 @@ RdpClientWindow::~RdpClientWindow() {
 bool RdpClientWindow::Connect(const SkISize& screen_size) {
   DCHECK(!m_hWnd);
 
-  RECT rect = { 0, 0, screen_size.width(), screen_size.height() };
+  screen_size_ = screen_size;
+  RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };
   bool result = Create(NULL, rect, NULL) != NULL;
 
   // Hide the window since this class is about establishing a connection, not
@@ -76,13 +78,8 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   base::win::ScopedBstr server_name(
       UTF8ToUTF16(server_endpoint_.ToStringWithoutPort()).c_str());
 
-  RECT rect;
-  if (!GetClientRect(&rect)) {
-    result = HRESULT_FROM_WIN32(GetLastError());
-    goto done;
-  }
-
   // Create the child window that actually hosts the ActiveX control.
+  RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };
   activex_window.Create(m_hWnd, rect, NULL, WS_CHILD | WS_VISIBLE | WS_BORDER);
   if (activex_window.m_hWnd == NULL) {
     result = HRESULT_FROM_WIN32(GetLastError());
@@ -101,6 +98,14 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
     goto done;
 
   result = control.QueryInterface(client_.Receive());
+  if (FAILED(result))
+    goto done;
+
+  // Set dimensions of the remote desktop.
+  result = client_->put_DesktopWidth(screen_size_.width());
+  if (FAILED(result))
+    goto done;
+  result = client_->put_DesktopHeight(screen_size_.height());
   if (FAILED(result))
     goto done;
 
