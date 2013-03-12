@@ -6,10 +6,13 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "cc/gl_renderer.h" // For the GLC() macro.
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 #define SHADER0(Src) #Src
-#define SHADER(Src) SHADER0(Src)
+#define VERTEX_SHADER(Src) setVertexTexCoordPrecision(context, SHADER0(Src))
+#define FRAGMENT_SHADER(Src) setFragTexCoordPrecision(context, SHADER0(Src))
 
 using WebKit::WebGraphicsContext3D;
 
@@ -28,6 +31,34 @@ static void getProgramUniformLocations(WebGraphicsContext3D* context, unsigned p
         } else
             locations[uniformIndex] = context->getUniformLocation(program, shaderUniforms[uniformIndex]);
     }
+}
+
+static std::string setFragTexCoordPrecision(WebGraphicsContext3D* context,
+                                            const char* shaderString)
+{
+    // TexCoordPrecisionHigh is used for cases where we absolutely need high
+    // precision or where the texture coordinates are not mutated in the
+    // fragment shader.
+    // Some cases that benefit from high precision are:
+    //   * Sampling from textures with width or height > 1024.
+    //   * Linear filtering of scaled textures.
+    // texCoordPrecisionMedium is used for cases where we don't need the high
+    // precision and can use a lower precision to improve performance.
+
+    return "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+           "  #define TexCoordPrecisionHigh highp\n"
+           "#else\n"
+           "  #define TexCoordPrecisionHigh mediump\n"
+           "#endif\n"
+           "#define TexCoordPrecisionMedium mediump\n" +
+           std::string(shaderString);
+}
+
+static std::string setVertexTexCoordPrecision(WebGraphicsContext3D* context,
+                                              const char* shaderString)
+{
+    return "#define TexCoordPrecisionHigh highp\n" +
+           std::string(shaderString);
 }
 
 }
@@ -50,13 +81,13 @@ void VertexShaderPosTex::init(WebGraphicsContext3D* context, unsigned program, b
     DCHECK(m_matrixLocation != -1);
 }
 
-std::string VertexShaderPosTex::getShaderString() const
+std::string VertexShaderPosTex::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         uniform mat4 matrix;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         void main()
         {
             gl_Position = matrix * a_position;
@@ -86,15 +117,15 @@ void VertexShaderPosTexYUVStretch::init(WebGraphicsContext3D* context, unsigned 
     DCHECK(m_matrixLocation != -1 && m_texScaleLocation != -1);
 }
 
-std::string VertexShaderPosTexYUVStretch::getShaderString() const
+std::string VertexShaderPosTexYUVStretch::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         precision mediump float;
         attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         uniform mat4 matrix;
-        varying vec2 v_texCoord;
-        uniform vec2 texScale;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
+        uniform TexCoordPrecisionHigh vec2 texScale;
         void main()
         {
             gl_Position = matrix * a_position;
@@ -121,9 +152,9 @@ void VertexShaderPos::init(WebGraphicsContext3D* context, unsigned program, bool
     DCHECK(m_matrixLocation != -1);
 }
 
-std::string VertexShaderPos::getShaderString() const
+std::string VertexShaderPos::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         attribute vec4 a_position;
         uniform mat4 matrix;
         void main()
@@ -157,42 +188,42 @@ void VertexShaderPosTexTransform::init(WebGraphicsContext3D* context, unsigned p
     DCHECK(m_matrixLocation != -1 && m_texTransformLocation != -1 && m_vertexOpacityLocation != -1);
 }
 
-std::string VertexShaderPosTexTransform::getShaderString() const
+std::string VertexShaderPosTexTransform::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         attribute float a_index;
         uniform mat4 matrix[8];
-        uniform vec4 texTransform[8];
+        uniform TexCoordPrecisionHigh vec4 texTransform[8];
         uniform float opacity[32];
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         varying float v_alpha;
         void main()
         {
             gl_Position = matrix[int(a_index * 0.25)] * a_position;
-            vec4 texTrans = texTransform[int(a_index * 0.25)];
+            TexCoordPrecisionHigh vec4 texTrans = texTransform[int(a_index * 0.25)];
             v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
             v_alpha = opacity[int(a_index)];
         }
     );
 }
 
-std::string VertexShaderPosTexTransformFlip::getShaderString() const
+std::string VertexShaderPosTexTransformFlip::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         attribute float a_index;
         uniform mat4 matrix[8];
-        uniform vec4 texTransform[8];
+        uniform TexCoordPrecisionHigh vec4 texTransform[8];
         uniform float opacity[32];
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         varying float v_alpha;
         void main()
         {
             gl_Position = matrix[int(a_index * 0.25)] * a_position;
-            vec4 texTrans = texTransform[int(a_index * 0.25)];
+            TexCoordPrecisionHigh vec4 texTrans = texTransform[int(a_index * 0.25)];
             v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
             v_texCoord.y = 1.0 - v_texCoord.y;
             v_alpha = opacity[int(a_index)];
@@ -200,11 +231,11 @@ std::string VertexShaderPosTexTransformFlip::getShaderString() const
     );
 }
 
-std::string VertexShaderPosTexIdentity::getShaderString() const
+std::string VertexShaderPosTexIdentity::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         attribute vec4 a_position;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         void main()
         {
             gl_Position = a_position;
@@ -239,19 +270,19 @@ void VertexShaderQuad::init(WebGraphicsContext3D* context, unsigned program, boo
     DCHECK_NE(m_texScaleLocation, -1);
 }
 
-std::string VertexShaderQuad::getShaderString() const
+std::string VertexShaderQuad::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
-        attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+    return VERTEX_SHADER(
+        attribute TexCoordPrecisionHigh vec4 a_position;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         uniform mat4 matrix;
-        uniform vec2 point[4];
-        uniform vec2 texScale;
-        varying vec2 v_texCoord;
+        uniform TexCoordPrecisionHigh vec2 point[4];
+        uniform TexCoordPrecisionHigh vec2 texScale;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         void main()
         {
-            vec2 complement = abs(a_texCoord - 1.0);
-            vec4 pos = vec4(0.0, 0.0, a_position.z, a_position.w);
+            TexCoordPrecisionHigh vec2 complement = abs(a_texCoord - 1.0);
+            TexCoordPrecisionHigh vec4 pos = vec4(0.0, 0.0, a_position.z, a_position.w);
             pos.xy += (complement.x * complement.y) * point[0];
             pos.xy += (a_texCoord.x * complement.y) * point[1];
             pos.xy += (a_texCoord.x * a_texCoord.y) * point[2];
@@ -286,15 +317,15 @@ void VertexShaderTile::init(WebGraphicsContext3D* context, unsigned program, boo
     DCHECK(m_matrixLocation != -1 && m_pointLocation != -1 && m_vertexTexTransformLocation != -1);
 }
 
-std::string VertexShaderTile::getShaderString() const
+std::string VertexShaderTile::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
-        attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+    return VERTEX_SHADER(
+        attribute TexCoordPrecisionHigh vec4 a_position;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         uniform mat4 matrix;
-        uniform vec2 point[4];
-        uniform vec4 vertexTexTransform;
-        varying vec2 v_texCoord;
+        uniform TexCoordPrecisionHigh vec2 point[4];
+        uniform TexCoordPrecisionHigh vec4 vertexTexTransform;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         void main()
         {
             vec2 complement = abs(a_texCoord - 1.0);
@@ -330,14 +361,14 @@ bool VertexShaderVideoTransform::init(WebGraphicsContext3D* context, unsigned pr
     return m_matrixLocation != -1 && m_texMatrixLocation != -1;
 }
 
-std::string VertexShaderVideoTransform::getShaderString() const
+std::string VertexShaderVideoTransform::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return VERTEX_SHADER(
         attribute vec4 a_position;
-        attribute vec2 a_texCoord;
+        attribute TexCoordPrecisionHigh vec2 a_texCoord;
         uniform mat4 matrix;
-        uniform mat4 texMatrix;
-        varying vec2 v_texCoord;
+        uniform TexCoordPrecisionHigh mat4 texMatrix;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         void main()
         {
             gl_Position = matrix * a_position;
@@ -398,25 +429,26 @@ bool FragmentShaderOESImageExternal::init(WebGraphicsContext3D* context, unsigne
     return m_samplerLocation != -1;
 }
 
-std::string FragmentShaderOESImageExternal::getShaderString() const
+std::string FragmentShaderOESImageExternal::getShaderString(WebGraphicsContext3D* context) const
 {
-    // Cannot use the SHADER() macro because of the '#' char
-    return "#extension GL_OES_EGL_image_external : require \n"
+    // Cannot use the FRAGMENT_SHADER() macro because of the '#' char
+    return setFragTexCoordPrecision(context,
+           "#extension GL_OES_EGL_image_external : require \n"
            "precision mediump float;\n"
-           "varying vec2 v_texCoord;\n"
+           "varying TexCoordPrecisionHigh vec2 v_texCoord;\n"
            "uniform samplerExternalOES s_texture;\n"
            "void main()\n"
            "{\n"
            "    vec4 texColor = texture2D(s_texture, v_texCoord);\n"
            "    gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w);\n"
-           "}\n";
+           "}\n");
 }
 
-std::string FragmentShaderRGBATexAlpha::getShaderString() const
+std::string FragmentShaderRGBATexAlpha::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform float alpha;
         void main()
@@ -427,11 +459,11 @@ std::string FragmentShaderRGBATexAlpha::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATexVaryingAlpha::getShaderString() const
+std::string FragmentShaderRGBATexVaryingAlpha::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         varying float v_alpha;
         uniform sampler2D s_texture;
         void main()
@@ -442,25 +474,26 @@ std::string FragmentShaderRGBATexVaryingAlpha::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATexRectVaryingAlpha::getShaderString() const
+std::string FragmentShaderRGBATexRectVaryingAlpha::getShaderString(WebGraphicsContext3D* context) const
 {
-    return "#extension GL_ARB_texture_rectangle : require\n"
+    return setFragTexCoordPrecision(context,
+            "#extension GL_ARB_texture_rectangle : require\n"
             "precision mediump float;\n"
-            "varying vec2 v_texCoord;\n"
+            "varying TexCoordPrecisionHigh vec2 v_texCoord;\n"
             "varying float v_alpha;\n"
             "uniform sampler2DRect s_texture;\n"
             "void main()\n"
             "{\n"
             "    vec4 texColor = texture2DRect(s_texture, v_texCoord);\n"
             "    gl_FragColor = texColor * v_alpha;\n"
-            "}\n";
+            "}\n");
 }
 
-std::string FragmentShaderRGBATexOpaque::getShaderString() const
+std::string FragmentShaderRGBATexOpaque::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D s_texture;
         void main()
         {
@@ -470,11 +503,11 @@ std::string FragmentShaderRGBATexOpaque::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATex::getShaderString() const
+std::string FragmentShaderRGBATex::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D s_texture;
         void main()
         {
@@ -483,11 +516,11 @@ std::string FragmentShaderRGBATex::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATexSwizzleAlpha::getShaderString() const
+std::string FragmentShaderRGBATexSwizzleAlpha::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform float alpha;
         void main()
@@ -498,11 +531,11 @@ std::string FragmentShaderRGBATexSwizzleAlpha::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATexSwizzleOpaque::getShaderString() const
+std::string FragmentShaderRGBATexSwizzleOpaque::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D s_texture;
         void main()
         {
@@ -536,11 +569,11 @@ void FragmentShaderRGBATexAlphaAA::init(WebGraphicsContext3D* context, unsigned 
     DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
 }
 
-std::string FragmentShaderRGBATexAlphaAA::getShaderString() const
+std::string FragmentShaderRGBATexAlphaAA::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform float alpha;
         uniform vec3 edge[8];
@@ -588,18 +621,18 @@ void FragmentTexClampAlphaAABinding::init(WebGraphicsContext3D* context, unsigne
     DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1 && m_fragmentTexTransformLocation != -1 && m_edgeLocation != -1);
 }
 
-std::string FragmentShaderRGBATexClampAlphaAA::getShaderString() const
+std::string FragmentShaderRGBATexClampAlphaAA::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionMedium vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform float alpha;
-        uniform vec4 fragmentTexTransform;
+        uniform TexCoordPrecisionMedium vec4 fragmentTexTransform;
         uniform vec3 edge[8];
         void main()
         {
-            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
+            TexCoordPrecisionMedium vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
             vec4 texColor = texture2D(s_texture, texCoord);
             vec3 pos = vec3(gl_FragCoord.xy, 1);
             float a0 = clamp(dot(edge[0], pos), 0.0, 1.0);
@@ -615,18 +648,18 @@ std::string FragmentShaderRGBATexClampAlphaAA::getShaderString() const
     );
 }
 
-std::string FragmentShaderRGBATexClampSwizzleAlphaAA::getShaderString() const
+std::string FragmentShaderRGBATexClampSwizzleAlphaAA::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionMedium vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform float alpha;
-        uniform vec4 fragmentTexTransform;
+        uniform TexCoordPrecisionMedium vec4 fragmentTexTransform;
         uniform vec3 edge[8];
         void main()
         {
-            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
+            TexCoordPrecisionMedium vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw + fragmentTexTransform.xy;
             vec4 texColor = texture2D(s_texture, texCoord);
             vec3 pos = vec3(gl_FragCoord.xy, 1);
             float a0 = clamp(dot(edge[0], pos), 0.0, 1.0);
@@ -671,20 +704,20 @@ void FragmentShaderRGBATexAlphaMask::init(WebGraphicsContext3D* context, unsigne
     DCHECK(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1);
 }
 
-std::string FragmentShaderRGBATexAlphaMask::getShaderString() const
+std::string FragmentShaderRGBATexAlphaMask::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionMedium vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform sampler2D s_mask;
-        uniform vec2 maskTexCoordScale;
-        uniform vec2 maskTexCoordOffset;
+        uniform TexCoordPrecisionMedium vec2 maskTexCoordScale;
+        uniform TexCoordPrecisionMedium vec2 maskTexCoordOffset;
         uniform float alpha;
         void main()
         {
             vec4 texColor = texture2D(s_texture, v_texCoord);
-            vec2 maskTexCoord = vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x, maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
+            TexCoordPrecision vec2 maskTexCoord = vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x, maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
             vec4 maskColor = texture2D(s_mask, maskTexCoord);
             gl_FragColor = vec4(texColor.x, texColor.y, texColor.z, texColor.w) * alpha * maskColor.w;
         }
@@ -723,21 +756,21 @@ void FragmentShaderRGBATexAlphaMaskAA::init(WebGraphicsContext3D* context, unsig
     DCHECK(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
 }
 
-std::string FragmentShaderRGBATexAlphaMaskAA::getShaderString() const
+std::string FragmentShaderRGBATexAlphaMaskAA::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionMedium vec2 v_texCoord;
         uniform sampler2D s_texture;
         uniform sampler2D s_mask;
-        uniform vec2 maskTexCoordScale;
-        uniform vec2 maskTexCoordOffset;
+        uniform TexCoordPrecisionMedium vec2 maskTexCoordScale;
+        uniform TexCoordPrecisionMedium vec2 maskTexCoordOffset;
         uniform float alpha;
         uniform vec3 edge[8];
         void main()
         {
             vec4 texColor = texture2D(s_texture, v_texCoord);
-            vec2 maskTexCoord = vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x, maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
+            TexCoordPrecisionMedium vec2 maskTexCoord = vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x, maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
             vec4 maskColor = texture2D(s_mask, maskTexCoord);
             vec3 pos = vec3(gl_FragCoord.xy, 1);
             float a0 = clamp(dot(edge[0], pos), 0.0, 1.0);
@@ -788,12 +821,12 @@ void FragmentShaderYUVVideo::init(WebGraphicsContext3D* context, unsigned progra
            && m_alphaLocation != -1 && m_yuvMatrixLocation != -1 && m_yuvAdjLocation != -1);
 }
 
-std::string FragmentShaderYUVVideo::getShaderString() const
+std::string FragmentShaderYUVVideo::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
         precision mediump int;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionHigh vec2 v_texCoord;
         uniform sampler2D y_texture;
         uniform sampler2D u_texture;
         uniform sampler2D v_texture;
@@ -830,9 +863,9 @@ void FragmentShaderColor::init(WebGraphicsContext3D* context, unsigned program, 
     DCHECK(m_colorLocation != -1);
 }
 
-std::string FragmentShaderColor::getShaderString() const
+std::string FragmentShaderColor::getShaderString(WebGraphicsContext3D* context) const
 {
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
         uniform vec4 color;
         void main()
@@ -868,14 +901,14 @@ void FragmentShaderCheckerboard::init(WebGraphicsContext3D* context, unsigned pr
     DCHECK(m_alphaLocation != -1 && m_texTransformLocation != -1 && m_frequencyLocation != -1 && m_colorLocation != -1);
 }
 
-std::string FragmentShaderCheckerboard::getShaderString() const
+std::string FragmentShaderCheckerboard::getShaderString(WebGraphicsContext3D* context) const
 {
     // Shader based on Example 13-17 of "OpenGL ES 2.0 Programming Guide"
     // by Munshi, Ginsburg, Shreiner.
-    return SHADER(
+    return FRAGMENT_SHADER(
         precision mediump float;
         precision mediump int;
-        varying vec2 v_texCoord;
+        varying TexCoordPrecisionMedium vec2 v_texCoord;
         uniform float alpha;
         uniform float frequency;
         uniform vec4 texTransform;
@@ -884,7 +917,7 @@ std::string FragmentShaderCheckerboard::getShaderString() const
         {
             vec4 color1 = vec4(1.0, 1.0, 1.0, 1.0);
             vec4 color2 = color;
-            vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * texTransform.zw + texTransform.xy;
+            TexCoordPrecisionMedium vec2 texCoord = clamp(v_texCoord, 0.0, 1.0) * texTransform.zw + texTransform.xy;
             vec2 coord = mod(floor(texCoord * frequency * 2.0), 2.0);
             float picker = abs(coord.x - coord.y);
             gl_FragColor = mix(color1, color2, picker) * alpha;

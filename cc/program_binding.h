@@ -45,7 +45,9 @@ class ProgramBinding : public ProgramBindingBase {
 public:
     explicit ProgramBinding(WebKit::WebGraphicsContext3D* context)
     {
-        ProgramBindingBase::init(context, m_vertexShader.getShaderString(), m_fragmentShader.getShaderString());
+        ProgramBindingBase::init(context,
+                                 m_vertexShader.getShaderString(context),
+                                 m_fragmentShader.getShaderString(context));
     }
 
     void initialize(WebKit::WebGraphicsContext3D* context, bool usingBindUniform)
