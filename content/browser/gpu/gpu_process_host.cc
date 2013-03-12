@@ -418,7 +418,7 @@ GpuProcessHost::~GpuProcessHost() {
         // The gpu process is too unstable to use. Disable it for current
         // session.
         hardware_gpu_enabled_ = false;
-        GpuDataManagerImpl::GetInstance()->BlacklistCard();
+        GpuDataManagerImpl::GetInstance()->DisableHardwareAcceleration();
 #endif
       }
     }

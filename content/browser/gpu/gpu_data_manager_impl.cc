@@ -496,7 +496,7 @@ GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
   return gpu_switching_;
 }
 
-void GpuDataManagerImpl::BlacklistCard() {
+void GpuDataManagerImpl::DisableHardwareAcceleration() {
   card_blacklisted_ = true;
 
   blacklisted_features_ = GPU_FEATURE_TYPE_ALL;
@@ -608,7 +608,7 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     command_line->AppendSwitch(switches::kDisableAcceleratedLayers);
   }
   if (command_line->HasSwitch(switches::kDisableGpu))
-    BlacklistCard();
+    DisableHardwareAcceleration();
   if (command_line->HasSwitch(switches::kGpuSwitching)) {
     std::string option_string = command_line->GetSwitchValueASCII(
         switches::kGpuSwitching);

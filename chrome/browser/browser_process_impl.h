@@ -92,6 +92,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
   virtual GLStringManager* gl_string_manager() OVERRIDE;
+  virtual GpuModeManager* gpu_mode_manager() OVERRIDE;
   virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
@@ -188,6 +189,8 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<IconManager> icon_manager_;
 
   scoped_ptr<GLStringManager> gl_string_manager_;
+
+  scoped_ptr<GpuModeManager> gpu_mode_manager_;
 
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;

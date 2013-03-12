@@ -25,6 +25,7 @@ class ComponentUpdateService;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class GLStringManager;
+class GpuModeManager;
 class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
@@ -148,6 +149,8 @@ class BrowserProcess {
   virtual IconManager* icon_manager() = 0;
 
   virtual GLStringManager* gl_string_manager() = 0;
+
+  virtual GpuModeManager* gpu_mode_manager() = 0;
 
   virtual RenderWidgetSnapshotTaker* GetRenderWidgetSnapshotTaker() = 0;
 

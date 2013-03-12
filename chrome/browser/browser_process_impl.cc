@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
+#include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/idle.h"
 #include "chrome/browser/intranet_redirect_detector.h"
@@ -504,6 +505,13 @@ GLStringManager* BrowserProcessImpl::gl_string_manager() {
   if (!gl_string_manager_.get())
     gl_string_manager_.reset(new GLStringManager());
   return gl_string_manager_.get();
+}
+
+GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!gpu_mode_manager_.get())
+    gpu_mode_manager_.reset(new GpuModeManager());
+  return gpu_mode_manager_.get();
 }
 
 RenderWidgetSnapshotTaker* BrowserProcessImpl::GetRenderWidgetSnapshotTaker() {

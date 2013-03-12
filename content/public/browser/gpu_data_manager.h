@@ -96,6 +96,9 @@ class GpuDataManager {
                             std::string* gl_renderer,
                             std::string* gl_version) = 0;
 
+  // Turn off all hardware acceleration.
+  virtual void DisableHardwareAcceleration() = 0;
+
  protected:
   virtual ~GpuDataManager() {}
 };

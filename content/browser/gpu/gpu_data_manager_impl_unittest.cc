@@ -194,13 +194,13 @@ TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
 }
 
-TEST_F(GpuDataManagerImplTest, BlacklistCard) {
+TEST_F(GpuDataManagerImplTest, DisableHardwareAcceleration) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  manager->BlacklistCard();
+  manager->DisableHardwareAcceleration();
   EXPECT_FALSE(manager->GpuAccessAllowed());
   EXPECT_EQ(GPU_FEATURE_TYPE_ALL, manager->GetBlacklistedFeatures());
 }
@@ -213,7 +213,7 @@ TEST_F(GpuDataManagerImplTest, SoftwareRendering) {
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
 
-  manager->BlacklistCard();
+  manager->DisableHardwareAcceleration();
   EXPECT_FALSE(manager->GpuAccessAllowed());
   EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
 
@@ -241,7 +241,7 @@ TEST_F(GpuDataManagerImplTest, SoftwareRendering2) {
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
 
-  manager->BlacklistCard();
+  manager->DisableHardwareAcceleration();
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
   EXPECT_EQ(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
@@ -274,7 +274,7 @@ TEST_F(GpuDataManagerImplTest, NoGpuInfoUpdateWithSoftwareRendering) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
 
-  manager->BlacklistCard();
+  manager->DisableHardwareAcceleration();
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_TRUE(manager->ShouldUseSoftwareRendering());

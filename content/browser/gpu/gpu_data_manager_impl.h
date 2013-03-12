@@ -79,6 +79,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void GetGLStrings(std::string* gl_vendor,
                             std::string* gl_renderer,
                             std::string* gl_version) OVERRIDE;
+  virtual void DisableHardwareAcceleration() OVERRIDE;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser
@@ -105,10 +106,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AppendPluginCommandLine(CommandLine* command_line) const;
 
   GpuSwitchingOption GetGpuSwitchingOption() const;
-
-  // Force the current card to be blacklisted (usually due to GPU process
-  // crashes).
-  void BlacklistCard();
 
   std::string GetBlacklistVersion() const;
 
@@ -170,7 +167,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuSideBlacklisting);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuSideExceptions);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, BlacklistCard);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           DisableHardwareAcceleration);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SoftwareRendering);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SoftwareRendering2);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuInfoUpdate);

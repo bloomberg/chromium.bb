@@ -2146,6 +2146,10 @@ const char kUserRemovedLoginItem[] = "background_mode.user_removed_login_item";
 // Set to true if background mode is enabled on this browser.
 const char kBackgroundModeEnabled[] = "background_mode.enabled";
 
+// Set to true if hardware acceleration mode is enabled on this browser.
+const char kHardwareAccelerationModeEnabled[] =
+  "hardware_acceleration_mode.enabled";
+
 // List of protocol handlers.
 const char kRegisteredProtocolHandlers[] =
   "custom_handlers.registered_protocol_handlers";

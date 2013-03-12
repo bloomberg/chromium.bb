@@ -12139,8 +12139,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_LANGUAGES">
         Languages
       </message>
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND">
-        Background apps
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_SYSTEM">
+        System
       </message>
 
       <!-- Multiple download warning-->

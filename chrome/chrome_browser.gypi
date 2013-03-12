@@ -631,6 +631,8 @@
         'browser/gpu/gl_string_manager.h',
         'browser/gpu/gpu_feature_checker.cc',
         'browser/gpu/gpu_feature_checker.h',
+        'browser/gpu/gpu_mode_manager.cc',
+        'browser/gpu/gpu_mode_manager.h',
         'browser/hang_monitor/hang_crash_dump_win.cc',
         'browser/hang_monitor/hang_crash_dump_win.h',
         'browser/hang_monitor/hung_plugin_action.cc',

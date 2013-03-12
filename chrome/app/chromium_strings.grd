@@ -423,8 +423,11 @@ be available for now. -->
           Let Chromium run in the background
         </message>
       </if>
-      <message name="IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE" desc="The label of the check-box that enables background mode">
+      <message name="IDS_OPTIONS_SYSTEM_ENABLE_BACKGROUND_MODE" desc="The label of the check-box that enables background mode">
         Continue running background apps when Chromium is closed
+      </message>
+      <message name="IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE" desc="The label of the check-box that enables hardware acceleration mode">
+        Use hardware acceleration when available (requires Chromium restart)
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
 Chromium cannot read and write to its data directory:

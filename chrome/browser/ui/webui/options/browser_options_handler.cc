@@ -349,12 +349,13 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #if defined(OS_CHROMEOS) && defined(USE_ASH)
     { "setWallpaper", IDS_SET_WALLPAPER_BUTTON },
 #endif
+    { "advancedSectionTitleSystem",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_SYSTEM },
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-    { "advancedSectionTitleBackground",
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND },
-    { "backgroundModeCheckbox", IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE },
+    { "backgroundModeCheckbox", IDS_OPTIONS_SYSTEM_ENABLE_BACKGROUND_MODE },
 #endif
-
+    { "hardwareAccelerationModeCheckbox",
+      IDS_OPTIONS_SYSTEM_ENABLE_HARDWARE_ACCELERATION_MODE },
     // Strings with product-name substitutions.
 #if !defined(OS_CHROMEOS)
     { "syncOverview", IDS_SYNC_OVERVIEW, IDS_PRODUCT_NAME },

@@ -32,6 +32,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
+#include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -183,6 +184,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   FlagsUI::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
   GLStringManager::RegisterPrefs(registry);
+  GpuModeManager::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   IOThread::RegisterPrefs(registry);
   KeywordEditorController::RegisterPrefs(registry);
