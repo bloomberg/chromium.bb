@@ -187,6 +187,13 @@
    fun:FcCharSetAddChar
 }
 {
+   bug_181572 (Skia -- global cache of typefaces)
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10SkFontHost14CreateTypefaceEPK10SkTypefacePKcNS0_5StyleE
+   fun:_ZN10SkTypeface14CreateFromNameEPKcNS_5StyleE
+}
+{
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
    Memcheck:Uninitialized
    ...

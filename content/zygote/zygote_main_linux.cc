@@ -37,8 +37,8 @@
 #include "crypto/nss_util.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
-#include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "third_party/icu/public/i18n/unicode/timezone.h"
+#include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
 #if defined(OS_LINUX)
 #include <sys/epoll.h>
@@ -368,8 +368,8 @@ static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
     return false;
 
   PreSandboxInit();
-  SkiaFontConfigSetImplementation(
-      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor));
+  SkFontConfigInterface::SetGlobal(
+      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor))->unref();
 
   if (setuid_sandbox->IsSuidSandboxChild()) {
     // Use the SUID sandbox.  This still allows the seccomp sandbox to
@@ -438,8 +438,8 @@ static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
     return false;
 
   PreSandboxInit();
-  SkiaFontConfigSetImplementation(
-      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor));
+  SkFontConfigInterface::SetGlobal(
+      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor)))->unref();
   return true;
 }
 
