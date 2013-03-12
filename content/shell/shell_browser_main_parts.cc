@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
@@ -99,6 +100,9 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      cc::switches::kCompositeToMailbox);
 #endif
 }
 
