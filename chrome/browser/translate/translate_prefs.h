@@ -35,6 +35,9 @@ class TranslatePrefs {
   void BlacklistSite(const std::string& site);
   void RemoveSiteFromBlacklist(const std::string& site);
 
+  bool HasWhitelistedLanguagePairs() const;
+  void ClearWhitelistedLanguagePairs();
+
   bool IsLanguagePairWhitelisted(const std::string& original_language,
       const std::string& target_language);
   void WhitelistLanguagePair(const std::string& original_language,
@@ -80,6 +83,8 @@ class TranslatePrefs {
   bool IsLanguageWhitelisted(const std::string& original_language,
       std::string* target_language) const;
   bool IsListEmpty(const char* pref_id) const;
+  bool IsDictionaryEmpty(const char* pref_id) const;
+
   // Retrieves the dictionary mapping the number of times translation has been
   // denied for a language, creating it if necessary.
   base::DictionaryValue* GetTranslationDeniedCountDictionary();

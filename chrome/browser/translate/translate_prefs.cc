@@ -105,6 +105,14 @@ void TranslatePrefs::ClearBlacklistedSites() {
   prefs_->ClearPref(kPrefTranslateSiteBlacklist);
 }
 
+bool TranslatePrefs::HasWhitelistedLanguagePairs() const {
+  return !IsDictionaryEmpty(kPrefTranslateWhitelists);
+}
+
+void TranslatePrefs::ClearWhitelistedLanguagePairs() {
+  prefs_->ClearPref(kPrefTranslateWhitelists);
+}
+
 int TranslatePrefs::GetTranslationDeniedCount(
     const std::string& language) const {
   const DictionaryValue* dict =
@@ -274,4 +282,9 @@ bool TranslatePrefs::IsLanguageWhitelisted(
 bool TranslatePrefs::IsListEmpty(const char* pref_id) const {
   const ListValue* blacklist = prefs_->GetList(pref_id);
   return (blacklist == NULL || blacklist->empty());
+}
+
+bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {
+  const DictionaryValue* dict = prefs_->GetDictionary(pref_id);
+  return (dict == NULL || dict->empty());
 }
