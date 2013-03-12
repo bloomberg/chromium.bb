@@ -198,14 +198,27 @@ class TraceInputs(unittest.TestCase):
 
   if sys.platform == 'darwin':
     def test_native_case_symlink_wrong_case(self):
-      actual = trace_inputs.get_native_path_case(
-          os.path.join(BASE_DIR, 'trace_inputs'))
-      self.assertEquals('trace_inputs', os.path.basename(actual))
+      base_dir = trace_inputs.get_native_path_case(BASE_DIR)
+      trace_inputs_dir = os.path.join(base_dir, 'trace_inputs')
+      actual = trace_inputs.get_native_path_case(trace_inputs_dir)
+      self.assertEquals(trace_inputs_dir, actual)
 
       # Make sure the symlink is not resolved.
-      actual = trace_inputs.get_native_path_case(
-          os.path.join(BASE_DIR, 'trace_inputs', 'Files2'))
-      self.assertEquals('files2', os.path.basename(actual))
+      data = os.path.join(trace_inputs_dir, 'Files2')
+      actual = trace_inputs.get_native_path_case(data)
+      self.assertEquals(
+          os.path.join(trace_inputs_dir, 'files2'), actual)
+
+      data = os.path.join(trace_inputs_dir, 'Files2', '')
+      actual = trace_inputs.get_native_path_case(data)
+      self.assertEquals(
+          os.path.join(trace_inputs_dir, 'files2', ''), actual)
+
+      data = os.path.join(trace_inputs_dir, 'Files2', 'Child1.py')
+      actual = trace_inputs.get_native_path_case(data)
+      # TODO(maruel): Should be child1.py.
+      self.assertEquals(
+          os.path.join(trace_inputs_dir, 'files2', 'Child1.py'), actual)
 
   if sys.platform == 'win32':
     def test_native_case_alternate_datastream(self):

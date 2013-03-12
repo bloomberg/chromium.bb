@@ -898,6 +898,21 @@ class IsolateTest(IsolateBase):
         expected_output,
         isolate.convert_old_to_new_format(isolate_with_default_variables))
 
+  if sys.platform == 'darwin':
+    def test_symlink_path_case(self):
+      # Ensures that the resuling path case is fixed on case insensitive file
+      # system.
+      os.symlink('dest', os.path.join(self.cwd, 'link'))
+      os.mkdir(os.path.join(self.cwd, 'Dest'))
+      open(os.path.join(self.cwd, 'Dest', 'file.txt'), 'w').close()
+
+      result = isolate.expand_symlinks(unicode(self.cwd), 'link')
+      # TODO(maruel): Should be 'Dest".
+      self.assertEqual((u'dest', [u'link']), result)
+      result = isolate.expand_symlinks(unicode(self.cwd), 'link/File.txt')
+      # TODO(maruel): Should be 'Dest/file.txt".
+      self.assertEqual((u'dest/File.txt', [u'link']), result)
+
 
 class IsolateLoad(IsolateBase):
   def setUp(self):
