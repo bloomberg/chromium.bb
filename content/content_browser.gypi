@@ -186,6 +186,8 @@
     'browser/accessibility/accessibility_tree_formatter_utils_win.cc',
     'browser/accessibility/accessibility_tree_formatter_utils_win.h',
     'browser/accessibility/accessibility_tree_formatter_win.cc',
+    'browser/accessibility/accessibility_ui.cc',
+    'browser/accessibility/accessibility_ui.h',
     'browser/accessibility/browser_accessibility.cc',
     'browser/accessibility/browser_accessibility.h',
     'browser/accessibility/browser_accessibility_cocoa.h',

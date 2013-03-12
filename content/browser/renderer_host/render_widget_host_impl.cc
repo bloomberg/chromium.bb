@@ -148,6 +148,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       waiting_for_screen_rects_ack_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
+      accessibility_mode_(AccessibilityModeOff),
       select_range_pending_(false),
       move_caret_pending_(false),
       needs_repainting_on_restore_(false),
@@ -2217,6 +2218,7 @@ void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
 }
 
 void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
+  accessibility_mode_ = mode;
   Send(new ViewMsg_SetAccessibilityMode(routing_id_, mode));
 }
 

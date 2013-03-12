@@ -4,6 +4,7 @@
 
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 
+#include "content/browser/accessibility/accessibility_ui.h"
 #include "content/browser/gpu/gpu_internals_ui.h"
 #include "content/browser/media/media_internals_ui.h"
 #include "content/browser/media/webrtc_internals_ui.h"
@@ -21,7 +22,8 @@ WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       url.host() == chrome::kChromeUITracingHost ||
 #endif
       url.host() == chrome::kChromeUIGpuHost ||
-      url.host() == chrome::kChromeUIMediaInternalsHost) {
+      url.host() == chrome::kChromeUIMediaInternalsHost ||
+      url.host() == chrome::kChromeUIAccessibilityHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
   }
   return WebUI::kNoWebUI;
@@ -45,6 +47,8 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     return new GpuInternalsUI(web_ui);
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
     return new MediaInternalsUI(web_ui);
+  if (url.host() == chrome::kChromeUIAccessibilityHost)
+    return new AccessibilityUI(web_ui);
 #if !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUITracingHost)
     return new TracingUI(web_ui);

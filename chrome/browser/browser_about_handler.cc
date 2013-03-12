@@ -21,6 +21,7 @@ namespace {
 // Add paths here to be included in chrome://chrome-urls (about:about).
 // These paths will also be suggested by BuiltinProvider.
 const char* const kPaths[] = {
+  chrome::kChromeUIAccessibilityHost,
   chrome::kChromeUIAppCacheInternalsHost,
   chrome::kChromeUIBlobInternalsHost,
   chrome::kChromeUICacheHost,
