@@ -272,7 +272,7 @@ void AesDecryptor::InitializeAudioDecoder(scoped_ptr<AudioDecoderConfig> config,
   init_cb.Run(false);
 }
 
-void AesDecryptor::InitializeVideoDecoder(scoped_ptr<VideoDecoderConfig> config,
+void AesDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
                                           const DecoderInitCB& init_cb) {
   // AesDecryptor does not support video decoding.
   init_cb.Run(false);

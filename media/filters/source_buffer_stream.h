@@ -12,6 +12,7 @@
 
 #include <deque>
 #include <list>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -270,7 +271,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // Holds the audio/video configs for this stream. |current_config_index_|
   // and |append_config_index_| represent indexes into one of these vectors.
   std::vector<AudioDecoderConfig*> audio_configs_;
-  std::vector<VideoDecoderConfig*> video_configs_;
+  std::vector<VideoDecoderConfig> video_configs_;
 
   // True if more data needs to be appended before the Seek() can complete,
   // false if no Seek() has been requested or the Seek() is completed.

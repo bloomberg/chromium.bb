@@ -328,8 +328,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       memory_limit_(kDefaultVideoMemoryLimit),
       config_change_pending_(false) {
   DCHECK(video_config.IsValidConfig());
-  video_configs_.push_back(new VideoDecoderConfig());
-  video_configs_.back()->CopyFrom(video_config);
+  video_configs_.push_back(video_config);
 }
 
 SourceBufferStream::~SourceBufferStream() {
@@ -339,7 +338,6 @@ SourceBufferStream::~SourceBufferStream() {
   }
 
   STLDeleteElements(&audio_configs_);
-  STLDeleteElements(&video_configs_);
 }
 
 void SourceBufferStream::OnNewMediaSegment(
@@ -1050,7 +1048,7 @@ const AudioDecoderConfig& SourceBufferStream::GetCurrentAudioDecoderConfig() {
 const VideoDecoderConfig& SourceBufferStream::GetCurrentVideoDecoderConfig() {
   if (config_change_pending_)
     CompleteConfigChange();
-  return *video_configs_[current_config_index_];
+  return video_configs_[current_config_index_];
 }
 
 base::TimeDelta SourceBufferStream::GetMaxInterbufferDistance() const {
@@ -1111,24 +1109,24 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
   DCHECK(audio_configs_.empty());
   DVLOG(3) << "UpdateVideoConfig.";
 
-  if (video_configs_[0]->is_encrypted() != config.is_encrypted()) {
+  if (video_configs_[0].is_encrypted() != config.is_encrypted()) {
     MEDIA_LOG(log_cb_) << "Video Encryption changes not allowed.";
     return false;
   }
 
-  if (video_configs_[0]->codec() != config.codec()) {
+  if (video_configs_[0].codec() != config.codec()) {
     MEDIA_LOG(log_cb_) << "Video codec changes not allowed.";
     return false;
   }
 
-  if (video_configs_[0]->is_encrypted() != config.is_encrypted()) {
+  if (video_configs_[0].is_encrypted() != config.is_encrypted()) {
     MEDIA_LOG(log_cb_) << "Video encryption changes not allowed.";
     return false;
   }
 
   // Check to see if the new config matches an existing one.
   for (size_t i = 0; i < video_configs_.size(); ++i) {
-    if (config.Matches(*video_configs_[i])) {
+    if (config.Matches(video_configs_[i])) {
       append_config_index_ = i;
       return true;
     }
@@ -1138,8 +1136,7 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
   append_config_index_ = video_configs_.size();
   DVLOG(2) << "New video config - index: " << append_config_index_;
   video_configs_.resize(video_configs_.size() + 1);
-  video_configs_[append_config_index_] = new VideoDecoderConfig();
-  video_configs_[append_config_index_]->CopyFrom(config);
+  video_configs_[append_config_index_] = config;
   return true;
 }
 

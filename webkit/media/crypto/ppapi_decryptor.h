@@ -60,9 +60,8 @@ class PpapiDecryptor : public media::Decryptor {
   virtual void InitializeAudioDecoder(
       scoped_ptr<media::AudioDecoderConfig> config,
       const DecoderInitCB& init_cb) OVERRIDE;
-  virtual void InitializeVideoDecoder(
-      scoped_ptr<media::VideoDecoderConfig> config,
-      const DecoderInitCB& init_cb) OVERRIDE;
+  virtual void InitializeVideoDecoder(const media::VideoDecoderConfig& config,
+                                      const DecoderInitCB& init_cb) OVERRIDE;
   virtual void DecryptAndDecodeAudio(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const AudioDecodeCB& audio_decode_cb) OVERRIDE;

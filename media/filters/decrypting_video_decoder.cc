@@ -163,12 +163,9 @@ void DecryptingVideoDecoder::SetDecryptor(Decryptor* decryptor) {
 
   decryptor_ = decryptor;
 
-  scoped_ptr<VideoDecoderConfig> scoped_config(new VideoDecoderConfig());
-  scoped_config->CopyFrom(demuxer_stream_->video_decoder_config());
-
   state_ = kPendingDecoderInit;
   decryptor_->InitializeVideoDecoder(
-      scoped_config.Pass(), BindToCurrentLoop(base::Bind(
+      demuxer_stream_->video_decoder_config(), BindToCurrentLoop(base::Bind(
           &DecryptingVideoDecoder::FinishInitialization, this)));
 }
 
@@ -252,13 +249,10 @@ void DecryptingVideoDecoder::DecryptAndDecodeBuffer(
   if (status == DemuxerStream::kConfigChanged) {
     DVLOG(2) << "DecryptAndDecodeBuffer() - kConfigChanged";
 
-    scoped_ptr<VideoDecoderConfig> scoped_config(new VideoDecoderConfig());
-    scoped_config->CopyFrom(demuxer_stream_->video_decoder_config());
-
     state_ = kPendingConfigChange;
     decryptor_->DeinitializeDecoder(Decryptor::kVideo);
     decryptor_->InitializeVideoDecoder(
-        scoped_config.Pass(), BindToCurrentLoop(base::Bind(
+        demuxer_stream_->video_decoder_config(), BindToCurrentLoop(base::Bind(
             &DecryptingVideoDecoder::FinishConfigChange, this)));
     return;
   }

@@ -13,7 +13,6 @@ VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       format_(VideoFrame::INVALID),
-      extra_data_size_(0),
       is_encrypted_(false) {
 }
 
@@ -85,29 +84,8 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
-  extra_data_size_ = extra_data_size;
-
-  if (extra_data_size_ > 0) {
-    extra_data_.reset(new uint8[extra_data_size_]);
-    memcpy(extra_data_.get(), extra_data, extra_data_size_);
-  } else {
-    extra_data_.reset();
-  }
-
+  extra_data_.assign(extra_data, extra_data + extra_data_size);
   is_encrypted_ = is_encrypted;
-}
-
-void VideoDecoderConfig::CopyFrom(const VideoDecoderConfig& video_config) {
-  Initialize(video_config.codec(),
-             video_config.profile(),
-             video_config.format(),
-             video_config.coded_size(),
-             video_config.visible_rect(),
-             video_config.natural_size(),
-             video_config.extra_data(),
-             video_config.extra_data_size(),
-             video_config.is_encrypted(),
-             false);
 }
 
 bool VideoDecoderConfig::IsValidConfig() const {
@@ -173,12 +151,14 @@ gfx::Size VideoDecoderConfig::natural_size() const {
   return natural_size_;
 }
 
-uint8* VideoDecoderConfig::extra_data() const {
-  return extra_data_.get();
+const uint8* VideoDecoderConfig::extra_data() const {
+  if (extra_data_.empty())
+    return NULL;
+  return &extra_data_[0];
 }
 
 size_t VideoDecoderConfig::extra_data_size() const {
-  return extra_data_size_;
+  return extra_data_.size();
 }
 
 bool VideoDecoderConfig::is_encrypted() const {

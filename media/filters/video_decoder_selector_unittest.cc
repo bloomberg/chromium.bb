@@ -95,10 +95,10 @@ class VideoDecoderSelectorTest : public ::testing::Test {
           .WillRepeatedly(RunCallback<0>(decryptor_.get()));
 
       if (decryptor_capability == kDecryptOnly) {
-        EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+        EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
             .WillRepeatedly(RunCallback<1>(false));
       } else {
-        EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+        EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
             .WillRepeatedly(RunCallback<1>(true));
       }
     }

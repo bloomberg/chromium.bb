@@ -163,21 +163,20 @@ void PpapiDecryptor::InitializeAudioDecoder(
 }
 
 void PpapiDecryptor::InitializeVideoDecoder(
-    scoped_ptr<media::VideoDecoderConfig> config,
+    const media::VideoDecoderConfig& config,
     const DecoderInitCB& init_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::InitializeVideoDecoder, weak_this_,
-        base::Passed(&config), init_cb));
+        &PpapiDecryptor::InitializeVideoDecoder, weak_this_, config, init_cb));
     return;
   }
 
   DVLOG(2) << "InitializeVideoDecoder()";
-  DCHECK(config->is_encrypted());
-  DCHECK(config->IsValidConfig());
+  DCHECK(config.is_encrypted());
+  DCHECK(config.IsValidConfig());
 
   video_decoder_init_cb_ = init_cb;
-  if (!plugin_cdm_delegate_->InitializeVideoDecoder(*config, base::Bind(
+  if (!plugin_cdm_delegate_->InitializeVideoDecoder(config, base::Bind(
       &PpapiDecryptor::OnDecoderInitialized, weak_this_, kVideo))) {
     base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;

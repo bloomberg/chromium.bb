@@ -103,7 +103,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   }
 
   void Initialize() {
-    EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+    EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
         .Times(AtMost(1))
         .WillOnce(RunCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
@@ -282,7 +282,7 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_InvalidVideoConfig) {
 
 // Ensure decoder handles unsupported video configs without crashing.
 TEST_F(DecryptingVideoDecoderTest, Initialize_UnsupportedVideoConfig) {
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
 
   VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
@@ -355,7 +355,7 @@ TEST_F(DecryptingVideoDecoderTest, DemuxerRead_ConfigChange) {
   Initialize();
 
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(RunCallback<1>(true));
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
@@ -374,7 +374,7 @@ TEST_F(DecryptingVideoDecoderTest, DemuxerRead_ConfigChangeFailed) {
   Initialize();
 
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
@@ -473,7 +473,7 @@ TEST_F(DecryptingVideoDecoderTest, Reset_DuringDemuxerRead_ConfigChange) {
   // Even during pending reset, the decoder still needs to be initialized with
   // the new config.
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(RunCallback<1>(true));
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, null_video_frame_));
 
@@ -493,7 +493,7 @@ TEST_F(DecryptingVideoDecoderTest, Reset_DuringDemuxerRead_ConfigChangeFailed) {
   // Even during pending reset, the decoder still needs to be initialized with
   // the new config.
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kDecodeError, null_video_frame_));
 
@@ -511,7 +511,7 @@ TEST_F(DecryptingVideoDecoderTest, Reset_DuringPendingConfigChange) {
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()));
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
   decoder_->Read(base::Bind(&DecryptingVideoDecoderTest::FrameReady,
@@ -591,7 +591,7 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
 
 // Test stopping when the decoder is in kPendingDecoderInit state.
 TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingDecoderInit) {
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
   config_.Initialize(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
@@ -627,7 +627,7 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingConfigChange) {
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()));
   EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo));
-  EXPECT_CALL(*decryptor_, InitializeVideoDecoderMock(_, _))
+  EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
   decoder_->Read(base::Bind(&DecryptingVideoDecoderTest::FrameReady,

@@ -6,9 +6,9 @@
 #define MEDIA_BASE_VIDEO_DECODER_CONFIG_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
@@ -95,9 +95,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   bool is_encrypted,
                   bool record_stats);
 
-  // Deep copies |video_config|.
-  void CopyFrom(const VideoDecoderConfig& video_config);
-
   // Returns true if this object has appropriate configuration values, false
   // otherwise.
   bool IsValidConfig() const;
@@ -129,7 +126,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   // Optional byte data required to initialize video decoders, such as H.264
   // AAVC data.
-  uint8* extra_data() const;
+  const uint8* extra_data() const;
   size_t extra_data_size() const;
 
   // Whether the video stream is potentially encrypted.
@@ -147,12 +144,13 @@ class MEDIA_EXPORT VideoDecoderConfig {
   gfx::Rect visible_rect_;
   gfx::Size natural_size_;
 
-  scoped_array<uint8> extra_data_;
-  size_t extra_data_size_;
+  std::vector<uint8> extra_data_;
 
   bool is_encrypted_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderConfig);
+  // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler
+  // generated copy constructor and assignment operator. Since the extra data is
+  // typically small, the performance impact is minimal.
 };
 
 }  // namespace media

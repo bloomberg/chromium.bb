@@ -50,12 +50,6 @@ void MockDecryptor::InitializeAudioDecoder(
   InitializeAudioDecoderMock(*config, init_cb);
 }
 
-void MockDecryptor::InitializeVideoDecoder(
-    scoped_ptr<VideoDecoderConfig> config,
-    const DecoderInitCB& init_cb) {
-  InitializeVideoDecoderMock(*config, init_cb);
-}
-
 MockStatisticsCB::MockStatisticsCB() {}
 
 MockStatisticsCB::~MockStatisticsCB() {}

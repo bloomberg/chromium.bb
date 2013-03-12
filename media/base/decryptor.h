@@ -141,7 +141,7 @@ class MEDIA_EXPORT Decryptor {
   // upon completion.
   virtual void InitializeAudioDecoder(scoped_ptr<AudioDecoderConfig> config,
                                       const DecoderInitCB& init_cb) = 0;
-  virtual void InitializeVideoDecoder(scoped_ptr<VideoDecoderConfig> config,
+  virtual void InitializeVideoDecoder(const VideoDecoderConfig& config,
                                       const DecoderInitCB& init_cb) = 0;
 
   // Helper structure for managing multiple decoded audio buffers per input.
