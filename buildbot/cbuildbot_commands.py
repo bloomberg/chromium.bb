@@ -415,15 +415,6 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
                       % result.returncode)
 
 
-def RunDevModeTest(buildroot, board, image_dir):
-  """Runs the dev mode testing script to verify dev-mode scripts work."""
-  crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
-  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
-  test_script = 'devmode-test/devinstall_test.py'
-  cmd = [os.path.join(crostestutils, test_script), board, image_path]
-  cros_build_lib.RunCommand(cmd)
-
-
 def ArchiveTestResults(buildroot, test_results_dir, prefix):
   """Archives the test results into a tarball.
 
@@ -553,7 +544,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
         raw = cros_build_lib.RunCommandCaptureOutput(
             ['asan_symbolize.py'], input=log_content, enter_chroot=True,
             debug_level=logging.DEBUG,
-            extra_env={'LLVM_SYMBOLIZER_PATH' : '/usr/bin/llvm-symbolizer'})
+            extra_env = {'LLVM_SYMBOLIZER_PATH' : '/usr/bin/llvm-symbolizer'})
         cros_build_lib.RunCommand(['c++filt'],
                                   input=raw.output, debug_level=logging.DEBUG,
                                   cwd=buildroot, redirect_stderr=True,
@@ -1487,7 +1478,7 @@ class MissingPGOData(results_lib.StepFailure):
   """Exception thrown when necessary PGO data is missing."""
 
 
-def WaitForPGOData(architectures, cpv, timeout=60 * 120):
+def WaitForPGOData(architectures, cpv, timeout=60*120):
   """Wait for PGO data to show up (with an appropriate timeout).
 
   Args:

@@ -1308,20 +1308,14 @@ class VMTestStage(BoardSpecificBuilderStage):
     # These directories are used later to archive test artifacts.
     test_results_dir = commands.CreateTestRoot(self._build_root)
     try:
-      test_type = self._build_config['vm_tests']
       commands.RunTestSuite(self._build_root,
                             self._current_board,
                             self.GetImageDirSymlink(),
                             os.path.join(test_results_dir,
                                          'test_harness'),
-                            test_type=test_type,
+                            test_type=self._build_config['vm_tests'],
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self._archive_stage.bot_archive_root)
-
-      if test_type == constants.FULL_AU_TEST_TYPE:
-        commands.RunDevModeTest(
-            self._build_root, self._current_board, self.GetImageDirSymlink())
-
     except Exception:
       cros_build_lib.Error(_VM_TEST_ERROR_MSG)
       raise
