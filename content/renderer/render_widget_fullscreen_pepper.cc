@@ -342,7 +342,7 @@ class PepperWidget : public WebWidget {
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
 };
 
-void DestroyContext(WebGraphicsContext3DCommandBufferImpl* context,
+void DestroyContext(WebKit::WebGraphicsContext3D* context,
                     GLuint program,
                     GLuint buffer) {
   DCHECK(context);
@@ -388,14 +388,6 @@ RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
     DestroyContext(context_, program_, buffer_);
 }
 
-void RenderWidgetFullscreenPepper::OnViewContextSwapBuffersPosted() {
-  OnSwapBuffersPosted();
-}
-
-void RenderWidgetFullscreenPepper::OnViewContextSwapBuffersComplete() {
-  OnSwapBuffersComplete();
-}
-
 void RenderWidgetFullscreenPepper::OnViewContextSwapBuffersAborted() {
   if (!context_)
     return;
@@ -408,7 +400,7 @@ void RenderWidgetFullscreenPepper::OnViewContextSwapBuffersAborted() {
   context_ = NULL;
   program_ = 0;
   buffer_ = 0;
-  OnSwapBuffersAborted();
+  RenderWidget::OnViewContextSwapBuffersAborted();
   CheckCompositing();
 }
 
@@ -543,7 +535,11 @@ WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
 }
 
 bool RenderWidgetFullscreenPepper::SupportsAsynchronousSwapBuffers() {
-  return context_ != NULL;
+  return RenderWidget::SupportsAsynchronousSwapBuffers() && context_ != NULL;
+}
+
+GURL RenderWidgetFullscreenPepper::GetURLForGraphicsContext3D() {
+  return active_url_;
 }
 
 // Fullscreen pepper widgets composite themselves into the plugin's backing
@@ -570,20 +566,9 @@ void RenderWidgetFullscreenPepper::CreateContext() {
   attributes.shareResources = true;
   attributes.preferDiscreteGPU = true;
 
-  context_ =
-      new WebGraphicsContext3DCommandBufferImpl(
-          surface_id(),
-          active_url_,
-          RenderThreadImpl::current(),
-          AsWeakPtr());
-  if (!context_->Initialize(
-      attributes,
-      true /* bind_generates_resources */,
-      CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT)) {
-    delete context_;
-    context_ = NULL;
+  context_ = CreateGraphicsContext3D(attributes);
+  if (!context_)
     return;
-  }
 
   if (!InitContext()) {
     DestroyContext(context_, program_, buffer_);
@@ -613,7 +598,7 @@ const char kFragmentShader[] =
     "  gl_FragColor = texture2D(in_texture, tex_coord);\n"
     "}\n";
 
-GLuint CreateShaderFromSource(WebGraphicsContext3DCommandBufferImpl* context,
+GLuint CreateShaderFromSource(WebKit::WebGraphicsContext3D* context,
                               GLenum type,
                               const char* source) {
     GLuint shader = context->createShader(type);

@@ -22,28 +22,24 @@ class PluginInstance;
 }  // namespace ppapi
 }  // namespace webkit
 
+namespace WebKit {
+class WebGraphicsContext3D;
+}
+
 namespace content {
-class WebGraphicsContext3DCommandBufferImpl;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
 // invalidate rects.
 class RenderWidgetFullscreenPepper :
     public RenderWidgetFullscreen,
-    public webkit::ppapi::FullscreenContainer,
-    public WebGraphicsContext3DSwapBuffersClient,
-    public base::SupportsWeakPtr<RenderWidgetFullscreenPepper> {
+    public webkit::ppapi::FullscreenContainer {
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
       webkit::ppapi::PluginInstance* plugin,
       const GURL& active_url,
       const WebKit::WebScreenInfo& screen_info);
-
-  // WebGraphicscontext3DSwapBuffersClient implementation
-  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
-  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
-  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
 
   // pepper::FullscreenContainer API.
   virtual void Invalidate() OVERRIDE;
@@ -60,7 +56,7 @@ class RenderWidgetFullscreenPepper :
   // in RenderWidgetFullscreen.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
-  WebGraphicsContext3DCommandBufferImpl* context() const { return context_; }
+  WebKit::WebGraphicsContext3D* context() const { return context_; }
   void SwapBuffers();
 
   // Could be NULL when this widget is closing.
@@ -97,7 +93,9 @@ class RenderWidgetFullscreenPepper :
 
   // RenderWidget overrides.
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
+  virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
   virtual void Composite() OVERRIDE;
+  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
 
  private:
   // Creates the GL context for compositing.
@@ -117,7 +115,7 @@ class RenderWidgetFullscreenPepper :
   webkit::ppapi::PluginInstance* plugin_;
 
   // GL context for compositing.
-  WebGraphicsContext3DCommandBufferImpl* context_;
+  WebKit::WebGraphicsContext3D* context_;
   unsigned int buffer_;
   unsigned int program_;
 

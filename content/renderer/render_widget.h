@@ -12,10 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "cc/rendering_stats.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -78,6 +80,7 @@ class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
       NON_EXPORTED_BASE(virtual public WebKit::WebWidgetClient),
+      NON_EXPORTED_BASE(public WebGraphicsContext3DSwapBuffersClient),
       public base::RefCounted<RenderWidget> {
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
@@ -346,14 +349,17 @@ class CONTENT_EXPORT RenderWidget
   // OnSwapBuffersComplete() when swaps complete, and OnSwapBuffersAborted if
   // the context is lost.
   virtual bool SupportsAsynchronousSwapBuffers();
+  virtual GURL GetURLForGraphicsContext3D();
 
   virtual bool ForceCompositingModeEnabled();
 
-  // Notifies scheduler that the RenderWidget's subclass has finished or aborted
-  // a swap buffers.
-  void OnSwapBuffersPosted();
-  void OnSwapBuffersComplete();
-  void OnSwapBuffersAborted();
+  // WebGraphicsContext3DSwapBuffersClient implementation.
+
+  // Called by a GraphicsContext associated with this view when swapbuffers
+  // is posted, completes or is aborted.
+  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
+  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
+  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
 
   // Detects if a suitable opaque plugin covers the given paint bounds with no
   // compositing necessary.
@@ -474,6 +480,10 @@ class CONTENT_EXPORT RenderWidget
   // Check whether the WebWidget has any touch event handlers registered
   // at the given point.
   virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const;
+
+  // Creates a 3D context associated with this view.
+  WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
@@ -675,6 +685,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;
+
+  base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

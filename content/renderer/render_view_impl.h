@@ -203,7 +203,6 @@ class CONTENT_EXPORT RenderViewImpl
       public RenderView,
       NON_EXPORTED_BASE(public webkit::npapi::WebPluginPageDelegate),
       NON_EXPORTED_BASE(public webkit_media::WebMediaPlayerDelegate),
-      NON_EXPORTED_BASE(public WebGraphicsContext3DSwapBuffersClient),
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
   // Creates a new RenderView. If this is a blocked popup or as a new tab,
@@ -239,14 +238,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // May return NULL when the view is closing.
   WebKit::WebView* webview() const;
-
-  // WebGraphicsContext3DSwapBuffersClient implementation.
-
-  // Called by a GraphicsContext associated with this view when swapbuffers
-  // is posted, completes or is aborted.
-  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
-  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
-  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
 
   int history_list_offset() const { return history_list_offset_; }
 
@@ -810,9 +801,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void OnSetFocus(bool enable) OVERRIDE;
   virtual void OnWasHidden() OVERRIDE;
   virtual void OnWasShown(bool needs_repainting) OVERRIDE;
-  virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
+  virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
   virtual bool ForceCompositingModeEnabled() OVERRIDE;
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual void OnImeSetComposition(
       const string16& text,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
@@ -1096,9 +1086,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
-
-  WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   // This method walks the entire frame tree for this RenderView and sends an
   // update to the browser process as described in the
