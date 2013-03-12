@@ -89,9 +89,7 @@ namespace webkit_glue {
 bool g_forcefully_terminate_plugin_process = false;
 
 void SetJavaScriptFlags(const std::string& str) {
-#if WEBKIT_USING_V8
   v8::V8::SetFlagsFromString(str.data(), static_cast<int>(str.size()));
-#endif
 }
 
 void EnableWebCoreLogChannels(const std::string& channels) {
