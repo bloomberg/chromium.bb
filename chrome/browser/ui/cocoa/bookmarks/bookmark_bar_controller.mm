@@ -214,9 +214,15 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)tagEmptyMenu:(NSMenu*)menu;
 - (void)clearMenuTagMap;
 - (int)preferredHeight;
-- (void)addNonBookmarkButtonsToView;
 - (void)addButtonsToView;
+- (BOOL)setOtherBookmarksButtonVisibility;
+- (BOOL)setAppsPageShortcutButtonVisibility;
+- (BookmarkButton*)customBookmarkButtonForCell:(NSCell*)cell;
+- (void)createOtherBookmarksButton;
+- (void)createAppsPageShortcutButton;
+- (void)openAppsPage:(id)sender;
 - (void)centerNoItemsLabel;
+- (void)positionRightSideButtons;
 - (void)watchForExitEvent:(BOOL)watch;
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
 
@@ -291,8 +297,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   DCHECK(value);
   if (value)
     node = static_cast<const BookmarkNode*>([value pointerValue]);
-  NSNumber* number = [dict
-                       objectForKey:bookmark_button::kBookmarkPulseFlagKey];
+  NSNumber* number = [dict objectForKey:bookmark_button::kBookmarkPulseFlagKey];
   DCHECK(number);
   BOOL doPulse = number ? [number boolValue] : NO;
 
@@ -398,7 +403,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   // Don't pass ourself along (as 'self') until our init is completely
   // done.  Thus, this call is (almost) last.
-  bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
+  bridge_.reset(new BookmarkBarBridge(browser_->profile(), self,
+                                      bookmarkModel_));
 }
 
 // Called by our main view (a BookmarkBarView) when it gets moved to a
@@ -476,6 +482,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // simply update based on what we're told.
 - (void)updateVisibility {
   [self showBookmarkBarWithAnimation:NO];
+}
+
+- (void)updateAppsPageShortcutButtonVisibility {
+  [self setAppsPageShortcutButtonVisibility];
+  [self reconfigureBookmarkBar];
 }
 
 - (void)updateHiddenState {
@@ -710,18 +721,37 @@ void RecordAppLaunch(Profile* profile, GURL url) {
       bookmark_utils::LAUNCH_ATTACHED_BAR;
 }
 
-// Position the off-the-side chevron to the left of the otherBookmarks button,
-// unless it's hidden in which case it's right aligned on top of it.
-- (void)positionOffTheSideButton {
-  NSRect frame = [offTheSideButton_ frame];
-  frame.size.height = bookmarks::kBookmarkFolderButtonHeight;
-  if (otherBookmarksButton_.get() && ![otherBookmarksButton_ isHidden]) {
-    frame.origin.x = ([otherBookmarksButton_ frame].origin.x -
-                      (frame.size.width +
-                       bookmarks::kBookmarkHorizontalPadding));
+// Position the right-side buttons including the off-the-side chevron.
+- (void)positionRightSideButtons {
+  int maxX = NSMaxX([[self buttonView] bounds]) -
+      bookmarks::kBookmarkHorizontalPadding;
+  int right = maxX;
+
+  int ignored = 0;
+  NSRect frame = [self frameForBookmarkButtonFromCell:
+      [appsPageShortcutButton_ cell] xOffset:&ignored];
+  if (![appsPageShortcutButton_ isHidden]) {
+    right -= NSWidth(frame);
+    frame.origin.x = right;
   } else {
-    frame.origin.x = (NSMaxX([otherBookmarksButton_ frame]) - frame.size.width);
+    frame.origin.x = maxX - NSWidth(frame);
   }
+  [appsPageShortcutButton_ setFrame:frame];
+
+  frame = [self frameForBookmarkButtonFromCell:
+      [otherBookmarksButton_ cell] xOffset:&ignored];
+  if (![otherBookmarksButton_ isHidden]) {
+    right -= NSWidth(frame);
+    frame.origin.x = right;
+  } else {
+    frame.origin.x = maxX - NSWidth(frame);
+  }
+  [otherBookmarksButton_ setFrame:frame];
+
+  frame = [offTheSideButton_ frame];
+  frame.size.height = bookmarks::kBookmarkFolderButtonHeight;
+  right -= frame.size.width;
+  frame.origin.x = right;
   [offTheSideButton_ setFrame:frame];
 }
 
@@ -1082,18 +1112,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return [[button.get() retain] autorelease];
 }
 
-// Add non-bookmark buttons to the view.  This includes the chevron
-// and the "other bookmarks" button.  Technically "other bookmarks" is
-// a bookmark button but it is treated specially.  Only needs to be
-// called when these buttons are new or when the bookmark bar is
-// cleared (e.g. on a loaded: call).  Unlike addButtonsToView below,
-// we don't need to add/remove these dynamically in response to window
-// resize.
-- (void)addNonBookmarkButtonsToView {
-  [buttonView_ addSubview:otherBookmarksButton_.get()];
-  [buttonView_ addSubview:offTheSideButton_];
-}
-
 // Add bookmark buttons to the view only if they are completely
 // visible and don't overlap the "other bookmarks".  Remove buttons
 // which are clipped.  Called when building the bookmark bar the first time.
@@ -1126,7 +1144,38 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return visible;
 }
 
-// Create the button for "Other Bookmarks" on the right of the bar.
+// Shows or hides the Apps button as appropriate, and returns whether it ended
+// up visible.
+- (BOOL)setAppsPageShortcutButtonVisibility {
+  if (!appsPageShortcutButton_.get())
+    return NO;
+
+  BOOL visible = bookmarkModel_->IsLoaded() &&
+      chrome::search::IsInstantExtendedAPIEnabled() &&
+      browser_->profile()->GetPrefs()->GetBoolean(
+          prefs::kShowAppsShortcutInBookmarkBar);
+  [appsPageShortcutButton_ setHidden:!visible];
+  return visible;
+}
+
+// Creates a bookmark bar button that does not correspond to a regular bookmark
+// or folder. It is used by the "Other Bookmarks" and the "Apps" buttons.
+- (BookmarkButton*)customBookmarkButtonForCell:(NSCell*)cell {
+  BookmarkButton* button = [[BookmarkButton alloc] init];
+  [[button draggableButton] setDraggable:NO];
+  [[button draggableButton] setActsOnMouseDown:YES];
+  // Peg at right; keep same height as bar.
+  [button setAutoresizingMask:(NSViewMinXMargin)];
+  [button setCell:cell];
+  [button setDelegate:self];
+  [button setTarget:self];
+  // Make sure this button, like all other BookmarkButtons, lives
+  // until the end of the current event loop.
+  [[button retain] autorelease];
+  return button;
+}
+
+// Creates the button for "Other Bookmarks", but does not position it.
 - (void)createOtherBookmarksButton {
   // Can't create this until the model is loaded, but only need to
   // create it once.
@@ -1135,34 +1184,42 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
   }
 
-  // TODO(jrg): remove duplicate code
   NSCell* cell = [self cellForBookmarkNode:bookmarkModel_->other_node()];
-  int ignored = 0;
-  NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&ignored];
-  frame.origin.x = [[self buttonView] bounds].size.width - frame.size.width;
-  frame.origin.x -= bookmarks::kBookmarkHorizontalPadding;
-  BookmarkButton* button = [[BookmarkButton alloc] initWithFrame:frame];
-  [[button draggableButton] setDraggable:NO];
-  [[button draggableButton] setActsOnMouseDown:YES];
-  otherBookmarksButton_.reset(button);
-  view_id_util::SetID(button, VIEW_ID_OTHER_BOOKMARKS);
-
-  // Make sure this button, like all other BookmarkButtons, lives
-  // until the end of the current event loop.
-  [[button retain] autorelease];
-
-  // Peg at right; keep same height as bar.
-  [button setAutoresizingMask:(NSViewMinXMargin)];
-  [button setCell:cell];
-  [button setDelegate:self];
-  [button setTarget:self];
-  [button setAction:@selector(openBookmarkFolderFromButton:)];
-  [buttonView_ addSubview:button];
+  otherBookmarksButton_.reset([self customBookmarkButtonForCell:cell]);
+  [otherBookmarksButton_ setAction:@selector(openBookmarkFolderFromButton:)];
+  view_id_util::SetID(otherBookmarksButton_.get(), VIEW_ID_OTHER_BOOKMARKS);
+  [buttonView_ addSubview:otherBookmarksButton_.get()];
 
   [self setOtherBookmarksButtonVisibility];
+}
 
-  // Now that it's here, move the chevron over.
-  [self positionOffTheSideButton];
+// Creates the button for "Apps", but does not position it.
+- (void)createAppsPageShortcutButton {
+  // Can't create this until the model is loaded, but only need to
+  // create it once.
+  if (appsPageShortcutButton_.get()) {
+    [self setAppsPageShortcutButtonVisibility];
+    return;
+  }
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSString* text = l10n_util::GetNSString(IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME);
+  NSImage* image = rb.GetNativeImageNamed(IDR_WEBSTORE_ICON_16).ToNSImage();
+  NSCell* cell = [self cellForCustomButtonWithText:text
+                                             image:image];
+  appsPageShortcutButton_.reset([self customBookmarkButtonForCell:cell]);
+  [appsPageShortcutButton_ setAction:@selector(openAppsPage:)];
+  NSString* tooltip =
+      l10n_util::GetNSString(IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP);
+  [appsPageShortcutButton_ setToolTip:tooltip];
+  [buttonView_ addSubview:appsPageShortcutButton_.get()];
+
+  [self setAppsPageShortcutButtonVisibility];
+}
+
+- (void)openAppsPage:(id)sender {
+  chrome::ShowAppLauncherPage(browser_);
+  bookmark_utils::RecordAppsPageOpen([self bookmarkLaunchLocation]);
 }
 
 // To avoid problems with sync, changes that may impact the current
@@ -1268,7 +1325,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (void)reconfigureBookmarkBar {
   [self redistributeButtonsOnBarAsNeeded];
-  [self positionOffTheSideButton];
+  [self positionRightSideButtons];
   [self configureOffTheSideButtonContentsAndVisibility];
   [self centerNoItemsLabel];
 }
@@ -1369,13 +1426,18 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (CGFloat)buttonViewMaxXWithOffTheSideButtonIsVisible:(BOOL)visible {
   CGFloat maxViewX = NSMaxX([buttonView_ bounds]);
-  // If necessary, pull in the width to account for the Other Bookmarks button.
-  if ([self setOtherBookmarksButtonVisibility]) {
-    maxViewX = [otherBookmarksButton_.get() frame].origin.x -
+  // If necessary, pull in the width to account for the Other Bookmarks or Apps
+  // button.
+  const BOOL otherButtonVisible = [self setOtherBookmarksButtonVisibility];
+  const BOOL appsButtonVisible = [self setAppsPageShortcutButtonVisibility];
+  if (otherButtonVisible || appsButtonVisible) {
+    BookmarkButton* leftMostRightAlignedButton = otherButtonVisible ?
+        otherBookmarksButton_.get() : appsPageShortcutButton_.get();
+    maxViewX = [leftMostRightAlignedButton frame].origin.x -
                bookmarks::kBookmarkRightMargin;
   }
 
-  [self positionOffTheSideButton];
+  [self positionRightSideButtons];
   // If we're already overflowing, then we need to account for the chevron.
   if (visible) {
     maxViewX =
@@ -1390,7 +1452,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   NSInteger barCount = node->child_count();
 
   // Determine the current maximum extent of the visible buttons.
-  [self positionOffTheSideButton];
+  [self positionRightSideButtons];
   CGFloat maxViewX = [self buttonViewMaxXWithOffTheSideButtonIsVisible:
       (barCount > displayedButtonCount_)];
 
@@ -1500,9 +1562,26 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   NSImage* image = node ? [self faviconForNode:node] : nil;
   BookmarkButtonCell* cell =
       [BookmarkButtonCell buttonCellForNode:node
-                             menuController:contextMenuController_
-                                   cellText:nil
-                                  cellImage:image];
+                                       text:nil
+                                      image:image
+                             menuController:contextMenuController_];
+  [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
+
+  // Note: a quirk of setting a cell's text color is that it won't work
+  // until the cell is associated with a button, so we can't theme the cell yet.
+
+  return cell;
+}
+
+// Return an autoreleased NSCell suitable for a special button displayed on the
+// bookmark bar that is not attached to any bookmark node.
+// TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
+- (BookmarkButtonCell*)cellForCustomButtonWithText:(NSString*)text
+                                             image:(NSImage*)image {
+  BookmarkButtonCell* cell =
+      [BookmarkButtonCell buttonCellWithText:text
+                                       image:image
+                              menuController:contextMenuController_];
   [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
 
   // Note: a quirk of setting a cell's text color is that it won't work
@@ -1595,6 +1674,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [cell setTextColor:color];
   }
   [[otherBookmarksButton_ cell] setTextColor:color];
+  [[appsPageShortcutButton_ cell] setTextColor:color];
 }
 
 // Return YES if the event indicates an exit from the bookmark bar
@@ -1900,9 +1980,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self clearBookmarkBar];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
+  [self createAppsPageShortcutButton];
   [self updateTheme:[[[self view] window] themeProvider]];
-  [self positionOffTheSideButton];
-  [self addNonBookmarkButtonsToView];
+  [self positionRightSideButtons];
   [self addButtonsToView];
   [self configureOffTheSideButtonContentsAndVisibility];
   [self reconfigureBookmarkBar];

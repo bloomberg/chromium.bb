@@ -4,10 +4,16 @@
 
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_bridge.h"
 
+#include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#include "chrome/common/pref_names.h"
 
-BookmarkBarBridge::BookmarkBarBridge(BookmarkBarController* controller,
+
+BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
+                                     BookmarkBarController* controller,
                                      BookmarkModel* model)
     : controller_(controller),
       model_(model),
@@ -18,6 +24,12 @@ BookmarkBarBridge::BookmarkBarBridge(BookmarkBarController* controller,
   // We will be notified when that happens with the AddObserver() call.
   if (model->IsLoaded())
     Loaded(model, false);
+
+  profile_pref_registrar_.Init(profile->GetPrefs());
+  profile_pref_registrar_.Add(
+      prefs::kShowAppsShortcutInBookmarkBar,
+      base::Bind(&BookmarkBarBridge::OnAppsPageShortcutVisibilityChanged,
+          base::Unretained(this)));
 }
 
 BookmarkBarBridge::~BookmarkBarBridge() {
@@ -80,4 +92,8 @@ void BookmarkBarBridge::ExtensiveBookmarkChangesBeginning(
 void BookmarkBarBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   batch_mode_ = false;
   [controller_ loaded:model];
+}
+
+void BookmarkBarBridge::OnAppsPageShortcutVisibilityChanged() {
+  [controller_ updateAppsPageShortcutButtonVisibility];
 }

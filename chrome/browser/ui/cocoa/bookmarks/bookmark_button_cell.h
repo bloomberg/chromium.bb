@@ -42,18 +42,31 @@ class BookmarkNode;
 
 // Create a button cell which draws with a theme.
 + (id)buttonCellForNode:(const BookmarkNode*)node
-         menuController:(BookmarkContextMenuCocoaController*)menuController
-               cellText:(NSString*)cellText
-              cellImage:(NSImage*)cellImage;
+                   text:(NSString*)text
+                  image:(NSImage*)image
+         menuController:(BookmarkContextMenuCocoaController*)menuController;
+
+// Create a button cell not attached to any node which draws with a theme.
++ (id)buttonCellWithText:(NSString*)text
+                   image:(NSImage*)image
+          menuController:(BookmarkContextMenuCocoaController*)menuController;
 
 // Initialize a button cell which draws with a theme.
 // Designated initializer.
 - (id)initForNode:(const BookmarkNode*)node
-   menuController:(BookmarkContextMenuCocoaController*)menuController
-         cellText:(NSString*)cellText
-        cellImage:(NSImage*)cellImage;
+             text:(NSString*)text
+            image:(NSImage*)image
+   menuController:(BookmarkContextMenuCocoaController*)menuController;
 
-- (BOOL)empty;  // returns YES if empty.
+// Initialize a button cell not attached to any node which draws with a theme.
+- (id)initWithText:(NSString*)text
+             image:(NSImage*)image
+    menuController:(BookmarkContextMenuCocoaController*)menuController;
+
+// A button cell is considered empty if it is expected to be attached to a node
+// and this node is NULL. If the button was created with
+// buttonCellForContextMenu then no node is expected and empty is always NO.
+- (BOOL)empty;
 - (void)setEmpty:(BOOL)empty;
 
 // |-setBookmarkCellText:image:| is used to set the text and image of

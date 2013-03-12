@@ -161,9 +161,9 @@ TEST_F(BookmarkButtonCellTest, FolderArrow) {
                                            GURL("http://www.google.com"));
   scoped_nsobject<BookmarkButtonCell> cell(
     [[BookmarkButtonCell alloc] initForNode:node
-                              menuController:nil
-                                   cellText:@"small"
-                                  cellImage:nil]);
+                                       text:@"small"
+                                      image:nil
+                             menuController:nil]);
   EXPECT_TRUE(cell.get());
 
   NSSize size = [cell cellSize];
@@ -188,9 +188,9 @@ TEST_F(BookmarkButtonCellTest, VerticalTextOffset) {
       [[GradientButtonCell alloc] initTextCell:@"Testing"]);
   scoped_nsobject<BookmarkButtonCell> bookmark_cell(
       [[BookmarkButtonCell alloc] initForNode:node
-                               menuController:nil
-                                     cellText:@"small"
-                                    cellImage:nil]);
+                                         text:@"small"
+                                        image:nil
+                               menuController:nil]);
 
   ASSERT_TRUE(gradient_cell.get());
   ASSERT_TRUE(bookmark_cell.get());

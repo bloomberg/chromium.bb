@@ -16,9 +16,9 @@
 // Create a button cell which draws without a theme and with a frame
 // color provided by the ThemeService defaults.
 + (id)buttonCellForNode:(const BookmarkNode*)node
-         menuController:(BookmarkContextMenuCocoaController*)menuController
-               cellText:(NSString*)cellText
-              cellImage:(NSImage*)cellImage;
+                   text:(NSString*)text
+                  image:(NSImage*)image
+         menuController:(BookmarkContextMenuCocoaController*)menuController;
 
 @end
 

@@ -362,9 +362,9 @@ struct LayoutMetrics {
       [barController_ menuController];
   BookmarkBarFolderButtonCell* cell =
       [BookmarkBarFolderButtonCell buttonCellForNode:child
-                                      menuController:menuController
-                                            cellText:nil
-                                           cellImage:image];
+                                                text:nil
+                                               image:image
+                                      menuController:menuController];
   [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
   return cell;
 }

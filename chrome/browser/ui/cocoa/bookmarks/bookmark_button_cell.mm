@@ -31,23 +31,34 @@ const int kHierarchyButtonXMargin = 4;
 @synthesize drawFolderArrow = drawFolderArrow_;
 
 + (id)buttonCellForNode:(const BookmarkNode*)node
-         menuController:(BookmarkContextMenuCocoaController*)menuController
-               cellText:(NSString*)cellText
-              cellImage:(NSImage*)cellImage {
+                   text:(NSString*)text
+                  image:(NSImage*)image
+         menuController:(BookmarkContextMenuCocoaController*)menuController {
   id buttonCell =
       [[[BookmarkButtonCell alloc] initForNode:node
-                                menuController:menuController
-                                      cellText:cellText
-                                     cellImage:cellImage]
+                                          text:text
+                                         image:image
+                                menuController:menuController]
+       autorelease];
+  return buttonCell;
+}
+
++ (id)buttonCellWithText:(NSString*)text
+                   image:(NSImage*)image
+          menuController:(BookmarkContextMenuCocoaController*)menuController {
+  id buttonCell =
+      [[[BookmarkButtonCell alloc] initWithText:text
+                                          image:image
+                                 menuController:menuController]
        autorelease];
   return buttonCell;
 }
 
 - (id)initForNode:(const BookmarkNode*)node
-   menuController:(BookmarkContextMenuCocoaController*)menuController
-         cellText:(NSString*)cellText
-        cellImage:(NSImage*)cellImage {
-  if ((self = [super initTextCell:cellText])) {
+             text:(NSString*)text
+            image:(NSImage*)image
+   menuController:(BookmarkContextMenuCocoaController*)menuController {
+  if ((self = [super initTextCell:text])) {
     menuController_ = menuController;
     [self configureBookmarkButtonCell];
     [self setTextColor:[NSColor blackColor]];
@@ -55,7 +66,7 @@ const int kHierarchyButtonXMargin = 4;
 
     if (node) {
       NSString* title = base::SysUTF16ToNSString(node->GetTitle());
-      [self setBookmarkCellText:title image:cellImage];
+      [self setBookmarkCellText:title image:image];
     } else {
       [self setEmpty:YES];
       [self setBookmarkCellText:l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU)
@@ -66,11 +77,25 @@ const int kHierarchyButtonXMargin = 4;
   return self;
 }
 
+- (id)initWithText:(NSString*)text
+             image:(NSImage*)image
+    menuController:(BookmarkContextMenuCocoaController*)menuController {
+  if ((self = [super initTextCell:text])) {
+    menuController_ = menuController;
+    [self configureBookmarkButtonCell];
+    [self setTextColor:[NSColor blackColor]];
+    [self setBookmarkNode:NULL];
+    [self setBookmarkCellText:text image:image];
+    // This is a custom button not attached to any node. It is no considered
+    // empty even if its bookmark node is NULL.
+    [self setEmpty:NO];
+  }
+
+  return self;
+}
+
 - (id)initTextCell:(NSString*)string {
-  return [self initForNode:nil
-            menuController:nil
-                  cellText:string
-                 cellImage:nil];
+  return [self initForNode:nil text:string image:nil menuController:nil];
 }
 
 // Used by the off-the-side menu, the only case where a
@@ -161,8 +186,12 @@ const int kHierarchyButtonXMargin = 4;
   if (empty_)
     return nil;
 
+  // If node is NULL, this is a custom button, the menu does not represent
+  // anything.
   const BookmarkNode* node = [self bookmarkNode];
-  if (node->parent() && node->parent()->type() == BookmarkNode::FOLDER) {
+
+  if (node && node->parent() &&
+      node->parent()->type() == BookmarkNode::FOLDER) {
     content::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
   } else {
     content::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));

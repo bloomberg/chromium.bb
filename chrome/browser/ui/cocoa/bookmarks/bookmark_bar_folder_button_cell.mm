@@ -7,14 +7,14 @@
 @implementation BookmarkBarFolderButtonCell
 
 + (id)buttonCellForNode:(const BookmarkNode*)node
-         menuController:(BookmarkContextMenuCocoaController*)menuController
-               cellText:(NSString*)cellText
-              cellImage:(NSImage*)cellImage {
+                   text:(NSString*)text
+                  image:(NSImage*)image
+         menuController:(BookmarkContextMenuCocoaController*)menuController {
   id buttonCell =
       [[[BookmarkBarFolderButtonCell alloc] initForNode:node
-                                         menuController:menuController
-                                               cellText:cellText
-                                              cellImage:cellImage]
+                                                   text:text
+                                                  image:image
+                                         menuController:menuController]
        autorelease];
   return buttonCell;
 }

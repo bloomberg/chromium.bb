@@ -108,7 +108,8 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   scoped_nsobject<FakeBookmarkBarController>
       controller([[FakeBookmarkBarController alloc] initWithBrowser:browser()]);
   EXPECT_TRUE(controller.get());
-  scoped_ptr<BookmarkBarBridge> bridge(new BookmarkBarBridge(controller.get(),
+  scoped_ptr<BookmarkBarBridge> bridge(new BookmarkBarBridge(profile(),
+                                                             controller.get(),
                                                              model));
   EXPECT_TRUE(bridge.get());
 

@@ -223,6 +223,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // "Other bookmarks" button on the right side.
   scoped_nsobject<BookmarkButton> otherBookmarksButton_;
 
+  // "Apps" button to the right of "Other bookmarks".
+  scoped_nsobject<BookmarkButton> appsPageShortcutButton_;
+
   // When doing a drag, this is folder button "hovered over" which we
   // may want to open after a short delay.  There are cases where a
   // mouse-enter can open a folder (e.g. if the menus are "active")
@@ -297,6 +300,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 // Update the visible state of the bookmark bar.
 - (void)updateVisibility;
+
+// Update the visible state of the bookmark bar.
+- (void)updateAppsPageShortcutButtonVisibility;
 
 // Hides or shows the bookmark bar depending on the current state.
 - (void)updateHiddenState;
@@ -384,6 +390,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
 - (void)clearBookmarkBar;
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node;
+- (BookmarkButtonCell*)cellForCustomButtonWithText:(NSString*)text
+                                             image:(NSImage*)image;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;

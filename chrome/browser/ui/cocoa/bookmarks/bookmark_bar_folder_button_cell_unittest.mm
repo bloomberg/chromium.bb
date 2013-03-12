@@ -17,9 +17,9 @@ class BookmarkBarFolderButtonCellTest : public CocoaTest {
 TEST_F(BookmarkBarFolderButtonCellTest, Create) {
   scoped_nsobject<BookmarkBarFolderButtonCell> cell;
   cell.reset([[BookmarkBarFolderButtonCell buttonCellForNode:nil
-                                              menuController:nil
-                                                    cellText:nil
-                                                   cellImage:nil] retain]);
+                                                        text:nil
+                                                       image:nil
+                                              menuController:nil] retain]);
   EXPECT_TRUE(cell);
 }
 
@@ -41,9 +41,9 @@ TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
       [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
   scoped_nsobject<BookmarkBarFolderButtonCell> folder_cell(
       [[BookmarkBarFolderButtonCell buttonCellForNode:nil
-                                       menuController:nil
-                                             cellText:@"Testing"
-                                            cellImage:image] retain]);
+                                                 text:@"Testing"
+                                                image:image
+                                       menuController:nil] retain]);
 
   ASSERT_TRUE(cell.get());
   ASSERT_TRUE(folder_cell.get());
