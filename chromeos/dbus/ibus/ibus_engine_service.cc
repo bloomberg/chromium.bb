@@ -136,6 +136,8 @@ class IBusEngineServiceImpl : public IBusEngineService {
   // IBusEngineService override.
   virtual void SetEngine(IBusEngineHandlerInterface* handler) OVERRIDE {
     DVLOG_IF(1, engine_handler_ != NULL) << "Replace engine.";
+    if (engine_handler_)
+      engine_handler_->Disable();
     engine_handler_ = handler;
   }
 
