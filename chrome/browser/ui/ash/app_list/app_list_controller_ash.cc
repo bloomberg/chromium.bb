@@ -43,7 +43,8 @@ bool AppListControllerDelegateAsh::CanShowCreateShortcutsDialog() {
   return false;
 }
 
-void AppListControllerDelegateAsh::CreateNewWindow(bool incognito) {
+void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,
+                                                   bool incognito) {
   if (incognito)
     ChromeLauncherController::instance()->CreateNewIncognitoWindow();
   else

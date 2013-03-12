@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 
+class AppListControllerDelegate;
 class PrefRegistrySimple;
 class Profile;
 
@@ -60,6 +61,8 @@ class AppListService : public ProfileInfoCacheObserver {
   virtual void OnProfileAvatarChanged(
       const base::FilePath& profile_path) OVERRIDE;
 
+  // Exposed to allow testing of the controller delegate.
+  virtual AppListControllerDelegate* CreateControllerDelegate();
  protected:
   AppListService() {}
   virtual ~AppListService() {}

@@ -67,3 +67,7 @@ void AppListService::OnProfileNameChanged(const base::FilePath& profile_path,
 
 void AppListService::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {}
+
+AppListControllerDelegate* AppListService::CreateControllerDelegate() {
+  return NULL;
+}

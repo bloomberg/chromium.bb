@@ -1420,6 +1420,7 @@
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
+        'browser/ui/views/app_list/app_list_controller_win_browsertest.cc',
         'browser/ui/views/avatar_menu_button_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/find_bar_controller_browsertest.cc',
@@ -1777,6 +1778,7 @@
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_browsertest.cc',
             'browser/ui/views/message_center/web_notification_tray_win_browsertest.cc',
+            'browser/ui/views/app_list/app_list_controller_win_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

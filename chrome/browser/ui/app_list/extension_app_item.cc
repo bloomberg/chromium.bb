@@ -501,9 +501,9 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
     extension_menu_items_->ExecuteCommand(command_id, NULL,
                                           content::ContextMenuParams());
   } else if (command_id == MENU_NEW_WINDOW) {
-    controller_->CreateNewWindow(false);
+    controller_->CreateNewWindow(profile_, false);
   } else if (command_id == MENU_NEW_INCOGNITO_WINDOW) {
-    controller_->CreateNewWindow(true);
+    controller_->CreateNewWindow(profile_, true);
   }
 }
 
@@ -530,17 +530,14 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   context_menu_model_.reset(new ui::SimpleMenuModel(this));
 
   if (extension_id_ == extension_misc::kChromeAppId) {
-    // Special context menu for Chrome app.
-#if defined(OS_CHROMEOS)
     context_menu_model_->AddItemWithStringId(
         MENU_NEW_WINDOW,
-        IDS_LAUNCHER_NEW_WINDOW);
+        IDS_APP_LIST_NEW_WINDOW);
     if (!profile_->IsOffTheRecord()) {
       context_menu_model_->AddItemWithStringId(
           MENU_NEW_INCOGNITO_WINDOW,
-          IDS_LAUNCHER_NEW_INCOGNITO_WINDOW);
+          IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-#endif
   } else {
     extension_menu_items_.reset(new extensions::ContextMenuMatcher(
         profile_, this, context_menu_model_.get(),

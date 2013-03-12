@@ -23,7 +23,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual void UnpinApp(const std::string& extension_id) OVERRIDE;
   virtual bool CanPin() OVERRIDE;
   virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
-  virtual void CreateNewWindow(bool incognito) OVERRIDE;
+  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            int event_flags) OVERRIDE;

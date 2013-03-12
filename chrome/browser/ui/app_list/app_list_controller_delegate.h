@@ -58,7 +58,7 @@ class AppListControllerDelegate {
 
   // Handle the "create window" context menu items of Chrome App.
   // |incognito| is true to create an incognito window.
-  virtual void CreateNewWindow(bool incognito);
+  virtual void CreateNewWindow(Profile* profile, bool incognito);
 
   // Show the app's most recent window, or launch it if it is not running.
   virtual void ActivateApp(Profile* profile,

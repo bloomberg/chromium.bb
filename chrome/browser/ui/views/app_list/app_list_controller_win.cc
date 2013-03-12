@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -142,6 +143,7 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void ShowCreateShortcutsDialog(
       Profile* profile,
       const std::string& extension_id) OVERRIDE;
+  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            int event_flags) OVERRIDE;
@@ -203,6 +205,8 @@ class AppListController : public AppListService {
   // We need to watch for profile removal to keep kAppListProfile updated.
   virtual void OnProfileWillBeRemoved(
       const base::FilePath& profile_path) OVERRIDE;
+
+  virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListController>;
@@ -352,6 +356,13 @@ void AppListControllerDelegateWin::ShowCreateShortcutsDialog(
   chrome::ShowCreateChromeAppShortcutsDialog(parent_hwnd, profile, extension);
 }
 
+void AppListControllerDelegateWin::CreateNewWindow(Profile* profile,
+                                                   bool incognito) {
+  Profile* window_profile = incognito ?
+      profile->GetOffTheRecordProfile() : profile;
+  chrome::NewEmptyWindow(window_profile, chrome::GetActiveDesktop());
+}
+
 void AppListControllerDelegateWin::ActivateApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
   LaunchApp(profile, extension, event_flags);
@@ -392,6 +403,10 @@ void AppListController::OnProfileWillBeRemoved(
     local_state->SetString(prefs::kAppListProfile,
         local_state->GetString(prefs::kProfileLastUsed));
   }
+}
+
+AppListControllerDelegate* AppListController::CreateControllerDelegate() {
+  return new AppListControllerDelegateWin();
 }
 
 void AppListController::SetAppListProfile(
@@ -525,7 +540,7 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
 #endif
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
-  view_delegate_ = new AppListViewDelegate(new AppListControllerDelegateWin(),
+  view_delegate_ = new AppListViewDelegate(CreateControllerDelegate(),
                                            profile_);
   current_view_ = new app_list::AppListView(view_delegate_);
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();

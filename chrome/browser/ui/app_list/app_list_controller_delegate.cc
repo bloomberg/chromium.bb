@@ -31,7 +31,8 @@ void AppListControllerDelegate::ShowCreateShortcutsDialog(
     Profile* profile,
     const std::string& extension_id) {}
 
-void AppListControllerDelegate::CreateNewWindow(bool incognito) {
+void AppListControllerDelegate::CreateNewWindow(Profile* profile,
+                                                bool incognito) {
   NOTREACHED();
 }
 
