@@ -20,7 +20,7 @@ class Status;
 // A DevTools client of a single DevTools debugger.
 class DevToolsClient {
  public:
-  typedef base::Callback<bool()> ConditionalFunc;
+  typedef base::Callback<Status(bool* is_condition_met)> ConditionalFunc;
 
   virtual ~DevToolsClient() {}
 
@@ -36,8 +36,9 @@ class DevToolsClient {
 
   virtual void AddListener(DevToolsEventListener* listener) = 0;
 
-  // Handles events until the given function returns true and there are no
-  // more received events to handle.
+  // Handles events until the given function reports the condition is met
+  // and there are no more received events to handle. If the given
+  // function ever returns an error, returns immediately with the error.
   virtual Status HandleEventsUntil(const ConditionalFunc& conditional_func) = 0;
 
   // Handles events that have been received but not yet handled.

@@ -266,3 +266,24 @@ Status ExecuteDismissAlert(
   session->prompt_text = "";
   return status;
 }
+
+Status ExecuteIsLoading(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  WebView* web_view = NULL;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  status = web_view->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  bool is_pending;
+  status = web_view->IsPendingNavigation(session->frame, &is_pending);
+  if (status.IsError())
+    return status;
+  value->reset(new base::FundamentalValue(is_pending));
+  return Status(kOk);
+}

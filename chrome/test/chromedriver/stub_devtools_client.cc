@@ -25,10 +25,13 @@ Status StubDevToolsClient::SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) {
+  result->reset(new base::DictionaryValue());
   return Status(kOk);
 }
 
-void StubDevToolsClient::AddListener(DevToolsEventListener* listener) {}
+void StubDevToolsClient::AddListener(DevToolsEventListener* listener) {
+  listeners_.push_back(listener);
+}
 
 Status StubDevToolsClient::HandleEventsUntil(
       const ConditionalFunc& conditional_func) {

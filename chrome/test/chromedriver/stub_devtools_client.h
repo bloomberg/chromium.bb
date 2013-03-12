@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_STUB_DEVTOOLS_CLIENT_H_
 #define CHROME_TEST_CHROMEDRIVER_STUB_DEVTOOLS_CLIENT_H_
 
+#include <list>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -14,6 +15,7 @@
 namespace base {
 class DictionaryValue;
 }
+
 class Status;
 
 class StubDevToolsClient : public DevToolsClient {
@@ -32,6 +34,9 @@ class StubDevToolsClient : public DevToolsClient {
   virtual void AddListener(DevToolsEventListener* listener) OVERRIDE;
   virtual Status HandleEventsUntil(
       const ConditionalFunc& conditional_func) OVERRIDE;
+
+ protected:
+  std::list<DevToolsEventListener*> listeners_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_STUB_DEVTOOLS_CLIENT_H_

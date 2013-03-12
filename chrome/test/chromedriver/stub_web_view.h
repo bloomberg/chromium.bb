@@ -51,6 +51,8 @@ class StubWebView : public WebView {
                               const std::string& url) OVERRIDE;
   virtual Status WaitForPendingNavigations(
       const std::string& frame_id) OVERRIDE;
+  virtual Status IsPendingNavigation(
+      const std::string& frame_id, bool* is_pending) OVERRIDE;
   virtual Status GetMainFrame(std::string* frame_id) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
   virtual Status CaptureScreenshot(std::string* screenshot) OVERRIDE;

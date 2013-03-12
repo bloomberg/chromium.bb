@@ -376,6 +376,29 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(False,
                       self._driver.ExecuteScript('return window.confirmed'))
 
+  def testShouldHandleNewWindowLoadingProperly(self):
+    """Tests that ChromeDriver determines loading correctly for new windows."""
+    sync_server = webserver.SyncWebServer()
+    self._http_server.SetDataForPath(
+        '/newwindow',
+        """
+        <html>
+        <body>
+        <a href='%s' target='_blank'>new window/tab</a>
+        </body>
+        </html>""" % sync_server.GetUrl())
+    self._driver.Load(self._http_server.GetUrl() + '/newwindow')
+    old_windows = self._driver.GetWindowHandles()
+    self._driver.FindElement('tagName', 'a').Click()
+    new_window = self._WaitForNewWindow(old_windows)
+    self.assertNotEqual(None, new_window)
+
+    self.assertFalse(self._driver.IsLoading())
+    self._driver.SwitchToWindow(new_window)
+    self.assertTrue(self._driver.IsLoading())
+    sync_server.RespondWithContent('<html>new window</html>')
+    self._driver.ExecuteScript('return 1')  # Shouldn't hang.
+
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

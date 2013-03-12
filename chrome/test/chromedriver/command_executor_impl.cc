@@ -208,6 +208,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteAcceptAlert);
   session_command_map[CommandNames::kDismissAlert] =
       base::Bind(&ExecuteDismissAlert);
+  session_command_map[CommandNames::kIsLoading] =
+      base::Bind(&ExecuteIsLoading);
 
   // Wrap SessionCommand into non-session Command.
   base::Callback<Status(

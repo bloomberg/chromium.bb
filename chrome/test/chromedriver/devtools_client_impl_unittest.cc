@@ -422,8 +422,13 @@ bool ReturnError(
   return false;
 }
 
-bool AlwaysTrue() {
-  return true;
+Status AlwaysTrue(bool* is_met) {
+  *is_met = true;
+  return Status(kOk);
+}
+
+Status AlwaysError(bool* is_met) {
+  return Status(kUnknownError);
 }
 
 }  // namespace
@@ -594,6 +599,16 @@ TEST(DevToolsClientImpl, WaitForNextEventError) {
   ASSERT_EQ(kUnknownError, status.code());
 }
 
+TEST(DevToolsClientImpl, WaitForNextEventConditionalFuncReturnsError) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
+  DevToolsClientImpl client(factory, "http://url", base::Bind(&CloserFunc),
+                            base::Bind(&ReturnEvent));
+  ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
+  Status status = client.HandleEventsUntil(base::Bind(&AlwaysError));
+  ASSERT_EQ(kUnknownError, status.code());
+}
+
 TEST(DevToolsClientImpl, NestedCommandsWithOutOfOrderResults) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
@@ -714,7 +729,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 
 }  // namespace
 
-TEST(DevToolsClientImpl, ProcessOnConnectedBeforeOnEvent) {
+TEST(DevToolsClientImpl, ProcessOnConnectedFirstOnCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
   DevToolsClientImpl client(factory, "http://url", base::Bind(&CloserFunc));
@@ -724,6 +739,20 @@ TEST(DevToolsClientImpl, ProcessOnConnectedBeforeOnEvent) {
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
   EXPECT_EQ(kOk, client.SendCommand("Runtime.execute", params).code());
+  listener1.VerifyCalled();
+  listener2.VerifyCalled();
+  listener3.VerifyCalled();
+}
+
+TEST(DevToolsClientImpl, ProcessOnConnectedFirstOnHandleEventsUntil) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
+  DevToolsClientImpl client(factory, "http://url", base::Bind(&CloserFunc));
+  OnConnectedListener listener1("DOM.getDocument", &client);
+  OnConnectedListener listener2("Runtime.enable", &client);
+  OnConnectedListener listener3("Page.enable", &client);
+  ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
+  EXPECT_EQ(kOk, client.HandleReceivedEvents().code());
   listener1.VerifyCalled();
   listener2.VerifyCalled();
   listener3.VerifyCalled();
@@ -776,6 +805,8 @@ TEST(DevToolsClientImpl, Reconnect) {
   params.SetInteger("param", 1);
   is_called = false;
   ASSERT_EQ(kDisconnected, client.SendCommand("method", params).code());
+  ASSERT_FALSE(is_called);
+  ASSERT_EQ(kDisconnected, client.HandleReceivedEvents().code());
   ASSERT_FALSE(is_called);
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   ASSERT_TRUE(is_called);

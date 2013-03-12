@@ -62,9 +62,15 @@ const char* GetAsString(MouseButton button) {
   }
 }
 
-bool IsNotPendingNavigation(NavigationTracker* tracker,
-                            const std::string& frame_id) {
-  return !tracker->IsPendingNavigation(frame_id);
+Status IsNotPendingNavigation(NavigationTracker* tracker,
+                              const std::string& frame_id,
+                              bool* is_not_pending) {
+  bool is_pending;
+  Status status = tracker->IsPendingNavigation(frame_id, &is_pending);
+  if (status.IsError())
+    return status;
+  *is_not_pending = !is_pending;
+  return Status(kOk);
 }
 
 const char* GetAsString(KeyEventType type) {
@@ -245,6 +251,17 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
   return client_->HandleEventsUntil(
       base::Bind(IsNotPendingNavigation, navigation_tracker_.get(),
                  full_frame_id));
+}
+
+Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,
+                                        bool* is_pending) {
+  std::string full_frame_id(frame_id);
+  if (full_frame_id.empty()) {
+    Status status = GetMainFrame(&full_frame_id);
+    if (status.IsError())
+      return status;
+  }
+  return navigation_tracker_->IsPendingNavigation(frame_id, is_pending);
 }
 
 Status WebViewImpl::GetMainFrame(std::string* out_frame) {

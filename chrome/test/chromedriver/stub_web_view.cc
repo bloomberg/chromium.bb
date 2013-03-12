@@ -72,6 +72,11 @@ Status StubWebView::WaitForPendingNavigations(const std::string& frame_id) {
   return Status(kOk);
 }
 
+Status StubWebView::IsPendingNavigation(const std::string& frame_id,
+                                        bool* is_pending) {
+  return Status(kOk);
+}
+
 Status StubWebView::GetMainFrame(std::string* frame_id) {
   return Status(kOk);
 }

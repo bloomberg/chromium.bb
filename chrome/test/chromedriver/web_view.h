@@ -82,6 +82,10 @@ class WebView {
   // If |frame_id| is "", waits for navigations on the main frame.
   virtual Status WaitForPendingNavigations(const std::string& frame_id) = 0;
 
+  // Returns whether the frame is pending navigation.
+  virtual Status IsPendingNavigation(
+      const std::string& frame_id, bool* is_pending) = 0;
+
   // Returns the frame id for the main frame.
   virtual Status GetMainFrame(std::string* out_frame) = 0;
 

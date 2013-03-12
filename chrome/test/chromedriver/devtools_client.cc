@@ -10,12 +10,13 @@
 
 namespace {
 
-bool ReturnTrue() {
-  return true;
+Status AlwaysTrue(bool* is_condition_true) {
+  *is_condition_true = true;
+  return Status(kOk);
 }
 
 }  // namespace
 
 Status DevToolsClient::HandleReceivedEvents() {
-  return HandleEventsUntil(base::Bind(&ReturnTrue));
+  return HandleEventsUntil(base::Bind(&AlwaysTrue));
 }

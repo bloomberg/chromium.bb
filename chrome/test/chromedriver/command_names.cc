@@ -118,3 +118,4 @@ const char CommandNames::kGetSessionLogs[] = "getSessionLogs";
 // Custom Chrome commands:
 const char CommandNames::kQuitAll[] = "quitAll";
 const char CommandNames::kGetSessionCapabilities[] = "getSessionCapabilities";
+const char CommandNames::kIsLoading[] = "isLoading";

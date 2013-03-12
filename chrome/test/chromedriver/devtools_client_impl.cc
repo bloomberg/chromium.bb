@@ -125,12 +125,28 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
 
 Status DevToolsClientImpl::HandleEventsUntil(
     const ConditionalFunc& conditional_func) {
+  if (!socket_->IsConnected())
+    return Status(kDisconnected, "not connected to DevTools");
+
+  Status status = EnsureAllListenersNotifiedOfConnection();
+  if (status.IsError())
+    return status;
+
   internal::InspectorMessageType type;
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
 
-  while (socket_->HasNextMessage() || !conditional_func.Run()) {
-    Status status = ReceiveNextMessage(-1, &type, &event, &response);
+  while (true) {
+    if (!socket_->HasNextMessage()) {
+      bool is_condition_met;
+      Status status = conditional_func.Run(&is_condition_met);
+      if (status.IsError())
+        return status;
+      if (is_condition_met)
+        return Status(kOk);
+    }
+
+    status = ReceiveNextMessage(-1, &type, &event, &response);
     if (status.IsError())
       return status;
   }
@@ -142,7 +158,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     const base::DictionaryValue& params,
     scoped_ptr<base::DictionaryValue>* result) {
   if (!socket_->IsConnected())
-    return Status(kDisconnected, "disconnected from DevTools");
+    return Status(kDisconnected, "not connected to DevTools");
 
   int command_id = next_id_++;
   base::DictionaryValue command;
@@ -178,13 +194,10 @@ Status DevToolsClientImpl::ReceiveNextMessage(
     internal::InspectorMessageType* type,
     internal::InspectorEvent* event,
     internal::InspectorCommandResponse* response) {
-  while (!listeners_for_on_connected_.empty()) {
-    DevToolsEventListener* listener = listeners_for_on_connected_.front();
-    listeners_for_on_connected_.pop_front();
-    Status status = listener->OnConnected();
-    if (status.IsError())
-      return status;
-  }
+  Status status = EnsureAllListenersNotifiedOfConnection();
+  if (status.IsError())
+    return status;
+
   // The message might be received already when processing other commands sent
   // from DevToolsEventListener::OnConnected.
   if (HasReceivedCommandResponse(expected_id))
@@ -224,6 +237,17 @@ Status DevToolsClientImpl::NotifyEventListeners(
   }
   if (method == "Inspector.detached")
     return Status(kDisconnected, "received Inspector.detached event");
+  return Status(kOk);
+}
+
+Status DevToolsClientImpl::EnsureAllListenersNotifiedOfConnection() {
+  while (!listeners_for_on_connected_.empty()) {
+    DevToolsEventListener* listener = listeners_for_on_connected_.front();
+    listeners_for_on_connected_.pop_front();
+    Status status = listener->OnConnected();
+    if (status.IsError())
+      return status;
+  }
   return Status(kOk);
 }
 

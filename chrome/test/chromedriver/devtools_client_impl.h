@@ -99,6 +99,7 @@ class DevToolsClientImpl : public DevToolsClient {
   bool HasReceivedCommandResponse(int cmd_id);
   Status NotifyEventListeners(const std::string& method,
                               const base::DictionaryValue& params);
+  Status EnsureAllListenersNotifiedOfConnection();
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
   FrontendCloserFunc frontend_closer_func_;

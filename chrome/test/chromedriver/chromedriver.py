@@ -254,6 +254,9 @@ class ChromeDriver(object):
       cmd = 'dismissAlert'
     self.ExecuteSessionCommand(cmd)
 
+  def IsLoading(self):
+    return self.ExecuteSessionCommand('isLoading')
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self.ExecuteSessionCommand('quit')
