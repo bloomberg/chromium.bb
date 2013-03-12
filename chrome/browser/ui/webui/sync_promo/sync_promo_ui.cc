@@ -129,6 +129,10 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   if (net::NetworkChangeNotifier::IsOffline())
     return false;
 
+  // Don't show if the profile is an incognito.
+  if (profile->IsOffTheRecord())
+    return false;
+
   // Display the signin promo if the user is not signed in.
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       profile->GetOriginalProfile());
