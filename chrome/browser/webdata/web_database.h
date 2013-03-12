@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 #include "sql/meta_table.h"
@@ -15,6 +16,7 @@ class KeywordTable;
 class LoginsTable;
 class TokenServiceTable;
 class WebAppsTable;
+class WebDatabaseTable;
 class WebIntentsTable;
 
 namespace base {
@@ -67,13 +69,20 @@ class WebDatabase {
   sql::Connection db_;
   sql::MetaTable meta_table_;
 
-  scoped_ptr<AutofillTable> autofill_table_;
-  scoped_ptr<KeywordTable> keyword_table_;
-  scoped_ptr<LoginsTable> logins_table_;
-  scoped_ptr<TokenServiceTable> token_service_table_;
-  scoped_ptr<WebAppsTable> web_apps_table_;
+  // TODO(joi): All of the typed pointers are going in a future
+  // change, as we remove knowledge of the specific types from this
+  // class.
+  AutofillTable* autofill_table_;
+  KeywordTable* keyword_table_;
+  LoginsTable* logins_table_;
+  TokenServiceTable* token_service_table_;
+  WebAppsTable* web_apps_table_;
   // TODO(thakis): Add a migration to delete this table, then remove this.
-  scoped_ptr<WebIntentsTable> web_intents_table_;
+  WebIntentsTable* web_intents_table_;
+
+  // Owns all the different database tables that have been added to
+  // this object.
+  ScopedVector<WebDatabaseTable> tables_;
 
   scoped_ptr<content::NotificationService> notification_service_;
 

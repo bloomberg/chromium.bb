@@ -19,6 +19,12 @@ bool WebAppsTable::IsSyncable() {
   return true;
 }
 
+bool WebAppsTable::MigrateToVersion(int version,
+                                    const std::string& app_locale,
+                                    bool* update_compatible_version) {
+  return true;
+}
+
 bool WebAppsTable::InitWebAppIconsTable() {
   if (!db_->DoesTableExist("web_app_icons")) {
     if (!db_->Execute("CREATE TABLE web_app_icons ("

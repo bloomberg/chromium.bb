@@ -18,6 +18,9 @@ class TokenServiceTable : public WebDatabaseTable {
   virtual ~TokenServiceTable() {}
   virtual bool Init() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
+  virtual bool MigrateToVersion(int version,
+                                const std::string& app_locale,
+                                bool* update_compatible_version) OVERRIDE;
 
   // Remove all tokens previously set with SetTokenForService.
   bool RemoveAllTokens();

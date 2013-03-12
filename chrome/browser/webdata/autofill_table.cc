@@ -342,6 +342,52 @@ bool AutofillTable::IsSyncable() {
   return true;
 }
 
+bool AutofillTable::MigrateToVersion(int version,
+                                     const std::string& app_locale,
+                                     bool* update_compatible_version) {
+  // Migrate if necessary.
+  switch (version) {
+    case 22:
+      return ClearAutofillEmptyValueElements();
+    case 23:
+      return MigrateToVersion23AddCardNumberEncryptedColumn();
+    case 24:
+      return MigrateToVersion24CleanupOversizedStringFields();
+    case 27:
+      *update_compatible_version = true;
+      return MigrateToVersion27UpdateLegacyCreditCards();
+    case 30:
+      *update_compatible_version = true;
+      return MigrateToVersion30AddDateModifed();
+    case 31:
+      *update_compatible_version = true;
+      return MigrateToVersion31AddGUIDToCreditCardsAndProfiles();
+    case 32:
+      *update_compatible_version = true;
+      return MigrateToVersion32UpdateProfilesAndCreditCards();
+    case 33:
+      *update_compatible_version = true;
+      return MigrateToVersion33ProfilesBasedOnFirstName();
+    case 34:
+      *update_compatible_version = true;
+      return MigrateToVersion34ProfilesBasedOnCountryCode(app_locale);
+    case 35:
+      *update_compatible_version = true;
+      return MigrateToVersion35GreatBritainCountryCodes();
+    // Combine migrations 36 and 37.  This is due to enhancements to the merge
+    // step when migrating profiles.  The original migration from 35 to 36 did
+    // not merge profiles with identical addresses, but the migration from 36 to
+    // 37 does.  The step from 35 to 36 should only happen on the Chrome 12 dev
+    // channel.  Chrome 12 beta and release users will jump from 35 to 37
+    // directly getting the full benefits of the multi-valued merge as well as
+    // the culling of bad data.
+    case 37:
+      *update_compatible_version = true;
+      return MigrateToVersion37MergeAndCullOlderProfiles();
+  }
+  return true;
+}
+
 bool AutofillTable::AddFormFieldValues(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes) {

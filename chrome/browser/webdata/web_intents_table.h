@@ -56,6 +56,9 @@ class WebIntentsTable : public WebDatabaseTable {
   // WebDatabaseTable implementation.
   virtual bool Init() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
+  virtual bool MigrateToVersion(int version,
+                                const std::string& app_locale,
+                                bool* update_compatible_version) OVERRIDE;
 
   // Adds "scheme" column to the web_intents and web_intents_defaults tables.
   bool MigrateToVersion46AddSchemeColumn();

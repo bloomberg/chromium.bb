@@ -62,23 +62,23 @@ void WebDatabase::CommitTransaction() {
 }
 
 AutofillTable* WebDatabase::GetAutofillTable() {
-  return autofill_table_.get();
+  return autofill_table_;
 }
 
 KeywordTable* WebDatabase::GetKeywordTable() {
-  return keyword_table_.get();
+  return keyword_table_;
 }
 
 LoginsTable* WebDatabase::GetLoginsTable() {
-  return logins_table_.get();
+  return logins_table_;
 }
 
 TokenServiceTable* WebDatabase::GetTokenServiceTable() {
-  return token_service_table_.get();
+  return token_service_table_;
 }
 
 WebAppsTable* WebDatabase::GetWebAppsTable() {
-  return web_apps_table_.get();
+  return web_apps_table_;
 }
 
 sql::Connection* WebDatabase::GetSQLConnection() {
@@ -123,23 +123,39 @@ sql::InitStatus WebDatabase::Init(const base::FilePath& db_name,
     return sql::INIT_TOO_NEW;
   }
 
+  // TODO(joi): Table creation should move out of this class; switch
+  // to a two-phase init to accomplish this.
+
   // Create the tables.
-  autofill_table_.reset(new AutofillTable(&db_, &meta_table_));
-  keyword_table_.reset(new KeywordTable(&db_, &meta_table_));
+  autofill_table_ = new AutofillTable(&db_, &meta_table_);
+  tables_.push_back(autofill_table_);
+
+  keyword_table_ = new KeywordTable(&db_, &meta_table_);
+  tables_.push_back(keyword_table_);
+
   // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
   // access, but for now, we still create it on all platforms since it deletes
   // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  logins_table_.reset(new LoginsTable(&db_, &meta_table_));
-  token_service_table_.reset(new TokenServiceTable(&db_, &meta_table_));
-  web_apps_table_.reset(new WebAppsTable(&db_, &meta_table_));
-  web_intents_table_.reset(new WebIntentsTable(&db_, &meta_table_));
+  logins_table_ = new LoginsTable(&db_, &meta_table_);
+  tables_.push_back(logins_table_);
+
+  token_service_table_ = new TokenServiceTable(&db_, &meta_table_);
+  tables_.push_back(token_service_table_);
+
+  web_apps_table_ = new WebAppsTable(&db_, &meta_table_);
+  tables_.push_back(web_apps_table_);
+
+  web_intents_table_ = new WebIntentsTable(&db_, &meta_table_);
+  tables_.push_back(web_intents_table_);
 
   // Initialize the tables.
-  if (!keyword_table_->Init() || !autofill_table_->Init() ||
-      !logins_table_->Init() || !web_apps_table_->Init() ||
-      !token_service_table_->Init() || !web_intents_table_->Init()) {
-    LOG(WARNING) << "Unable to initialize the web database.";
-    return sql::INIT_FAILURE;
+  for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
+       it != tables_.end();
+       ++it) {
+    if (!(*it)->Init()) {
+      LOG(WARNING) << "Unable to initialize the web database.";
+      return sql::INIT_FAILURE;
+    }
   }
 
   // If the file on disk is an older database version, bring it up to date.
@@ -162,212 +178,40 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(
   if (current_version > meta_table_.GetVersionNumber())
     ChangeVersion(&meta_table_, current_version, false);
 
-  // Migrate if necessary.
-  switch (current_version) {
+  if (current_version < 20) {
     // Versions 1 - 19 are unhandled.  Version numbers greater than
     // kCurrentVersionNumber should have already been weeded out by the caller.
-    default:
-      // When the version is too old, we return failure error code.  The schema
-      // is too out of date to migrate.
-      // There should not be a released product that makes a database too old to
-      // migrate. If we do encounter such a legacy database, we will need a
-      // better solution to handle it (i.e., pop up a dialog to tell the user,
-      // erase all their prefs and start over, etc.).
-      LOG(WARNING) << "Web database version " << current_version <<
-          " is too old to handle.";
-      NOTREACHED();
-      return sql::INIT_FAILURE;
-
-    case 20:
-      if (!keyword_table_->MigrateToVersion21AutoGenerateKeywordColumn())
-        return FailedMigrationTo(21);
-
-      ChangeVersion(&meta_table_, 21, true);
-      // FALL THROUGH
-
-    case 21:
-      if (!autofill_table_->ClearAutofillEmptyValueElements())
-        return FailedMigrationTo(22);
-
-      ChangeVersion(&meta_table_, 22, false);
-      // FALL THROUGH
-
-    case 22:
-      if (!autofill_table_->MigrateToVersion23AddCardNumberEncryptedColumn())
-        return FailedMigrationTo(23);
-
-      ChangeVersion(&meta_table_, 23, false);
-      // FALL THROUGH
-
-    case 23:
-      if (!autofill_table_->MigrateToVersion24CleanupOversizedStringFields())
-        return FailedMigrationTo(24);
-
-      ChangeVersion(&meta_table_, 24, false);
-      // FALL THROUGH
-
-    case 24:
-      if (!keyword_table_->MigrateToVersion25AddLogoIDColumn())
-        return FailedMigrationTo(25);
-
-      ChangeVersion(&meta_table_, 25, true);
-      // FALL THROUGH
-
-    case 25:
-      if (!keyword_table_->MigrateToVersion26AddCreatedByPolicyColumn())
-        return FailedMigrationTo(26);
-
-      ChangeVersion(&meta_table_, 26, true);
-      // FALL THROUGH
-
-    case 26:
-      if (!autofill_table_->MigrateToVersion27UpdateLegacyCreditCards())
-        return FailedMigrationTo(27);
-
-      ChangeVersion(&meta_table_, 27, true);
-      // FALL THROUGH
-
-    case 27:
-      if (!keyword_table_->MigrateToVersion28SupportsInstantColumn())
-        return FailedMigrationTo(28);
-
-      ChangeVersion(&meta_table_, 28, true);
-      // FALL THROUGH
-
-    case 28:
-      if (!keyword_table_->MigrateToVersion29InstantURLToSupportsInstant())
-        return FailedMigrationTo(29);
-
-      ChangeVersion(&meta_table_, 29, true);
-      // FALL THROUGH
-
-    case 29:
-      if (!autofill_table_->MigrateToVersion30AddDateModifed())
-        return FailedMigrationTo(30);
-
-      ChangeVersion(&meta_table_, 30, true);
-      // FALL THROUGH
-
-    case 30:
-      if (!autofill_table_->MigrateToVersion31AddGUIDToCreditCardsAndProfiles())
-        return FailedMigrationTo(31);
-
-      ChangeVersion(&meta_table_, 31, true);
-      // FALL THROUGH
-
-    case 31:
-      if (!autofill_table_->MigrateToVersion32UpdateProfilesAndCreditCards())
-        return FailedMigrationTo(32);
-
-      ChangeVersion(&meta_table_, 32, true);
-      // FALL THROUGH
-
-    case 32:
-      if (!autofill_table_->MigrateToVersion33ProfilesBasedOnFirstName())
-        return FailedMigrationTo(33);
-
-      ChangeVersion(&meta_table_, 33, true);
-      // FALL THROUGH
-
-    case 33:
-      if (!autofill_table_->MigrateToVersion34ProfilesBasedOnCountryCode(
-              app_locale))
-        return FailedMigrationTo(34);
-
-      ChangeVersion(&meta_table_, 34, true);
-      // FALL THROUGH
-
-    case 34:
-      if (!autofill_table_->MigrateToVersion35GreatBritainCountryCodes())
-        return FailedMigrationTo(35);
-
-      ChangeVersion(&meta_table_, 35, true);
-      // FALL THROUGH
-
-    // Combine migrations 35 and 36.  This is due to enhancements to the merge
-    // step when migrating profiles.  The original migration from 35 to 36 did
-    // not merge profiles with identical addresses, but the migration from 36 to
-    // 37 does.  The step from 35 to 36 should only happen on the Chrome 12 dev
-    // channel.  Chrome 12 beta and release users will jump from 35 to 37
-    // directly getting the full benefits of the multi-valued merge as well as
-    // the culling of bad data.
-    case 35:
-    case 36:
-      if (!autofill_table_->MigrateToVersion37MergeAndCullOlderProfiles())
-        return FailedMigrationTo(37);
-
-      ChangeVersion(&meta_table_, 37, true);
-      // FALL THROUGH
-
-    case 37:
-      if (!keyword_table_->MigrateToVersion38AddLastModifiedColumn())
-        return FailedMigrationTo(38);
-
-      ChangeVersion(&meta_table_, 38, true);
-      // FALL THROUGH
-
-    case 38:
-      if (!keyword_table_->MigrateToVersion39AddSyncGUIDColumn())
-        return FailedMigrationTo(39);
-
-      ChangeVersion(&meta_table_, 39, true);
-      // FALL THROUGH
-
-    // Subsequent search engine backup migrations are merged into a single one.
-    case 39:
-    case 40:
-    case 41:
-    case 42:
-    case 43:
-      if (!keyword_table_->MigrateToVersion44AddDefaultSearchProviderBackup())
-        return FailedMigrationTo(44);
-
-      ChangeVersion(&meta_table_, 44, true);
-      // FALL THROUGH
-
-    case 44:
-      if (!keyword_table_->
-          MigrateToVersion45RemoveLogoIDAndAutogenerateColumns())
-        return FailedMigrationTo(45);
-
-      ChangeVersion(&meta_table_, 45, true);
-      // FALL THROUGH
-
-    case 45:
-      if (!web_intents_table_->MigrateToVersion46AddSchemeColumn())
-        return FailedMigrationTo(46);
-
-      ChangeVersion(&meta_table_, 46, true);
-      // FALL THROUGH
-
-    case 46:
-      if (!keyword_table_->MigrateToVersion47AddAlternateURLsColumn())
-        return FailedMigrationTo(47);
-
-      ChangeVersion(&meta_table_, 47, true);
-      // FALL THROUGH
-
-    case 47:
-      if (!keyword_table_->MigrateToVersion48RemoveKeywordsBackup())
-        return FailedMigrationTo(48);
-
-      ChangeVersion(&meta_table_, 48, true);
-      // FALL THROUGH
-
-    case 48:
-      if (!keyword_table_->
-          MigrateToVersion49AddSearchTermsReplacementKeyColumn())
-        return FailedMigrationTo(49);
-
-      ChangeVersion(&meta_table_, 49, true);
-      // FALL THROUGH
-
-    // Add successive versions here.  Each should set the version number and
-    // compatible version number as appropriate, then fall through to the next
-    // case.
-
-    case kCurrentVersionNumber:
-      // No migration needed.
-      return sql::INIT_OK;
+    //
+    // When the version is too old, we return failure error code.  The schema
+    // is too out of date to migrate.
+    //
+    // There should not be a released product that makes a database too old to
+    // migrate. If we do encounter such a legacy database, we will need a
+    // better solution to handle it (i.e., pop up a dialog to tell the user,
+    // erase all their prefs and start over, etc.).
+    LOG(WARNING) << "Web database version " << current_version <<
+        " is too old to handle.";
+    NOTREACHED();
+    return sql::INIT_FAILURE;
   }
+
+  for (int next_version = current_version + 1;
+       next_version <= kCurrentVersionNumber;
+       ++next_version) {
+    // Give each table a chance to migrate to this version.
+    for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
+         it != tables_.end();
+         ++it) {
+      // Any of the tables may set this to true, but by default it is false.
+      bool update_compatible_version = false;
+      if (!(*it)->MigrateToVersion(next_version,
+                                   app_locale,
+                                   &update_compatible_version)) {
+        return FailedMigrationTo(next_version);
+      }
+
+      ChangeVersion(&meta_table_, next_version, update_compatible_version);
+    }
+  }
+  return sql::INIT_OK;
 }

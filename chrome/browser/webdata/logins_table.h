@@ -25,6 +25,9 @@ class LoginsTable : public WebDatabaseTable {
   virtual ~LoginsTable() {}
   virtual bool Init() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
+  virtual bool MigrateToVersion(int version,
+                                const std::string& app_locale,
+                                bool* update_compatible_version) OVERRIDE;
 
 #if defined(OS_WIN)
   // Adds |info| to the list of imported passwords from ie7/ie8.

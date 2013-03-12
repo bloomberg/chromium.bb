@@ -75,6 +75,9 @@ class KeywordTable : public WebDatabaseTable {
   virtual ~KeywordTable();
   virtual bool Init() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
+  virtual bool MigrateToVersion(int version,
+                                const std::string& app_locale,
+                                bool* update_compatible_version) OVERRIDE;
 
   // Adds a new keyword, updating the id field on success.
   // Returns true if successful.

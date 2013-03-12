@@ -118,6 +118,9 @@ class AutofillTable : public WebDatabaseTable {
   virtual ~AutofillTable();
   virtual bool Init() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
+  virtual bool MigrateToVersion(int version,
+                                const std::string& app_locale,
+                                bool* update_compatible_version) OVERRIDE;
 
   // Records the form elements in |elements| in the database in the
   // autofill table.  A list of all added and updated autofill entries

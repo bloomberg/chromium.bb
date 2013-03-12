@@ -27,6 +27,12 @@ bool TokenServiceTable::IsSyncable() {
   return true;
 }
 
+bool TokenServiceTable::MigrateToVersion(int version,
+                                         const std::string& app_locale,
+                                         bool* update_compatible_version) {
+  return true;
+}
+
 bool TokenServiceTable::RemoveAllTokens() {
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM token_service"));

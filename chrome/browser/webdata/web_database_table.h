@@ -15,7 +15,7 @@ class MetaTable;
 // An abstract base class representing a table within a WebDatabase.
 // Each table should subclass this, adding type-specific methods as needed.
 class WebDatabaseTable {
- protected:
+ public:
   WebDatabaseTable(sql::Connection* db, sql::MetaTable* meta_table);
   virtual ~WebDatabaseTable();
 
@@ -29,6 +29,20 @@ class WebDatabaseTable {
   // TODO(andybons): Implement something more robust.
   virtual bool IsSyncable() = 0;
 
+  // Migrates this table to |version|. Returns false if there was
+  // migration work to do and it failed, true otherwise.
+  //
+  // |app_locale| is the locale of the app. Passed as a parameter as
+  // |it can only be safely queried on the UI thread.
+  //
+  // Implementations may set |*update_compatible_version| to true if
+  // the compatible version should be changed to |version|.
+  // Implementations should otherwise not modify this parameter.
+  virtual bool MigrateToVersion(int version,
+                                const std::string& app_locale,
+                                bool* update_compatible_version) = 0;
+
+ protected:
   sql::Connection* db_;
   sql::MetaTable* meta_table_;
 

@@ -71,6 +71,17 @@ bool WebIntentsTable::IsSyncable() {
   return false;
 }
 
+bool WebIntentsTable::MigrateToVersion(int version,
+                                       const std::string& app_locale,
+                                       bool* update_compatible_version) {
+  if (version == 46) {
+    *update_compatible_version = true;
+    return MigrateToVersion46AddSchemeColumn();
+  }
+
+  return true;
+}
+
 // Updates the table by way of renaming the old tables, rerunning
 // the Init method, then selecting old values into the new tables.
 bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {

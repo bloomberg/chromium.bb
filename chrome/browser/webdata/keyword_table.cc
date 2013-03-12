@@ -152,6 +152,52 @@ bool KeywordTable::IsSyncable() {
   return true;
 }
 
+bool KeywordTable::MigrateToVersion(int version,
+                                    const std::string& app_locale,
+                                    bool* update_compatible_version) {
+  // Migrate if necessary.
+  switch (version) {
+    case 21:
+      *update_compatible_version = true;
+      return MigrateToVersion21AutoGenerateKeywordColumn();
+    case 25:
+      *update_compatible_version = true;
+      return MigrateToVersion25AddLogoIDColumn();
+    case 26:
+      *update_compatible_version = true;
+      return MigrateToVersion26AddCreatedByPolicyColumn();
+    case 28:
+      *update_compatible_version = true;
+      return MigrateToVersion28SupportsInstantColumn();
+    case 29:
+      *update_compatible_version = true;
+      return MigrateToVersion29InstantURLToSupportsInstant();
+    case 38:
+      *update_compatible_version = true;
+      return MigrateToVersion38AddLastModifiedColumn();
+    case 39:
+      *update_compatible_version = true;
+      return MigrateToVersion39AddSyncGUIDColumn();
+    case 44:
+      *update_compatible_version = true;
+      return MigrateToVersion44AddDefaultSearchProviderBackup();
+    case 45:
+      *update_compatible_version = true;
+      return MigrateToVersion45RemoveLogoIDAndAutogenerateColumns();
+    case 47:
+      *update_compatible_version = true;
+      return MigrateToVersion47AddAlternateURLsColumn();
+    case 48:
+      *update_compatible_version = true;
+      return MigrateToVersion48RemoveKeywordsBackup();
+    case 49:
+      *update_compatible_version = true;
+      return MigrateToVersion49AddSearchTermsReplacementKeyColumn();
+  }
+
+  return true;
+}
+
 bool KeywordTable::AddKeyword(const TemplateURLData& data) {
   DCHECK(data.id);
   std::string query("INSERT INTO keywords (" + GetKeywordColumns() +
