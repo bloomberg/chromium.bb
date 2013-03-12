@@ -33,9 +33,9 @@ struct CursorData {
 const CursorData kImageCursors[] = {
   {ui::kCursorNull, IDR_AURA_CURSOR_PTR, {4, 4}, {8, 9}},
   {ui::kCursorPointer, IDR_AURA_CURSOR_PTR, {4, 4}, {8, 9}},
-  {ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, {4, 4}, {8, 9}},
-  {ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP, {4, 4}, {8, 9}},
-  {ui::kCursorCopy, IDR_AURA_CURSOR_COPY, {4, 4}, {8, 9}},
+  {ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
+  {ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
+  {ui::kCursorCopy, IDR_AURA_CURSOR_COPY, {9, 9}, {18, 18}},
   {ui::kCursorHand, IDR_AURA_CURSOR_HAND, {9, 4}, {19, 8}},
   {ui::kCursorMove, IDR_AURA_CURSOR_MOVE, {11, 11}, {23, 23}},
   {ui::kCursorNorthEastResize, IDR_AURA_CURSOR_NORTH_EAST_RESIZE,
