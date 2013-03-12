@@ -36,9 +36,16 @@ node = env.PPAPIBrowserTester(
     args=platform_args + ['--expect_browser_process_crash',
                           '--expected_crash_dumps=1',
                           '--expected_process_type=browser'])
+
+# The test is disabled because it is flaky on Linux and Mac.
+# See: https://code.google.com/p/chromium/issues/detail?id=175023
+# Additionally, the test affects crash stats on Mac because it uploads
+# crash dumps on the bots for the Chrome official build.
+# See: https://code.google.com/p/chromium/issues/detail?id=129402
 env.AddNodeToTestSuite(
     node, ['chrome_browser_tests'], 'run_breakpad_browser_process_crash_test',
     is_broken=(env.PPAPIBrowserTesterIsBroken() or
+               env.Bit('host_linux') or env.Bit('host_mac') or
                env.Bit('running_on_valgrind')))
 
 # This crash in trusted code should produce a crash dump.
