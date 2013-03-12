@@ -79,6 +79,10 @@
 #include "sync/internal_api/public/read_transaction.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
@@ -933,9 +937,7 @@ void ProfileSyncService::OnExperimentsChanged(
     std::string experiment_name = GetExperimentNameForDataType(it.Get());
     if (experiment_name.empty())
       continue;
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      experiment_name,
-                                      true);
+    SetExperimentFlag(experiment_name);
   }
 
   // Check if the user has "Keep Everything Synced" enabled. If so, we want
@@ -960,9 +962,7 @@ void ProfileSyncService::OnExperimentsChanged(
   // Now enable any non-datatype features.
   if (experiments.sync_tab_favicons) {
     DVLOG(1) << "Enabling syncing of tab favicons.";
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      "sync-tab-favicons",
-                                      true);
+    SetExperimentFlag("sync-tab-favicons");
 #if defined(OS_ANDROID)
     // Android does not support about:flags and experiments, so we need to force
     // setting the experiments as command line switches.
@@ -970,17 +970,11 @@ void ProfileSyncService::OnExperimentsChanged(
 #endif
   }
 
-  if (experiments.keystore_encryption) {
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      syncer::kKeystoreEncryptionFlag,
-                                      true);
-  }
+  if (experiments.keystore_encryption)
+    SetExperimentFlag(syncer::kKeystoreEncryptionFlag);
 
-  if (experiments.full_history_sync) {
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      syncer::kFullHistorySyncFlag,
-                                      true);
-  }
+  if (experiments.full_history_sync)
+    SetExperimentFlag(syncer::kFullHistorySyncFlag);
 
   current_experiments_ = experiments;
 }
@@ -2026,4 +2020,17 @@ void ProfileSyncService::ResetForTest() {
       profile,
       signin,
       behavior);
+}
+
+void ProfileSyncService::SetExperimentFlag(const std::string& experiment) {
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsCurrentUserOwner())
+    about_flags::SetExperimentEnabled(NULL, experiment, true);
+  else
+    about_flags::SetExperimentEnabled(profile_->GetPrefs(), experiment, true);
+#else
+  about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+                                    experiment,
+                                    true);
+#endif
 }
