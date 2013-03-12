@@ -48,16 +48,16 @@ namespace app.window {
     // Y coordinate of the window. (Deprecated; use 'bounds'.)
     [nodoc] long? top;
 
-    // Minimum width of the window.
+    // Minimum width for the lifetime of the window.
     long? minWidth;
 
-    // Minimum height of the window.
+    // Minimum height for the lifetime of the window.
     long? minHeight;
 
-    // Maximum width of the window.
+    // Maximum width for the lifetime of the window.
     long? maxWidth;
 
-    // Maximum height of the window.
+    // Maximum height for the lifetime of the window.
     long? maxHeight;
 
     // Type of window to create.
@@ -67,9 +67,8 @@ namespace app.window {
     DOMString? frame;
 
     // Size of the content in the window (excluding the titlebar). If specified
-    // in addition to any of the left/top/width/height parameters, this field
-    // takes precedence. If a frameBounds is specified, the frameBounds take
-    // precedence.
+    // in addition to any of the deprecated left/top/width/height parameters,
+    // this field takes precedence.
     Bounds? bounds;
 
     // Enable window background transparency.
@@ -113,7 +112,7 @@ namespace app.window {
     // Is the window maximized?
     static boolean isMaximized();
 
-    // Restore the window.
+    // Restore the window, exiting a maximized or minimized state.
     static void restore();
 
     // Move the window to the position (|left|, |top|).
