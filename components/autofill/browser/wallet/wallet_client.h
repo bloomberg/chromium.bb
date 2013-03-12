@@ -41,7 +41,7 @@ class WalletItems;
 // 1) GetWalletItems should be called to retrieve the user's Wallet.
 //   a) If the user does not have a Wallet, they must AcceptLegalDocuments and
 //      SaveInstrumentAndAddress before continuing.
-//   b) If the user has not acccepte the most recent legal documents for
+//   b) If the user has not accepted the most recent legal documents for
 //      Wallet, they must AcceptLegalDocuments.
 // 2) The user then chooses what instrument and shipping address to use for the
 //    current transaction.
@@ -186,7 +186,7 @@ class WalletClient
   FRIEND_TEST_ALL_PREFIXES(WalletClientTest, CancelPendingRequests);
 
   // TODO(ahutter): Implement this.
-  std::string GetRiskParams() { return std::string(); }
+  std::string GetRiskParams() { return std::string("risky business"); }
 
   enum RequestType {
     NO_PENDING_REQUEST,

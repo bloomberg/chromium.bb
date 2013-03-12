@@ -64,6 +64,9 @@ class CreditCard : public FormGroup {
 
   const std::string& type() const { return type_; }
 
+  int expiration_month() const { return expiration_month_; }
+  int expiration_year() const { return expiration_year_; }
+
   // The guid is the primary identifier for |CreditCard| objects.
   // TODO(estade): remove this and just use GetGUID().
   const std::string guid() const { return guid_; }

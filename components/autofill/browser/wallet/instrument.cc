@@ -5,9 +5,13 @@
 #include "components/autofill/browser/wallet/instrument.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/browser/autofill_country.h"
+#include "components/autofill/browser/autofill_profile.h"
+#include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/validation.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
 
@@ -15,6 +19,21 @@ namespace autofill {
 namespace wallet {
 
 namespace {
+
+// Converts a known Autofill card type to a Instrument::FormOfPayment.
+// Used for creating new Instruments.
+Instrument::FormOfPayment FormOfPaymentFromCardType(const std::string& type) {
+  if (type == kAmericanExpressCard)
+    return Instrument::AMEX;
+  else if (type == kDiscoverCard)
+    return Instrument::DISCOVER;
+  else if (type == kMasterCard)
+    return Instrument::MASTER_CARD;
+  else if (type == kVisaCard)
+    return Instrument::VISA;
+
+  return Instrument::UNKNOWN;
+}
 
 std::string FormOfPaymentToString(Instrument::FormOfPayment form_of_payment) {
   switch (form_of_payment) {
@@ -36,6 +55,18 @@ std::string FormOfPaymentToString(Instrument::FormOfPayment form_of_payment) {
 }
 
 }  // namespace
+
+Instrument::Instrument(const CreditCard& card,
+                       const string16& card_verification_number,
+                       const AutofillProfile& profile)
+    : primary_account_number_(card.GetRawInfo(CREDIT_CARD_NUMBER)),
+      card_verification_number_(card_verification_number),
+      expiration_month_(card.expiration_month()),
+      expiration_year_(card.expiration_year()),
+      form_of_payment_(FormOfPaymentFromCardType(card.type())),
+      address_(new Address(profile)) {
+  Init();
+}
 
 Instrument::Instrument(const string16& primary_account_number,
                        const string16& card_verification_number,

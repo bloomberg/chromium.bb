@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_IMPL_H_
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -196,18 +197,13 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Returns the PersonalDataManager for |profile_|.
   virtual PersonalDataManager* GetManager();
 
+  // Call to disable communication to Online Wallet for this dialog.
+  // Exposed for testing.
+  void DisableWallet();
+
  private:
   // Returns whether Wallet is the current data source.
   bool IsPayingWithWallet() const;
-
-  // Refresh wallet items immediately if there's no refresh currently in
-  // progress, otherwise wait until the current refresh completes.
-  void ScheduleRefreshWalletItems();
-
-  // Called when any type of request to Online Wallet completes. |success| is
-  // true when there was no network error, the response wasn't malformed, and no
-  // Wallet error occurred.
-  void WalletRequestCompleted(bool success);
 
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
@@ -282,8 +278,25 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void LoadRiskFingerprintData();
   void OnDidLoadRiskFingerprintData(scoped_ptr<risk::Fingerprint> fingerprint);
 
+  // Whether the user has chosen to enter all new data in |section|. This
+  // happens via choosing "Add a new X..." from a section's suggestion menu.
+  bool IsManuallyEditingSection(DialogSection section);
+
   // Whether the billing section should be used to fill in the shipping details.
   bool UseBillingForShipping();
+
+  // Start the submit proccess to interact with Online Wallet (might do various
+  // things like accept documents, save details, update details, respond to
+  // required actions, etc.).
+  void SubmitWithWallet();
+
+  // Gets a full wallet from Online Wallet so the user can purchase something.
+  // This information is decoded to reveal a fronting (proxy) card.
+  void GetFullWallet();
+
+  // Called when there's nothing left to accept, update, save, or authenticate
+  // in order to fill |form_structure_| and pass data back to the invoking page.
+  void FinishSubmit();
 
   // The |profile| for |contents_|.
   Profile* const profile_;
@@ -313,8 +326,13 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;
 
-  // The most recently received WalletItems retrieved via |wallet_client_|.
+  // Recently received items retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;
+  scoped_ptr<wallet::FullWallet> full_wallet_;
+
+  // Used to remember the state of Wallet comboboxes when Submit was clicked.
+  std::string active_instrument_id_;
+  std::string active_address_id_;
 
   // The fields for billing and shipping which the page has actually requested.
   DetailInputs requested_email_fields_;

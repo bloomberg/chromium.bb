@@ -468,7 +468,7 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, this));
   request_->SetRequestContext(context_getter_);
-  DVLOG(1) << "url=" << url << ", post_body=" << post_body;
+  DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(kJsonMimeType, post_body);
   request_->Start();
 }

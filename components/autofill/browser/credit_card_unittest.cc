@@ -166,19 +166,24 @@ TEST(CreditCardTest, SetExpirationMonth) {
 
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
   EXPECT_EQ(ASCIIToUTF16("05"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(5, card.expiration_month());
 
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("7"));
   EXPECT_EQ(ASCIIToUTF16("07"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(7, card.expiration_month());
 
   // This should fail, and preserve the previous value.
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"));
   EXPECT_EQ(ASCIIToUTF16("07"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(7, card.expiration_month());
 
   card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"), "en-US");
   EXPECT_EQ(ASCIIToUTF16("01"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(1, card.expiration_month());
 
   card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"), "en-US");
   EXPECT_EQ(ASCIIToUTF16("04"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(4, card.expiration_month());
 }
 
 TEST(CreditCardTest, CreditCardType) {
@@ -302,6 +307,7 @@ TEST(CreditCardTest, CreditCardTwoDigitYear) {
   credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2017"));
   credit_card.FillSelectControl(CREDIT_CARD_EXP_4_DIGIT_YEAR, &field);
   EXPECT_EQ(ASCIIToUTF16("17"), field.value);
+  EXPECT_EQ(2017, credit_card.expiration_year());
 }
 
 TEST(CreditCardTest, CreditCardTypeSelectControl) {

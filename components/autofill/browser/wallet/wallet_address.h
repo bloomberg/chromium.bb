@@ -12,6 +12,8 @@
 #include "base/string16.h"
 #include "components/autofill/browser/field_types.h"
 
+class AutofillProfile;
+
 namespace base {
 class DictionaryValue;
 }
@@ -30,10 +32,15 @@ namespace wallet {
 // http://www.oasis-open.org/committees/ciq/download.shtml.
 class Address {
  public:
-  Address();
   // TODO(ahutter): Use additional fields (descriptive_name, is_post_box,
   // is_minimal_address, is_valid, is_default) when SaveToWallet is implemented.
   // See http://crbug.com/164284.
+
+  Address();
+
+  // Using the raw info in |profile|, create a wallet::Address.
+  explicit Address(const AutofillProfile& profile);
+
   Address(const std::string& country_name_code,
           const string16& recipient_name,
           const string16& address_line_1,
@@ -43,6 +50,7 @@ class Address {
           const string16& postal_code_number,
           const string16& phone_number,
           const std::string& object_id);
+
   ~Address();
 
   // Returns an empty scoped_ptr if input is invalid or a valid address that is
@@ -158,6 +166,7 @@ class Address {
   // Externalized Online Wallet id for this address.
   std::string object_id_;
 
+  // This class is intentionally copyable.
   DISALLOW_ASSIGN(Address);
 };
 

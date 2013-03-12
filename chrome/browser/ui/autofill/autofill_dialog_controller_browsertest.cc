@@ -82,6 +82,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      metric_logger,
                                      dialog_type,
                                      base::Bind(&MockCallback)) {
+    DisableWallet();
   }
 
   virtual ~TestAutofillDialogController() {}

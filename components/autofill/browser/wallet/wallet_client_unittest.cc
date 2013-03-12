@@ -243,7 +243,7 @@ const char kAuthenticateInstrumentValidRequest[] =
     "{"
         "\"instrument_escrow_handle\":\"escrow_handle\","
         "\"instrument_id\":\"instrument_id\","
-        "\"risk_params\":\"\""
+        "\"risk_params\":\"risky business\""
     "}";
 
 const char kGetFullWalletValidRequest[] =
@@ -257,7 +257,7 @@ const char kGetFullWalletValidRequest[] =
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"selected_address_id\":\"shipping_address_id\","
         "\"selected_instrument_id\":\"instrument_id\","
         "\"session_material\":\"session_material\","
@@ -277,7 +277,7 @@ const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
         "\"feature\":\"REQUEST_AUTOCOMPLETE\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"selected_address_id\":\"shipping_address_id\","
         "\"selected_instrument_id\":\"instrument_id\","
         "\"session_material\":\"session_material\","
@@ -290,7 +290,7 @@ const char kGetFullWalletWithRiskCapabilitesValidRequest[] =
 const char kGetWalletItemsValidRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"supported_risk_challenge\":"
         "["
         "]"
@@ -299,7 +299,7 @@ const char kGetWalletItemsValidRequest[] =
 const char kGetWalletItemsWithRiskCapabilitiesValidRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"supported_risk_challenge\":"
         "["
             "\"RELOGIN\""
@@ -309,7 +309,7 @@ const char kGetWalletItemsWithRiskCapabilitiesValidRequest[] =
 const char kSaveAddressValidRequest[] =
     "{"
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
             "\"phone_number\":\"ship_phone_number\","
@@ -358,7 +358,7 @@ const char kSaveInstrumentValidRequest[] =
         "\"instrument_escrow_handle\":\"escrow_handle\","
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\""
+        "\"risk_params\":\"risky business\""
       "}";
 
 const char kSaveInstrumentAndAddressValidRequest[] =
@@ -390,7 +390,7 @@ const char kSaveInstrumentAndAddressValidRequest[] =
         "\"instrument_escrow_handle\":\"escrow_handle\","
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"shipping_address\":"
         "{"
             "\"phone_number\":\"ship_phone_number\","
@@ -429,7 +429,7 @@ const char kUpdateInstrumentValidRequest[] =
     "{"
         "\"instrument_phone_number\":\"phone_number\","
         "\"merchant_domain\":\"https://example.com/\","
-        "\"risk_params\":\"\","
+        "\"risk_params\":\"risky business\","
         "\"upgraded_billing_address\":"
         "{"
             "\"address_line\":"

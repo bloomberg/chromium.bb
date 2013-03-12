@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_country.h"
+#include "components/autofill/browser/autofill_profile.h"
 
 namespace autofill {
 namespace wallet {
@@ -79,6 +80,16 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
 }  // namespace
 
 Address::Address() {}
+
+Address::Address(const AutofillProfile& profile)
+    : country_name_code_(profile.CountryCode()),
+      recipient_name_(profile.GetRawInfo(NAME_FULL)),
+      address_line_1_(profile.GetRawInfo(ADDRESS_HOME_LINE1)),
+      address_line_2_(profile.GetRawInfo(ADDRESS_HOME_LINE2)),
+      locality_name_(profile.GetRawInfo(ADDRESS_HOME_CITY)),
+      administrative_area_name_(profile.GetRawInfo(ADDRESS_HOME_STATE)),
+      postal_code_number_(profile.GetRawInfo(ADDRESS_HOME_ZIP)),
+      phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)) {}
 
 Address::Address(const std::string& country_name_code,
                  const string16& recipient_name,

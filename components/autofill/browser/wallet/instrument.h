@@ -10,6 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
+class AutofillProfile;
+class CreditCard;
+
 namespace base {
 class DictionaryValue;
 }
@@ -33,13 +36,20 @@ class Instrument {
     JCB,
   };
 
+  // Convert the info in |card| to an Instrument using |profile| for address.
+  Instrument(const CreditCard& card,
+             const string16& card_verification_number,
+             const AutofillProfile& profile);
+
   Instrument(const string16& primary_account_number,
              const string16& card_verification_number,
              int expiration_month,
              int expiration_year,
              FormOfPayment form_of_payment,
              scoped_ptr<Address> address);
+
   Instrument(const Instrument& instrument);
+
   ~Instrument();
 
   scoped_ptr<base::DictionaryValue> ToDictionary() const;
