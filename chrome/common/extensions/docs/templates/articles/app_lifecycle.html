@@ -89,15 +89,11 @@ to the event page and are directly scriptable by the event page.
 </p>
 
 <p>
-Windows can either be shells or panels.
-Shell windows have no browser chrome.
-Panel windows are the same as shell windows,
-except they have different size and position restrictions,
-for example, a chat panel.
+Windows have an optional frame with title bar and size controls. They are
+not associated with any Chrome browser windows.
 </p>
 
-<p>Here's a sample <code>background.js</code>
-  with a 'shell' window:</p>
+<p>Here's a sample window created from <code>background.js</code>:</p>
 
 <pre>
 chrome.app.runtime.onLaunched.addListener(function() {
@@ -107,22 +103,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     minWidth: 800,
     minHeight: 600,
     left: 100,
-    top: 100,
-    type: 'shell'
-  });
-});
-</pre>
-
-<p>Here's a sample <code>background.js</code>
-  with a 'panel' window:
-</p>
-
-<pre>
-chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.app.window.create('index.html', {
-    width: 400,
-    height: 200,
-    type: 'panel'
+    top: 100
   });
 });
 </pre>
