@@ -124,14 +124,6 @@ class DriveDirectory : public DriveEntry {
   // TODO(satorux): Remove this. crbug.com/139649
   void RemoveEntry(DriveEntry* entry);
 
-  // Takes over all entries from |dir|.
-  // TODO(satorux): Remove this. crbug.com/139649
-  void TakeOverEntries(DriveDirectory* dir);
-
-  // Takes over entry represented by |resource_id|. Helper function for
-  // TakeOverEntries. TODO(satorux): Remove this. crbug.com/139649
-  void TakeOverEntry(const std::string& resource_id);
-
   // Find a child's resource_id by its name. Returns the empty string if not
   // found. TODO(satorux): Remove this. crbug.com/139649
   std::string FindChild(const base::FilePath::StringType& file_name) const;

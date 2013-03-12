@@ -1175,7 +1175,6 @@ void DriveFileSystem::AddToSearchResults(
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(entry_proto.get());
 
   // If a result is not present in our local file system snapshot, call
   // CheckForUpdates to refresh the snapshot with a delta feed. This may happen

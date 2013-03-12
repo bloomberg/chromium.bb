@@ -103,22 +103,6 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
   entry->set_parent_resource_id(proto_.resource_id());
 }
 
-void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
-  for (ChildMap::const_iterator iter = dir->children_.begin();
-       iter != dir->children_.end(); ++iter) {
-    TakeOverEntry(iter->second);
-  }
-  dir->children_.clear();
-}
-
-void DriveDirectory::TakeOverEntry(const std::string& resource_id) {
-  DriveEntry* entry = resource_metadata_->GetEntryByResourceId(resource_id);
-  DCHECK(entry);
-  resource_metadata_->RemoveEntryFromResourceMap(resource_id);
-  entry->set_parent_resource_id(std::string());
-  AddEntry(entry);
-}
-
 void DriveDirectory::RemoveEntry(DriveEntry* entry) {
   DCHECK(entry);
 

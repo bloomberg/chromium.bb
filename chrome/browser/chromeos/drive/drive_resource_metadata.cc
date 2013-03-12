@@ -371,60 +371,50 @@ void DriveResourceMetadata::RefreshEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<DriveEntry> drive_entry = CreateDriveEntryFromProto(entry_proto);
-  if (!drive_entry.get()) {
+  DriveEntry* entry = GetEntryByResourceId(entry_proto.resource_id());
+  if (!entry) {
     PostGetEntryInfoWithFilePathCallbackError(
-        callback, DRIVE_FILE_ERROR_FAILED);
+        callback, DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
-  DriveEntry* old_entry = GetEntryByResourceId(drive_entry->resource_id());
-  DriveDirectory* old_parent = NULL;
-  if (old_entry && !old_entry->parent_resource_id().empty()) {
-    old_parent = GetEntryByResourceId(
-        old_entry->parent_resource_id())->AsDriveDirectory();
-  }
-  DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
-
-  // We special case root here because old_parent of root is null.
-  if ((!old_parent || !new_parent) && old_entry != root_.get()) {
-    scoped_ptr<DriveEntryProto> result_entry_proto(
-        new DriveEntryProto(drive_entry->proto()));
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   DRIVE_FILE_ERROR_NOT_FOUND,
-                   base::FilePath(),
-                   base::Passed(&result_entry_proto)));
+  // Reject incompatible input.
+  if (entry->proto().file_info().is_directory() !=
+      entry_proto.file_info().is_directory()) {
+    PostGetEntryInfoWithFilePathCallbackError(
+        callback, DRIVE_FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  // Move children over to the new directory from the existing directory.
-  if (drive_entry->AsDriveDirectory() && old_entry->AsDriveDirectory()) {
-    drive_entry->AsDriveDirectory()->TakeOverEntries(
-        old_entry->AsDriveDirectory());
-  }
+  // Update data.
+  if (entry != root_.get()) {
+    DriveDirectory* old_parent = GetParent(entry->parent_resource_id());
+    DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
 
-  DriveEntry* new_entry = drive_entry.release();
-  if (old_entry == root_.get()) {
-    // Replace root.
-    root_.reset(new_entry->AsDriveDirectory());
-    resource_map_[root_->resource_id()] = root_.get();
-  } else {
+    if (!old_parent || !new_parent) {
+      PostGetEntryInfoWithFilePathCallbackError(
+          callback, DRIVE_FILE_ERROR_NOT_FOUND);
+      return;
+    }
+
     // Remove from the old parent and add to the new parent.
-    old_parent->RemoveEntry(old_entry);
-    new_parent->AddEntry(new_entry);  // Transfers ownership.
+    old_parent->RemoveChild(entry);
+    entry->FromProto(entry_proto);
+    new_parent->AddEntry(entry);  // Transfers ownership.
+  } else {
+    // root has no parent.
+    entry->FromProto(entry_proto);
   }
 
-  DVLOG(1) << "RefreshEntry " << GetFilePath(new_entry->proto()).value();
+  DVLOG(1) << "RefreshEntry " << GetFilePath(entry->proto()).value();
   // Note that base_name is not the same for new_entry and entry_proto.
   scoped_ptr<DriveEntryProto> result_entry_proto(
-      new DriveEntryProto(new_entry->proto()));
+      new DriveEntryProto(entry->proto()));
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  DRIVE_FILE_OK,
-                 GetFilePath(new_entry->proto()),
+                 GetFilePath(entry->proto()),
                  base::Passed(&result_entry_proto)));
 }
 
