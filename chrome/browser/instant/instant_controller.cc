@@ -15,6 +15,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_ntp.h"
 #include "chrome/browser/instant/instant_overlay.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/instant/instant_tab.h"
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/platform_util.h"
@@ -212,6 +213,11 @@ InstantController::InstantController(chrome::BrowserInstantController* browser,
       omnibox_bounds_(-1, -1, 0, 0),
       allow_overlay_to_show_search_suggestions_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+
+  // When the InstantController lives, the InstantService should live.
+  // InstantService sets up profile-level facilities such as the ThemeSource for
+  // the NTP.
+  InstantServiceFactory::GetForProfile(browser_->profile());
 }
 
 InstantController::~InstantController() {
