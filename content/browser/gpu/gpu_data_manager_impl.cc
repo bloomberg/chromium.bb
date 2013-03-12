@@ -206,22 +206,6 @@ void GpuDataManagerImpl::RemoveObserver(GpuDataManagerObserver* observer) {
   observer_list_->RemoveObserver(observer);
 }
 
-void GpuDataManagerImpl::SetWindowCount(uint32 count) {
-  {
-    base::AutoLock auto_lock(gpu_info_lock_);
-    window_count_ = count;
-  }
-  GpuProcessHost::SendOnIO(
-      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-      new GpuMsg_SetVideoMemoryWindowCount(count));
-}
-
-uint32 GpuDataManagerImpl::GetWindowCount() const {
-  base::AutoLock auto_lock(gpu_info_lock_);
-  return window_count_;
-}
-
 void GpuDataManagerImpl::UnblockDomainFrom3DAPIs(const GURL& url) {
   // This method must do two things:
   //

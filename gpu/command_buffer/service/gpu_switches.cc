@@ -45,11 +45,6 @@ const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 // affected systems.
 const char kForceGLFinishWorkaround[]       = "force-glfinish-workaround";
 
-// Disable the nonuniform GPU memory memory and instead use the scheme that
-// distributes memory uniformly to all visible renderers.
-const char kDisableNonuniformGpuMemPolicy[] =
-    "disable-nonuniform-gpu-mem-policy";
-
 // Sets the total amount of memory that may be allocated for GPU resources
 const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 
@@ -70,7 +65,6 @@ const char* kGpuSwitches[] = {
   kDisableGpuProgramCache,
   kEnforceGLMinimums,
   kForceGLFinishWorkaround,
-  kDisableNonuniformGpuMemPolicy,
   kForceGpuMemAvailableMb,
   kGpuProgramCacheSizeKb,
   kTraceGL,

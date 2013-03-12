@@ -432,13 +432,10 @@ GpuProcessHost::~GpuProcessHost() {
 
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
-
   UMA_HISTOGRAM_BOOLEAN("GPU.AtExitReceivedMemoryStats",
                         uma_memory_stats_received_);
 
   if (uma_memory_stats_received_) {
-    UMA_HISTOGRAM_COUNTS_100("GPU.AtExitWindowCount",
-                             uma_memory_stats_.window_count);
     UMA_HISTOGRAM_COUNTS_100("GPU.AtExitManagedMemoryClientCount",
                              uma_memory_stats_.client_count);
     UMA_HISTOGRAM_COUNTS_100("GPU.AtExitContextGroupCount",
@@ -528,8 +525,7 @@ bool GpuProcessHost::Init() {
   if (!Send(new GpuMsg_Initialize()))
     return false;
 
-  return Send(new GpuMsg_SetVideoMemoryWindowCount(
-      GpuDataManagerImpl::GetInstance()->GetWindowCount()));
+  return true;
 }
 
 void GpuProcessHost::RouteOnUIThread(const IPC::Message& message) {

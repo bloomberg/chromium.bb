@@ -1052,9 +1052,6 @@ void ChromeBrowserMainParts::PostProfileInit() {
 void ChromeBrowserMainParts::PreBrowserStart() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreBrowserStart();
-#if !defined(OS_ANDROID)
-  gpu_util::InstallBrowserMonitor();
-#endif
 
   three_d_observer_.reset(new ThreeDAPIObserver());
 }
@@ -1696,10 +1693,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();
-
-#if !defined(OS_ANDROID)
-  gpu_util::UninstallBrowserMonitor();
-#endif
 
 #if defined(OS_WIN)
   // Log the search engine chosen on first run. Do this at shutdown, after any

@@ -7,14 +7,6 @@
 
 namespace gpu_util {
 
-// Sets up a monitor for browser windows, to be used to determine gpu
-// managed memory allocation.
-// Not supported on Android.
-#if !defined(OS_ANDROID)
-void InstallBrowserMonitor();
-void UninstallBrowserMonitor();
-#endif // !defined(OS_ANDROID)
-
 // Sets up force-compositing-mode and threaded compositing field trials.
 void InitializeCompositingFieldTrial();
 

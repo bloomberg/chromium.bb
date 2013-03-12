@@ -55,7 +55,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
       content::GPUVideoMemoryUsageStats* video_memory_usage_stats) const;
-  void SetWindowCount(uint32 count);
 
   GpuMemoryManagerClientState* CreateClientState(
       GpuMemoryManagerClient* client, bool has_surface, bool visible);
@@ -68,8 +67,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   friend class GpuMemoryTrackingGroup;
   friend class GpuMemoryManagerClientState;
 
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
-                           ComparatorTests);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            TestManageBasicFunctionality);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
@@ -93,19 +90,12 @@ class CONTENT_EXPORT GpuMemoryManager :
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            TestManagedUsageTracking);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
-                           TestBackgroundCutoff);
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
-                           TestBackgroundMru);
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
-                           TestUnmanagedTracking);
-
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
                            BackgroundMru);
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            BackgroundDiscardPersistent);
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            UnmanagedTracking);
-  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTestNonuniform,
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            DefaultAllocation);
 
   typedef std::map<gpu::gles2::MemoryTracker*, GpuMemoryTrackingGroup*>
@@ -115,10 +105,7 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   void Manage();
   void SetClientsHibernatedState() const;
-  uint64 GetVisibleClientAllocation() const;
-  uint64 GetCurrentNonvisibleAvailableGpuMemory() const;
-  void AssignSurfacesAllocationsNonuniform();
-  void AssignSurfacesAllocationsUniform();
+  void AssignSurfacesAllocations();
   void AssignNonSurfacesAllocations();
 
   // Math helper function to compute the maximum value of cap such that
@@ -126,8 +113,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   static uint64 ComputeCap(std::vector<uint64> bytes, uint64 bytes_sum_limit);
 
   // Compute the allocation for clients when visible and not visible.
-  void ComputeVisibleSurfacesAllocationsNonuniform();
-  void ComputeNonvisibleSurfacesAllocationsNonuniform();
+  void ComputeVisibleSurfacesAllocations();
+  void ComputeNonvisibleSurfacesAllocations();
   void DistributeRemainingMemoryToVisibleSurfaces();
 
   // Compute the budget for a client. Allow at most bytes_above_required_cap
@@ -146,7 +133,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory();
   void UpdateUnmanagedMemoryLimits();
-  void UpdateNonvisibleAvailableGpuMemory();
 
   // The amount of video memory which is available for allocation.
   uint64 GetAvailableGpuMemory() const;
@@ -204,9 +190,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   ClientStateList* GetClientList(GpuMemoryManagerClientState* client_state);
 
   // Interfaces for testing
-  void TestingSetUseNonuniformMemoryPolicy(bool use_nonuniform_memory_policy) {
-    use_nonuniform_memory_policy_ = use_nonuniform_memory_policy;
-  }
   void TestingDisableScheduleManage() { disable_schedule_manage_ = true; }
   void TestingSetAvailableGpuMemory(uint64 bytes) {
     bytes_available_gpu_memory_ = bytes;
@@ -225,15 +208,7 @@ class CONTENT_EXPORT GpuMemoryManager :
     bytes_unmanaged_limit_step_ = bytes;
   }
 
-  void TestingSetNonvisibleAvailableGpuMemory(uint64 bytes) {
-    bytes_nonvisible_available_gpu_memory_ = bytes;
-  }
-
   GpuChannelManager* channel_manager_;
-
-  // The new memory policy does not uniformly assign memory to tabs, but
-  // scales the assignments to the tabs' needs.
-  bool use_nonuniform_memory_policy_;
 
   // A list of all visible and nonvisible clients, in most-recently-used
   // order (most recently used is first).
@@ -259,10 +234,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   uint64 bytes_minimum_per_client_;
   uint64 bytes_default_per_client_;
 
-  // The maximum amount of memory that can be allocated for GPU resources
-  // in nonvisible renderers.
-  uint64 bytes_nonvisible_available_gpu_memory_;
-
   // The current total memory usage, and historical maximum memory usage
   uint64 bytes_allocated_managed_current_;
   uint64 bytes_allocated_managed_visible_;
@@ -277,12 +248,6 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // Update bytes_allocated_unmanaged_low/high_ in intervals of step_.
   uint64 bytes_unmanaged_limit_step_;
-
-  // The number of browser windows that exist. If we ever receive a
-  // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory
-  // allocations, instead of doing more complicated stub-based calculations.
-  bool window_count_has_been_received_;
-  uint32 window_count_;
 
   // Used to disable automatic changes to Manage() in testing.
   bool disable_schedule_manage_;

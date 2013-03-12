@@ -17,8 +17,7 @@ struct GPUMemoryUmaStats {
         bytes_allocated_max(0),
         bytes_limit(0),
         client_count(0),
-        context_group_count(0),
-        window_count(0) {
+        context_group_count(0) {
   }
 
   // The number of bytes currently allocated.

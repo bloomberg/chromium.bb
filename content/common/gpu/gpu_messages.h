@@ -173,7 +173,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)
   IPC_STRUCT_TRAITS_MEMBER(bytes_limit)
-  IPC_STRUCT_TRAITS_MEMBER(window_count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::GpuMemoryAllocationForRenderer)
@@ -268,11 +267,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
 // Tells the GPU process to report video_memory information for the task manager
 IPC_MESSAGE_CONTROL0(GpuMsg_GetVideoMemoryUsageStats)
-
-// Tells the GPU process' memory manager how many visible windows there are, so
-// it can partition memory amongst them.
-IPC_MESSAGE_CONTROL1(GpuMsg_SetVideoMemoryWindowCount,
-                     uint32 /* window_count */)
 
 // Tells the GPU process that the browser process has finished resizing the
 // view.

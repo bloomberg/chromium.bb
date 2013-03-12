@@ -69,8 +69,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void RegisterSwiftShaderPath(const base::FilePath& path) OVERRIDE;
   virtual void AddObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
-  virtual void SetWindowCount(uint32 count) OVERRIDE;
-  virtual uint32 GetWindowCount() const OVERRIDE;
   virtual void UnblockDomainFrom3DAPIs(const GURL& url) OVERRIDE;
   virtual void DisableGpuWatchdog() OVERRIDE;
   virtual void SetGLStrings(const std::string& gl_vendor,
