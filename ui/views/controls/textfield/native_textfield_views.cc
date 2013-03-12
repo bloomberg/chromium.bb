@@ -1346,6 +1346,7 @@ void NativeTextfieldViews::HandleMousePressEvent(const ui::MouseEvent& event) {
           MoveCursorTo(event.location(), event.IsShiftDown());
         break;
       case 1:
+        MoveCursorTo(event.location(), false);
         model_->SelectWord();
         OnCaretBoundsChanged();
         break;
