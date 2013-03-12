@@ -58,8 +58,15 @@ function FullWindowVideoControls(
   window.addEventListener('resize', this.updateStyle.bind(this));
 
   document.addEventListener('keydown', function(e) {
-    if (e.keyIdentifier == 'U+0020') {
+    if (e.keyIdentifier == 'U+0020') {  // Space
       this.togglePlayStateWithFeedback();
+      e.preventDefault();
+    }
+    if (e.keyIdentifier == 'U+001B') {  // Escape
+      chrome.fileBrowserPrivate.isFullscreen(function(enabled) {
+        if (enabled)
+          chrome.fileBrowserPrivate.toggleFullscreen();
+      });
       e.preventDefault();
     }
   }.bind(this));
