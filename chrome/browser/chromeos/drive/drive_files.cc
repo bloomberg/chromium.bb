@@ -14,9 +14,7 @@ namespace drive {
 
 // DriveEntry class.
 
-DriveEntry::DriveEntry(DriveResourceMetadata* resource_metadata)
-    : resource_metadata_(resource_metadata) {
-  DCHECK(resource_metadata);
+DriveEntry::DriveEntry() {
 }
 
 DriveEntry::~DriveEntry() {
@@ -24,16 +22,6 @@ DriveEntry::~DriveEntry() {
 
 DriveDirectory* DriveEntry::AsDriveDirectory() {
   return NULL;
-}
-
-base::FilePath DriveEntry::GetFilePath() const {
-  base::FilePath path;
-  DriveEntry* parent = proto_.parent_resource_id().empty() ? NULL :
-      resource_metadata_->GetEntryByResourceId(proto_.parent_resource_id());
-  if (parent)
-    path = parent->GetFilePath();
-  path = path.Append(proto_.base_name());
-  return path;
 }
 
 void DriveEntry::set_parent_resource_id(const std::string& parent_resource_id) {
@@ -53,7 +41,7 @@ void DriveEntry::SetBaseNameFromTitle() {
 // DriveDirectory class implementation.
 
 DriveDirectory::DriveDirectory(DriveResourceMetadata* resource_metadata)
-    : DriveEntry(resource_metadata) {
+    : resource_metadata_(resource_metadata) {
   proto_.mutable_file_info()->set_is_directory(true);
 }
 
@@ -108,11 +96,6 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
     }
   }
   entry->set_base_name(full_file_name.value());
-
-  DVLOG(1) << "AddEntry: dir = " << GetFilePath().value()
-           << ", file = " + entry->base_name()
-           << ", parent resource = " << entry->parent_resource_id()
-           << ", resource = " + entry->resource_id();
 
   // Setup child and parent links.
   children_.insert(std::make_pair(entry->base_name(),
@@ -199,19 +182,6 @@ void DriveDirectory::RemoveChildDirectories() {
       resource_metadata_->RemoveEntryFromResourceMap(iter->second);
       delete dir;
       children_.erase(iter);
-    }
-  }
-}
-
-void DriveDirectory::GetChildDirectoryPaths(
-    std::set<base::FilePath>* child_dirs) {
-  for (ChildMap::const_iterator iter = children_.begin();
-       iter != children_.end(); ++iter) {
-    DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
-        iter->second)->AsDriveDirectory();
-    if (dir) {
-      child_dirs->insert(dir->GetFilePath());
-      dir->GetChildDirectoryPaths(child_dirs);
     }
   }
 }

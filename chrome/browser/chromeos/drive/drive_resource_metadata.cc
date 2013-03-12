@@ -87,7 +87,7 @@ DriveResourceMetadata::~DriveResourceMetadata() {
 }
 
 scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntry() {
-  return scoped_ptr<DriveEntry>(new DriveEntry(this));
+  return scoped_ptr<DriveEntry>(new DriveEntry());
 }
 
 scoped_ptr<DriveDirectory> DriveResourceMetadata::CreateDriveDirectory() {
@@ -157,7 +157,7 @@ void DriveResourceMetadata::MoveEntryToDirectory(
       parent->RemoveChild(entry);
 
     destination->AsDriveDirectory()->AddEntry(entry);
-    moved_file_path = entry->GetFilePath();
+    moved_file_path = GetFilePath(entry->proto());
     error = DRIVE_FILE_OK;
   }
   DVLOG(1) << "MoveEntryToDirectory " << moved_file_path.value();
@@ -197,7 +197,7 @@ void DriveResourceMetadata::RenameEntry(
   // changed, but not the file_name. MoveEntryToDirectory calls RemoveChild to
   // remove the child based on the old file_name, and then re-adds the child by
   // first assigning the new title to file_name. http://crbug.com/30157
-  MoveEntryToDirectory(file_path, parent->GetFilePath(), callback);
+  MoveEntryToDirectory(file_path, GetFilePath(parent->proto()), callback);
 }
 
 void DriveResourceMetadata::RemoveEntryFromParent(
@@ -222,11 +222,11 @@ void DriveResourceMetadata::RemoveEntryFromParent(
       GetEntryByResourceId(entry->parent_resource_id())->AsDriveDirectory();
   DCHECK(parent);
 
-  DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
+  DVLOG(1) << "RemoveEntryFromParent " << GetFilePath(entry->proto()).value();
   parent->RemoveEntry(entry);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK, parent->GetFilePath()));
+      base::Bind(callback, DRIVE_FILE_OK, GetFilePath(parent->proto())));
 }
 
 bool DriveResourceMetadata::AddEntryToResourceMap(DriveEntry* entry) {
@@ -248,7 +248,7 @@ void DriveResourceMetadata::RemoveEntryFromResourceMap(
 
 DriveEntry* DriveResourceMetadata::FindEntryByPathSync(
     const base::FilePath& file_path) {
-  if (file_path == root_->GetFilePath())
+  if (file_path == GetFilePath(root_->proto()))
     return root_.get();
 
   std::vector<base::FilePath::StringType> components;
@@ -292,7 +292,7 @@ void DriveResourceMetadata::GetEntryInfoByResourceId(
   if (entry) {
     entry_proto.reset(new DriveEntryProto(entry->proto()));
     error = DRIVE_FILE_OK;
-    drive_file_path = entry->GetFilePath();
+    drive_file_path = GetFilePath(entry->proto());
   } else {
     error = DRIVE_FILE_ERROR_NOT_FOUND;
   }
@@ -416,7 +416,7 @@ void DriveResourceMetadata::RefreshEntry(
     new_parent->AddEntry(new_entry);  // Transfers ownership.
   }
 
-  DVLOG(1) << "RefreshEntry " << new_entry->GetFilePath().value();
+  DVLOG(1) << "RefreshEntry " << GetFilePath(new_entry->proto()).value();
   // Note that base_name is not the same for new_entry and entry_proto.
   scoped_ptr<DriveEntryProto> result_entry_proto(
       new DriveEntryProto(new_entry->proto()));
@@ -424,7 +424,7 @@ void DriveResourceMetadata::RefreshEntry(
       FROM_HERE,
       base::Bind(callback,
                  DRIVE_FILE_OK,
-                 new_entry->GetFilePath(),
+                 GetFilePath(new_entry->proto()),
                  base::Passed(&result_entry_proto)));
 }
 
@@ -463,7 +463,7 @@ void DriveResourceMetadata::RefreshDirectory(
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK, directory->GetFilePath()));
+      base::Bind(callback, DRIVE_FILE_OK, GetFilePath(directory->proto())));
 }
 
 void DriveResourceMetadata::AddEntry(const DriveEntryProto& entry_proto,
@@ -485,9 +485,10 @@ void DriveResourceMetadata::AddEntry(const DriveEntryProto& entry_proto,
 
   DriveEntry* added_entry = new_entry.release();
   parent->AddEntry(added_entry);  // Transfers ownership.
-  DVLOG(1) << "AddEntry "  << added_entry->GetFilePath().value();
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK, added_entry->GetFilePath()));
+  DVLOG(1) << "AddEntry "  << GetFilePath(added_entry->proto()).value();
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, DRIVE_FILE_OK, GetFilePath(added_entry->proto())));
 }
 
 DriveDirectory* DriveResourceMetadata::GetParent(
@@ -501,6 +502,17 @@ DriveDirectory* DriveResourceMetadata::GetParent(
   return entry ? entry->AsDriveDirectory() : NULL;
 }
 
+base::FilePath DriveResourceMetadata::GetFilePath(
+    const DriveEntryProto& entry) {
+  base::FilePath path;
+  DriveEntry* parent = entry.parent_resource_id().empty() ? NULL :
+      GetEntryByResourceId(entry.parent_resource_id());
+  if (parent)
+    path = GetFilePath(parent->proto());
+  path = path.Append(entry.base_name());
+  return path;
+}
+
 void DriveResourceMetadata::GetChildDirectories(
     const std::string& resource_id,
     const GetChildDirectoriesCallback& changed_dirs_callback) {
@@ -509,12 +521,28 @@ void DriveResourceMetadata::GetChildDirectories(
 
   std::set<base::FilePath> changed_directories;
   DriveEntry* entry = GetEntryByResourceId(resource_id);
-  if (entry && entry->AsDriveDirectory())
-    entry->AsDriveDirectory()->GetChildDirectoryPaths(&changed_directories);
+  DriveDirectory* directory = entry ? entry->AsDriveDirectory() : NULL;
+  if (directory)
+    GetDescendantDirectoryPaths(*directory, &changed_directories);
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(changed_dirs_callback, changed_directories));
+}
+
+void DriveResourceMetadata::GetDescendantDirectoryPaths(
+    const DriveDirectory& directory,
+    std::set<base::FilePath>* child_directories) {
+  for (DriveDirectory::ChildMap::const_iterator iter =
+           directory.children_.begin();
+       iter != directory.children_.end(); ++iter) {
+    DriveDirectory* dir =
+        GetEntryByResourceId(iter->second)->AsDriveDirectory();
+    if (dir) {
+      child_directories->insert(GetFilePath(dir->proto()));
+      GetDescendantDirectoryPaths(*dir, child_directories);
+    }
+  }
 }
 
 void DriveResourceMetadata::RemoveAll(const base::Closure& callback) {

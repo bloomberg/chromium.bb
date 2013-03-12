@@ -66,11 +66,6 @@ class DriveEntry {
     return proto_.parent_resource_id();
   }
 
-  // Returns virtual file path representing this file system entry. This path
-  // corresponds to file path expected by public methods of DriveFileSystem
-  // class.
-  base::FilePath GetFilePath() const;
-
   // Sets |base_name_| based on the value of |title_| without name
   // de-duplication (see AddEntry() for details on de-duplication).
   virtual void SetBaseNameFromTitle();
@@ -80,16 +75,13 @@ class DriveEntry {
   // For access to set_parent_resource_id() from AddEntry.
   friend class DriveDirectory;
 
-  explicit DriveEntry(DriveResourceMetadata* resource_metadata);
+  DriveEntry();
 
   // Sets the parent directory of this file system entry.
   // It is intended to be used by DriveDirectory::AddEntry() only.
   void set_parent_resource_id(const std::string& parent_resource_id);
 
   DriveEntryProto proto_;
-
-  // Weak pointer to DriveResourceMetadata.
-  DriveResourceMetadata* resource_metadata_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveEntry);
@@ -153,13 +145,13 @@ class DriveDirectory : public DriveEntry {
   void RemoveChildFiles();
   void RemoveChildDirectories();
 
-  // Recursively extracts the paths set of all sub-directories.
-  void GetChildDirectoryPaths(std::set<base::FilePath>* child_dirs);
-
   // Map between base_name and resource_id of files and directories.
   typedef std::map<base::FilePath::StringType, std::string> ChildMap;
   // Collection of children.
   ChildMap children_;
+
+  // Weak pointer to DriveResourceMetadata.
+  DriveResourceMetadata* resource_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };

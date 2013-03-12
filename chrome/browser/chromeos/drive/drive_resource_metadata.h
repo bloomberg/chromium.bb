@@ -353,6 +353,13 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // directory.
   DriveDirectory* GetParent(const std::string& parent_resource_id);
 
+  // Returns virtual file path of the entry.
+  base::FilePath GetFilePath(const DriveEntryProto& entry);
+
+  // Recursively extracts the paths set of all sub-directories.
+  void GetDescendantDirectoryPaths(const DriveDirectory& directory,
+                                   std::set<base::FilePath>* child_directories);
+
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
