@@ -21,7 +21,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkFontHost.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -72,7 +71,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* treeImpl, int id
     : LayerImpl(treeImpl, id)
     , m_fpsGraph(60.0, 80.0)
     , m_paintTimeGraph(16.0, 48.0)
-    , m_typeface(skia::AdoptRef(SkFontHost::CreateTypeface(NULL, "monospace", SkTypeface::kBold)))
+    , m_typeface(skia::AdoptRef(SkTypeface::CreateFromName("monospace", SkTypeface::kBold)))
 {
 }
 
