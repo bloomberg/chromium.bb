@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS == "android" and android_build_type == 0', {
+    ['OS == "android" and android_webview_build == 0', {
       'targets': [
         {
           'target_name': 'eyesfree_java',

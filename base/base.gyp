@@ -151,7 +151,7 @@
             '../build/android/cpufeatures.gypi',
           ],
         }],
-        ['OS == "android" and _toolset == "target" and android_build_type == 0', {
+        ['OS == "android" and _toolset == "target" and android_webview_build == 0', {
           'dependencies': [
             'base_java',
           ],
@@ -1131,7 +1131,7 @@
           },
           'includes': [ '../build/java.gypi' ],
           'conditions': [
-            ['android_build_type==0', {
+            ['android_webview_build==0', {
               'dependencies': [
                 '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
               ],

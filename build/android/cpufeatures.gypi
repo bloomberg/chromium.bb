@@ -7,7 +7,7 @@
 # gyp file in the checked-in NDK to build it.
 {
   'conditions': [
-    ['android_build_type != 0', {
+    ['android_webview_build == 1', {
       'libraries': [
         'cpufeatures.a'
       ],

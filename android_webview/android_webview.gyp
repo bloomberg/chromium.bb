@@ -24,7 +24,7 @@
         'lib/main/webview_entry_point.cc',
       ],
       'conditions': [
-        ['android_build_type != 0', {
+        ['android_webview_build == 1', {
           'libraries': [
             # The "android" gyp backend doesn't quite handle static libraries'
             # dependencies correctly; force this to be linked as a workaround.

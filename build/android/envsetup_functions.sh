@@ -284,6 +284,8 @@ ${ANDROID_SDK_VERSION}
           '${ANDROID_BUILD_TOP}')")
       ;;
   esac
+  DEFINES+=" android_webview_build=1"
+  # temporary until all uses of android_build_type are gone (crbug.com/184431)
   DEFINES+=" android_build_type=1"
   DEFINES+=" android_src=\$(GYP_ABS_ANDROID_TOP_DIR)"
   DEFINES+=" android_sdk=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}"

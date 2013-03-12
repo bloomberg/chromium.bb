@@ -434,7 +434,7 @@
                 'ext/vector_platform_device_skia.cc',
               ],
             }],
-            [ '_toolset == "target" and android_build_type == 0', {
+            [ '_toolset == "target" and android_webview_build == 0', {
               'defines': [
                 'HAVE_ENDIAN_H',
               ],
@@ -597,7 +597,7 @@
               'SK_BUILD_FOR_ANDROID_NDK',
             ],
             'conditions': [
-              [ '_toolset == "target" and android_build_type == 0', {
+              [ '_toolset == "target" and android_webview_build == 0', {
                 'defines': [
                   'HAVE_ENDIAN_H',
                 ],

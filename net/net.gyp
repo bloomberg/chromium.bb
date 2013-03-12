@@ -1269,7 +1269,7 @@
             },
           },
         ],
-        ['OS=="android" and _toolset=="target" and android_build_type == 0', {
+        ['OS=="android" and _toolset=="target" and android_webview_build == 0', {
           'dependencies': [
              'net_java',
           ],

@@ -608,7 +608,7 @@
             'shell/android/shell_library_loader.h',
           ],
           'conditions': [
-            ['android_build_type==1', {
+            ['android_webview_build==1', {
               'ldflags': [
                 '-lgabi++',  # For rtti
               ],

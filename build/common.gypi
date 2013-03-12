@@ -102,10 +102,11 @@
         # building on.
         'target_arch%': '<(host_arch)',
 
-        # Sets whether we're building with the Android SDK/NDK (and hence with
-        # Ant, value 0), or as part of the Android system (and hence with the
-        # Android build system, value 1).
-        'android_build_type%': 0,
+        # This is set when building the Android WebView inside the Android
+        # build system, using the 'android' gyp backend. The WebView code is
+        # still built when this is unset, but builds using the normal chromium
+        # build system.
+        'android_webview_build%': 0,
 
         # Sets whether chrome is built for google tv device.
         'google_tv%': 0,
@@ -169,7 +170,7 @@
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_touch_ui%': '<(enable_touch_ui)',
-      'android_build_type%': '<(android_build_type)',
+      'android_webview_build%': '<(android_webview_build)',
       'google_tv%': '<(google_tv)',
       'enable_app_list%': '<(enable_app_list)',
       'enable_message_center%': '<(enable_message_center)',
@@ -483,18 +484,18 @@
         }],
 
         # Enable autofill dialog for Android and Views-enabled platforms for now.
-        ['toolkit_views==1 or (OS=="android" and android_build_type==0)', {
+        ['toolkit_views==1 or (OS=="android" and android_webview_build==0)', {
           'enable_autofill_dialog%': 1
         }],
 
-        ['OS=="android" and android_build_type==0', {
+        ['OS=="android" and android_webview_build==0', {
           'enable_webrtc%': 1,
         }],
 
         # Disable WebRTC for building WebView as part of Android system.
         # TODO(boliu): Decide if we want WebRTC, and if so, also merge
         # the necessary third_party repositories.
-        ['OS=="android" and android_build_type==1', {
+        ['OS=="android" and android_webview_build==1', {
           'enable_webrtc%': 0,
         }],
 
@@ -588,7 +589,7 @@
         ['OS=="android"', {
           # When building as part of the Android system, use system libraries
           # where possible to reduce ROM size.
-          'use_system_libjpeg%': '<(android_build_type)',
+          'use_system_libjpeg%': '<(android_webview_build)',
         }],
 
         # Enable Settings App only on Windows.
@@ -727,7 +728,7 @@
     'wix_path%': '<(wix_path)',
     'use_libjpeg_turbo%': '<(use_libjpeg_turbo)',
     'use_system_libjpeg%': '<(use_system_libjpeg)',
-    'android_build_type%': '<(android_build_type)',
+    'android_webview_build%': '<(android_webview_build)',
     'google_tv%': '<(google_tv)',
     'enable_app_list%': '<(enable_app_list)',
     'enable_message_center%': '<(enable_message_center)',
@@ -990,6 +991,10 @@
     'android_app_version_name%': 'Developer Build',
     'android_app_version_code%': 0,
 
+    # Temporarily set android_build_type until all uses of it have been renamed.
+    # http://crbug.com/184431
+    'android_build_type%': '<(android_webview_build)',
+
     'sas_dll_exists': '<!(python <(DEPTH)/build/dir_exists.py <(sas_dll_path))',
     'wix_exists': '<!(python <(DEPTH)/build/dir_exists.py <(wix_path))',
 
@@ -1205,15 +1210,15 @@
         # When building as part of the Android system, use system libraries
         # where possible to reduce ROM size.
         # TODO(steveblock): Investigate using the system version of sqlite.
-        'use_system_sqlite%': 0,  # '<(android_build_type)',
-        'use_system_expat%': '<(android_build_type)',
-        'use_system_icu%': '<(android_build_type)',
-        'use_system_stlport%': '<(android_build_type)',
+        'use_system_sqlite%': 0,  # '<(android_webview_build)',
+        'use_system_expat%': '<(android_webview_build)',
+        'use_system_icu%': '<(android_webview_build)',
+        'use_system_stlport%': '<(android_webview_build)',
 
         'enable_managed_users%': 0,
 
         # Copy it out one scope.
-        'android_build_type%': '<(android_build_type)',
+        'android_webview_build%': '<(android_webview_build)',
       }],  # OS=="android"
       ['OS=="mac"', {
         'variables': {
@@ -3194,7 +3199,7 @@
                   '-mllvm -asan-globals=0',
                 ],
               }],
-              ['android_build_type==0', {
+              ['android_webview_build==0', {
                 'defines': [
                   # The NDK has these things, but doesn't define the constants
                   # to say that it does. Define them here instead.
@@ -3207,7 +3212,7 @@
                   '--sysroot=<(android_ndk_sysroot)',
                 ],
               }],
-              ['android_build_type==1', {
+              ['android_webview_build==1', {
                 'include_dirs': [
                   # OpenAL headers from the Android tree.
                   '<(android_src)/frameworks/wilhelm/include',
@@ -3236,7 +3241,7 @@
                   '-Wno-sign-promo',
                 ],
               }],
-              ['android_build_type==1 and chromium_code==0', {
+              ['android_webview_build==1 and chromium_code==0', {
                 'cflags': [
                   # There is a class of warning which:
                   #  1) Android always enables and also treats as errors

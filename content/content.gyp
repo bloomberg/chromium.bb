@@ -30,7 +30,6 @@
           },
         },
       }],
-      
     ],
   },
   'conditions': [
@@ -322,7 +321,7 @@
             'java_strings_grd': 'android_content_strings.grd',
           },
           'conditions': [
-            ['android_build_type == 0', {
+            ['android_webview_build == 0', {
               'dependencies': [
                 '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
                 '../third_party/guava/guava.gyp:guava_javalib',
