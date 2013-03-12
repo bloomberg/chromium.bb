@@ -2143,6 +2143,11 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     state = BookmarkBar::HIDDEN;
 #endif
 
+  // Don't allow detached bookmark bar to be shown in suggestions or results
+  // modes.
+  if (state == BookmarkBar::DETACHED && search_model_->mode().is_search())
+    state = BookmarkBar::HIDDEN;
+
   if (state == bookmark_bar_state_)
     return;
 
