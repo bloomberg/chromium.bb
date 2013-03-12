@@ -10,13 +10,20 @@ cr.define('mobile', function() {
   var REDIRECT_POST_PAGE_URL = EXTENSION_BASE_URL + 'redirect.html?autoPost=1';
   var PORTAL_OFFLINE_PAGE_URL = EXTENSION_BASE_URL + 'portal_offline.html';
 
+  var NetworkState = {
+    UNKNOWN: 0,
+    PORTAL_REACHABLE: 1,
+    PORTAL_UNREACHABLE: 2,
+  };
+
   var localStrings = new LocalStrings();
 
   function PortalImpl() {
     // Mobile device information.
     this.deviceInfo_ = null;
     this.spinnerInt_ = -1;
-    this.portalReachable_ = true;
+    this.networkState_ = NetworkState.UNKNOWN;
+    this.portalFrameSet_ = false;
   }
 
   cr.addSingletonGetter(PortalImpl);
@@ -36,20 +43,13 @@ cr.define('mobile', function() {
 
     updateDeviceInfo: function(deviceInfo) {
       this.deviceInfo_ = deviceInfo;
-
-      var postData = '';
-      if (deviceInfo.post_data && deviceInfo.post_data.length)
-        postData = '&post_data=' + encodeURIComponent(deviceInfo.post_data);
-      $('portalFrame').contentWindow.location.href = REDIRECT_POST_PAGE_URL +
-          postData + '&formUrl=' + encodeURIComponent(deviceInfo.payment_url);
-
       this.updateState_();
     },
 
-    updatePortalReachability: function(portalReachable) {
-      if (this.portalReachable_ == portalReachable)
+    updateNetworkState: function(networkState) {
+      if (this.networkState_ == networkState)
         return;
-      this.portalReachable_ = portalReachable;
+      this.networkState_ = networkState;
 
       // If the device info is not yet set, the state will be updated on the
       // device info update.
@@ -58,11 +58,13 @@ cr.define('mobile', function() {
     },
 
     updateState_: function() {
-      if (!this.deviceInfo_)
+      if (!this.deviceInfo_ || this.networkState_ == NetworkState.UNKNOWN)
         return;
-      if (this.portalReachable_) {
+
+      if (this.networkState_ == NetworkState.PORTAL_REACHABLE) {
         // If the portal is reachable, set and show portalFrame; and hide system
         // status displaying 'offline portal' page.
+        this.setPortalFrameIfNeeded_(this.deviceInfo_);
         $('portalFrame').hidden = false;
         $('systemStatus').hidden = true;
         this.stopSpinner_();
@@ -73,6 +75,21 @@ cr.define('mobile', function() {
         $('systemStatus').hidden = false;
         this.startSpinner_();
       }
+    },
+
+    setPortalFrameIfNeeded_: function(deviceInfo) {
+      // The portal should be set only once.
+      if (this.portalFrameSet_)
+        return;
+
+      var postData = '';
+      if (deviceInfo.post_data && deviceInfo.post_data.length)
+        postData = '&post_data=' + encodeURIComponent(deviceInfo.post_data);
+
+      $('portalFrame').contentWindow.location.href = REDIRECT_POST_PAGE_URL +
+          postData + '&formUrl=' + encodeURIComponent(deviceInfo.payment_url);
+
+      this.portalFrameSet_ = true;
     },
 
     startSpinner_: function() {
@@ -137,7 +154,9 @@ cr.define('mobile', function() {
   };
 
   MobileSetupPortal.onConnectivityChanged = function(portalReachable) {
-    PortalImpl.getInstance().updatePortalReachability(portalReachable);
+    PortalImpl.getInstance().updateNetworkState(
+        portalReachable ? NetworkState.PORTAL_REACHABLE :
+                          NetworkState.PORTAL_UNREACHABLE);
   };
 
   // Export

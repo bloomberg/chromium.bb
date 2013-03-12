@@ -175,14 +175,21 @@ class MobileSetupHandler
       MobileActivator::PlanActivationState new_state,
       const std::string& error_description) OVERRIDE;
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib) OVERRIDE;
-
   // Handlers for JS WebUI messages.
   void HandleSetTransactionStatus(const ListValue* args);
   void HandleStartActivation(const ListValue* args);
   void HandlePaymentPortalLoad(const ListValue* args);
   void HandleGetDeviceInfo(const ListValue* args);
+
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib) OVERRIDE;
+
+  // Updates |lte_portal_reachable_| for lte network |network| and notifies
+  // webui of the new state if the reachability changed or |force_notification|
+  // is set.
+  void UpdatePortalReachability(NetworkLibrary* network_lib,
+                                CellularNetwork* network,
+                                bool force_notification);
 
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
@@ -404,7 +411,9 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
            chromeos::NETWORK_TECHNOLOGY_LTE_ADVANCED)) {
     type_ = TYPE_PORTAL_LTE;
     network_lib->AddNetworkManagerObserver(this);
-    OnNetworkManagerChanged(network_lib);
+    // Update the network status and notify the webui. This is the initial
+    // network state so the webui should be notified no matter what.
+    UpdatePortalReachability(network_lib, network, true /*force notification*/);
   } else {
     type_ = TYPE_PORTAL;
   }
@@ -423,12 +432,20 @@ void MobileSetupHandler::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
     return;
 
   CellularNetwork* network =
-        network_lib->FindCellularNetworkByPath(path.substr(1));
+      network_lib->FindCellularNetworkByPath(path.substr(1));
   if (!network) {
     LOG(ERROR) << "Service path lost";
     web_ui()->GetWebContents()->Close();
     return;
   }
+
+  UpdatePortalReachability(network_lib, network, false /*force notification*/);
+}
+
+void MobileSetupHandler::UpdatePortalReachability(NetworkLibrary* network_lib,
+                                                  CellularNetwork* network,
+                                                  bool force_notification) {
+  DCHECK(web_ui());
 
   DCHECK_EQ(type_, TYPE_PORTAL_LTE);
 
@@ -436,7 +453,7 @@ void MobileSetupHandler::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
                           (network_lib->connected_network() &&
                            network_lib->connected_network()->online());
 
-  if (portal_reachable != lte_portal_reachable_) {
+  if (force_notification || portal_reachable != lte_portal_reachable_) {
     web_ui()->CallJavascriptFunction(kJsConnectivityChangedCallback,
                                      base::FundamentalValue(portal_reachable));
   }
