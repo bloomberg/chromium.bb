@@ -1710,8 +1710,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
 #endif
 }
 
-// Disabled due to flakiness.  http://crbug.com/171974
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyURLToClipboard) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, IncognitoCopyURLToClipboard) {
   EXPECT_FALSE(browser()->profile()->IsOffTheRecord());
   Browser* browser_incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser_incognito,
@@ -1739,9 +1738,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyURLToClipboard) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->Clear(ui::Clipboard::BUFFER_STANDARD);
-  ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(browser_incognito,
-                                            ui::VKEY_C,
-                                            kCtrlOrCmdMask));
+  EXPECT_TRUE(chrome::ExecuteCommand(browser_incognito, IDC_COPY));
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 
@@ -1769,8 +1766,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyURLToClipboard) {
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
 }
 
-// Disabled due to flakiness.  http://crbug.com/171974
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyTextToClipboard) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, IncognitoCopyTextToClipboard) {
   EXPECT_FALSE(browser()->profile()->IsOffTheRecord());
   Browser* browser_incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser_incognito,
@@ -1792,9 +1788,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_IncognitoCopyTextToClipboard) {
   EXPECT_TRUE(omnibox_view->IsSelectAll());
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->Clear(ui::Clipboard::BUFFER_STANDARD);
-  ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(browser_incognito,
-                                            ui::VKEY_C,
-                                            kCtrlOrCmdMask));
+  EXPECT_TRUE(chrome::ExecuteCommand(browser_incognito, IDC_COPY));
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
   EXPECT_FALSE(clipboard->IsFormatAvailable(
