@@ -425,6 +425,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // View to host everything that isn't related to sign-in.
   views::View* main_container_;
 
+  // View to host details sections.
+  views::View* details_container_;
+
   // The "Extra view" is on the same row as the dialog buttons.
   views::View* button_strip_extra_view_;
 

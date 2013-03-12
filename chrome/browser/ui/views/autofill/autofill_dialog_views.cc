@@ -491,6 +491,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
       main_container_(NULL),
+      details_container_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
       autocheckout_progress_bar_view_(NULL),
@@ -545,17 +546,14 @@ void AutofillDialogViews::UpdateAccountChooser() {
 }
 
 void AutofillDialogViews::UpdateButtonStrip() {
-  if (controller_->AutocheckoutIsRunning()) {
-    save_in_chrome_checkbox_->SetVisible(false);
-    autocheckout_progress_bar_view_->SetVisible(true);
-    ContentsPreferredSizeChanged();
-  }
+  save_in_chrome_checkbox_->SetVisible(!(controller_->AutocheckoutIsRunning() ||
+                                         controller_->HadAutocheckoutError()));
+  autocheckout_progress_bar_view_->SetVisible(
+      controller_->AutocheckoutIsRunning());
+  details_container_->SetVisible(!(controller_->AutocheckoutIsRunning() ||
+                                   controller_->HadAutocheckoutError()));
 
-  if (controller_->HadAutocheckoutError()) {
-    autocheckout_progress_bar_view_->SetVisible(false);
-    ContentsPreferredSizeChanged();
-  }
-
+  ContentsPreferredSizeChanged();
   GetDialogClientView()->UpdateDialogButtons();
 }
 
@@ -896,18 +894,18 @@ views::View* AutofillDialogViews::CreateMainContainer() {
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
-  views::View* view = new views::View();
+  details_container_ = new views::View();
   // A box layout is used because it respects widget visibility.
-  view->SetLayoutManager(
+  details_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            views::kRelatedControlVerticalSpacing));
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     CreateDetailsSection(iter->second.section);
-    view->AddChildView(iter->second.container);
+    details_container_->AddChildView(iter->second.container);
   }
 
-  return view;
+  return details_container_;
 }
 
 void AutofillDialogViews::CreateDetailsSection(DialogSection section) {
