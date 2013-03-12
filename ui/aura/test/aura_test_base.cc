@@ -9,7 +9,7 @@
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/ime/text_input_test_support.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -73,7 +73,7 @@ void AuraTestBase::TearDown() {
   ui::TextInputTestSupport::Shutdown();
   testing::Test::TearDown();
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
   ui::ResetXCursorCache();
 #endif
 }
