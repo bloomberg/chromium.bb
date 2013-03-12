@@ -48,4 +48,6 @@
 #
 # START OVERRIDES HERE
 
+crbug.com/181700 fast/writing-mode/Kusa-Makura-background-canvas.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
