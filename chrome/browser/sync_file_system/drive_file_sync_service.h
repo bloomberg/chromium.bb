@@ -49,6 +49,9 @@ class DriveFileSyncService
       public base::NonThreadSafe,
       public syncer::InvalidationHandler {
  public:
+  typedef base::Callback<void(SyncStatusCode status,
+                              const std::string& resource_id)>
+      ResourceIdCallback;
   static const char kServiceName[];
 
   explicit DriveFileSyncService(Profile* profile);
@@ -258,22 +261,26 @@ class DriveFileSyncService
   void UnregisterInactiveExtensionsIds();
 
   void GetSyncRootDirectory(scoped_ptr<TaskToken> token,
-                            const SyncStatusCallback& callback);
+                            const ResourceIdCallback& callback);
   void DidGetSyncRootDirectory(scoped_ptr<TaskToken> token,
-                               const SyncStatusCallback& callback,
+                               const ResourceIdCallback& callback,
                                google_apis::GDataErrorCode error,
-                               const std::string& resource_id);
+                               const std::string& sync_root_resource_id);
   void DidGetSyncRootForRegisterOrigin(
       const GURL& origin,
       const SyncStatusCallback& callback,
-      SyncStatusCode status);
+      SyncStatusCode status,
+      const std::string& sync_root_resource_id);
   void StartBatchSyncForOrigin(const GURL& origin,
                                const std::string& resource_id);
-  void DidGetDirectoryForOrigin(scoped_ptr<TaskToken> token,
-                                const GURL& origin,
-                                const SyncStatusCallback& callback,
-                                google_apis::GDataErrorCode error,
-                                const std::string& resource_id);
+  void GetDriveDirectoryForOrigin(const GURL& origin,
+                                  const SyncStatusCallback& callback,
+                                  const std::string& sync_root_resource_id);
+  void DidGetDriveDirectoryForOrigin(scoped_ptr<TaskToken> token,
+                                     const GURL& origin,
+                                     const SyncStatusCallback& callback,
+                                     google_apis::GDataErrorCode error,
+                                     const std::string& resource_id);
   void DidDeleteOriginDirectory(scoped_ptr<TaskToken> token,
                                 const SyncStatusCallback& callback,
                                 google_apis::GDataErrorCode error);
