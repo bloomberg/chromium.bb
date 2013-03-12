@@ -381,8 +381,11 @@ extern const char kWinHttpProxyResolver[];
 extern const char kPluginsMetadataServerURL[];
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 extern const char kEnableSpdyProxyAuth[];
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+#if defined(OS_ANDROID)
 extern const char kEnableTranslate[];
 extern const char kTabletUI[];
 #endif

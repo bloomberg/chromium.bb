@@ -1411,10 +1411,12 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 const char kPluginsMetadataServerURL[]      = "plugins-metadata-server-url";
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 // Enable SPDY proxy.
 const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
+#if defined(OS_ANDROID)
 // Pops the translate infobar if possible.
 const char kEnableTranslate[]               = "enable-translate";
 
