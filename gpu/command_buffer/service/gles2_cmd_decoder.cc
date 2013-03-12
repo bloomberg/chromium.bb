@@ -82,6 +82,40 @@ khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
 }
 #endif
 
+static void GetShaderPrecisionFormatImpl(GLenum shader_type,
+                                         GLenum precision_type,
+                                         GLint *range, GLint *precision) {
+  switch (precision_type) {
+    case GL_LOW_INT:
+    case GL_MEDIUM_INT:
+    case GL_HIGH_INT:
+      // These values are for a 32-bit twos-complement integer format.
+      range[0] = 31;
+      range[1] = 30;
+      *precision = 0;
+      break;
+    case GL_LOW_FLOAT:
+    case GL_MEDIUM_FLOAT:
+    case GL_HIGH_FLOAT:
+      // These values are for an IEEE single-precision floating-point format.
+      range[0] = 127;
+      range[1] = 127;
+      *precision = 23;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
+    // This function is sometimes defined even though it's really just
+    // a stub, so we need to set range and precision as if it weren't
+    // defined before calling it.
+    glGetShaderPrecisionFormat(shader_type, precision_type,
+                               range, precision);
+  }
+}
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -2562,7 +2596,13 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.MaxDrawBuffers = 1;
 
 #if (ANGLE_SH_VERSION >= 110)
-  resources.FragmentPrecisionHigh = 1;
+  GLint range[2];
+  GLint precision = 0;
+  GetShaderPrecisionFormatImpl(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
+                               range, &precision);
+  resources.FragmentPrecisionHigh = ((range[0] >= 62) &&
+                                     (range[1] >= 62) &&
+                                     (precision >= 16));
 #endif
 
   if (force_webgl_glsl_validation_) {
@@ -8634,36 +8674,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
 
   GLint range[2] = {0, 0};
   GLint precision = 0;
-
-  switch (precision_type) {
-    case GL_LOW_INT:
-    case GL_MEDIUM_INT:
-    case GL_HIGH_INT:
-      // These values are for a 32-bit twos-complement integer format.
-      range[0] = 31;
-      range[1] = 30;
-      precision = 0;
-      break;
-    case GL_LOW_FLOAT:
-    case GL_MEDIUM_FLOAT:
-    case GL_HIGH_FLOAT:
-      // These values are for an IEEE single-precision floating-point format.
-      range[0] = 127;
-      range[1] = 127;
-      precision = 23;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  if (gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
-    // This function is sometimes defined even though it's really just
-    // a stub, so we need to set range and precision as if it weren't
-    // defined before calling it.
-    glGetShaderPrecisionFormat(shader_type, precision_type,
-                               range, &precision);
-  }
+  GetShaderPrecisionFormatImpl(shader_type, precision_type, range, &precision);
 
   result->min_range = range[0];
   result->max_range = range[1];
