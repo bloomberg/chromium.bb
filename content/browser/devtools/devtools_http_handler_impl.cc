@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -63,34 +64,44 @@ class DevToolsDefaultBindingHandler
   }
 
   void GarbageCollect() {
-    AgentsMap::iterator it = agents_map_.begin();
-    while (it != agents_map_.end()) {
-      if (!it->second->GetRenderViewHost())
-        agents_map_.erase(it++);
-      else
+    AgentsMap::iterator it = guid_to_agent_.begin();
+    while (it != guid_to_agent_.end()) {
+      DevToolsAgentHost* agent = it->second;
+      if (!agent->GetRenderViewHost()) {
+        GUIDMap::iterator agent_it = agent_to_guid_.find(agent);
+        DCHECK(agent_it != agent_to_guid_.end());
+        agent_to_guid_.erase(agent_it);
+        guid_to_agent_.erase(it++);
+      } else
         ++it;
     }
   }
 
   virtual std::string GetIdentifier(DevToolsAgentHost* agent_host) OVERRIDE {
     GarbageCollect();
-    std::string id = agent_host->GetId();
-    agents_map_[id] = agent_host;
-    return id;
+    if (agent_to_guid_.find(agent_host) == agent_to_guid_.end()) {
+      std::string guid = base::GenerateGUID();
+      agent_to_guid_[agent_host] = guid;
+      guid_to_agent_[guid] = agent_host;
+    }
+    return agent_to_guid_[agent_host];
   }
 
   virtual DevToolsAgentHost* ForIdentifier(
       const std::string& identifier) OVERRIDE {
     GarbageCollect();
-    AgentsMap::iterator it = agents_map_.find(identifier);
-    if (it != agents_map_.end())
+    AgentsMap::iterator it = guid_to_agent_.find(identifier);
+    if (it != guid_to_agent_.end())
       return it->second;
     return NULL;
   }
 
  private:
   typedef std::map<std::string, scoped_refptr<DevToolsAgentHost> > AgentsMap;
-  AgentsMap agents_map_;
+  AgentsMap guid_to_agent_;
+
+  typedef std::map<DevToolsAgentHost*, std::string> GUIDMap;
+  GUIDMap agent_to_guid_;
 };
 
 // An internal implementation of DevToolsClientHost that delegates
