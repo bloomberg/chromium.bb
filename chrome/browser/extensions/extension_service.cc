@@ -728,9 +728,9 @@ void ExtensionService::ReloadExtensionWithEvents(
         manager->GetBackgroundHostForExtension(extension_id);
     if (host && DevToolsAgentHost::HasFor(host->render_view_host())) {
       // Look for an open inspector for the background page.
-      int devtools_cookie = DevToolsAgentHost::DisconnectRenderViewHost(
+      std::string devtools_cookie = DevToolsAgentHost::DisconnectRenderViewHost(
           host->render_view_host());
-      if (devtools_cookie >= 0)
+      if (devtools_cookie != std::string())
         orphaned_dev_tools_[extension_id] = devtools_cookie;
     }
 

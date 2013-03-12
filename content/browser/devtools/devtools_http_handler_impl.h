@@ -41,12 +41,8 @@ class DevToolsHttpHandlerImpl
       public base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>,
       public net::HttpServer::Delegate {
  private:
-  struct PageInfo;
-  typedef std::vector<PageInfo> PageList;
   friend class base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>;
   friend class DevToolsHttpHandler;
-
-  static bool SortPageListByTime(const PageInfo& info1, const PageInfo& info2);
 
   // Takes ownership over |socket_factory|.
   DevToolsHttpHandlerImpl(const net::StreamListenSocketFactory* socket_factory,
@@ -78,8 +74,7 @@ class DevToolsHttpHandlerImpl
 
   void OnJsonRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);
-  void OnThumbnailRequestUI(int connection_id,
-                            const net::HttpServerRequestInfo& info);
+  void OnThumbnailRequestUI(int connection_id, const GURL& page_url);
   void OnDiscoveryPageRequestUI(int connection_id);
 
   void OnWebSocketRequestUI(int connection_id,
@@ -110,16 +105,11 @@ class DevToolsHttpHandlerImpl
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
 
-  PageList GeneratePageList();
-
   // Returns the front end url without the host at the beginning.
   std::string GetFrontendURLInternal(const std::string rvh_id,
                                      const std::string& host);
 
-  PageInfo CreatePageInfo(RenderViewHost* rvh,
-                          DevToolsHttpHandlerDelegate::TargetType type);
-
-  base::DictionaryValue* SerializePageInfo(const PageInfo& page_info,
+  base::DictionaryValue* SerializePageInfo(RenderViewHost* rvh,
                                            const std::string& host);
 
   // The thread used by the devtools handler to run server socket.

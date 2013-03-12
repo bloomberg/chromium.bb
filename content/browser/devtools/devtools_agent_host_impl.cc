@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 
 #include "base/basictypes.h"
+#include "base/stringprintf.h"
 #include "content/common/devtools_messages.h"
 
 namespace content {
@@ -15,7 +16,7 @@ static int g_next_agent_host_id = 0;
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
     : close_listener_(NULL),
-      id_(++g_next_agent_host_id) {
+      id_(base::StringPrintf("%d", ++g_next_agent_host_id)) {
 }
 
 void DevToolsAgentHostImpl::Attach() {
@@ -52,6 +53,10 @@ void DevToolsAgentHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
       MSG_ROUTING_NONE,
       level,
       message));
+}
+
+std::string DevToolsAgentHostImpl::GetId() {
+  return id_;
 }
 
 RenderViewHost* DevToolsAgentHostImpl::GetRenderViewHost() {

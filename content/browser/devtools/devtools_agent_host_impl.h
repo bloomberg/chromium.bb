@@ -41,9 +41,9 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
     close_listener_ = listener;
   }
 
-  int id() { return id_; }
-
   // DevToolsAgentHost implementation.
+  virtual std::string GetId() OVERRIDE;
+
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
  protected:
@@ -59,7 +59,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   CloseListener* close_listener_;
 
  private:
-  int id_;
+  const std::string id_;
 };
 
 }  // namespace content

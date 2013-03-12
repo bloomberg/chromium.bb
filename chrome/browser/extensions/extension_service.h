@@ -912,7 +912,7 @@ class ExtensionService
 
   // Map of inspector cookies that are detached, waiting for an extension to be
   // reloaded.
-  typedef std::map<std::string, int> OrphanedDevTools;
+  typedef std::map<std::string, std::string> OrphanedDevTools;
   OrphanedDevTools orphaned_dev_tools_;
 
   // Maps extension ids to a bitmask that indicates which events should be
