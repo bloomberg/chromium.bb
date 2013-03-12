@@ -9,8 +9,10 @@ Import('env')
 # and ld.so-as-main would complicate the reverse channel emulation
 # quite a bit.  Once we have a better handle on how to merge manifests
 # and we need to test dynamic loading by the subprocess, we can
-# revisit this.
-if env.Bit('nacl_glibc'):
+# revisit this.  The subprogram must be a nexe and cannot be a pexe,
+# so until we generate a nexe for it, we also disable this test for
+# pnacl.
+if env.Bit('nacl_glibc') or env.Bit('bitcode'):
   Return()
 
 env.ComponentLibrary('process_lib',
