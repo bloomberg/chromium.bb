@@ -60,7 +60,6 @@
         'python',
         '<(DEPTH)/tools/swarm_client/isolate.py',
         '<(test_isolation_mode)',
-        '--outdir', '<(test_isolation_outdir)',
         '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
         '--variable', 'OS', '<(OS)',
         '--variable', 'chromeos', '<(chromeos)',
@@ -73,11 +72,8 @@
             '--outdir', '<(PRODUCT_DIR)/<(test_isolation_outdir)',
           ],
         }],
-        ['test_isolation_fail_on_missing == 0', {
-            'action': ['--ignore_broken_items']
-          },
-        ],
       ],
+
       'msvs_cygwin_shell': 0,
     },
   ],
