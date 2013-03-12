@@ -515,6 +515,7 @@ BOOL ThePasteboardIsTooDamnBig() {
 
 - (void)setInstantSuggestion:(NSString*)instantSuggestion
                    textColor:(NSColor*)textColor {
+  [self setNeedsDisplay:YES];
   if ([instantSuggestion length] == 0) {
     suggestTextView_.reset();
     return;

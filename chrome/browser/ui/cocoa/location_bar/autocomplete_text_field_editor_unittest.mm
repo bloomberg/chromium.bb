@@ -189,7 +189,10 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 
 // Test setting instant suggestion, mostly to ensure nothing leaks or crashes.
 TEST_F(AutocompleteTextFieldEditorTest, InstantSuggestion) {
+  [editor_ display];
+  EXPECT_FALSE([editor_ needsDisplay]);
   [editor_ setInstantSuggestion:@"foo" textColor:[NSColor redColor]];
+  EXPECT_TRUE([editor_ needsDisplay]);
   [editor_ display];
 }
 
