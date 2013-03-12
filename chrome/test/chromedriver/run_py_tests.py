@@ -428,10 +428,8 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     Unless --dom-automation is specified, window.domAutomationController
     is undefined.
     """
-    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
-                                             chrome_binary=_CHROME_BINARY,
-                                             chrome_switches=['dom-automation'])
-    result = self._driver.ExecuteScript('return window.domAutomationController')
+    driver = self.CreateDriver(chrome_switches=['dom-automation'])
+    result = driver.ExecuteScript('return window.domAutomationController')
     self.assertNotEqual(None, result)
 
 
@@ -445,9 +443,7 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     crx_1_encoded = base64.b64encode(open(crx_1).read())
     crx_2_encoded = base64.b64encode(open(crx_2).read())
     extensions = [crx_1_encoded, crx_2_encoded]
-    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB,
-                                             chrome_binary=_CHROME_BINARY,
-                                             chrome_extensions=extensions)
+    self.CreateDriver(chrome_extensions=extensions)
 
 
 if __name__ == '__main__':
