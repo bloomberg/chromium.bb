@@ -165,9 +165,8 @@ class UrlHelperTest(unittest.TestCase):
     url = 'http://my.url.com'
     response = 'True'
 
-    def mock_url_open(input_url):
-      self.assertTrue(input_url.startswith(url))
-
+    def mock_url_open(request):
+      self.assertTrue(request.get_full_url().startswith(url))
       return StringIO.StringIO(response)
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url':url}, response)
@@ -176,10 +175,9 @@ class UrlHelperTest(unittest.TestCase):
     url = 'http://my.url.com'
     response = 'True'
 
-    def mock_url_open(input_url, data):
-      self.assertTrue(input_url.startswith(url))
-      self.assertEqual('%s=0' % run_isolated.COUNT_KEY, data)
-
+    def mock_url_open(request):
+      self.assertTrue(request.get_full_url().startswith(url))
+      self.assertEqual('', request.get_data())
       return StringIO.StringIO(response)
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url':url, 'data':{}}, response)
@@ -187,8 +185,8 @@ class UrlHelperTest(unittest.TestCase):
   def testUrlOpenSuccessAfterFailure(self):
     response = 'True'
 
-    def mock_url_open(_url, data):
-      if run_isolated.COUNT_KEY + '=0' in data:
+    def mock_url_open(request):
+      if run_isolated.COUNT_KEY + '=1' not in request.get_data():
         raise urllib2.URLError('url')
       return StringIO.StringIO(response)
 
@@ -196,23 +194,24 @@ class UrlHelperTest(unittest.TestCase):
                                response)
 
   def testUrlOpenFailure(self):
-    def mock_url_open(_url):
+    def mock_url_open(_request):
       raise urllib2.URLError('url')
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url'}, None)
 
   def testUrlOpenHTTPErrorNoRetry(self):
-    def mock_url_open(_url, data):
-      if not run_isolated.COUNT_KEY + '=0' in data:
-        self.fail('UrlOpen was called more than once')
+    count = []
+    def mock_url_open(request):
+      count.append(request)
       raise urllib2.HTTPError('url', 400, 'error message', None, None)
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}}, None)
+    self.assertEqual(1, len(count))
 
   def testUrlOpenHTTPErrorRetry404(self):
     response = 'data'
-    def mock_url_open(_url, data):
-      if not run_isolated.COUNT_KEY + '=0' in data:
+    def mock_url_open(request):
+      if run_isolated.COUNT_KEY + '=1' in request.get_data():
         return StringIO.StringIO(response)
       raise urllib2.HTTPError('url', 404, 'error message', None, None)
 
@@ -223,8 +222,8 @@ class UrlHelperTest(unittest.TestCase):
   def testUrlOpenHTTPErrorWithRetry(self):
     response = 'response'
 
-    def mock_url_open(_url, data):
-      if run_isolated.COUNT_KEY + '=0' in data:
+    def mock_url_open(request):
+      if run_isolated.COUNT_KEY + '=1' not in request.get_data():
         raise urllib2.HTTPError('url', 500, 'error message', None, None)
 
       return StringIO.StringIO(response)
@@ -240,5 +239,5 @@ class UrlHelperTest(unittest.TestCase):
 
 if __name__ == '__main__':
   logging.basicConfig(
-      level=(logging.DEBUG if '-v' in sys.argv else logging.ERROR))
+      level=(logging.DEBUG if '-v' in sys.argv else logging.FATAL))
   unittest.main()

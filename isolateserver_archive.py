@@ -20,9 +20,6 @@ import run_isolated
 import run_test_cases
 
 
-# The maximum number of upload attempts to try when uploading a single file.
-MAX_UPLOAD_ATTEMPTS = 5
-
 # The minimum size of files to upload directly to the blobstore.
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 
@@ -108,33 +105,13 @@ def sha1_file(filepath):
   return digest.hexdigest()
 
 
-def url_open(url, data, content_type='application/octet-stream'):
-  """Opens the given url with the given data, repeating up to
-  MAX_UPLOAD_ATTEMPTS times if it encounters an error.
-
-  Arguments:
-    url: The url to open.
-    data: The data to send to the url.
-
-  Returns:
-    The response from the url, or it raises an exception it it failed to get
-    a response.
-  """
-  request = gen_url_request(url, data, content_type)
-  last_error = None
-  for i in range(MAX_UPLOAD_ATTEMPTS):
-    try:
-      return urllib2.urlopen(request)
-    except urllib2.URLError as e:
-      last_error = e
-      logging.warning('Unable to connect to %s, error msg: %s', url, e)
-      time.sleep(0.5 + i)
-
-  # If we get no response from the server after max_retries, assume it
-  # is down and raise an exception
-  raise run_isolated.MappingError(
-      'Unable to connect to server, %s, to see which files are presents: %s' %
-        (url, last_error))
+def url_open(url, *args, **kwargs):
+  result = run_isolated.url_open(url, *args, **kwargs)
+  if not result:
+    # If we get no response from the server, assume it is down and raise an
+    # exception.
+    raise run_isolated.MappingError('Unable to connect to server %s' % url)
+  return result
 
 
 def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
@@ -148,7 +125,7 @@ def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
   logging.debug('Generating url to directly upload file to blobstore')
   assert isinstance(hash_key, str), hash_key
   assert isinstance(content, str), (hash_key, content)
-  upload_url = url_open(generate_upload_url, None).read()
+  upload_url = url_open(generate_upload_url).read()
 
   if not upload_url:
     logging.error('Unable to generate upload url')
@@ -156,7 +133,7 @@ def upload_hash_content_to_blobstore(generate_upload_url, hash_key, content):
 
   content_type, body = encode_multipart_formdata(
       [], [('hash_contents', hash_key, content)])
-  url_open(upload_url, body, content_type)
+  return url_open(upload_url, body, content_type=content_type)
 
 
 class UploadRemote(run_isolated.Remote):
@@ -176,8 +153,10 @@ class UploadRemote(run_isolated.Remote):
             hash_key,
             content)
       else:
-        url_open(content_url + 'store/' + self.namespace + '/' + hash_key,
-                 content)
+        url_open(
+            content_url + 'store/' + self.namespace + '/' + hash_key,
+            content,
+            content_type='application/octet-stream')
     return upload_file
 
 
@@ -192,7 +171,8 @@ def update_files_to_upload(query_url, queries, upload):
       (binascii.unhexlify(meta_data['h']) for (_, meta_data) in queries))
   assert (len(body) % 20) == 0, repr(body)
 
-  response = url_open(query_url, body).read()
+  response = url_open(
+      query_url, body, content_type='application/octet-stream').read()
   if len(queries) != len(response):
     raise run_isolated.MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '

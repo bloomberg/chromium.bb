@@ -309,7 +309,7 @@ def fix_python_path(cmd):
   return out
 
 
-def url_open(url, data=None, retry_404=False):
+def url_open(url, data=None, retry_404=False, content_type=None):
   """Attempts to open the given url multiple times.
 
   |data| can be either:
@@ -326,47 +326,71 @@ def url_open(url, data=None, retry_404=False):
   """
   method = 'GET' if data is None else 'POST'
 
-  data = data if data is not None else {}
   if isinstance(data, dict) and COUNT_KEY in data:
     logging.error('%s already existed in the data passed into UlrOpen. It '
                   'would be overwritten. Aborting UrlOpen', COUNT_KEY)
     return None
 
+  assert not ((method != 'POST') and content_type), (
+      'Can\'t use content_type on GET')
+
+  def make_request(extra):
+    """Returns a urllib2.Request instance for this specific retry."""
+    if isinstance(data, str) or data is None:
+      payload = data
+    else:
+      if isinstance(data, dict):
+        payload = data.items()
+      else:
+        payload = data[:]
+      payload.extend(extra.iteritems())
+      payload = urllib.urlencode(payload)
+
+    new_url = url
+    if isinstance(data, str) or data is None:
+      # In these cases, add the extra parameter to the query part of the url.
+      url_parts = list(urlparse.urlparse(new_url))
+      # Append the query parameter.
+      if url_parts[4] and extra:
+        url_parts[4] += '&'
+      url_parts[4] += urllib.urlencode(extra)
+      new_url = urlparse.urlunparse(url_parts)
+
+    request = urllib2.Request(new_url, data=payload)
+    if payload is not None:
+      if content_type:
+        request.add_header('Content-Type', content_type)
+      request.add_header('Content-Length', len(payload))
+    return request
+
+  return url_open_request(make_request, retry_404)
+
+
+def url_open_request(make_request, retry_404=False):
+  """Internal version of url_open() for users that need special handling.
+  """
   for attempt in range(MAX_URL_OPEN_ATTEMPTS):
+    extra = {COUNT_KEY: attempt} if attempt else {}
+    request = make_request(extra)
     try:
-      if isinstance(data, str):
-        encoded_data = data
-      else:
-        if isinstance(data, dict):
-          data[COUNT_KEY] = attempt
-        encoded_data = urllib.urlencode(data)
-
-      if method == 'POST':
-        # Simply specifying data to urlopen makes it a POST.
-        url_response = urllib2.urlopen(url, encoded_data)
-      else:
-        url_parts = list(urlparse.urlparse(url))
-        url_parts[4] = encoded_data
-        url = urlparse.urlunparse(url_parts)
-        url_response = urllib2.urlopen(url)
-
-      logging.info('url_open(%s) succeeded', url)
+      url_response = urllib2.urlopen(request)
+      logging.info('url_open(%s) succeeded', request.get_full_url())
       return url_response
     except urllib2.HTTPError as e:
       if e.code < 500 and not (retry_404 and e.code == 404):
         # This HTTPError means we reached the server and there was a problem
         # with the request, so don't retry.
         logging.exception('Able to connect to %s but an exception was '
-                          'thrown.\n%s', url, e)
+                          'thrown.\n%s', request.get_full_url(), e)
         return None
 
       # The HTTPError was due to a server error, so retry the attempt.
       logging.warning('Able to connect to %s on attempt %d.\nException: %s ',
-                      url, attempt, e)
+                      request.get_full_url(), attempt, e)
 
     except (urllib2.URLError, httplib.HTTPException) as e:
       logging.warning('Unable to open url %s on attempt %d.\nException: %s',
-                      url, attempt, e)
+                      request.get_full_url(), attempt, e)
 
     # Only sleep if we are going to try again.
     if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
@@ -375,7 +399,7 @@ def url_open(url, data=None, retry_404=False):
       time.sleep(duration)
 
   logging.error('Unable to open given url, %s, after %d attempts.',
-                url, MAX_URL_OPEN_ATTEMPTS)
+                request.get_full_url(), MAX_URL_OPEN_ATTEMPTS)
   return None
 
 

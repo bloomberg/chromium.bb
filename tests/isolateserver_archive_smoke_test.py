@@ -49,8 +49,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     self.assertEqual(0, subprocess.call(args))
 
     # Ensure the files are present on the server.
-    contains_hash_url = '%s/content/contains/%s' % (
-        ISOLATE_SERVER.rstrip('/'), self.namespace)
+    contains_hash_url = '%scontent/contains/%s?from_smoke_test=1' % (
+        ISOLATE_SERVER, self.namespace)
 
     file_hashes = (isolateserver_archive.sha1_file(
         os.path.join(TEST_DATA_DIR, f)) for f in files)
@@ -58,7 +58,10 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
     for _ in range(3):
       # Cope with eventual consistency.
-      response = isolateserver_archive.url_open(contains_hash_url, body).read()
+      response = isolateserver_archive.url_open(
+          contains_hash_url,
+          body,
+          content_type='application/octet-stream').read()
       if response == chr(1) * len(files):
         break
       print('Warning: only eventually consistent')
@@ -97,7 +100,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
 
 if __name__ == '__main__':
   if len(sys.argv) > 1 and sys.argv[1].startswith('http'):
-    ISOLATE_SERVER = sys.argv.pop(1)
+    ISOLATE_SERVER = sys.argv.pop(1).rstrip('/') + '/'
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   unittest.main()
