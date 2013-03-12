@@ -8,6 +8,7 @@
 #include <dbt.h>
 #include <fileapi.h>
 
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -173,12 +174,17 @@ const int kWorkerPoolNumThreads = 3;
 const char* kWorkerPoolNamePrefix = "DeviceInfoPool";
 
 VolumeMountWatcherWin::VolumeMountWatcherWin()
-    : device_info_worker_pool_(new base::SequencedWorkerPool(
-          kWorkerPoolNumThreads, kWorkerPoolNamePrefix)),
-      weak_factory_(this),
+    : weak_factory_(this),
       notifications_(NULL) {
   get_attached_devices_callback_ = base::Bind(&GetAttachedDevices);
   get_device_details_callback_ = base::Bind(&GetDeviceDetails);
+
+  device_info_worker_pool_ = new base::SequencedWorkerPool(
+      kWorkerPoolNumThreads, kWorkerPoolNamePrefix);
+  task_runner_ =
+      device_info_worker_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
+          device_info_worker_pool_->GetSequenceToken(),
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 // static
@@ -203,9 +209,14 @@ void VolumeMountWatcherWin::Init() {
   // When VolumeMountWatcherWin is created, the message pumps are not running
   // so a posted task from the constructor would never run. Therefore, do all
   // the initializations here.
-  device_info_worker_pool_->PostTask(FROM_HERE, base::Bind(
-      &FindExistingDevicesAndAdd, get_attached_devices_callback_,
-      weak_factory_.GetWeakPtr()));
+  // Disabled pending resolution of http://crbug.com/173953
+  // task_runner_->PostTask(FROM_HERE, base::Bind(
+  //     &FindExistingDevicesAndAdd, get_attached_devices_callback_,
+  //     weak_factory_.GetWeakPtr()));
+
+  // This task is a mystery. Without it, the ToastCrasher test fails, but
+  // it isn't clear why. Need to move pool creation later?
+  task_runner_->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
 }
 
 // static
@@ -225,18 +236,15 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
     std::vector<base::FilePath> removable_devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_refptr<base::TaskRunner> runner =
-      device_info_worker_pool_->GetTaskRunnerWithShutdownBehavior(
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   for (size_t i = 0; i < removable_devices.size(); i++) {
     if (ContainsKey(pending_device_checks_, removable_devices[i]))
       continue;
     pending_device_checks_.insert(removable_devices[i]);
-    runner->PostTask(FROM_HERE,
-                     base::Bind(&RetrieveInfoForDeviceAndAdd,
-                                removable_devices[i],
-                                get_device_details_callback_,
-                                weak_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&RetrieveInfoForDeviceAndAdd,
+                                      removable_devices[i],
+                                      get_device_details_callback_,
+                                      weak_factory_.GetWeakPtr()));
   }
 }
 

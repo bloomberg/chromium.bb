@@ -149,5 +149,9 @@ bool TestVolumeMountWatcherWin::GetRawDeviceInfo(
       total_size_in_bytes);
 }
 
+void TestVolumeMountWatcherWin::ShutdownWorkerPool() {
+  device_info_worker_pool_->Shutdown();
+}
+
 }  // namespace test
 }  // namespace chrome

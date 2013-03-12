@@ -64,6 +64,10 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
                         bool* removable,
                         uint64* total_size_in_bytes);
 
+  // Should be used by unit tests to make sure the worker pool doesn't survive
+  // into other test runs.
+  void ShutdownWorkerPool();
+
  private:
   std::vector<base::FilePath> devices_checked_;
   scoped_ptr<base::WaitableEvent> device_check_complete_event_;
