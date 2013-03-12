@@ -119,3 +119,8 @@ Later modifications (see chromium.patch):
 - Added constants for GL_NVX_gpu_memory_info to glext.h
 
 - Added constants for GL_EXT_discard_framebuffer to glext.h
+
+- Disabled the IEEE float optimized UNCLAMPED_FLOAT_TO_UBYTE and
+  CLAMPED_FLOAT_TO_UBYTE (src/mesa/main/macros.h) in chromium version
+  of mesa.  They produce slightly different results than the
+  un-optimized versions that are used when DEBUG is defined.
