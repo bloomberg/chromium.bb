@@ -262,6 +262,18 @@
         <istrue value="${verbose}" />
     </condition>
 
+    <!--
+      For debug builds, the Android SDK tools create a key in ~/.android and sign the build with it.
+      This has caused all kinds of issues. Instead, the debug build should be signed with a key in
+      build/android/ant. The SDK tools do not provide any support for overriding that behavior and so
+      instead one must use the hack below.
+    -->
+    <property name="key.store" value="${CHROMIUM_SRC}/build/android/ant/chromium-debug.keystore"/>
+    <property name="key.store.password" value="chromium"/>
+    <property name="key.alias" value="chromiumdebugkey"/>
+    <property name="key.alias.password" value="chromium"/>
+
+
     <!-- properties for signing in release mode -->
     <condition property="has.keystore">
         <and>
@@ -1151,17 +1163,6 @@
         <!-- proguard is never enabled in debug mode -->
         <property name="proguard.enabled" value="false"/>
     </target>
-
-    <!--
-      For debug builds, the Android SDK tools create a key in ~/.android and sign the build with it.
-      This has caused all kinds of issues. Instead, the debug build should be signed with a key in
-      build/android/ant. The SDK tools do not provide any support for overriding that behavior and so
-      instead one must use the hack below.
-    -->
-    <property name="key.store" value="${CHROMIUM_SRC}/build/android/ant/chromium-debug.keystore"/>
-    <property name="key.store.password" value="chromium"/>
-    <property name="key.alias" value="chromiumdebugkey"/>
-    <property name="key.alias.password" value="chromium"/>
 
     <!-- SDK tools assume that out.packaged.file is signed and name it "...-unaligned" -->
     <property name="out.packaged.file"
