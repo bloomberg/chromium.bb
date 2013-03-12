@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -201,6 +202,10 @@ void ProfileSyncServiceAndroid::SignInSync(
     // Set the currently-signed-in username, fetch an auth token if necessary,
     // and enable sync.
     std::string name = ConvertJavaStringToUTF8(env, username);
+    // TODO(tim) It should be enough to only call
+    // SigninManager::SetAuthenticatedUsername here. See
+    // http://crbug.com/107160.
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, name);
     SigninManagerFactory::GetForProfile(profile_)->
         SetAuthenticatedUsername(name);
     std::string token = ConvertJavaStringToUTF8(env, auth_token);
