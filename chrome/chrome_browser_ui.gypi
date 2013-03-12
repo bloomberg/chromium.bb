@@ -89,7 +89,8 @@
         'browser/ui/android/navigation_popup.cc',
         'browser/ui/android/navigation_popup.h',
         'browser/ui/android/simple_message_box_android.cc',
-        'browser/ui/android/ssl_client_certificate_selector.cc',
+        'browser/ui/android/ssl_client_certificate_request.cc',
+        'browser/ui/android/ssl_client_certificate_request.h',
         'browser/ui/android/status_tray_android.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h',
@@ -2260,6 +2261,11 @@
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
             ['include', '^browser/ui/profile_error_dialog\\.cc$'],
+          ],
+        }],
+        ['OS == "android"', {
+          'dependencies': [
+            '../third_party/openssl/openssl.gyp:openssl',
           ],
         }],
         ['enable_one_click_signin==0', {
