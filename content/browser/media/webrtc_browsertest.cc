@@ -23,14 +23,13 @@ class WebrtcBrowserTest: public ContentBrowserTest {
   WebrtcBrowserTest() {}
   virtual ~WebrtcBrowserTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
     // assume this switch is set by default in content_browsertests.
     ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
 
     ASSERT_TRUE(test_server()->Start());
-    ContentBrowserTest::SetUp();
   }
  protected:
   bool ExecuteJavascript(const std::string& javascript) {
