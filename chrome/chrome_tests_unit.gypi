@@ -1393,6 +1393,7 @@
         'browser/ui/tabs/pinned_tab_codec_unittest.cc',
         'browser/ui/tabs/pinned_tab_service_unittest.cc',
         'browser/ui/tabs/pinned_tab_test_utils.cc',
+        'browser/ui/tabs/tab_audio_indicator_unittest.cc',
         'browser/ui/tabs/tab_menu_model_unittest.cc',
         'browser/ui/tabs/tab_strip_model_unittest.cc',
         'browser/ui/tabs/test_tab_strip_model_delegate.cc',
