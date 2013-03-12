@@ -152,16 +152,6 @@ WebKit::WebString FakeWebGraphicsContext3D::getShaderInfoLog(
   return WebKit::WebString();
 }
 
-void FakeWebGraphicsContext3D::getShaderPrecisionFormat(
-    WebKit::WGC3Denum shadertype,
-    WebKit::WGC3Denum precisiontype,
-    WebKit::WGC3Dint* range,
-    WebKit::WGC3Dint* precision) {
-  range[0] = 0;
-  range[1] = 0;
-  *precision = 0;
-}
-
 WebKit::WebString FakeWebGraphicsContext3D::getShaderSource(
     WebGLId shader) {
   return WebKit::WebString();
