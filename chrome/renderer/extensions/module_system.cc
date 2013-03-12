@@ -48,6 +48,17 @@ ModuleSystem::~ModuleSystem() {
 void ModuleSystem::Invalidate() {
   if (!is_valid())
     return;
+
+  // Clear the module system properties from the global context. It's polite,
+  // and we use this as a signal in lazy handlers that we no longer exist.
+  {
+    v8::HandleScope scope;
+    v8::Handle<v8::Object> global = v8_context()->Global();
+    global->DeleteHiddenValue(v8::String::New(kModulesField));
+    global->DeleteHiddenValue(v8::String::New(kModuleSystem));
+  }
+
+  // Invalidate all of the successfully required handlers we own.
   for (NativeHandlerMap::iterator it = native_handler_map_.begin();
        it != native_handler_map_.end(); ++it) {
     it->second->Invalidate();
