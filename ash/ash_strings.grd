@@ -170,9 +170,6 @@ This file contains the strings for ash.
       <message name="IDS_AURA_APP_LIST_SYNCING_TITLE" desc="The title used for the Aura app list in the launcher to indicate loading/syncing apps.">
         Syncing apps...
       </message>
-      <message name="IDS_AURA_NEW_TAB" desc="The text label of the New Tab menu item">
-        New tab
-      </message>
       <message name="IDS_AURA_LAUNCHER_OVERFLOW_NAME" desc="The title used for the Aura overflow button in the launcher">
         Overflow Button
       </message>
@@ -190,9 +187,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_RIGHT" desc="Title of the menu item in the context menu for aligning the launcher to the right of the screen">
         Right
-      </message>
-      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_TOP" desc="Title of the menu item in the context menu for aligning the launcher to the top of the screen">
-        Top
       </message>
 
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
@@ -217,9 +211,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The label used for the settings item in the status tray.">
         Settings
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_SHUT_DOWN" desc="The label used for the button in the status tray to shut down the system.">
-        Shut down
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system.">
         Sign out
@@ -276,14 +267,8 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH" desc="The label used in the tray popup to enable bluetooth.">
         Enable Bluetooth
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS" desc="The label used in the tray popup for bluetooth settings.">
-        Bluetooth settings...
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE" desc="The label used in the tray popup to add a bluetooth device.">
         Add device...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_TURNED_OFF" desc="The label used in the tray popup to show bluetooth is turned off.">
-        Bluetooth is turned off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
@@ -298,9 +283,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
         Volume
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_VOLUME_MUTE" desc="The label text for the volume mute segment.">
-        mute
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
@@ -439,9 +421,6 @@ Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
         Shutdown
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS" desc="The accessible text for the notifications button.">
-        Notifications
       </message>
       <message name="IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME" desc="The time remaining until the end of the session. Shown if the session length is limited.">
         <ph name="hours">$1<ex>01</ex></ph>:<ph name="minutes">$2<ex>35</ex></ph>:<ph name="seconds">$3<ex>12</ex></ph>

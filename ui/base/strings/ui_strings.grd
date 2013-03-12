@@ -359,12 +359,6 @@ need to be translated for each locale.-->
       <message name="IDS_APP_RIGHT_ARROW_KEY" desc="Right arrow key">
         Right Arrow
       </message>
-      <message name="IDS_APP_RIGHT_UP_KEY" desc="Up arrow key">
-        Up Arrow
-      </message>
-      <message name="IDS_APP_RIGHT_DOWN_KEY" desc="Down arrow key">
-        Down Arrow
-      </message>
       <message name="IDS_APP_ENTER_KEY" desc="Enter key">
         Enter
       </message>
@@ -457,9 +451,6 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for quiet mode.">
         Quiet mode
-      </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_EXIT" desc="The button label for exiting quiet mode.">
-        Exit quiet mode
       </message>
       <message name="IDS_MESSAGE_CENTER_QUIET_MODE_1HOUR" desc="The button label to enter quiet mode in one hour.">
         Quiet mode for one hour
