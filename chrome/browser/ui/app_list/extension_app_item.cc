@@ -559,8 +559,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
               IDS_APP_LIST_CONTEXT_MENU_PIN);
     }
 
-    if (controller_->CanShowCreateShortcutsDialog() &&
-        extension->is_platform_app()) {
+    if (controller_->CanShowCreateShortcutsDialog()) {
       context_menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
                                                IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
@@ -585,10 +584,10 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
       context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(OPTIONS,
                                                IDS_NEW_TAB_APP_OPTIONS);
-      context_menu_model_->AddItemWithStringId(DETAILS,
-                                               IDS_NEW_TAB_APP_DETAILS);
     }
 
+    context_menu_model_->AddItemWithStringId(DETAILS,
+                                             IDS_NEW_TAB_APP_DETAILS);
     context_menu_model_->AddItemWithStringId(UNINSTALL,
                                              extension->is_platform_app() ?
                                                  IDS_APP_LIST_UNINSTALL_ITEM :
