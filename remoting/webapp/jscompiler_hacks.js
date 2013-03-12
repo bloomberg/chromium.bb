@@ -72,6 +72,12 @@ WebKitMutationObserver.prototype.observe = function(element, options) {};
 remoting.storage.local = null;
 
 /** @type {Object} */
+chrome.storage = {};
+
+/** @type {remoting.MockStorage} */
+chrome.storage.local;
+
+/** @type {Object} */
 chrome.app.runtime = {
   /** @type {Object} */
   onLaunched: {
