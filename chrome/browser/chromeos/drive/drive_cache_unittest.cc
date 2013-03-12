@@ -127,10 +127,7 @@ class DriveCacheTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    cache_->Destroy();
-    // The cache destruction requires to post a task to the blocking pool.
-    google_apis::test_util::RunBlockingPoolTask();
-
+    test_util::DeleteDriveCache(cache_);
     profile_.reset(NULL);
   }
 
@@ -1358,8 +1355,7 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_FALSE(success);
 
-  cache->Destroy();
-  google_apis::test_util::RunBlockingPoolTask();
+  test_util::DeleteDriveCache(cache);
 }
 
 }   // namespace drive

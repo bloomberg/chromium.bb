@@ -249,10 +249,7 @@ class DriveFileSystemTest : public testing::Test {
     file_system_ = NULL;
     delete fake_drive_service_;
     fake_drive_service_ = NULL;
-    cache_->Destroy();
-    // The cache destruction requires to post a task to the blocking pool.
-    google_apis::test_util::RunBlockingPoolTask();
-
+    test_util::DeleteDriveCache(cache_);
     profile_.reset(NULL);
   }
 

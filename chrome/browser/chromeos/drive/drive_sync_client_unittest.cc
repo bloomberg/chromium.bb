@@ -110,8 +110,7 @@ class DriveSyncClientTest : public testing::Test {
     // The sync client should be deleted before NetworkLibrary, as the sync
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
-    cache_->Destroy();
-    google_apis::test_util::RunBlockingPoolTask();
+    test_util::DeleteDriveCache(cache_);
     mock_network_change_notifier_.reset();
   }
 

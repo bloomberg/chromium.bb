@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 
 namespace drive {
@@ -226,6 +227,13 @@ bool LoadChangeFeed(const std::string& relative_path,
   google_apis::test_util::RunBlockingPoolTask();
 
   return true;
+}
+
+void DeleteDriveCache(DriveCache* drive_cache) {
+  DCHECK(drive_cache);
+  drive_cache->Destroy();
+  // The cache destruction requires to post a task to the blocking pool.
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 }  // namespace test_util

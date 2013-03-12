@@ -18,6 +18,7 @@ class Value;
 
 namespace drive {
 
+class DriveCache;
 class DriveCacheEntry;
 class DriveEntryProto;
 class ChangeListLoader;
@@ -167,6 +168,10 @@ bool LoadChangeFeed(const std::string& relative_path,
                     ChangeListLoader* change_list_loader,
                     bool is_delta_feed,
                     int64 root_feed_changestamp);
+
+// DriveCache has private destructor, so it is impossible to delete the
+// instance directly. This method delete it correctly.
+void DeleteDriveCache(DriveCache* drive_cache);
 
 }  // namespace test_util
 }  // namespace drive

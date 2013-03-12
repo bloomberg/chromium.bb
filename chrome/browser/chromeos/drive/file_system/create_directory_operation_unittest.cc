@@ -80,11 +80,7 @@ class CreateDirectoryOperationTest
   virtual void TearDown() OVERRIDE {
     operation_.reset();
     change_list_loader_.reset();
-
-    cache_->Destroy();
-    // The cache destruction requires to post a task to the blocking pool.
-    google_apis::test_util::RunBlockingPoolTask();
-
+    test_util::DeleteDriveCache(cache_);
     fake_free_disk_space_getter_.reset();
     drive_web_apps_registry_.reset();
     scheduler_.reset();

@@ -108,10 +108,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     stale_cache_files_remover_.reset();
     delete file_system_;
     file_system_ = NULL;
-    cache_->Destroy();
-    // The cache destruction requires to post a task to the blocking pool.
-    google_apis::test_util::RunBlockingPoolTask();
-
+    test_util::DeleteDriveCache(cache_);
     profile_.reset(NULL);
   }
 
