@@ -54,6 +54,8 @@
         'win/chrome_launcher.h',
         'win/local_security_policy.cc',
         'win/local_security_policy.h',
+        'win/service_controller.cc',
+        'win/service_controller.h',
       ],
     },
     {
