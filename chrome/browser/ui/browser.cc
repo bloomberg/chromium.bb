@@ -1014,6 +1014,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                WebContents* new_contents,
                                int index,
                                bool user_gesture) {
+  content::RecordAction(UserMetricsAction("ActiveTabChanged"));
+
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
   bool did_reload = false;

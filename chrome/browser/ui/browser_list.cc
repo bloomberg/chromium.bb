@@ -19,11 +19,13 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
+using content::UserMetricsAction;
 using content::WebContents;
 
 // static
@@ -133,6 +135,7 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 
 // static
 void BrowserList::SetLastActive(Browser* browser) {
+  content::RecordAction(UserMetricsAction("ActiveBrowserChanged"));
   BrowserList* browser_list = GetInstance(browser->host_desktop_type());
 
   RemoveBrowserFrom(browser, &browser_list->last_active_browsers_);
