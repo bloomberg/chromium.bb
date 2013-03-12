@@ -12,7 +12,10 @@
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -67,7 +70,8 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
 class URLBlacklistManagerTest : public testing::Test {
  protected:
   URLBlacklistManagerTest()
-      : ui_thread_(BrowserThread::UI, &loop_),
+      : loop_(MessageLoop::TYPE_IO),
+        ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
         io_thread_(BrowserThread::IO, &loop_) {
   }
@@ -439,6 +443,32 @@ TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://very.safe/")));
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://very.safe/path")));
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://very.safe/path")));
+}
+
+TEST_F(URLBlacklistManagerTest, DontBlockResources) {
+  scoped_ptr<URLBlacklist> blacklist(new URLBlacklist());
+  scoped_ptr<base::ListValue> blocked(new base::ListValue);
+  blocked->Append(new base::StringValue("google.com"));
+  blacklist->Block(blocked.get());
+  blacklist_manager_->SetBlacklist(blacklist.Pass());
+  EXPECT_TRUE(blacklist_manager_->IsURLBlocked(GURL("http://google.com")));
+
+  net::TestURLRequestContext context;
+  net::URLRequest request(GURL("http://google.com"), NULL, &context);
+
+  // Background requests aren't filtered.
+  EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(request));
+
+  // Main frames are filtered.
+  request.set_load_flags(net::LOAD_MAIN_FRAME);
+  EXPECT_TRUE(blacklist_manager_->IsRequestBlocked(request));
+
+  // Sync gets a free pass.
+  GURL sync_url(
+      GaiaUrls::GetInstance()->service_login_url() + "?service=chromiumsync");
+  net::URLRequest sync_request(sync_url, NULL, &context);
+  sync_request.set_load_flags(net::LOAD_MAIN_FRAME);
+  EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(sync_request));
 }
 
 }  // namespace policy

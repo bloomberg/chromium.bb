@@ -366,7 +366,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   // blocked. However, an extension might redirect the request to another URL,
   // which is not blocked.
   if (url_blacklist_manager_ &&
-      url_blacklist_manager_->IsURLBlocked(request->url())) {
+      url_blacklist_manager_->IsRequestBlocked(*request)) {
     // URL access blocked by policy.
     request->net_log().AddEvent(
         net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,

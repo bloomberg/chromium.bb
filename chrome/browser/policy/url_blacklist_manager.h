@@ -25,6 +25,10 @@ namespace base {
 class ListValue;
 }
 
+namespace net {
+class URLRequest;
+}
+
 namespace policy {
 
 // Contains a set of filters to block and allow certain URLs, and matches GURLs
@@ -128,6 +132,13 @@ class URLBlacklistManager {
   // Returns true if |url| is blocked by the current blacklist. Must be called
   // from the IO thread.
   bool IsURLBlocked(const GURL& url) const;
+
+  // Returns true if |request| is blocked by the current blacklist.
+  // Only main frame and sub frame requests may be blocked; other sub resources
+  // or background downloads (e.g. extensions updates, sync, etc) are not
+  // filtered. The sync signin page is also not filtered.
+  // Must be called from the IO thread.
+  bool IsRequestBlocked(const net::URLRequest& request) const;
 
   // Replaces the current blacklist. Must be called on the IO thread.
   // Virtual for testing.

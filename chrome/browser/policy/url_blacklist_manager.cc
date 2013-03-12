@@ -11,13 +11,17 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using extensions::URLMatcher;
@@ -44,12 +48,25 @@ const char* kStandardSchemes[] = {
   "wss"
 };
 
+const char kServiceLoginAuth[] = "/ServiceLoginAuth";
+
 bool IsStandardScheme(const std::string& scheme) {
   for (size_t i = 0; i < arraysize(kStandardSchemes); ++i) {
     if (scheme == kStandardSchemes[i])
       return true;
   }
   return false;
+}
+
+bool IsSigninFlowURL(const GURL& url) {
+  // Whitelist all the signin flow URLs flagged by the SigninManager.
+  if (SigninManager::IsWebBasedSigninFlowURL(url))
+    return true;
+
+  // Additionally whitelist /ServiceLoginAuth.
+  if (url.GetOrigin() != GURL(GaiaUrls::GetInstance()->gaia_origin_url()))
+    return false;
+  return url.path() == kServiceLoginAuth;
 }
 
 // A task that builds the blacklist on the FILE thread.
@@ -357,6 +374,17 @@ void URLBlacklistManager::SetBlacklist(scoped_ptr<URLBlacklist> blacklist) {
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return blacklist_->IsURLBlocked(url);
+}
+
+bool URLBlacklistManager::IsRequestBlocked(
+    const net::URLRequest& request) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  int filter_flags = net::LOAD_MAIN_FRAME | net::LOAD_SUB_FRAME;
+  if ((request.load_flags() & filter_flags) == 0)
+    return false;
+  if (IsSigninFlowURL(request.url()))
+    return false;
+  return IsURLBlocked(request.url());
 }
 
 // static
