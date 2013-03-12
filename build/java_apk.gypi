@@ -141,7 +141,7 @@
         '<(java_in_dir)/AndroidManifest.xml',
         '<(DEPTH)/build/android/ant/chromium-apk.xml',
         '<(DEPTH)/build/android/ant/common.xml',
-        '<(DEPTH)/build/android/ant/sdk-targets.xml',
+        '<(DEPTH)/build/android/ant/apk-build.xml',
         # If there is a separate find for additional_src_dirs, it will find the
         # wrong .java files when additional_src_dirs is empty.
         '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
