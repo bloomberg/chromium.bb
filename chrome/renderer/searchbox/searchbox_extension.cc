@@ -294,7 +294,11 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> GetFontSize(const v8::Arguments& args);
 
   // Navigates the window to a URL represented by either a URL string or a
-  // restricted ID.
+  // restricted ID. The two variants handle restricted IDs in their
+  // respective namespaces.
+  static v8::Handle<v8::Value> NavigateSearchBox(const v8::Arguments& args);
+  static v8::Handle<v8::Value> NavigateNewTabPage(const v8::Arguments& args);
+  // DEPRECATED: TODO(sreeram): Remove when google.com no longer uses this.
   static v8::Handle<v8::Value> NavigateContentWindow(const v8::Arguments& args);
 
   // Sets ordered suggestions. Valid for current |value|.
@@ -303,14 +307,16 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Sets the text to be autocompleted into the search box.
   static v8::Handle<v8::Value> SetQuerySuggestion(const v8::Arguments& args);
 
-  // Like |SetQuerySuggestion| but uses a restricted ID to identify the text.
+  // Like |SetQuerySuggestion| but uses a restricted autocomplete result ID to
+  // identify the text.
   static v8::Handle<v8::Value> SetQuerySuggestionFromAutocompleteResult(
       const v8::Arguments& args);
 
   // Sets the search box text, completely replacing what the user typed.
   static v8::Handle<v8::Value> SetQuery(const v8::Arguments& args);
 
-  // Like |SetQuery| but uses a restricted ID to identify the text.
+  // Like |SetQuery| but uses a restricted autocomplete result ID to identify
+  // the text.
   static v8::Handle<v8::Value> SetQueryFromAutocompleteResult(
       const v8::Arguments& args);
 
@@ -383,6 +389,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetFont);
   if (name->Equals(v8::String::New("GetFontSize")))
     return v8::FunctionTemplate::New(GetFontSize);
+  if (name->Equals(v8::String::New("NavigateSearchBox")))
+    return v8::FunctionTemplate::New(NavigateSearchBox);
+  if (name->Equals(v8::String::New("NavigateNewTabPage")))
+    return v8::FunctionTemplate::New(NavigateNewTabPage);
   if (name->Equals(v8::String::New("NavigateContentWindow")))
     return v8::FunctionTemplate::New(NavigateContentWindow);
   if (name->Equals(v8::String::New("SetSuggestions")))
@@ -680,7 +690,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFontSize(
 }
 
 // static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateSearchBox(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view || !args.Length()) return v8::Undefined();
@@ -698,6 +708,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
     destination_url = GURL(V8ValueToUTF16(args[0]));
   }
 
+  DVLOG(1) << render_view << " NavigateSearchBox: " << destination_url;
+
   // Navigate the main frame.
   if (destination_url.is_valid()) {
     WindowOpenDisposition disposition = CURRENT_TAB;
@@ -707,6 +719,53 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
         destination_url, transition, disposition);
   }
   return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateNewTabPage(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || !args.Length()) return v8::Undefined();
+
+  GURL destination_url;
+  content::PageTransition transition = content::PAGE_TRANSITION_TYPED;
+  if (args[0]->IsNumber()) {
+    destination_url = GURL(SearchBox::Get(render_view)->MostVisitedItemIDToURL(
+        args[0]->Uint32Value()));
+  } else {
+    destination_url = GURL(V8ValueToUTF16(args[0]));
+  }
+
+  DVLOG(1) << render_view << " NavigateNewTabPage: " << destination_url;
+
+  // Navigate the main frame.
+  if (destination_url.is_valid()) {
+    WindowOpenDisposition disposition = CURRENT_TAB;
+    if (args[1]->Uint32Value() == 2)
+      disposition = NEW_BACKGROUND_TAB;
+    SearchBox::Get(render_view)->NavigateToURL(
+        destination_url, transition, disposition);
+  }
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::NavigateContentWindow(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || !args.Length()) return v8::Undefined();
+
+  DVLOG(1) << render_view << " NavigateContentWindow; query="
+           << SearchBox::Get(render_view)->query();
+
+  // If the query is blank and verbatim is false, this must be the NTP. If the
+  // user were clicking on an autocomplete suggestion, either the query would
+  // be non-blank, or it would be blank due to SetQueryFromAutocompleteResult()
+  // but verbatim would be true.
+  if (SearchBox::Get(render_view)->query().empty() &&
+      !SearchBox::Get(render_view)->verbatim())
+    return NavigateNewTabPage(args);
+  return NavigateSearchBox(args);
 }
 
 // static
@@ -883,8 +942,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
 
     const string16 url = UTF8ToUTF16(items[i].url.spec());
     const string16 host = UTF8ToUTF16(items[i].url.host());
-    int restrict_id =
-        SearchBox::Get(render_view)->UrlToRestrictedId(url);
+    int most_visited_item_id =
+        SearchBox::Get(render_view)->URLToMostVisitedItemID(url);
 
     // We set the "dir" attribute of the title, so that in RTL locales, a LTR
     // title is rendered left-to-right and truncated from the right. For
@@ -909,13 +968,13 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
 
     v8::Handle<v8::Object> item = v8::Object::New();
     item->Set(v8::String::New("rid"),
-              v8::Int32::New(restrict_id));
+              v8::Int32::New(most_visited_item_id));
     item->Set(v8::String::New("thumbnailUrl"),
               UTF16ToV8String(SearchBox::Get(render_view)->
-                              GenerateThumbnailUrl(restrict_id)));
+                              GenerateThumbnailUrl(most_visited_item_id)));
     item->Set(v8::String::New("faviconUrl"),
               UTF16ToV8String(SearchBox::Get(render_view)->
-                              GenerateFaviconUrl(restrict_id)));
+                              GenerateFaviconUrl(most_visited_item_id)));
     item->Set(v8::String::New("title"),
               UTF16ToV8String(title));
     item->Set(v8::String::New("domain"), UTF16ToV8String(host));

@@ -50,10 +50,10 @@ class SearchBox : public content::RenderViewObserver,
                      WindowOpenDisposition disposition);
 
   // Sends ChromeViewHostMsg_InstantDeleteMostVisitedItem to the browser.
-  void DeleteMostVisitedItem(int restrict_id);
+  void DeleteMostVisitedItem(int most_visited_item_id);
 
   // Sends ChromeViewHostMsg_InstantUndoMostVisitedDeletion to the browser.
-  void UndoMostVisitedDeletion(int restrict_id);
+  void UndoMostVisitedDeletion(int most_visited_item_id);
 
   // Sends ChromeViewHostMsg_InstantUndoAllMostVisitedDeletions to the browser.
   void UndoAllMostVisitedDeletions();
@@ -78,17 +78,17 @@ class SearchBox : public content::RenderViewObserver,
   const std::vector<InstantAutocompleteResult>& GetAutocompleteResults();
   // Searchbox retains ownership of this object.
   const InstantAutocompleteResult*
-      GetAutocompleteResultWithId(size_t restricted_id) const;
+      GetAutocompleteResultWithId(size_t autocomplete_result_id) const;
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
 
   // Most Visited items.
   const std::vector<MostVisitedItem>& GetMostVisitedItems();
 
   // Secure Urls.
-  int UrlToRestrictedId(const string16 url);
-  string16 RestrictedIdToURL(int id);
-  string16 GenerateThumbnailUrl(int id);
-  string16 GenerateFaviconUrl(int id);
+  int URLToMostVisitedItemID(const string16 url);
+  string16 MostVisitedItemIDToURL(int most_visited_item_id);
+  string16 GenerateThumbnailUrl(int most_visited_item_id);
+  string16 GenerateFaviconUrl(int most_visited_item_id);
 
  private:
   // Overridden from content::RenderViewObserver:
@@ -140,12 +140,11 @@ class SearchBox : public content::RenderViewObserver,
   size_t omnibox_font_size_;
   std::vector<MostVisitedItem> most_visited_items_;
 
-  // URL to Restricted Id mapping.
   // TODO(dcblack): Unify this logic to work with both Most Visited and
-  // history suggestions.  (crbug/175768)
-  std::map<string16, int> url_to_restricted_id_map_;
-  std::map<int, string16> restricted_id_to_url_map_;
-  int last_restricted_id_;
+  // history suggestions. http://crbug.com/175768
+  std::map<string16, int> url_to_most_visited_item_id_map_;
+  std::map<int, string16> most_visited_item_id_to_url_map_;
+  int last_most_visited_item_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

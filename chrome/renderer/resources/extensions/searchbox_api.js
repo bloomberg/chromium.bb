@@ -13,6 +13,7 @@ if (!chrome.embeddedSearch) {
     //                            Private functions
     // =========================================================================
     native function GetFont();
+    // DEPRECATED. TODO(sreeram): Remove once google.com no longer uses this.
     native function NavigateContentWindow();
 
     function escapeHTML(text) {
@@ -64,6 +65,7 @@ if (!chrome.embeddedSearch) {
     // =========================================================================
     //                           Exported functions
     // =========================================================================
+    // DEPRECATED. TODO(sreeram): Remove once google.com no longer uses this.
     this.navigateContentWindow = function(destination, disposition) {
       return NavigateContentWindow(destination, disposition);
     };
@@ -102,6 +104,7 @@ if (!chrome.embeddedSearch) {
       native function FocusOmnibox();
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
+      native function NavigateSearchBox();
 
       function SafeWrapSuggestion(restrictedText) {
         return SafeWrap(restrictedText, window.innerWidth - 155, 22);
@@ -239,14 +242,14 @@ if (!chrome.embeddedSearch) {
       this.setAutocompleteText = function(text, behavior) {
         SetQuerySuggestion(text, behavior);
       };
-      this.setRestrictedAutocompleteText = function(resultId) {
-        SetQuerySuggestionFromAutocompleteResult(resultId);
+      this.setRestrictedAutocompleteText = function(autocompleteResultId) {
+        SetQuerySuggestionFromAutocompleteResult(autocompleteResultId);
       };
       this.setValue = function(text, type) {
         SetQuery(text, type);
       };
-      this.setRestrictedValue = function(resultId) {
-        SetQueryFromAutocompleteResult(resultId);
+      this.setRestrictedValue = function(autocompleteResultId) {
+        SetQueryFromAutocompleteResult(autocompleteResultId);
       };
       // TODO(jered): Remove the deprecated "reason" argument.
       this.showOverlay = function(reason, height) {
@@ -266,6 +269,9 @@ if (!chrome.embeddedSearch) {
       this.stopCapturingKeyStrokes = function() {
         StopCapturingKeyStrokes();
       };
+      this.navigateContentWindow = function(destination, disposition) {
+        NavigateSearchBox(destination, disposition);
+      }
       this.onchange = null;
       this.onsubmit = null;
       this.oncancel = null;
@@ -298,6 +304,7 @@ if (!chrome.embeddedSearch) {
       native function DeleteMostVisitedItem();
       native function UndoAllMostVisitedDeletions();
       native function UndoMostVisitedDeletion();
+      native function NavigateNewTabPage();
 
       function SafeWrapMostVisited(restrictedText, width, opt_direction) {
         return SafeWrap(restrictedText, width, 18, 11, opt_direction);
@@ -332,6 +339,9 @@ if (!chrome.embeddedSearch) {
       this.undoMostVisitedDeletion = function(restrictId) {
         UndoMostVisitedDeletion(restrictId);
       };
+      this.navigateContentWindow = function(destination, disposition) {
+        NavigateNewTabPage(destination, disposition);
+      }
 
       this.onmostvisitedchange = null;
       this.onthemechange = null;

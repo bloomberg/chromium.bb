@@ -608,10 +608,13 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   if (overlay_->IsUsingLocalOverlay())
     return false;
 
-  if (type == INSTANT_COMMIT_FOCUS_LOST)
-    overlay_->Cancel(last_omnibox_text_);
-  else if (type != INSTANT_COMMIT_NAVIGATED)
+  if (type == INSTANT_COMMIT_FOCUS_LOST) {
+    // Extended mode doesn't need or use the Cancel message.
+    if (!extended_enabled_)
+      overlay_->Cancel(last_omnibox_text_);
+  } else if (type != INSTANT_COMMIT_NAVIGATED) {
     overlay_->Submit(last_omnibox_text_);
+  }
 
   scoped_ptr<content::WebContents> overlay = overlay_->ReleaseContents();
 

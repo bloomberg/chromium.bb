@@ -34,7 +34,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
       is_key_capture_enabled_(false),
       display_instant_results_(false),
       omnibox_font_size_(0),
-      last_restricted_id_(0) {
+      last_most_visited_item_id_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -84,14 +84,14 @@ void SearchBox::NavigateToURL(const GURL& url,
       url, transition, disposition));
 }
 
-void SearchBox::DeleteMostVisitedItem(int restrict_id) {
-  string16 url = RestrictedIdToURL(restrict_id);
+void SearchBox::DeleteMostVisitedItem(int most_visited_item_id) {
+  string16 url = MostVisitedItemIDToURL(most_visited_item_id);
   render_view()->Send(new ChromeViewHostMsg_InstantDeleteMostVisitedItem(
       render_view()->GetRoutingID(), GURL(url)));
 }
 
-void SearchBox::UndoMostVisitedDeletion(int restrict_id) {
-  string16 url = RestrictedIdToURL(restrict_id);
+void SearchBox::UndoMostVisitedDeletion(int most_visited_item_id) {
+  string16 url = MostVisitedItemIDToURL(most_visited_item_id);
   render_view()->Send(new ChromeViewHostMsg_InstantUndoMostVisitedDeletion(
       render_view()->GetRoutingID(), GURL(url)));
 }
@@ -124,11 +124,13 @@ const std::vector<InstantAutocompleteResult>&
 }
 
 const InstantAutocompleteResult* SearchBox::GetAutocompleteResultWithId(
-    size_t restricted_id) const {
-  if (restricted_id < last_results_base_ ||
-      restricted_id >= last_results_base_ + last_autocomplete_results_.size())
+    size_t autocomplete_result_id) const {
+  if (autocomplete_result_id < last_results_base_ ||
+      autocomplete_result_id >=
+          last_results_base_ + last_autocomplete_results_.size())
     return NULL;
-  return &last_autocomplete_results_[restricted_id - last_results_base_];
+  return &last_autocomplete_results_[
+      autocomplete_result_id - last_results_base_];
 }
 
 const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
@@ -363,31 +365,31 @@ const std::vector<MostVisitedItem>& SearchBox::GetMostVisitedItems() {
   return most_visited_items_;
 }
 
-int SearchBox::UrlToRestrictedId(string16 url) {
-  if (url_to_restricted_id_map_[url])
-    return url_to_restricted_id_map_[url];
+int SearchBox::URLToMostVisitedItemID(string16 url) {
+  if (url_to_most_visited_item_id_map_[url])
+    return url_to_most_visited_item_id_map_[url];
 
-  last_restricted_id_++;
-  url_to_restricted_id_map_[url] = last_restricted_id_;
-  restricted_id_to_url_map_[last_restricted_id_] = url;
+  last_most_visited_item_id_++;
+  url_to_most_visited_item_id_map_[url] = last_most_visited_item_id_;
+  most_visited_item_id_to_url_map_[last_most_visited_item_id_] = url;
 
-  return last_restricted_id_;
+  return last_most_visited_item_id_;
 }
 
-string16 SearchBox::RestrictedIdToURL(int id) {
-  return restricted_id_to_url_map_[id];
+string16 SearchBox::MostVisitedItemIDToURL(int most_visited_item_id) {
+  return most_visited_item_id_to_url_map_[most_visited_item_id];
 }
 
-string16 SearchBox::GenerateThumbnailUrl(int id) {
+string16 SearchBox::GenerateThumbnailUrl(int most_visited_item_id) {
   std::ostringstream ostr;
-  ostr << kThumbnailUrlPrefix << id;
+  ostr << kThumbnailUrlPrefix << most_visited_item_id;
   GURL url = GURL(ostr.str());
   return UTF8ToUTF16(url.spec());
 }
 
-string16 SearchBox::GenerateFaviconUrl(int id) {
+string16 SearchBox::GenerateFaviconUrl(int most_visited_item_id) {
   std::ostringstream ostr;
-  ostr << kFaviconUrlPrefix << id;
+  ostr << kFaviconUrlPrefix << most_visited_item_id;
   GURL url = GURL(ostr.str());
   return UTF8ToUTF16(url.spec());
 }
