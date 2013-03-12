@@ -17,6 +17,8 @@
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -71,9 +73,11 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
+#include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"
 
 using content::BrowserContext;
@@ -2419,3 +2423,52 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
   // Verify that download shelf is not shown.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
+
+// Verify the multiple downloads infobar.
+IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Create a downloads observer.
+  scoped_ptr<content::DownloadTestObserver> downloads_observer(
+        CreateWaiter(browser(), 2));
+
+  // Create an infobar observer.
+  content::WindowedNotificationObserver infobar_added_1(
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+        content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURL(
+     browser(),
+     test_server()->GetURL("files/downloads/download-a_zip_file.html"));
+  infobar_added_1.Wait();
+
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+       browser()->tab_strip_model()->GetActiveWebContents());
+  // Verify that there is only one infobar.
+  EXPECT_EQ(1u, infobar_service->GetInfoBarCount());
+
+  // Get the infobar at index 0.
+  int infobar_index = 0;
+  InfoBarDelegate* infobar =
+      infobar_service->GetInfoBarDelegateAt(infobar_index);
+  EXPECT_TRUE(infobar != NULL);
+
+  ConfirmInfoBarDelegate* confirm_infobar =
+      infobar->AsConfirmInfoBarDelegate();
+  EXPECT_TRUE(confirm_infobar != NULL);
+
+  // Verify multi download warning infobar message.
+  EXPECT_EQ(confirm_infobar->GetMessageText(),
+            l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING));
+
+  // Click on the "Allow" button to allow multiple downloads.
+  if (confirm_infobar->Accept())
+    infobar_service->RemoveInfoBar(infobar);
+  // Verify that there are no more infobars.
+  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+
+  // Waits for the download to complete.
+  downloads_observer->WaitForFinished();
+  EXPECT_EQ(2u, downloads_observer->NumDownloadsSeenInState(
+      DownloadItem::COMPLETE));
+}
+
