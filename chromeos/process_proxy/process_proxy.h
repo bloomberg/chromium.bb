@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
-#define CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
+#ifndef CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
+#define CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
 
 #include <fcntl.h>
 #include <signal.h>
@@ -12,12 +12,14 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/process_proxy/process_output_watcher.h"
+#include "chromeos/process_proxy/process_output_watcher.h"
 
 namespace base {
+class TaskRunner;
 class Thread;
 }  // namespace base
 
+namespace chromeos {
 
 // Proxy to a single ChromeOS process.
 // This is refcounted. Note that output watcher, when it gets triggered owns a
@@ -62,6 +64,8 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   // Gets called by output watcher when the process writes something to its
   // output streams.
   void OnProcessOutput(ProcessOutputType type, const std::string& output);
+  void CallOnProcessOutputCallback(ProcessOutputType type,
+                                   const std::string& output);
 
   bool StopWatching();
 
@@ -80,6 +84,7 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
 
   bool callback_set_;
   ProcessOutputCallback callback_;
+  scoped_refptr<base::TaskRunner> callback_runner_;
 
   bool watcher_started_;
 
@@ -89,4 +94,6 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   DISALLOW_COPY_AND_ASSIGN(ProcessProxy);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_H_

@@ -608,7 +608,6 @@
         'browser/chromeos/offline/offline_load_page_unittest.cc',
         'browser/chromeos/power/session_length_limiter_unittest.cc',
         'browser/chromeos/preferences_unittest.cc',
-        'browser/chromeos/process_proxy/process_output_watcher_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
         'browser/chromeos/settings/cros_settings_unittest.cc',
         'browser/chromeos/settings/device_settings_provider_unittest.cc',

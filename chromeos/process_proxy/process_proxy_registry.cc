@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
+#include "chromeos/process_proxy/process_proxy_registry.h"
 
 #include "base/bind.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -48,6 +50,10 @@ ProcessProxyRegistry::ProcessProxyRegistry() {
 }
 
 ProcessProxyRegistry::~ProcessProxyRegistry() {
+  // TODO(tbarzic): Fix issue with ProcessProxyRegistry being destroyed
+  // on a different thread (it's a LazyInstance).
+  DetachFromThread();
+
   // Close all proxies we own.
   while (!proxy_map_.empty())
     CloseProcess(proxy_map_.begin()->first);
@@ -58,8 +64,12 @@ ProcessProxyRegistry* ProcessProxyRegistry::Get() {
   return g_process_proxy_registry.Pointer();
 }
 
-bool ProcessProxyRegistry::OpenProcess(const std::string& command, pid_t* pid,
+bool ProcessProxyRegistry::OpenProcess(
+    const std::string& command,
+    pid_t* pid,
     const ProcessOutputCallbackWithPid& callback) {
+  DCHECK(CalledOnValidThread());
+
   // TODO(tbarzic): Instead of creating a new thread for each new process proxy,
   // use one thread for all processes.
   // We will need new thread for proxy's outpu watcher.
@@ -97,6 +107,8 @@ bool ProcessProxyRegistry::OpenProcess(const std::string& command, pid_t* pid,
 }
 
 bool ProcessProxyRegistry::SendInput(pid_t pid, const std::string& data) {
+  DCHECK(CalledOnValidThread());
+
   std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
   if (it == proxy_map_.end())
     return false;
@@ -104,6 +116,8 @@ bool ProcessProxyRegistry::SendInput(pid_t pid, const std::string& data) {
 }
 
 bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
+  DCHECK(CalledOnValidThread());
+
   std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
   if (it == proxy_map_.end())
     return false;
@@ -115,6 +129,8 @@ bool ProcessProxyRegistry::CloseProcess(pid_t pid) {
 }
 
 bool ProcessProxyRegistry::OnTerminalResize(pid_t pid, int width, int height) {
+  DCHECK(CalledOnValidThread());
+
   std::map<pid_t, ProcessProxyInfo>::iterator it = proxy_map_.find(pid);
   if (it == proxy_map_.end())
     return false;
@@ -124,6 +140,8 @@ bool ProcessProxyRegistry::OnTerminalResize(pid_t pid, int width, int height) {
 
 void ProcessProxyRegistry::OnProcessOutput(pid_t pid,
     ProcessOutputType type, const std::string& data) {
+  DCHECK(CalledOnValidThread());
+
   const char* type_str = ProcessOutputTypeToString(type);
   DCHECK(type_str);
 
@@ -138,3 +156,4 @@ void ProcessProxyRegistry::OnProcessOutput(pid_t pid,
     CloseProcess(pid);
 }
 
+}  // namespace chromeos

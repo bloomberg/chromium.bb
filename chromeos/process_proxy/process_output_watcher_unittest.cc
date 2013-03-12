@@ -15,7 +15,9 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/chromeos/process_proxy/process_output_watcher.h"
+#include "chromeos/process_proxy/process_output_watcher.h"
+
+namespace chromeos {
 
 struct TestCase {
   std::string str;
@@ -165,3 +167,5 @@ TEST_F(ProcessOutputWatcherTest, SendNull) {
 
   RunTest(test_cases);
 };
+
+}  // namespace chromeos

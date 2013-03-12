@@ -16,6 +16,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/linux/system.gyp:dbus',
         '../build/linux/system.gyp:ssl',
         '../dbus/dbus.gyp:dbus',
@@ -197,6 +198,12 @@
         'network/sms_watcher.h',
         'power/power_state_override.cc',
         'power/power_state_override.h',
+        'process_proxy/process_output_watcher.cc',
+        'process_proxy/process_output_watcher.h',
+        'process_proxy/process_proxy.cc',
+        'process_proxy/process_proxy.h',
+        'process_proxy/process_proxy_registry.cc',
+        'process_proxy/process_proxy_registry.h',
       ],
       'conditions': [
         ['use_x11 == 1', {
@@ -375,6 +382,8 @@
         'network/onc/onc_validator_unittest.cc',
         'network/shill_property_handler_unittest.cc',
         'power/power_state_override_unittest.cc',
+        'process_proxy/process_output_watcher_unittest.cc',
+        'process_proxy/process_proxy_unittest.cc',
       ],
       'include_dirs': [
         '..',

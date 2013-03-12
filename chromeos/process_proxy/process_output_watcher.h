@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
-#define CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
+#ifndef CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
+#define CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
 
 #include <string>
 
 #include "base/callback.h"
+#include "chromeos/chromeos_export.h"
 
 namespace {
 
 const int kReadBufferSize = 256;
 
 }  // namespace
+
+namespace chromeos {
 
 enum ProcessOutputType {
   PROCESS_OUTPUT_TYPE_OUT,
@@ -26,7 +29,7 @@ typedef base::Callback<void(ProcessOutputType, const std::string&)>
 
 // This class should live on its own thread because running class makes
 // underlying thread block. It deletes itself when watching is stopped.
-class ProcessOutputWatcher {
+class CHROMEOS_EXPORT ProcessOutputWatcher {
  public:
   ProcessOutputWatcher(int out_fd, int stop_fd,
                        const ProcessOutputCallback& callback);
@@ -64,4 +67,7 @@ class ProcessOutputWatcher {
 
   DISALLOW_COPY_AND_ASSIGN(ProcessOutputWatcher);
 };
-#endif  // CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_PROCESS_PROXY_PROCESS_OUTPUT_WATCHER_H_

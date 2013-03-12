@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/process_proxy/process_proxy.h"
+#include "chromeos/process_proxy/process_proxy.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -15,8 +15,7 @@
 #include "base/process_util.h"
 #include "base/logging.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/chromeos/process_proxy/process_output_watcher.h"
-#include "content/public/browser/browser_thread.h"
+#include "chromeos/process_proxy/process_output_watcher.h"
 
 namespace {
 
@@ -33,6 +32,8 @@ enum PseudoTerminalFd {
 const int kInvalidFd = -1;
 
 }  // namespace
+
+namespace chromeos {
 
 ProcessProxy::ProcessProxy(): process_launched_(false),
                               callback_set_(false),
@@ -63,8 +64,9 @@ bool ProcessProxy::Open(const std::string& command, pid_t* pid) {
   return process_launched_;
 }
 
-bool ProcessProxy::StartWatchingOnThread(base::Thread* watch_thread,
-     const ProcessOutputCallback& callback) {
+bool ProcessProxy::StartWatchingOnThread(
+    base::Thread* watch_thread,
+    const ProcessOutputCallback& callback) {
   DCHECK(process_launched_);
   if (watcher_started_)
     return false;
@@ -80,6 +82,7 @@ bool ProcessProxy::StartWatchingOnThread(base::Thread* watch_thread,
 
   callback_set_ = true;
   callback_ = callback;
+  callback_runner_ = base::MessageLoopProxy::current();
 
   // This object will delete itself once watching is stopped.
   // It also takes ownership of the passed fds.
@@ -102,13 +105,17 @@ bool ProcessProxy::StartWatchingOnThread(base::Thread* watch_thread,
 
 void ProcessProxy::OnProcessOutput(ProcessOutputType type,
                                    const std::string& output) {
-  // We have to check if callback is set on FILE thread..
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE)) {
-    content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ProcessProxy::OnProcessOutput, this, type, output));
+  if (!callback_runner_)
     return;
-  }
 
+  callback_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ProcessProxy::CallOnProcessOutputCallback,
+                 this, type, output));
+}
+
+void ProcessProxy::CallOnProcessOutputCallback(ProcessOutputType type,
+                                               const std::string& output) {
   // We may receive some output even after Close was called (crosh process does
   // not have to quit instantly, or there may be some trailing data left in
   // output stream fds). In that case owner of the callback may be gone so we
@@ -134,6 +141,8 @@ void ProcessProxy::Close() {
 
   process_launched_ = false;
   callback_set_ = false;
+  callback_ = ProcessOutputCallback();
+  callback_runner_ = NULL;
 
   base::KillProcess(pid_, 0, true /* wait */);
 
@@ -252,3 +261,5 @@ void ProcessProxy::ClearFdPair(int* pipe) {
   pipe[PIPE_END_READ] = kInvalidFd;
   pipe[PIPE_END_WRITE] = kInvalidFd;
 }
+
+}  // namespace chromeos

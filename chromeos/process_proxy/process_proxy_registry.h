@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
-#define CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
+#ifndef CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
+#define CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
 
 #include <map>
 
@@ -11,15 +11,19 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/chromeos/process_proxy/process_proxy.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/process_proxy/process_proxy.h"
+
+namespace chromeos {
 
 typedef base::Callback<void(pid_t, const std::string&, const std::string&)>
       ProcessOutputCallbackWithPid;
 
 // Keeps track of all created ProcessProxies. It is created lazily and should
-// live on the FILE thread (where all methods must be called).
-class ProcessProxyRegistry {
+// live on a single thread (where all methods must be called).
+class CHROMEOS_EXPORT ProcessProxyRegistry : public base::NonThreadSafe {
  public:
   // Info we need about a ProcessProxy instance.
   struct ProcessProxyInfo {
@@ -59,12 +63,6 @@ class ProcessProxyRegistry {
   void OnProcessOutput(pid_t pid,
                        ProcessOutputType type,
                        const std::string& data);
-  // Must be called on UI thread. This lives on FILE thread, thus static.
-  // Notifies CroshProcessEventRouter about new process output. Assumes the
-  // event router has already been initialized by someone else.
-  static void DispatchProcessOutputOnUIThread(pid_t pid,
-                                             const std::string& output_type,
-                                             const std::string& output);
 
   // Map of all existing ProcessProxies.
   std::map<pid_t, ProcessProxyInfo> proxy_map_;
@@ -72,4 +70,6 @@ class ProcessProxyRegistry {
   DISALLOW_COPY_AND_ASSIGN(ProcessProxyRegistry);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_PROCESS_PROXY_PROCESS_PROXY_REGISTRY_H_

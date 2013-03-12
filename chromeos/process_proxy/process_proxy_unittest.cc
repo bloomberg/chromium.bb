@@ -14,12 +14,9 @@
 #include "base/process_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_thread.h"
+#include "chromeos/process_proxy/process_proxy_registry.h"
 
-using content::BrowserThread;
+namespace chromeos {
 
 namespace {
 
@@ -80,7 +77,7 @@ class RegistryTestRunner : public TestRunner {
     }
 
     if (!valid || TestSucceeded()) {
-      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      MessageLoop::current()->PostTask(FROM_HERE,
                                        MessageLoop::QuitClosure());
     }
   }
@@ -96,7 +93,7 @@ class RegistryTestRunner : public TestRunner {
     if (stream >= arraysize(left_to_check_index_))
       return false;
     bool success = left_to_check_index_[stream] < expected_line_.length() &&
-                   expected_line_[left_to_check_index_[stream]] == received;
+        expected_line_[left_to_check_index_[stream]] == received;
     if (success)
       left_to_check_index_[stream]++;
     if (left_to_check_index_[stream] == expected_line_.length() &&
@@ -111,8 +108,8 @@ class RegistryTestRunner : public TestRunner {
 
   bool TestSucceeded() {
     return left_to_check_index_[0] == expected_line_.length() &&
-           left_to_check_index_[1] == expected_line_.length() &&
-           lines_left_ == 0;
+        left_to_check_index_[1] == expected_line_.length() &&
+        lines_left_ == 0;
   }
 
   size_t left_to_check_index_[2];
@@ -140,7 +137,7 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
       return;
     }
     EXPECT_EQ("exit", type);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+    MessageLoop::current()->PostTask(FROM_HERE,
                                      MessageLoop::QuitClosure());
   }
 
@@ -166,10 +163,10 @@ class SigIntTestRunner : public TestRunner {
     // We may receive ^C on stdout, but we don't care about that, as long as we
     // eventually received exit event.
     if (type == "exit") {
-      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      MessageLoop::current()->PostTask(FROM_HERE,
                                        MessageLoop::QuitClosure());
     }
- }
+  }
 
   virtual void StartRegistryTest(ProcessProxyRegistry* registry) OVERRIDE {
     // Send SingInt and verify the process exited.
@@ -179,7 +176,7 @@ class SigIntTestRunner : public TestRunner {
 
 }  // namespace
 
-class ProcessProxyTest : public InProcessBrowserTest {
+class ProcessProxyTest : public testing::Test {
  public:
   ProcessProxyTest() {}
   virtual ~ProcessProxyTest() {}
@@ -188,9 +185,10 @@ class ProcessProxyTest : public InProcessBrowserTest {
   void InitRegistryTest() {
     registry_ = ProcessProxyRegistry::Get();
 
-    EXPECT_TRUE(registry_->OpenProcess(kCatCommand, &pid_,
-        base::Bind(&TestRunner::OnSomeRead,
-                   base::Unretained(test_runner_.get()))));
+    EXPECT_TRUE(registry_->OpenProcess(
+                    kCatCommand, &pid_,
+                    base::Bind(&TestRunner::OnSomeRead,
+                               base::Unretained(test_runner_.get()))));
 
     test_runner_->SetupExpectations(pid_);
     test_runner_->StartRegistryTest(registry_);
@@ -204,25 +202,27 @@ class ProcessProxyTest : public InProcessBrowserTest {
     if (status == base::TERMINATION_STATUS_STILL_RUNNING)
       base::KillProcess(pid_, 0, true);
 
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+    MessageLoop::current()->PostTask(FROM_HERE,
                                      MessageLoop::QuitClosure());
   }
 
   void RunTest() {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-         base::Bind(&ProcessProxyTest::InitRegistryTest,
-                    base::Unretained(this)));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ProcessProxyTest::InitRegistryTest,
+                   base::Unretained(this)));
 
     // Wait until all data from output watcher is received (QuitTask will be
     // fired on watcher thread).
-    content::RunMessageLoop();
+    MessageLoop::current()->Run();
 
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-         base::Bind(&ProcessProxyTest::EndRegistryTest,
-                    base::Unretained(this)));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ProcessProxyTest::EndRegistryTest,
+                   base::Unretained(this)));
 
     // Wait until we clean up the process proxy.
-    content::RunMessageLoop();
+    MessageLoop::current()->Run();
   }
 
   scoped_ptr<TestRunner> test_runner_;
@@ -230,24 +230,28 @@ class ProcessProxyTest : public InProcessBrowserTest {
  private:
   ProcessProxyRegistry* registry_;
   pid_t pid_;
+
+  MessageLoop message_loop_;
 };
 
 // Test will open new process that will run cat command, and verify data we
 // write to process gets echoed back.
-IN_PROC_BROWSER_TEST_F(ProcessProxyTest, RegistryTest) {
+TEST_F(ProcessProxyTest, RegistryTest) {
   test_runner_.reset(new RegistryTestRunner());
   RunTest();
 }
 
 // Open new process, then kill it. Verifiy that we detect when the process dies.
-IN_PROC_BROWSER_TEST_F(ProcessProxyTest, RegistryNotifiedOnProcessExit) {
+TEST_F(ProcessProxyTest, RegistryNotifiedOnProcessExit) {
   test_runner_.reset(new RegistryNotifiedOnProcessExitTestRunner());
   RunTest();
 }
 
 // Test verifies that \003 message send to process is processed as SigInt.
 // Timing out on the waterfall: http://crbug.com/115064
-IN_PROC_BROWSER_TEST_F(ProcessProxyTest, DISABLED_SigInt) {
+TEST_F(ProcessProxyTest, DISABLED_SigInt) {
   test_runner_.reset(new SigIntTestRunner());
   RunTest();
 }
+
+}  // namespace chromeos

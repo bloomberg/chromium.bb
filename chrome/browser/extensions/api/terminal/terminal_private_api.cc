@@ -8,7 +8,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
+#include "chromeos/process_proxy/process_proxy_registry.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -105,9 +105,11 @@ bool TerminalPrivateOpenTerminalProcessFunction::RunTerminalFunction() {
 void TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread() {
   DCHECK(command_);
 
-  ProcessProxyRegistry* registry = ProcessProxyRegistry::Get();
+  chromeos::ProcessProxyRegistry* registry =
+      chromeos::ProcessProxyRegistry::Get();
   pid_t pid;
-  if (!registry->OpenProcess(command_, &pid,
+  if (!registry->OpenProcess(
+          command_, &pid,
           base::Bind(&NotifyProcessOutput, profile_, extension_id()))) {
     // If new process could not be opened, we return -1.
     pid = -1;
@@ -143,7 +145,7 @@ bool TerminalPrivateSendInputFunction::RunTerminalFunction() {
 
 void TerminalPrivateSendInputFunction::SendInputOnFileThread(pid_t pid,
     const std::string& text) {
-  bool success = ProcessProxyRegistry::Get()->SendInput(pid, text);
+  bool success = chromeos::ProcessProxyRegistry::Get()->SendInput(pid, text);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&TerminalPrivateSendInputFunction::RespondOnUIThread, this,
@@ -174,7 +176,7 @@ bool TerminalPrivateCloseTerminalProcessFunction::RunTerminalFunction() {
 }
 
 void TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread(pid_t pid) {
-  bool success = ProcessProxyRegistry::Get()->CloseProcess(pid);
+  bool success = chromeos::ProcessProxyRegistry::Get()->CloseProcess(pid);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&TerminalPrivateCloseTerminalProcessFunction::
@@ -216,8 +218,8 @@ bool TerminalPrivateOnTerminalResizeFunction::RunTerminalFunction() {
 
 void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
                                                     int width, int height) {
-  bool success = ProcessProxyRegistry::Get()->OnTerminalResize(pid,
-                                                               width, height);
+  bool success = chromeos::ProcessProxyRegistry::Get()->OnTerminalResize(
+      pid, width, height);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread,

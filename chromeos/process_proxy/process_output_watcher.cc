@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/process_proxy/process_output_watcher.h"
+#include "chromeos/process_proxy/process_output_watcher.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -33,6 +33,8 @@ void CloseFd(int* fd) {
 }
 
 }  // namespace
+
+namespace chromeos {
 
 ProcessOutputWatcher::ProcessOutputWatcher(int out_fd, int stop_fd,
     const ProcessOutputCallback& callback)
@@ -114,3 +116,5 @@ void ProcessOutputWatcher::ReadFromFd(ProcessOutputType type, int* fd) {
 void ProcessOutputWatcher::OnStop() {
   delete this;
 }
+
+}  // namespace chromeos
