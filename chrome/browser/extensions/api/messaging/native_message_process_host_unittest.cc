@@ -86,8 +86,6 @@ class NativeMessagingTest : public ::testing::Test,
   }
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableNativeMessaging);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     // Change the user data dir so native apps will be looked for in the test
     // directory.

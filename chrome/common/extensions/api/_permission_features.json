@@ -257,12 +257,26 @@
       "ionpfmkccalenbmnddpbmocokhaknphg"   // Quickoffice dev
     ]
   },
-  "nativeMessaging": {
-    "channel": "dev",
-    "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
-    ]
-  },
+  "nativeMessaging": [
+    {
+      "channel": "beta",
+      "extension_types": [
+        "extension", "packaged_app", "platform_app"
+      ]
+    },
+    {
+      "channel": "stable",
+      "extension_types": [
+        "extension", "packaged_app", "platform_app"
+      ],
+      "whitelist": [
+        "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+        "kgngmbheleoaphbjbaiobfdepmghbfah",  // Dogfood Chrome Remote Desktop
+        "odkaodonbgfohohmklejpjiejmcipmib",  // QA Chrome Remote Desktop
+        "ojoimpklfciegopdfgeenehpalipignm"   // Chromoting canary
+      ]
+    }
+  ],
   "networkingPrivate": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"],

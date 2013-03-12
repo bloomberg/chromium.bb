@@ -560,9 +560,6 @@ const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 // than part of the renderer process.  http://crbug.com/51644
 const char kEnableNativeAutofillUi[]        = "enable-new-autofill-ui";
 
-// Enables the native messaging extensions API.
-const char kEnableNativeMessaging[]         = "enable-native-messaging";
-
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]            = "enable-net-benchmarking";
 

@@ -19,9 +19,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NativeMessageBasic) {
   ASSERT_NO_FATAL_FAILURE(
       extensions::CreateTestNativeHostManifest(manifest_path));
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableNativeMessaging);
-
   std::string hosts_option = base::StringPrintf(
       "%s=%s", extensions::kTestNativeMessagingHostName,
       manifest_path.AsUTF8Unsafe().c_str());

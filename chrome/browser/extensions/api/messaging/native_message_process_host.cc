@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
@@ -13,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "extensions/common/constants.h"
@@ -99,16 +97,7 @@ NativeMessageProcessHost::CreateWithLauncher(
     scoped_ptr<NativeProcessLauncher> launcher) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  scoped_ptr<NativeMessageProcessHost> process;
-  if (Feature::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeMessaging)) {
-    content::BrowserThread::DeleteSoon(
-        content::BrowserThread::IO, FROM_HERE, launcher.release());
-    return process.Pass();
-  }
-
-  process.reset(new NativeMessageProcessHost(
+  scoped_ptr<NativeMessageProcessHost> process(new NativeMessageProcessHost(
       weak_client_ui, source_extension_id, native_host_name,
       destination_port, launcher.Pass()));
 
