@@ -132,6 +132,10 @@
       'c/trusted/ppb_image_data_trusted.h',
       'c/trusted/ppb_url_loader_trusted.h',
       'c/trusted/ppp_broker.h',
+
+      # Extensions dev interfaces.
+      'c/extensions/dev/ppb_alarms_dev.h',
+      'c/extensions/dev/ppb_events_dev.h',
     ],
     'cpp_source_files': [
       'cpp/array_output.cc',
@@ -307,6 +311,21 @@
       'cpp/trusted/file_chooser_trusted.h',
       'cpp/trusted/file_io_trusted.cc',
       'cpp/trusted/file_io_trusted.h',
+
+      # Extensions interfaces.
+      'cpp/extensions/dict_field.h',
+      'cpp/extensions/event_base.cc',
+      'cpp/extensions/event_base.h',
+      'cpp/extensions/ext_output_traits.h',
+      'cpp/extensions/from_var_converter.h',
+      'cpp/extensions/optional.h',
+      'cpp/extensions/to_var_converter.h',
+
+      # Extensions dev interfaces.
+      'cpp/extensions/dev/alarms_dev.cc',
+      'cpp/extensions/dev/alarms_dev.h',
+      'cpp/extensions/dev/events_dev.cc',
+      'cpp/extensions/dev/events_dev.h',
 
       # Utility sources.
       'utility/completion_callback_factory.h',

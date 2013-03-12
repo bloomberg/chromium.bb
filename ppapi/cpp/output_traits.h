@@ -10,6 +10,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/array_output.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
+#include "ppapi/cpp/extensions/ext_output_traits.h"
+#include "ppapi/cpp/resource.h"
 
 /// @file
 /// This file defines internal templates for defining how data is passed to the
@@ -23,7 +25,6 @@ struct PP_Var;
 
 namespace pp {
 
-class Resource;
 class Var;
 
 namespace internal {
@@ -117,16 +118,20 @@ struct ResourceCallbackOutputTraits {
 };
 
 // The general templatized base class for all CallbackOutputTraits. This class
-// covers both resources and POD (ints, structs, etc.) by inheriting from the
-// appropriate base class depending on whether the given type derives from
-// pp::Resource. This trick allows us to do this once rather than writing
-// specializations for every resource object type.
+// covers resources, extensions API output objects and POD (ints, structs, etc.)
+// by inheriting from the appropriate base class depending on whether the given
+// type derives from pp::Resource or ext::internal::OutputObjectBase. This trick
+// allows us to do this once rather than writing specializations for every
+// object type.
 template<typename T>
 struct CallbackOutputTraits
-    : public InheritIf<GenericCallbackOutputTraits<T>,
-                       !IsBaseOf<Resource, T>::value>,
-      public InheritIf<ResourceCallbackOutputTraits<T>,
-                       IsBaseOf<Resource, T>::value> {
+    : public InheritIf<ResourceCallbackOutputTraits<T>,
+                       IsBaseOf<Resource, T>::value>,
+      public InheritIf<ext::internal::ExtensionsCallbackOutputTraits<T>,
+                       IsBaseOf<ext::internal::OutputObjectBase, T>::value>,
+      public InheritIf<GenericCallbackOutputTraits<T>,
+                       !IsBaseOf<Resource, T>::value &&
+                       !IsBaseOf<ext::internal::OutputObjectBase, T>::value> {
 };
 
 // A specialization of CallbackOutputTraits for pp::Var output parameters.
@@ -199,17 +204,21 @@ struct ResourceVectorCallbackOutputTraits {
   }
 };
 
-// Specialization of CallbackOutputTraits for vectors. This struct covers both
-// arrays of resources and arrays of POD (ints, structs, etc.) by inheriting
-// from the appropriate base class depending on whether the given type derives
-// from pp::Resource. This trick allows us to do this once rather than writing
-// specializations for every resource object type.
+// Specialization of CallbackOutputTraits for vectors. This struct covers arrays
+// of resources, extensions API output objects and POD (ints, structs, etc.) by
+// inheriting from the appropriate base class depending on whether the given
+// type derives from pp::Resource or ext::internal::OutputObjectBase. This trick
+// allows us to do this once rather than writing specializations for every
+// object type.
 template<typename T>
 struct CallbackOutputTraits< std::vector<T> >
-    : public InheritIf<GenericVectorCallbackOutputTraits<T>,
-                       !IsBaseOf<Resource, T>::value>,
-      public InheritIf<ResourceVectorCallbackOutputTraits<T>,
-                       IsBaseOf<Resource, T>::value> {
+    : public InheritIf<ResourceVectorCallbackOutputTraits<T>,
+                       IsBaseOf<Resource, T>::value>,
+      public InheritIf<ext::internal::ExtensionsVectorCallbackOutputTraits<T>,
+                       IsBaseOf<ext::internal::OutputObjectBase, T>::value>,
+      public InheritIf<GenericVectorCallbackOutputTraits<T>,
+                       !IsBaseOf<Resource, T>::value &&
+                       !IsBaseOf<ext::internal::OutputObjectBase, T>::value> {
 };
 
 // A specialization of CallbackOutputTraits to provide the callback system

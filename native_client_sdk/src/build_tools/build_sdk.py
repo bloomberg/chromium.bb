@@ -288,12 +288,16 @@ def InstallCommonHeaders(inc_path):
   ppapi = os.path.join(inc_path, 'ppapi')
   buildbot_common.RemoveDir(ppapi)
 
-  # Copy in c and c/dev headers
+  # Copy in c, c/dev and c/extensions/dev headers
   buildbot_common.MakeDir(os.path.join(ppapi, 'c', 'dev'))
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'c', '*.h'),
           os.path.join(ppapi, 'c'))
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'c', 'dev', '*.h'),
           os.path.join(ppapi, 'c', 'dev'))
+  buildbot_common.MakeDir(os.path.join(ppapi, 'c', 'extensions', 'dev'))
+  buildbot_common.CopyDir(
+          os.path.join(PPAPI_DIR, 'c', 'extensions', 'dev', '*.h'),
+          os.path.join(ppapi, 'c', 'extensions', 'dev'))
 
   # Remove private and trusted interfaces
   buildbot_common.RemoveDir(os.path.join(ppapi, 'c', 'private'))
@@ -305,6 +309,12 @@ def InstallCommonHeaders(inc_path):
           os.path.join(ppapi, 'cpp'))
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'cpp', 'dev', '*.h'),
           os.path.join(ppapi, 'cpp', 'dev'))
+  buildbot_common.MakeDir(os.path.join(ppapi, 'cpp', 'extensions', 'dev'))
+  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'cpp', 'extensions', '*.h'),
+          os.path.join(ppapi, 'cpp', 'extensions'))
+  buildbot_common.CopyDir(
+          os.path.join(PPAPI_DIR, 'cpp', 'extensions', 'dev', '*.h'),
+          os.path.join(ppapi, 'cpp', 'extensions', 'dev'))
   buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'graphics'))
   buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'threading'))
   buildbot_common.MakeDir(os.path.join(ppapi, 'utility', 'websocket'))

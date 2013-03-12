@@ -101,6 +101,18 @@ Var::Var(const std::string& utf8_str) {
   is_managed_ = true;
 }
 
+
+Var::Var(const PP_Var& var) {
+  var_ = var;
+  is_managed_ = true;
+  if (NeedsRefcounting(var_)) {
+    if (has_interface<PPB_Var_1_0>())
+      get_interface<PPB_Var_1_0>()->AddRef(var_);
+    else
+      var_.type = PP_VARTYPE_NULL;
+  }
+}
+
 Var::Var(const Var& other) {
   var_ = other.var_;
   is_managed_ = true;

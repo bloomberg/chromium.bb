@@ -42,6 +42,8 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
+#include "ppapi/c/extensions/dev/ppb_alarms_dev.h"
+#include "ppapi/c/extensions/dev/ppb_events_dev.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_console.h"
@@ -265,6 +267,8 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1;
 /* END Declarations for all Wrapper Infos. */
 
 /* Not generating wrapper methods for PPB_Audio_1_0 */
@@ -3659,6 +3663,56 @@ static struct PP_Var Pnacl_M18_PPP_Instance_Private_GetInstanceObject(PP_Instanc
 
 /* End wrapper methods for PPP_Instance_Private_0_1 */
 
+/* Begin wrapper methods for PPB_Ext_Alarms_Dev_0_1 */
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Ext_Alarms_Dev_Create(PP_Instance instance, struct PP_Var name, PP_Ext_Alarms_AlarmCreateInfo_Dev alarm_info) {
+  const struct PPB_Ext_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1.real_iface;
+  iface->Create(instance, name, alarm_info);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M27_PPB_Ext_Alarms_Dev_Get(PP_Instance instance, struct PP_Var name, PP_Ext_Alarms_Alarm_Dev* alarm, struct PP_CompletionCallback callback) {
+  const struct PPB_Ext_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1.real_iface;
+  return iface->Get(instance, name, alarm, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M27_PPB_Ext_Alarms_Dev_GetAll(PP_Instance instance, PP_Ext_Alarms_Alarm_Dev_Array* alarms, struct PP_CompletionCallback callback) {
+  const struct PPB_Ext_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1.real_iface;
+  return iface->GetAll(instance, alarms, callback);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Ext_Alarms_Dev_Clear(PP_Instance instance, struct PP_Var name) {
+  const struct PPB_Ext_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1.real_iface;
+  iface->Clear(instance, name);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Ext_Alarms_Dev_ClearAll(PP_Instance instance) {
+  const struct PPB_Ext_Alarms_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1.real_iface;
+  iface->ClearAll(instance);
+}
+
+/* End wrapper methods for PPB_Ext_Alarms_Dev_0_1 */
+
+/* Begin wrapper methods for PPB_Ext_Events_Dev_0_1 */
+
+static __attribute__((pnaclcall))
+uint32_t Pnacl_M27_PPB_Ext_Events_Dev_AddListener(PP_Instance instance, struct PP_Ext_EventListener listener) {
+  const struct PPB_Ext_Events_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1.real_iface;
+  return iface->AddListener(instance, listener);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M27_PPB_Ext_Events_Dev_RemoveListener(PP_Instance instance, uint32_t listener_id) {
+  const struct PPB_Ext_Events_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1.real_iface;
+  iface->RemoveListener(instance, listener_id);
+}
+
+/* End wrapper methods for PPB_Ext_Events_Dev_0_1 */
+
 /* Not generating wrapper interface for PPB_Audio_1_0 */
 
 /* Not generating wrapper interface for PPB_AudioConfig_1_0 */
@@ -4507,6 +4561,19 @@ struct PPP_Instance_Private_0_1 Pnacl_Wrappers_PPP_Instance_Private_0_1 = {
     .GetInstanceObject = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M18_PPP_Instance_Private_GetInstanceObject
 };
 
+struct PPB_Ext_Alarms_Dev_0_1 Pnacl_Wrappers_PPB_Ext_Alarms_Dev_0_1 = {
+    .Create = (void (*)(PP_Instance instance, struct PP_Var name, PP_Ext_Alarms_AlarmCreateInfo_Dev alarm_info))&Pnacl_M27_PPB_Ext_Alarms_Dev_Create,
+    .Get = (int32_t (*)(PP_Instance instance, struct PP_Var name, PP_Ext_Alarms_Alarm_Dev* alarm, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_Ext_Alarms_Dev_Get,
+    .GetAll = (int32_t (*)(PP_Instance instance, PP_Ext_Alarms_Alarm_Dev_Array* alarms, struct PP_CompletionCallback callback))&Pnacl_M27_PPB_Ext_Alarms_Dev_GetAll,
+    .Clear = (void (*)(PP_Instance instance, struct PP_Var name))&Pnacl_M27_PPB_Ext_Alarms_Dev_Clear,
+    .ClearAll = (void (*)(PP_Instance instance))&Pnacl_M27_PPB_Ext_Alarms_Dev_ClearAll
+};
+
+struct PPB_Ext_Events_Dev_0_1 Pnacl_Wrappers_PPB_Ext_Events_Dev_0_1 = {
+    .AddListener = (uint32_t (*)(PP_Instance instance, struct PP_Ext_EventListener listener))&Pnacl_M27_PPB_Ext_Events_Dev_AddListener,
+    .RemoveListener = (void (*)(PP_Instance instance, uint32_t listener_id))&Pnacl_M27_PPB_Ext_Events_Dev_RemoveListener
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Audio_1_0 = {
   .iface_macro = PPB_AUDIO_INTERFACE_1_0,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5335,6 +5402,18 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1 = {
+  .iface_macro = PPB_EXT_ALARMS_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Ext_Alarms_Dev_0_1,
+  .real_iface = NULL
+};
+
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1 = {
+  .iface_macro = PPB_EXT_EVENTS_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Ext_Events_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Audio_1_0,
   &Pnacl_WrapperInfo_PPB_AudioConfig_1_0,
@@ -5451,6 +5530,8 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4,
   &Pnacl_WrapperInfo_PPB_UMA_Private_0_1,
   &Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1,
+  &Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1,
   NULL
 };
 
