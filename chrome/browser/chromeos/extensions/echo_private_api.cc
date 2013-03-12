@@ -16,8 +16,11 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/common/extensions/api/echo_private.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace echo_api = extensions::api::echo_private;
 
 using content::BrowserThread;
 
@@ -32,8 +35,7 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
   if (!chromeos::KioskModeSettings::Get()->is_initialized()) {
     chromeos::KioskModeSettings::Get()->Initialize(base::Bind(
         &EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode,
-        base::Unretained(this),
-        type));
+        this, type));
     return;
   }
   // Possible ECHO code type and corresponding key name in StatisticsProvider.
@@ -53,14 +55,16 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
     else if (type == kGroupType)
       provider->GetMachineStatistic(kGroupCodeKey, &result);
   }
-  SetResult(new base::StringValue(result));
+
+  results_ = echo_api::GetRegistrationCode::Results::Create(result);
   SendResponse(true);
 }
 
 bool EchoPrivateGetRegistrationCodeFunction::RunImpl() {
-  std::string type;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &type));
-  GetRegistrationCode(type);
+  scoped_ptr<echo_api::GetRegistrationCode::Params> params =
+      echo_api::GetRegistrationCode::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  GetRegistrationCode(params->type);
   return true;
 }
 
@@ -99,7 +103,7 @@ bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
                                     ctime.month,
                                     ctime.day_of_month);
   }
-  SetResult(new base::StringValue(timestamp));
+  results_ = echo_api::GetOobeTimestamp::Results::Create(timestamp);
   return true;
 }
 
@@ -113,10 +117,9 @@ EchoPrivateCheckAllowRedeemOffersFunction::
 
 void EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
-      chromeos::CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&EchoPrivateCheckAllowRedeemOffersFunction::
-                     CheckAllowRedeemOffers,
-                     base::Unretained(this)));
+      chromeos::CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+          &EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers,
+          this));
   if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -125,7 +128,7 @@ void EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
           chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow)) {
     allow = true;
   }
-  SetResult(new base::FundamentalValue(allow));
+  results_ = echo_api::CheckAllowRedeemOffers::Results::Create(allow);
   SendResponse(true);
 }
 
@@ -135,4 +138,52 @@ void EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
 bool EchoPrivateCheckAllowRedeemOffersFunction::RunImpl() {
   CheckAllowRedeemOffers();
   return true;
+}
+
+EchoPrivateGetUserConsentFunction::EchoPrivateGetUserConsentFunction()
+    : redeem_offers_allowed_(false) {
+}
+
+EchoPrivateGetUserConsentFunction::~EchoPrivateGetUserConsentFunction() {}
+
+bool EchoPrivateGetUserConsentFunction::RunImpl() {
+  scoped_ptr<echo_api::GetUserConsent::Params> params =
+       echo_api::GetUserConsent::Params::Create(*args_);
+   EXTENSION_FUNCTION_VALIDATE(params);
+
+   if (!GURL(params->consent_requester.origin).is_valid()) {
+     error_ = "Invalid origin.";
+     return false;
+   }
+
+   CheckRedeemOffersAllowed();
+   return true;
+}
+
+void EchoPrivateGetUserConsentFunction::CheckRedeemOffersAllowed() {
+  chromeos::CrosSettingsProvider::TrustedStatus status =
+      chromeos::CrosSettings::Get()->PrepareTrustedValues(base::Bind(
+          &EchoPrivateGetUserConsentFunction::CheckRedeemOffersAllowed,
+          this));
+    if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+      return;
+
+    bool allow;
+    if (!chromeos::CrosSettings::Get()->GetBoolean(
+            chromeos::kAllowRedeemChromeOsRegistrationOffers, &allow)) {
+      // The echo should be disabled only when
+      // kAllowRedeemChromeOsRegistrationOffers is explicitly set to false.
+      allow = true;
+    }
+
+    OnRedeemOffersAllowedChecked(allow);
+}
+
+void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
+    bool is_allowed) {
+  redeem_offers_allowed_ = is_allowed;
+
+  // TODO(tbarzic): Implement dialogs to be used here.
+  results_ = echo_api::GetUserConsent::Results::Create(false);
+  SendResponse(true);
 }

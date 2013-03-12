@@ -70,6 +70,40 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getUserConsent",
+        "description": "If device policy allows user to redeem offer, displays a native dialog asking user for a consent to verify device's eligibility for the offer. If the device policy forbids user to redeem offers, displays a native dialog informing user the offer redeeming is disabled.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "consentRequester",
+            "description": "Information about the service requesting user consent.",
+            "type": "object",
+            "properties": {
+              "serviceName": {
+                "type": "string",
+                "minLength": 1,
+                "description": "User friendly name of the service that is requesting the consent."
+              },
+              "origin": {
+                "type": "string",
+                "description": "URL origin of the service requesting the consent."
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "boolean",
+                "description": "Whether the user consent was given."
+              }
+            ]
+          }
+        ]
       }
     ]
   }
