@@ -220,8 +220,8 @@
    fun:cc::ProgramBindingBase::init
    fun:ProgramBinding
    ...
-   fun:cc::SingleThreadProxy::commitAndComposite
-   fun:cc::SingleThreadProxy::compositeImmediately
+   fun:cc::SingleThreadProxy::CommitAndComposite
+   fun:cc::SingleThreadProxy::CompositeImmediately
 }
 {
    bug_148477_c
