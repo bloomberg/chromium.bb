@@ -12,8 +12,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_user_passphrase.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/pref_names.h"
@@ -83,17 +81,11 @@ void ManagedUserPassphraseDialogMessageHandler::CheckPassphrase(
   passphrase_key_generator.GenerateHashFromPassphrase(passphrase,
                                                       &encoded_passphrase_hash);
 
-  // Check if the entered passphrase is correct and possibly set the managed
-  // user into the elevated state which for example allows to modify settings.
-  ManagedUserService* managed_user_service =
-      ManagedUserServiceFactory::GetForProfile(profile);
-  if (stored_passphrase_hash == encoded_passphrase_hash) {
-    managed_user_service->SetElevated(true);
-    web_ui()->CallJavascriptFunction("passphraseCorrect");
-  } else {
-    managed_user_service->SetElevated(false);
-    web_ui()->CallJavascriptFunction("passphraseIncorrect");
-  }
+  // Check if the entered passphrase is correct and give the result back to the
+  // UI.
+  base::FundamentalValue passphrase_correct(
+      stored_passphrase_hash == encoded_passphrase_hash);
+  web_ui()->CallJavascriptFunction("passphraseResult", passphrase_correct);
 }
 
 }  // namespace

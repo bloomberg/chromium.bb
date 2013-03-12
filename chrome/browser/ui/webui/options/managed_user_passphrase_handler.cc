@@ -12,7 +12,6 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/managed_user_passphrase_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -68,6 +67,9 @@ void ManagedUserPassphraseHandler::GetLocalizedValues(
 }
 
 void ManagedUserPassphraseHandler::PassphraseDialogCallback(bool success) {
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  managed_user_service->SetElevated(true);
   base::FundamentalValue unlock_success(success);
   web_ui()->CallJavascriptFunction("ManagedUserSettings.isAuthenticated",
                                    unlock_success);
@@ -76,7 +78,8 @@ void ManagedUserPassphraseHandler::PassphraseDialogCallback(bool success) {
 void ManagedUserPassphraseHandler::SetElevated(
     const base::ListValue* args) {
   bool elevated;
-  args->GetBoolean(0, &elevated);
+  bool success = args->GetBoolean(0, &elevated);
+  DCHECK(success);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   ManagedUserService* managed_user_service =
@@ -85,13 +88,7 @@ void ManagedUserPassphraseHandler::SetElevated(
     managed_user_service->SetElevated(false);
     return;
   }
-  if (managed_user_service->IsElevated()) {
-    // If the custodian is already authenticated, skip the passphrase dialog.
-    PassphraseDialogCallback(true);
-    return;
-  }
-  // Is deleted automatically when the dialog is closed.
-  new ManagedUserPassphraseDialog(
+  managed_user_service->RequestAuthorization(
       web_ui()->GetWebContents(),
       base::Bind(&ManagedUserPassphraseHandler::PassphraseDialogCallback,
                  weak_ptr_factory_.GetWeakPtr()));

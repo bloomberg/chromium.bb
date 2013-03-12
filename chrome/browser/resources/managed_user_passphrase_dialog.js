@@ -33,13 +33,13 @@ function load() {
   };
 }
 
-function passphraseCorrect() {
-  chrome.send('DialogClose', ['true']);
-}
-
-function passphraseIncorrect() {
-  $('incorrect-passphrase-warning').hidden = false;
-  $('passphrase-entry').focus();
+function passphraseResult(passphraseCorrect) {
+  if (passphraseCorrect) {
+    chrome.send('DialogClose', ['true']);
+  } else {
+    $('incorrect-passphrase-warning').hidden = false;
+    $('passphrase-entry').focus();
+  }
 }
 
 window.addEventListener('DOMContentLoaded', load);
