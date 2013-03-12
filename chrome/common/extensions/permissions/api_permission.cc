@@ -282,6 +282,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       kFlagCannotBeOptional },
     { APIPermission::kMediaGalleriesPrivate, "mediaGalleriesPrivate",
       kFlagCannotBeOptional },
+    { APIPermission::kStreamsPrivate, "streamsPrivate", kFlagCannotBeOptional },
 
     // Full url access permissions.
     { APIPermission::kDebugger, "debugger",

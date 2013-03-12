@@ -23,19 +23,6 @@ class FileBrowserHandler {
  public:
   typedef std::vector<linked_ptr<FileBrowserHandler> > List;
 
-  // Returns true iff the extension with id |extension_id| is allowed to use
-  // MIME type filters.
-  static bool ExtensionWhitelistedForMIMETypes(const std::string& extension_id);
-
-  // Returns list of extensions' ids that are allowed to use MIME type filters.
-  static std::vector<std::string> GetMIMETypeWhitelist();
-
-  // Whitelists the extension to use MIME type filters for a test.
-  // |extension_id| should be owned by the test code.
-  static void set_extension_whitelisted_for_test(std::string* extension_id) {
-    g_test_extension_id_ = extension_id;
-  }
-
   FileBrowserHandler();
   ~FileBrowserHandler();
 
@@ -60,11 +47,6 @@ class FileBrowserHandler {
   void AddPattern(const URLPattern& pattern);
   bool MatchesURL(const GURL& url) const;
   void ClearPatterns();
-
-  // Adds a MIME type filter to the handler.
-  void AddMIMEType(const std::string& mime_type);
-  // Tests if the handler has registered a filter for the MIME type.
-  bool CanHandleMIMEType(const std::string& mime_type) const;
 
   // Action icon path.
   const std::string icon_path() const { return default_icon_path_; }
@@ -91,10 +73,6 @@ class FileBrowserHandler {
   static List* GetHandlers(const extensions::Extension* extension);
 
  private:
-  // The id of the extension that will be whitelisted to use MIME type filters
-  // during tests.
-  static std::string* g_test_extension_id_;
-
   // The id for the extension this action belongs to (as defined in the
   // extension manifest).
   std::string extension_id_;
@@ -106,8 +84,6 @@ class FileBrowserHandler {
 
   // A list of file filters.
   extensions::URLPatternSet url_set_;
-  // A list of MIME type filters.
-  std::set<std::string> mime_type_set_;
 };
 
 // Parses the "file_browser_handlers" extension manifest key.

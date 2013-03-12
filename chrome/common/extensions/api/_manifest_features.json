@@ -181,6 +181,15 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "mime_types": {
+    "channel": "stable",
+    "extension_types": [ "extension", "packaged_app", "platform_app" ],
+    "whitelist": [
+      "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
+      "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
+      "ionpfmkccalenbmnddpbmocokhaknphg"   // QuickOffice Dev
+    ]
+  },
   "minimum_chrome_version": {
     "channel": "stable",
     "extension_types": [

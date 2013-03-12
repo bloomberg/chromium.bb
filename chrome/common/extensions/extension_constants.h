@@ -117,6 +117,9 @@ namespace extension_misc {
   // The extension id of the Office Viewer dev extension.
   extern const char kQuickOfficeDevExtensionId[];
 
+  // The extension id used for testing streamsPrivate
+  extern const char kStreamsPrivateTestExtensionId[];
+
   // The extension id of the Web Store component application.
   extern const char kWebStoreAppId[];
 

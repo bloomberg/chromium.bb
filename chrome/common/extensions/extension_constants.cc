@@ -130,6 +130,8 @@ const char kHTermDevAppId[] = "okddffdblfhhnmhodogpojmfkjmhinfp";
 const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
 const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
+const char kStreamsPrivateTestExtensionId[] =
+    "oickdpebdnfbgkcaoklfcdhjniefkcji";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";

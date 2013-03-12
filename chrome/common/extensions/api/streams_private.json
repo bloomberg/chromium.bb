@@ -1,0 +1,35 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace":"streamsPrivate",
+    "types": [
+    ],
+
+    "events": [
+      {
+        "name": "onExecuteMimeTypeHandler",
+        "type": "function",
+        "description": "Fired when a resource is fetched which matches a mime type handled by this extension. The resource request is cancelled, and the extension is expected to handle the request. The event is restricted to a small number of white-listed extensions.",
+        "parameters": [
+          {
+            "name": "mimeType",
+            "type": "string",
+            "description": "The MIME type of the intercepted URL request."
+          },
+          {
+            "name": "originalUrl",
+            "type": "string",
+            "description": "The original URL that was intercepted."
+          }
+        ]
+      }
+    ],
+
+    "functions": [
+    ]
+  }
+]
+

@@ -102,6 +102,7 @@ class APIPermission {
     kSessionRestore,
     kSocket,
     kStorage,
+    kStreamsPrivate,
     kSyncFileSystem,
     kSystemPrivate,
     kSystemIndicator,

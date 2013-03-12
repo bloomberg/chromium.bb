@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/extensions/file_browser_handler.h"
-#include "chrome/browser/chromeos/extensions/file_browser_resource_throttle.h"
+#include "chrome/browser/extensions/api/streams_private/streams_resource_throttle.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/test/test_browser_thread.h"
@@ -26,10 +26,10 @@ using testing::_;
 namespace {
 
 // Mock file browser handler event router to be used in the test.
-class MockFileBrowserHandlerEventRouter
-    : public FileBrowserResourceThrottle::FileBrowserHandlerEventRouter {
+class MockStreamsPrivateEventRouter
+    : public StreamsResourceThrottle::StreamsPrivateEventRouter {
  public:
-  virtual ~MockFileBrowserHandlerEventRouter() {}
+  virtual ~MockStreamsPrivateEventRouter() {}
 
   MOCK_METHOD5(DispatchMimeTypeHandlerEvent,
                void(int render_process_id,
@@ -49,13 +49,13 @@ class MockResourceController : public content::ResourceController {
   MOCK_METHOD0(Resume, void());
 };
 
-class FileBrowserResourceThrottleTest : public testing::Test {
+class StreamsResourceThrottleTest : public testing::Test {
  public:
-  typedef FileBrowserResourceThrottle::FileBrowserHandlerEventRouter
+  typedef StreamsResourceThrottle::StreamsPrivateEventRouter
           HandlerEventRouter;
 
-  FileBrowserResourceThrottleTest()
-      : test_extension_id_("test_extension_id"),
+  StreamsResourceThrottleTest()
+      : test_extension_id_(extension_misc::kStreamsPrivateTestExtensionId),
         test_render_process_id_(2),
         test_render_view_id_(12),
         test_request_url_("http://some_url/file.txt"),
@@ -63,10 +63,10 @@ class FileBrowserResourceThrottleTest : public testing::Test {
         io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
 
-  virtual ~FileBrowserResourceThrottleTest() {}
+  virtual ~StreamsResourceThrottleTest() {}
 
   virtual void SetUp() OVERRIDE {
-    (new FileBrowserHandlerParser)->Register();
+    (new MimeTypesHandlerParser)->Register();
     // Extension info map must be created before |CreateAndInstallTestExtension|
     // is called (the method will add created extension to the info map).
     extension_info_map_ = new ExtensionInfoMap();
@@ -75,7 +75,7 @@ class FileBrowserResourceThrottleTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    FileBrowserHandler::set_extension_whitelisted_for_test(NULL);
+    MimeTypesHandler::set_extension_whitelisted_for_test(NULL);
     extensions::ManifestHandler::ClearRegistryForTesting();
   }
 
@@ -85,7 +85,7 @@ class FileBrowserResourceThrottleTest : public testing::Test {
   // 'plain/html' and 'plain/text' MIME types.
   void CreateAndInstallTestExtension() {
     // The extension must be white-listed in order to be successfully created.
-    FileBrowserHandler::set_extension_whitelisted_for_test(
+    MimeTypesHandler::set_extension_whitelisted_for_test(
         &test_extension_id_);
 
     extension_ =
@@ -94,31 +94,11 @@ class FileBrowserResourceThrottleTest : public testing::Test {
                      .Set("name", "file browser handler test")
                      .Set("version", "1.0.0")
                      .Set("manifest_version", 2)
-                     .Set("file_browser_handlers", ListBuilder()
-                         .Append(DictionaryBuilder()
-                             // Handler that handles 'plain/html', among others.
-                             .Set("id", "ID_handle_html")
-                             .Set("default_title", "Default title")
-                             .Set("default_icon", "icon.png")
-                             // file_filters_field is mandatory, even though
-                             // it's not used in the tests.
-                             .Set("file_filters", ListBuilder()
-                                 .Append("filesystem:*.html"))
-                             .Set("mime_types", ListBuilder()
-                                 .Append("random/mime1")
-                                 .Append("random/mime2")
-                                 .Append("plain/html")))
-                         .Append(DictionaryBuilder()
-                             // Handler that handles only 'plain/text'.
-                             .Set("id", "ID_handle_text")
-                             .Set("default_title", "Default title")
-                             .Set("default_icon", "icon.png")
-                             // file_filters_field is mandatory, even though
-                             // it's not used in the tests.
-                             .Set("file_filters", ListBuilder()
-                                 .Append("filesystem:*.txt"))
-                             .Set("mime_types", ListBuilder()
-                                 .Append("plain/text")))))
+                     .Set("mime_types", ListBuilder()
+                         .Append("random/mime1")
+                         .Append("random/mime2")
+                         .Append("plain/html")
+                         .Append("plain/text")))
         .SetID(test_extension_id_)
         .Build();
 
@@ -155,19 +135,19 @@ class FileBrowserResourceThrottleTest : public testing::Test {
   // It's setup with |mock_event_router| passed to the method and
   // |mock_resource_throttle_|.
   // |mock_event_router|'s expectations must be set before calling this method.
-  scoped_ptr<FileBrowserResourceThrottle> CreateThrottleToTest(
+  scoped_ptr<StreamsResourceThrottle> CreateThrottleToTest(
       bool is_incognito,
-      scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router,
+      scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router,
       const std::string& mime_type) {
     scoped_ptr<HandlerEventRouter> event_router(mock_event_router.release());
-    scoped_ptr<FileBrowserResourceThrottle> test_throttle(
-        FileBrowserResourceThrottle::CreateForTest(test_render_process_id_,
-                                                   test_render_view_id_,
-                                                   mime_type,
-                                                   test_request_url_,
-                                                   is_incognito,
-                                                   extension_info_map_.get(),
-                                                   event_router.Pass()));
+    scoped_ptr<StreamsResourceThrottle> test_throttle(
+        StreamsResourceThrottle::CreateForTest(test_render_process_id_,
+                                               test_render_view_id_,
+                                               mime_type,
+                                               test_request_url_,
+                                               is_incognito,
+                                               extension_info_map_.get(),
+                                               event_router.Pass()));
 
     test_throttle->set_controller_for_testing(&mock_resource_controller_);
 
@@ -201,11 +181,11 @@ class FileBrowserResourceThrottleTest : public testing::Test {
 // Tests that the request gets canceled (mock_resource_controller_.Cancel() is
 // called) and the event_router is invoked when a white-listed extension has a
 // file browser handler that can handle the request's MIME type.
-TEST_F(FileBrowserResourceThrottleTest, HandlerWhiteListed) {
+TEST_F(StreamsResourceThrottleTest, HandlerWhiteListed) {
   EXPECT_CALL(mock_resource_controller_, CancelAndIgnore()).Times(1);
 
-  scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router(
-      new MockFileBrowserHandlerEventRouter());
+  scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router(
+      new MockStreamsPrivateEventRouter());
   EXPECT_CALL(*mock_event_router,
       DispatchMimeTypeHandlerEvent(test_render_process_id_,
                                    test_render_view_id_,
@@ -214,7 +194,7 @@ TEST_F(FileBrowserResourceThrottleTest, HandlerWhiteListed) {
                                    test_extension_id_))
       .Times(1);
 
-  scoped_ptr<FileBrowserResourceThrottle> throttle(
+  scoped_ptr<StreamsResourceThrottle> throttle(
       CreateThrottleToTest(false, mock_event_router.Pass(), "plain/html"));
 
   bool defer = false;
@@ -227,11 +207,11 @@ TEST_F(FileBrowserResourceThrottleTest, HandlerWhiteListed) {
 // file browser handler that can handle the request's MIME type, even when the
 // file browser handler is not first in the extension's file browser handler
 // list.
-TEST_F(FileBrowserResourceThrottleTest, SecondHandlerWhiteListed) {
+TEST_F(StreamsResourceThrottleTest, SecondHandlerWhiteListed) {
   EXPECT_CALL(mock_resource_controller_, CancelAndIgnore()).Times(1);
 
-  scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router(
-      new MockFileBrowserHandlerEventRouter());
+  scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router(
+      new MockStreamsPrivateEventRouter());
   EXPECT_CALL(*mock_event_router,
       DispatchMimeTypeHandlerEvent(test_render_process_id_,
                                    test_render_view_id_,
@@ -240,7 +220,7 @@ TEST_F(FileBrowserResourceThrottleTest, SecondHandlerWhiteListed) {
                                    test_extension_id_))
       .Times(1);
 
-  scoped_ptr<FileBrowserResourceThrottle> throttle(
+  scoped_ptr<StreamsResourceThrottle> throttle(
       CreateThrottleToTest(false, mock_event_router.Pass(), "plain/text"));
 
   bool defer = false;
@@ -250,13 +230,13 @@ TEST_F(FileBrowserResourceThrottleTest, SecondHandlerWhiteListed) {
 
 // Tests that the request is not canceled and the event router is not invoked
 // if there is no file browser handlers registered for the request's MIME type.
-TEST_F(FileBrowserResourceThrottleTest, NoWhiteListedHandler) {
-  scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router(
-      new MockFileBrowserHandlerEventRouter());
+TEST_F(StreamsResourceThrottleTest, NoWhiteListedHandler) {
+  scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router(
+      new MockStreamsPrivateEventRouter());
   EXPECT_CALL(*mock_event_router, DispatchMimeTypeHandlerEvent(_, _, _, _, _))
       .Times(0);
 
-  scoped_ptr<FileBrowserResourceThrottle> throttle(
+  scoped_ptr<StreamsResourceThrottle> throttle(
       CreateThrottleToTest(false, mock_event_router.Pass(),
                            "random_mime_type"));
 
@@ -268,15 +248,15 @@ TEST_F(FileBrowserResourceThrottleTest, NoWhiteListedHandler) {
 // Tests that the request is not canceled and the event router is not invoked
 // if there is an extension with the file browser handler that can handle the
 // request's MIME type, but the extension is disabled.
-TEST_F(FileBrowserResourceThrottleTest, HandlerWhiteListedAndDisabled) {
+TEST_F(StreamsResourceThrottleTest, HandlerWhiteListedAndDisabled) {
   DisableTestExtension();
 
-  scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router(
-      new MockFileBrowserHandlerEventRouter());
+  scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router(
+      new MockStreamsPrivateEventRouter());
   EXPECT_CALL(*mock_event_router, DispatchMimeTypeHandlerEvent(_, _, _, _, _))
       .Times(0);
 
-  scoped_ptr<FileBrowserResourceThrottle> throttle(
+  scoped_ptr<StreamsResourceThrottle> throttle(
       CreateThrottleToTest(false, mock_event_router.Pass(), "plain/text"));
 
   bool defer = false;
@@ -287,15 +267,15 @@ TEST_F(FileBrowserResourceThrottleTest, HandlerWhiteListedAndDisabled) {
 // Tests that the request is not canceled and the event router is not invoked
 // in incognito mode if the extension that handles the request's MIME type is
 // not incognito enabled.
-TEST_F(FileBrowserResourceThrottleTest, IncognitoExtensionNotEnabled) {
+TEST_F(StreamsResourceThrottleTest, IncognitoExtensionNotEnabled) {
   ReloadTestExtensionIncognitoDisabled();
 
-  scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router(
-      new MockFileBrowserHandlerEventRouter());
+  scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router(
+      new MockStreamsPrivateEventRouter());
   EXPECT_CALL(*mock_event_router, DispatchMimeTypeHandlerEvent(_, _, _, _, _))
       .Times(0);
 
-  scoped_ptr<FileBrowserResourceThrottle> throttle(
+  scoped_ptr<StreamsResourceThrottle> throttle(
       CreateThrottleToTest(true, mock_event_router.Pass(), "plain/text"));
 
   bool defer = false;
@@ -306,11 +286,11 @@ TEST_F(FileBrowserResourceThrottleTest, IncognitoExtensionNotEnabled) {
 // Tests that the request gets canceled (mock_resource_controller_.Cancel() is
 // called) and the event_router is invoked in incognito when a white-listed
 // extension that handles request's MIME type is incognito enabled.
-TEST_F(FileBrowserResourceThrottleTest, IncognitoExtensionEnabled) {
+TEST_F(StreamsResourceThrottleTest, IncognitoExtensionEnabled) {
   EXPECT_CALL(mock_resource_controller_, CancelAndIgnore()).Times(1);
 
-  scoped_ptr<MockFileBrowserHandlerEventRouter> mock_event_router(
-      new MockFileBrowserHandlerEventRouter());
+  scoped_ptr<MockStreamsPrivateEventRouter> mock_event_router(
+      new MockStreamsPrivateEventRouter());
   EXPECT_CALL(*mock_event_router,
       DispatchMimeTypeHandlerEvent(test_render_process_id_,
                                    test_render_view_id_,
@@ -319,7 +299,7 @@ TEST_F(FileBrowserResourceThrottleTest, IncognitoExtensionEnabled) {
                                    test_extension_id_))
       .Times(1);
 
-  scoped_ptr<FileBrowserResourceThrottle> throttle(
+  scoped_ptr<StreamsResourceThrottle> throttle(
       CreateThrottleToTest(true, mock_event_router.Pass(), "plain/html"));
 
   bool defer = false;

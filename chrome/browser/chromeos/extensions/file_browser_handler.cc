@@ -43,11 +43,6 @@ unsigned int GetAccessPermissionFlagFromString(const std::string& access_str) {
   return kInvalidPermission;
 }
 
-const char* const kMIMETypeHandlersWhitelist[] = {
-  extension_misc::kQuickOfficeExtensionId,
-  extension_misc::kQuickOfficeDevExtensionId
-};
-
 // Stored on the Extension.
 struct FileBrowserHandlerInfo : public extensions::Extension::ManifestData {
   FileBrowserHandler::List file_browser_handlers;
@@ -63,28 +58,6 @@ FileBrowserHandlerInfo::~FileBrowserHandlerInfo() {
 }
 
 }  // namespace
-
-// static
-bool FileBrowserHandler::ExtensionWhitelistedForMIMETypes(
-    const std::string& extension_id) {
-  if (g_test_extension_id_ && extension_id == *g_test_extension_id_)
-    return true;
-  for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i) {
-    if (extension_id == kMIMETypeHandlersWhitelist[i])
-      return true;
-  }
-  return false;
-}
-
-// static
-std::vector<std::string> FileBrowserHandler::GetMIMETypeWhitelist() {
-  std::vector<std::string> whitelist;
-  if (g_test_extension_id_)
-    whitelist.push_back(*g_test_extension_id_);
-  for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i)
-    whitelist.push_back(kMIMETypeHandlersWhitelist[i]);
-  return whitelist;
-}
 
 FileBrowserHandler::FileBrowserHandler()
     : file_access_permission_flags_(kPermissionsNotDefined) {
@@ -103,15 +76,6 @@ void FileBrowserHandler::ClearPatterns() {
 
 bool FileBrowserHandler::MatchesURL(const GURL& url) const {
   return url_set_.MatchesURL(url);
-}
-
-void FileBrowserHandler::AddMIMEType(const std::string& mime_type) {
-  DCHECK(ExtensionWhitelistedForMIMETypes(extension_id()));
-  mime_type_set_.insert(mime_type);
-}
-
-bool FileBrowserHandler::CanHandleMIMEType(const std::string& mime_type) const {
-  return mime_type_set_.find(mime_type) != mime_type_set_.end();
 }
 
 bool FileBrowserHandler::AddFileAccessPermission(
@@ -159,8 +123,6 @@ FileBrowserHandler::GetHandlers(const extensions::Extension* extension) {
     return &info->file_browser_handlers;
   return NULL;
 }
-
-std::string* FileBrowserHandler::g_test_extension_id_ = NULL;
 
 FileBrowserHandlerParser::FileBrowserHandlerParser() {
 }
@@ -263,35 +225,6 @@ FileBrowserHandler* LoadFileBrowserHandler(
         return NULL;
       }
       result->AddPattern(pattern);
-    }
-
-    // Initialize MIME type filters (optional).
-    // NOTE: This is only used by QuickOffice extension to register MIME types
-    // it can handle by directly downloading them. It will *not* be used in File
-    // Manager UI. This is why file filters are mandatory even when MIME type
-    // filters are specified.
-    const ListValue* mime_type_filters = NULL;
-    if (file_browser_handler->HasKey(keys::kMIMETypes)) {
-      if (!FileBrowserHandler::ExtensionWhitelistedForMIMETypes(extension_id)) {
-        *error = ASCIIToUTF16(
-            errors::kNoPermissionForFileBrowserHandlerMIMETypes);
-        return NULL;
-      }
-
-      if (!file_browser_handler->GetList(keys::kMIMETypes,
-                                         &mime_type_filters)) {
-        *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandlerMIMETypes);
-        return NULL;
-      }
-
-      for (size_t i = 0; i < mime_type_filters->GetSize(); ++i) {
-        std::string filter;
-        if (!mime_type_filters->GetString(i, &filter)) {
-          *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandlerMIMETypes);
-          return NULL;
-        }
-        result->AddMIMEType(filter);
-      }
     }
   }
 

@@ -237,6 +237,8 @@
         'common/extensions/manifest_url_handler.h',
         'common/extensions/message_bundle.cc',
         'common/extensions/message_bundle.h',
+        'common/extensions/mime_types_handler.cc',
+        'common/extensions/mime_types_handler.h',
         'common/extensions/permissions/api_permission.cc',
         'common/extensions/permissions/api_permission.h',
         'common/extensions/permissions/api_permission_set.cc',

@@ -379,6 +379,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_PROXY));
   RegisterSchema("scriptBadge", ReadFromResource(
       IDR_EXTENSION_API_JSON_SCRIPTBADGE));
+  RegisterSchema("streamsPrivate", ReadFromResource(
+      IDR_EXTENSION_API_JSON_STREAMSPRIVATE));
   RegisterSchema("ttsEngine", ReadFromResource(
       IDR_EXTENSION_API_JSON_TTSENGINE));
   RegisterSchema("tts", ReadFromResource(

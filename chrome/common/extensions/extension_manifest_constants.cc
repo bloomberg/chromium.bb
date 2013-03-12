@@ -71,6 +71,7 @@ const char kManifestVersion[] = "manifest_version";
 const char kMatches[] = "matches";
 const char kMinimumChromeVersion[] = "minimum_chrome_version";
 const char kMIMETypes[] = "mime_types";
+const char kMimeTypesHandler[] = "mime_types_handler";
 const char kName[] = "name";
 const char kNaClModules[] = "nacl_modules";
 const char kNaClModulesMIMEType[] = "mime_type";
@@ -256,8 +257,6 @@ const char kInvalidFileAccessValue[] =
     "Invalid value for 'file_access[*]'.";
 const char kInvalidFileBrowserHandler[] =
     "Invalid value for 'file_browser_handlers'.";
-const char kInvalidFileBrowserHandlerMIMETypes[] =
-    "Invalid value for 'file_browser_handlers.mime_types'";
 const char kInvalidFileFiltersList[] =
     "Invalid value for 'file_filters'.";
 const char kInvalidFileFilterValue[] =
@@ -374,6 +373,10 @@ const char kInvalidMatchCount[] =
     "one match specified.";
 const char kInvalidMatches[] =
     "Required value 'content_scripts[*].matches' is missing or invalid.";
+const char kInvalidMIMETypes[] =
+    "Invalid value for 'mime_types'";
+const char kInvalidMimeTypesHandler[] =
+    "Invalid value for 'mime_types'.";
 const char kInvalidMinimumChromeVersion[] =
     "Invalid value for 'minimum_chrome_version'.";
 const char kInvalidName[] =
@@ -526,8 +529,8 @@ const char kMissingFile[] =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char kMultipleOverrides[] =
     "An extension cannot override more than one page.";
-const char kNoPermissionForFileBrowserHandlerMIMETypes[] =
-    "The extension is not allowed to use file_browser_handlers.mime_types key.";
+const char kNoPermissionForMIMETypes[] =
+    "The extension is not allowed to use mime_types key.";
 const char kNoWildCardsInPaths[] =
   "Wildcards are not allowed in extent URL pattern paths.";
 const char kOneUISurfaceOnly[] =

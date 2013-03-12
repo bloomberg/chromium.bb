@@ -13,6 +13,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/api/streams_private/streams_resource_throttle.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
@@ -59,7 +60,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/file_browser_resource_throttle.h"
 #include "chrome/browser/chromeos/login/merge_session_throttle.h"
 // TODO(oshima): Enable this for other platforms.
 #include "chrome/browser/renderer_host/offline_resource_throttle.h"
@@ -221,15 +221,15 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-#if defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
     if (!must_download) {
       ProfileIOData* io_data =
           ProfileIOData::FromResourceContext(resource_context);
-      throttles->push_back(FileBrowserResourceThrottle::Create(
+      throttles->push_back(StreamsResourceThrottle::Create(
           child_id, route_id, request, io_data->is_incognito(),
           io_data->GetExtensionInfoMap()));
     }
-#endif  // defined(OS_CHROMEOS)
+#endif
 
     throttles->push_back(new DownloadResourceThrottle(
         download_request_limiter_, child_id, route_id, request_id,

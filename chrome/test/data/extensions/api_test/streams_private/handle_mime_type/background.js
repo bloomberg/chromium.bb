@@ -5,8 +5,8 @@
 // True iff the notifyFail has alerady been called.
 var hasFailed = false;
 
-chrome.fileBrowserHandler.onExecuteContentHandler.addListener(
-    function(mime_type, content_url) {
+chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
+    function(mime_type, original_url) {
   // The tests are setup so resources with MIME type 'application/msword' are
   // meant to be handled by the extension. The extension getting an event with
   // the MIME type 'application/msword' means the test has succeeded.

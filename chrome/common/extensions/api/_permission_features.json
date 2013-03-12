@@ -353,6 +353,15 @@
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"]
   },
+  "streamsPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "whitelist": [
+      "oickdpebdnfbgkcaoklfcdhjniefkcji",  // browser_tests
+      "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // QuickOffice
+      "ionpfmkccalenbmnddpbmocokhaknphg"   // QuickOffice Dev
+    ]
+  },
   "socket": {
     "channel": "stable",
     "extension_types": ["platform_app"]
