@@ -166,8 +166,11 @@ void WebContentsViewMac::SizeContents(const gfx::Size& size) {
 }
 
 void WebContentsViewMac::Focus() {
-  [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
-  [[cocoa_view_.get() window] makeKeyAndOrderFront:GetContentNativeView()];
+  NSWindow* window = [cocoa_view_.get() window];
+  [window makeFirstResponder:GetContentNativeView()];
+  if (![window isVisible])
+    return;
+  [window makeKeyAndOrderFront:nil];
 }
 
 void WebContentsViewMac::SetInitialFocus() {
