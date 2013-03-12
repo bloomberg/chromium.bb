@@ -53,31 +53,36 @@ class AutocheckoutManager {
   // yet for the current page. |frame_url| is the page where Autocheckout is
   // being initiated. |ssl_status| is the SSL status of the page. |native_view|
   // is the parent view of the bubble. |bounding_box| is the bounding box of the
-  // input field in focus. Returns true if the bubble was shown and false
-  // otherwise.
-  virtual bool MaybeShowAutocheckoutBubble(const GURL& frame_url,
+  // input field in focus.
+  virtual void MaybeShowAutocheckoutBubble(const GURL& frame_url,
                                            const content::SSLStatus& ssl_status,
                                            const gfx::NativeView& native_view,
                                            const gfx::RectF& bounding_box);
 
-  // Show the requestAutocomplete dialog.
-  virtual void ShowAutocheckoutDialog(const GURL& frame_url,
-                                      const content::SSLStatus& ssl_status);
-
-  // Whether or not the current page is the start of a multipage Autofill flow.
-  bool IsStartOfAutofillableFlow() const;
-
-  // Whether or not the current page is part of a multipage Autofill flow.
-  bool IsInAutofillableFlow() const;
+  bool is_autocheckout_bubble_showing() const {
+    return is_autocheckout_bubble_showing_;
+  }
 
  protected:
   // Exposed for testing.
   bool in_autocheckout_flow() const { return in_autocheckout_flow_; }
 
   // Exposed for testing.
-  bool autocheckout_bubble_shown() const { return autocheckout_bubble_shown_; }
+  bool autocheckout_offered() const { return autocheckout_offered_; }
+
+  // Show the requestAutocomplete dialog if |show_dialog| is true. Also, does
+  // bookkeeping for whether or not the bubble is showing.
+  virtual void MaybeShowAutocheckoutDialog(const GURL& frame_url,
+                                           const content::SSLStatus& ssl_status,
+                                           bool show_dialog);
 
  private:
+  // Whether or not the current page is the start of a multipage Autofill flow.
+  bool IsStartOfAutofillableFlow() const;
+
+  // Whether or not the current page is part of a multipage Autofill flow.
+  bool IsInAutofillableFlow() const;
+
   // Callback called from AutofillDialogController on filling up the UI form.
   void ReturnAutocheckoutData(const FormStructure* result);
 
@@ -102,7 +107,10 @@ class AutocheckoutManager {
   // Whether or not the Autocheckout bubble has been displayed to the user for
   // the current forms. Ensures the Autocheckout bubble is only shown to a
   // user once per pageview.
-  bool autocheckout_bubble_shown_;
+  bool autocheckout_offered_;
+
+  // Whether or not the Autocheckout bubble is being displayed to the user.
+  bool is_autocheckout_bubble_showing_;
 
   // Whether or not the user is in an Autocheckout flow.
   bool in_autocheckout_flow_;

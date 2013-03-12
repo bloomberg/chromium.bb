@@ -38,7 +38,7 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
       const gfx::NativeView& native_view,
-      const base::Closure& callback) OVERRIDE;
+      const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void HideAutocheckoutBubble() OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,

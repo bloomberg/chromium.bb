@@ -29,31 +29,40 @@ class TestAutofillMetrics : public AutofillMetrics {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillMetrics);
 };
 
-class TestClosure {
+class TestCallback {
  public:
-  TestClosure() : run_count_(0) {}
-  ~TestClosure() {}
+  TestCallback() : accepted_count_(0), dismissed_count_(0) {}
+  ~TestCallback() {}
 
-  void Run() {
-    run_count_++;
+  void Run(bool accepted) {
+    if (accepted)
+      accepted_count_++;
+    else
+      dismissed_count_++;
   }
 
-  int run_count() const {
-    return run_count_;
+  int accepted_count() const {
+    return accepted_count_;
   }
 
-  base::Closure GetCallback() {
-    return base::Bind(&TestClosure::Run, base::Unretained(this));
+  int dismissed_count() const {
+    return dismissed_count_;
+  }
+
+  base::Callback<void(bool)> GetCallback() {
+    return base::Bind(&TestCallback::Run, base::Unretained(this));
   }
 
  private:
-  int run_count_;
+  int accepted_count_;
+  int dismissed_count_;
 };
 
 class TestAutocheckoutBubbleController :
   public autofill::AutocheckoutBubbleController {
  public:
-  explicit TestAutocheckoutBubbleController(const base::Closure& callback)
+  explicit TestAutocheckoutBubbleController(
+      const base::Callback<void(bool)>& callback)
       : AutocheckoutBubbleController(gfx::RectF(),
                                      gfx::NativeView(),
                                      callback) {
@@ -73,14 +82,15 @@ namespace autofill {
 
 TEST(AutocheckoutBubbleControllerTest, BubbleCreationAndDestructionMetrics) {
   // Test bubble created metric.
-  TestClosure closure;
-  TestAutocheckoutBubbleController controller(closure.GetCallback());
+  TestCallback callback;
+  TestAutocheckoutBubbleController controller(callback.GetCallback());
 
   controller.BubbleCreated();
 
   EXPECT_EQ(AutofillMetrics::BUBBLE_CREATED,
             controller.get_metric_logger()->metric());
-  EXPECT_EQ(0, closure.run_count());
+  EXPECT_EQ(0, callback.accepted_count());
+  EXPECT_EQ(0, callback.dismissed_count());
 
   // If neither BubbleAccepted or BubbleCanceled was called the bubble was
   // ignored.
@@ -88,45 +98,50 @@ TEST(AutocheckoutBubbleControllerTest, BubbleCreationAndDestructionMetrics) {
 
   EXPECT_EQ(AutofillMetrics::BUBBLE_IGNORED,
             controller.get_metric_logger()->metric());
-  EXPECT_EQ(0, closure.run_count());
+  EXPECT_EQ(0, callback.accepted_count());
+  EXPECT_EQ(1, callback.dismissed_count());
 }
 
 TEST(AutocheckoutBubbleControllerTest, BubbleAcceptedMetric) {
   // Test bubble accepted metric.
-  TestClosure closure;
-  TestAutocheckoutBubbleController controller(closure.GetCallback());
+  TestCallback callback;
+  TestAutocheckoutBubbleController controller(callback.GetCallback());
 
   controller.BubbleAccepted();
 
   EXPECT_EQ(AutofillMetrics::BUBBLE_ACCEPTED,
             controller.get_metric_logger()->metric());
-  EXPECT_EQ(1, closure.run_count());
+  EXPECT_EQ(1, callback.accepted_count());
+  EXPECT_EQ(0, callback.dismissed_count());
 
   // Test that after a bubble is accepted it is not considered ignored.
   controller.BubbleDestroyed();
 
   EXPECT_EQ(AutofillMetrics::BUBBLE_ACCEPTED,
             controller.get_metric_logger()->metric());
-  EXPECT_EQ(1, closure.run_count());
+  EXPECT_EQ(1, callback.accepted_count());
+  EXPECT_EQ(0, callback.dismissed_count());
 }
 
 TEST(AutocheckoutBubbleControllerTest, BubbleCanceledMetric) {
   // Test bubble dismissed metric.
-  TestClosure closure;
-  TestAutocheckoutBubbleController controller(closure.GetCallback());
+  TestCallback callback;
+  TestAutocheckoutBubbleController controller(callback.GetCallback());
 
   controller.BubbleCanceled();
 
   EXPECT_EQ(AutofillMetrics::BUBBLE_DISMISSED,
             controller.get_metric_logger()->metric());
-  EXPECT_EQ(0, closure.run_count());
+  EXPECT_EQ(0, callback.accepted_count());
+  EXPECT_EQ(1, callback.dismissed_count());
 
   // Test that after a bubble is dismissed it is not considered ignored.
   controller.BubbleDestroyed();
 
   EXPECT_EQ(AutofillMetrics::BUBBLE_DISMISSED,
             controller.get_metric_logger()->metric());
-  EXPECT_EQ(0, closure.run_count());
+  EXPECT_EQ(0, callback.accepted_count());
+  EXPECT_EQ(1, callback.dismissed_count());
 }
 
 }  // namespace autofill

@@ -108,7 +108,7 @@ class AutofillManagerDelegate {
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
       const gfx::NativeView& native_view,
-      const base::Closure& callback) = 0;
+      const base::Callback<void(bool)>& callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.
   virtual void ShowRequestAutocompleteDialog(

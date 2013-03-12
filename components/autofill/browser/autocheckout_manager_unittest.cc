@@ -216,9 +216,9 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       const gfx::NativeView& native_view,
-      const base::Closure& callback) OVERRIDE {
+      const base::Callback<void(bool)>& callback) OVERRIDE {
     autocheckout_bubble_shown_ = true;
-    callback.Run();
+    callback.Run(true);
   }
 
   virtual void HideAutocheckoutBubble() OVERRIDE {}
@@ -279,7 +279,8 @@ class TestAutocheckoutManager: public AutocheckoutManager {
        : AutocheckoutManager(autofill_manager) {}
 
    using AutocheckoutManager::in_autocheckout_flow;
-   using AutocheckoutManager::autocheckout_bubble_shown;
+   using AutocheckoutManager::autocheckout_offered;
+   using AutocheckoutManager::MaybeShowAutocheckoutDialog;
 };
 
 }  // namespace
@@ -328,7 +329,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     content::SSLStatus ssl_status;
     EXPECT_CALL(*autofill_manager_delegate_,
                 UpdateProgressBar(testing::DoubleEq(1.0/3.0))).Times(1);
-    autocheckout_manager_->ShowAutocheckoutDialog(frame_url, ssl_status);
+    autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url,
+                                                       ssl_status,
+                                                       true);
     CheckFillFormsAndClickIpc();
     EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
     EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
@@ -429,14 +432,15 @@ TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
   content::SSLStatus ssl_status;
   gfx::NativeView native_view;
   gfx::RectF bounding_box;
-  EXPECT_TRUE(autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
-                                                                 ssl_status,
-                                                                 native_view,
-                                                                 bounding_box));
-  EXPECT_TRUE(autocheckout_manager_->autocheckout_bubble_shown());
+  autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
+                                                     ssl_status,
+                                                     native_view,
+                                                     bounding_box);
+  EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   // OnFormsSeen resets whether or not the bubble was shown.
   autocheckout_manager_->OnFormsSeen();
-  EXPECT_FALSE(autocheckout_manager_->autocheckout_bubble_shown());
+  EXPECT_FALSE(autocheckout_manager_->autocheckout_offered());
 }
 
 TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
@@ -444,12 +448,13 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   content::SSLStatus ssl_status;
   gfx::NativeView native_view;
   gfx::RectF bounding_box;
+  autocheckout_manager_->OnLoadedPageMetaData(CreateStartOfFlowMetaData());
   // MaybeShowAutocheckoutBubble shows bubble if it has not been shown.
-  EXPECT_TRUE(autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
-                                                                 ssl_status,
-                                                                 native_view,
-                                                                 bounding_box));
-  EXPECT_TRUE(autocheckout_manager_->autocheckout_bubble_shown());
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
+                                                     ssl_status,
+                                                     native_view,
+                                                     bounding_box);
+  EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_TRUE(autofill_manager_delegate_->autocheckout_bubble_shown());
 
   // Reset |autofill_manager_delegate_|.
@@ -458,12 +463,11 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
 
   // MaybeShowAutocheckoutBubble does nothing if the bubble was already shown
   // for the current page.
-  EXPECT_FALSE(autocheckout_manager_->MaybeShowAutocheckoutBubble(
-      frame_url,
-      ssl_status,
-      native_view,
-      bounding_box));
-  EXPECT_TRUE(autocheckout_manager_->autocheckout_bubble_shown());
+  autocheckout_manager_->MaybeShowAutocheckoutBubble(frame_url,
+                                                     ssl_status,
+                                                     native_view,
+                                                     bounding_box);
+  EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_FALSE(autofill_manager_delegate_->autocheckout_bubble_shown());
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }

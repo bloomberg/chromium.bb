@@ -69,6 +69,7 @@ class AutofillAgent : public content::RenderViewObserver,
                               const WebKit::WebFormElement& form) OVERRIDE;
   virtual void ZoomLevelChanged() OVERRIDE;
   virtual void DidChangeScrollOffset(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
 
   // PageClickListener:
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,

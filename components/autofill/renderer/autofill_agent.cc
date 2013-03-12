@@ -5,6 +5,7 @@
 #include "components/autofill/renderer/autofill_agent.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
@@ -12,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "components/autofill/common/autocheckout_status.h"
 #include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"
@@ -120,6 +122,14 @@ void TrimDataListsForIPC(std::vector<string16>* values,
     if ((*icons)[i].length() > kMaximumTextSizeForAutofill)
       (*icons)[i].resize(kMaximumTextSizeForAutofill);
   }
+}
+
+gfx::RectF GetScaledBoundingBox(float scale, WebInputElement* element) {
+  gfx::Rect bounding_box(element->boundsInViewportSpace());
+  return gfx::RectF(bounding_box.x() * scale,
+                    bounding_box.y() * scale,
+                    bounding_box.width() * scale,
+                    bounding_box.height() * scale);
 }
 
 }  // namespace
@@ -255,6 +265,45 @@ void AutofillAgent::ZoomLevelChanged() {
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
   HideHostAutofillUi();
+}
+
+void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
+  // TODO(ahutter): Remove this hack once Autocheckout whitelisting info is
+  // pushed to the renderer.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalFormFilling))
+    return;
+
+  if (node.isNull() || !node.isElementNode())
+    return;
+
+  WebKit::WebElement web_element = node.toConst<WebKit::WebElement>();
+
+  if (!web_element.document().frame())
+      return;
+
+  const WebInputElement* element = toWebInputElement(&web_element);
+
+  if (!element || !element->isEnabled() || element->isReadOnly() ||
+      !element->isTextField() || element->isPasswordField())
+    return;
+
+  FormData form;
+  FormFieldData field;
+  // This must be called to short circuit this method if it fails.
+  if (!FindFormAndFieldForInputElement(*element, &form, &field, REQUIRE_NONE))
+    return;
+
+  content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(
+      element->document().frame());
+
+  element_ = *element;
+
+  Send(new AutofillHostMsg_MaybeShowAutocheckoutBubble(
+      routing_id(),
+      form.origin,
+      ssl_status,
+      GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_)));
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
@@ -772,13 +821,8 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
   }
 
-  gfx::Rect bounding_box(element_.boundsInViewportSpace());
-
-  float scale = web_view_->pageScaleFactor();
-  gfx::RectF bounding_box_scaled(bounding_box.x() * scale,
-                                 bounding_box.y() * scale,
-                                 bounding_box.width() * scale,
-                                 bounding_box.height() * scale);
+  gfx::RectF bounding_box_scaled =
+      GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_);
 
   // Find the datalist values and send them to the browser process.
   std::vector<string16> data_list_values;

@@ -73,7 +73,8 @@ namespace autofill {
 
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
     : autofill_manager_(autofill_manager),
-      autocheckout_bubble_shown_(false),
+      autocheckout_offered_(false),
+      is_autocheckout_bubble_showing_(false),
       in_autocheckout_flow_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -167,19 +168,21 @@ void AutocheckoutManager::OnLoadedPageMetaData(
 }
 
 void AutocheckoutManager::OnFormsSeen() {
-  autocheckout_bubble_shown_ = false;
+  autocheckout_offered_ = false;
 }
 
-bool AutocheckoutManager::MaybeShowAutocheckoutBubble(
+void AutocheckoutManager::MaybeShowAutocheckoutBubble(
     const GURL& frame_url,
     const content::SSLStatus& ssl_status,
     const gfx::NativeView& native_view,
     const gfx::RectF& bounding_box) {
-  if (autocheckout_bubble_shown_)
-    return false;
+  if (autocheckout_offered_ ||
+      is_autocheckout_bubble_showing_ ||
+      !IsStartOfAutofillableFlow())
+    return;
 
-  base::Closure callback = base::Bind(
-      &AutocheckoutManager::ShowAutocheckoutDialog,
+  base::Callback<void(bool)> callback = base::Bind(
+      &AutocheckoutManager::MaybeShowAutocheckoutDialog,
       weak_ptr_factory_.GetWeakPtr(),
       frame_url,
       ssl_status);
@@ -187,13 +190,18 @@ bool AutocheckoutManager::MaybeShowAutocheckoutBubble(
       bounding_box,
       native_view,
       callback);
-  autocheckout_bubble_shown_ = true;
-  return true;
+  is_autocheckout_bubble_showing_ = true;
+  autocheckout_offered_ = true;
 }
 
-void AutocheckoutManager::ShowAutocheckoutDialog(
+void AutocheckoutManager::MaybeShowAutocheckoutDialog(
     const GURL& frame_url,
-    const SSLStatus& ssl_status) {
+    const SSLStatus& ssl_status,
+    bool show_dialog) {
+  is_autocheckout_bubble_showing_ = false;
+  if (!show_dialog)
+    return;
+
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());

@@ -128,7 +128,7 @@ void TabAutofillManagerDelegate::ShowPasswordGenerationBubble(
 void TabAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     const gfx::NativeView& native_view,
-    const base::Closure& callback) {
+    const base::Callback<void(bool)>& callback) {
   HideAutocheckoutBubble();
   autocheckout_bubble_ =
       AutocheckoutBubble::Create(scoped_ptr<AutocheckoutBubbleController>(

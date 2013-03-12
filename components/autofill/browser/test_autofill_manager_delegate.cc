@@ -47,7 +47,7 @@ void TestAutofillManagerDelegate::ShowPasswordGenerationBubble(
 void TestAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,
     const gfx::NativeView& native_view,
-    const base::Closure& callback) {}
+    const base::Callback<void(bool)>& callback) {}
 
 void TestAutofillManagerDelegate::HideAutocheckoutBubble() {}
 

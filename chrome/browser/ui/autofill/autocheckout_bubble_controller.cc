@@ -13,7 +13,7 @@ namespace autofill {
 AutocheckoutBubbleController::AutocheckoutBubbleController(
     const gfx::RectF& anchor_rect,
     const gfx::NativeView& native_view,
-    const base::Closure& callback)
+    const base::Callback<void(bool)>& callback)
     : anchor_rect_(gfx::ToEnclosingRect(anchor_rect)),
       native_view_(native_view),
       callback_(callback),
@@ -40,13 +40,14 @@ int AutocheckoutBubbleController::PromptTextID() {
 void AutocheckoutBubbleController::BubbleAccepted() {
   had_user_interaction_ = true;
   metric_logger_->LogAutocheckoutBubbleMetric(AutofillMetrics::BUBBLE_ACCEPTED);
-  callback_.Run();
+  callback_.Run(true);
 }
 
 void AutocheckoutBubbleController::BubbleCanceled() {
   had_user_interaction_ = true;
   metric_logger_->LogAutocheckoutBubbleMetric(
       AutofillMetrics::BUBBLE_DISMISSED);
+  callback_.Run(false);
 }
 
 void AutocheckoutBubbleController::BubbleCreated() const {
@@ -57,6 +58,7 @@ void AutocheckoutBubbleController::BubbleDestroyed() const {
   if (!had_user_interaction_) {
     metric_logger_->LogAutocheckoutBubbleMetric(
         AutofillMetrics::BUBBLE_IGNORED);
+    callback_.Run(false);
   }
 }
 

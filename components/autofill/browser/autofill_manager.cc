@@ -354,6 +354,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnRequestAutocomplete)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ClickFailed,
                         OnClickFailed)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_MaybeShowAutocheckoutBubble,
+                        OnMaybeShowAutocheckoutBubble)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -489,6 +491,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormFieldData& field,
                                                const gfx::RectF& bounding_box,
                                                bool display_warning) {
+  if (autocheckout_manager_.is_autocheckout_bubble_showing())
+    return;
+
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
@@ -566,20 +571,6 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           has_logged_address_suggestions_count_ = true;
         }
       }
-    }
-
-    // If form is known to be at the start of the autofillable flow (i.e, when
-    // Autofill server said so), then trigger payments UI while also returning
-    // standard autofill suggestions to renderer process.
-    if (autocheckout_manager_.IsStartOfAutofillableFlow()) {
-      bool bubble_shown =
-          autocheckout_manager_.MaybeShowAutocheckoutBubble(
-              form.origin,
-              form.ssl_status,
-              web_contents()->GetView()->GetContentNativeView(),
-              bounding_box);
-      if (bubble_shown)
-        return;
     }
   }
 
@@ -879,6 +870,20 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 
 void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
   // TODO(ahutter): Plug into WalletClient.
+}
+
+void AutofillManager::OnMaybeShowAutocheckoutBubble(
+    const GURL& source_url,
+    const content::SSLStatus& ssl_status,
+    const gfx::RectF& bounding_box) {
+  if (!IsAutofillEnabled())
+    return;
+
+  autocheckout_manager_.MaybeShowAutocheckoutBubble(
+      source_url,
+      ssl_status,
+      web_contents()->GetView()->GetContentNativeView(),
+      bounding_box);
 }
 
 std::string AutofillManager::GetAutocheckoutURLPrefix() const {

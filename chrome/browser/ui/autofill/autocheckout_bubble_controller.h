@@ -25,7 +25,7 @@ class AutocheckoutBubbleController {
   // requestAutocomplete dialog to collect user input for Autocheckout.
   AutocheckoutBubbleController(const gfx::RectF& anchor_rect,
                                const gfx::NativeView& native_view,
-                               const base::Closure& callback);
+                               const base::Callback<void(bool)>& callback);
   ~AutocheckoutBubbleController();
 
   static int AcceptTextID();
@@ -59,7 +59,7 @@ class AutocheckoutBubbleController {
   gfx::NativeView native_view_;
 
   // |callback_| is invoked if the bubble is accepted.
-  base::Closure callback_;
+  base::Callback<void(bool)> callback_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
