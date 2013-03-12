@@ -42,14 +42,18 @@
   action not_data16_prefix {
     SET_DATA16_PREFIX(FALSE);
   }
-  action not_lock_prefix0 {
+
+  # LOCK prefix can be used to address CR8-CR15 registers. In such cases
+  # we do not treat it as LOCK.
+  action lock_extends_cr_operand0 {
     SET_OPERAND_NAME(0, GET_OPERAND_NAME(0) | 0x08);
     SET_LOCK_PREFIX(FALSE);
   }
-  action not_lock_prefix1 {
+  action lock_extends_cr_operand1 {
     SET_OPERAND_NAME(1, GET_OPERAND_NAME(1) | 0x08);
     SET_LOCK_PREFIX(FALSE);
   }
+
   action not_repnz_prefix {
     SET_REPNZ_PREFIX(FALSE);
   }

@@ -630,7 +630,7 @@ class InstructionPrinter(object):
             def_format.OperandType.CONTROL_REGISTER)
         if operand is not None:
           assert self._NeedOperandInfo(operand)
-          self._out.write('@not_lock_prefix%d\n' % operand.index)
+          self._out.write('@lock_extends_cr_operand%d\n' % operand.index)
 
     # TODO(shcherbina): 'memory' format?
     for operand in instruction.operands:

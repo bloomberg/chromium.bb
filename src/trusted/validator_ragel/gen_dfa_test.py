@@ -530,7 +530,7 @@ class TestInstructionPrinter(unittest.TestCase):
         @operand1_from_modrm_reg
         @instruction_mov
         @operands_count_is_2
-        @not_lock_prefix1
+        @lock_extends_cr_operand1
         @operand0_regsize
         @operand1_creg
         @CPUFeature_ALTMOVCR8

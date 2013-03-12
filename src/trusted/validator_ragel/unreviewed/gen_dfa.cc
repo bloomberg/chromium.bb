@@ -1536,7 +1536,7 @@ void PrintImmediateArguments(const MarkedInstruction& instruction) {
       for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
              operands.begin(); operand != operands.end(); ++operand)
         if (operand->type == 'C') {
-          fprintf(out_file, " @not_lock_prefix%" NACL_PRIuS,
+          fprintf(out_file, " @lock_extends_cr_operand%" NACL_PRIuS,
                   operand - operands.begin());
           break;
         }
