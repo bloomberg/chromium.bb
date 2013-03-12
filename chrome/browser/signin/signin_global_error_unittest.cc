@@ -77,9 +77,9 @@ TEST_F(SigninGlobalErrorTest, AuthStatusProviderErrorTransition) {
     ASSERT_TRUE(global_error_->HasBadge());
 
     // Now resolve the auth errors - badge should go away.
-    provider0.SetAuthError(GoogleServiceAuthError::None());
+    provider0.SetAuthError(GoogleServiceAuthError::AuthErrorNone());
     ASSERT_TRUE(global_error_->HasBadge());
-    provider1.SetAuthError(GoogleServiceAuthError::None());
+    provider1.SetAuthError(GoogleServiceAuthError::AuthErrorNone());
     ASSERT_FALSE(global_error_->HasBadge());
   }
   ASSERT_FALSE(global_error_->HasBadge());

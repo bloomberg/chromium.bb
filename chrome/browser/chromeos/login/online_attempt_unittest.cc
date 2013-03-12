@@ -203,7 +203,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
 
   MessageLoop::current()->Run();
 
-  EXPECT_EQ(LoginFailure::None(), local_state.online_outcome());
+  EXPECT_EQ(LoginFailure::LoginFailureNone(), local_state.online_outcome());
 }
 
 TEST_F(OnlineAttemptTest, LoginNetFailure) {
@@ -253,7 +253,7 @@ TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
 
   // Force UI thread to finish tasks so I can verify |state_|.
   message_loop_.RunUntilIdle();
-  EXPECT_TRUE(GoogleServiceAuthError::None() ==
+  EXPECT_TRUE(GoogleServiceAuthError::AuthErrorNone() ==
               state_.online_outcome().error());
 }
 

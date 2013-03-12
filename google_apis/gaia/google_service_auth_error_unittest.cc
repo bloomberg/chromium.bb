@@ -37,7 +37,7 @@ TEST_F(GoogleServiceAuthErrorTest, SimpleToValue) {
 }
 
 TEST_F(GoogleServiceAuthErrorTest, None) {
-  GoogleServiceAuthError error(GoogleServiceAuthError::None());
+  GoogleServiceAuthError error(GoogleServiceAuthError::AuthErrorNone());
   scoped_ptr<DictionaryValue> value(error.ToValue());
   EXPECT_EQ(1u, value->size());
   ExpectDictStringValue("NONE", *value, "state");

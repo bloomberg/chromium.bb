@@ -56,7 +56,7 @@ class LoginFailure {
     return LoginFailure(NETWORK_AUTH_FAILED, error);
   }
 
-  static LoginFailure None() {
+  static LoginFailure LoginFailureNone() {
     return LoginFailure(NONE);
   }
 

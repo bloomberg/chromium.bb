@@ -36,7 +36,7 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
 
 TestingOAuth2TokenServiceConsumer::TestingOAuth2TokenServiceConsumer()
     : number_of_correct_tokens_(0),
-      last_error_(GoogleServiceAuthError::None()),
+      last_error_(GoogleServiceAuthError::AuthErrorNone()),
       number_of_errors_(0) {
 }
 

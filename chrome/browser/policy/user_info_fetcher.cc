@@ -53,7 +53,7 @@ void UserInfoFetcher::Start(const std::string& access_token) {
 
 void UserInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   net::URLRequestStatus status = source->GetStatus();
-  GoogleServiceAuthError error = GoogleServiceAuthError::None();
+  GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
   if (!status.is_success()) {
     if (status.status() == net::URLRequestStatus::CANCELED)
       error = GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);

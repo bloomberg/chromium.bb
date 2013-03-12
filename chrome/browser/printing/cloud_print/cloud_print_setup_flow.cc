@@ -98,7 +98,7 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(
     bool setup_done)
     : web_ui_(NULL),
       dialog_start_args_(args),
-      last_auth_error_(GoogleServiceAuthError::None()),
+      last_auth_error_(GoogleServiceAuthError::AuthErrorNone()),
       setup_done_(setup_done),
       process_control_(NULL),
       delegate_(delegate) {

@@ -277,7 +277,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveNeedOldPw) {
   // and been rejected because of unmatched key; additionally,
   // an online auth attempt has completed successfully.
   state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
 
   EXPECT_EQ(ParallelAuthenticator::NEED_OLD_PW,
             SetAndResolveState(auth_, state_.release()));
@@ -454,7 +454,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
       .Times(1)
       .RetiresOnSaturation();
 
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
   SetAttemptState(auth_, state_.release());
 
   auth_->ResyncEncryptedData();
@@ -482,7 +482,7 @@ TEST_F(ParallelAuthenticatorTest, DriveRequestOldPassword) {
   ExpectPasswordChange();
 
   state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
   SetAttemptState(auth_, state_.release());
 
   RunResolve(auth_.get());
@@ -505,7 +505,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
   SetAttemptState(auth_, state_.release());
 
   auth_->RecoverEncryptedData(std::string());
@@ -563,7 +563,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
   // an online auth attempt has completed successfully.
   state_->PresetCryptohomeStatus(false,
                                  cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST);
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
 
   EXPECT_EQ(ParallelAuthenticator::CREATE_NEW,
             SetAndResolveState(auth_, state_.release()));
@@ -586,7 +586,7 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
   // an online auth attempt has completed successfully.
   state_->PresetCryptohomeStatus(false,
                                  cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST);
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
   SetAttemptState(auth_, state_.release());
 
   RunResolve(auth_.get());
@@ -725,7 +725,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
   // Set up state as though a cryptohome mount attempt has occurred and
   // succeeded.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
-  state_->PresetOnlineLoginStatus(LoginFailure::None());
+  state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
   SetAttemptState(auth_, state_.release());
 
   RunResolve(auth_.get());

@@ -139,7 +139,7 @@ GoogleServiceAuthError GoogleServiceAuthError::FromClientOAuthError(
  return GoogleServiceAuthError(explanation);
 }
 
-GoogleServiceAuthError GoogleServiceAuthError::None() {
+GoogleServiceAuthError GoogleServiceAuthError::AuthErrorNone() {
   return GoogleServiceAuthError(NONE);
 }
 

@@ -86,7 +86,7 @@ void OnlineAttempt::OnClientLoginSuccess(
     TryClientLogin();
     return;
   }
-  TriggerResolve(LoginFailure::None());
+  TriggerResolve(LoginFailure::LoginFailureNone());
 }
 
 void OnlineAttempt::OnClientLoginFailure(
@@ -121,7 +121,7 @@ void OnlineAttempt::OnClientLoginFailure(
 
   if (error.state() == GoogleServiceAuthError::TWO_FACTOR) {
     LOG(WARNING) << "Two factor authenticated. Sync will not work.";
-    TriggerResolve(LoginFailure::None());
+    TriggerResolve(LoginFailure::LoginFailureNone());
 
     return;
   }

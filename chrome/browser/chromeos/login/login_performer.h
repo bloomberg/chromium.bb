@@ -195,7 +195,7 @@ class LoginPerformer : public LoginStatusConsumer,
   OnlineAttemptHost online_attempt_host_;
 
   // Represents last login failure that was encountered when communicating to
-  // sign-in server. LoginFailure.None() by default.
+  // sign-in server. LoginFailure.LoginFailureNone() by default.
   LoginFailure last_login_failure_;
 
   // Username and password for the current login attempt.

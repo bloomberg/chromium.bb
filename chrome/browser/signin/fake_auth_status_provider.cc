@@ -6,7 +6,7 @@
 
 FakeAuthStatusProvider::FakeAuthStatusProvider(SigninGlobalError* error)
   : global_error_(error),
-    auth_error_(GoogleServiceAuthError::None()) {
+    auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
   global_error_->AddProvider(this);
 }
 

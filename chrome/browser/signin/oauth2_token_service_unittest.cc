@@ -35,7 +35,7 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
  public:
   TestingOAuth2TokenServiceConsumer()
       : number_of_correct_tokens_(0),
-        last_error_(GoogleServiceAuthError::None()),
+        last_error_(GoogleServiceAuthError::AuthErrorNone()),
         number_of_errors_(0) {}
   virtual ~TestingOAuth2TokenServiceConsumer() {}
 
@@ -66,7 +66,7 @@ class RetryingTestingOAuth2TokenServiceConsumer
       OAuth2TokenService* oauth2_service)
       : oauth2_service_(oauth2_service),
         number_of_correct_tokens_(0),
-        last_error_(GoogleServiceAuthError::None()),
+        last_error_(GoogleServiceAuthError::AuthErrorNone()),
         number_of_errors_(0) {}
   virtual ~RetryingTestingOAuth2TokenServiceConsumer() {}
 

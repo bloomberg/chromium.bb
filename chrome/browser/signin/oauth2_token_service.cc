@@ -520,7 +520,7 @@ void OAuth2TokenService::Observe(int type,
   // OAuth2 access tokens. If this token either changes or is cleared, any
   // available tokens must be invalidated.
   token_cache_.clear();
-  UpdateAuthError(GoogleServiceAuthError::None());
+  UpdateAuthError(GoogleServiceAuthError::AuthErrorNone());
 }
 
 void OAuth2TokenService::UpdateAuthError(const GoogleServiceAuthError& error) {

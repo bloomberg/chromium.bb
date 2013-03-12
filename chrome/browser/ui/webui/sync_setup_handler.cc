@@ -838,7 +838,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
 
   // User is trying to log in again so reset the cached error.
   GoogleServiceAuthError current_error = last_signin_error_;
-  last_signin_error_ = GoogleServiceAuthError::None();
+  last_signin_error_ = GoogleServiceAuthError::AuthErrorNone();
 
   SigninManager* signin = GetSignin();
 
@@ -1131,7 +1131,7 @@ void SyncSetupHandler::CloseSyncSetup() {
   // overlay in the settings page will stay in whatever error state it was last
   // when it is reopened.
   last_attempted_user_email_.clear();
-  last_signin_error_ = GoogleServiceAuthError::None();
+  last_signin_error_ = GoogleServiceAuthError::AuthErrorNone();
 
   configuring_sync_ = false;
   signin_tracker_.reset();

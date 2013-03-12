@@ -17,7 +17,7 @@ class MockUbertokenConsumer : public UbertokenConsumer {
  public:
   MockUbertokenConsumer()
       : nb_correct_token_(0),
-        last_error_(GoogleServiceAuthError::None()),
+        last_error_(GoogleServiceAuthError::AuthErrorNone()),
         nb_error_(0) {
   }
   virtual ~MockUbertokenConsumer() {}

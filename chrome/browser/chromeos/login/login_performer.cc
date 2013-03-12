@@ -52,7 +52,7 @@ LoginPerformer* LoginPerformer::default_performer_ = NULL;
 
 LoginPerformer::LoginPerformer(Delegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(online_attempt_host_(this)),
-      last_login_failure_(LoginFailure::None()),
+      last_login_failure_(LoginFailure::LoginFailureNone()),
       delegate_(delegate),
       password_changed_(false),
       password_changed_callback_count_(0),

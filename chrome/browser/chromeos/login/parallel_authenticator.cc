@@ -840,7 +840,7 @@ ParallelAuthenticator::ResolveOnlineSuccessState(
 
 void ParallelAuthenticator::ResolveLoginCompletionStatus() {
   // Shortcut online state resolution process.
-  current_state_->RecordOnlineLoginStatus(LoginFailure::None());
+  current_state_->RecordOnlineLoginStatus(LoginFailure::LoginFailureNone());
   Resolve();
 }
 

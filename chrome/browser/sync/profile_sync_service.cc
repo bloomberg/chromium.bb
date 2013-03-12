@@ -132,7 +132,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        Profile* profile,
                                        SigninManager* signin_manager,
                                        StartBehavior start_behavior)
-    : last_auth_error_(AuthError::None()),
+    : last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
       profile_(profile),
@@ -669,7 +669,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
   // Revert to "no auth error".
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)
-    UpdateAuthErrorState(GoogleServiceAuthError::None());
+    UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
 
   if (sync_global_error_.get()) {
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
@@ -1003,7 +1003,7 @@ AuthError ConnectionStatusToAuthError(
     syncer::ConnectionStatus status) {
   switch (status) {
     case syncer::CONNECTION_OK:
-      return AuthError::None();
+      return AuthError::AuthErrorNone();
       break;
     case syncer::CONNECTION_AUTH_ERROR:
       return AuthError(AuthError::INVALID_GAIA_CREDENTIALS);

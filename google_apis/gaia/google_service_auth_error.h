@@ -168,7 +168,7 @@ class GoogleServiceAuthError {
   // Provided for convenience for clients needing to reset an instance to NONE.
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
   // to explicit class and State enum relation. Note: shouldn't be inlined!
-  static GoogleServiceAuthError None();
+  static GoogleServiceAuthError AuthErrorNone();
 
   // The error information.
   State state() const;
