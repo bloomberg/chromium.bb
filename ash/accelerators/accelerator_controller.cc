@@ -69,6 +69,8 @@
 namespace ash {
 namespace {
 
+using internal::DisplayInfo;
+
 // Factor of magnification scale. For example, when this value is 1.189, scale
 // value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
 // Note: this value is 2.0 ^ (1 / 4).
@@ -152,39 +154,32 @@ bool HandleRotateActiveWindow() {
   return true;
 }
 
+const DisplayInfo::Rotation GetNextRotation(DisplayInfo::Rotation current) {
+  switch (current) {
+    case DisplayInfo::ROTATE_0:
+      return DisplayInfo::ROTATE_90;
+    case DisplayInfo::ROTATE_90:
+      return DisplayInfo::ROTATE_180;
+    case DisplayInfo::ROTATE_180:
+      return DisplayInfo::ROTATE_270;
+    case DisplayInfo::ROTATE_270:
+      return DisplayInfo::ROTATE_0;
+  }
+  NOTREACHED() << "Unknown rotation:" << current;
+  return DisplayInfo::ROTATE_0;
+}
+
 // Rotates the screen.
 bool HandleRotateScreen() {
-  static int i = 0;
-  int delta = 0;
-  switch (i) {
-    case 0: delta = 90; break;
-    case 1: delta = 90; break;
-    case 2: delta = 90; break;
-    case 3: delta = 90; break;
-    case 4: delta = -90; break;
-    case 5: delta = -90; break;
-    case 6: delta = -90; break;
-    case 7: delta = -90; break;
-    case 8: delta = -90; break;
-    case 9: delta = 180; break;
-    case 10: delta = 180; break;
-    case 11: delta = 90; break;
-    case 12: delta = 180; break;
-    case 13: delta = 180; break;
-  }
-  i = (i + 1) % 14;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (size_t i = 0; i < root_windows.size(); ++i) {
-    aura::RootWindow* root_window = root_windows[i];
-    root_window->layer()->GetAnimator()->
-        set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-        new ui::LayerAnimationSequence(
-            new ash::ScreenRotation(delta, root_window->layer())));
-    screen_rotation->AddObserver(root_window);
-    root_window->layer()->GetAnimator()->
-        StartAnimation(screen_rotation.release());
-  }
+  aura::Window* active_window = wm::GetActiveWindow();
+  if (!active_window)
+    return false;
+  const gfx::Display& display =
+      Shell::GetScreen()->GetDisplayNearestWindow(active_window);
+  const DisplayInfo& display_info =
+      Shell::GetInstance()->display_manager()->GetDisplayInfo(display);
+  Shell::GetInstance()->display_manager()->SetDisplayRotation(
+      display.id(), GetNextRotation(display_info.rotation()));
   return true;
 }
 

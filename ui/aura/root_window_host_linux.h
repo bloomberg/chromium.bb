@@ -18,6 +18,7 @@
 #include "ui/aura/root_window_host.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -49,6 +50,8 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
+  virtual void SetInsets(const gfx::Insets& insets) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
@@ -119,6 +122,9 @@ class RootWindowHostLinux : public RootWindowHost,
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
+
+  // The insets that specifies the effective area within the |window_|.
+  gfx::Insets insets_;
 
   // The bounds of |x_root_window_|.
   gfx::Rect x_root_bounds_;

@@ -250,9 +250,13 @@ WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    gfx::Size root_window_size = (*iter)->GetHostSize();
-    if (root_window_size.width() > kSmallWallpaperMaxWidth ||
-        root_window_size.height() > kSmallWallpaperMaxHeight) {
+    // Compare to host size as constants are defined in terms of
+    // physical pixel size.
+    // TODO(oshima): This may not be ideal for fractional scaling
+    // scenario. Revisit and fix if necessary.
+    gfx::Size host_window_size = (*iter)->GetHostSize();
+    if (host_window_size.width() > kSmallWallpaperMaxWidth ||
+        host_window_size.height() > kSmallWallpaperMaxHeight) {
       resolution = WALLPAPER_RESOLUTION_LARGE;
     }
   }

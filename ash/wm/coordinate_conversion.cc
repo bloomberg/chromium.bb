@@ -19,6 +19,7 @@ namespace wm {
 aura::RootWindow* GetRootWindowAt(const gfx::Point& point) {
   const gfx::Display& display =
       Shell::GetScreen()->GetDisplayNearestPoint(point);
+  DCHECK(display.is_valid());
   // TODO(yusukes): Move coordinate_conversion.cc and .h to ui/aura/ once
   // GetRootWindowForDisplayId() is moved to aura::Env.
   return Shell::GetInstance()->display_controller()->

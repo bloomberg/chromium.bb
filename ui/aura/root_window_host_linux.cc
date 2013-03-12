@@ -579,6 +579,18 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
+gfx::Insets RootWindowHostLinux::GetInsets() const {
+  return insets_;
+}
+
+void RootWindowHostLinux::SetInsets(const gfx::Insets& insets) {
+  insets_ = insets;
+  if (pointer_barriers_.get()) {
+    UnConfineCursor();
+    ConfineCursorToRootWindow();
+  }
+}
+
 gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
   return bounds_.origin();
 }
@@ -627,31 +639,31 @@ bool RootWindowHostLinux::ConfineCursorToRootWindow() {
   DCHECK(!pointer_barriers_.get());
   if (pointer_barriers_.get())
     return false;
-  // TODO(oshima): There is a know issue where the pointer barrier
-  // leaks mouse pointer under certain conditions. crbug.com/133694.
   pointer_barriers_.reset(new XID[4]);
+  gfx::Rect bounds(bounds_);
+  bounds.Inset(insets_);
   // Horizontal, top barriers.
   pointer_barriers_[0] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      bounds_.x(), bounds_.y(), bounds_.right(), bounds_.y(),
+      bounds.x(), bounds.y(), bounds.right(), bounds.y(),
       BarrierPositiveY,
       0, XIAllDevices);
   // Horizontal, bottom barriers.
   pointer_barriers_[1] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      bounds_.x(), bounds_.bottom(), bounds_.right(),  bounds_.bottom(),
+      bounds.x(), bounds.bottom(), bounds.right(),  bounds.bottom(),
       BarrierNegativeY,
       0, XIAllDevices);
   // Vertical, left  barriers.
   pointer_barriers_[2] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      bounds_.x(), bounds_.y(), bounds_.x(), bounds_.bottom(),
+      bounds.x(), bounds.y(), bounds.x(), bounds.bottom(),
       BarrierPositiveX,
       0, XIAllDevices);
   // Vertical, right barriers.
   pointer_barriers_[3] = XFixesCreatePointerBarrier(
       xdisplay_, x_root_window_,
-      bounds_.right(), bounds_.y(), bounds_.right(), bounds_.bottom(),
+      bounds.right(), bounds.y(), bounds.right(), bounds.bottom(),
       BarrierNegativeX,
       0, XIAllDevices);
 #endif
@@ -998,7 +1010,7 @@ void RootWindowHostLinux::TranslateAndDispatchMouseEvent(
     gfx::Point location(event->location());
     screen_position_client->ConvertNativePointToScreen(root, &location);
     screen_position_client->ConvertPointFromScreen(root, &location);
-    // |delegate_|'s OnHoustMouseEvent expects native coordinates relative to
+    // |delegate_|'s OnHostMouseEvent expects native coordinates relative to
     // root.
     location = ui::ConvertPointToPixel(root->layer(), location);
     event->set_location(location);

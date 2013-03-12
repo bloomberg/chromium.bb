@@ -55,7 +55,7 @@ class AshEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
   // aura::test::EventGeneratorDelegate overrides:
   virtual aura::RootWindow* GetRootWindowAt(
       const gfx::Point& point_in_screen) const OVERRIDE {
-    gfx::Screen* screen = Shell::GetInstance()->screen();
+    gfx::Screen* screen = Shell::GetScreen();
     gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetInstance()->display_controller()->
         GetRootWindowForDisplayId(display.id());
@@ -107,12 +107,16 @@ void AshTestBase::SetUp() {
   message_center::MessageCenter::Initialize();
 #endif
   ash::Shell::CreateInstance(test_shell_delegate_);
+  Shell* shell = Shell::GetInstance();
+  test::DisplayManagerTestApi(shell->display_manager()).
+      DisableChangeDisplayUponHostResize();
+
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->ShowRootWindow();
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+  shell->cursor_manager()->EnableMouseEvents();
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {

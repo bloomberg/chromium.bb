@@ -23,6 +23,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -36,9 +37,13 @@
 #include "ui/base/x/x11_util.h"
 #endif  // defined(OS_CHROMEOS)
 
+DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::DisplayInfo::Rotation);
 
 namespace ash {
 namespace {
+
+DEFINE_WINDOW_PROPERTY_KEY(internal::DisplayInfo::Rotation, kRotationKey,
+                           internal::DisplayInfo::ROTATE_0);
 
 // Primary display stored in global object as it can be
 // accessed after Shell is deleted. A separate display instance is created
@@ -105,8 +110,42 @@ internal::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
+void RotateRootWindow(aura::RootWindow* root_window,
+                      const gfx::Display& display,
+                      const internal::DisplayInfo& info) {
+  // TODO(oshima): Add animation. (crossfade+rotation, or just cross-fade)
+#if defined(OS_WIN)
+  // Windows 8 bots refused to resize the host window, and
+  // updating the transform results in incorrectly resizing
+  // the root window. Don't apply the transform unless
+  // necessary so that unit tests pass on win8 bots.
+  if (info.rotation() == root_window->GetProperty(kRotationKey))
+    return;
+  root_window->SetProperty(kRotationKey, info.rotation());
+#endif
+  gfx::Transform rotate;
+  switch (info.rotation()) {
+    case internal::DisplayInfo::ROTATE_0:
+      break;
+    case internal::DisplayInfo::ROTATE_90:
+      rotate.Translate(display.bounds().height(), 0);
+      rotate.Rotate(90);
+      break;
+    case internal::DisplayInfo::ROTATE_270:
+      rotate.Translate(0, display.bounds().width());
+      rotate.Rotate(270);
+      break;
+    case internal::DisplayInfo::ROTATE_180:
+      rotate.Translate(display.bounds().width(), display.bounds().height());
+      rotate.Rotate(180);
+      break;
+  }
+  root_window->SetTransform(rotate);
+}
+
 void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                                       const gfx::Display& display) {
+  internal::DisplayInfo info = GetDisplayManager()->GetDisplayInfo(display);
 #if defined(OS_CHROMEOS)
   // Native window property (Atom in X11) that specifies the display's
   // rotation and scale factor.  They are read and used by
@@ -120,7 +159,7 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
   const char kCARDINAL[] = "CARDINAL";
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int rotation = 0;
+  int rotation = static_cast<int>(info.rotation());
   if (command_line->HasSwitch(switches::kAshOverrideDisplayOrientation)) {
     std::string value = command_line->
         GetSwitchValueASCII(switches::kAshOverrideDisplayOrientation);
@@ -137,6 +176,7 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                      kCARDINAL,
                      100 * display.device_scale_factor());
 #endif
+  RotateRootWindow(root, display, info);
 }
 
 }  // namespace
@@ -237,12 +277,29 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 DisplayController::DisplayController()
     : desired_primary_display_id_(gfx::Display::kInvalidDisplayID),
       primary_root_window_for_replace_(NULL) {
-#if defined(OS_CHROMEOS)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+#if defined(OS_CHROMEOS)
   if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
       base::chromeos::IsRunningOnChromeOS())
     limiter_.reset(new DisplayChangeLimiter);
 #endif
+  if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
+    std::string value = command_line->GetSwitchValueASCII(
+        switches::kAshSecondaryDisplayLayout);
+    char layout;
+    int offset = 0;
+    if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
+      if (layout == 't')
+        default_display_layout_.position = DisplayLayout::TOP;
+      else if (layout == 'b')
+        default_display_layout_.position = DisplayLayout::BOTTOM;
+      else if (layout == 'r')
+        default_display_layout_.position = DisplayLayout::RIGHT;
+      else if (layout == 'l')
+        default_display_layout_.position = DisplayLayout::LEFT;
+      default_display_layout_.offset = offset;
+    }
+  }
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
@@ -310,24 +367,6 @@ void DisplayController::InitSecondaryDisplays() {
     if (primary_display_id != display->id()) {
       aura::RootWindow* root = AddRootWindowForDisplay(*display);
       Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
-    }
-  }
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
-    std::string value = command_line->GetSwitchValueASCII(
-        switches::kAshSecondaryDisplayLayout);
-    char layout;
-    int offset;
-    if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
-      if (layout == 't')
-        default_display_layout_.position = DisplayLayout::TOP;
-      else if (layout == 'b')
-        default_display_layout_.position = DisplayLayout::BOTTOM;
-      else if (layout == 'r')
-        default_display_layout_.position = DisplayLayout::RIGHT;
-      else if (layout == 'l')
-        default_display_layout_.position = DisplayLayout::LEFT;
-      default_display_layout_.offset = offset;
     }
   }
   UpdateDisplayBoundsForLayout();
@@ -608,15 +647,16 @@ gfx::Display* DisplayController::GetSecondaryDisplay() {
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   if (limiter_.get())
     limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
-  DCHECK(!GetDisplayManager()->GetDisplayInfo(display).
-         bounds_in_pixel().IsEmpty());
+  const internal::DisplayInfo& display_info =
+      GetDisplayManager()->GetDisplayInfo(display);
+  DCHECK(!display_info.bounds_in_pixel().IsEmpty());
 
   NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
+  root->SetHostBoundsAndInsets(display_info.bounds_in_pixel(),
+                               display_info.GetOverscanInsetsInPixel());
   SetDisplayPropertiesOnHostWindow(root, display);
-  root->SetHostBounds(
-      GetDisplayManager()->GetDisplayInfo(display).bounds_in_pixel());
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
@@ -632,8 +672,11 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
         internal::kDisplayIdKey, display.id());
     primary_root_window_for_replace_ = NULL;
     UpdateDisplayBoundsForLayout();
-    root_windows_[display.id()]->SetHostBounds(
-        GetDisplayManager()->GetDisplayInfo(display).bounds_in_pixel());
+    const internal::DisplayInfo& display_info =
+        GetDisplayManager()->GetDisplayInfo(display);
+    root_windows_[display.id()]->SetHostBoundsAndInsets(
+        display_info.bounds_in_pixel(),
+        display_info.GetOverscanInsetsInPixel());
   } else {
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);

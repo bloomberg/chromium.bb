@@ -380,9 +380,8 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 // Assertions around attached window resize dragging from the bottom with 3
 // windows.
 TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
+  UpdateDisplay("600x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   window_->SetBounds(gfx::Rect( 300, 100, 300, 200));
@@ -1264,9 +1263,8 @@ TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
+  UpdateDisplay("600x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
@@ -1295,9 +1293,8 @@ TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
+  UpdateDisplay("600x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
@@ -1324,9 +1321,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
+  UpdateDisplay("600x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
@@ -1360,9 +1356,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
 #endif
 
 TEST_F(WorkspaceWindowResizerTest, MAYBE_DontExceedMinHeight) {
+  UpdateDisplay("600x500");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 500));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Four 100x100 windows flush against eachother, starting at 100,100.
@@ -1389,9 +1384,8 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_DontExceedMinHeight) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
+  UpdateDisplay("600x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
@@ -1415,9 +1409,8 @@ TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
+  UpdateDisplay("600x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
@@ -1449,9 +1442,8 @@ TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
 #endif
 
 TEST_F(WorkspaceWindowResizerTest, MAYBE_MainWindowHonoursMaxWidth) {
+  UpdateDisplay("400x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(400, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.
@@ -1476,9 +1468,8 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_MainWindowHonoursMaxWidth) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
+  UpdateDisplay("400x800");
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  root->SetHostSize(gfx::Size(400, 800));
-
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
   // Three 100x100 windows flush against eachother, starting at 100,100.

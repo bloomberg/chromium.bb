@@ -83,6 +83,9 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // Clears the overscan insets
   void ClearCustomOverscanInsets(int64 display_id);
 
+  // Sets the display's rotation.
+  void SetDisplayRotation(int64 display_id, DisplayInfo::Rotation rotation);
+
   // Returns the current overscan insets for the specified |display_id|.
   // Returns an empty insets (0, 0, 0, 0) if no insets are specified for
   // the display.
@@ -144,6 +147,10 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   typedef std::vector<gfx::Display> DisplayList;
 
+  void set_change_display_upon_host_resize(bool value) {
+    change_display_upon_host_resize_ = value;
+  }
+
   void Init();
   void CycleDisplayImpl();
   void ScaleDisplayImpl();
@@ -163,8 +170,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // can be different from |new_info| (due to overscan state), so
   // you must use |GetDisplayInfo| to get the correct DisplayInfo for
   // a display.
-  void InsertAndUpdateDisplayInfo(const DisplayInfo& new_info,
-                                  bool can_overscan);
+  void InsertAndUpdateDisplayInfo(const DisplayInfo& new_info);
 
   // Creates a display object from the DisplayInfo for |display_id|.
   gfx::Display CreateDisplayFromDisplayInfoById(int64 display_id);
@@ -181,6 +187,13 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   // The mapping from the display ID to its internal data.
   std::map<int64, DisplayInfo> display_info_;
+
+  // When set to true, the host window's resize event updates
+  // the display's size. This is set to true when running on
+  // desktop environment (for debugging) so that resizing the host
+  // window wil update the display properly. This is set to false
+  // on device as well as during the unit tests.
+  bool change_display_upon_host_resize_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

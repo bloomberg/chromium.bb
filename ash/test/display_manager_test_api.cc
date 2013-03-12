@@ -89,5 +89,9 @@ int64 DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
   return gfx::Display::InternalDisplayId();
 }
 
+void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {
+  display_manager_->set_change_display_upon_host_resize(false);
+}
+
 }  // namespace test
 }  // namespace ash

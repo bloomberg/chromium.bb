@@ -848,9 +848,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 #endif
 
 #if !defined(NDEBUG)
-  // RotateScreen
-  EXPECT_TRUE(ProcessWithContext(
-      ui::Accelerator(ui::VKEY_HOME, ui::EF_CONTROL_DOWN)));
   // ToggleDesktopBackgroundMode
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)));

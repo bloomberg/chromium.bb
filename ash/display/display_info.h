@@ -25,14 +25,29 @@ namespace internal {
 // This class is intentionally made copiable.
 class ASH_EXPORT DisplayInfo {
  public:
+  // Screen Rotation in clock-wise degrees.
+  // TODO(oshima): move his to gfx::Display.
+  enum Rotation {
+    ROTATE_0 = 0,
+    ROTATE_90,
+    ROTATE_180,
+    ROTATE_270,
+  };
+
   // Creates a DisplayInfo from string spec. 100+200-1440x800 creates display
-  // whose size is 1440x800 at the location (100, 200) in screen's coordinates.
+  // whose size is 1440x800 at the location (100, 200) in host coordinates.
   // The location can be omitted and be just "1440x800", which creates
   // display at the origin of the screen. An empty string creates
   // the display with default size.
   //  The device scale factor can be specified by "*", like "1280x780*2",
   // or will use the value of |gfx::Display::GetForcedDeviceScaleFactor()| if
   // --force-device-scale-factor is specified.
+  // Additiona properties can be specified followed by "/". 'o' adds
+  // default overscan insets (5%). 'r','l','b' rotates the display 90
+  // (to 'r'ight), 180 ('u'pside-down) and 270 degrees (to 'l'eft) respectively.
+  // For example, "1280x780*2/ob" creates a display_info whose native resolution
+  // is 1280x780 with 2.0 scale factor, with default overscan insets, and
+  // is flipped upside-down.
   static DisplayInfo CreateFromSpec(const std::string& spec);
 
   // Creates a DisplayInfo from string spec using given |id|.
@@ -51,21 +66,23 @@ class ASH_EXPORT DisplayInfo {
   // True if the display has overscan.
   bool has_overscan() const { return has_overscan_; }
 
+  void set_rotation(Rotation rotation) { rotation_ = rotation; }
+  Rotation rotation() const { return rotation_; }
+
   // Gets/Sets the device scale factor of the display.
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
 
-  // The original bounds_in_pixel for the display.  This can be different from
-  // the |bounds_in_pixel| in case of overscan insets.
-  const gfx::Rect original_bounds_in_pixel() const {
-    return original_bounds_in_pixel_;
+  // The bounds_in_pixel for the display. The size of this can be different from
+  // the |size_in_pixel| in case of overscan insets.
+  const gfx::Rect bounds_in_pixel() const {
+    return bounds_in_pixel_;
   }
 
-  // The bounds for the display in pixels.
-  const gfx::Rect bounds_in_pixel() const { return bounds_in_pixel_; }
+  // The size for the display in pixels.
+  const gfx::Size& size_in_pixel() const { return size_in_pixel_; }
 
-  // The overscan insets for the display in DIP. The default value is
-  // (-1, -1, -1, -1), which indicates that no overscan should be applied.
+  // The overscan insets for the display in DIP.
   const gfx::Insets& overscan_insets_in_dip() const {
     return overscan_insets_in_dip_;
   }
@@ -74,29 +91,26 @@ class ASH_EXPORT DisplayInfo {
   // (|has_custom_overscan_insets_| and |custom_overscan_insets_in_dip_|).
   void CopyFromNative(const DisplayInfo& native_info);
 
-  // Set the |original_bounds_in_pixel| and |bounds_in_pixel| to
-  // given |bounds|.
+  // Update the |bounds_in_pixel_| and |size_in_pixel_| using
+  // given |bounds_in_pixel|.
   void SetBounds(const gfx::Rect& bounds_in_pixel);
 
-  // Sets the |bounds_in_pixel| and updates original bounds based on
-  // current overscan configuration.
-  void UpdateBounds(const gfx::Rect& bounds_in_pixel);
-
   // Update the |bounds_in_pixel| according to the current overscan
-  // settings.
-  // 1) If can_overscan is false, then |bounds_in_pixel| is equal to
-  //    |original_bounds_in_pixel|.
-  // 2) If this has custom overscan insets
+  // and rotation settings.
+  // 1) If this has custom overscan insets
   //    (i.e. |has_custom_overscan_insets_| is true), it simply applies
   //    the existing |overscan_insets_in_dip_|.
-  // 3) If this doesn't have custom overscan insets, then this updates
+  // 2) If this doesn't have custom overscan insets but the display claims
+  //    that it has overscan (|has_overscan_| is true), then updates
   //    |overscan_insets_in_dip_| to default value (5% of the display size)
   //    and apply the insets.
-  void UpdateOverscanInfo(bool can_overscan);
+  // 3) Otherwise, clear the overscan insets.
+  void UpdateDisplaySize();
 
   // Sets/Clears the overscan insets.
   void SetOverscanInsets(bool custom,
                          const gfx::Insets& insets_in_dip);
+  gfx::Insets GetOverscanInsetsInPixel() const;
   void clear_has_custom_overscan_insets() {
     has_custom_overscan_insets_ = false;
   }
@@ -114,9 +128,12 @@ class ASH_EXPORT DisplayInfo {
   int64 id_;
   std::string name_;
   bool has_overscan_;
+  Rotation rotation_;
   float device_scale_factor_;
-  gfx::Rect original_bounds_in_pixel_;
   gfx::Rect bounds_in_pixel_;
+  // The size of the display in use. The size can be different from the size
+  // of |bounds_in_pixel_| if the display has overscan insets and/or rotation.
+  gfx::Size size_in_pixel_;
   gfx::Insets overscan_insets_in_dip_;
 
   // True if the |overscan_insets_in_dip| is specified by a user. This

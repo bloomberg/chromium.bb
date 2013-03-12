@@ -77,6 +77,7 @@ const AcceleratorData kAcceleratorData[] = {
   // Extra shortcut to lock the screen on linux desktop.
   { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
+  { true, ui::VKEY_F3, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, ROTATE_SCREEN },
 #endif  // !defined(NDEBUG)
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_DIALOG },
   { true, ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
@@ -98,7 +99,8 @@ const AcceleratorData kAcceleratorData[] = {
     NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN, NEW_TAB },
-
+  { true, ui::VKEY_BROWSER_REFRESH,
+    ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, ROTATE_SCREEN },
   { true, ui::VKEY_BROWSER_REFRESH,
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     ROTATE_WINDOW },
@@ -164,7 +166,6 @@ const AcceleratorData kAcceleratorData[] = {
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
 const AcceleratorData kDebugAcceleratorData[] = {
-  { true, ui::VKEY_HOME, ui::EF_CONTROL_DOWN, ROTATE_SCREEN },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_DESKTOP_BACKGROUND_MODE },
   { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
@@ -223,12 +224,12 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
+  ROTATE_SCREEN,
   ROTATE_WINDOW,
 #if !defined(NDEBUG)
   PRINT_LAYER_HIERARCHY,
   PRINT_VIEW_HIERARCHY,
   PRINT_WINDOW_HIERARCHY,
-  ROTATE_SCREEN,
 #endif
 #if defined(OS_CHROMEOS) && !defined(NDEBUG)
   POWER_PRESSED,
@@ -289,6 +290,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
+  ROTATE_SCREEN,
   ROTATE_WINDOW,
   TOGGLE_MAXIMIZED,
   WINDOW_MINIMIZE,
@@ -316,6 +318,7 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   POWER_PRESSED,
   POWER_RELEASED,
   PREVIOUS_IME,
+  ROTATE_SCREEN,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TOGGLE_CAPS_LOCK,
@@ -329,7 +332,6 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   PRINT_LAYER_HIERARCHY,
   PRINT_VIEW_HIERARCHY,
   PRINT_WINDOW_HIERARCHY,
-  ROTATE_SCREEN,
 #endif
 };
 

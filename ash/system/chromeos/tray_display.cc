@@ -13,6 +13,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -57,7 +58,11 @@ class DisplayView : public ash::internal::ActionableView {
   virtual ~DisplayView() {}
 
   void Update() {
-    switch (Shell::GetInstance()->output_configurator()->output_state()) {
+    chromeos::OutputState state =
+        base::chromeos::IsRunningOnChromeOS() ?
+        Shell::GetInstance()->output_configurator()->output_state() :
+        InferOutputState();
+    switch (state) {
       case chromeos::STATE_INVALID:
       case chromeos::STATE_HEADLESS:
       case chromeos::STATE_SINGLE:
@@ -81,19 +86,30 @@ class DisplayView : public ash::internal::ActionableView {
     }
   }
 
+  chromeos::OutputState InferOutputState() const {
+    return Shell::GetScreen()->GetNumDisplays() == 1 ?
+        chromeos::STATE_SINGLE : chromeos::STATE_DUAL_EXTENDED;
+  }
+
  private:
   // Returns the name of the currently connected external display.
-  string16 GetExternalDisplayName() {
-#if defined(USE_X11)
+  string16 GetExternalDisplayName() const {
+    if (base::chromeos::IsRunningOnChromeOS())
+      return GetNativeExternalDisplayName();
+    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
+  }
+
+  string16 GetNativeExternalDisplayName() const {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     int64 internal_display_id = gfx::Display::InternalDisplayId();
     int64 primary_display_id =
-        gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+        Shell::GetScreen()->GetPrimaryDisplay().id();
 
     // Use xrandr features rather than DisplayManager to find out the external
     // display's name. DisplayManager's API doesn't work well in mirroring mode
     // since it's based on gfx::Display but in mirroring mode there's only one
     // gfx::Display instance which represents both displays.
+    // TODO(oshima): Use DisplayManager to get external display name.
     std::vector<XID> outputs;
     ui::GetOutputDeviceHandles(&outputs);
     for (size_t i = 0; i < outputs.size(); ++i) {
@@ -118,7 +134,6 @@ class DisplayView : public ash::internal::ActionableView {
         return UTF8ToUTF16(name);
       }
     }
-#endif
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
   }
 

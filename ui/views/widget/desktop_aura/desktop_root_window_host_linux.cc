@@ -20,6 +20,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/insets.h"
 #include "ui/linux_ui/linux_ui.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -722,6 +723,13 @@ void DesktopRootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
     root_window_host_delegate_->OnHostResized(bounds.size());
   else
     root_window_host_delegate_->OnHostPaint();
+}
+
+gfx::Insets DesktopRootWindowHostLinux::GetInsets() const {
+  return gfx::Insets();
+}
+
+void DesktopRootWindowHostLinux::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::Point DesktopRootWindowHostLinux::GetLocationOnNativeScreen() const {

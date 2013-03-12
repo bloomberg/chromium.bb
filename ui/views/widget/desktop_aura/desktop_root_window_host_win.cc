@@ -14,6 +14,7 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method_win.h"
 #include "ui/base/win/shell.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
 #include "ui/native_theme/native_theme_aura.h"
@@ -379,6 +380,13 @@ gfx::Rect DesktopRootWindowHostWin::GetBounds() const {
 
 void DesktopRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
   message_handler_->SetBounds(bounds);
+}
+
+gfx::Insets DesktopRootWindowHostWin::GetInsets() const {
+  return gfx::Insets();
+}
+
+void DesktopRootWindowHostWin::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::Point DesktopRootWindowHostWin::GetLocationOnNativeScreen() const {

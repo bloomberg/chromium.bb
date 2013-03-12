@@ -139,7 +139,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
 TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // Normal window bounds shouldn't be changed.
   gfx::Size work_area(
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size());
+      Shell::GetScreen()->GetPrimaryDisplay().work_area().size());
   const gfx::Rect window_bounds(
       100, 101, work_area.width() + 1, work_area.height() + 2);
   scoped_ptr<aura::Window> window(

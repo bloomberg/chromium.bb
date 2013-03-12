@@ -31,6 +31,9 @@ class DisplayManagerTestApi {
   // the internal display.
   int64 SetFirstDisplayAsInternalDisplay();
 
+  // Don't update the display when the root window's size was changed.
+  void DisableChangeDisplayUponHostResize();
+
  private:
   internal::DisplayManager* display_manager_;  // not owned
 

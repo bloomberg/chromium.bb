@@ -18,6 +18,7 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/view_prop.h"
+#include "ui/gfx/insets.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 
 namespace aura {
@@ -244,6 +245,13 @@ gfx::Rect RemoteRootWindowHostWin::GetBounds() const {
 
 void RemoteRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
   delegate_->OnHostResized(bounds.size());
+}
+
+gfx::Insets RemoteRootWindowHostWin::GetInsets() const {
+  return gfx::Insets();
+}
+
+void RemoteRootWindowHostWin::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::Point RemoteRootWindowHostWin::GetLocationOnNativeScreen() const {

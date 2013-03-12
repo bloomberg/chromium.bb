@@ -16,6 +16,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 
 using std::max;
@@ -144,6 +145,13 @@ void RootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
       GetDisplayNearestWindow(delegate_->AsRootWindow()).device_scale_factor();
   if (current_scale != new_scale)
     delegate_->OnHostResized(bounds.size());
+}
+
+gfx::Insets RootWindowHostWin::GetInsets() const {
+  return gfx::Insets();
+}
+
+void RootWindowHostWin::SetInsets(const gfx::Insets& insets) {
 }
 
 gfx::Point RootWindowHostWin::GetLocationOnNativeScreen() const {

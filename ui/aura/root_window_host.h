@@ -15,6 +15,7 @@
 class SkCanvas;
 
 namespace gfx {
+class Insets;
 class Point;
 class Rect;
 class Size;
@@ -59,6 +60,11 @@ class AURA_EXPORT RootWindowHost {
   // Gets/Sets the size of the RootWindowHost.
   virtual gfx::Rect GetBounds() const = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
+
+  // Sets/Gets the insets that specifies the effective root window area
+  // in the host window.
+  virtual gfx::Insets GetInsets() const = 0;
+  virtual void SetInsets(const gfx::Insets& insets) = 0;
 
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnNativeScreen() const = 0;

@@ -119,6 +119,7 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_move_hold_count_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)) {
   SetName("RootWindow");
+  host_->SetInsets(params.initial_insets);
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
@@ -154,8 +155,8 @@ void RootWindow::Init() {
                                 host_->GetBounds().size());
   Window::Init(ui::LAYER_NOT_DRAWN);
   compositor()->SetRootLayer(layer());
-  SetBounds(
-      ui::ConvertRectToDIP(layer(), gfx::Rect(host_->GetBounds().size())));
+  SetTransformInternal(gfx::Transform());
+  UpdateWindowSize(host_->GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(this);
   Show();
 }
@@ -197,8 +198,14 @@ gfx::Size RootWindow::GetHostSize() const {
 }
 
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
+  SetHostBoundsAndInsets(bounds_in_pixel, gfx::Insets());
+}
+
+void RootWindow::SetHostBoundsAndInsets(const gfx::Rect& bounds_in_pixel,
+                                        const gfx::Insets& insets_in_pixel) {
   DCHECK(!bounds_in_pixel.IsEmpty());
   DispatchHeldMouseMove();
+  host_->SetInsets(insets_in_pixel);
   host_->SetBounds(bounds_in_pixel);
   synthesize_mouse_move_ = false;
 }
@@ -443,12 +450,25 @@ const RootWindow* RootWindow::GetRootWindow() const {
 }
 
 void RootWindow::SetTransform(const gfx::Transform& transform) {
-  Window::SetTransform(transform);
+  SetTransformInternal(transform);
 
   // If the layer is not animating, then we need to update the host size
   // immediately.
   if (!layer()->GetAnimator()->is_animating())
     OnHostResized(host_->GetBounds().size());
+}
+
+void RootWindow::SetTransformInternal(const gfx::Transform& transform) {
+  gfx::Insets insets = host_->GetInsets();
+  if (insets.top() != 0 || insets.left() != 0) {
+    float device_scale_factor = GetDeviceScaleFactor();
+    gfx::Transform translate;
+    translate.Translate(insets.left() / device_scale_factor,
+                        insets.top() / device_scale_factor);
+    Window::SetTransform(translate * transform);
+  } else {
+    Window::SetTransform(transform);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -722,6 +742,17 @@ void RootWindow::CleanupGestureRecognizerState(Window* window) {
   }
 }
 
+void RootWindow::UpdateWindowSize(const gfx::Size& host_size) {
+  gfx::Rect bounds(host_size);
+  bounds.Inset(host_->GetInsets());
+  bounds = ui::ConvertRectToDIP(layer(), bounds);
+  gfx::RectF new_bounds(bounds);
+  layer()->transform().TransformRect(&new_bounds);
+  // Ignore the origin because RootWindow's insets are handled by
+  // the transform.
+  SetBounds(gfx::Rect(gfx::ToNearestRect(new_bounds).size()));
+}
+
 void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
   if (attached->IsVisible() &&
       attached->ContainsPointInRoot(GetLastMouseLocationInRoot()))
@@ -924,10 +955,8 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   // The layer, and all the observers should be notified of the
   // transformed size of the root window.
   gfx::Size old(bounds().size());
-  gfx::RectF bounds(ui::ConvertSizeToDIP(layer(), size));
-  layer()->transform().TransformRect(&bounds);
-  // The transform is expected to produce an integer rect as its output.
-  SetBounds(gfx::ToNearestRect(bounds));
+  UpdateWindowSize(size);
+  // TODO(oshima): Rename this to OnHostWindowResized.
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnRootWindowResized(this, old));
 }

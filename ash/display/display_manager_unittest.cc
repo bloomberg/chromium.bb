@@ -233,8 +233,15 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   EXPECT_EQ(display_info2.id(), changed_displays[0].id());
   EXPECT_EQ("0,0 500x500",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
-  EXPECT_EQ("12,514 378x376",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  DisplayInfo updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_EQ("0,501 400x400",
+            updated_display_info2.bounds_in_pixel().ToString());
+  EXPECT_EQ("378x376",
+            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("13,12,11,10",
+            updated_display_info2.overscan_insets_in_dip().ToString());
+  EXPECT_EQ("500,0 378x376",
+            ScreenAsh::GetSecondaryDisplay().bounds().ToString());
 
   // Make sure that SetOverscanInsets() is idempotent.
   display_manager()->SetOverscanInsets(display_info1.id(), gfx::Insets());
@@ -242,15 +249,22 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
       display_info2.id(), gfx::Insets(13, 12, 11, 10));
   EXPECT_EQ("0,0 500x500",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
-  EXPECT_EQ("12,514 378x376",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_EQ("0,501 400x400",
+            updated_display_info2.bounds_in_pixel().ToString());
+  EXPECT_EQ("378x376",
+            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("13,12,11,10",
+            updated_display_info2.overscan_insets_in_dip().ToString());
 
   display_manager()->SetOverscanInsets(
       display_info2.id(), gfx::Insets(10, 11, 12, 13));
   EXPECT_EQ("0,0 500x500",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
-  EXPECT_EQ("11,511 376x378",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  EXPECT_EQ("376x378",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
+  EXPECT_EQ("10,11,12,13",
+            GetDisplayInfoAt(1).overscan_insets_in_dip().ToString());
 
   // Recreate a new 2nd display. It won't apply the overscan inset because the
   // new display has a different ID.
@@ -270,8 +284,11 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ("1,1 500x500",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
-  EXPECT_EQ("11,511 376x378",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_EQ("376x378",
+            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("10,11,12,13",
+            updated_display_info2.overscan_insets_in_dip().ToString());
 
   // HiDPI but overscan display. The specified insets size should be doubled.
   UpdateDisplay("0+0-500x500,0+501-400x400*2");
@@ -279,19 +296,29 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
       display_manager()->GetDisplayAt(1)->id(), gfx::Insets(4, 5, 6, 7));
   EXPECT_EQ("0,0 500x500",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
-  EXPECT_EQ("10,509 376x380",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
-  EXPECT_EQ("188x190", display_manager()->GetDisplayAt(1)->size().ToString());
+  updated_display_info2 = GetDisplayInfoAt(1);
+  EXPECT_EQ("0,501 400x400",
+            updated_display_info2.bounds_in_pixel().ToString());
+  EXPECT_EQ("376x380",
+            updated_display_info2.size_in_pixel().ToString());
+  EXPECT_EQ("4,5,6,7",
+            updated_display_info2.overscan_insets_in_dip().ToString());
+  EXPECT_EQ("8,10,12,14",
+            updated_display_info2.GetOverscanInsetsInPixel().ToString());
 
   // Make sure switching primary display applies the overscan offset only once.
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
       ScreenAsh::GetSecondaryDisplay());
+  EXPECT_EQ("-500,0 500x500",
+            ScreenAsh::GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("0,0 500x500",
             GetDisplayInfo(ScreenAsh::GetSecondaryDisplay()).
             bounds_in_pixel().ToString());
-  EXPECT_EQ("10,509 376x380",
-            GetDisplayInfo(gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()).
+  EXPECT_EQ("0,501 400x400",
+            GetDisplayInfo(Shell::GetScreen()->GetPrimaryDisplay()).
             bounds_in_pixel().ToString());
+  EXPECT_EQ("0,0 188x190",
+            Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
 }
 
 TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
@@ -564,27 +591,50 @@ TEST_F(DisplayManagerTest, AutomaticOverscanInsets) {
   // SetDefaultOverscanInsets(&display_info_list[1]);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   // It has overscan insets, although SetOverscanInsets() isn't called.
-  EXPECT_EQ("11,211 380x380",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  EXPECT_EQ("380x380",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
 
   // If custom overscan insets is specified, the specified value is used.
   display_manager()->SetOverscanInsets(id, gfx::Insets(5, 6, 7, 8));
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("7,206 386x388",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  EXPECT_EQ("386x388",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
 
   // Do not overscan even though it has 'has_overscan' flag, if the custom
   // insets is empty.
   display_manager()->SetOverscanInsets(id, gfx::Insets());
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("1,201 400x400",
-            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  EXPECT_EQ("400x400",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
 
   // Clearing the custom overscan should set the bounds to
   // original.
   display_manager()->ClearCustomOverscanInsets(id);
-  EXPECT_EQ("11,211 380x380",
+  EXPECT_EQ("380x380",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
+}
+
+TEST_F(DisplayManagerTest, Rotate) {
+  UpdateDisplay("100x200/r,300x400/l");
+  EXPECT_EQ("1,1 100x200",
+            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+  EXPECT_EQ("200x100",
+            GetDisplayInfoAt(0).size_in_pixel().ToString());
+
+  EXPECT_EQ("1,201 300x400",
             GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  EXPECT_EQ("400x300",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
+  UpdateDisplay("100x200/b,300x400");
+  EXPECT_EQ("1,1 100x200",
+            GetDisplayInfoAt(0).bounds_in_pixel().ToString());
+  EXPECT_EQ("100x200",
+            GetDisplayInfoAt(0).size_in_pixel().ToString());
+
+  EXPECT_EQ("1,201 300x400",
+            GetDisplayInfoAt(1).bounds_in_pixel().ToString());
+  EXPECT_EQ("300x400",
+            GetDisplayInfoAt(1).size_in_pixel().ToString());
 }
 
 }  // namespace internal

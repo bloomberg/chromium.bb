@@ -24,6 +24,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
@@ -62,11 +63,13 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public aura::RootWindowHostDelegate {
  public:
   struct AURA_EXPORT CreateParams {
-    // CreateParams with initial_bounds and default host.
+    // CreateParams with initial_bounds and default host in pixel.
     explicit CreateParams(const gfx::Rect& initial_bounds);
     ~CreateParams() {}
 
     gfx::Rect initial_bounds;
+
+    gfx::Insets initial_insets;
 
     // A host to use in place of the default one that RootWindow will create.
     // NULL by default.
@@ -98,12 +101,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   RootWindowHostDelegate* AsRootWindowHostDelegate();
 
-  // Sets the size of the root window.
+  // Gets/sets the size of the host window.
   void SetHostSize(const gfx::Size& size_in_pixel);
   gfx::Size GetHostSize() const;
 
-  // Sets the bounds of the host window.
-  void SetHostBounds(const gfx::Rect& size_in_pixel);
+  // Sets the bounds and insets of the host window.
+  void SetHostBounds(const gfx::Rect& size_in_pizel);
+  void SetHostBoundsAndInsets(const gfx::Rect& bounds_in_pixel,
+                              const gfx::Insets& insets_in_pixel);
 
   // Returns where the RootWindow is on screen.
   gfx::Point GetHostOrigin() const;
@@ -315,6 +320,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Cleans up the gesture recognizer for all windows in |window| (including
   // |window| itself).
   void CleanupGestureRecognizerState(Window* window);
+
+  // Updates the root window's size using |host_size|, current
+  // transform and insets.
+  void UpdateWindowSize(const gfx::Size& host_size);
+
+  void SetTransformInternal(const gfx::Transform& transform);
 
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
