@@ -59,7 +59,7 @@ class GLRendererPixelTest : public testing::Test {
     output_surface_.reset(new OutputSurface(
         context3d.PassAs<WebKit::WebGraphicsContext3D>()));
     resource_provider_ = ResourceProvider::Create(output_surface_.get());
-    renderer_ = GLRenderer::create(&fake_client_,
+    renderer_ = GLRenderer::Create(&fake_client_,
                                    output_surface_.get(),
                                    resource_provider_.get());
   }

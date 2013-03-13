@@ -2740,7 +2740,7 @@ static void setupLayersForTextureCaching(LayerTreeHostImpl* layerTreeHostImpl, L
 
 class GLRendererWithReleaseTextures : public GLRenderer {
 public:
-    using GLRenderer::releaseRenderPassTextures;
+    using GLRenderer::ReleaseRenderPassTextures;
 };
 
 TEST_F(LayerTreeHostImplTest, textureCachingWithOcclusion)
@@ -3446,7 +3446,7 @@ TEST_F(LayerTreeHostImplTest, surfaceTextureCaching)
 
     // Change opacity again, and evict the cached surface texture.
     surfaceLayerPtr->SetOpacity(0.5f);
-    static_cast<GLRendererWithReleaseTextures*>(myHostImpl->renderer())->releaseRenderPassTextures();
+    static_cast<GLRendererWithReleaseTextures*>(myHostImpl->renderer())->ReleaseRenderPassTextures();
 
     // Change opacity and draw
     surfaceLayerPtr->SetOpacity(0.6f);
@@ -3610,7 +3610,7 @@ TEST_F(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 
     // Change opacity again, and evict the cached surface texture.
     surfaceLayerPtr->SetOpacity(0.5f);
-    static_cast<GLRendererWithReleaseTextures*>(myHostImpl->renderer())->releaseRenderPassTextures();
+    static_cast<GLRendererWithReleaseTextures*>(myHostImpl->renderer())->ReleaseRenderPassTextures();
 
     // Change opacity and draw
     surfaceLayerPtr->SetOpacity(0.6f);
@@ -3713,7 +3713,7 @@ public:
     static scoped_ptr<TestRenderer> Create(ResourceProvider* resourceProvider, OutputSurface* outputSurface, Proxy* proxy)
     {
         scoped_ptr<TestRenderer> renderer(new TestRenderer(resourceProvider, outputSurface, proxy));
-        if (!renderer->initialize())
+        if (!renderer->Initialize())
             return scoped_ptr<TestRenderer>();
 
         return renderer.Pass();

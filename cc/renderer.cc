@@ -7,11 +7,11 @@
 namespace cc {
 
 bool Renderer::HaveCachedResourcesForRenderPassId(RenderPass::Id id) const {
-    return false;
+  return false;
 }
 
 bool Renderer::IsContextLost() {
-    return false;
+  return false;
 }
 
 }  // namespace cc

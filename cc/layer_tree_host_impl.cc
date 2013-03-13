@@ -1089,7 +1089,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     if (outputSurface->capabilities().has_parent_compositor)
         m_renderer = DelegatingRenderer::Create(this, outputSurface.get(), resourceProvider.get());
     else if (outputSurface->context3d())
-        m_renderer = GLRenderer::create(this, outputSurface.get(), resourceProvider.get());
+        m_renderer = GLRenderer::Create(this, outputSurface.get(), resourceProvider.get());
     else if (outputSurface->software_device())
         m_renderer = SoftwareRenderer::Create(this, outputSurface.get(), resourceProvider.get());
     if (!m_renderer)

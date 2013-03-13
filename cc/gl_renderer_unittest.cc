@@ -116,8 +116,8 @@ public:
     // GLRenderer methods.
 
     // Changing visibility to public.
-    using GLRenderer::initialize;
-    using GLRenderer::isBackbufferDiscarded;
+    using GLRenderer::Initialize;
+    using GLRenderer::IsBackbufferDiscarded;
     using GLRenderer::DoDrawQuad;
     using GLRenderer::BeginDrawingFrame;
     using GLRenderer::FinishDrawingQuadList;
@@ -136,7 +136,7 @@ protected:
 
     virtual void SetUp()
     {
-        m_renderer.initialize();
+        m_renderer.Initialize();
     }
 
     void SwapBuffers()
@@ -162,7 +162,7 @@ TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
 {
     context()->setMemoryAllocation(m_suggestHaveBackbufferYes);
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
+    EXPECT_FALSE(m_renderer.IsBackbufferDiscarded());
 
     SwapBuffers();
     EXPECT_EQ(1, context()->frameCount());
@@ -176,7 +176,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLa
     m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
+    EXPECT_TRUE(m_renderer.IsBackbufferDiscarded());
 }
 
 // Test GLRenderer discardBackbuffer functionality:
@@ -187,7 +187,7 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
     m_renderer.SetVisible(true);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
+    EXPECT_FALSE(m_renderer.IsBackbufferDiscarded());
 }
 
 
@@ -199,11 +199,11 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
     m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
+    EXPECT_TRUE(m_renderer.IsBackbufferDiscarded());
 
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
-    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
+    EXPECT_TRUE(m_renderer.IsBackbufferDiscarded());
 }
 
 // Test GLRenderer discardBackbuffer functionality:
@@ -213,12 +213,12 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration)
 {
     m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
-    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
+    EXPECT_TRUE(m_renderer.IsBackbufferDiscarded());
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     m_renderer.SetVisible(true);
     m_renderer.DrawFrame(m_mockClient.renderPassesInDrawOrder());
-    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
+    EXPECT_FALSE(m_renderer.IsBackbufferDiscarded());
 
     SwapBuffers();
     EXPECT_EQ(1, context()->frameCount());
@@ -228,15 +228,15 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
 {
     m_renderer.SetVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
-    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
+    EXPECT_TRUE(m_renderer.IsBackbufferDiscarded());
     EXPECT_EQ(1, m_mockClient.setFullRootLayerDamageCount());
 
     char pixels[4];
     m_renderer.DrawFrame(m_mockClient.renderPassesInDrawOrder());
-    EXPECT_FALSE(m_renderer.isBackbufferDiscarded());
+    EXPECT_FALSE(m_renderer.IsBackbufferDiscarded());
 
     m_renderer.GetFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
-    EXPECT_TRUE(m_renderer.isBackbufferDiscarded());
+    EXPECT_TRUE(m_renderer.IsBackbufferDiscarded());
     EXPECT_EQ(2, m_mockClient.setFullRootLayerDamageCount());
 }
 
@@ -314,7 +314,7 @@ TEST(GLRendererTest2, initializationDoesNotMakeSynchronousCalls)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
 }
 
 class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
@@ -357,7 +357,7 @@ TEST(GLRendererTest2, initializationWithQuicklyLostContextDoesNotAssert)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
-    renderer.initialize();
+    renderer.Initialize();
 }
 
 class ContextThatDoesNotSupportMemoryManagmentExtensions : public TestWebGraphicsContext3D {
@@ -379,7 +379,7 @@ TEST(GLRendererTest2, initializationWithoutGpuMemoryManagerExtensionSupportShoul
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
-    renderer.initialize();
+    renderer.Initialize();
 
     EXPECT_GT(mockClient.memoryAllocationLimitBytes(), 0ul);
 }
@@ -409,7 +409,7 @@ TEST(GLRendererTest2, opaqueBackground)
 
     mockClient.root_render_pass()->has_transparent_background = false;
 
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
 
     renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
 
@@ -432,7 +432,7 @@ TEST(GLRendererTest2, transparentBackground)
 
     mockClient.root_render_pass()->has_transparent_background = true;
 
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
 
     renderer.DrawFrame(mockClient.renderPassesInDrawOrder());
 
@@ -481,7 +481,7 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
 
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
 
     bool lastCallWasSetVisiblity = false;
     // Ensure that the call to setVisibilityCHROMIUM is the last call issue to the GPU
@@ -535,7 +535,7 @@ TEST(GLRendererTest2, activeTextureState)
 
     // During initialization we are allowed to set any texture parameters.
     EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
 
     cc::RenderPass::Id id(1, 1);
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
@@ -599,7 +599,7 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     NoClearRootRenderPassMockContext* mockContext = static_cast<NoClearRootRenderPassMockContext*>(outputSurface->context3d());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
 
     gfx::Rect viewportRect(mockClient.DeviceViewportSize());
     ScopedPtrVector<RenderPass>& renderPasses = mockClient.renderPassesInDrawOrder();
@@ -668,7 +668,7 @@ TEST(GLRendererTest2, scissorTestWhenClearing) {
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ScissorTestOnClearCheckingContext)));
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
-    EXPECT_TRUE(renderer.initialize());
+    EXPECT_TRUE(renderer.Initialize());
     EXPECT_FALSE(renderer.Capabilities().usingPartialSwap);
 
     gfx::Rect viewportRect(mockClient.DeviceViewportSize());
@@ -742,7 +742,7 @@ protected:
 
     virtual void SetUp()
     {
-        EXPECT_TRUE(m_renderer.initialize());
+        EXPECT_TRUE(m_renderer.Initialize());
     }
 
     void SwapBuffers()
