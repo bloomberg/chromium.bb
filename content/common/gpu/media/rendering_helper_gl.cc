@@ -445,6 +445,14 @@ void RenderingHelperGL::CreateTexture(int window_id,
 
 void RenderingHelperGL::RenderTexture(uint32 texture_id) {
   CHECK_EQ(MessageLoop::current(), message_loop_);
+  size_t window_id = texture_id_to_surface_index_[texture_id];
+  MakeCurrent(window_id);
+  int dimensions_id = window_id % dimensions_.size();
+  int width = dimensions_[dimensions_id].width();
+  int height = dimensions_[dimensions_id].height();
+  glViewport(0, 0, width, height);
+  glScissor(0, 0, width, height);
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -452,8 +460,6 @@ void RenderingHelperGL::RenderTexture(uint32 texture_id) {
   if (suppress_swap_to_display_)
     return;
 
-  int window_id = texture_id_to_surface_index_[texture_id];
-  MakeCurrent(window_id);
 #if GL_VARIANT_GLX
   glXSwapBuffers(x_display_, x_windows_[window_id]);
 #else  // EGL
