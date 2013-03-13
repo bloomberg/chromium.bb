@@ -17,13 +17,13 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings, Proxy* proxy);
   virtual ~FakeLayerTreeHostImpl();
 
-  void forcePrepareToDraw() {
-    LayerTreeHostImpl::FrameData frameData;
-    prepareToDraw(frameData);
-    didDrawAllLayers(frameData);
+  void ForcePrepareToDraw() {
+    LayerTreeHostImpl::FrameData frame_data;
+    PrepareToDraw(&frame_data);
+    DidDrawAllLayers(frame_data);
   }
 
-  using LayerTreeHostImpl::activatePendingTree;
+  using LayerTreeHostImpl::ActivatePendingTree;
 
  private:
   FakeLayerTreeHostImplClient client_;

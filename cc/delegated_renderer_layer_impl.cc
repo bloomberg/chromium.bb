@@ -211,7 +211,7 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
     // Don't clash with the RenderPass we generate if we own a RenderSurface.
     DCHECK(output_render_pass_id.index > 0);
 
-    render_pass_sink->appendRenderPass(
+    render_pass_sink->AppendRenderPass(
         render_passes_in_draw_order_[i]->Copy(output_render_pass_id));
   }
 }

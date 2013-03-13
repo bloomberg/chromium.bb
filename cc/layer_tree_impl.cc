@@ -60,7 +60,7 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   root_scroll_layer_ = NULL;
   currently_scrolling_layer_ = NULL;
 
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::FindRootScrollLayer() {
@@ -113,7 +113,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   if (hud_layer())
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
         LayerTreeHostCommon::findLayerInSubtree(
-            target_tree->RootLayer(), hud_layer()->id())));
+            target_tree->root_layer(), hud_layer()->id())));
   else
     target_tree->set_hud_layer(NULL);
 }
@@ -159,7 +159,7 @@ void LayerTreeImpl::SetPageScaleDelta(float delta)
   page_scale_delta_ = delta;
 
   if (IsActiveTree()) {
-    LayerTreeImpl* pending_tree = layer_tree_host_impl_->pendingTree();
+    LayerTreeImpl* pending_tree = layer_tree_host_impl_->pending_tree();
     if (pending_tree) {
       DCHECK_EQ(1, pending_tree->sent_page_scale_delta());
       pending_tree->SetPageScaleDelta(page_scale_delta_ / sent_page_scale_delta_);
@@ -217,9 +217,9 @@ struct UpdateTilePrioritiesForLayer {
 
 void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
   if (!needs_update_draw_properties_) {
-    if (reason == UPDATE_ACTIVE_TREE_FOR_DRAW && RootLayer())
+    if (reason == UPDATE_ACTIVE_TREE_FOR_DRAW && root_layer())
       LayerTreeHostCommon::callFunctionForSubtree<UpdateTilePrioritiesForLayer>(
-          RootLayer());
+          root_layer());
     return;
   }
 
@@ -230,7 +230,7 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
   if (!layer_tree_host_impl_->renderer())
       return;
 
-  if (!RootLayer())
+  if (!root_layer())
     return;
 
   if (root_scroll_layer_) {
@@ -240,12 +240,15 @@ void LayerTreeImpl::UpdateDrawProperties(UpdateDrawPropertiesReason reason) {
   }
 
   {
-    TRACE_EVENT1("cc", "LayerTreeImpl::UpdateDrawProperties", "IsActive", IsActiveTree());
+    TRACE_EVENT1("cc",
+                 "LayerTreeImpl::UpdateDrawProperties",
+                 "IsActive",
+                 IsActiveTree());
     bool update_tile_priorities =
         reason == UPDATE_PENDING_TREE ||
         reason == UPDATE_ACTIVE_TREE_FOR_DRAW;
     LayerTreeHostCommon::calculateDrawProperties(
-        RootLayer(),
+        root_layer(),
         device_viewport_size(),
         device_scale_factor(),
         total_page_scale_factor(),
@@ -268,7 +271,7 @@ static void ClearRenderSurfacesOnLayerImplRecursive(LayerImpl* current)
 }
 
 void LayerTreeImpl::ClearRenderSurfaces() {
-  ClearRenderSurfacesOnLayerImplRecursive(RootLayer());
+  ClearRenderSurfacesOnLayerImplRecursive(root_layer());
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
 }
@@ -320,7 +323,7 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pendingTree) {
   int id = currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
   pendingTree->set_currently_scrolling_layer(
-      LayerTreeHostCommon::findLayerInSubtree(pendingTree->RootLayer(), id));
+      LayerTreeHostCommon::findLayerInSubtree(pendingTree->root_layer(), id));
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {
@@ -330,8 +333,8 @@ static void DidBecomeActiveRecursive(LayerImpl* layer) {
 }
 
 void LayerTreeImpl::DidBecomeActive() {
-  if (RootLayer())
-    DidBecomeActiveRecursive(RootLayer());
+  if (root_layer())
+    DidBecomeActiveRecursive(root_layer());
   FindRootScrollLayer();
   UpdateMaxScrollOffset();
 }
@@ -342,12 +345,12 @@ bool LayerTreeImpl::ContentsTexturesPurged() const {
 
 void LayerTreeImpl::SetContentsTexturesPurged() {
   contents_textures_purged_ = true;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::ResetContentsTexturesPurged() {
   contents_textures_purged_ = false;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 bool LayerTreeImpl::ViewportSizeInvalid() const {
@@ -356,12 +359,12 @@ bool LayerTreeImpl::ViewportSizeInvalid() const {
 
 void LayerTreeImpl::SetViewportSizeInvalid() {
   viewport_size_invalid_ = true;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::ResetViewportSizeInvalid() {
   viewport_size_invalid_ = false;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 Proxy* LayerTreeImpl::proxy() const {
@@ -369,73 +372,73 @@ Proxy* LayerTreeImpl::proxy() const {
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {
-  return layer_tree_host_impl_->Settings();
+  return layer_tree_host_impl_->settings();
 }
 
 const RendererCapabilities& LayerTreeImpl::rendererCapabilities() const {
-  return layer_tree_host_impl_->rendererCapabilities();
+  return layer_tree_host_impl_->GetRendererCapabilities();
 }
 
 OutputSurface* LayerTreeImpl::output_surface() const {
-  return layer_tree_host_impl_->outputSurface();
+  return layer_tree_host_impl_->output_surface();
 }
 
 ResourceProvider* LayerTreeImpl::resource_provider() const {
-  return layer_tree_host_impl_->resourceProvider();
+  return layer_tree_host_impl_->resource_provider();
 }
 
 TileManager* LayerTreeImpl::tile_manager() const {
-  return layer_tree_host_impl_->tileManager();
+  return layer_tree_host_impl_->tile_manager();
 }
 
 FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
-  return layer_tree_host_impl_->fpsCounter();
+  return layer_tree_host_impl_->fps_counter();
 }
 
 PaintTimeCounter* LayerTreeImpl::paint_time_counter() const {
-  return layer_tree_host_impl_->paintTimeCounter();
+  return layer_tree_host_impl_->paint_time_counter();
 }
 
 MemoryHistory* LayerTreeImpl::memory_history() const {
-  return layer_tree_host_impl_->memoryHistory();
+  return layer_tree_host_impl_->memory_history();
 }
 
 bool LayerTreeImpl::IsActiveTree() const {
-  return layer_tree_host_impl_->activeTree() == this;
+  return layer_tree_host_impl_->active_tree() == this;
 }
 
 bool LayerTreeImpl::IsPendingTree() const {
-  return layer_tree_host_impl_->pendingTree() == this;
+  return layer_tree_host_impl_->pending_tree() == this;
 }
 
 bool LayerTreeImpl::IsRecycleTree() const {
-  return layer_tree_host_impl_->recycleTree() == this;
+  return layer_tree_host_impl_->recycle_tree() == this;
 }
 
 LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
-  LayerTreeImpl* tree = layer_tree_host_impl_->activeTree();
+  LayerTreeImpl* tree = layer_tree_host_impl_->active_tree();
   if (!tree)
     return NULL;
   return tree->LayerById(id);
 }
 
 LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
-  LayerTreeImpl* tree = layer_tree_host_impl_->pendingTree();
+  LayerTreeImpl* tree = layer_tree_host_impl_->pending_tree();
   if (!tree)
     return NULL;
   return tree->LayerById(id);
 }
 
 int LayerTreeImpl::MaxTextureSize() const {
-  return layer_tree_host_impl_->rendererCapabilities().max_texture_size;
+  return layer_tree_host_impl_->GetRendererCapabilities().max_texture_size;
 }
 
 bool LayerTreeImpl::PinchGestureActive() const {
-  return layer_tree_host_impl_->pinchGestureActive();
+  return layer_tree_host_impl_->pinch_gesture_active();
 }
 
 base::TimeTicks LayerTreeImpl::CurrentFrameTime() const {
-  return layer_tree_host_impl_->currentFrameTime();
+  return layer_tree_host_impl_->CurrentFrameTime();
 }
 
 void LayerTreeImpl::SetNeedsRedraw() {
@@ -443,31 +446,31 @@ void LayerTreeImpl::SetNeedsRedraw() {
 }
 
 const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
-  return layer_tree_host_impl_->debugState();
+  return layer_tree_host_impl_->debug_state();
 }
 
 float LayerTreeImpl::device_scale_factor() const {
-  return layer_tree_host_impl_->deviceScaleFactor();
+  return layer_tree_host_impl_->device_scale_factor();
 }
 
 gfx::Size LayerTreeImpl::device_viewport_size() const {
-  return layer_tree_host_impl_->DeviceViewportSize();
+  return layer_tree_host_impl_->device_viewport_size();
 }
 
-const gfx::Size& LayerTreeImpl::layout_viewport_size() const {
-  return layer_tree_host_impl_->layoutViewportSize();
+gfx::Size LayerTreeImpl::layout_viewport_size() const {
+  return layer_tree_host_impl_->layout_viewport_size();
 }
 
 std::string LayerTreeImpl::layer_tree_as_text() const {
-  return layer_tree_host_impl_->layerTreeAsText();
+  return layer_tree_host_impl_->LayerTreeAsText();
 }
 
 DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
-  return layer_tree_host_impl_->debugRectHistory();
+  return layer_tree_host_impl_->debug_rect_history();
 }
 
 AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
-  return layer_tree_host_impl_->animationRegistrar();
+  return layer_tree_host_impl_->animation_registrar();
 }
 
 scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {

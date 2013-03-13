@@ -38,7 +38,7 @@ TestHooks::TestHooks()
 
 TestHooks::~TestHooks() { }
 
-bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool)
+bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*, LayerTreeHostImpl::FrameData*, bool)
 {
     return true;
 }
@@ -68,76 +68,76 @@ scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testH
     return make_scoped_ptr(new MockLayerTreeHostImpl(testHooks, settings, client, proxy));
 }
 
-void MockLayerTreeHostImpl::beginCommit()
+void MockLayerTreeHostImpl::BeginCommit()
 {
-    LayerTreeHostImpl::beginCommit();
+    LayerTreeHostImpl::BeginCommit();
     m_testHooks->beginCommitOnThread(this);
 }
 
-void MockLayerTreeHostImpl::commitComplete()
+void MockLayerTreeHostImpl::CommitComplete()
 {
-    LayerTreeHostImpl::commitComplete();
+    LayerTreeHostImpl::CommitComplete();
     m_testHooks->commitCompleteOnThread(this);
 
-    if (!Settings().implSidePainting)
+    if (!settings().implSidePainting)
         m_testHooks->treeActivatedOnThread(this);
 
 }
 
-bool MockLayerTreeHostImpl::prepareToDraw(FrameData& frame)
+bool MockLayerTreeHostImpl::PrepareToDraw(FrameData* frame)
 {
-    bool result = LayerTreeHostImpl::prepareToDraw(frame);
+    bool result = LayerTreeHostImpl::PrepareToDraw(frame);
     if (!m_testHooks->prepareToDrawOnThread(this, frame, result))
         result = false;
     return result;
 }
 
-void MockLayerTreeHostImpl::drawLayers(FrameData& frame)
+void MockLayerTreeHostImpl::DrawLayers(FrameData* frame)
 {
-    LayerTreeHostImpl::drawLayers(frame);
+    LayerTreeHostImpl::DrawLayers(frame);
     m_testHooks->drawLayersOnThread(this);
 }
 
-bool MockLayerTreeHostImpl::activatePendingTreeIfNeeded()
+bool MockLayerTreeHostImpl::ActivatePendingTreeIfNeeded()
 {
-    if (!pendingTree())
+    if (!pending_tree())
         return false;
 
     if (!m_testHooks->canActivatePendingTree())
         return false;
 
-    bool activated = LayerTreeHostImpl::activatePendingTreeIfNeeded();
+    bool activated = LayerTreeHostImpl::ActivatePendingTreeIfNeeded();
     if (activated)
         m_testHooks->treeActivatedOnThread(this);
     return activated;
 }
 
-bool MockLayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurface)
+bool MockLayerTreeHostImpl::InitializeRenderer(scoped_ptr<OutputSurface> outputSurface)
 {
-    bool success = LayerTreeHostImpl::initializeRenderer(outputSurface.Pass());
+    bool success = LayerTreeHostImpl::InitializeRenderer(outputSurface.Pass());
     m_testHooks->initializedRendererOnThread(this, success);
     return success;
 }
 
-void MockLayerTreeHostImpl::setVisible(bool visible)
+void MockLayerTreeHostImpl::SetVisible(bool visible)
 {
-    LayerTreeHostImpl::setVisible(visible);
+    LayerTreeHostImpl::SetVisible(visible);
     m_testHooks->didSetVisibleOnImplTree(this, visible);
 }
 
-void MockLayerTreeHostImpl::animateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)
+void MockLayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonicTime, base::Time wallClockTime)
 {
     m_testHooks->willAnimateLayers(this, monotonicTime);
-    LayerTreeHostImpl::animateLayers(monotonicTime, wallClockTime);
+    LayerTreeHostImpl::AnimateLayers(monotonicTime, wallClockTime);
     m_testHooks->animateLayers(this, monotonicTime);
 }
 
-void MockLayerTreeHostImpl::updateAnimationState()
+void MockLayerTreeHostImpl::UpdateAnimationState()
 {
-    LayerTreeHostImpl::updateAnimationState();
+    LayerTreeHostImpl::UpdateAnimationState();
     bool hasUnfinishedAnimation = false;
-    AnimationRegistrar::AnimationControllerMap::const_iterator iter = activeAnimationControllers().begin();
-    for (; iter != activeAnimationControllers().end(); ++iter) {
+    AnimationRegistrar::AnimationControllerMap::const_iterator iter = active_animation_controllers().begin();
+    for (; iter != active_animation_controllers().end(); ++iter) {
         if (iter->second->HasActiveAnimation()) {
             hasUnfinishedAnimation = true;
             break;
@@ -146,7 +146,7 @@ void MockLayerTreeHostImpl::updateAnimationState()
     m_testHooks->updateAnimationState(this, hasUnfinishedAnimation);
 }
 
-base::TimeDelta MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const
+base::TimeDelta MockLayerTreeHostImpl::LowFrequencyAnimationInterval() const
 {
     return base::TimeDelta::FromMilliseconds(16);
 }

@@ -20,9 +20,9 @@ class WebToCCInputHandlerAdapter : public cc::InputHandler {
   virtual ~WebToCCInputHandlerAdapter();
 
   // cc::InputHandler implementation.
-  virtual void bindToClient(cc::InputHandlerClient*) OVERRIDE;
-  virtual void animate(base::TimeTicks time) OVERRIDE;
-  virtual void mainThreadHasStoppedFlinging() OVERRIDE;
+  virtual void BindToClient(cc::InputHandlerClient*) OVERRIDE;
+  virtual void Animate(base::TimeTicks time) OVERRIDE;
+  virtual void MainThreadHasStoppedFlinging() OVERRIDE;
 
  private:
   explicit WebToCCInputHandlerAdapter(scoped_ptr<WebInputHandler>);

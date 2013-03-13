@@ -191,7 +191,7 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
                content_rect_,
                damage_tracker_->current_damage_rect(),
                screen_space_transform_);
-  pass_sink->appendRenderPass(pass.Pass());
+  pass_sink->AppendRenderPass(pass.Pass());
 }
 
 void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,

@@ -185,7 +185,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws :
 
   virtual bool prepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData& frame,
+      LayerTreeHostImpl::FrameData* frame,
       bool result) OVERRIDE {
     return false;
   }
@@ -271,7 +271,7 @@ public:
     EXPECT_FLOAT_EQ(linearly_interpolated_opacity, curve->GetValue(time));
 
     LayerAnimationController* controller_impl =
-        host_impl->rootLayer()->layer_animation_controller();
+        host_impl->RootLayer()->layer_animation_controller();
     Animation* animation_impl =
         controller_impl->GetAnimation(0, Animation::Opacity);
 
@@ -316,7 +316,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes :
       LayerTreeHostImpl* impl_host,
       bool hasUnfinishedAnimation) OVERRIDE {
     LayerAnimationController* controller =
-        impl_host->rootLayer()->layer_animation_controller();
+        impl_host->RootLayer()->layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(0, Animation::Opacity);
     if (!animation)

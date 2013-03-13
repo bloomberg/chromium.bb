@@ -39,7 +39,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.active_tree(), 1);
     owningLayer->CreateRenderSurface();
     ASSERT_TRUE(owningLayer->render_surface());
     RenderSurfaceImpl* renderSurface = owningLayer->render_surface();
@@ -59,7 +59,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->SetContentRect(testRect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::Create(hostImpl.activeTree(), 2);
+    scoped_ptr<LayerImpl> dummyMask = LayerImpl::Create(hostImpl.active_tree(), 2);
     gfx::Transform dummyMatrix;
     dummyMatrix.Translate(1.0, 2.0);
 
@@ -75,9 +75,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.active_tree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.activeTree(), 2);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.active_tree(), 2);
     owningLayer->CreateRenderSurface();
     ASSERT_TRUE(owningLayer->render_surface());
     owningLayer->draw_properties().render_target = owningLayer.get();
@@ -115,7 +115,7 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
 class TestRenderPassSink : public RenderPassSink {
 public:
-    virtual void appendRenderPass(scoped_ptr<RenderPass> renderPass) OVERRIDE { m_renderPasses.push_back(renderPass.Pass()); }
+    virtual void AppendRenderPass(scoped_ptr<RenderPass> renderPass) OVERRIDE { m_renderPasses.push_back(renderPass.Pass()); }
 
     const ScopedPtrVector<RenderPass>& renderPasses() const { return m_renderPasses; }
 
@@ -127,9 +127,9 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 {
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> rootLayer = LayerImpl::Create(hostImpl.active_tree(), 1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.activeTree(), 2);
+    scoped_ptr<LayerImpl> owningLayer = LayerImpl::Create(hostImpl.active_tree(), 2);
     owningLayer->CreateRenderSurface();
     ASSERT_TRUE(owningLayer->render_surface());
     owningLayer->draw_properties().render_target = owningLayer.get();

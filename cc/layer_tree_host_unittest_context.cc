@@ -148,8 +148,9 @@ class LayerTreeHostContextTest : public ThreadedTest {
     return offscreen_contexts_compositor_thread_;
   }
 
-  virtual bool prepareToDrawOnThread(
-      LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool result)
+  virtual bool prepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame,
+                                     bool result)
       OVERRIDE {
     EXPECT_TRUE(result);
     if (!times_to_lose_during_draw_)
@@ -423,14 +424,14 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
 
   virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     FakeContentLayerImpl* content_impl = static_cast<FakeContentLayerImpl*>(
-        host_impl->rootLayer()->children()[0]);
+        host_impl->active_tree()->root_layer()->children()[0]);
     // Even though the context was lost, we should have a resource. The
     // TestWebGraphicsContext3D ensures that this resource is created with
     // the active context.
     EXPECT_TRUE(content_impl->HaveResourceForTileAt(0, 0));
 
     cc::ContextProvider* contexts =
-        host_impl->resourceProvider()->offscreen_context_provider();
+        host_impl->resource_provider()->offscreen_context_provider();
     if (use_surface_) {
       EXPECT_TRUE(contexts->Context3d());
       // TODO(danakj): Make a fake GrContext.
@@ -519,7 +520,7 @@ class LayerTreeHostContextTestOffscreenContextFails
 
   virtual void drawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     cc::ContextProvider* contexts =
-        host_impl->resourceProvider()->offscreen_context_provider();
+        host_impl->resource_provider()->offscreen_context_provider();
     EXPECT_FALSE(contexts);
     endTest();
   }
@@ -558,16 +559,16 @@ class LayerTreeHostContextTestLostContextFails :
     ++num_commits_;
     if (num_commits_ == 1) {
       // When the context is ok, we should have these things.
-      EXPECT_TRUE(host_impl->outputSurface());
+      EXPECT_TRUE(host_impl->output_surface());
       EXPECT_TRUE(host_impl->renderer());
-      EXPECT_TRUE(host_impl->resourceProvider());
+      EXPECT_TRUE(host_impl->resource_provider());
       return;
     }
 
     // When context recreation fails we shouldn't be left with any of them.
-    EXPECT_FALSE(host_impl->outputSurface());
+    EXPECT_FALSE(host_impl->output_surface());
     EXPECT_FALSE(host_impl->renderer());
-    EXPECT_FALSE(host_impl->resourceProvider());
+    EXPECT_FALSE(host_impl->resource_provider());
   }
 
   virtual void afterTest() OVERRIDE {}
@@ -576,42 +577,48 @@ class LayerTreeHostContextTestLostContextFails :
   int num_commits_;
 };
 
-TEST_F(LayerTreeHostContextTestLostContextFails, FailReinitialize100_SingleThread) {
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailReinitialize100_SingleThread) {
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
   runTest(false);
 }
 
-TEST_F(LayerTreeHostContextTestLostContextFails, FailReinitialize100_MultiThread) {
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailReinitialize100_MultiThread) {
   times_to_fail_reinitialize_ = 100;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 0;
   runTest(true);
 }
 
-TEST_F(LayerTreeHostContextTestLostContextFails, FailRecreate100_SingleThread) {
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailRecreate100_SingleThread) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
   runTest(false);
 }
 
-TEST_F(LayerTreeHostContextTestLostContextFails, FailRecreate100_MultiThread) {
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       FailRecreate100_MultiThread) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 100;
   times_to_lose_on_recreate_ = 0;
   runTest(true);
 }
 
-TEST_F(LayerTreeHostContextTestLostContextFails, LoseOnRecreate100_SingleThread) {
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_SingleThread) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
   runTest(false);
 }
 
-TEST_F(LayerTreeHostContextTestLostContextFails, LoseOnRecreate100_MultiThread) {
+TEST_F(LayerTreeHostContextTestLostContextFails,
+       LoseOnRecreate100_MultiThread) {
   times_to_fail_reinitialize_ = 0;
   times_to_fail_recreate_ = 0;
   times_to_lose_on_recreate_ = 100;
@@ -824,7 +831,7 @@ class LayerTreeHostContextTestLayersNotified :
     LayerTreeHostContextTest::commitCompleteOnThread(host_impl);
 
     FakeContentLayerImpl* root = static_cast<FakeContentLayerImpl*>(
-        host_impl->rootLayer());
+        host_impl->active_tree()->root_layer());
     FakeContentLayerImpl* child = static_cast<FakeContentLayerImpl*>(
         root->children()[0]);
     FakeContentLayerImpl* grandchild = static_cast<FakeContentLayerImpl*>(
@@ -982,9 +989,9 @@ class LayerTreeHostContextTestDontUseLostResources :
   virtual void commitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerTreeHostContextTest::commitCompleteOnThread(host_impl);
 
-    ResourceProvider* resource_provider = host_impl->resourceProvider();
+    ResourceProvider* resource_provider = host_impl->resource_provider();
 
-    if (host_impl->activeTree()->source_frame_number() == 0) {
+    if (host_impl->active_tree()->source_frame_number() == 0) {
       // Set up impl resources on the first commit.
 
       scoped_ptr<TestRenderPass> pass_for_quad = TestRenderPass::Create();
@@ -1010,7 +1017,7 @@ class LayerTreeHostContextTestDontUseLostResources :
       // First child is the delegated layer.
       FakeDelegatedRendererLayerImpl* delegated_impl =
           static_cast<FakeDelegatedRendererLayerImpl*>(
-              host_impl->rootLayer()->children()[0]);
+              host_impl->active_tree()->root_layer()->children()[0]);
       delegated_impl->SetFrameDataForRenderPasses(&pass_list);
       EXPECT_TRUE(pass_list.empty());
 
@@ -1037,7 +1044,7 @@ class LayerTreeHostContextTestDontUseLostResources :
       return;
     }
 
-    if (host_impl->activeTree()->source_frame_number() == 3) {
+    if (host_impl->active_tree()->source_frame_number() == 3) {
       // On the third commit we're recovering from context loss. Hardware
       // video frames should not be reused by the VideoFrameProvider, but
       // software frames can be.
@@ -1048,9 +1055,9 @@ class LayerTreeHostContextTestDontUseLostResources :
 
   virtual bool prepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData& frame,
+      LayerTreeHostImpl::FrameData* frame,
       bool result) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() == 2) {
+    if (host_impl->active_tree()->source_frame_number() == 2) {
       // Lose the context during draw on the second commit. This will cause
       // a third commit to recover.
       if (context3d_)

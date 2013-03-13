@@ -170,7 +170,7 @@ public:
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
         m_numDraws++;
-        if (!impl->activeTree()->source_frame_number())
+        if (!impl->active_tree()->source_frame_number())
             endTest();
     }
 
@@ -212,9 +212,9 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        if (impl->activeTree()->source_frame_number() == 0)
+        if (impl->active_tree()->source_frame_number() == 0)
             postSetNeedsCommitToMainThread();
-        else if (impl->activeTree()->source_frame_number() == 1)
+        else if (impl->active_tree()->source_frame_number() == 1)
             endTest();
     }
 
@@ -256,7 +256,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        EXPECT_EQ(0, impl->activeTree()->source_frame_number());
+        EXPECT_EQ(0, impl->active_tree()->source_frame_number());
         if (!m_numDraws)
             postSetNeedsRedrawToMainThread(); // Redraw again to verify that the second redraw doesn't commit.
         else
@@ -428,8 +428,8 @@ public:
         if (m_done)
             return;
         // Only the initial draw should bring us here.
-        EXPECT_TRUE(impl->canDraw());
-        EXPECT_EQ(0, impl->activeTree()->source_frame_number());
+        EXPECT_TRUE(impl->CanDraw());
+        EXPECT_EQ(0, impl->active_tree()->source_frame_number());
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
@@ -438,7 +438,7 @@ public:
             return;
         if (m_numCommits >= 1) {
             // After the first commit, we should not be able to draw.
-            EXPECT_FALSE(impl->canDraw());
+            EXPECT_FALSE(impl->CanDraw());
         }
     }
 
@@ -647,9 +647,9 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        EXPECT_EQ(gfx::Size(20, 20), impl->layoutViewportSize());
-        EXPECT_EQ(SK_ColorGRAY, impl->activeTree()->background_color());
-        EXPECT_EQ(5, impl->activeTree()->page_scale_factor());
+        EXPECT_EQ(gfx::Size(20, 20), impl->layout_viewport_size());
+        EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
+        EXPECT_EQ(5, impl->active_tree()->page_scale_factor());
 
         endTest();
     }
@@ -687,9 +687,9 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        impl->rootLayer()->SetScrollable(true);
-        impl->rootLayer()->SetScrollOffset(gfx::Vector2d());
-        impl->activeTree()->SetPageScaleFactorAndLimits(impl->activeTree()->page_scale_factor(), 0.5, 2);
+        impl->active_tree()->root_layer()->SetScrollable(true);
+        impl->active_tree()->root_layer()->SetScrollOffset(gfx::Vector2d());
+        impl->active_tree()->SetPageScaleFactorAndLimits(impl->active_tree()->page_scale_factor(), 0.5, 2);
 
         // We request animation only once.
         if (!m_animationRequested) {
@@ -707,10 +707,10 @@ public:
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        impl->processScrollDeltas();
+        impl->ProcessScrollDeltas();
         // We get one commit before the first draw, and the animation doesn't happen until the second draw.
-        if (impl->activeTree()->source_frame_number() == 1) {
-            EXPECT_EQ(1.25, impl->activeTree()->page_scale_factor());
+        if (impl->active_tree()->source_frame_number() == 1) {
+            EXPECT_EQ(1.25, impl->active_tree()->page_scale_factor());
             endTest();
         } else
             postSetNeedsRedrawToMainThread();
@@ -928,19 +928,19 @@ public:
         MockLayerTreeHostImpl* mockImpl = static_cast<MockLayerTreeHostImpl*>(impl);
 
         // Should only do one commit.
-        EXPECT_EQ(0, impl->activeTree()->source_frame_number());
+        EXPECT_EQ(0, impl->active_tree()->source_frame_number());
         // Device scale factor should come over to impl.
-        EXPECT_NEAR(impl->deviceScaleFactor(), 1.5, 0.00001);
+        EXPECT_NEAR(impl->device_scale_factor(), 1.5, 0.00001);
 
         // Both layers are on impl.
-        ASSERT_EQ(1u, impl->rootLayer()->children().size());
+        ASSERT_EQ(1u, impl->active_tree()->root_layer()->children().size());
 
         // Device viewport is scaled.
-        EXPECT_EQ(gfx::Size(40, 40), impl->layoutViewportSize());
-        EXPECT_EQ(gfx::Size(60, 60), impl->DeviceViewportSize());
+        EXPECT_EQ(gfx::Size(40, 40), impl->layout_viewport_size());
+        EXPECT_EQ(gfx::Size(60, 60), impl->device_viewport_size());
 
-        LayerImpl* root = impl->rootLayer();
-        LayerImpl* child = impl->rootLayer()->children()[0];
+        LayerImpl* root = impl->active_tree()->root_layer();
+        LayerImpl* child = impl->active_tree()->root_layer()->children()[0];
 
         // Positions remain in layout pixels.
         EXPECT_EQ(gfx::Point(0, 0), root->position());
@@ -948,11 +948,11 @@ public:
 
         // Compute all the layer transforms for the frame.
         LayerTreeHostImpl::FrameData frameData;
-        mockImpl->prepareToDraw(frameData);
-        mockImpl->didDrawAllLayers(frameData);
+        mockImpl->PrepareToDraw(&frameData);
+        mockImpl->DidDrawAllLayers(frameData);
 
         const MockLayerTreeHostImpl::LayerList& renderSurfaceLayerList =
-          *frameData.renderSurfaceLayerList;
+          *frameData.render_surface_layer_list;
 
         // Both layers should be drawing into the root render surface.
         ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -967,7 +967,7 @@ public:
         EXPECT_EQ(childBoundsScaled, child->content_bounds());
 
         gfx::Transform scaleTransform;
-        scaleTransform.Scale(impl->deviceScaleFactor(), impl->deviceScaleFactor());
+        scaleTransform.Scale(impl->device_scale_factor(), impl->device_scale_factor());
 
         // The root layer is scaled by 2x.
         gfx::Transform rootScreenSpaceTransform = scaleTransform;
@@ -1042,9 +1042,9 @@ public:
     {
         ASSERT_EQ(0u, m_layerTreeHost->settings().maxPartialTextureUpdates);
 
-        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->context3d());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->output_surface()->context3d());
 
-        switch (impl->activeTree()->source_frame_number()) {
+        switch (impl->active_tree()->source_frame_number()) {
         case 0:
             // Number of textures should be one for each layer
             ASSERT_EQ(2, context->NumTextures());
@@ -1084,7 +1084,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->context3d());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->output_surface()->context3d());
 
         // Number of textures used for draw should always be one for each layer.
         EXPECT_EQ(2, context->NumUsedTextures());
@@ -1174,9 +1174,9 @@ public:
     {
         ASSERT_EQ(1u, m_layerTreeHost->settings().maxPartialTextureUpdates);
 
-        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->context3d());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->output_surface()->context3d());
 
-        switch (impl->activeTree()->source_frame_number()) {
+        switch (impl->active_tree()->source_frame_number()) {
         case 0:
             // Number of textures should be one for each layer.
             ASSERT_EQ(4, context->NumTextures());
@@ -1259,11 +1259,11 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->context3d());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->output_surface()->context3d());
 
         // Number of textures used for drawing should one per layer except for
         // frame 3 where the viewport only contains one layer.
-        if (impl->activeTree()->source_frame_number() == 3)
+        if (impl->active_tree()->source_frame_number() == 3)
             EXPECT_EQ(1, context->NumUsedTextures());
         else
             EXPECT_EQ(4, context->NumUsedTextures());
@@ -1437,10 +1437,10 @@ public:
     virtual void drawLayersOnThread(LayerTreeHostImpl* hostImpl) OVERRIDE
     {
         Renderer* renderer = hostImpl->renderer();
-        RenderPass::Id surface1RenderPassId = hostImpl->rootLayer()->children()[0]->render_surface()->RenderPassId();
-        RenderPass::Id surface2RenderPassId = hostImpl->rootLayer()->children()[0]->children()[0]->render_surface()->RenderPassId();
+        RenderPass::Id surface1RenderPassId = hostImpl->active_tree()->root_layer()->children()[0]->render_surface()->RenderPassId();
+        RenderPass::Id surface2RenderPassId = hostImpl->active_tree()->root_layer()->children()[0]->children()[0]->render_surface()->RenderPassId();
 
-        switch (hostImpl->activeTree()->source_frame_number()) {
+        switch (hostImpl->active_tree()->source_frame_number()) {
         case 0:
             EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(surface1RenderPassId));
             EXPECT_TRUE(renderer->HaveCachedResourcesForRenderPassId(surface2RenderPassId));
@@ -2142,7 +2142,7 @@ public:
             m_layerTreeHost->contents_texture_manager()->memoryUseBytes());
         // Make sure that contents textures are marked as having been
         // purged.
-        EXPECT_TRUE(hostImpl->activeTree()->ContentsTexturesPurged());
+        EXPECT_TRUE(hostImpl->active_tree()->ContentsTexturesPurged());
         // End the test in this state.
         endTest();
     }

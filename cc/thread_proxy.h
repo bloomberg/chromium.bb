@@ -59,21 +59,21 @@ public:
     virtual bool CommitPendingForTesting() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
-    virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
-    virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
-    virtual void onVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
-    virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
-    virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE;
-    virtual void setNeedsRedrawOnImplThread() OVERRIDE;
-    virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
-    virtual void setNeedsCommitOnImplThread() OVERRIDE;
-    virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
-    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
-    virtual void reduceWastedContentsTextureMemoryOnImplThread() OVERRIDE;
-    virtual void sendManagedMemoryStats() OVERRIDE;
-    virtual bool isInsideDraw() OVERRIDE;
-    virtual void renewTreePriority() OVERRIDE;
+    virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
+    virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
+    virtual void OnVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
+    virtual void OnCanDrawStateChanged(bool canDraw) OVERRIDE;
+    virtual void OnHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE;
+    virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
+    virtual void DidUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
+    virtual void SetNeedsCommitOnImplThread() OVERRIDE;
+    virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
+    virtual void PostAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
+    virtual bool ReduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
+    virtual void ReduceWastedContentsTextureMemoryOnImplThread() OVERRIDE;
+    virtual void SendManagedMemoryStats() OVERRIDE;
+    virtual bool IsInsideDraw() OVERRIDE;
+    virtual void RenewTreePriority() OVERRIDE;
 
     // SchedulerClient implementation
     virtual void scheduledActionBeginFrame() OVERRIDE;

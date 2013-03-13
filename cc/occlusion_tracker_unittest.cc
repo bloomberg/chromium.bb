@@ -407,13 +407,13 @@ private:
 template<>
 LayerTreeHost* OcclusionTrackerTest<OcclusionTrackerTestMainThreadTypes>::getHost()
 {
-    return 0;
+    return NULL;
 }
 
 template<>
 LayerTreeImpl* OcclusionTrackerTest<OcclusionTrackerTestImplThreadTypes>::getHost()
 {
-  return m_hostImpl.activeTree();
+  return m_hostImpl.active_tree();
 }
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \

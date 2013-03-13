@@ -41,7 +41,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.activeTree(), 1);
+    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.active_tree(), 1);
     layer->draw_properties().visible_content_rect = visibleContentRect;
     layer->SetBounds(layerSize);
     layer->SetContentBounds(layerSize);
@@ -102,7 +102,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
 
     FakeImplProxy proxy;
     FakeLayerTreeHostImpl hostImpl(&proxy);
-    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.activeTree(), 1);
+    scoped_ptr<NinePatchLayerImpl> layer = NinePatchLayerImpl::Create(hostImpl.active_tree(), 1);
     layer->draw_properties().visible_content_rect = visibleContentRect;
     layer->SetBounds(layerSize);
     layer->SetContentBounds(layerSize);

@@ -9,13 +9,13 @@
 #include "cc/cc_export.h"
 
 namespace cc {
-
 class RenderPass;
 
 class CC_EXPORT RenderPassSink {
-public:
-    virtual void appendRenderPass(scoped_ptr<RenderPass>) = 0;
+ public:
+  virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) = 0;
 };
 
-}
+}  // namespace cc
+
 #endif  // CC_RENDER_PASS_SINK_H_

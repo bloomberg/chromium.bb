@@ -266,19 +266,19 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   LayerTreeImpl* sync_tree;
   if (settings_.implSidePainting) {
     // Commits should not occur while there is already a pending tree.
-    DCHECK(!host_impl->pendingTree());
-    host_impl->createPendingTree();
-    sync_tree = host_impl->pendingTree();
+    DCHECK(!host_impl->pending_tree());
+    host_impl->CreatePendingTree();
+    sync_tree = host_impl->pending_tree();
   } else {
-    contents_texture_manager_->reduceMemory(host_impl->resourceProvider());
-    sync_tree = host_impl->activeTree();
+    contents_texture_manager_->reduceMemory(host_impl->resource_provider());
+    sync_tree = host_impl->active_tree();
   }
 
   if (needs_full_tree_sync_)
     sync_tree->SetRootLayer(TreeSynchronizer::synchronizeTrees(
         root_layer(), sync_tree->DetachLayerTree(), sync_tree)); {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
-    TreeSynchronizer::pushProperties(root_layer(), sync_tree->RootLayer());
+    TreeSynchronizer::pushProperties(root_layer(), sync_tree->root_layer());
   }
 
   sync_tree->set_needs_full_tree_sync(needs_full_tree_sync_);
@@ -286,7 +286,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   if (root_layer_ && hud_layer_) {
     LayerImpl* hud_impl = LayerTreeHostCommon::findLayerInSubtree(
-        sync_tree->RootLayer(), hud_layer_->id());
+        sync_tree->root_layer(), hud_layer_->id());
     sync_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(hud_impl));
   } else {
     sync_tree->set_hud_layer(NULL);
@@ -304,8 +304,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     // adjusted its delta prior to the pending tree being created.
     // This code is equivalent to that in LayerTreeImpl::SetPageScaleDelta.
     DCHECK_EQ(1.f, sync_tree->sent_page_scale_delta());
-    page_scale_delta = host_impl->activeTree()->page_scale_delta();
-    sent_page_scale_delta = host_impl->activeTree()->sent_page_scale_delta();
+    page_scale_delta = host_impl->active_tree()->page_scale_delta();
+    sent_page_scale_delta = host_impl->active_tree()->sent_page_scale_delta();
   } else {
     page_scale_delta = sync_tree->page_scale_delta();
     sent_page_scale_delta = sync_tree->sent_page_scale_delta();
@@ -317,9 +317,9 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
                                          max_page_scale_factor_);
   sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
 
-  host_impl->setViewportSize(layout_viewport_size_, device_viewport_size_);
-  host_impl->setDeviceScaleFactor(device_scale_factor_);
-  host_impl->setDebugState(debug_state_);
+  host_impl->SetViewportSize(layout_viewport_size_, device_viewport_size_);
+  host_impl->SetDeviceScaleFactor(device_scale_factor_);
+  host_impl->SetDebugState(debug_state_);
 
   DCHECK(!sync_tree->ViewportSizeInvalid());
 
@@ -335,7 +335,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   }
 
   if (debug_state_.continuousPainting)
-    host_impl->savePaintTime(rendering_stats_.totalPaintTime, commit_number());
+    host_impl->SavePaintTime(rendering_stats_.totalPaintTime, commit_number());
 
   commit_number_++;
 }
@@ -373,11 +373,11 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(proxy_->IsImplThread());
   scoped_ptr<LayerTreeHostImpl> host_impl =
-      LayerTreeHostImpl::create(settings_, client, proxy_.get());
+      LayerTreeHostImpl::Create(settings_, client, proxy_.get());
   if (settings_.calculateTopControlsPosition &&
-      host_impl->topControlsManager()) {
+      host_impl->top_controls_manager()) {
     top_controls_manager_weak_ptr_ =
-        host_impl->topControlsManager()->AsWeakPtr();
+        host_impl->top_controls_manager()->AsWeakPtr();
   }
   return host_impl.Pass();
 }

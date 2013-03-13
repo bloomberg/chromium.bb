@@ -212,11 +212,11 @@ TEST(LayerSorterTest, VerifyExistingOrderingPreservedWhenNoZDiff) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
 
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.activeTree(), 1);
-  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.activeTree(), 2);
-  scoped_ptr<LayerImpl> layer3 = LayerImpl::Create(host_impl.activeTree(), 3);
-  scoped_ptr<LayerImpl> layer4 = LayerImpl::Create(host_impl.activeTree(), 4);
-  scoped_ptr<LayerImpl> layer5 = LayerImpl::Create(host_impl.activeTree(), 5);
+  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.active_tree(), 2);
+  scoped_ptr<LayerImpl> layer3 = LayerImpl::Create(host_impl.active_tree(), 3);
+  scoped_ptr<LayerImpl> layer4 = LayerImpl::Create(host_impl.active_tree(), 4);
+  scoped_ptr<LayerImpl> layer5 = LayerImpl::Create(host_impl.active_tree(), 5);
 
   gfx::Transform BehindMatrix;
   BehindMatrix.Translate3d(0.0, 0.0, 2.0);
@@ -277,8 +277,8 @@ TEST(LayerSorterTest, VerifyConcidentLayerPrecisionLossResultsInDocumentOrder) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
 
-  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.activeTree(), 1);
-  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.activeTree(), 2);
+  scoped_ptr<LayerImpl> layer1 = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> layer2 = LayerImpl::Create(host_impl.active_tree(), 2);
 
   // Layer 1 should occur before layer 2 in paint.  However, due to numeric
   // issues in the sorter, it will put the layers in the wrong order

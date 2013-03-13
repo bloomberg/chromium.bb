@@ -43,23 +43,23 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
 
   virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) {
     return static_cast<WebInputHandlerClient::ScrollStatus>(
-        client_->scrollBegin(
+        client_->ScrollBegin(
             point, static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
   }
 
   virtual bool scrollByIfPossible(WebPoint point, WebFloatSize delta) {
-    return client_->scrollBy(point, delta);
+    return client_->ScrollBy(point, delta);
   }
 
-  virtual void scrollEnd() { client_->scrollEnd(); }
+  virtual void scrollEnd() { client_->ScrollEnd(); }
 
-  virtual void pinchGestureBegin() { client_->pinchGestureBegin(); }
+  virtual void pinchGestureBegin() { client_->PinchGestureBegin(); }
 
   virtual void pinchGestureUpdate(float magnify_delta, WebPoint anchor) {
-    client_->pinchGestureUpdate(magnify_delta, anchor);
+    client_->PinchGestureUpdate(magnify_delta, anchor);
   }
 
-  virtual void pinchGestureEnd() { client_->pinchGestureEnd(); }
+  virtual void pinchGestureEnd() { client_->PinchGestureEnd(); }
 
   virtual void startPageScaleAnimation(WebSize target_position,
                                        bool anchor_point,
@@ -70,31 +70,31 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
         start_time_sec * base::Time::kMicrosecondsPerSecond);
     base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
         duration_sec * base::Time::kMicrosecondsPerSecond);
-    client_->startPageScaleAnimation(
+    client_->StartPageScaleAnimation(
         target_position, anchor_point, page_scale, start_time, duration);
   }
 
-  virtual void scheduleAnimation() { client_->scheduleAnimation(); }
+  virtual void scheduleAnimation() { client_->ScheduleAnimation(); }
 
   virtual bool haveTouchEventHandlersAt(WebPoint point) {
-    return client_->haveTouchEventHandlersAt(point);
+    return client_->HaveTouchEventHandlersAt(point);
   }
 
  private:
   cc::InputHandlerClient* client_;
 };
 
-void WebToCCInputHandlerAdapter::bindToClient(cc::InputHandlerClient* client) {
+void WebToCCInputHandlerAdapter::BindToClient(cc::InputHandlerClient* client) {
   client_adapter_.reset(new ClientAdapter(client));
   handler_->bindToClient(client_adapter_.get());
 }
 
-void WebToCCInputHandlerAdapter::animate(base::TimeTicks time) {
+void WebToCCInputHandlerAdapter::Animate(base::TimeTicks time) {
   double monotonic_time_seconds = (time - base::TimeTicks()).InSecondsF();
   handler_->animate(monotonic_time_seconds);
 }
 
-void WebToCCInputHandlerAdapter::mainThreadHasStoppedFlinging() {
+void WebToCCInputHandlerAdapter::MainThreadHasStoppedFlinging() {
   handler_->mainThreadHasStoppedFlinging();
 }
 

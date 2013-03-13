@@ -110,7 +110,7 @@ class LayerTreeHostDelegatedTestCreateChildId
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
@@ -120,7 +120,7 @@ class LayerTreeHostDelegatedTestCreateChildId
         EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_FALSE(did_reset_child_id_);
 
-        host_impl->resourceProvider()->GraphicsContext3D()->loseContextCHROMIUM(
+        host_impl->resource_provider()->GraphicsContext3D()->loseContextCHROMIUM(
             GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
         break;
       case 3:
@@ -138,7 +138,7 @@ class LayerTreeHostDelegatedTestCreateChildId
     if (num_activates_ < 2)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
@@ -242,16 +242,16 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
   }
 
   virtual bool prepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData& frame,
+                                     LayerTreeHostImpl::FrameData* frame,
                                      bool result) {
     EXPECT_TRUE(result);
 
     if (!first_draw_for_source_frame_)
       return result;
 
-    gfx::RectF damage_rect = frame.renderPasses.back()->damage_rect;
+    gfx::RectF damage_rect = frame->render_passes.back()->damage_rect;
 
-    switch (host_impl->activeTree()->source_frame_number()) {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // Before the layer has a frame to display it should not
         // be visible at all, and not damage anything.
@@ -351,12 +351,12 @@ class LayerTreeHostDelegatedTestMergeResources
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
     // Both frames' resources should be in the parent's resource provider.
@@ -393,12 +393,12 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
     // The frame's resource should be in the parent's resource provider.
@@ -619,15 +619,15 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() != 3)
+    if (host_impl->active_tree()->source_frame_number() != 3)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
     // The bad frame should be dropped. So we should only have one quad (the
@@ -716,15 +716,15 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() != 3)
+    if (host_impl->active_tree()->source_frame_number() != 3)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
     // The third frame has all of the resources in it again, the delegated
@@ -822,18 +822,18 @@ class LayerTreeHostDelegatedTestBadFrame
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() < 1)
+    if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
-    switch (host_impl->activeTree()->source_frame_number()) {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 1: {
         // We have the first good frame with just 990 and 555 in it.
         // layer.
@@ -933,15 +933,15 @@ class LayerTreeHostDelegatedTestUnnamedResource
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() != 1)
+    if (host_impl->active_tree()->source_frame_number() != 1)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
     // The layer only held on to the resource that was used.
@@ -996,15 +996,15 @@ class LayerTreeHostDelegatedTestDontLeakResource
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() != 1)
+    if (host_impl->active_tree()->source_frame_number() != 1)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
     // The layer only held on to the resource that was used.
@@ -1073,18 +1073,18 @@ class LayerTreeHostDelegatedTestResourceSentToParent
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() < 1)
+    if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
-    switch (host_impl->activeTree()->source_frame_number()) {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 1: {
         EXPECT_EQ(2u, map.size());
         EXPECT_EQ(1u, map.count(999));
@@ -1098,7 +1098,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         ResourceProvider::ResourceIdArray resources_for_parent;
         resources_for_parent.push_back(map.find(999)->second);
         TransferableResourceArray transferable_resources;
-        host_impl->resourceProvider()->PrepareSendToParent(
+        host_impl->resource_provider()->PrepareSendToParent(
             resources_for_parent, &transferable_resources);
         break;
       }
@@ -1116,7 +1116,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         resource.id = map.find(999)->second;
         TransferableResourceArray transferable_resources;
         transferable_resources.push_back(resource);
-        host_impl->resourceProvider()->ReceiveFromParent(
+        host_impl->resource_provider()->ReceiveFromParent(
             transferable_resources);
         break;
       }
@@ -1188,18 +1188,18 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
   }
 
   virtual void treeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    if (host_impl->activeTree()->source_frame_number() < 1)
+    if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 
-    LayerImpl* root_impl = host_impl->activeTree()->RootLayer();
+    LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     const ResourceProvider::ResourceIdMap& map =
-        host_impl->resourceProvider()->GetChildToParentMap(
+        host_impl->resource_provider()->GetChildToParentMap(
             delegated_impl->ChildId());
 
-    switch (host_impl->activeTree()->source_frame_number()) {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 1:
         EXPECT_EQ(3u, map.size());
         EXPECT_EQ(1u, map.count(999));

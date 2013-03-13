@@ -12,25 +12,27 @@ namespace cc {
 class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
  public:
   // LayerTreeHostImplClient implementation.
-  virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }
-  virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
-  virtual void onVSyncParametersChanged(
+  virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
+  virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
+  virtual void OnVSyncParametersChanged(
       base::TimeTicks,
-      base::TimeDelta) OVERRIDE { }
-  virtual void onCanDrawStateChanged(bool) OVERRIDE { }
-  virtual void onHasPendingTreeStateChanged(bool) OVERRIDE { }
-  virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
-  virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE { }
-  virtual void setNeedsCommitOnImplThread() OVERRIDE { }
-  virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
-  virtual void postAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEventsVector>,
-      base::Time) OVERRIDE { }
-  virtual bool reduceContentsTextureMemoryOnImplThread(size_t, int) OVERRIDE;
-  virtual void reduceWastedContentsTextureMemoryOnImplThread() OVERRIDE { }
-  virtual void sendManagedMemoryStats() OVERRIDE { }
-  virtual bool isInsideDraw() OVERRIDE;
-  virtual void renewTreePriority() OVERRIDE { }
+      base::TimeDelta) OVERRIDE {}
+  virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
+  virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE {}
+  virtual void SetNeedsRedrawOnImplThread() OVERRIDE {}
+  virtual void DidUploadVisibleHighResolutionTileOnImplThread() OVERRIDE {}
+  virtual void SetNeedsCommitOnImplThread() OVERRIDE {}
+  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE {}
+  virtual void PostAnimationEventsToMainThreadOnImplThread(
+      scoped_ptr<AnimationEventsVector> events,
+      base::Time wall_clock_time) OVERRIDE {}
+  virtual bool ReduceContentsTextureMemoryOnImplThread(
+      size_t limit_bytes,
+      int priority_cutoff) OVERRIDE;
+  virtual void ReduceWastedContentsTextureMemoryOnImplThread() OVERRIDE {}
+  virtual void SendManagedMemoryStats() OVERRIDE {}
+  virtual bool IsInsideDraw() OVERRIDE;
+  virtual void RenewTreePriority() OVERRIDE {}
 };
 
 }  // namespace cc

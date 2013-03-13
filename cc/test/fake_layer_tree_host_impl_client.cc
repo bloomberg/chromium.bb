@@ -6,13 +6,13 @@
 
 namespace cc {
 
-bool FakeLayerTreeHostImplClient::reduceContentsTextureMemoryOnImplThread(
-    size_t,
-    int) {
+bool FakeLayerTreeHostImplClient::ReduceContentsTextureMemoryOnImplThread(
+    size_t limit_butes,
+    int priority_cutoff) {
   return false;
 }
 
-bool FakeLayerTreeHostImplClient::isInsideDraw() {
+bool FakeLayerTreeHostImplClient::IsInsideDraw() {
   return false;
 }
 

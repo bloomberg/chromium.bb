@@ -105,7 +105,7 @@ TEST_F(TextureLayerTest, syncImplWhenDrawing)
     scoped_refptr<TextureLayer> testLayer = TextureLayer::Create(NULL);
     ASSERT_TRUE(testLayer);
     scoped_ptr<TextureLayerImpl> implLayer;
-    implLayer = TextureLayerImpl::Create(m_hostImpl.activeTree(), 1, false);
+    implLayer = TextureLayerImpl::Create(m_hostImpl.active_tree(), 1, false);
     ASSERT_TRUE(implLayer);
 
     EXPECT_CALL(*m_layerTreeHost, AcquireLayerTextures()).Times(AnyNumber());
@@ -400,7 +400,7 @@ protected:
     {
         TextureLayerTest::SetUp();
         m_layerTreeHost.reset(new MockLayerImplTreeHost);
-        EXPECT_TRUE(m_hostImpl.initializeRenderer(createFakeOutputSurface()));
+        EXPECT_TRUE(m_hostImpl.InitializeRenderer(createFakeOutputSurface()));
     }
 
     CommonMailboxObjects m_testData;
@@ -408,13 +408,13 @@ protected:
 
 TEST_F(TextureLayerImplWithMailboxTest, testImplLayerCallbacks)
 {
-    m_hostImpl.createPendingTree();
+    m_hostImpl.CreatePendingTree();
     scoped_ptr<TextureLayerImpl> pendingLayer;
-    pendingLayer = TextureLayerImpl::Create(m_hostImpl.pendingTree(), 1, true);
+    pendingLayer = TextureLayerImpl::Create(m_hostImpl.pending_tree(), 1, true);
     ASSERT_TRUE(pendingLayer);
 
     scoped_ptr<LayerImpl> activeLayer(pendingLayer->CreateLayerImpl(
-        m_hostImpl.activeTree()));
+        m_hostImpl.active_tree()));
     ASSERT_TRUE(activeLayer);
 
     pendingLayer->setTextureMailbox(m_testData.m_mailbox1);
@@ -459,20 +459,20 @@ TEST_F(TextureLayerImplWithMailboxTest, testImplLayerCallbacks)
 TEST_F(TextureLayerImplWithMailboxTest, testDestructorCallbackOnCreatedResource)
 {
     scoped_ptr<TextureLayerImpl> implLayer;
-    implLayer = TextureLayerImpl::Create(m_hostImpl.activeTree(), 1, true);
+    implLayer = TextureLayerImpl::Create(m_hostImpl.active_tree(), 1, true);
     ASSERT_TRUE(implLayer);
 
     EXPECT_CALL(m_testData.m_mockCallback,
                 Release(m_testData.m_mailboxName1, _)).Times(1);
     implLayer->setTextureMailbox(m_testData.m_mailbox1);
-    implLayer->WillDraw(m_hostImpl.activeTree()->resource_provider());
-    implLayer->DidDraw(m_hostImpl.activeTree()->resource_provider());
+    implLayer->WillDraw(m_hostImpl.active_tree()->resource_provider());
+    implLayer->DidDraw(m_hostImpl.active_tree()->resource_provider());
     implLayer->setTextureMailbox(TextureMailbox());
 }
 
 TEST_F(TextureLayerImplWithMailboxTest, testCallbackOnInUseResource)
 {
-    ResourceProvider *provider = m_hostImpl.activeTree()->resource_provider();
+    ResourceProvider *provider = m_hostImpl.active_tree()->resource_provider();
     ResourceProvider::ResourceId id =
         provider->CreateResourceFromTextureMailbox(m_testData.m_mailbox1);
     provider->AllocateForTesting(id);

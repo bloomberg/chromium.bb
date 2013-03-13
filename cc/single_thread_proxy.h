@@ -53,26 +53,26 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual bool CommitPendingForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
-  virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
-  virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
-  virtual void onVSyncParametersChanged(base::TimeTicks timebase,
+  virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
+  virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
+  virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE {}
-  virtual void onCanDrawStateChanged(bool can_draw) OVERRIDE {}
-  virtual void onHasPendingTreeStateChanged(bool have_pending_tree) OVERRIDE;
-  virtual void setNeedsRedrawOnImplThread() OVERRIDE;
-  virtual void didUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
-  virtual void setNeedsCommitOnImplThread() OVERRIDE;
-  virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
-  virtual void postAnimationEventsToMainThreadOnImplThread(
+  virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
+  virtual void OnHasPendingTreeStateChanged(bool have_pending_tree) OVERRIDE;
+  virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
+  virtual void DidUploadVisibleHighResolutionTileOnImplThread() OVERRIDE;
+  virtual void SetNeedsCommitOnImplThread() OVERRIDE;
+  virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
+  virtual void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events,
       base::Time wall_clock_time) OVERRIDE;
-  virtual bool reduceContentsTextureMemoryOnImplThread(
+  virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes,
       int priority_cutoff) OVERRIDE;
-  virtual void reduceWastedContentsTextureMemoryOnImplThread() OVERRIDE;
-  virtual void sendManagedMemoryStats() OVERRIDE;
-  virtual bool isInsideDraw() OVERRIDE;
-  virtual void renewTreePriority() OVERRIDE {}
+  virtual void ReduceWastedContentsTextureMemoryOnImplThread() OVERRIDE;
+  virtual void SendManagedMemoryStats() OVERRIDE;
+  virtual bool IsInsideDraw() OVERRIDE;
+  virtual void RenewTreePriority() OVERRIDE {}
 
   // Called by the legacy path where RenderWidget does the scheduling.
   void CompositeImmediately();

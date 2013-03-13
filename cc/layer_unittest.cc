@@ -596,7 +596,7 @@ TEST_F(LayerTest, setBoundsTriggersSetNeedsRedrawAfterGettingNonEmptyBounds)
 TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
 {
     scoped_refptr<Layer> testLayer = Layer::Create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.active_tree(), 1);
 
     testLayer->SetNeedsDisplayRect(gfx::RectF(gfx::PointF(), gfx::SizeF(5, 5)));
     testLayer->PushPropertiesTo(implLayer.get());
@@ -617,7 +617,7 @@ TEST_F(LayerTest, verifyPushPropertiesAccumulatesUpdateRect)
 TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForTransform)
 {
     scoped_refptr<Layer> testLayer = Layer::Create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.active_tree(), 1);
 
     gfx::Transform transform;
     transform.Rotate(45.0);
@@ -633,7 +633,7 @@ TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForTransform)
 TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForOpacity)
 {
     scoped_refptr<Layer> testLayer = Layer::Create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.active_tree(), 1);
 
     testLayer->SetOpacity(0.5);
 
@@ -647,7 +647,7 @@ TEST_F(LayerTest, verifyPushPropertiesCausesSurfacePropertyChangedForOpacity)
 TEST_F(LayerTest, verifyPushPropertiesDoesNotCauseSurfacePropertyChangedDuringImplOnlyTransformAnimation)
 {
     scoped_refptr<Layer> testLayer = Layer::Create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.active_tree(), 1);
 
     scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
     implLayer->layer_animation_controller()->SetAnimationRegistrar(registrar.get());
@@ -676,7 +676,7 @@ TEST_F(LayerTest, verifyPushPropertiesDoesNotCauseSurfacePropertyChangedDuringIm
 TEST_F(LayerTest, verifyPushPropertiesDoesNotCauseSurfacePropertyChangedDuringImplOnlyOpacityAnimation)
 {
     scoped_refptr<Layer> testLayer = Layer::Create();
-    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> implLayer = LayerImpl::Create(m_hostImpl.active_tree(), 1);
 
     scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::create();
     implLayer->layer_animation_controller()->SetAnimationRegistrar(registrar.get());

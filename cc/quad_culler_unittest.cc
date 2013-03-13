@@ -49,7 +49,7 @@ public:
 
     scoped_ptr<TiledLayerImpl> makeLayer(TiledLayerImpl* parent, const gfx::Transform& drawTransform, const gfx::Rect& layerRect, float opacity, bool opaque, const gfx::Rect& layerOpaqueRect, std::vector<LayerImpl*>& surfaceLayerList)
     {
-        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::Create(m_hostImpl.activeTree(), layer_id_++);
+        scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::Create(m_hostImpl.active_tree(), layer_id_++);
         scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(gfx::Size(100, 100), LayerTilingData::NoBorderTexels);
         tiler->setBounds(layerRect.size());
         layer->setTilingData(*tiler);

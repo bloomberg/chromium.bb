@@ -44,7 +44,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
   virtual void afterTest() OVERRIDE {}
 
   virtual bool prepareToDrawOnThread(
-      LayerTreeHostImpl*, LayerTreeHostImpl::FrameData& frame, bool result)
+      LayerTreeHostImpl*, LayerTreeHostImpl::FrameData* frame, bool result)
       OVERRIDE {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
 
@@ -64,7 +64,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     ASSERT_TRUE(last_frame.delegated_frame_data);
     EXPECT_FALSE(last_frame.gl_frame_data);
     EXPECT_EQ(
-        gfx::Rect(host_impl->DeviceViewportSize()).ToString(),
+        gfx::Rect(host_impl->device_viewport_size()).ToString(),
         last_frame_data->render_pass_list.back()->output_rect.ToString());
     EXPECT_EQ(0.5f, last_frame.metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, last_frame.metadata.max_page_scale_factor);
@@ -89,27 +89,27 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
 
   virtual bool prepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData& frame,
+      LayerTreeHostImpl::FrameData* frame,
       bool result) OVERRIDE {
 
-    frame.renderPasses.clear();
-    frame.renderPassesById.clear();
+    frame->render_passes.clear();
+    frame->render_passes_by_id.clear();
 
     TestRenderPass* child_pass = addRenderPass(
-        frame.renderPasses,
+        frame->render_passes,
         RenderPass::Id(2, 1),
         gfx::Rect(3, 3, 10, 10),
         gfx::Transform());
     child_pass->AppendOneOfEveryQuadType(
-        host_impl->resourceProvider(), RenderPass::Id(0, 0));
+        host_impl->resource_provider(), RenderPass::Id(0, 0));
 
     TestRenderPass* pass = addRenderPass(
-        frame.renderPasses,
+        frame->render_passes,
         RenderPass::Id(1, 1),
         gfx::Rect(3, 3, 10, 10),
         gfx::Transform());
     pass->AppendOneOfEveryQuadType(
-        host_impl->resourceProvider(), child_pass->id);
+        host_impl->resource_provider(), child_pass->id);
     return true;
   }
 
