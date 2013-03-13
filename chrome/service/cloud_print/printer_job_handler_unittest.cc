@@ -671,7 +671,7 @@ TEST_F(PrinterJobHandlerTest, DISABLED_HappyPathTest) {
       .Times(Exactly(1));
 
   SetUpJobSuccessTest(1);
-  BeginTest(1);
+  BeginTest(20);
 }
 
 TEST_F(PrinterJobHandlerTest, TicketDownloadFailureTest) {
@@ -699,7 +699,7 @@ TEST_F(PrinterJobHandlerTest, TicketDownloadFailureTest) {
       .Times(AtLeast(1));
 
   SetUpJobSuccessTest(2);
-  BeginTest(1);
+  BeginTest(20);
 }
 
 // TODO(noamsml): Figure out how to make this test not take 1 second and
@@ -783,4 +783,3 @@ TEST_F(PrinterJobHandlerTest, DISABLED_CompleteFailureTest) {
 }
 
 }  // namespace cloud_print
-
