@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
+#include "net/base/net_export.h"
 #include "net/quic/crypto/key_exchange.h"
 
 #if defined(USE_OPENSSL)
@@ -25,7 +26,7 @@ namespace net {
 
 // P256KeyExchange implements a KeyExchange using elliptic-curve
 // Diffie-Hellman on NIST P-256.
-class P256KeyExchange : public KeyExchange {
+class NET_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
  public:
   virtual ~P256KeyExchange();
 
@@ -57,23 +58,20 @@ class P256KeyExchange : public KeyExchange {
   };
 
 #if defined(USE_OPENSSL)
-  // P256KeyExchange takes ownership of |private_key|.
-  P256KeyExchange(EC_KEY* private_key, uint8* public_key);
+  // P256KeyExchange takes ownership of |private_key|, and expects
+  // |public_key| consists of |kUncompressedP256PointBytes| bytes.
+  P256KeyExchange(EC_KEY* private_key, const uint8* public_key);
 
   crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> private_key_;
-  uint8 public_key_[kUncompressedP256PointBytes];
 #else
-  // Password used by |NewPrivateKey| to encrypt exported EC private keys.
-  // This is not used to provide any security, but to workaround NSS being
-  // unable to export unencrypted EC keys. Note that SPDY and ChannelID
-  // use the same approach.
-  static const char kExportPassword[];
-
-  // P256KeyExchange takes ownership of |key_pair|.
-  explicit P256KeyExchange(crypto::ECPrivateKey* key_pair);
+  // P256KeyExchange takes ownership of |key_pair|, and expects
+  // |public_key| consists of |kUncompressedP256PointBytes| bytes.
+  P256KeyExchange(crypto::ECPrivateKey* key_pair, const uint8* public_key);
 
   scoped_ptr<crypto::ECPrivateKey> key_pair_;
 #endif
+  // The public key stored as an uncompressed P-256 point.
+  uint8 public_key_[kUncompressedP256PointBytes];
 };
 
 }  // namespace net

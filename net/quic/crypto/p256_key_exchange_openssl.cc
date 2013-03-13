@@ -12,7 +12,7 @@
 
 namespace net {
 
-P256KeyExchange::P256KeyExchange(EC_KEY* private_key, uint8* public_key)
+P256KeyExchange::P256KeyExchange(EC_KEY* private_key, const uint8* public_key)
     : private_key_(private_key) {
   memcpy(public_key_, public_key, sizeof(public_key_));
 }
@@ -23,8 +23,7 @@ P256KeyExchange::~P256KeyExchange() {
 // static
 P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
   if (key.empty()) {
-    DLOG(INFO) << "P256KeyExchange::New: "
-                  "Private key is empty";
+    DLOG(INFO) << "Private key is empty";
     return NULL;
   }
 
@@ -32,8 +31,7 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
   crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> private_key(
       d2i_ECPrivateKey(NULL, &keyp, key.size()));
   if (!private_key.get() || !EC_KEY_check_key(private_key.get())) {
-    DLOG(INFO) << "P256KeyExchange::New: "
-                  "Private key is invalid";
+    DLOG(INFO) << "Private key is invalid";
     return NULL;
   }
 
@@ -45,8 +43,7 @@ P256KeyExchange* P256KeyExchange::New(base::StringPiece key) {
           public_key,
           sizeof(public_key),
           NULL) != sizeof(public_key)) {
-    DLOG(INFO) << "P256KeyExchange::New: "
-                  "Can't get public key";
+    DLOG(INFO) << "Can't get public key";
     return NULL;
   }
 
@@ -58,23 +55,20 @@ std::string P256KeyExchange::NewPrivateKey() {
   crypto::ScopedOpenSSL<EC_KEY, EC_KEY_free> key(
       EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
   if (!key.get() || !EC_KEY_generate_key(key.get())) {
-    DLOG(INFO) << "P256KeyExchange::NewPrivateKey: "
-                  "Can't generate a new private key";
-    return "";
+    DLOG(INFO) << "Can't generate a new private key";
+    return std::string();
   }
 
   int key_len = i2d_ECPrivateKey(key.get(), NULL);
   if (key_len <= 0) {
-    DLOG(INFO) << "P256KeyExchange::NewPrivateKey: "
-                  "Can't convert private key to string";
-    return "";
+    DLOG(INFO) << "Can't convert private key to string";
+    return std::string();
   }
   scoped_ptr<uint8[]> private_key(new uint8[key_len]);
   uint8* keyp = private_key.get();
   if (!i2d_ECPrivateKey(key.get(), &keyp)) {
-    DLOG(INFO) << "P256KeyExchange::NewPrivateKey: "
-                  "Can't convert private key to string";
-    return "";
+    DLOG(INFO) << "Can't convert private key to string";
+    return std::string();
   }
   return std::string(reinterpret_cast<char*>(private_key.get()), key_len);
 }
@@ -83,8 +77,7 @@ bool P256KeyExchange::CalculateSharedKey(
     const base::StringPiece& peer_public_value,
     std::string* out_result) const {
   if (peer_public_value.size() != kUncompressedP256PointBytes) {
-    DLOG(INFO) << "P256KeyExchange::CalculateSharedKey: "
-                  "Peer public value is invalid";
+    DLOG(INFO) << "Peer public value is invalid";
     return false;
   }
 
@@ -97,8 +90,7 @@ bool P256KeyExchange::CalculateSharedKey(
           reinterpret_cast<const uint8*>(peer_public_value.data()),
           peer_public_value.size(),
           NULL)) {
-    DLOG(INFO) << "P256KeyExchange::CalculateSharedKey: "
-                  "Can't convert peer public value to curve point";
+    DLOG(INFO) << "Can't convert peer public value to curve point";
     return false;
   }
 
@@ -109,8 +101,7 @@ bool P256KeyExchange::CalculateSharedKey(
       point.get(),
       private_key_.get(),
       NULL) != sizeof(result)) {
-    DLOG(INFO) << "P256KeyExchange::CalculateSharedKey: "
-                  "Can't compute ECDH shared key";
+    DLOG(INFO) << "Can't compute ECDH shared key";
     return false;
   }
 

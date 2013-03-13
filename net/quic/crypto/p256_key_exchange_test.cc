@@ -10,15 +10,19 @@
 namespace net {
 namespace test {
 
-#if defined(USE_OPENSSL)
 // SharedKey just tests that the basic key exchange identity holds: that both
 // parties end up with the same key.
 TEST(P256KeyExchange, SharedKey) {
   for (int i = 0; i < 5; i++) {
-    scoped_ptr<P256KeyExchange> alice(P256KeyExchange::New(
-        P256KeyExchange::NewPrivateKey()));
-    scoped_ptr<P256KeyExchange> bob(P256KeyExchange::New(
-        P256KeyExchange::NewPrivateKey()));
+    std::string alice_private(P256KeyExchange::NewPrivateKey());
+    std::string bob_private(P256KeyExchange::NewPrivateKey());
+
+    ASSERT_FALSE(alice_private.empty());
+    ASSERT_FALSE(bob_private.empty());
+    ASSERT_NE(alice_private, bob_private);
+
+    scoped_ptr<P256KeyExchange> alice(P256KeyExchange::New(alice_private));
+    scoped_ptr<P256KeyExchange> bob(P256KeyExchange::New(bob_private));
 
     ASSERT_TRUE(alice.get() != NULL);
     ASSERT_TRUE(bob.get() != NULL);
@@ -32,7 +36,6 @@ TEST(P256KeyExchange, SharedKey) {
     ASSERT_EQ(alice_shared, bob_shared);
   }
 }
-#endif
 
 }  // namespace test
 }  // namespace net
