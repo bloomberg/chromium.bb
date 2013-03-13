@@ -67,6 +67,8 @@
         'views/app_list_view.h',
         'views/apps_grid_view.cc',
         'views/apps_grid_view.h',
+        'views/cached_label.cc',
+        'views/cached_label.h',
         'views/contents_view.cc',
         'views/contents_view.h',
         'views/page_switcher.cc',

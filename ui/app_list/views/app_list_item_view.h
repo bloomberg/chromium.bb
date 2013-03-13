@@ -28,6 +28,7 @@ namespace app_list {
 
 class AppListItemModel;
 class AppsGridView;
+class CachedLabel;
 
 class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
@@ -95,7 +96,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   views::ImageView* icon_;  // Owned by views hierarchy.
-  views::Label* title_;  // Owned by views hierarchy.
+  CachedLabel* title_;  // Owned by views hierarchy.
 
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
