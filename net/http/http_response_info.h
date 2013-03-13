@@ -24,6 +24,17 @@ class SSLCertRequestInfo;
 
 class NET_EXPORT HttpResponseInfo {
  public:
+  // Describes the kind of connection used to fetch this response.
+  enum ConnectionInfo {
+    CONNECTION_INFO_UNKNOWN,
+    CONNECTION_INFO_HTTP1,
+    CONNECTION_INFO_SPDY2,
+    CONNECTION_INFO_SPDY3,
+    CONNECTION_INFO_SPDY3_1,
+    CONNECTION_INFO_QUIC1_SPDY3,
+    NUM_OF_CONNECTION_INFOS,
+  };
+
   HttpResponseInfo();
   HttpResponseInfo(const HttpResponseInfo& rhs);
   ~HttpResponseInfo();
@@ -70,6 +81,9 @@ class NET_EXPORT HttpResponseInfo {
 
   // Protocol negotiated with the server.
   std::string npn_negotiated_protocol;
+
+  // The type of connection used for this response.
+  ConnectionInfo connection_info;
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this is the last time the cache entry was validated.

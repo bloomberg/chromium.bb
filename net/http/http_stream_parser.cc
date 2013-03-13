@@ -802,6 +802,7 @@ int HttpStreamParser::DoParseResponseHeaders(int end_offset) {
     return ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION;
 
   response_->headers = headers;
+  response_->connection_info = HttpResponseInfo::CONNECTION_INFO_HTTP1;
   response_->vary_data.Init(*request_, *response_->headers);
   DVLOG(1) << __FUNCTION__ << "()"
            << " content_length = \""

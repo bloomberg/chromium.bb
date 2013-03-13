@@ -310,6 +310,8 @@ TEST_F(QuicNetworkTransactionTest, ForceQuic) {
   ASSERT_TRUE(response->headers != NULL);
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3,
+            response->connection_info);
 
   std::string response_data;
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));

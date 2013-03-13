@@ -184,6 +184,14 @@ class SpdyNetworkTransactionSpdy2Test
       ASSERT_TRUE(response->headers != NULL);
       EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
       EXPECT_EQ(spdy_enabled_, response->was_fetched_via_spdy);
+      EXPECT_EQ(spdy_enabled_, response->was_fetched_via_spdy);
+      if (HttpStreamFactory::spdy_enabled()) {
+        EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_SPDY2,
+                  response->connection_info);
+      } else {
+        EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1,
+                  response->connection_info);
+      }
       if (test_type_ == SPDYNPN && spdy_enabled_) {
         EXPECT_TRUE(response->was_npn_negotiated);
       } else {

@@ -468,6 +468,8 @@ int QuicHttpStream::ParseResponseHeaders() {
   // Put the peer's IP address and port into the response.
   IPEndPoint address = stream_->GetPeerAddress();
   response_info_->socket_address = HostPortPair::FromIPEndPoint(address);
+  response_info_->connection_info =
+      HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3;
   response_info_->vary_data.Init(*request_info_, *response_info_->headers);
   response_info_->was_npn_negotiated = true;
   response_info_->npn_negotiated_protocol = "quic/1+spdy/3";

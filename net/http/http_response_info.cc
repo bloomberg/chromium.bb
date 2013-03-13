@@ -81,6 +81,9 @@ enum {
   // This bit is set if the response info has protocol version.
   RESPONSE_INFO_HAS_NPN_NEGOTIATED_PROTOCOL = 1 << 17,
 
+  // This bit is set if the response info has connection info.
+  RESPONSE_INFO_HAS_CONNECTION_INFO = 1 << 18,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -89,7 +92,8 @@ HttpResponseInfo::HttpResponseInfo()
     : was_cached(false),
       was_fetched_via_spdy(false),
       was_npn_negotiated(false),
-      was_fetched_via_proxy(false) {
+      was_fetched_via_proxy(false),
+      connection_info(CONNECTION_INFO_UNKNOWN) {
 }
 
 HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
@@ -99,6 +103,7 @@ HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
       was_fetched_via_proxy(rhs.was_fetched_via_proxy),
       socket_address(rhs.socket_address),
       npn_negotiated_protocol(rhs.npn_negotiated_protocol),
+      connection_info(rhs.connection_info),
       request_time(rhs.request_time),
       response_time(rhs.response_time),
       auth_challenge(rhs.auth_challenge),
@@ -134,7 +139,7 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
                                       bool* response_truncated) {
   PickleIterator iter(pickle);
 
-  // read flags and verify version
+  // Read flags and verify version
   int flags;
   if (!pickle.ReadInt(&iter, &flags))
     return false;
@@ -145,24 +150,24 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
     return false;
   }
 
-  // read request-time
+  // Read request-time
   int64 time_val;
   if (!pickle.ReadInt64(&iter, &time_val))
     return false;
   request_time = Time::FromInternalValue(time_val);
   was_cached = true;  // Set status to show cache resurrection.
 
-  // read response-time
+  // Read response-time
   if (!pickle.ReadInt64(&iter, &time_val))
     return false;
   response_time = Time::FromInternalValue(time_val);
 
-  // read response-headers
+  // Read response-headers
   headers = new HttpResponseHeaders(pickle, &iter);
   if (headers->response_code() == -1)
     return false;
 
-  // read ssl-info
+  // Read ssl-info
   if (flags & RESPONSE_INFO_HAS_CERT) {
     X509Certificate::PickleType type = GetPickleTypeForVersion(version);
     ssl_info.cert = X509Certificate::CreateFromPickle(pickle, &iter, type);
@@ -189,7 +194,7 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
     ssl_info.connection_status = connection_status;
   }
 
-  // read vary-data
+  // Read vary-data
   if (flags & RESPONSE_INFO_HAS_VARY_DATA) {
     if (!vary_data.InitFromPickle(pickle, &iter))
       return false;
@@ -209,10 +214,22 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
     return false;
   }
 
-  // read protocol-version.
+  // Read protocol-version.
   if (flags & RESPONSE_INFO_HAS_NPN_NEGOTIATED_PROTOCOL) {
     if (!pickle.ReadString(&iter, &npn_negotiated_protocol))
       return false;
+  }
+
+  // Read connection info.
+  if (flags & RESPONSE_INFO_HAS_CONNECTION_INFO) {
+    int value;
+    if (!pickle.ReadInt(&iter, &value))
+      return false;
+
+    if (value > static_cast<int>(CONNECTION_INFO_UNKNOWN) &&
+        value < static_cast<int>(NUM_OF_CONNECTION_INFOS)) {
+      connection_info = static_cast<ConnectionInfo>(value);
+    }
   }
 
   was_fetched_via_spdy = (flags & RESPONSE_INFO_WAS_SPDY) != 0;
@@ -250,6 +267,8 @@ void HttpResponseInfo::Persist(Pickle* pickle,
   }
   if (was_fetched_via_proxy)
     flags |= RESPONSE_INFO_WAS_PROXY;
+  if (connection_info != CONNECTION_INFO_UNKNOWN)
+    flags |= RESPONSE_INFO_HAS_CONNECTION_INFO;
 
   pickle->WriteInt(flags);
   pickle->WriteInt64(request_time.ToInternalValue());
@@ -287,6 +306,9 @@ void HttpResponseInfo::Persist(Pickle* pickle,
 
   if (was_npn_negotiated)
     pickle->WriteString(npn_negotiated_protocol);
+
+  if (connection_info != CONNECTION_INFO_UNKNOWN)
+    pickle->WriteInt(static_cast<int>(connection_info));
 }
 
 }  // namespace net

@@ -410,6 +410,16 @@ int SpdyHttpStream::OnResponseReceived(const SpdyHeaderBlock& response,
   response_info_->npn_negotiated_protocol =
       SSLClientSocket::NextProtoToString(protocol_negotiated);
   response_info_->request_time = stream_->GetRequestTime();
+  switch (spdy_session_->GetProtocolVersion()) {
+    case 2:
+      response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY2;
+      break;
+    case 3:
+      response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY3;
+      break;
+    default:
+      NOTREACHED();
+  }
   response_info_->vary_data.Init(*request_info_, *response_info_->headers);
   // TODO(ahendrickson): This is recorded after the entire SYN_STREAM control
   // frame has been received and processed.  Move to framer?
