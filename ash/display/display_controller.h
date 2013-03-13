@@ -180,6 +180,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
  private:
+  // Create a root window for given |display|.
+  aura::RootWindow* CreateRootWindowForDisplay(const gfx::Display& display);
+
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
   aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);

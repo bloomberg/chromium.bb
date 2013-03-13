@@ -92,6 +92,7 @@ RootWindowHost* CreateHost(RootWindow* root_window,
 
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
+      initial_root_window_scale(1.0f),
       host(NULL) {
 }
 
@@ -117,8 +118,10 @@ RootWindow::RootWindow(const CreateParams& params)
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)),
+      root_window_scale_(1.0f) {
   SetName("RootWindow");
+  root_window_scale_ = params.initial_root_window_scale;
   host_->SetInsets(params.initial_insets);
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));
@@ -198,13 +201,20 @@ gfx::Size RootWindow::GetHostSize() const {
 }
 
 void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
-  SetHostBoundsAndInsets(bounds_in_pixel, gfx::Insets());
+  SetHostBoundsAndInsetsAndRootWindowScale(
+      bounds_in_pixel, gfx::Insets(), 1.0f);
 }
 
-void RootWindow::SetHostBoundsAndInsets(const gfx::Rect& bounds_in_pixel,
-                                        const gfx::Insets& insets_in_pixel) {
+void RootWindow::SetHostBoundsAndInsetsAndRootWindowScale(
+    const gfx::Rect& bounds_in_pixel,
+    const gfx::Insets& insets_in_pixel,
+    float root_window_scale) {
   DCHECK(!bounds_in_pixel.IsEmpty());
   DispatchHeldMouseMove();
+  root_window_scale_ = root_window_scale;
+  // Scale the composited result if the |root_window_scale_| is specified,
+  // rather than sacling each layers.
+  layer()->SetForceRenderSurface(root_window_scale_ != 1.0f);
   host_->SetInsets(insets_in_pixel);
   host_->SetBounds(bounds_in_pixel);
   synthesize_mouse_move_ = false;
@@ -460,15 +470,16 @@ void RootWindow::SetTransform(const gfx::Transform& transform) {
 
 void RootWindow::SetTransformInternal(const gfx::Transform& transform) {
   gfx::Insets insets = host_->GetInsets();
+  gfx::Transform translate;
   if (insets.top() != 0 || insets.left() != 0) {
     float device_scale_factor = GetDeviceScaleFactor();
-    gfx::Transform translate;
     translate.Translate(insets.left() / device_scale_factor,
                         insets.top() / device_scale_factor);
     Window::SetTransform(translate * transform);
-  } else {
-    Window::SetTransform(transform);
   }
+  float invert = 1.0f / root_window_scale_;
+  translate.Scale(invert, invert);
+  Window::SetTransform(translate * transform);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -748,6 +759,15 @@ void RootWindow::UpdateWindowSize(const gfx::Size& host_size) {
   bounds = ui::ConvertRectToDIP(layer(), bounds);
   gfx::RectF new_bounds(bounds);
   layer()->transform().TransformRect(&new_bounds);
+
+  // It makes little sense to scale beyond the original
+  // resolution.
+  DCHECK_LE(root_window_scale_, GetDeviceScaleFactor());
+  // Apply |root_window_scale_| twice as the downscaling
+  // is already applied once in |SetTransformInternal()|.
+  // TODO(oshima): This is a bit ugly. Consider specifying
+  // the pseudo host resolution instead.
+  new_bounds.Scale(root_window_scale_ * root_window_scale_);
   // Ignore the origin because RootWindow's insets are handled by
   // the transform.
   SetBounds(gfx::Rect(gfx::ToNearestRect(new_bounds).size()));

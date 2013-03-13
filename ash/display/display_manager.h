@@ -100,9 +100,6 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // Updates the internal display data and notifies observers about the changes.
   void UpdateDisplays(const std::vector<DisplayInfo>& display_info_list);
 
-  // Create a root window for given |display|.
-  aura::RootWindow* CreateRootWindowForDisplay(const gfx::Display& display);
-
   // Obsoleted: Do not use in new code.
   // Returns the display at |index|. The display at 0 is
   // no longer considered "primary".

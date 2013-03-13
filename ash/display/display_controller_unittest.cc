@@ -678,5 +678,32 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
+#if defined(OS_WIN)
+// On Win8 bots, the host window can't be resized and
+// SetTransform updates the window using the orignal host window
+// size.
+#define MAYBE_ScaleRootWindow DISABLED_ScaleRootWindow
+#else
+#define MAYBE_ScaleRootWindow ScaleRootWindow
+#endif
+
+TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
+  TestEventHandler event_handler;
+  Shell::GetInstance()->AddPreTargetHandler(&event_handler);
+
+  UpdateDisplay("600x400*2@1.5");
+
+  gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
+  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
+
+  aura::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseTo(599, 200);
+  EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
+
+  Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+}
+
 }  // namespace test
 }  // namespace ash

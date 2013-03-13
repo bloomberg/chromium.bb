@@ -8,9 +8,12 @@
 
 #include "ash/display/display_info.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/size_f.h"
 
 #if defined(OS_WIN)
 #include "ui/aura/root_window_host.h"
@@ -41,17 +44,23 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
 #endif
+  std::string main_spec = spec;
 
-  int x = 0, y = 0, width, height;
-  float scale = 1.0f;
+  float ui_scale = 1.0f;
   std::vector<std::string> parts;
-  size_t count = Tokenize(spec, "/", &parts);
+  if (Tokenize(main_spec, "@", &parts) == 2) {
+    double scale_in_double = 0;
+    if (base::StringToDouble(parts[1], &scale_in_double))
+      ui_scale = scale_in_double;
+    main_spec = parts[0];
+  }
+
+  size_t count = Tokenize(main_spec, "/", &parts);
   Rotation rotation(ROTATE_0);
   bool has_overscan = false;
-  std::string main_spec = spec;
   if (count) {
     main_spec = parts[0];
-    if (count == 2) {
+    if (count >= 2) {
       std::string options = parts[1];
       for (size_t i = 0; i < options.size(); ++i) {
         char c = options[i];
@@ -73,17 +82,21 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
     }
   }
 
-  if (sscanf(main_spec.c_str(), "%dx%d*%f", &width, &height, &scale) >= 2 ||
+  int x = 0, y = 0, width, height;
+  float device_scale_factor = 1.0f;
+  if (sscanf(main_spec.c_str(), "%dx%d*%f",
+             &width, &height, &device_scale_factor) >= 2 ||
       sscanf(main_spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
-             &scale) >= 4) {
+             &device_scale_factor) >= 4) {
     bounds.SetRect(x, y, width, height);
   }
   if (id == gfx::Display::kInvalidDisplayID)
     id = synthesized_display_id++;
   DisplayInfo display_info(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
-  display_info.set_device_scale_factor(scale);
+  display_info.set_device_scale_factor(device_scale_factor);
   display_info.set_rotation(rotation);
+  display_info.set_ui_scale(ui_scale);
   display_info.SetBounds(bounds);
   DVLOG(1) << "DisplayInfoFromSpec info=" << display_info.ToString()
            << ", spec=" << spec;
@@ -96,7 +109,8 @@ DisplayInfo::DisplayInfo()
       rotation_(ROTATE_0),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
-      has_custom_overscan_insets_(false) {
+      has_custom_overscan_insets_(false),
+      ui_scale_(1.0f) {
 }
 
 DisplayInfo::DisplayInfo(int64 id,
@@ -108,7 +122,8 @@ DisplayInfo::DisplayInfo(int64 id,
       rotation_(ROTATE_0),
       device_scale_factor_(1.0f),
       overscan_insets_in_dip_(0, 0, 0, 0),
-      has_custom_overscan_insets_(false) {
+      has_custom_overscan_insets_(false),
+      ui_scale_(1.0f) {
 }
 
 DisplayInfo::~DisplayInfo() {
@@ -124,6 +139,7 @@ void DisplayInfo::CopyFromNative(const DisplayInfo& native_info) {
   size_in_pixel_ = native_info.size_in_pixel_;
   device_scale_factor_ = native_info.device_scale_factor_;
   rotation_ = native_info.rotation_;
+  ui_scale_ = native_info.ui_scale_;
   // Don't copy insets as it may be given by preference.  |rotation_|
   // is treated as a native so that it can be specified in
   // |CreateFromSpec|.
@@ -158,6 +174,9 @@ void DisplayInfo::UpdateDisplaySize() {
 
   if (rotation_ == ROTATE_90 || rotation_ == ROTATE_270)
     size_in_pixel_.SetSize(size_in_pixel_.height(), size_in_pixel_.width());
+  gfx::SizeF size_f(size_in_pixel_);
+  size_f.Scale(ui_scale_);
+  size_in_pixel_ = gfx::ToRoundedSize(size_f);
 }
 
 void DisplayInfo::SetOverscanInsets(bool custom,
@@ -174,13 +193,14 @@ std::string DisplayInfo::ToString() const {
   int rotation_degree = static_cast<int>(rotation_) * 90;
   return base::StringPrintf(
       "DisplayInfo[%lld] bounds=%s, size=%s, scale=%f, "
-      "overscan=%s, rotation=%d",
+      "overscan=%s, rotation=%d, ui-scale=%f",
       static_cast<long long int>(id_),
       bounds_in_pixel_.ToString().c_str(),
       size_in_pixel_.ToString().c_str(),
       device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(),
-      rotation_degree);
+      rotation_degree,
+      ui_scale_);
 }
 
 }  // namespace internal

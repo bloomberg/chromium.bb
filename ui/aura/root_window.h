@@ -71,6 +71,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
     gfx::Insets initial_insets;
 
+    float initial_root_window_scale;
+
     // A host to use in place of the default one that RootWindow will create.
     // NULL by default.
     RootWindowHost* host;
@@ -107,8 +109,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Sets the bounds and insets of the host window.
   void SetHostBounds(const gfx::Rect& size_in_pizel);
-  void SetHostBoundsAndInsets(const gfx::Rect& bounds_in_pixel,
-                              const gfx::Insets& insets_in_pixel);
+  void SetHostBoundsAndInsetsAndRootWindowScale(
+      const gfx::Rect& bounds_in_pixel,
+      const gfx::Insets& insets_in_pixel,
+      float root_window_scale);
 
   // Returns where the RootWindow is on screen.
   gfx::Point GetHostOrigin() const;
@@ -423,6 +427,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   base::WeakPtrFactory<RootWindow> held_mouse_event_factory_;
 
   scoped_ptr<ui::ViewProp> prop_;
+
+  // The scale of the root window. This is used to expand the
+  // area of the root window (useful in HighDPI display).
+  // Note that this should not be confused with the device scale
+  // factor, which specfies the pixel density of the display.
+  float root_window_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

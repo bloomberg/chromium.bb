@@ -98,6 +98,9 @@ const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 
+// Specifies the internal display's ui scale.
+const char kAshInternalDisplayUIScale[] = "ash-internal-display-ui-scale";
+
 // Overrides all displays' orientation. The value should be one of 0
 // (normal), 1 (90 degrees clockwise), 2 (180 degrees) or 3 (270
 // degrees clockwise).

@@ -9,7 +9,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
-#include "ash/host/root_window_host_factory.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -337,26 +336,6 @@ void DisplayManager::UpdateDisplays(
 #endif
 }
 
-RootWindow* DisplayManager::CreateRootWindowForDisplay(
-    const gfx::Display& display) {
-  static int root_window_count = 0;
-  const DisplayInfo& display_info = GetDisplayInfo(display);
-  const gfx::Rect& bounds_in_pixel = display_info.bounds_in_pixel();
-  RootWindow::CreateParams params(bounds_in_pixel);
-  params.host = Shell::GetInstance()->root_window_host_factory()->
-      CreateRootWindowHost(bounds_in_pixel);
-  params.initial_insets = display_info.GetOverscanInsetsInPixel();
-  aura::RootWindow* root_window = new aura::RootWindow(params);
-  root_window->SetName(StringPrintf("RootWindow-%d", root_window_count++));
-
-  // No need to remove RootWindowObserver because
-  // the DisplayManager object outlives RootWindow objects.
-  root_window->AddRootWindowObserver(this);
-  root_window->SetProperty(kDisplayIdKey, display.id());
-  root_window->Init();
-  return root_window;
-}
-
 gfx::Display* DisplayManager::GetDisplayAt(size_t index) {
   return index < displays_.size() ? &displays_[index] : NULL;
 }
@@ -457,10 +436,9 @@ void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
     gfx::Size old_display_size_in_pixel = display.GetSizeInPixel();
     display_info_[display.id()].SetBounds(
         gfx::Rect(root->GetHostOrigin(), root->GetHostSize()));
-    const gfx::Size& new_display_size_in_pixel =
-        display_info_[display.id()].size_in_pixel();
-    if (old_display_size_in_pixel != new_display_size_in_pixel) {
-      display.SetSize(new_display_size_in_pixel);
+    const gfx::Size& new_root_size = root->bounds().size();
+    if (old_size != new_root_size) {
+      display.SetSize(display_info_[display.id()].size_in_pixel());
       Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
     }
   }
@@ -583,6 +561,20 @@ void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
     info->second.CopyFromNative(new_info);
   else
     display_info_[new_info.id()] = new_info;
+  bool on_chromeos = false;
+#if defined(OS_CHROMEOS)
+  on_chromeos = base::chromeos::IsRunningOnChromeOS();
+#endif
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if ((new_info.id() == gfx::Display::InternalDisplayId() || !on_chromeos) &&
+      command_line->HasSwitch(switches::kAshInternalDisplayUIScale)) {
+    double scale_in_double = 1.0;
+    std::string value = CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kAshInternalDisplayUIScale);
+    if (!base::StringToDouble(value, &scale_in_double))
+      LOG(ERROR) << "Failed to parse the display scale:" << value;
+    display_info_[new_info.id()].set_ui_scale(scale_in_double);
+  }
 
   display_info_[new_info.id()].UpdateDisplaySize();
 }

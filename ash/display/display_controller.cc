@@ -8,6 +8,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
+#include "ash/host/root_window_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -667,8 +668,10 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
   aura::RootWindow* root = root_windows_[display.id()];
-  root->SetHostBoundsAndInsets(display_info.bounds_in_pixel(),
-                               display_info.GetOverscanInsetsInPixel());
+  root->SetHostBoundsAndInsetsAndRootWindowScale(
+      display_info.bounds_in_pixel(),
+      display_info.GetOverscanInsetsInPixel(),
+      display_info.ui_scale());
   SetDisplayPropertiesOnHostWindow(root, display);
 }
 
@@ -687,9 +690,10 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     UpdateDisplayBoundsForLayout();
     const internal::DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display);
-    root_windows_[display.id()]->SetHostBoundsAndInsets(
+    root_windows_[display.id()]->SetHostBoundsAndInsetsAndRootWindowScale(
         display_info.bounds_in_pixel(),
-        display_info.GetOverscanInsetsInPixel());
+        display_info.GetOverscanInsetsInPixel(),
+        display_info.ui_scale());
   } else {
     DCHECK(!root_windows_.empty());
     aura::RootWindow* root = AddRootWindowForDisplay(display);
@@ -747,10 +751,31 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
 }
 
+aura::RootWindow* DisplayController::CreateRootWindowForDisplay(
+    const gfx::Display& display) {
+  static int root_window_count = 0;
+  const internal::DisplayInfo& display_info =
+      GetDisplayManager()->GetDisplayInfo(display);
+  const gfx::Rect& bounds_in_pixel = display_info.bounds_in_pixel();
+  aura::RootWindow::CreateParams params(bounds_in_pixel);
+  params.host = Shell::GetInstance()->root_window_host_factory()->
+      CreateRootWindowHost(bounds_in_pixel);
+  params.initial_insets = display_info.GetOverscanInsetsInPixel();
+  params.initial_root_window_scale = display_info.ui_scale();
+  aura::RootWindow* root_window = new aura::RootWindow(params);
+  root_window->SetName(StringPrintf("RootWindow-%d", root_window_count++));
+
+  // No need to remove RootWindowObserver because
+  // the DisplayManager object outlives RootWindow objects.
+  root_window->AddRootWindowObserver(GetDisplayManager());
+  root_window->SetProperty(internal::kDisplayIdKey, display.id());
+  root_window->Init();
+  return root_window;
+}
+
 aura::RootWindow* DisplayController::AddRootWindowForDisplay(
     const gfx::Display& display) {
-  aura::RootWindow* root =
-      GetDisplayManager()->CreateRootWindowForDisplay(display);
+  aura::RootWindow* root = CreateRootWindowForDisplay(display);
   root_windows_[display.id()] = root;
   SetDisplayPropertiesOnHostWindow(root, display);
 
