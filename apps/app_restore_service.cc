@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -103,8 +104,9 @@ void AppRestoreService::RecordAppStop(const std::string& extension_id) {
 void AppRestoreService::RestoreApp(
     const Extension* extension,
     const std::vector<SavedFileEntry>& file_entries) {
-  // TODO(koz): Make |file_entries| available to the newly restarted app.
-  AppEventRouter::DispatchOnRestartedEvent(profile_, extension);
+  extensions::RestartPlatformAppWithFileEntries(profile_,
+                                                extension,
+                                                file_entries);
 }
 
 }  // namespace apps

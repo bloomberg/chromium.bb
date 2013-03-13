@@ -36,8 +36,7 @@ binding.registerCustomHook(function(bindingsAPI) {
 
         var fileSystemId = response.fileSystemId;
         var baseName = response.baseName;
-        // TODO(koz): Generate a persistent id in the browser and use it here.
-        var id = fileSystemId + ":" + baseName;
+        var id = response.id;
         var fs = GetIsolatedFileSystem(fileSystemId);
 
         try {

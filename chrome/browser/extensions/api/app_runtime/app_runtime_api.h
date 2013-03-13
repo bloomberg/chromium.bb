@@ -18,14 +18,20 @@ namespace extensions {
 
 class Extension;
 
+namespace app_file_handler_util {
+struct GrantedFileEntry;
+}
+
 class AppEventRouter {
  public:
   // Dispatches the onLaunched event to the given app, providing no launch
   // data.
   static void DispatchOnLaunchedEvent(Profile* profile,
                                       const Extension* extension);
-  static void DispatchOnRestartedEvent(Profile* profile,
-                                       const Extension* extension);
+  static void DispatchOnRestartedEvent(
+      Profile* profile,
+      const Extension* extension,
+      const std::vector<app_file_handler_util::GrantedFileEntry>& file_entries);
 
   // TODO(benwells): Update this comment, it is out of date.
   // Dispatches the onLaunched event to the given app, providing launch data of

@@ -15,6 +15,38 @@ var appNatives = requireNative('app_runtime');
 var DeserializeString = appNatives.DeserializeString;
 var SerializeToString = appNatives.SerializeToString;
 var CreateBlob = appNatives.CreateBlob;
+var entryIdManager = require('entryIdManager');
+
+chromeHidden.Event.registerArgumentMassager('app.runtime.onRestarted',
+    function(args, dispatch) {
+  // These file entries don't get dispatched, we just use this hook to register
+  // them all with entryIdManager.
+  var fileEntries = args[0];
+
+  var pendingCallbacks = fileEntries.length;
+
+  var dispatchIfNoPendingCallbacks = function() {
+    if (pendingCallbacks == 0)
+      dispatch([]);
+  };
+
+  for (var i = 0; i < fileEntries.length; i++) {
+    var fe = fileEntries[i];
+    var fs = GetIsolatedFileSystem(fe.fileSystemId);
+    (function(fe, fs) {
+      fs.root.getFile(fe.baseName, {}, function(fileEntry) {
+        entryIdManager.registerEntry(fe.id, fileEntry);
+        pendingCallbacks--;
+        dispatchIfNoPendingCallbacks();
+      }, function(err) {
+        console.error('Error getting fileEntry, code: ' + err.code);
+        pendingCallbacks--;
+        dispatchIfNoPendingCallbacks();
+      });
+    })(fe, fs);
+  }
+  dispatchIfNoPendingCallbacks();
+});
 
 chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
     function(args, dispatch) {

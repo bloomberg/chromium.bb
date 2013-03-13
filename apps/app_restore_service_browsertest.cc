@@ -98,4 +98,52 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   ASSERT_TRUE(file_entries.empty());
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsRestored) {
+  content::WindowedNotificationObserver extension_suspended(
+      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::NotificationService::AllSources());
+
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  base::FilePath temp_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),
+                                                  &temp_file));
+
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &temp_file);
+
+  ExtensionTestMessageListener file_written_listener("fileWritten", false);
+  ExtensionTestMessageListener access_ok_listener(
+      "restartedFileAccessOK", false);
+
+  const Extension* extension =
+      LoadAndLaunchPlatformApp("file_access_restored_test");
+  ASSERT_TRUE(extension);
+  file_written_listener.WaitUntilSatisfied();
+
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+
+  // Record the file entries in prefs because when the app gets suspended it
+  // will have them all cleared.
+  std::vector<SavedFileEntry> file_entries;
+  extension_prefs->GetSavedFileEntries(extension->id(), &file_entries);
+  extension_suspended.Wait();
+
+  // Simulate a restart by populating the preferences as if the browser didn't
+  // get time to clean itself up.
+  extension_prefs->SetExtensionRunning(extension->id(), true);
+  for (std::vector<SavedFileEntry>::const_iterator it = file_entries.begin();
+       it != file_entries.end(); ++it) {
+    extension_prefs->AddSavedFileEntry(
+        extension->id(), it->id, it->path, it->writable);
+  }
+
+  apps::AppRestoreServiceFactory::GetForProfile(browser()->profile())->
+      HandleStartup(true);
+
+  access_ok_listener.WaitUntilSatisfied();
+}
+
 }  // namespace apps

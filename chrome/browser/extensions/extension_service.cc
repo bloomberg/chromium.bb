@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
@@ -743,6 +744,11 @@ void ExtensionService::ReloadExtensionWithEvents(
   }
 
   on_load_events_[extension_id] = events;
+  if (events & EVENT_RESTARTED) {
+    extension_prefs_->GetSavedFileEntries(
+        extension_id, &on_restart_file_entries_[extension_id]);
+  }
+
 
   if (delayed_updates_for_idle_.Contains(extension_id)) {
     FinishDelayedInstallation(extension_id);
@@ -2910,9 +2916,16 @@ void ExtensionService::DoPostLoadTasks(const Extension* extension) {
     if (events_to_fire & EVENT_LAUNCHED)
       queue->AddPendingTask(profile(), extension->id(),
                             base::Bind(&ExtensionService::LaunchApplication));
-    if (events_to_fire & EVENT_RESTARTED)
+    if (events_to_fire & EVENT_RESTARTED) {
+      SavedFileEntryMap::iterator it =
+          on_restart_file_entries_.find(extension->id());
+      if (it == on_restart_file_entries_.end())
+        NOTREACHED();
       queue->AddPendingTask(profile(), extension->id(),
-                            base::Bind(&ExtensionService::RestartApplication));
+                            base::Bind(&ExtensionService::RestartApplication,
+                                       it->second));
+      on_restart_file_entries_.erase(it);
+    }
   }
 
   on_load_events_.erase(it);
@@ -2933,13 +2946,14 @@ void ExtensionService::LaunchApplication(
 
 // static
 void ExtensionService::RestartApplication(
+    std::vector<extensions::app_file_handler_util::SavedFileEntry> file_entries,
     extensions::ExtensionHost* extension_host) {
   if (!extension_host)
     return;
 
 #if !defined(OS_ANDROID)
-  extensions::AppEventRouter::DispatchOnRestartedEvent(
-      extension_host->profile(), extension_host->extension());
+  extensions::RestartPlatformAppWithFileEntries(
+      extension_host->profile(), extension_host->extension(), file_entries);
 #endif
 }
 

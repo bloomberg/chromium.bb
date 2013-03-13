@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_LAUNCHER_H_
 
 #include <string>
+#include <vector>
 
 class CommandLine;
 class Profile;
@@ -21,6 +22,10 @@ class WebContents;
 namespace extensions {
 
 class Extension;
+
+namespace app_file_handler_util {
+struct SavedFileEntry;
+}
 
 // Launches the platform app |extension|. Creates appropriate launch data for
 // the |command_line| fields present. |extension| and |profile| must not be
@@ -43,6 +48,12 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
                                       const Extension* extension,
                                       const std::string& handler_id,
                                       const base::FilePath& file_path);
+
+void RestartPlatformAppWithFileEntries(
+    Profile* profile,
+    const Extension* extension,
+    const std::vector<app_file_handler_util::SavedFileEntry>&
+        saved_file_entries);
 
 }  // namespace extensions
 

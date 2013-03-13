@@ -13,8 +13,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +36,9 @@ using content::BrowserThread;
 using extensions::app_file_handler_util::FileHandlerForId;
 using extensions::app_file_handler_util::FileHandlerCanHandleFileWithMimeType;
 using extensions::app_file_handler_util::FirstFileHandlerForMimeType;
+using extensions::app_file_handler_util::CreateFileEntry;
+using extensions::app_file_handler_util::GrantedFileEntry;
+using extensions::app_file_handler_util::SavedFileEntry;
 
 namespace extensions {
 
@@ -239,6 +245,70 @@ class PlatformAppPathLauncher
   DISALLOW_COPY_AND_ASSIGN(PlatformAppPathLauncher);
 };
 
+class SavedFileEntryLauncher
+    : public base::RefCountedThreadSafe<SavedFileEntryLauncher> {
+ public:
+  SavedFileEntryLauncher(
+      Profile* profile,
+      const Extension* extension,
+      const std::vector<SavedFileEntry>& file_entries)
+      : profile_(profile),
+        extension_(extension),
+        file_entries_(file_entries) {}
+
+  void Launch() {
+    // Access needs to be granted to the file or filesystem for the process
+    // associated with the extension. To do this the ExtensionHost is needed.
+    // This might not be available, or it might be in the process of being
+    // unloaded, in which case the lazy background task queue is used to load
+    // he extension and then call back to us.
+    extensions::LazyBackgroundTaskQueue* queue =
+        ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+    if (queue->ShouldEnqueueTask(profile_, extension_)) {
+      queue->AddPendingTask(profile_, extension_->id(), base::Bind(
+              &SavedFileEntryLauncher::GrantAccessToFilesAndLaunch,
+              this));
+      return;
+    }
+    ExtensionProcessManager* process_manager =
+        ExtensionSystem::Get(profile_)->process_manager();
+    extensions::ExtensionHost* host =
+        process_manager->GetBackgroundHostForExtension(extension_->id());
+    DCHECK(host);
+    GrantAccessToFilesAndLaunch(host);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<SavedFileEntryLauncher>;
+  ~SavedFileEntryLauncher() {}
+  void GrantAccessToFilesAndLaunch(ExtensionHost* host) {
+    int renderer_id = host->render_process_host()->GetID();
+    std::vector<GrantedFileEntry> granted_file_entries;
+    for (std::vector<SavedFileEntry>::const_iterator it =
+         file_entries_.begin(); it != file_entries_.end(); ++it) {
+      GrantedFileEntry file_entry = CreateFileEntry(
+          profile_, extension_->id(), renderer_id, it->path, it->writable);
+      file_entry.id = it->id;
+      granted_file_entries.push_back(file_entry);
+
+      // Record that we have granted this file permission.
+      ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile_)->
+          extension_service()->extension_prefs();
+      extension_prefs->AddSavedFileEntry(
+          host->extension()->id(), it->id, it->path, it->writable);
+    }
+    extensions::AppEventRouter::DispatchOnRestartedEvent(
+        profile_, extension_, granted_file_entries);
+  }
+
+  // The profile the app should be run in.
+  Profile* profile_;
+  // The extension providing the app.
+  const Extension* extension_;
+
+  std::vector<SavedFileEntry> file_entries_;
+};
+
 }  // namespace
 
 void LaunchPlatformApp(Profile* profile,
@@ -273,6 +343,15 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
   scoped_refptr<PlatformAppPathLauncher> launcher =
       new PlatformAppPathLauncher(profile, extension, file_path);
   launcher->LaunchWithHandler(handler_id);
+}
+
+void RestartPlatformAppWithFileEntries(
+    Profile* profile,
+    const Extension* extension,
+    const std::vector<SavedFileEntry>& file_entries) {
+  scoped_refptr<SavedFileEntryLauncher> launcher = new SavedFileEntryLauncher(
+      profile, extension, file_entries);
+  launcher->Launch();
 }
 
 }  // namespace extensions
