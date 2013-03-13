@@ -3246,13 +3246,10 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                                            error_checker=_error_checker)
 
   def testResolveAndVerifyArgsNonWorldLocalOnly(self):
-    pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
-                           cpv='dev-libs/B-1',
-                           ),
+    pinfolist = [cpu.PInfo(user_arg='dev-libs/B'),
                  ]
     cmdargs = ['--upgrade', '--unstable-ok']
-    result = self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs)
-    self.assertEquals(result, pinfolist)
+    self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs, error=RuntimeError)
 
   def testResolveAndVerifyArgsNonWorldUpstreamOnly(self):
     pinfolist = [cpu.PInfo(user_arg='dev-libs/B',
