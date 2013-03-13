@@ -105,6 +105,7 @@ cr.define('login', function() {
       this.frame_.hidden = show;
       $('signin-right').hidden = show;
       $('enterprise-info-container').hidden = show;
+      $('gaia-signin-divider').hidden = show;
     },
 
     /**
