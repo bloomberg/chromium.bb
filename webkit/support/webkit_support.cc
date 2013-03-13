@@ -122,6 +122,10 @@ void InitLogging() {
     // http://blogs.msdn.com/oldnewthing/archive/2004/07/27/198410.aspx
     UINT existing_flags = SetErrorMode(new_flags);
     SetErrorMode(existing_flags | new_flags);
+
+    // Don't pop up dialog on assertion failure, log to stdout instead.
+    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
   }
 #endif
 
