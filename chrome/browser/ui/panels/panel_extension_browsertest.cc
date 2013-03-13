@@ -153,47 +153,91 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
   ASSERT_TRUE(web_contents);
 
   WebKit::WebContextMenuData data;
-  content::ContextMenuParams params(data);
-  params.page_url = web_contents->GetURL();
-
-  // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
-  EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
   // Verify basic menu contents. The basic extension does not add any
   // context menu items so the panel's menu should include only the
   // developer tools.
-  scoped_ptr<PanelContextMenu> menu;
-  menu.reset(new PanelContextMenu(web_contents, params));
-  menu->Init();
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  {
+    content::ContextMenuParams params(data);
+    params.page_url = web_contents->GetURL();
+    // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
+
+    scoped_ptr<PanelContextMenu> menu(
+        new PanelContextMenu(web_contents, params));
+    menu->Init();
+
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  }
 
   // Verify expected menu contents for editable item.
-  params.is_editable = true;
-  menu.reset(new PanelContextMenu(web_contents, params));
-  menu->Init();
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
-  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
-  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
-  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  {
+    content::ContextMenuParams params(data);
+    params.is_editable = true;
+    params.page_url = web_contents->GetURL();
+    // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
+
+    scoped_ptr<PanelContextMenu> menu(
+        new PanelContextMenu(web_contents, params));
+    menu->Init();
+
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+    EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+    EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+    EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  }
 
   // Verify expected menu contents for text selection.
-  params.is_editable = false;
-  params.selection_text = ASCIIToUTF16("Select me");
-  menu.reset(new PanelContextMenu(web_contents, params));
-  menu->Init();
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
-  EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
-  EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  {
+    content::ContextMenuParams params(data);
+    params.page_url = web_contents->GetURL();
+    params.selection_text = ASCIIToUTF16("Select me");
+    // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
+
+    scoped_ptr<PanelContextMenu> menu(
+        new PanelContextMenu(web_contents, params));
+    menu->Init();
+
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+    EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  }
+
+  // Verify expected menu contexts for a link.
+  {
+    content::ContextMenuParams params(data);
+    params.page_url = web_contents->GetURL();
+    params.unfiltered_link_url = GURL("http://google.com/");
+    // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
+    EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
+
+    scoped_ptr<PanelContextMenu> menu(
+        new PanelContextMenu(web_contents, params));
+    menu->Init();
+
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_PASTE));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
+    EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+    EXPECT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
@@ -232,6 +276,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
   EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
   EXPECT_FALSE(menu->HasCommandWithId(IDC_BACK));
   EXPECT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
 
   // Execute the extension's custom menu item and wait for the extension's
   // script to tell us its onclick fired.

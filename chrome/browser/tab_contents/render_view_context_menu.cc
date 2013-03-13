@@ -596,6 +596,8 @@ void RenderViewContextMenu::AppendPanelItems() {
     AppendEditableItems();
   else if (has_selection)
     AppendCopyItem();
+  else if (params_.unfiltered_link_url.is_valid())
+    AppendLinkItems();
 
   // Only add extension items from this extension.
   int index = 0;
