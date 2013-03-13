@@ -41,7 +41,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host)
 
 void SingleThreadProxy::Start() {
   DebugScopedSetImplThread impl(this);
-  layer_tree_host_impl_ = layer_tree_host_->createLayerTreeHostImpl(this);
+  layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
 }
 
 SingleThreadProxy::~SingleThreadProxy() {
@@ -96,7 +96,7 @@ bool SingleThreadProxy::IsStarted() const {
 bool SingleThreadProxy::InitializeOutputSurface() {
   DCHECK(Proxy::IsMainThread());
   scoped_ptr<OutputSurface> outputSurface =
-      layer_tree_host_->createOutputSurface();
+      layer_tree_host_->CreateOutputSurface();
   if (!outputSurface.get())
     return false;
   output_surface_before_initialization_ = outputSurface.Pass();
@@ -136,7 +136,7 @@ bool SingleThreadProxy::RecreateOutputSurface() {
   DCHECK(output_surface_lost_);
 
   scoped_ptr<OutputSurface> outputSurface =
-      layer_tree_host_->createOutputSurface();
+      layer_tree_host_->CreateOutputSurface();
   if (!outputSurface.get())
     return false;
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
@@ -151,7 +151,7 @@ bool SingleThreadProxy::RecreateOutputSurface() {
   {
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     DebugScopedSetImplThread impl(this);
-    layer_tree_host_->deleteContentsTexturesOnImplThread(
+    layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resourceProvider());
     initialized =
         layer_tree_host_impl_->initializeRenderer(outputSurface.Pass());
@@ -171,7 +171,7 @@ bool SingleThreadProxy::RecreateOutputSurface() {
   return initialized;
 }
 
-void SingleThreadProxy::GetRenderingStats(RenderingStats* stats) {
+void SingleThreadProxy::CollectRenderingStats(RenderingStats* stats) {
   stats->totalCommitTime = total_commit_time_;
   stats->totalCommitCount = total_commit_count_;
   layer_tree_host_impl_->renderingStats(stats);
@@ -198,9 +198,9 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     base::TimeTicks startTime = base::TimeTicks::HighResNow();
     layer_tree_host_impl_->beginCommit();
 
-    layer_tree_host_->contentsTextureManager()->
+    layer_tree_host_->contents_texture_manager()->
         pushTexturePrioritiesToBackings();
-    layer_tree_host_->beginCommitOnImplThread(layer_tree_host_impl_.get());
+    layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
     scoped_ptr<ResourceUpdateController> updateController =
         ResourceUpdateController::Create(
@@ -210,7 +210,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
             layer_tree_host_impl_->resourceProvider());
     updateController->Finalize();
 
-    layer_tree_host_->finishCommitOnImplThread(layer_tree_host_impl_.get());
+    layer_tree_host_->FinishCommitOnImplThread(layer_tree_host_impl_.get());
 
     layer_tree_host_impl_->commitComplete();
 
@@ -226,13 +226,13 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     total_commit_time_ += endTime - startTime;
     total_commit_count_++;
   }
-  layer_tree_host_->commitComplete();
+  layer_tree_host_->CommitComplete();
   next_frame_is_newly_committed_frame_ = true;
 }
 
 void SingleThreadProxy::SetNeedsCommit() {
   DCHECK(Proxy::IsMainThread());
-  layer_tree_host_->scheduleComposite();
+  layer_tree_host_->ScheduleComposite();
 }
 
 void SingleThreadProxy::SetNeedsRedraw() {
@@ -265,7 +265,7 @@ void SingleThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     DebugScopedSetImplThread impl(this);
 
-    layer_tree_host_->deleteContentsTexturesOnImplThread(
+    layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resourceProvider());
     layer_tree_host_impl_.reset();
   }
@@ -273,7 +273,7 @@ void SingleThreadProxy::Stop() {
 }
 
 void SingleThreadProxy::setNeedsRedrawOnImplThread() {
-  layer_tree_host_->scheduleComposite();
+  layer_tree_host_->ScheduleComposite();
 }
 
 void SingleThreadProxy::didUploadVisibleHighResolutionTileOnImplThread() {
@@ -282,11 +282,11 @@ void SingleThreadProxy::didUploadVisibleHighResolutionTileOnImplThread() {
 }
 
 void SingleThreadProxy::setNeedsCommitOnImplThread() {
-  layer_tree_host_->scheduleComposite();
+  layer_tree_host_->ScheduleComposite();
 }
 
 void SingleThreadProxy::setNeedsManageTilesOnImplThread() {
-  layer_tree_host_->scheduleComposite();
+  layer_tree_host_->ScheduleComposite();
 }
 
 void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(
@@ -294,17 +294,17 @@ void SingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(
     base::Time wall_clock_time) {
   DCHECK(Proxy::IsImplThread());
   DebugScopedSetMainThread main(this);
-  layer_tree_host_->setAnimationEvents(events.Pass(), wall_clock_time);
+  layer_tree_host_->SetAnimationEvents(events.Pass(), wall_clock_time);
 }
 
 bool SingleThreadProxy::reduceContentsTextureMemoryOnImplThread(
     size_t limit_bytes,
     int priority_cutoff) {
   DCHECK(IsImplThread());
-  if (!layer_tree_host_->contentsTextureManager())
+  if (!layer_tree_host_->contents_texture_manager())
     return false;
 
-  return layer_tree_host_->contentsTextureManager()->reduceMemoryOnImplThread(
+  return layer_tree_host_->contents_texture_manager()->reduceMemoryOnImplThread(
       limit_bytes, priority_cutoff, layer_tree_host_impl_->resourceProvider());
 }
 
@@ -317,13 +317,15 @@ void SingleThreadProxy::sendManagedMemoryStats() {
   DCHECK(Proxy::IsImplThread());
   if (!layer_tree_host_impl_.get())
     return;
-  if (!layer_tree_host_->contentsTextureManager())
+  if (!layer_tree_host_->contents_texture_manager())
     return;
 
+  PrioritizedResourceManager* contents_texture_manager =
+      layer_tree_host_->contents_texture_manager();
   layer_tree_host_impl_->sendManagedMemoryStats(
-      layer_tree_host_->contentsTextureManager()->memoryVisibleBytes(),
-      layer_tree_host_->contentsTextureManager()->memoryVisibleAndNearbyBytes(),
-      layer_tree_host_->contentsTextureManager()->memoryUseBytes());
+      contents_texture_manager->memoryVisibleBytes(),
+      contents_texture_manager->memoryVisibleAndNearbyBytes(),
+      contents_texture_manager->memoryUseBytes());
 }
 
 bool SingleThreadProxy::isInsideDraw() { return inside_draw_; }
@@ -369,12 +371,12 @@ void SingleThreadProxy::onSwapBuffersCompleteOnImplThread() { NOTREACHED(); }
 bool SingleThreadProxy::CommitAndComposite() {
   DCHECK(Proxy::IsMainThread());
 
-  if (!layer_tree_host_->initializeRendererIfNeeded())
+  if (!layer_tree_host_->InitializeRendererIfNeeded())
     return false;
 
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
-  if (renderer_capabilities_for_main_thread_.usingOffscreenContext3d &&
-      layer_tree_host_->needsOffscreenContext()) {
+  if (renderer_capabilities_for_main_thread_.using_offscreen_context3d &&
+      layer_tree_host_->needs_offscreen_context()) {
     offscreen_context_provider =
         layer_tree_host_->client()->OffscreenContextProviderForMainThread();
     if (offscreen_context_provider->InitializeOnMainThread())
@@ -383,17 +385,17 @@ bool SingleThreadProxy::CommitAndComposite() {
       offscreen_context_provider = NULL;
   }
 
-  layer_tree_host_->contentsTextureManager()->unlinkAndClearEvictedBackings();
+  layer_tree_host_->contents_texture_manager()->unlinkAndClearEvictedBackings();
 
   scoped_ptr<ResourceUpdateQueue> queue =
       make_scoped_ptr(new ResourceUpdateQueue);
-  layer_tree_host_->updateLayers(
-      *(queue.get()), layer_tree_host_impl_->memoryAllocationLimitBytes());
+  layer_tree_host_->UpdateLayers(
+      queue.get(), layer_tree_host_impl_->memoryAllocationLimitBytes());
 
-  layer_tree_host_->willCommit();
+  layer_tree_host_->WillCommit();
   DoCommit(queue.Pass());
   bool result = DoComposite(offscreen_context_provider);
-  layer_tree_host_->didBeginFrame();
+  layer_tree_host_->DidBeginFrame();
   return result;
 }
 
@@ -433,7 +435,7 @@ bool SingleThreadProxy::DoComposite(
         resourceProvider()->offscreen_context_provider();
     if (offscreen_contexts)
       offscreen_contexts->VerifyContexts();
-    layer_tree_host_->didLoseOutputSurface();
+    layer_tree_host_->DidLoseOutputSurface();
     return false;
   }
 
@@ -443,7 +445,7 @@ bool SingleThreadProxy::DoComposite(
 void SingleThreadProxy::DidSwapFrame() {
   if (next_frame_is_newly_committed_frame_) {
     next_frame_is_newly_committed_frame_ = false;
-    layer_tree_host_->didCommitAndDrawFrame();
+    layer_tree_host_->DidCommitAndDrawFrame();
   }
 }
 

@@ -98,13 +98,13 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     replica_layer_->SetLayerTreeHost(host);
 
   layer_animation_controller_->SetAnimationRegistrar(
-      host ? host->animationRegistrar() : NULL);
+      host ? host->animation_registrar() : NULL);
 
   if (host && layer_animation_controller_->has_any_animation())
-    host->setNeedsCommit();
+    host->SetNeedsCommit();
   if (host &&
       (!filters_.isEmpty() || !background_filters_.isEmpty() || filter_))
-    layer_tree_host_->setNeedsFilterContext();
+    layer_tree_host_->set_needs_filter_context();
 
 }
 
@@ -112,12 +112,12 @@ void Layer::SetNeedsCommit() {
   if (ignore_set_needs_commit_)
     return;
   if (layer_tree_host_)
-    layer_tree_host_->setNeedsCommit();
+    layer_tree_host_->SetNeedsCommit();
 }
 
 void Layer::SetNeedsFullTreeSync() {
   if (layer_tree_host_)
-    layer_tree_host_->setNeedsFullTreeSync();
+    layer_tree_host_->SetNeedsFullTreeSync();
 }
 
 gfx::Rect Layer::LayerRectToContentRect(const gfx::RectF& layer_rect) const {
@@ -363,7 +363,7 @@ void Layer::SetFilters(const WebKit::WebFilterOperations& filters) {
   filters_ = filters;
   SetNeedsCommit();
   if (!filters.isEmpty() && layer_tree_host_)
-    layer_tree_host_->setNeedsFilterContext();
+    layer_tree_host_->set_needs_filter_context();
 }
 
 void Layer::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
@@ -373,7 +373,7 @@ void Layer::SetFilter(const skia::RefPtr<SkImageFilter>& filter) {
   filter_ = filter;
   SetNeedsCommit();
   if (filter && layer_tree_host_)
-    layer_tree_host_->setNeedsFilterContext();
+    layer_tree_host_->set_needs_filter_context();
 }
 
 void Layer::SetBackgroundFilters(const WebKit::WebFilterOperations& filters) {
@@ -382,7 +382,7 @@ void Layer::SetBackgroundFilters(const WebKit::WebFilterOperations& filters) {
   background_filters_ = filters;
   SetNeedsCommit();
   if (!filters.isEmpty() && layer_tree_host_)
-    layer_tree_host_->setNeedsFilterContext();
+    layer_tree_host_->set_needs_filter_context();
 }
 
 void Layer::SetOpacity(float opacity) {
@@ -519,8 +519,8 @@ void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
   needs_display_ = true;
 
   // Simply mark the contents as dirty. For non-root layers, the call to
-  // setNeedsCommit will schedule a fresh compositing pass.
-  // For the root layer, setNeedsCommit has no effect.
+  // SetNeedsCommit will schedule a fresh compositing pass.
+  // For the root layer, SetNeedsCommit has no effect.
   if (DrawsContent() && !update_rect_.IsEmpty())
     SetNeedsCommit();
 }
@@ -539,7 +539,7 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
     return;
   is_container_for_fixed_position_layers_ = container;
 
-  if (layer_tree_host_ && layer_tree_host_->commitRequested())
+  if (layer_tree_host_ && layer_tree_host_->CommitRequested())
     return;
 
   // Only request a commit if we have a fixed positioned descendant.

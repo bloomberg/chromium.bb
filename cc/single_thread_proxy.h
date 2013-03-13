@@ -35,7 +35,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual bool InitializeRenderer() OVERRIDE;
   virtual bool RecreateOutputSurface() OVERRIDE;
-  virtual void GetRenderingStats(RenderingStats* stats) OVERRIDE;
+  virtual void CollectRenderingStats(RenderingStats* stats) OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;

@@ -33,7 +33,7 @@ public:
     MockLayerTreeHost()
         : LayerTreeHost(&m_fakeClient, LayerTreeSettings())
     {
-        initialize(scoped_ptr<Thread>(NULL));
+        Initialize(scoped_ptr<Thread>(NULL));
     }
 
 private:
@@ -70,11 +70,11 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     testLayer->SetIsDrawable(true);
     testLayer->SetBounds(gfx::Size(100, 100));
 
-    layer_tree_host_->setRootLayer(testLayer);
+    layer_tree_host_->SetRootLayer(testLayer);
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(testLayer->layer_tree_host(), layer_tree_host_.get());
 
-    layer_tree_host_->initializeRendererIfNeeded();
+    layer_tree_host_->InitializeRendererIfNeeded();
 
     PriorityCalculator calculator;
     ResourceUpdateQueue queue;
@@ -99,8 +99,8 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_TRUE(params.texture != NULL);
 
     // Upload the texture.
-    layer_tree_host_->contentsTextureManager()->setMaxMemoryLimitBytes(1024 * 1024);
-    layer_tree_host_->contentsTextureManager()->prioritizeTextures();
+    layer_tree_host_->contents_texture_manager()->setMaxMemoryLimitBytes(1024 * 1024);
+    layer_tree_host_->contents_texture_manager()->prioritizeTextures();
 
     scoped_ptr<OutputSurface> outputSurface;
     scoped_ptr<ResourceProvider> resourceProvider;
@@ -122,7 +122,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     {
         DebugScopedSetImplThread implThread(proxy());
         DebugScopedSetMainThreadBlocked mainThreadBlocked(proxy());
-        layer_tree_host_->contentsTextureManager()->clearAllMemory(resourceProvider.get());
+        layer_tree_host_->contents_texture_manager()->clearAllMemory(resourceProvider.get());
     }
 
     // Reupload after eviction
@@ -132,7 +132,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_EQ(queue.partialUploadSize(), 0);
 
     // PrioritizedResourceManager clearing
-    layer_tree_host_->contentsTextureManager()->unregisterTexture(params.texture);
+    layer_tree_host_->contents_texture_manager()->unregisterTexture(params.texture);
     EXPECT_EQ(NULL, params.texture->resourceManager());
     testLayer->SetTexturePriorities(calculator);
     ResourceUpdateQueue queue2;
@@ -141,7 +141,7 @@ TEST_F(NinePatchLayerTest, triggerFullUploadOnceWhenChangingBitmap)
     EXPECT_EQ(queue2.partialUploadSize(), 0);
     params = queue2.takeFirstFullUpload();
     EXPECT_TRUE(params.texture != NULL);
-    EXPECT_EQ(params.texture->resourceManager(), layer_tree_host_->contentsTextureManager());
+    EXPECT_EQ(params.texture->resourceManager(), layer_tree_host_->contents_texture_manager());
 }
 
 }  // namespace

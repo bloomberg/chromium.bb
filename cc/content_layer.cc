@@ -101,7 +101,7 @@ void ContentLayer::createUpdaterIfNeeded()
         m_updater = BitmapContentLayerUpdater::create(painter.Pass());
     m_updater->setOpaque(contents_opaque());
 
-    unsigned textureFormat = layer_tree_host()->rendererCapabilities().bestTextureFormat;
+    unsigned textureFormat = layer_tree_host()->GetRendererCapabilities().best_texture_format;
     setTextureFormat(textureFormat);
 }
 

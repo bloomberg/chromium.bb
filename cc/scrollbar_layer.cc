@@ -67,7 +67,7 @@ WebKit::WebScrollbar::Orientation ScrollbarLayer::Orientation() const {
 
 int ScrollbarLayer::MaxTextureSize() {
   DCHECK(layer_tree_host());
-  return layer_tree_host()->rendererCapabilities().maxTextureSize;
+  return layer_tree_host()->GetRendererCapabilities().max_texture_size;
 }
 
 float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
@@ -253,7 +253,8 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   if (layer_tree_host()->settings().solidColorScrollbars)
     return;
 
-  texture_format_ = layer_tree_host()->rendererCapabilities().bestTextureFormat;
+  texture_format_ =
+      layer_tree_host()->GetRendererCapabilities().best_texture_format;
 
   if (!back_track_updater_) {
     back_track_updater_ = CachingBitmapContentLayerUpdater::Create(
@@ -265,7 +266,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   }
   if (!back_track_) {
     back_track_ = back_track_updater_->createResource(
-        layer_tree_host()->contentsTextureManager());
+        layer_tree_host()->contents_texture_manager());
   }
 
   // Only create two-part track if we think the two parts could be different in
@@ -281,7 +282,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
     }
     if (!fore_track_) {
       fore_track_ = fore_track_updater_->createResource(
-          layer_tree_host()->contentsTextureManager());
+          layer_tree_host()->contents_texture_manager());
     }
   }
 
@@ -293,7 +294,7 @@ void ScrollbarLayer::CreateUpdaterIfNeeded() {
   }
   if (!thumb_) {
     thumb_ = thumb_updater_->createResource(
-        layer_tree_host()->contentsTextureManager());
+        layer_tree_host()->contents_texture_manager());
   }
 }
 

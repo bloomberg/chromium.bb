@@ -268,23 +268,23 @@ void RenderWidgetCompositor::SetSuppressScheduleComposite(bool suppress) {
 }
 
 void RenderWidgetCompositor::Animate(base::TimeTicks time) {
-  layer_tree_host_->updateAnimations(time);
+  layer_tree_host_->UpdateAnimations(time);
 }
 
 void RenderWidgetCompositor::Composite() {
-  layer_tree_host_->composite();
+  layer_tree_host_->Composite();
 }
 
 void RenderWidgetCompositor::GetRenderingStats(cc::RenderingStats* stats) {
-  layer_tree_host_->renderingStats(stats);
+  layer_tree_host_->CollectRenderingStats(stats);
 }
 
 skia::RefPtr<SkPicture> RenderWidgetCompositor::CapturePicture() {
-  return layer_tree_host_->capturePicture();
+  return layer_tree_host_->CapturePicture();
 }
 
 void RenderWidgetCompositor::EnableHidingTopControls(bool enable) {
-  layer_tree_host_->enableHidingTopControls(enable);
+  layer_tree_host_->EnableHidingTopControls(enable);
 }
 
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
@@ -296,37 +296,37 @@ bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
     impl_thread = cc::ThreadImpl::createForDifferentThread(
         compositor_message_loop_proxy);
   }
-  layer_tree_host_ = cc::LayerTreeHost::create(this,
+  layer_tree_host_ = cc::LayerTreeHost::Create(this,
                                                settings,
                                                impl_thread.Pass());
   return layer_tree_host_;
 }
 
 void RenderWidgetCompositor::setSurfaceReady() {
-  layer_tree_host_->setSurfaceReady();
+  layer_tree_host_->SetSurfaceReady();
 }
 
 void RenderWidgetCompositor::setRootLayer(const WebKit::WebLayer& layer) {
-  layer_tree_host_->setRootLayer(
+  layer_tree_host_->SetRootLayer(
       static_cast<const WebKit::WebLayerImpl*>(&layer)->layer());
 }
 
 void RenderWidgetCompositor::clearRootLayer() {
-  layer_tree_host_->setRootLayer(scoped_refptr<cc::Layer>());
+  layer_tree_host_->SetRootLayer(scoped_refptr<cc::Layer>());
 }
 
 void RenderWidgetCompositor::setViewportSize(
     const WebSize& layout_viewport_size,
     const WebSize& device_viewport_size) {
-  layer_tree_host_->setViewportSize(layout_viewport_size, device_viewport_size);
+  layer_tree_host_->SetViewportSize(layout_viewport_size, device_viewport_size);
 }
 
 WebSize RenderWidgetCompositor::layoutViewportSize() const {
-  return layer_tree_host_->layoutViewportSize();
+  return layer_tree_host_->layout_viewport_size();
 }
 
 WebSize RenderWidgetCompositor::deviceViewportSize() const {
-  return layer_tree_host_->deviceViewportSize();
+  return layer_tree_host_->device_viewport_size();
 }
 
 WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
@@ -335,28 +335,28 @@ WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
 }
 
 void RenderWidgetCompositor::setDeviceScaleFactor(float device_scale) {
-  layer_tree_host_->setDeviceScaleFactor(device_scale);
+  layer_tree_host_->SetDeviceScaleFactor(device_scale);
 }
 
 float RenderWidgetCompositor::deviceScaleFactor() const {
-  return layer_tree_host_->deviceScaleFactor();
+  return layer_tree_host_->device_scale_factor();
 }
 
 void RenderWidgetCompositor::setBackgroundColor(WebKit::WebColor color) {
-  layer_tree_host_->setBackgroundColor(color);
+  layer_tree_host_->set_background_color(color);
 }
 
 void RenderWidgetCompositor::setHasTransparentBackground(bool transparent) {
-  layer_tree_host_->setHasTransparentBackground(transparent);
+  layer_tree_host_->set_has_transparent_background(transparent);
 }
 
 void RenderWidgetCompositor::setVisible(bool visible) {
-  layer_tree_host_->setVisible(visible);
+  layer_tree_host_->SetVisible(visible);
 }
 
 void RenderWidgetCompositor::setPageScaleFactorAndLimits(
     float page_scale_factor, float minimum, float maximum) {
-  layer_tree_host_->setPageScaleFactorAndLimits(
+  layer_tree_host_->SetPageScaleFactorAndLimits(
       page_scale_factor, minimum, maximum);
 }
 
@@ -367,7 +367,7 @@ void RenderWidgetCompositor::startPageScaleAnimation(
     double duration_sec) {
   base::TimeDelta duration = base::TimeDelta::FromMicroseconds(
       duration_sec * base::Time::kMicrosecondsPerSecond);
-  layer_tree_host_->startPageScaleAnimation(
+  layer_tree_host_->StartPageScaleAnimation(
       gfx::Vector2d(destination.x, destination.y),
       use_anchor,
       new_page_scale,
@@ -375,65 +375,66 @@ void RenderWidgetCompositor::startPageScaleAnimation(
 }
 
 void RenderWidgetCompositor::setNeedsAnimate() {
-  layer_tree_host_->setNeedsAnimate();
+  layer_tree_host_->SetNeedsAnimate();
 }
 
 void RenderWidgetCompositor::setNeedsRedraw() {
   if (threaded_)
-    layer_tree_host_->setNeedsAnimate();
+    layer_tree_host_->SetNeedsAnimate();
   else
     widget_->scheduleAnimation();
 }
 
 bool RenderWidgetCompositor::commitRequested() const {
-  return layer_tree_host_->commitRequested();
+  return layer_tree_host_->CommitRequested();
 }
 
 void RenderWidgetCompositor::didStopFlinging() {
-  layer_tree_host_->didStopFlinging();
+  layer_tree_host_->DidStopFlinging();
 }
 
 void RenderWidgetCompositor::registerForAnimations(WebKit::WebLayer* layer) {
   cc::Layer* cc_layer = static_cast<WebKit::WebLayerImpl*>(layer)->layer();
   cc_layer->layer_animation_controller()->SetAnimationRegistrar(
-      layer_tree_host_->animationRegistrar());
+      layer_tree_host_->animation_registrar());
 }
 
-bool RenderWidgetCompositor::compositeAndReadback(void *pixels,
-                                                  const WebRect& rect) {
-  return layer_tree_host_->compositeAndReadback(pixels, rect);
+bool RenderWidgetCompositor::compositeAndReadback(
+    void *pixels, const WebRect& rect_in_device_viewport) {
+  return layer_tree_host_->CompositeAndReadback(pixels,
+                                                rect_in_device_viewport);
 }
 
 void RenderWidgetCompositor::finishAllRendering() {
-  layer_tree_host_->finishAllRendering();
+  layer_tree_host_->FinishAllRendering();
 }
 
 void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
-  layer_tree_host_->setDeferCommits(defer_commits);
+  layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
 void RenderWidgetCompositor::setShowFPSCounter(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
   debug_state.showFPSCounter = show;
-  layer_tree_host_->setDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowPaintRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
   debug_state.showPaintRects = show;
-  layer_tree_host_->setDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setShowDebugBorders(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
   debug_state.showDebugBorders = show;
-  layer_tree_host_->setDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::setContinuousPaintingEnabled(bool enabled) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
   debug_state.continuousPainting = enabled;
-  layer_tree_host_->setDebugState(debug_state);
+  layer_tree_host_->SetDebugState(debug_state);
 }
 
 void RenderWidgetCompositor::willBeginFrame() {

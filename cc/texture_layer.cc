@@ -56,9 +56,9 @@ TextureLayer::~TextureLayer()
 {
     if (layer_tree_host()) {
         if (m_textureId)
-            layer_tree_host()->acquireLayerTextures();
+            layer_tree_host()->AcquireLayerTextures();
         if (m_rateLimitContext && m_client)
-            layer_tree_host()->stopRateLimiter(m_client->context());
+            layer_tree_host()->StopRateLimiter(m_client->context());
     }
     if (m_ownMailbox)
         m_textureMailbox.RunReleaseCallback(m_textureMailbox.sync_point());
@@ -106,7 +106,7 @@ void TextureLayer::setPremultipliedAlpha(bool premultipliedAlpha)
 void TextureLayer::setRateLimitContext(bool rateLimit)
 {
     if (!rateLimit && m_rateLimitContext && m_client && layer_tree_host())
-        layer_tree_host()->stopRateLimiter(m_client->context());
+        layer_tree_host()->StopRateLimiter(m_client->context());
 
     m_rateLimitContext = rateLimit;
 }
@@ -117,7 +117,7 @@ void TextureLayer::setTextureId(unsigned id)
     if (m_textureId == id)
         return;
     if (m_textureId && layer_tree_host())
-        layer_tree_host()->acquireLayerTextures();
+        layer_tree_host()->AcquireLayerTextures();
     m_textureId = id;
     SetNeedsCommit();
 }
@@ -138,7 +138,7 @@ void TextureLayer::setTextureMailbox(const TextureMailbox& mailbox)
 void TextureLayer::willModifyTexture()
 {
     if (layer_tree_host() && (DrawsContent() || m_contentCommitted)) {
-        layer_tree_host()->acquireLayerTextures();
+        layer_tree_host()->AcquireLayerTextures();
         m_contentCommitted = false;
     }
 }
@@ -148,13 +148,13 @@ void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirtyRect)
     Layer::SetNeedsDisplayRect(dirtyRect);
 
     if (m_rateLimitContext && m_client && layer_tree_host() && DrawsContent())
-        layer_tree_host()->startRateLimiter(m_client->context());
+        layer_tree_host()->StartRateLimiter(m_client->context());
 }
 
 void TextureLayer::SetLayerTreeHost(LayerTreeHost* host)
 {
     if (m_textureId && layer_tree_host() && host != layer_tree_host())
-        layer_tree_host()->acquireLayerTextures();
+        layer_tree_host()->AcquireLayerTextures();
     Layer::SetLayerTreeHost(host);
 }
 

@@ -80,7 +80,7 @@ bool ThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect)
     DCHECK(m_layerTreeHost);
     DCHECK(!m_deferCommits);
 
-    if (!m_layerTreeHost->initializeRendererIfNeeded()) {
+    if (!m_layerTreeHost->InitializeRendererIfNeeded()) {
         TRACE_EVENT0("cc", "compositeAndReadback_EarlyOut_LR_Uninitialized");
         return false;
     }
@@ -158,7 +158,7 @@ bool ThreadProxy::IsStarted() const
 bool ThreadProxy::InitializeOutputSurface()
 {
     TRACE_EVENT0("cc", "ThreadProxy::initializeOutputSurface");
-    scoped_ptr<OutputSurface> context = m_layerTreeHost->createOutputSurface();
+    scoped_ptr<OutputSurface> context = m_layerTreeHost->CreateOutputSurface();
     if (!context.get())
         return false;
 
@@ -224,7 +224,7 @@ bool ThreadProxy::RecreateOutputSurface()
     DCHECK(IsMainThread());
 
     // Try to create the surface.
-    scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->createOutputSurface();
+    scoped_ptr<OutputSurface> outputSurface = m_layerTreeHost->CreateOutputSurface();
     if (!outputSurface.get())
         return false;
     scoped_refptr<cc::ContextProvider> offscreenContextProvider;
@@ -255,7 +255,7 @@ bool ThreadProxy::RecreateOutputSurface()
     return recreateSucceeded;
 }
 
-void ThreadProxy::GetRenderingStats(RenderingStats* stats)
+void ThreadProxy::CollectRenderingStats(RenderingStats* stats)
 {
     DCHECK(IsMainThread());
 
@@ -392,10 +392,10 @@ bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int
 {
     DCHECK(IsImplThread());
 
-    if (!m_layerTreeHost->contentsTextureManager())
+    if (!m_layerTreeHost->contents_texture_manager())
         return false;
 
-    bool reduceResult = m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, priorityCutoff, m_layerTreeHostImpl->resourceProvider());
+    bool reduceResult = m_layerTreeHost->contents_texture_manager()->reduceMemoryOnImplThread(limitBytes, priorityCutoff, m_layerTreeHostImpl->resourceProvider());
     if (!reduceResult)
         return false;
 
@@ -410,10 +410,10 @@ void ThreadProxy::reduceWastedContentsTextureMemoryOnImplThread()
 {
     DCHECK(IsImplThread());
 
-    if (!m_layerTreeHost->contentsTextureManager())
+    if (!m_layerTreeHost->contents_texture_manager())
         return;
 
-    m_layerTreeHost->contentsTextureManager()->reduceWastedMemoryOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    m_layerTreeHost->contents_texture_manager()->reduceWastedMemoryOnImplThread(m_layerTreeHostImpl->resourceProvider());
 }
 
 void ThreadProxy::sendManagedMemoryStats()
@@ -421,7 +421,7 @@ void ThreadProxy::sendManagedMemoryStats()
     DCHECK(IsImplThread());
     if (!m_layerTreeHostImpl.get())
         return;
-    if (!m_layerTreeHost->contentsTextureManager())
+    if (!m_layerTreeHost->contents_texture_manager())
         return;
 
     // If we are using impl-side painting, then sendManagedMemoryStats is called
@@ -431,9 +431,9 @@ void ThreadProxy::sendManagedMemoryStats()
         return;
 
     m_layerTreeHostImpl->sendManagedMemoryStats(
-        m_layerTreeHost->contentsTextureManager()->memoryVisibleBytes(),
-        m_layerTreeHost->contentsTextureManager()->memoryVisibleAndNearbyBytes(),
-        m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+        m_layerTreeHost->contents_texture_manager()->memoryVisibleBytes(),
+        m_layerTreeHost->contents_texture_manager()->memoryVisibleAndNearbyBytes(),
+        m_layerTreeHost->contents_texture_manager()->memoryUseBytes());
 }
 
 bool ThreadProxy::isInsideDraw()
@@ -504,7 +504,7 @@ void ThreadProxy::Start()
     // Create LayerTreeHostImpl.
     DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
     CompletionEvent completion;
-    scoped_ptr<InputHandler> handler = m_layerTreeHost->createInputHandler();
+    scoped_ptr<InputHandler> handler = m_layerTreeHost->CreateInputHandler();
     Proxy::ImplThread()->postTask(base::Bind(&ThreadProxy::initializeImplOnImplThread, base::Unretained(this), &completion, handler.release()));
     completion.wait();
 
@@ -599,7 +599,7 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
 
     if (m_deferCommits) {
         m_pendingDeferredCommit = beginFrameState.Pass();
-        m_layerTreeHost->didDeferCommit();
+        m_layerTreeHost->DidDeferCommit();
         TRACE_EVENT0("cc", "EarlyOut_DeferCommits");
         return;
     }
@@ -618,8 +618,8 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
     m_animateRequested = false;
 
     if (beginFrameState) {
-        m_layerTreeHost->applyScrollAndScale(*beginFrameState->scrollInfo);
-        m_layerTreeHost->setImplTransform(beginFrameState->implTransform);
+        m_layerTreeHost->ApplyScrollAndScale(*beginFrameState->scrollInfo);
+        m_layerTreeHost->SetImplTransform(beginFrameState->implTransform);
     }
 
     if (!m_inCompositeAndReadback && !m_layerTreeHost->visible()) {
@@ -631,17 +631,17 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
         return;
     }
 
-    m_layerTreeHost->willBeginFrame();
+    m_layerTreeHost->WillBeginFrame();
 
     if (beginFrameState)
-        m_layerTreeHost->updateAnimations(beginFrameState->monotonicFrameBeginTime);
+        m_layerTreeHost->UpdateAnimations(beginFrameState->monotonicFrameBeginTime);
 
     // Unlink any backings that the impl thread has evicted, so that we know to re-paint
     // them in updateLayers.
-    if (m_layerTreeHost->contentsTextureManager())
-        m_layerTreeHost->contentsTextureManager()->unlinkAndClearEvictedBackings();
+    if (m_layerTreeHost->contents_texture_manager())
+        m_layerTreeHost->contents_texture_manager()->unlinkAndClearEvictedBackings();
 
-    m_layerTreeHost->layout();
+    m_layerTreeHost->Layout();
 
     // Clear the commit flag after updating animations and layout here --- objects that only
     // layout when painted will trigger another setNeedsCommit inside
@@ -649,19 +649,19 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
     m_commitRequested = false;
     m_commitRequestSentToImplThread = false;
 
-    if (!m_layerTreeHost->initializeRendererIfNeeded()) {
+    if (!m_layerTreeHost->InitializeRendererIfNeeded()) {
         TRACE_EVENT0("cc", "EarlyOut_InitializeFailed");
         return;
     }
 
     scoped_ptr<ResourceUpdateQueue> queue = make_scoped_ptr(new ResourceUpdateQueue);
-    m_layerTreeHost->updateLayers(*(queue.get()), beginFrameState ? beginFrameState->memoryAllocationLimitBytes : 0);
+    m_layerTreeHost->UpdateLayers(queue.get(), beginFrameState ? beginFrameState->memoryAllocationLimitBytes : 0);
 
     // Once single buffered layers are committed, they cannot be modified until
     // they are drawn by the impl thread.
     m_texturesAcquired = false;
 
-    m_layerTreeHost->willCommit();
+    m_layerTreeHost->WillCommit();
     // Before applying scrolls and calling animate, we set m_animateRequested to
     // false. If it is true now, it means setNeedAnimate was called again, but
     // during a state when m_commitRequestSentToImplThread = true. We need to
@@ -674,7 +674,7 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
     }
 
     scoped_refptr<cc::ContextProvider> offscreenContextProvider;
-    if (m_RendererCapabilitiesMainThreadCopy.usingOffscreenContext3d && m_layerTreeHost->needsOffscreenContext()) {
+    if (m_RendererCapabilitiesMainThreadCopy.using_offscreen_context3d && m_layerTreeHost->needs_offscreen_context()) {
         offscreenContextProvider = m_layerTreeHost->client()->OffscreenContextProviderForCompositorThread();
         if (offscreenContextProvider->InitializeOnMainThread())
             m_createdOffscreenContextProvider = true;
@@ -701,8 +701,8 @@ void ThreadProxy::beginFrame(scoped_ptr<BeginFrameAndCommitState> beginFrameStat
         m_totalCommitCount++;
     }
 
-    m_layerTreeHost->commitComplete();
-    m_layerTreeHost->didBeginFrame();
+    m_layerTreeHost->CommitComplete();
+    m_layerTreeHost->DidBeginFrame();
 }
 
 void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, ResourceUpdateQueue* rawQueue, scoped_refptr<cc::ContextProvider> offscreenContextProvider)
@@ -723,7 +723,7 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
 
     m_layerTreeHostImpl->resourceProvider()->SetOffscreenContextProvider(offscreenContextProvider);
 
-    if (m_layerTreeHost->contentsTextureManager()->linkedEvictedBackingsExist()) {
+    if (m_layerTreeHost->contents_texture_manager()->linkedEvictedBackingsExist()) {
         // Clear any uploads we were making to textures linked to evicted
         // resources
         queue->clearUploadsToEvictedResources();
@@ -732,7 +732,7 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Re
         setNeedsCommitOnImplThread();
     }
 
-    m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
+    m_layerTreeHost->contents_texture_manager()->pushTexturePrioritiesToBackings();
 
     m_currentResourceUpdateControllerOnImplThread = ResourceUpdateController::Create(this, Proxy::ImplThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider());
     m_currentResourceUpdateControllerOnImplThread->PerformMoreUpdates(
@@ -763,13 +763,13 @@ void ThreadProxy::scheduledActionCommit()
     m_currentResourceUpdateControllerOnImplThread.reset();
 
     m_layerTreeHostImpl->beginCommit();
-    m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
-    m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
+    m_layerTreeHost->BeginCommitOnImplThread(m_layerTreeHostImpl.get());
+    m_layerTreeHost->FinishCommitOnImplThread(m_layerTreeHostImpl.get());
     m_layerTreeHostImpl->commitComplete();
 
     m_nextFrameIsNewlyCommittedFrameOnImplThread = true;
 
-    if (m_layerTreeHost->settings().implSidePainting && m_layerTreeHost->blocksPendingCommit())
+    if (m_layerTreeHost->settings().implSidePainting && m_layerTreeHost->BlocksPendingCommit())
     {
         // For some layer types in impl-side painting, the commit is held until
         // the pending tree is activated.
@@ -957,7 +957,7 @@ void ThreadProxy::didCommitAndDrawFrame()
     DCHECK(IsMainThread());
     if (!m_layerTreeHost)
         return;
-    m_layerTreeHost->didCommitAndDrawFrame();
+    m_layerTreeHost->DidCommitAndDrawFrame();
 }
 
 void ThreadProxy::didCompleteSwapBuffers()
@@ -965,7 +965,7 @@ void ThreadProxy::didCompleteSwapBuffers()
     DCHECK(IsMainThread());
     if (!m_layerTreeHost)
         return;
-    m_layerTreeHost->didCompleteSwapBuffers();
+    m_layerTreeHost->DidCompleteSwapBuffers();
 }
 
 void ThreadProxy::setAnimationEvents(scoped_ptr<AnimationEventsVector> events, base::Time wallClockTime)
@@ -974,14 +974,14 @@ void ThreadProxy::setAnimationEvents(scoped_ptr<AnimationEventsVector> events, b
     DCHECK(IsMainThread());
     if (!m_layerTreeHost)
         return;
-    m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
+    m_layerTreeHost->SetAnimationEvents(events.Pass(), wallClockTime);
 }
 
 void ThreadProxy::beginContextRecreation()
 {
     TRACE_EVENT0("cc", "ThreadProxy::beginContextRecreation");
     DCHECK(IsMainThread());
-    m_layerTreeHost->didLoseOutputSurface();
+    m_layerTreeHost->DidLoseOutputSurface();
     m_outputSurfaceRecreationCallback.Reset(base::Bind(&ThreadProxy::tryToRecreateOutputSurface, base::Unretained(this)));
     Proxy::MainThread()->postTask(m_outputSurfaceRecreationCallback.callback());
 }
@@ -990,7 +990,7 @@ void ThreadProxy::tryToRecreateOutputSurface()
 {
     DCHECK(IsMainThread());
     DCHECK(m_layerTreeHost);
-    LayerTreeHost::RecreateResult result = m_layerTreeHost->recreateOutputSurface();
+    LayerTreeHost::RecreateResult result = m_layerTreeHost->RecreateOutputSurface();
     if (result == LayerTreeHost::RecreateFailedButTryAgain)
         Proxy::MainThread()->postTask(m_outputSurfaceRecreationCallback.callback());
     else if (result == LayerTreeHost::RecreateSucceeded)
@@ -1001,7 +1001,7 @@ void ThreadProxy::initializeImplOnImplThread(CompletionEvent* completion, InputH
 {
     TRACE_EVENT0("cc", "ThreadProxy::initializeImplOnImplThread");
     DCHECK(IsImplThread());
-    m_layerTreeHostImpl = m_layerTreeHost->createLayerTreeHostImpl(this);
+    m_layerTreeHostImpl = m_layerTreeHost->CreateLayerTreeHostImpl(this);
     const base::TimeDelta displayRefreshInterval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
     scoped_ptr<FrameRateController> frameRateController;
     if (m_renderVSyncEnabled)
@@ -1038,7 +1038,7 @@ void ThreadProxy::initializeRendererOnImplThread(CompletionEvent* completion, bo
     if (*initializeSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();
         m_schedulerOnImplThread->setSwapBuffersCompleteSupported(
-                capabilities->usingSwapCompleteCallback);
+                capabilities->using_swap_complete_callback);
 
         int maxFramesPending = FrameRateController::kDefaultMaxFramesPending;
         if (m_layerTreeHostImpl->outputSurface()->capabilities().has_parent_compositor)
@@ -1053,7 +1053,7 @@ void ThreadProxy::layerTreeHostClosedOnImplThread(CompletionEvent* completion)
 {
     TRACE_EVENT0("cc", "ThreadProxy::layerTreeHostClosedOnImplThread");
     DCHECK(IsImplThread());
-    m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    m_layerTreeHost->DeleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     m_inputHandlerOnImplThread.reset();
     m_layerTreeHostImpl.reset();
     m_schedulerOnImplThread.reset();
@@ -1076,7 +1076,7 @@ void ThreadProxy::recreateOutputSurfaceOnImplThread(CompletionEvent* completion,
 {
     TRACE_EVENT0("cc", "ThreadProxy::recreateOutputSurfaceOnImplThread");
     DCHECK(IsImplThread());
-    m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    m_layerTreeHost->DeleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
     *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(outputSurface.Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();

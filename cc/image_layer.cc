@@ -59,7 +59,7 @@ void ImageLayer::createUpdaterIfNeeded() {
 
   updater_ = ImageLayerUpdater::create();
   GLenum texture_format =
-      layer_tree_host()->rendererCapabilities().bestTextureFormat;
+      layer_tree_host()->GetRendererCapabilities().best_texture_format;
   setTextureFormat(texture_format);
 }
 

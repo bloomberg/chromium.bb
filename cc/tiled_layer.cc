@@ -132,7 +132,7 @@ void TiledLayer::updateTileSizeAndTilingOption()
         isTiled = autoTiled;
 
     gfx::Size requestedSize = isTiled ? tileSize : content_bounds();
-    const int maxSize = layer_tree_host()->rendererCapabilities().maxTextureSize;
+    const int maxSize = layer_tree_host()->GetRendererCapabilities().max_texture_size;
     requestedSize.ClampToMax(gfx::Size(maxSize, maxSize));
     setTileSize(requestedSize);
 }
@@ -230,7 +230,7 @@ PrioritizedResourceManager* TiledLayer::resourceManager() const
 {
     if (!layer_tree_host())
         return 0;
-    return layer_tree_host()->contentsTextureManager();
+    return layer_tree_host()->contents_texture_manager();
 }
 
 const PrioritizedResource* TiledLayer::resourceAtForTesting(int i, int j) const
@@ -249,7 +249,7 @@ void TiledLayer::SetLayerTreeHost(LayerTreeHost* host)
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
-            tile->managedResource()->setTextureManager(host->contentsTextureManager());
+            tile->managedResource()->setTextureManager(host->contents_texture_manager());
         }
     }
     ContentsScalingLayer::SetLayerTreeHost(host);
@@ -323,7 +323,7 @@ bool TiledLayer::updateTiles(int left, int top, int right, int bottom, ResourceU
     gfx::Rect paintRect = markTilesForUpdate(left, top, right, bottom, ignoreOcclusions);
 
     if (occlusion)
-        occlusion->OverdrawMetrics().DidPaint(paintRect);
+        occlusion->overdraw_metrics()->DidPaint(paintRect);
 
     if (paintRect.IsEmpty())
         return true;
@@ -364,7 +364,7 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
     if (!succeeded)
         return;
     if (occlusion)
-        occlusion->OverdrawMetrics().DidCullTilesForUpload(occludedTileCount);
+        occlusion->overdraw_metrics()->DidCullTilesForUpload(occludedTileCount);
 }
 
 bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions)
@@ -407,12 +407,12 @@ gfx::Rect TiledLayer::markTilesForUpdate(int left, int top, int right, int botto
                 continue;
             // FIXME: Decide if partial update should be allowed based on cost
             // of update. https://bugs.webkit.org/show_bug.cgi?id=77376
-            if (tile->isDirty() && layer_tree_host() && layer_tree_host()->bufferedUpdates()) {
+            if (tile->isDirty() && layer_tree_host() && layer_tree_host()->buffered_updates()) {
                 // If we get a partial update, we use the same texture, otherwise return the
                 // current texture backing, so we don't update visible textures non-atomically.
                 // If the current backing is in-use, it won't be deleted until after the commit
                 // as the texture manager will not allow deletion or recycling of in-use textures.
-                if (tileOnlyNeedsPartialUpdate(tile) && layer_tree_host()->requestPartialTextureUpdate())
+                if (tileOnlyNeedsPartialUpdate(tile) && layer_tree_host()->RequestPartialTextureUpdate())
                     tile->partialUpdate = true;
                 else {
                     tile->dirtyRect = m_tiler->tileRect(tile);
@@ -498,7 +498,7 @@ void TiledLayer::updateTileTextures(const gfx::Rect& paintRect, int left, int to
 
             tile->updaterResource()->update(*queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)
-                occlusion->OverdrawMetrics().DidUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
+                occlusion->overdraw_metrics()->DidUpload(gfx::Transform(), sourceRect, tile->opaqueRect());
 
         }
     }
@@ -512,7 +512,7 @@ bool TiledLayer::isSmallAnimatedLayer() const
 {
     if (!draw_transform_is_animating() && !screen_space_transform_is_animating())
         return false;
-    gfx::Size viewportSize = layer_tree_host() ? layer_tree_host()->deviceViewportSize() : gfx::Size();
+    gfx::Size viewportSize = layer_tree_host() ? layer_tree_host()->device_viewport_size() : gfx::Size();
     gfx::Rect contentRect(gfx::Point(), content_bounds());
     return contentRect.width() <= viewportSize.width() + m_tiler->tileSize().width()
         && contentRect.height() <= viewportSize.height() + m_tiler->tileSize().height();

@@ -64,7 +64,7 @@ class LayerTreeHostOcclusionTest : public ThreadedTest {
   }
 
   virtual void didCommit() OVERRIDE {
-    TestLayer* root = static_cast<TestLayer*>(m_layerTreeHost->rootLayer());
+    TestLayer* root = static_cast<TestLayer*>(m_layerTreeHost->root_layer());
     VerifyOcclusion(root);
 
     endTest();
@@ -129,7 +129,7 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClipping :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 10, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -159,7 +159,7 @@ class LayerTreeHostOcclusionTestOcclusionSurfaceClippingOpaque :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -192,7 +192,7 @@ class LayerTreeHostOcclusionTestOcclusionTwoChildren :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 20, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -226,7 +226,7 @@ class LayerTreeHostOcclusionTestOcclusionMask :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 180, 180));
     root_->set_expected_occlusion(gfx::Rect(10, 10, 190, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -261,7 +261,7 @@ class LayerTreeHostOcclusionTestOcclusionMaskBelowOcclusion :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -295,7 +295,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacity :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -330,7 +330,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion :
     child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
     root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -374,7 +374,7 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter :
         gfx::Rect(10, 330, 160, 170), gfx::Rect(40, 500, 130, 20)));
     root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -416,7 +416,7 @@ class LayerTreeHostOcclusionTestOcclusionBlurFilter :
     child_->set_expected_occlusion(gfx::Rect(10, 330, 160, 170));
     root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     ThreadedTest::setupTree();
   }
 };
@@ -465,7 +465,7 @@ class LayerTreeHostOcclusionTestManySurfaces :
       layers[i]->set_expected_occlusion(expected_occlusion);
     }
 
-    m_layerTreeHost->setRootLayer(layers[0].get());
+    m_layerTreeHost->SetRootLayer(layers[0]);
     ThreadedTest::setupTree();
   }
 };

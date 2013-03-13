@@ -85,11 +85,11 @@ class LayerTreeHostPerfTestJsonReader : public LayerTreeHostPerfTest {
 
   virtual void buildTree() OVERRIDE {
     gfx::Size viewport = gfx::Size(720, 1038);
-    m_layerTreeHost->setViewportSize(viewport, viewport);
+    m_layerTreeHost->SetViewportSize(viewport, viewport);
     scoped_refptr<Layer> root = ParseTreeFromJson(json_,
                                                   &fake_content_layer_client_);
     ASSERT_TRUE(root.get());
-    m_layerTreeHost->setRootLayer(root);
+    m_layerTreeHost->SetRootLayer(root);
   }
 
  private:
@@ -111,7 +111,7 @@ class ScrollingLayerTreePerfTest : public LayerTreeHostPerfTestJsonReader {
 
   virtual void buildTree() OVERRIDE {
     LayerTreeHostPerfTestJsonReader::buildTree();
-    scrollable_ = m_layerTreeHost->rootLayer()->children()[1];
+    scrollable_ = m_layerTreeHost->root_layer()->children()[1];
     ASSERT_TRUE(scrollable_);
   }
 

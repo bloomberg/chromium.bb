@@ -72,14 +72,14 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
     current_canvas_(NULL) {
   resource_provider_->set_default_resource_type(ResourceProvider::Bitmap);
 
-  capabilities_.maxTextureSize = resource_provider_->max_texture_size();
-  capabilities_.bestTextureFormat = resource_provider_->best_texture_format();
-  capabilities_.usingSetVisibility = true;
+  capabilities_.max_texture_size = resource_provider_->max_texture_size();
+  capabilities_.best_texture_format = resource_provider_->best_texture_format();
+  capabilities_.using_set_visibility = true;
   // The updater can access bitmaps while the SoftwareRenderer is using them.
-  capabilities_.allowPartialTextureUpdates = true;
-  capabilities_.usingPartialSwap = true;
+  capabilities_.allow_partial_texture_updates = true;
+  capabilities_.using_partial_swap = true;
   if (client_->HasImplThread())
-    capabilities_.usingSwapCompleteCallback = true;
+    capabilities_.using_swap_complete_callback = true;
   compositor_frame_.software_frame_data.reset(new SoftwareFrameData());
 
   ViewportChanged();

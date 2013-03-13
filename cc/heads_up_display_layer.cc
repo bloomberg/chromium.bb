@@ -27,11 +27,11 @@ HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
 
 void HeadsUpDisplayLayer::Update(ResourceUpdateQueue*, const OcclusionTracker*, RenderingStats*)
 {
-    const LayerTreeDebugState& debugState = layer_tree_host()->debugState();
-    int maxTextureSize = layer_tree_host()->rendererCapabilities().maxTextureSize;
+    const LayerTreeDebugState& debugState = layer_tree_host()->debug_state();
+    int maxTextureSize = layer_tree_host()->GetRendererCapabilities().max_texture_size;
 
-    int deviceViewportInLayoutPixelsWidth = layer_tree_host()->deviceViewportSize().width() / layer_tree_host()->deviceScaleFactor();
-    int deviceViewportInLayoutPixelsHeight = layer_tree_host()->deviceViewportSize().height() / layer_tree_host()->deviceScaleFactor();
+    int deviceViewportInLayoutPixelsWidth = layer_tree_host()->device_viewport_size().width() / layer_tree_host()->device_scale_factor();
+    int deviceViewportInLayoutPixelsHeight = layer_tree_host()->device_viewport_size().height() / layer_tree_host()->device_scale_factor();
 
     gfx::Size bounds;
     gfx::Transform matrix;

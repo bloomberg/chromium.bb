@@ -166,12 +166,12 @@ void PictureLayerImpl::AppendQuads(QuadSink* quadSink,
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(sharedQuadState, geometry_rect, color);
         if (quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData))
-            appendQuadsData->numMissingTiles++;
+          appendQuadsData->numMissingTiles++;
       } else {
         scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
         quad->SetNew(sharedQuadState, geometry_rect, background_color());
         if (quadSink->append(quad.PassAs<DrawQuad>(), appendQuadsData))
-            appendQuadsData->numMissingTiles++;
+          appendQuadsData->numMissingTiles++;
       }
 
       appendQuadsData->hadIncompleteTile = true;
@@ -383,7 +383,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     // we should avoid power-of-two textures. This helps reduce the number
     // of different textures sizes to help recycling, and also keeps all
     // textures multiple-of-eight, which is preferred on some drivers (IMG).
-    bool avoidPow2 = layer_tree_impl()->rendererCapabilities().avoidPow2Textures;
+    bool avoidPow2 = layer_tree_impl()->rendererCapabilities().avoid_pow2_textures;
     int roundUpTo = avoidPow2 ? 56 : 64;
     width = RoundUp(width, roundUpTo);
     height = RoundUp(height, roundUpTo);

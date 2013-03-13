@@ -123,47 +123,47 @@ bool GLRenderer::Initialize() {
   if (Settings().acceleratePainting &&
       extensions.count("GL_EXT_texture_format_BGRA8888") &&
       extensions.count("GL_EXT_read_format_bgra"))
-    capabilities_.usingAcceleratedPainting = true;
+    capabilities_.using_accelerated_painting = true;
   else
-    capabilities_.usingAcceleratedPainting = false;
+    capabilities_.using_accelerated_painting = false;
 
-  capabilities_.usingPartialSwap =
+  capabilities_.using_partial_swap =
       Settings().partialSwapEnabled &&
       extensions.count("GL_CHROMIUM_post_sub_buffer");
 
   // Use the swapBuffers callback only with the threaded proxy.
   if (client_->HasImplThread())
-    capabilities_.usingSwapCompleteCallback =
+    capabilities_.using_swap_complete_callback =
         extensions.count("GL_CHROMIUM_swapbuffers_complete_callback");
-  if (capabilities_.usingSwapCompleteCallback)
+  if (capabilities_.using_swap_complete_callback)
     context_->setSwapBuffersCompleteCallbackCHROMIUM(this);
 
-  capabilities_.usingSetVisibility =
+  capabilities_.using_set_visibility =
       extensions.count("GL_CHROMIUM_set_visibility");
 
   if (extensions.count("GL_CHROMIUM_iosurface"))
     DCHECK(extensions.count("GL_ARB_texture_rectangle"));
 
-  capabilities_.usingGpuMemoryManager =
+  capabilities_.using_gpu_memory_manager =
       extensions.count("GL_CHROMIUM_gpu_memory_manager") &&
       Settings().useMemoryManagement;
-  if (capabilities_.usingGpuMemoryManager)
+  if (capabilities_.using_gpu_memory_manager)
     context_->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
-  capabilities_.usingEglImage = extensions.count("GL_OES_EGL_image_external");
+  capabilities_.using_egl_image = extensions.count("GL_OES_EGL_image_external");
 
-  capabilities_.maxTextureSize = resource_provider_->max_texture_size();
-  capabilities_.bestTextureFormat = resource_provider_->best_texture_format();
+  capabilities_.max_texture_size = resource_provider_->max_texture_size();
+  capabilities_.best_texture_format = resource_provider_->best_texture_format();
 
   // The updater can access textures while the GLRenderer is using them.
-  capabilities_.allowPartialTextureUpdates = true;
+  capabilities_.allow_partial_texture_updates = true;
 
   // Check for texture fast paths. Currently we always use MO8 textures,
   // so we only need to avoid POT textures if we have an NPOT fast-path.
-  capabilities_.avoidPow2Textures =
+  capabilities_.avoid_pow2_textures =
       extensions.count("GL_CHROMIUM_fast_NPOT_MO8_textures");
 
-  capabilities_.usingOffscreenContext3d = true;
+  capabilities_.using_offscreen_context3d = true;
 
   is_using_bind_uniform_ =
       extensions.count("GL_CHROMIUM_bind_uniform_location");
@@ -214,7 +214,7 @@ void GLRenderer::SetVisible(bool visible) {
   // TODO: Replace setVisibilityCHROMIUM with an extension to explicitly manage
   // front/backbuffers
   // crbug.com/116049
-  if (capabilities_.usingSetVisibility)
+  if (capabilities_.using_set_visibility)
     context_->setVisibilityCHROMIUM(visible);
 }
 
@@ -1182,7 +1182,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame& frame,
 
   static float gl_matrix[16];
 
-  DCHECK(capabilities_.usingEglImage);
+  DCHECK(capabilities_.using_egl_image);
 
   const VideoStreamTextureProgram* program = GetVideoStreamTextureProgram();
   SetUseProgram(program->program());
@@ -1575,7 +1575,7 @@ bool GLRenderer::SwapBuffers() {
   TRACE_EVENT0("cc", "GLRenderer::swapBuffers");
   // We're done! Time to swapbuffers!
 
-  if (capabilities_.usingPartialSwap) {
+  if (capabilities_.using_partial_swap) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport)
     swap_buffer_rect_.Intersect(gfx::Rect(gfx::Point(), ViewportSize()));

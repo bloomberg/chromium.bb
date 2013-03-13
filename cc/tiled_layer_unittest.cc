@@ -56,11 +56,11 @@ public:
 
     virtual void SetUp()
     {
-        layer_tree_host_ = LayerTreeHost::create(&m_fakeLayerImplTreeHostClient, m_settings, scoped_ptr<Thread>(NULL));
+        layer_tree_host_ = LayerTreeHost::Create(&m_fakeLayerImplTreeHostClient, m_settings, scoped_ptr<Thread>(NULL));
         m_proxy = layer_tree_host_->proxy();
         m_resourceManager = PrioritizedResourceManager::create(m_proxy);
-        layer_tree_host_->initializeRendererIfNeeded();
-        layer_tree_host_->setRootLayer(Layer::Create());
+        layer_tree_host_->InitializeRendererIfNeeded();
+        layer_tree_host_->SetRootLayer(Layer::Create());
 
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked(m_proxy);
         m_resourceProvider = ResourceProvider::Create(m_outputSurface.get());
@@ -119,19 +119,19 @@ public:
                        const scoped_refptr<FakeTiledLayer>& layer2)
     {
         if (layer1 && !layer1->parent())
-            layer_tree_host_->rootLayer()->AddChild(layer1);
+            layer_tree_host_->root_layer()->AddChild(layer1);
         if (layer2 && !layer2->parent())
-            layer_tree_host_->rootLayer()->AddChild(layer2);
+            layer_tree_host_->root_layer()->AddChild(layer2);
         if (m_occlusion)
-            m_occlusion->setRenderTarget(layer_tree_host_->rootLayer());
+            m_occlusion->setRenderTarget(layer_tree_host_->root_layer());
 
         std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
         LayerTreeHostCommon::calculateDrawProperties(
-            layer_tree_host_->rootLayer(),
-            layer_tree_host_->deviceViewportSize(),
-            layer_tree_host_->deviceScaleFactor(),
+            layer_tree_host_->root_layer(),
+            layer_tree_host_->device_viewport_size(),
+            layer_tree_host_->device_scale_factor(),
             1, // page_scale_factor
-            layer_tree_host_->rendererCapabilities().maxTextureSize,
+            layer_tree_host_->GetRendererCapabilities().max_texture_size,
             false, // can_use_lcd_text
             renderSurfaceLayerList);
     }
@@ -223,16 +223,16 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
     TestOcclusionTracker occluded;
     m_occlusion = &occluded;
-    layer_tree_host_->setViewportSize(gfx::Size(1000, 1000), gfx::Size(1000, 1000));
+    layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000), gfx::Size(1000, 1000));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->SetBounds(gfx::Size(100, 200));
     calcDrawProps(layer);
     updateAndPush(layer, layerImpl);
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // We should have both tiles on the impl side.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -245,9 +245,9 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     calcDrawProps(layer);
     updateAndPush(layer, layerImpl);
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000 + 2500, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000 + 2500, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // We should still have both tiles, as part of the top tile is still unoccluded.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
@@ -467,7 +467,7 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
 
     // We should have the prepainted tile on the impl side, but culled it during paint.
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 0));
-    EXPECT_EQ(1, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_EQ(1, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, pushTilesMarkedDirtyDuringPaint)
@@ -550,7 +550,7 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
         int layerWidth  = 5 * FakeTiledLayer::tileSize().width();
         int layerHeight = 5 * FakeTiledLayer::tileSize().height();
         int memoryForLayer = layerWidth * layerHeight * 4;
-        layer_tree_host_->setViewportSize(gfx::Size(layerWidth, layerHeight), gfx::Size(layerWidth, layerHeight));
+        layer_tree_host_->SetViewportSize(gfx::Size(layerWidth, layerHeight), gfx::Size(layerWidth, layerHeight));
 
         // Use 10x5 tiles to run out of memory.
         if (runOutOfMemory[i])
@@ -819,38 +819,38 @@ TEST_F(TiledLayerTest, skipsDrawGetsReset)
     // We have enough memory for only one of the two layers.
     int memoryLimit = 4 * 300 * 300; // 4 bytes per pixel.
 
-    scoped_refptr<FakeTiledLayer> rootLayer = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contentsTextureManager()));
-    scoped_refptr<FakeTiledLayer> childLayer = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contentsTextureManager()));
-    rootLayer->AddChild(childLayer);
+    scoped_refptr<FakeTiledLayer> root_layer = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
+    scoped_refptr<FakeTiledLayer> childLayer = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
+    root_layer->AddChild(childLayer);
 
-    rootLayer->SetBounds(contentBounds);
-    rootLayer->draw_properties().visible_content_rect = contentRect;
-    rootLayer->SetPosition(gfx::PointF(0, 0));
+    root_layer->SetBounds(contentBounds);
+    root_layer->draw_properties().visible_content_rect = contentRect;
+    root_layer->SetPosition(gfx::PointF(0, 0));
     childLayer->SetBounds(contentBounds);
     childLayer->draw_properties().visible_content_rect = contentRect;
     childLayer->SetPosition(gfx::PointF(0, 0));
-    rootLayer->invalidateContentRect(contentRect);
+    root_layer->invalidateContentRect(contentRect);
     childLayer->invalidateContentRect(contentRect);
 
-    layer_tree_host_->setRootLayer(rootLayer);
-    layer_tree_host_->setViewportSize(gfx::Size(300, 300), gfx::Size(300, 300));
+    layer_tree_host_->SetRootLayer(root_layer);
+    layer_tree_host_->SetViewportSize(gfx::Size(300, 300), gfx::Size(300, 300));
 
-    layer_tree_host_->updateLayers(*m_queue.get(), memoryLimit);
+    layer_tree_host_->UpdateLayers(m_queue.get(), memoryLimit);
 
     // We'll skip the root layer.
-    EXPECT_TRUE(rootLayer->skipsDraw());
+    EXPECT_TRUE(root_layer->skipsDraw());
     EXPECT_FALSE(childLayer->skipsDraw());
 
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // Remove the child layer.
-    rootLayer->RemoveAllChildren();
+    root_layer->RemoveAllChildren();
 
-    layer_tree_host_->updateLayers(*m_queue.get(), memoryLimit);
-    EXPECT_FALSE(rootLayer->skipsDraw());
+    layer_tree_host_->UpdateLayers(m_queue.get(), memoryLimit);
+    EXPECT_FALSE(root_layer->skipsDraw());
 
-    resourceManagerClearAllMemory(layer_tree_host_->contentsTextureManager(), m_resourceProvider.get());
-    layer_tree_host_->setRootLayer(0);
+    resourceManagerClearAllMemory(layer_tree_host_->contents_texture_manager(), m_resourceProvider.get());
+    layer_tree_host_->SetRootLayer(NULL);
 }
 
 TEST_F(TiledLayerTest, resizeToSmaller)
@@ -898,18 +898,18 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
     gfx::Size contentBounds(300, 200);
     gfx::Rect contentRect(gfx::Point(), contentBounds);
 
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
     layer->SetBounds(contentBounds);
     layer->SetPosition(gfx::PointF(0, 0));
     layer->draw_properties().visible_content_rect = contentRect;
     layer->invalidateContentRect(contentRect);
 
-    layer_tree_host_->setRootLayer(layer);
-    layer_tree_host_->setViewportSize(gfx::Size(300, 200), gfx::Size(300, 200));
+    layer_tree_host_->SetRootLayer(layer);
+    layer_tree_host_->SetViewportSize(gfx::Size(300, 200), gfx::Size(300, 200));
 
     // Full update of all 6 tiles.
-    layer_tree_host_->updateLayers(
-        *m_queue.get(), std::numeric_limits<size_t>::max());
+    layer_tree_host_->UpdateLayers(m_queue.get(),
+                                   std::numeric_limits<size_t>::max());
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         EXPECT_EQ(6, m_queue->fullUploadSize());
@@ -920,11 +920,11 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // Full update of 3 tiles and partial update of 3 tiles.
     layer->invalidateContentRect(gfx::Rect(0, 0, 300, 150));
-    layer_tree_host_->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+    layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         EXPECT_EQ(3, m_queue->fullUploadSize());
@@ -935,13 +935,13 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // Partial update of 6 tiles.
     layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
-        layer_tree_host_->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(2, m_queue->fullUploadSize());
         EXPECT_EQ(4, m_queue->partialUploadSize());
         updateTextures();
@@ -950,7 +950,7 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // Checkerboard all tiles.
     layer->invalidateContentRect(gfx::Rect(0, 0, 300, 200));
@@ -958,13 +958,13 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // Partial update of 6 checkerboard tiles.
     layer->invalidateContentRect(gfx::Rect(50, 50, 200, 100));
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
-        layer_tree_host_->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(6, m_queue->fullUploadSize());
         EXPECT_EQ(0, m_queue->partialUploadSize());
         updateTextures();
@@ -973,13 +973,13 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // Partial update of 4 tiles.
     layer->invalidateContentRect(gfx::Rect(50, 50, 100, 100));
     {
         scoped_ptr<FakeTiledLayerImpl> layerImpl = make_scoped_ptr(new FakeTiledLayerImpl(m_hostImpl->activeTree(), 1));
-        layer_tree_host_->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(0, m_queue->fullUploadSize());
         EXPECT_EQ(4, m_queue->partialUploadSize());
         updateTextures();
@@ -988,10 +988,10 @@ TEST_F(TiledLayerPartialUpdateTest, partialUpdates)
         layer->fakeLayerUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
-    resourceManagerClearAllMemory(layer_tree_host_->contentsTextureManager(), m_resourceProvider.get());
-    layer_tree_host_->setRootLayer(0);
+    resourceManagerClearAllMemory(layer_tree_host_->contents_texture_manager(), m_resourceProvider.get());
+    layer_tree_host_->SetRootLayer(NULL);
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithoutOcclusion)
@@ -1016,7 +1016,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
 
     // The tile size is 100x100.
 
-    layer_tree_host_->setViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+    layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
     layer->SetBounds(gfx::Size(600, 600));
     calcDrawProps(layer);
 
@@ -1030,9 +1030,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36-3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 330000, 1);
-    EXPECT_EQ(3, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 330000, 1);
+    EXPECT_EQ(3, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
     layer->SetTexturePriorities(m_priorityCalculator);
@@ -1043,9 +1043,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36-2, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 330000 + 340000, 1);
-    EXPECT_EQ(3 + 2, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 330000 + 340000, 1);
+    EXPECT_EQ(3 + 2, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
     layer->SetTexturePriorities(m_priorityCalculator);
@@ -1056,9 +1056,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 330000 + 340000 + 360000, 1);
-    EXPECT_EQ(3 + 2, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 330000 + 340000 + 360000, 1);
+    EXPECT_EQ(3 + 2, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
@@ -1069,7 +1069,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
 
     // The tile size is 100x100.
 
-    layer_tree_host_->setViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+    layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
     layer->SetBounds(gfx::Size(600, 600));
     calcDrawProps(layer);
 
@@ -1084,9 +1084,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(24-3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 210000, 1);
-    EXPECT_EQ(3, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 210000, 1);
+    EXPECT_EQ(3, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1100,9 +1100,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(24-6, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 210000 + 180000, 1);
-    EXPECT_EQ(3 + 6, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 210000 + 180000, 1);
+    EXPECT_EQ(3 + 6, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1116,9 +1116,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(24-6, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 210000 + 180000 + 180000, 1);
-    EXPECT_EQ(3 + 6 + 6, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 210000 + 180000 + 180000, 1);
+    EXPECT_EQ(3 + 6 + 6, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
 }
 
@@ -1130,7 +1130,7 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
 
     // The tile size is 100x100.
 
-    layer_tree_host_->setViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+    layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
     layer->SetBounds(gfx::Size(600, 600));
     calcDrawProps(layer);
 
@@ -1146,9 +1146,9 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
         updateTextures();
     }
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 330000, 1);
-    EXPECT_EQ(3, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 330000, 1);
+    EXPECT_EQ(3, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
     layer->SetTexturePriorities(m_priorityCalculator);
@@ -1158,9 +1158,9 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 330000, 1);
-    EXPECT_EQ(6, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 330000, 1);
+    EXPECT_EQ(6, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
@@ -1173,7 +1173,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
 
     // This makes sure the painting works when the occluded region (in screen space)
     // is transformed differently than the layer.
-    layer_tree_host_->setViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+    layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
     layer->SetBounds(gfx::Size(600, 600));
     calcDrawProps(layer);
     gfx::Transform screenTransform;
@@ -1190,9 +1190,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(36-3, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 330000, 1);
-    EXPECT_EQ(3, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 330000, 1);
+    EXPECT_EQ(3, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
@@ -1206,7 +1206,7 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     // This makes sure the painting works when the content space is scaled to
     // a different layer space. In this case tiles are scaled to be 200x200
     // pixels, which means none should be occluded.
-    layer_tree_host_->setViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
+    layer_tree_host_->SetViewportSize(gfx::Size(600, 600), gfx::Size(600, 600));
     layer->SetBounds(gfx::Size(600, 600));
     layer->SetRasterScale(0.5);
     calcDrawProps(layer);
@@ -1229,9 +1229,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     // number of tiles 3x3.
     EXPECT_EQ(9, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 90000, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 90000, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1247,9 +1247,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(9-1, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 90000 + 80000, 1);
-    EXPECT_EQ(1, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 90000 + 80000, 1);
+    EXPECT_EQ(1, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     layer->fakeLayerUpdater()->clearUpdateCount();
 
@@ -1270,9 +1270,9 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     layer->Update(m_queue.get(), &occluded, NULL);
     EXPECT_EQ(9-1, layer->fakeLayerUpdater()->updateCount());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 90000 + 80000 + 80000, 1);
-    EXPECT_EQ(1 + 1, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 90000 + 80000 + 80000, 1);
+    EXPECT_EQ(1 + 1, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
@@ -1280,7 +1280,7 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
     m_occlusion = &occluded;
-    layer_tree_host_->setViewportSize(gfx::Size(1000, 1000), gfx::Size(1000, 1000));
+    layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000), gfx::Size(1000, 1000));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles in various ways.
 
@@ -1304,10 +1304,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->VisibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.IsEmpty());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 20000, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 20000, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // visibleContentOpaqueRegion should match the visible part of what is painted opaque.
     opaquePaintRect = gfx::Rect(10, 10, 90, 190);
@@ -1320,10 +1320,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->VisibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 20000 * 2, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 17100, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000 + 20000 - 17100, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 20000 * 2, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 17100, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000 + 20000 - 17100, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // If we paint again without invalidating, the same stuff should be opaque.
     layer->fakeLayerUpdater()->setOpaquePaintRect(gfx::Rect());
@@ -1334,10 +1334,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->VisibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 20000 * 2, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 17100, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000 + 20000 - 17100, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 20000 * 2, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 17100, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000 + 20000 - 17100, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // If we repaint a non-opaque part of the tile, then it shouldn't lose its opaque-ness. And other tiles should
     // not be affected.
@@ -1350,10 +1350,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->VisibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(opaquePaintRect, visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 20000 * 2 + 1, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 17100, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000 + 20000 - 17100 + 1, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 20000 * 2 + 1, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 17100, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000 + 20000 - 17100 + 1, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // If we repaint an opaque part of the tile, then it should lose its opaque-ness. But other tiles should still
     // not be affected.
@@ -1366,10 +1366,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     opaqueContents = layer->VisibleContentOpaqueRegion();
     EXPECT_EQ(gfx::IntersectRects(gfx::Rect(10, 100, 90, 100), visibleBounds).ToString(), opaqueContents.ToString());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 20000 * 2 + 1  + 1, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 17100, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 20000 + 20000 - 17100 + 1 + 1, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 20000 * 2 + 1  + 1, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 17100, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 20000 + 20000 - 17100 + 1 + 1, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, pixels_paintedMetrics)
@@ -1377,7 +1377,7 @@ TEST_F(TiledLayerTest, pixels_paintedMetrics)
     scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_resourceManager.get()));
     TestOcclusionTracker occluded;
     m_occlusion = &occluded;
-    layer_tree_host_->setViewportSize(gfx::Size(1000, 1000), gfx::Size(1000, 1000));
+    layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000), gfx::Size(1000, 1000));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles in various ways.
 
@@ -1398,10 +1398,10 @@ TEST_F(TiledLayerTest, pixels_paintedMetrics)
     opaqueContents = layer->VisibleContentOpaqueRegion();
     EXPECT_TRUE(opaqueContents.IsEmpty());
 
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 30000, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 30000, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 30000, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 30000, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 
     // Invalidates an area on the top and bottom tile, which will cause us to paint the tile in the middle,
     // even though it is not dirty and will not be uploaded.
@@ -1416,11 +1416,11 @@ TEST_F(TiledLayerTest, pixels_paintedMetrics)
     EXPECT_TRUE(opaqueContents.IsEmpty());
 
     // The middle tile was painted even though not invalidated.
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_painted(), 30000 + 60 * 210, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_painted(), 30000 + 60 * 210, 1);
     // The pixels uploaded will not include the non-invalidated tile in the middle.
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_opaque(), 0, 1);
-    EXPECT_NEAR(occluded.OverdrawMetrics().pixels_uploaded_translucent(), 30000 + 1 + 100, 1);
-    EXPECT_EQ(0, occluded.OverdrawMetrics().tiles_culled_for_upload());
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_opaque(), 0, 1);
+    EXPECT_NEAR(occluded.overdraw_metrics()->pixels_uploaded_translucent(), 30000 + 1 + 100, 1);
+    EXPECT_EQ(0, occluded.overdraw_metrics()->tiles_culled_for_upload());
 }
 
 TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
@@ -1430,10 +1430,10 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     gfx::Rect childRect(0, 0, 300, 100);
     gfx::Rect child2Rect(0, 100, 300, 100);
 
-    scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
     scoped_refptr<Layer> surface = Layer::Create();
-    scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contentsTextureManager()));
-    scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
+    scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
 
     root->SetBounds(rootRect.size());
     root->SetAnchorPoint(gfx::PointF());
@@ -1459,15 +1459,14 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     child2->draw_properties().visible_content_rect = child2Rect;
     child2->draw_properties().drawable_content_rect = rootRect;
 
-    layer_tree_host_->setRootLayer(root);
-    layer_tree_host_->setViewportSize(rootRect.size(), rootRect.size());
+    layer_tree_host_->SetRootLayer(root);
+    layer_tree_host_->SetViewportSize(rootRect.size(), rootRect.size());
 
     // With a huge memory limit, all layers should update and push their textures.
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    layer_tree_host_->updateLayers(
-        *m_queue.get(), std::numeric_limits<size_t>::max());
+    layer_tree_host_->UpdateLayers(m_queue.get(), std::numeric_limits<size_t>::max());
     {
         updateTextures();
         EXPECT_EQ(6, root->fakeLayerUpdater()->updateCount());
@@ -1493,7 +1492,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_TRUE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // With a memory limit that includes only the root layer (3x2 tiles) and half the surface that
     // the child layers draw into, the child layers will not be allocated. If the surface isn't
@@ -1501,8 +1500,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    layer_tree_host_->updateLayers(
-        *m_queue.get(), (3 * 2 + 3 * 1) * (100 * 100) * 4);
+    layer_tree_host_->UpdateLayers(m_queue.get(), (3 * 2 + 3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
         EXPECT_EQ(6, root->fakeLayerUpdater()->updateCount());
@@ -1528,7 +1526,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
     // With a memory limit that includes only half the root layer, no contents will be
     // allocated. If render surface memory wasn't accounted for, there is enough space
@@ -1537,8 +1535,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    layer_tree_host_->updateLayers(
-        *m_queue.get(), (3 * 1) * (100 * 100) * 4);
+    layer_tree_host_->UpdateLayers(m_queue.get(), (3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
         EXPECT_EQ(0, root->fakeLayerUpdater()->updateCount());
@@ -1564,10 +1561,10 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    layer_tree_host_->commitComplete();
+    layer_tree_host_->CommitComplete();
 
-    resourceManagerClearAllMemory(layer_tree_host_->contentsTextureManager(), m_resourceProvider.get());
-    layer_tree_host_->setRootLayer(0);
+    resourceManagerClearAllMemory(layer_tree_host_->contents_texture_manager(), m_resourceProvider.get());
+    layer_tree_host_->SetRootLayer(NULL);
 }
 
 class TrackingLayerPainter : public LayerPainter {

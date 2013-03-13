@@ -163,26 +163,26 @@ public:
     static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::LayerTreeHostClient* client, const cc::LayerTreeSettings& settings, scoped_ptr<cc::Thread> implThread)
     {
         scoped_ptr<MockLayerTreeHost> layerTreeHost(new MockLayerTreeHost(testHooks, client, settings));
-        bool success = layerTreeHost->initialize(implThread.Pass());
+        bool success = layerTreeHost->Initialize(implThread.Pass());
         EXPECT_TRUE(success);
         return layerTreeHost.Pass();
     }
 
-    virtual scoped_ptr<cc::LayerTreeHostImpl> createLayerTreeHostImpl(cc::LayerTreeHostImplClient* client) OVERRIDE
+    virtual scoped_ptr<cc::LayerTreeHostImpl> CreateLayerTreeHostImpl(cc::LayerTreeHostImplClient* client) OVERRIDE
     {
         return MockLayerTreeHostImpl::create(m_testHooks, settings(), client, proxy()).PassAs<cc::LayerTreeHostImpl>();
     }
 
-    virtual void setNeedsCommit() OVERRIDE
+    virtual void SetNeedsCommit() OVERRIDE
     {
         if (!m_testStarted)
             return;
-        LayerTreeHost::setNeedsCommit();
+        LayerTreeHost::SetNeedsCommit();
     }
 
     void setTestStarted(bool started) { m_testStarted = started; }
 
-    virtual void didDeferCommit() OVERRIDE
+    virtual void DidDeferCommit() OVERRIDE
     {
         m_testHooks->didDeferCommit();
     }
@@ -225,7 +225,7 @@ public:
         m_testHooks->layout();
     }
 
-  virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float scale) OVERRIDE
+    virtual void applyScrollAndScale(gfx::Vector2d scrollDelta, float scale) OVERRIDE
     {
         m_testHooks->applyScrollAndScale(scrollDelta, scale);
     }
@@ -365,7 +365,7 @@ void ThreadedTest::doBeginTest()
     m_started = true;
     m_beginning = true;
     setupTree();
-    m_layerTreeHost->setSurfaceReady();
+    m_layerTreeHost->SetSurfaceReady();
     beginTest();
     m_beginning = false;
     if (m_endWhenBeginReturns)
@@ -379,16 +379,16 @@ void ThreadedTest::doBeginTest()
 
 void ThreadedTest::setupTree()
 {
-    if (!m_layerTreeHost->rootLayer()) {
+    if (!m_layerTreeHost->root_layer()) {
         scoped_refptr<Layer> rootLayer = Layer::Create();
         rootLayer->SetBounds(gfx::Size(1, 1));
-        m_layerTreeHost->setRootLayer(rootLayer);
+        m_layerTreeHost->SetRootLayer(rootLayer);
     }
 
-    gfx::Size rootBounds = m_layerTreeHost->rootLayer()->bounds();
+    gfx::Size rootBounds = m_layerTreeHost->root_layer()->bounds();
     gfx::Size deviceRootBounds = gfx::ToCeiledSize(
-        gfx::ScaleSize(rootBounds, m_layerTreeHost->deviceScaleFactor()));
-    m_layerTreeHost->setViewportSize(rootBounds, deviceRootBounds);
+        gfx::ScaleSize(rootBounds, m_layerTreeHost->device_scale_factor()));
+    m_layerTreeHost->SetViewportSize(rootBounds, deviceRootBounds);
 }
 
 void ThreadedTest::timeout()
@@ -421,8 +421,8 @@ void ThreadedTest::dispatchAddInstantAnimation()
 {
     DCHECK(!proxy() || proxy()->IsMainThread());
 
-    if (m_layerTreeHost.get() && m_layerTreeHost->rootLayer())
-        addOpacityTransitionToLayer(*m_layerTreeHost->rootLayer(), 0, 0, 0.5, false);
+    if (m_layerTreeHost.get() && m_layerTreeHost->root_layer())
+        addOpacityTransitionToLayer(*m_layerTreeHost->root_layer(), 0, 0, 0.5, false);
 }
 
 void ThreadedTest::dispatchAddAnimation(Layer* layerToReceiveAnimation)
@@ -438,7 +438,7 @@ void ThreadedTest::dispatchSetNeedsCommit()
     DCHECK(!proxy() || proxy()->IsMainThread());
 
     if (m_layerTreeHost.get())
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
 }
 
 void ThreadedTest::dispatchAcquireLayerTextures()
@@ -446,7 +446,7 @@ void ThreadedTest::dispatchAcquireLayerTextures()
     DCHECK(!proxy() || proxy()->IsMainThread());
 
     if (m_layerTreeHost.get())
-        m_layerTreeHost->acquireLayerTextures();
+        m_layerTreeHost->AcquireLayerTextures();
 }
 
 void ThreadedTest::dispatchSetNeedsRedraw()
@@ -454,7 +454,7 @@ void ThreadedTest::dispatchSetNeedsRedraw()
     DCHECK(!proxy() || proxy()->IsMainThread());
 
     if (m_layerTreeHost.get())
-        m_layerTreeHost->setNeedsRedraw();
+        m_layerTreeHost->SetNeedsRedraw();
 }
 
 void ThreadedTest::dispatchSetVisible(bool visible)
@@ -464,7 +464,7 @@ void ThreadedTest::dispatchSetVisible(bool visible)
     if (!m_layerTreeHost)
         return;
 
-    m_layerTreeHost->setVisible(visible);
+    m_layerTreeHost->SetVisible(visible);
 
     // If the LTH is being made visible and a previous scheduleComposite() was
     // deferred because the LTH was not visible, re-schedule the composite now.
@@ -487,7 +487,7 @@ void ThreadedTest::dispatchComposite()
     }
 
     m_scheduleWhenSetVisibleTrue = false;
-    m_layerTreeHost->composite();
+    m_layerTreeHost->Composite();
 }
 
 void ThreadedTest::runTest(bool threaded)
@@ -505,8 +505,8 @@ void ThreadedTest::runTest(bool threaded)
     m_timeout.Reset(base::Bind(&ThreadedTest::timeout, base::Unretained(this)));
     m_mainCCThread->postDelayedTask(m_timeout.callback(), 5000);
     MessageLoop::current()->Run();
-    if (m_layerTreeHost.get() && m_layerTreeHost->rootLayer())
-        m_layerTreeHost->rootLayer()->SetLayerTreeHost(0);
+    if (m_layerTreeHost.get() && m_layerTreeHost->root_layer())
+        m_layerTreeHost->root_layer()->SetLayerTreeHost(NULL);
     m_layerTreeHost.reset();
 
     m_timeout.Cancel();

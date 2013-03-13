@@ -32,14 +32,14 @@
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
-template<>
+template <>
 struct hash<WebKit::WebGraphicsContext3D*> {
   size_t operator()(WebKit::WebGraphicsContext3D* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
-} // namespace BASE_HASH_NAMESPACE
-#endif // COMPILER
+}  // namespace BASE_HASH_NAMESPACE
+#endif  // COMPILER
 
 namespace cc {
 
@@ -56,235 +56,262 @@ class ResourceUpdateQueue;
 class TopControlsManager;
 struct ScrollAndScaleSet;
 
-
-// Provides information on an Impl's rendering capabilities back to the LayerTreeHost
+// Provides information on an Impl's rendering capabilities back to the
+// LayerTreeHost.
 struct CC_EXPORT RendererCapabilities {
-    RendererCapabilities();
-    ~RendererCapabilities();
+  RendererCapabilities();
+  ~RendererCapabilities();
 
-    unsigned bestTextureFormat;
-    bool usingPartialSwap;
-    bool usingAcceleratedPainting;
-    bool usingSetVisibility;
-    bool usingSwapCompleteCallback;
-    bool usingGpuMemoryManager;
-    bool usingEglImage;
-    bool allowPartialTextureUpdates;
-    bool usingOffscreenContext3d;
-    int maxTextureSize;
-    bool avoidPow2Textures;
+  unsigned best_texture_format;
+  bool using_partial_swap;
+  bool using_accelerated_painting;
+  bool using_set_visibility;
+  bool using_swap_complete_callback;
+  bool using_gpu_memory_manager;
+  bool using_egl_image;
+  bool allow_partial_texture_updates;
+  bool using_offscreen_context3d;
+  int max_texture_size;
+  bool avoid_pow2_textures;
 };
 
 class CC_EXPORT LayerTreeHost : public RateLimiterClient {
-public:
-    static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&, scoped_ptr<Thread> implThread);
-    virtual ~LayerTreeHost();
+ public:
+  static scoped_ptr<LayerTreeHost> Create(LayerTreeHostClient* client,
+                                          const LayerTreeSettings& settings,
+                                          scoped_ptr<Thread> impl_thread);
+  virtual ~LayerTreeHost();
 
-    void setSurfaceReady();
+  void SetSurfaceReady();
 
-    // Returns true if any LayerTreeHost is alive.
-    static bool anyLayerTreeHostInstanceExists();
+  // Returns true if any LayerTreeHost is alive.
+  static bool AnyLayerTreeHostInstanceExists();
 
-    void setNeedsFilterContext() { m_needsFilterContext = true; }
-    bool needsOffscreenContext() const { return m_needsFilterContext || settings().acceleratePainting; }
+  void set_needs_filter_context() { needs_filter_context_ = true; }
+  bool needs_offscreen_context() const {
+    return needs_filter_context_ || settings_.acceleratePainting;
+  }
 
-    // LayerTreeHost interface to Proxy.
-    void willBeginFrame() { m_client->willBeginFrame(); }
-    void didBeginFrame();
-    void updateAnimations(base::TimeTicks monotonicFrameBeginTime);
-    void didStopFlinging();
-    void layout();
-    void beginCommitOnImplThread(LayerTreeHostImpl*);
-    void finishCommitOnImplThread(LayerTreeHostImpl*);
-    void willCommit();
-    void commitComplete();
-    scoped_ptr<OutputSurface> createOutputSurface();
-    scoped_ptr<InputHandler> createInputHandler();
-    virtual scoped_ptr<LayerTreeHostImpl> createLayerTreeHostImpl(LayerTreeHostImplClient*);
-    void didLoseOutputSurface();
-    enum RecreateResult {
-        RecreateSucceeded,
-        RecreateFailedButTryAgain,
-        RecreateFailedAndGaveUp,
-    };
-    RecreateResult recreateOutputSurface();
-    void didCommitAndDrawFrame() { m_client->didCommitAndDrawFrame(); }
-    void didCompleteSwapBuffers() { m_client->didCompleteSwapBuffers(); }
-    void deleteContentsTexturesOnImplThread(ResourceProvider*);
-    virtual void acquireLayerTextures();
-    // Returns false if we should abort this frame due to initialization failure.
-    bool initializeRendererIfNeeded();
-    void updateLayers(ResourceUpdateQueue&, size_t contentsMemoryLimitBytes);
+  // LayerTreeHost interface to Proxy.
+  void WillBeginFrame() { client_->willBeginFrame(); }
+  void DidBeginFrame();
+  void UpdateAnimations(base::TimeTicks monotonic_frame_begin_time);
+  void DidStopFlinging();
+  void Layout();
+  void BeginCommitOnImplThread(LayerTreeHostImpl* host_impl);
+  void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
+  void WillCommit();
+  void CommitComplete();
+  scoped_ptr<OutputSurface> CreateOutputSurface();
+  scoped_ptr<InputHandler> CreateInputHandler();
+  virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
+      LayerTreeHostImplClient* client);
+  void DidLoseOutputSurface();
+  enum RecreateResult {
+    RecreateSucceeded,
+    RecreateFailedButTryAgain,
+    RecreateFailedAndGaveUp,
+  };
+  RecreateResult RecreateOutputSurface();
+  void DidCommitAndDrawFrame() { client_->didCommitAndDrawFrame(); }
+  void DidCompleteSwapBuffers() { client_->didCompleteSwapBuffers(); }
+  void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
+  virtual void AcquireLayerTextures();
+  // Returns false if we should abort this frame due to initialization failure.
+  bool InitializeRendererIfNeeded();
+  void UpdateLayers(ResourceUpdateQueue* queue,
+                    size_t contents_memory_limit_bytes);
 
-    LayerTreeHostClient* client() { return m_client; }
+  LayerTreeHostClient* client() { return client_; }
 
-    void composite();
+  void Composite();
 
-    // Only used when compositing on the main thread.
-    void scheduleComposite();
+  // Only used when compositing on the main thread.
+  void ScheduleComposite();
 
-    // Composites and attempts to read back the result into the provided
-    // buffer. If it wasn't possible, e.g. due to context lost, will return
-    // false.
-    bool compositeAndReadback(void *pixels, const gfx::Rect&);
+  // Composites and attempts to read back the result into the provided
+  // buffer. If it wasn't possible, e.g. due to context lost, will return
+  // false.
+  bool CompositeAndReadback(void* pixels, gfx::Rect rect_in_device_viewport);
 
-    void finishAllRendering();
+  void FinishAllRendering();
 
-    void setDeferCommits(bool deferCommits);
+  void SetDeferCommits(bool defer_commits);
 
-    // Test only hook
-    virtual void didDeferCommit();
+  // Test only hook
+  virtual void DidDeferCommit();
 
-    int commitNumber() const { return m_commitNumber; }
+  int commit_number() const { return commit_number_; }
 
-    void renderingStats(RenderingStats*) const;
+  void CollectRenderingStats(RenderingStats* stats) const;
 
-    const RendererCapabilities& rendererCapabilities() const;
+  const RendererCapabilities& GetRendererCapabilities() const;
 
-    void setNeedsAnimate();
-    // virtual for testing
-    virtual void setNeedsCommit();
-    virtual void setNeedsFullTreeSync();
-    void setNeedsRedraw();
-    bool commitRequested() const;
+  void SetNeedsAnimate();
+  virtual void SetNeedsCommit();
+  virtual void SetNeedsFullTreeSync();
+  void SetNeedsRedraw();
+  bool CommitRequested() const;
 
-    void setAnimationEvents(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime);
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
+                          base::Time wall_clock_time);
 
-    Layer* rootLayer() { return m_rootLayer.get(); }
-    const Layer* rootLayer() const { return m_rootLayer.get(); }
-    void setRootLayer(scoped_refptr<Layer>);
+  void SetRootLayer(scoped_refptr<Layer> root_layer);
+  Layer* root_layer() { return root_layer_.get(); }
+  const Layer* root_layer() const { return root_layer_.get(); }
 
-    const LayerTreeSettings& settings() const { return m_settings; }
+  const LayerTreeSettings& settings() const { return settings_; }
 
-    void setDebugState(const LayerTreeDebugState& debugState);
-    const LayerTreeDebugState& debugState() const { return m_debugState; }
+  void SetDebugState(const LayerTreeDebugState& debug_state);
+  const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
-    void setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize);
+  void SetViewportSize(gfx::Size layout_viewport_size,
+                       gfx::Size device_viewport_size);
 
-    const gfx::Size& layoutViewportSize() const { return m_layoutViewportSize; }
-    const gfx::Size& deviceViewportSize() const { return m_deviceViewportSize; }
+  gfx::Size layout_viewport_size() const { return layout_viewport_size_; }
+  gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
-    void setPageScaleFactorAndLimits(float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor);
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                   float min_page_scale_factor,
+                                   float max_page_scale_factor);
 
-    void setBackgroundColor(SkColor color) { m_backgroundColor = color; }
+  void set_background_color(SkColor color) { background_color_ = color; }
 
-    void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
+  void set_has_transparent_background(bool transparent) {
+    has_transparent_background_ = transparent;
+  }
 
-    PrioritizedResourceManager* contentsTextureManager() const;
+  PrioritizedResourceManager* contents_texture_manager() const {
+    return contents_texture_manager_.get();
+  }
 
-    bool visible() const { return m_visible; }
-    void setVisible(bool);
+  void SetVisible(bool visible);
+  bool visible() const { return visible_; }
 
-    void startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration);
+  void StartPageScaleAnimation(gfx::Vector2d target_offset,
+                               bool use_anchor,
+                               float scale,
+                               base::TimeDelta duration);
 
-    void applyScrollAndScale(const ScrollAndScaleSet&);
-    void setImplTransform(const gfx::Transform&);
+  void ApplyScrollAndScale(const ScrollAndScaleSet& info);
 
-    void startRateLimiter(WebKit::WebGraphicsContext3D*);
-    void stopRateLimiter(WebKit::WebGraphicsContext3D*);
+  void SetImplTransform(const gfx::Transform& transform);
 
-    // RateLimitClient implementation
-    virtual void rateLimit() OVERRIDE;
+  void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
+  void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
 
-    bool bufferedUpdates();
-    bool requestPartialTextureUpdate();
+  // RateLimitClient implementation
+  virtual void rateLimit() OVERRIDE;
 
-    void setDeviceScaleFactor(float);
-    float deviceScaleFactor() const { return m_deviceScaleFactor; }
+  bool buffered_updates() const {
+    return settings_.maxPartialTextureUpdates !=
+        std::numeric_limits<size_t>::max();
+  }
+  bool RequestPartialTextureUpdate();
 
-    void enableHidingTopControls(bool enable);
+  void SetDeviceScaleFactor(float device_scale_factor);
+  float device_scale_factor() const { return device_scale_factor_; }
 
-    HeadsUpDisplayLayer* hudLayer() const { return m_hudLayer.get(); }
+  void EnableHidingTopControls(bool enable);
 
-    Proxy* proxy() const { return m_proxy.get(); }
+  HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
 
-    AnimationRegistrar* animationRegistrar() const { return m_animationRegistrar.get(); }
+  Proxy* proxy() const { return proxy_.get(); }
 
-    skia::RefPtr<SkPicture> capturePicture();
+  AnimationRegistrar* animation_registrar() const {
+    return animation_registrar_.get();
+  }
 
-    bool blocksPendingCommit() const;
+  skia::RefPtr<SkPicture> CapturePicture();
 
-    // Obtains a thorough dump of the LayerTreeHost as a value.
-    scoped_ptr<base::Value> asValue() const;
+  bool BlocksPendingCommit() const;
 
-protected:
-    LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
-    bool initialize(scoped_ptr<Thread> implThread);
-    bool initializeForTesting(scoped_ptr<Proxy> proxyForTesting);
+  // Obtains a thorough dump of the LayerTreeHost as a value.
+  scoped_ptr<base::Value> AsValue() const;
 
-private:
-    typedef std::vector<scoped_refptr<Layer> > LayerList;
+ protected:
+  LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);
+  bool Initialize(scoped_ptr<Thread> impl_thread);
+  bool InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
 
-    bool initializeProxy(scoped_ptr<Proxy> proxy);
-    void initializeRenderer();
+ private:
+  typedef std::vector<scoped_refptr<Layer> > LayerList;
 
-    void update(Layer*, ResourceUpdateQueue&, const OcclusionTracker*);
-    bool paintLayerContents(const LayerList&, ResourceUpdateQueue&);
-    bool paintMasksForRenderSurface(Layer*, ResourceUpdateQueue&);
+  bool InitializeProxy(scoped_ptr<Proxy> proxy);
+  void InitializeRenderer();
 
-    void updateLayers(Layer*, ResourceUpdateQueue&);
-    void updateHudLayer();
-    void triggerPrepaint();
+  bool PaintLayerContents(const LayerList& render_surface_layer_list,
+                          ResourceUpdateQueue* quue);
+  bool PaintMasksForRenderSurface(Layer* render_surface_layer,
+                                  ResourceUpdateQueue* queue);
 
-    void prioritizeTextures(const LayerList&, OverdrawMetrics&); 
-    void setPrioritiesForSurfaces(size_t surfaceMemoryBytes);
-    void setPrioritiesForLayers(const LayerList&);
-    size_t calculateMemoryForRenderSurfaces(const LayerList& updateList);
+  void UpdateLayers(Layer* root_layer, ResourceUpdateQueue* queue);
+  void UpdateHudLayer();
+  void TriggerPrepaint();
 
-    void animateLayers(base::TimeTicks monotonicTime);
-    bool animateLayersRecursive(Layer* current, base::TimeTicks time);
-    void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
+  void PrioritizeTextures(const LayerList& render_surface_layer_list,
+                          OverdrawMetrics* metrics); 
+  void SetPrioritiesForSurfaces(size_t surface_memory_bytes);
+  void SetPrioritiesForLayers(const LayerList& update_list);
+  size_t CalculateMemoryForRenderSurfaces(const LayerList& update_list);
 
-    bool m_animating;
-    bool m_needsFullTreeSync;
-    bool m_needsFilterContext;
+  void AnimateLayers(base::TimeTicks monotonic_time);
+  bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
+  void SetAnimationEventsRecursive(const AnimationEventsVector& events,
+                                   Layer* layer,
+                                   base::Time wall_clock_time);
 
-    base::CancelableClosure m_prepaintCallback;
+  bool animating_;
+  bool needs_full_tree_sync_;
+  bool needs_filter_context_;
 
-    LayerTreeHostClient* m_client;
-    scoped_ptr<Proxy> m_proxy;
+  base::CancelableClosure prepaint_callback_;
 
-    int m_commitNumber;
-    RenderingStats m_renderingStats;
+  LayerTreeHostClient* client_;
+  scoped_ptr<Proxy> proxy_;
 
-    bool m_rendererInitialized;
-    bool m_outputSurfaceLost;
-    int m_numFailedRecreateAttempts;
+  int commit_number_;
+  RenderingStats rendering_stats_;
 
-    scoped_refptr<Layer> m_rootLayer;
-    scoped_refptr<HeadsUpDisplayLayer> m_hudLayer;
+  bool renderer_initialized_;
+  bool output_surface_lost_;
+  int num_failed_recreate_attempts_;
 
-    scoped_ptr<PrioritizedResourceManager> m_contentsTextureManager;
-    scoped_ptr<PrioritizedResource> m_surfaceMemoryPlaceholder;
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
 
-    base::WeakPtr<TopControlsManager> m_topControlsManagerWeakPtr;
+  scoped_ptr<PrioritizedResourceManager> contents_texture_manager_;
+  scoped_ptr<PrioritizedResource> surface_memory_placeholder_;
 
-    LayerTreeSettings m_settings;
-    LayerTreeDebugState m_debugState;
+  base::WeakPtr<TopControlsManager> top_controls_manager_weak_ptr_;
 
-    gfx::Size m_layoutViewportSize;
-    gfx::Size m_deviceViewportSize;
-    float m_deviceScaleFactor;
+  LayerTreeSettings settings_;
+  LayerTreeDebugState debug_state_;
 
-    bool m_visible;
+  gfx::Size layout_viewport_size_;
+  gfx::Size device_viewport_size_;
+  float device_scale_factor_;
 
-    typedef base::hash_map<WebKit::WebGraphicsContext3D*, scoped_refptr<RateLimiter> > RateLimiterMap;
-    RateLimiterMap m_rateLimiters;
+  bool visible_;
 
-    float m_pageScaleFactor;
-    float m_minPageScaleFactor, m_maxPageScaleFactor;
-    gfx::Transform m_implTransform;
-    bool m_triggerIdleUpdates;
+  typedef base::hash_map<WebKit::WebGraphicsContext3D*,
+                         scoped_refptr<RateLimiter> > RateLimiterMap;
+  RateLimiterMap rate_limiters_;
 
-    SkColor m_backgroundColor;
-    bool m_hasTransparentBackground;
+  float page_scale_factor_;
+  float min_page_scale_factor_, max_page_scale_factor_;
+  gfx::Transform impl_transform_;
+  bool trigger_idle_updates_;
 
-    typedef ScopedPtrVector<PrioritizedResource> TextureList;
-    size_t m_partialTextureUpdateRequests;
+  SkColor background_color_;
+  bool has_transparent_background_;
 
-    scoped_ptr<AnimationRegistrar> m_animationRegistrar;
+  typedef ScopedPtrVector<PrioritizedResource> TextureList;
+  size_t partial_texture_update_requests_;
 
-    DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
+  scoped_ptr<AnimationRegistrar> animation_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
 
 }  // namespace cc

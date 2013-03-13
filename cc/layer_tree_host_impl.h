@@ -165,7 +165,7 @@ public:
 
     bool swapBuffers();
 
-    void readback(void* pixels, const gfx::Rect&);
+    void readback(void* pixels, gfx::Rect rect_in_device_viewport);
 
     LayerTreeImpl* activeTree() { return m_activeTree.get(); }
     const LayerTreeImpl* activeTree() const { return m_activeTree.get(); }

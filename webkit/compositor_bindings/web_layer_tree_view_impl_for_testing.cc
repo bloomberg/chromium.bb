@@ -47,66 +47,66 @@ bool WebLayerTreeViewImplForTesting::initialize(
   // tests.
   settings.acceleratedAnimationEnabled = type_ == webkit_support::FAKE_CONTEXT;
   layer_tree_host_ =
-      cc::LayerTreeHost::create(this, settings, compositor_thread.Pass());
+      cc::LayerTreeHost::Create(this, settings, compositor_thread.Pass());
   if (!layer_tree_host_.get())
     return false;
   return true;
 }
 
 void WebLayerTreeViewImplForTesting::setSurfaceReady() {
-  layer_tree_host_->setSurfaceReady();
+  layer_tree_host_->SetSurfaceReady();
 }
 
 void WebLayerTreeViewImplForTesting::setRootLayer(const WebLayer& root) {
-  layer_tree_host_->setRootLayer(static_cast<const WebLayerImpl*>(&root)
-                                     ->layer());
+  layer_tree_host_->SetRootLayer(
+      static_cast<const WebLayerImpl*>(&root)->layer());
 }
 
 void WebLayerTreeViewImplForTesting::clearRootLayer() {
-  layer_tree_host_->setRootLayer(scoped_refptr<cc::Layer>());
+  layer_tree_host_->SetRootLayer(scoped_refptr<cc::Layer>());
 }
 
 void WebLayerTreeViewImplForTesting::setViewportSize(
     const WebSize& layout_viewport_size,
     const WebSize& device_viewport_size) {
-  layer_tree_host_->setViewportSize(layout_viewport_size, device_viewport_size);
+  layer_tree_host_->SetViewportSize(layout_viewport_size, device_viewport_size);
 }
 
 WebSize WebLayerTreeViewImplForTesting::layoutViewportSize() const {
-  return layer_tree_host_->layoutViewportSize();
+  return layer_tree_host_->layout_viewport_size();
 }
 
 WebSize WebLayerTreeViewImplForTesting::deviceViewportSize() const {
-  return layer_tree_host_->deviceViewportSize();
+  return layer_tree_host_->device_viewport_size();
 }
 
 void WebLayerTreeViewImplForTesting::setDeviceScaleFactor(
     float device_scale_factor) {
-  layer_tree_host_->setDeviceScaleFactor(device_scale_factor);
+  layer_tree_host_->SetDeviceScaleFactor(device_scale_factor);
 }
 
 float WebLayerTreeViewImplForTesting::deviceScaleFactor() const {
-  return layer_tree_host_->deviceScaleFactor();
+  return layer_tree_host_->device_scale_factor();
 }
 
 void WebLayerTreeViewImplForTesting::setBackgroundColor(WebColor color) {
-  layer_tree_host_->setBackgroundColor(color);
+  layer_tree_host_->set_background_color(color);
 }
 
 void WebLayerTreeViewImplForTesting::setHasTransparentBackground(
     bool transparent) {
-  layer_tree_host_->setHasTransparentBackground(transparent);
+  layer_tree_host_->set_has_transparent_background(transparent);
 }
 
 void WebLayerTreeViewImplForTesting::setVisible(bool visible) {
-  layer_tree_host_->setVisible(visible);
+  layer_tree_host_->SetVisible(visible);
 }
 
 void WebLayerTreeViewImplForTesting::setPageScaleFactorAndLimits(
     float page_scale_factor,
     float minimum,
     float maximum) {
-  layer_tree_host_->setPageScaleFactorAndLimits(
+  layer_tree_host_->SetPageScaleFactorAndLimits(
       page_scale_factor, minimum, maximum);
 }
 
@@ -117,41 +117,42 @@ void WebLayerTreeViewImplForTesting::startPageScaleAnimation(
     double duration_sec) {}
 
 void WebLayerTreeViewImplForTesting::setNeedsAnimate() {
-  layer_tree_host_->setNeedsAnimate();
+  layer_tree_host_->SetNeedsAnimate();
 }
 
 void WebLayerTreeViewImplForTesting::setNeedsRedraw() {
-  layer_tree_host_->setNeedsRedraw();
+  layer_tree_host_->SetNeedsRedraw();
 }
 
 bool WebLayerTreeViewImplForTesting::commitRequested() const {
-  return layer_tree_host_->commitRequested();
+  return layer_tree_host_->CommitRequested();
 }
 
 void WebLayerTreeViewImplForTesting::composite() {
-  layer_tree_host_->composite();
+  layer_tree_host_->Composite();
 }
 
 void WebLayerTreeViewImplForTesting::updateAnimations(
     double frame_begin_timeSeconds) {
   base::TimeTicks frame_begin_time = base::TimeTicks::FromInternalValue(
       frame_begin_timeSeconds * base::Time::kMicrosecondsPerMillisecond);
-  layer_tree_host_->updateAnimations(frame_begin_time);
+  layer_tree_host_->UpdateAnimations(frame_begin_time);
 }
 
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
-bool WebLayerTreeViewImplForTesting::compositeAndReadback(void* pixels,
-                                                          const WebRect& rect) {
-  return layer_tree_host_->compositeAndReadback(pixels, rect);
+bool WebLayerTreeViewImplForTesting::compositeAndReadback(
+    void* pixels, const WebRect& rect_in_device_viewport) {
+  return layer_tree_host_->CompositeAndReadback(pixels,
+                                                rect_in_device_viewport);
 }
 
 void WebLayerTreeViewImplForTesting::finishAllRendering() {
-  layer_tree_host_->finishAllRendering();
+  layer_tree_host_->FinishAllRendering();
 }
 
 void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
-  layer_tree_host_->setDeferCommits(defer_commits);
+  layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
 void WebLayerTreeViewImplForTesting::renderingStats(WebRenderingStats&) const {}

@@ -41,9 +41,9 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
     if (keepQuad)
         drawQuad->visible_rect = culledRect;
 
-    occlusionTracker.OverdrawMetrics().DidCullForDrawing(drawQuad->quadTransform(), drawQuad->rect, culledRect);
+    occlusionTracker.overdraw_metrics()->DidCullForDrawing(drawQuad->quadTransform(), drawQuad->rect, culledRect);
     gfx::Rect opaqueDrawRect = drawQuad->opacity() == 1.0f ? drawQuad->opaque_rect : gfx::Rect();
-    occlusionTracker.OverdrawMetrics().DidDraw(drawQuad->quadTransform(), culledRect, opaqueDrawRect);
+    occlusionTracker.overdraw_metrics()->DidDraw(drawQuad->quadTransform(), culledRect, opaqueDrawRect);
 
     if (keepQuad) {
         if (createDebugBorderQuads && !drawQuad->IsDebugQuad() && drawQuad->visible_rect != drawQuad->rect) {

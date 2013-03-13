@@ -31,14 +31,14 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
   }
 
   virtual void beginTest() OVERRIDE {
-    m_layerTreeHost->rootLayer()->SetScrollable(true);
-    m_layerTreeHost->rootLayer()->SetScrollOffset(initial_scroll_);
+    m_layerTreeHost->root_layer()->SetScrollable(true);
+    m_layerTreeHost->root_layer()->SetScrollOffset(initial_scroll_);
     postSetNeedsCommitToMainThread();
   }
 
   virtual void layout() OVERRIDE {
-    Layer* root = m_layerTreeHost->rootLayer();
-    if (!m_layerTreeHost->commitNumber())
+    Layer* root = m_layerTreeHost->root_layer();
+    if (!m_layerTreeHost->commit_number())
       EXPECT_VECTOR_EQ(initial_scroll_, root->scroll_offset());
     else {
       EXPECT_VECTOR_EQ(initial_scroll_ + scroll_amount_, root->scroll_offset());
@@ -72,8 +72,8 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
   virtual void applyScrollAndScale(
       gfx::Vector2d scroll_delta, float scale) OVERRIDE {
-    gfx::Vector2d offset = m_layerTreeHost->rootLayer()->scroll_offset();
-    m_layerTreeHost->rootLayer()->SetScrollOffset(offset + scroll_delta);
+    gfx::Vector2d offset = m_layerTreeHost->root_layer()->scroll_offset();
+    m_layerTreeHost->root_layer()->SetScrollOffset(offset + scroll_delta);
     num_scrolls_++;
   }
 
@@ -100,14 +100,14 @@ class LayerTreeHostScrollTestScrollMultipleRedraw :
   }
 
   virtual void beginTest() OVERRIDE {
-    m_layerTreeHost->rootLayer()->SetScrollable(true);
-    m_layerTreeHost->rootLayer()->SetScrollOffset(initial_scroll_);
+    m_layerTreeHost->root_layer()->SetScrollable(true);
+    m_layerTreeHost->root_layer()->SetScrollOffset(initial_scroll_);
     postSetNeedsCommitToMainThread();
   }
 
   virtual void beginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    Layer* root = m_layerTreeHost->rootLayer();
-    switch (m_layerTreeHost->commitNumber()) {
+    Layer* root = m_layerTreeHost->root_layer();
+    switch (m_layerTreeHost->commit_number()) {
       case 0:
         EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
         break;
@@ -159,8 +159,8 @@ class LayerTreeHostScrollTestScrollMultipleRedraw :
 
   virtual void applyScrollAndScale(
       gfx::Vector2d scroll_delta, float scale) OVERRIDE {
-    gfx::Vector2d offset = m_layerTreeHost->rootLayer()->scroll_offset();
-    m_layerTreeHost->rootLayer()->SetScrollOffset(offset + scroll_delta);
+    gfx::Vector2d offset = m_layerTreeHost->root_layer()->scroll_offset();
+    m_layerTreeHost->root_layer()->SetScrollOffset(offset + scroll_delta);
     num_scrolls_++;
   }
 
@@ -182,7 +182,7 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
   }
 
   virtual void beginTest() OVERRIDE {
-    m_layerTreeHost->rootLayer()->SetScrollable(true);
+    m_layerTreeHost->root_layer()->SetScrollable(true);
     postSetNeedsCommitToMainThread();
   }
 
@@ -222,8 +222,8 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
 
   virtual void applyScrollAndScale(
       gfx::Vector2d scroll_delta, float scale) OVERRIDE {
-    gfx::Vector2d offset = m_layerTreeHost->rootLayer()->scroll_offset();
-    m_layerTreeHost->rootLayer()->SetScrollOffset(offset + scroll_delta);
+    gfx::Vector2d offset = m_layerTreeHost->root_layer()->scroll_offset();
+    m_layerTreeHost->root_layer()->SetScrollOffset(offset + scroll_delta);
   }
 
   virtual void afterTest() OVERRIDE {}
@@ -249,7 +249,7 @@ class LayerTreeHostScrollTestCaseWithChild :
   }
 
   virtual void setupTree() OVERRIDE {
-    m_layerTreeHost->setDeviceScaleFactor(device_scale_factor_);
+    m_layerTreeHost->SetDeviceScaleFactor(device_scale_factor_);
 
     scoped_refptr<Layer> root_layer = Layer::Create();
     root_layer->SetBounds(gfx::Size(10, 10));
@@ -290,7 +290,7 @@ class LayerTreeHostScrollTestCaseWithChild :
 
     expected_scroll_layer_->SetScrollOffset(initial_offset_);
 
-    m_layerTreeHost->setRootLayer(root_layer);
+    m_layerTreeHost->SetRootLayer(root_layer);
     LayerTreeHostScrollTest::setupTree();
   }
 
@@ -313,7 +313,7 @@ class LayerTreeHostScrollTestCaseWithChild :
     EXPECT_VECTOR_EQ(
         gfx::Vector2d(), expected_no_scroll_layer_->scroll_offset());
 
-    switch (m_layerTreeHost->commitNumber()) {
+    switch (m_layerTreeHost->commit_number()) {
       case 0:
         EXPECT_VECTOR_EQ(
             initial_offset_,
@@ -515,14 +515,14 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
   }
 
   virtual void beginTest() OVERRIDE {
-    m_layerTreeHost->rootLayer()->SetScrollable(true);
-    m_layerTreeHost->rootLayer()->SetScrollOffset(initial_scroll_);
+    m_layerTreeHost->root_layer()->SetScrollable(true);
+    m_layerTreeHost->root_layer()->SetScrollOffset(initial_scroll_);
     postSetNeedsCommitToMainThread();
   }
 
   virtual void layout() OVERRIDE {
-    Layer* root = m_layerTreeHost->rootLayer();
-    if (!m_layerTreeHost->commitNumber())
+    Layer* root = m_layerTreeHost->root_layer();
+    if (!m_layerTreeHost->commit_number())
       EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
     else {
       EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_ + impl_thread_scroll1_);
@@ -598,8 +598,8 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
   virtual void applyScrollAndScale(
       gfx::Vector2d scroll_delta, float scale) OVERRIDE {
-    gfx::Vector2d offset = m_layerTreeHost->rootLayer()->scroll_offset();
-    m_layerTreeHost->rootLayer()->SetScrollOffset(offset + scroll_delta);
+    gfx::Vector2d offset = m_layerTreeHost->root_layer()->scroll_offset();
+    m_layerTreeHost->root_layer()->SetScrollOffset(offset + scroll_delta);
     num_scrolls_++;
   }
 

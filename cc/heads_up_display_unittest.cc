@@ -52,40 +52,40 @@ public:
     {
         ++m_numCommits;
 
-        ASSERT_TRUE(m_layerTreeHost->hudLayer());
+        ASSERT_TRUE(m_layerTreeHost->hud_layer());
 
         switch (m_numCommits) {
         case 1:
             // Change directly to a new root layer.
-            m_layerTreeHost->setRootLayer(m_rootLayer1);
+            m_layerTreeHost->SetRootLayer(m_rootLayer1);
             break;
         case 2:
-            EXPECT_EQ(m_rootLayer1.get(), m_layerTreeHost->hudLayer()->parent());
+            EXPECT_EQ(m_rootLayer1.get(), m_layerTreeHost->hud_layer()->parent());
             // Unset the root layer.
-            m_layerTreeHost->setRootLayer(0);
+            m_layerTreeHost->SetRootLayer(NULL);
             break;
         case 3:
-            EXPECT_EQ(0, m_layerTreeHost->hudLayer()->parent());
+            EXPECT_EQ(0, m_layerTreeHost->hud_layer()->parent());
             // Change back to the previous root layer.
-            m_layerTreeHost->setRootLayer(m_rootLayer1);
+            m_layerTreeHost->SetRootLayer(m_rootLayer1);
             break;
         case 4:
-            EXPECT_EQ(m_rootLayer1.get(), m_layerTreeHost->hudLayer()->parent());
+            EXPECT_EQ(m_rootLayer1.get(), m_layerTreeHost->hud_layer()->parent());
             // Unset the root layer.
-            m_layerTreeHost->setRootLayer(0);
+            m_layerTreeHost->SetRootLayer(NULL);
             break;
         case 5:
-            EXPECT_EQ(0, m_layerTreeHost->hudLayer()->parent());
+            EXPECT_EQ(0, m_layerTreeHost->hud_layer()->parent());
             // Change to a new root layer from a null root.
-            m_layerTreeHost->setRootLayer(m_rootLayer2);
+            m_layerTreeHost->SetRootLayer(m_rootLayer2);
             break;
         case 6:
-            EXPECT_EQ(m_rootLayer2.get(), m_layerTreeHost->hudLayer()->parent());
+            EXPECT_EQ(m_rootLayer2.get(), m_layerTreeHost->hud_layer()->parent());
             // Change directly back to the last root layer/
-            m_layerTreeHost->setRootLayer(m_rootLayer1);
+            m_layerTreeHost->SetRootLayer(m_rootLayer1);
             break;
         case 7:
-            EXPECT_EQ(m_rootLayer1.get(), m_layerTreeHost->hudLayer()->parent());
+            EXPECT_EQ(m_rootLayer1.get(), m_layerTreeHost->hud_layer()->parent());
             endTest();
             break;
         }

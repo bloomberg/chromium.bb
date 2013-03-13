@@ -129,7 +129,7 @@ CompositorImpl::~CompositorImpl() {
 
 void CompositorImpl::Composite() {
   if (host_.get())
-    host_->composite();
+    host_->Composite();
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
@@ -200,19 +200,19 @@ void CompositorImpl::SetVisible(bool visible) {
       impl_thread = cc::ThreadImpl::createForDifferentThread(
           g_impl_thread->message_loop()->message_loop_proxy());
 
-    host_ = cc::LayerTreeHost::create(this, settings, impl_thread.Pass());
-    host_->setRootLayer(root_layer_);
+    host_ = cc::LayerTreeHost::Create(this, settings, impl_thread.Pass());
+    host_->SetRootLayer(root_layer_);
 
-    host_->setVisible(true);
-    host_->setSurfaceReady();
-    host_->setViewportSize(size_, size_);
-    host_->setHasTransparentBackground(has_transparent_background_);
+    host_->SetVisible(true);
+    host_->SetSurfaceReady();
+    host_->SetViewportSize(size_, size_);
+    host_->set_has_transparent_background(has_transparent_background_);
   }
 }
 
 void CompositorImpl::setDeviceScaleFactor(float factor) {
   if (host_)
-    host_->setDeviceScaleFactor(factor);
+    host_->SetDeviceScaleFactor(factor);
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
@@ -221,19 +221,19 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
   size_ = size;
   if (host_)
-    host_->setViewportSize(size, size);
+    host_->SetViewportSize(size, size);
   root_layer_->SetBounds(size);
 }
 
 void CompositorImpl::SetHasTransparentBackground(bool flag) {
   has_transparent_background_ = flag;
   if (host_.get())
-    host_->setHasTransparentBackground(flag);
+    host_->set_has_transparent_background(flag);
 }
 
 bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
   if (host_.get())
-    return host_->compositeAndReadback(pixels, rect);
+    return host_->CompositeAndReadback(pixels, rect);
   else
     return false;
 }

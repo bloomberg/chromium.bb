@@ -266,7 +266,7 @@ class LayerTreeHostContextTestLostContextSucceeds :
   }
 
   virtual void InvalidateAndSetNeedsCommit() {
-    m_layerTreeHost->setNeedsCommit();
+    m_layerTreeHost->SetNeedsCommit();
   }
 
   bool NextTestCase() {
@@ -409,7 +409,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
 
     root_->AddChild(content_);
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -508,7 +508,7 @@ class LayerTreeHostContextTestOffscreenContextFails
 
     root_->AddChild(content_);
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -630,7 +630,7 @@ class LayerTreeHostContextTestFinishAllRenderingAfterLoss :
 
   virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_FALSE(succeeded);
-    m_layerTreeHost->finishAllRendering();
+    m_layerTreeHost->FinishAllRendering();
     endTest();
   }
 
@@ -652,7 +652,7 @@ class LayerTreeHostContextTestLostContextAndEvictTextures :
 
   virtual void setupTree() OVERRIDE {
     layer_->SetBounds(gfx::Size(10, 20));
-    m_layerTreeHost->setRootLayer(layer_);
+    m_layerTreeHost->SetRootLayer(layer_);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -765,7 +765,7 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
       parent_->AddChild(child);
     }
 
-    m_layerTreeHost->setRootLayer(parent_);
+    m_layerTreeHost->SetRootLayer(parent_);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -812,7 +812,7 @@ class LayerTreeHostContextTestLayersNotified :
     root_->AddChild(child_);
     child_->AddChild(grandchild_);
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -955,7 +955,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     // Enable the hud.
     LayerTreeDebugState debug_state;
     debug_state.showPropertyChangedRects = true;
-    m_layerTreeHost->setDebugState(debug_state);
+    m_layerTreeHost->SetDebugState(debug_state);
 
     bool paint_scrollbar = true;
     bool has_thumb = true;
@@ -971,7 +971,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     scrollbar_->SetIsDrawable(true);
     root_->AddChild(scrollbar_);
 
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -1060,12 +1060,12 @@ class LayerTreeHostContextTestDontUseLostResources :
   }
 
   virtual void didCommitAndDrawFrame() OVERRIDE {
-    ASSERT_TRUE(m_layerTreeHost->hudLayer());
+    ASSERT_TRUE(m_layerTreeHost->hud_layer());
     // End the test once we know the 3nd frame drew.
-    if (m_layerTreeHost->commitNumber() == 4)
+    if (m_layerTreeHost->commit_number() == 4)
       endTest();
     else
-      m_layerTreeHost->setNeedsCommit();
+      m_layerTreeHost->SetNeedsCommit();
   }
 
   virtual void afterTest() OVERRIDE {}
@@ -1152,7 +1152,7 @@ class LayerTreeHostContextTestImplSidePainting :
     picture->SetIsDrawable(true);
     root->AddChild(picture);
 
-    m_layerTreeHost->setRootLayer(root);
+    m_layerTreeHost->SetRootLayer(root);
     LayerTreeHostContextTest::setupTree();
   }
 
@@ -1183,8 +1183,8 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
     scrollbar_layer_ = FakeScrollbarLayer::Create(
         false, true, scroll_layer->id());
     scrollbar_layer_->SetBounds(gfx::Size(10, 100));
-    m_layerTreeHost->rootLayer()->AddChild(scrollbar_layer_);
-    m_layerTreeHost->rootLayer()->AddChild(scroll_layer);
+    m_layerTreeHost->root_layer()->AddChild(scrollbar_layer_);
+    m_layerTreeHost->root_layer()->AddChild(scroll_layer);
     postSetNeedsCommitToMainThread();
   }
 

@@ -78,7 +78,7 @@ class CC_EXPORT Proxy {
   // Returns false if the renderer couldn't be reinitialized.
   virtual bool RecreateOutputSurface() = 0;
 
-  virtual void GetRenderingStats(RenderingStats* stats) = 0;
+  virtual void CollectRenderingStats(RenderingStats* stats) = 0;
 
   virtual const RendererCapabilities& GetRendererCapabilities() const = 0;
 

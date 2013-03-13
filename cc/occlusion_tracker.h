@@ -78,8 +78,8 @@ class CC_EXPORT OcclusionTrackerBase {
       bool* has_occlusion_from_outside_target_surface) const;
 
   // Report operations for recording overdraw metrics.
-  class OverdrawMetrics& OverdrawMetrics() const {
-    return *overdraw_metrics_.get();
+  OverdrawMetrics* overdraw_metrics() const {
+    return overdraw_metrics_.get();
   }
 
   // Gives the region of the screen that is not occluded by something opaque.

@@ -409,9 +409,9 @@ Compositor::Compositor(CompositorDelegate* delegate,
         g_compositor_thread->message_loop_proxy());
   }
 
-  host_ = cc::LayerTreeHost::create(this, settings, thread.Pass());
-  host_->setRootLayer(root_web_layer_);
-  host_->setSurfaceReady();
+  host_ = cc::LayerTreeHost::Create(this, settings, thread.Pass());
+  host_->SetRootLayer(root_web_layer_);
+  host_->SetSurfaceReady();
 }
 
 Compositor::~Compositor() {
@@ -447,7 +447,7 @@ void Compositor::Terminate() {
 
 void Compositor::ScheduleDraw() {
   if (g_compositor_thread)
-    host_->composite();
+    host_->Composite();
   else if (delegate_)
     delegate_->ScheduleDraw();
 }
@@ -467,7 +467,7 @@ void Compositor::SetRootLayer(Layer* root_layer) {
 
 void Compositor::SetHostHasTransparentBackground(
     bool host_has_transparent_background) {
-  host_->setHasTransparentBackground(host_has_transparent_background);
+  host_->set_has_transparent_background(host_has_transparent_background);
 }
 
 void Compositor::Draw(bool force_clear) {
@@ -482,14 +482,14 @@ void Compositor::Draw(bool force_clear) {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
     layout();
-    host_->composite();
+    host_->Composite();
   }
   if (!pending_swap.posted())
     NotifyEnd();
 }
 
 void Compositor::ScheduleFullDraw() {
-  host_->setNeedsRedraw();
+  host_->SetNeedsRedraw();
 }
 
 bool Compositor::ReadPixels(SkBitmap* bitmap,
@@ -504,14 +504,14 @@ bool Compositor::ReadPixels(SkBitmap* bitmap,
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
   CancelCompositorLock();
   PendingSwap pending_swap(READPIXELS_SWAP, posted_swaps_.get());
-  return host_->compositeAndReadback(pixels, bounds_in_pixel);
+  return host_->CompositeAndReadback(pixels, bounds_in_pixel);
 }
 
 void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   DCHECK_GT(scale, 0);
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
-    host_->setViewportSize(size_in_pixel, size_in_pixel);
+    host_->SetViewportSize(size_in_pixel, size_in_pixel);
     root_web_layer_->SetBounds(size_in_pixel);
   }
   if (device_scale_factor_ != scale) {
@@ -646,7 +646,7 @@ scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
   if (!compositor_lock_) {
     compositor_lock_ = new CompositorLock(this);
     if (g_compositor_thread)
-      host_->setDeferCommits(true);
+      host_->SetDeferCommits(true);
     FOR_EACH_OBSERVER(CompositorObserver,
                       observer_list_,
                       OnCompositingLockStateChanged(this));
@@ -658,7 +658,7 @@ void Compositor::UnlockCompositor() {
   DCHECK(compositor_lock_);
   compositor_lock_ = NULL;
   if (g_compositor_thread)
-    host_->setDeferCommits(false);
+    host_->SetDeferCommits(false);
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingLockStateChanged(this));

@@ -43,7 +43,7 @@ void NinePatchLayer::SetTexturePriorities(
     // FIXME: Need to support swizzle in the shader for
     // !PlatformColor::sameComponentOrder(texture_format)
     GLenum texture_format =
-        layer_tree_host()->rendererCapabilities().bestTextureFormat;
+        layer_tree_host()->GetRendererCapabilities().best_texture_format;
     resource_->texture()->setDimensions(
         gfx::Size(bitmap_.width(), bitmap_.height()), texture_format);
   }
@@ -89,7 +89,7 @@ void NinePatchLayer::CreateResource() {
 
   if (!resource_) {
     resource_ = updater_->createResource(
-        layer_tree_host()->contentsTextureManager());
+        layer_tree_host()->contents_texture_manager());
   }
 }
 

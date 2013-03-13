@@ -199,24 +199,24 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->initializeRendererIfNeeded();
+        m_layerTreeHost->InitializeRendererIfNeeded();
 
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::Create());
         m_scrollbarLayer = ScrollbarLayer::Create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), 1);
         m_scrollbarLayer->SetLayerTreeHost(m_layerTreeHost.get());
         m_scrollbarLayer->SetBounds(bounds_);
-        m_layerTreeHost->rootLayer()->AddChild(m_scrollbarLayer);
+        m_layerTreeHost->root_layer()->AddChild(m_scrollbarLayer);
 
         m_scrollLayer = Layer::Create();
         m_scrollbarLayer->SetScrollLayerId(m_scrollLayer->id());
-        m_layerTreeHost->rootLayer()->AddChild(m_scrollLayer);
+        m_layerTreeHost->root_layer()->AddChild(m_scrollLayer);
 
         postSetNeedsCommitToMainThread();
     }
 
     virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        const int kMaxTextureSize = impl->rendererCapabilities().maxTextureSize;
+        const int kMaxTextureSize = impl->rendererCapabilities().max_texture_size;
 
         // Check first that we're actually testing something.
         EXPECT_GT(m_scrollbarLayer->bounds().width(), kMaxTextureSize);
@@ -250,7 +250,7 @@ public:
     MockLayerTreeHost(const LayerTreeSettings& settings)
         : LayerTreeHost(&m_fakeClient, settings)
     {
-        initialize(scoped_ptr<Thread>(NULL));
+        Initialize(scoped_ptr<Thread>(NULL));
     }
 
 private:
@@ -275,9 +275,9 @@ public:
         layerTreeRoot->AddChild(contentLayer);
         layerTreeRoot->AddChild(scrollbarLayer);
 
-        m_layerTreeHost->initializeRendererIfNeeded();
-        m_layerTreeHost->contentsTextureManager()->setMaxMemoryLimitBytes(1024 * 1024);
-        m_layerTreeHost->setRootLayer(layerTreeRoot);
+        m_layerTreeHost->InitializeRendererIfNeeded();
+        m_layerTreeHost->contents_texture_manager()->setMaxMemoryLimitBytes(1024 * 1024);
+        m_layerTreeHost->SetRootLayer(layerTreeRoot);
 
         scrollbarLayer->SetIsDrawable(true);
         scrollbarLayer->SetBounds(gfx::Size(100, 100));
@@ -298,7 +298,7 @@ public:
         OcclusionTracker occlusionTracker(gfx::Rect(), false);
 
         scrollbarLayer->SetTexturePriorities(calculator);
-        m_layerTreeHost->contentsTextureManager()->prioritizeTextures();
+        m_layerTreeHost->contents_texture_manager()->prioritizeTextures();
         scrollbarLayer->Update(&queue, &occlusionTracker, NULL);
         EXPECT_EQ(0, queue.fullUploadSize());
         EXPECT_EQ(expectedResources, queue.partialUploadSize());

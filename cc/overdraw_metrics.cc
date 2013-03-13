@@ -148,7 +148,7 @@ void OverdrawMetrics::RecordMetrics(
 }
 
 static gfx::Size DeviceViewportSize(const LayerTreeHost* host) {
-  return host->deviceViewportSize();
+  return host->device_viewport_size();
 }
 static gfx::Size DeviceViewportSize(const LayerTreeHostImpl* host_impl) {
   return host_impl->DeviceViewportSize();

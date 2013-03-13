@@ -669,7 +669,7 @@ TEST(GLRendererTest2, scissorTestWhenClearing) {
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
     FakeRendererGL renderer(&mockClient, outputSurface.get(), resourceProvider.get());
     EXPECT_TRUE(renderer.Initialize());
-    EXPECT_FALSE(renderer.Capabilities().usingPartialSwap);
+    EXPECT_FALSE(renderer.Capabilities().using_partial_swap);
 
     gfx::Rect viewportRect(mockClient.DeviceViewportSize());
     ScopedPtrVector<RenderPass>& renderPasses = mockClient.renderPassesInDrawOrder();

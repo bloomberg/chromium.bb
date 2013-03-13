@@ -524,7 +524,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
                 drawFrame = false;
         }
 
-        if (appendQuadsData.hadIncompleteTile) 
+        if (appendQuadsData.hadIncompleteTile)
             frame.containsIncompleteTile = true;
 
         occlusionTracker.LeaveLayer(it);
@@ -546,7 +546,7 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     }
 
     if (drawFrame)
-        occlusionTracker.OverdrawMetrics().RecordMetrics(this);
+        occlusionTracker.overdraw_metrics()->RecordMetrics(this);
 
     removeRenderPasses(CullRenderPassesWithNoQuads(), frame);
     m_renderer->DecideRenderPassAllocationsForFrame(frame.renderPasses);
@@ -889,10 +889,11 @@ void LayerTreeHostImpl::OnSwapBuffersComplete()
     m_client->onSwapBuffersCompleteOnImplThread();
 }
 
-void LayerTreeHostImpl::readback(void* pixels, const gfx::Rect& rect)
+void LayerTreeHostImpl::readback(void* pixels,
+                                 gfx::Rect rect_in_device_viewport)
 {
     DCHECK(m_renderer);
-    m_renderer->GetFramebufferPixels(pixels, rect);
+    m_renderer->GetFramebufferPixels(pixels, rect_in_device_viewport);
 }
 
 bool LayerTreeHostImpl::haveRootScrollLayer() const {

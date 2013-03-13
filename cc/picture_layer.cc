@@ -53,7 +53,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     pile_->SetTileGridSize(host->settings().defaultTileSize);
     pile_->set_num_raster_threads(host->settings().numRasterThreads);
     pile_->set_slow_down_raster_scale_factor(
-        host->debugState().slowDownRasterScaleFactor);
+        host->debug_state().slowDownRasterScaleFactor);
   }
 }
 

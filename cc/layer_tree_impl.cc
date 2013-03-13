@@ -427,7 +427,7 @@ LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
 }
 
 int LayerTreeImpl::MaxTextureSize() const {
-  return layer_tree_host_impl_->rendererCapabilities().maxTextureSize;
+  return layer_tree_host_impl_->rendererCapabilities().max_texture_size;
 }
 
 bool LayerTreeImpl::PinchGestureActive() const {

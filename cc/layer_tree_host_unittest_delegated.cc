@@ -79,7 +79,7 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     delegated_->SetIsDrawable(true);
 
     root_->AddChild(delegated_);
-    m_layerTreeHost->setRootLayer(root_);
+    m_layerTreeHost->SetRootLayer(root_);
     LayerTreeHostDelegatedTest::setupTree();
   }
 
@@ -164,7 +164,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         first_draw_for_source_frame_(true) {}
 
   virtual void didCommit() OVERRIDE {
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // The first time the layer gets a frame the whole layer should be
@@ -183,7 +183,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 3:
         // Should create zero damage.
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
         break;
       case 4:
         // Should damage the full viewport.
@@ -191,7 +191,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 5:
         // Should create zero damage.
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
         break;
       case 6:
         // Should damage the full layer.
@@ -201,7 +201,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 7:
         // Should create zero damage.
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
         break;
       case 8:
         // Should damage the full layer.
@@ -209,7 +209,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 9:
         // Should create zero damage.
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
         break;
       case 10:
         // Setting an empty frame should damage the whole layer the
@@ -235,7 +235,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
       case 14:
         // Should create zero damage.
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
         break;
     }
     first_draw_for_source_frame_ = true;
@@ -438,7 +438,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with two resources in it.
@@ -508,7 +508,7 @@ class LayerTreeHostDelegatedTestReusedResources
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -567,7 +567,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -664,7 +664,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -769,7 +769,7 @@ class LayerTreeHostDelegatedTestBadFrame
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // Generate a frame with some resources in it.
@@ -911,7 +911,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // This frame includes two resources in it, but only uses one.
@@ -968,7 +968,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // This frame includes two resources in it.
@@ -1025,7 +1025,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
  public:
   virtual void beginTest() OVERRIDE {
     // Prevent drawing with resources that are sent to the grandparent.
-    m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size());
+    m_layerTreeHost->SetViewportSize(gfx::Size(10, 10), gfx::Size());
     postSetNeedsCommitToMainThread();
   }
 
@@ -1033,7 +1033,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         // This frame includes two resources in it.
@@ -1059,7 +1059,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
         EXPECT_EQ(0u, resources.size());
 
-        m_layerTreeHost->setNeedsCommit();
+        m_layerTreeHost->SetNeedsCommit();
         break;
       case 4:
         // 999 was returned from the grandparent and could be released.
@@ -1140,7 +1140,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
  public:
   virtual void beginTest() OVERRIDE {
     // Prevent drawing with resources that are sent to the grandparent.
-    m_layerTreeHost->setViewportSize(gfx::Size(10, 10), gfx::Size());
+    m_layerTreeHost->SetViewportSize(gfx::Size(10, 10), gfx::Size());
     postSetNeedsCommitToMainThread();
   }
 
@@ -1148,7 +1148,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
     scoped_ptr<DelegatedFrameData> frame;
     TransferableResourceArray resources;
 
-    int next_source_frame_number = m_layerTreeHost->commitNumber();
+    int next_source_frame_number = m_layerTreeHost->commit_number();
     switch (next_source_frame_number) {
       case 1:
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));

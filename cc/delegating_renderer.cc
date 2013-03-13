@@ -51,14 +51,14 @@ DelegatingRenderer::DelegatingRenderer(
 }
 
 bool DelegatingRenderer::Initialize() {
-  capabilities_.usingPartialSwap = false;
+  capabilities_.using_partial_swap = false;
   // TODO(danakj): Throttling - we may want to only allow 1 outstanding frame,
   // but the parent compositor may pipeline for us.
   // TODO(danakj): Can we use this in single-thread mode?
-  capabilities_.usingSwapCompleteCallback = true;
-  capabilities_.maxTextureSize = resource_provider_->max_texture_size();
-  capabilities_.bestTextureFormat = resource_provider_->best_texture_format();
-  capabilities_.allowPartialTextureUpdates = false;
+  capabilities_.using_swap_complete_callback = true;
+  capabilities_.max_texture_size = resource_provider_->max_texture_size();
+  capabilities_.best_texture_format = resource_provider_->best_texture_format();
+  capabilities_.allow_partial_texture_updates = false;
 
   WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
 
@@ -105,18 +105,18 @@ bool DelegatingRenderer::Initialize() {
   if (hasIOSurface)
     DCHECK(hasARBTextureRect);
 
-  capabilities_.usingAcceleratedPainting =
+  capabilities_.using_accelerated_painting =
       Settings().acceleratePainting &&
-      capabilities_.bestTextureFormat == GL_BGRA_EXT &&
+      capabilities_.best_texture_format == GL_BGRA_EXT &&
       hasReadBGRA;
 
   // TODO(piman): loop visibility to GPU process?
-  capabilities_.usingSetVisibility = hasSetVisibility;
+  capabilities_.using_set_visibility = hasSetVisibility;
 
   // TODO(danakj): Support GpuMemoryManager.
-  capabilities_.usingGpuMemoryManager = false;
+  capabilities_.using_gpu_memory_manager = false;
 
-  capabilities_.usingEglImage = hasEGLImage;
+  capabilities_.using_egl_image = hasEGLImage;
 
   return true;
 }

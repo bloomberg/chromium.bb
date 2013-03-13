@@ -37,7 +37,7 @@ class DelegatingRendererTest : public ThreadedTest {
 class DelegatingRendererTestDraw : public DelegatingRendererTest {
  public:
   virtual void beginTest() OVERRIDE {
-    m_layerTreeHost->setPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+    m_layerTreeHost->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
     postSetNeedsCommitToMainThread();
   }
 
