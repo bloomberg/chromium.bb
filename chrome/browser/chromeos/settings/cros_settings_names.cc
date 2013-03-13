@@ -88,8 +88,4 @@ const char kPolicyMissingMitigationMode[] =
 // through Chrome OS Registration.
 const char kAllowRedeemChromeOsRegistrationOffers[] =
     "cros.echo.allow_redeem_chrome_os_registration_offers";
-
-// A list pref storing the flags that need to be applied to the browser upon
-// start-up.
-const char kStartUpFlags[] = "cros.startup_flags";
 }  // namespace chromeos

@@ -49,7 +49,6 @@ extern const char kPolicyMissingMitigationMode[];
 
 extern const char kAllowRedeemChromeOsRegistrationOffers[];
 
-extern const char kStartUpFlags[];
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

@@ -245,12 +245,6 @@ message AllowRedeemChromeOsRegistrationOffersProto {
   optional bool allow_redeem_offers = 1 [default = true];
 }
 
-message StartUpFlagsProto {
-  // The list of flags to be applied to chrome on start-up (back up store for
-  // owner set flags in about:flags).
-  repeated string flags = 1;
-}
-
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -274,5 +268,4 @@ message ChromeDeviceSettingsProto {
   optional SystemTimezoneProto system_timezone = 20;
   optional DeviceLocalAccountsProto device_local_accounts = 21;
   optional AllowRedeemChromeOsRegistrationOffersProto allow_redeem_offers = 22;
-  optional StartUpFlagsProto start_up_flags = 23;
 }
