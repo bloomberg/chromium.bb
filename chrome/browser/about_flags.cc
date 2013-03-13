@@ -580,7 +580,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME,
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION,
     kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableGestureTapHighlight)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableGestureTapHighlight,
+                              switches::kDisableGestureTapHighlight)
   },
   {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA

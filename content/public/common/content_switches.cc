@@ -319,6 +319,7 @@ const char kEnableTextServicesFramework[] = "enable-text-services-framework";
 
 // Enable Gesture Tap Highlight
 const char kEnableGestureTapHighlight[]    = "enable-gesture-tap-highlight";
+const char kDisableGestureTapHighlight[]   = "disable-gesture-tap-highlight";
 
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
