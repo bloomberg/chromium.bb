@@ -21,6 +21,8 @@
 #include "base/strings/string_tokenizer.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/test/test_launcher.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/test/browser_test_message_pump_android.h"
@@ -69,8 +71,12 @@ static void RunTests(JNIEnv* env,
   int argc = ArgsToArgv(args, &argv);
 
   // Fully initialize command line with arguments.
-  CommandLine::ForCurrentProcess()->AppendArguments(
-      CommandLine(argc, &argv[0]), false);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendArguments(CommandLine(argc, &argv[0]), false);
+
+  // Append required switches.
+  command_line->AppendSwitch(content::kSingleProcessTestsFlag);
+  command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
   // Create fifo and redirect stdout and stderr to it.
   base::FilePath files_dir(
