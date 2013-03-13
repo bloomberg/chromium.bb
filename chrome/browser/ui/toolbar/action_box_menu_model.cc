@@ -51,6 +51,8 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
                       starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
   SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE_FROM_STAR),
           rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
+
+  AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 }
 
 ActionBoxMenuModel::~ActionBoxMenuModel() {
