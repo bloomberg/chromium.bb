@@ -1466,9 +1466,7 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     if (std::find(ash_browser_list->begin_last_active(),
                   ash_browser_list->end_last_active(),
                   browser) == ash_browser_list->end_last_active() ||
-        !browser->window() ||
-        (browser->window()->GetNativeWindow() &&
-         !browser->window()->GetNativeWindow()->IsVisible()))
+        !browser->window())
       continue;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
