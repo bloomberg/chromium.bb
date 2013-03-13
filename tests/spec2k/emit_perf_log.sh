@@ -7,17 +7,17 @@
 set -o nounset
 set -o errexit
 
-#@ LogUserSysTime <time_file> <graph_label> <bench> <compiler_setup>
-#@   Take user+sys data from <time_file>, and log it for the Chrome perf bots.
+#@ LogRealTime <time_file> <graph_label> <bench> <compiler_setup>
+#@   Take wall time data from <time_file>, and log it for the Chrome perf bots.
 #@   <time_file> should be a single line where column 1 and 2 are user/sys.
-LogUserSysTime() {
+LogRealTime() {
   local time_file=$1
   local graph_label=$2
   local bench=$3
   local setup=$4
   # Generate a list of times "[x,y,z]". The chromium perf log parser
   # will know to average this list of times.
-  local times="[$(awk '{print $1 + $2}' ${time_file} | \
+  local times="[$(awk '{print $3}' ${time_file} | \
                    tr '\n' ',' | sed 's/,$//')]"
   LogPerf ${graph_label} ${bench} ${setup} "${times}" "secs"
 }

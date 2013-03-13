@@ -60,7 +60,7 @@ TIME_TRANSLATE=$(COMPILE_REPEATER) $(REPETITIONS) $@
 # Assumes time is logged to a file with name $(1).compile_time
 LOG_TRANSLATE_TIME=(TIME_FILE="$(1).compile_time" && \
 	 FILE_TYPE=$(subst $(2).,,$(1)) && \
-	 $(PERF_LOGGER) LogUserSysTime $$TIME_FILE "compiletime" $(2) $$FILE_TYPE)
+	 $(PERF_LOGGER) LogRealTime $$TIME_FILE "compiletime" $(2) $$FILE_TYPE)
 else
 # Set the various operations to nops
 TIME_TRANSLATE=

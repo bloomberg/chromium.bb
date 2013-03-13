@@ -719,7 +719,7 @@ RunTimedBenchmarks() {
     done
     # TODO(jvoung): split runtimes by arch as well
     # i.e., pull "arch" out of SUFFIX and add to the "runtime" label.
-    "${PERF_LOGGER}" LogUserSysTime "${time_file}" "runtime" \
+    "${PERF_LOGGER}" LogRealTime "${time_file}" "runtime" \
       ${benchname} ${SUFFIX}
     popd
   done
@@ -741,13 +741,13 @@ TimeValidation() {
     do
       TimedRunCmd ${time_file} "${VALIDATOR}" ${target_file}
     done
-    "${PERF_LOGGER}" LogUserSysTime "${time_file}" "validationtime" \
+    "${PERF_LOGGER}" LogRealTime "${time_file}" "validationtime" \
       ${benchname} ${SUFFIX}
     popd
   done
   if [[ ${setup_func} =~ "Arm" ]]; then
     TimedRunCmd llc.validation_time "${VALIDATOR}" "${ARM_LLC_NEXE}"
-    "${PERF_LOGGER}" LogUserSysTime llc.validation_time "validationtime" \
+    "${PERF_LOGGER}" LogRealTime llc.validation_time "validationtime" \
       "llc" ${SUFFIX}
   fi
 }
