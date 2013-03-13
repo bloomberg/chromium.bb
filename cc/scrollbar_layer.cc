@@ -77,7 +77,7 @@ float ScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   // If the scaled content_bounds() is bigger than the max texture size of the
   // device, we need to clamp it by rescaling, since content_bounds() is used
   // below to set the texture size.
-  gfx::Size scaled_bounds = computeContentBoundsForScale(scale, scale);
+  gfx::Size scaled_bounds = ComputeContentBoundsForScale(scale, scale);
   if (scaled_bounds.width() > MaxTextureSize() ||
       scaled_bounds.height() > MaxTextureSize()) {
     if (scaled_bounds.width() > scaled_bounds.height())
