@@ -552,9 +552,10 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   }
 }
 
-void DriveFileSyncService::SetConflictResolutionPolicy(
+SyncStatusCode DriveFileSyncService::SetConflictResolutionPolicy(
     ConflictResolutionPolicy resolution) {
   conflict_resolution_ = resolution;
+  return SYNC_STATUS_OK;
 }
 
 ConflictResolutionPolicy

@@ -20,7 +20,8 @@ namespace sync_file_system {
 
 const char MockRemoteFileSyncService::kServiceName[] = "mock_sync_service";
 
-MockRemoteFileSyncService::MockRemoteFileSyncService() {
+MockRemoteFileSyncService::MockRemoteFileSyncService()
+    : conflict_resolution_policy_(CONFLICT_RESOLUTION_MANUAL) {
   typedef MockRemoteFileSyncService self;
   ON_CALL(*this, AddServiceObserver(_))
       .WillByDefault(Invoke(this, &self::AddServiceObserverStub));
@@ -46,6 +47,10 @@ MockRemoteFileSyncService::MockRemoteFileSyncService() {
       .WillByDefault(Return(REMOTE_SERVICE_OK));
   ON_CALL(*this, GetServiceName())
       .WillByDefault(Return(kServiceName));
+  ON_CALL(*this, SetConflictResolutionPolicy(_))
+      .WillByDefault(Invoke(this, &self::SetConflictResolutionPolicyStub));
+  ON_CALL(*this, GetConflictResolutionPolicy())
+      .WillByDefault(Invoke(this, &self::GetConflictResolutionPolicyStub));
 }
 
 MockRemoteFileSyncService::~MockRemoteFileSyncService() {
@@ -128,6 +133,17 @@ void MockRemoteFileSyncService::GetRemoteFileMetadataStub(
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, SYNC_STATUS_OK, iter->second));
+}
+
+SyncStatusCode MockRemoteFileSyncService::SetConflictResolutionPolicyStub(
+    ConflictResolutionPolicy policy) {
+  conflict_resolution_policy_ = policy;
+  return SYNC_STATUS_OK;
+}
+
+ConflictResolutionPolicy
+MockRemoteFileSyncService::GetConflictResolutionPolicyStub() const {
+  return conflict_resolution_policy_;
 }
 
 }  // namespace sync_file_system

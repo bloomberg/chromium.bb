@@ -53,7 +53,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_CONST_METHOD0(GetServiceName, const char*());
   MOCK_METHOD1(SetSyncEnabled, void(bool));
   MOCK_METHOD1(SetConflictResolutionPolicy,
-               void(ConflictResolutionPolicy));
+               SyncStatusCode(ConflictResolutionPolicy));
   MOCK_CONST_METHOD0(GetConflictResolutionPolicy,
                      ConflictResolutionPolicy());
 
@@ -99,6 +99,9 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void GetRemoteFileMetadataStub(
       const fileapi::FileSystemURL& url,
       const SyncFileMetadataCallback& callback);
+  SyncStatusCode SetConflictResolutionPolicyStub(
+      ConflictResolutionPolicy policy);
+  ConflictResolutionPolicy GetConflictResolutionPolicyStub() const;
 
   OriginToURLSetMap conflict_file_urls_;
   FileMetadataMap conflict_file_metadata_;
@@ -108,6 +111,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;
+
+  ConflictResolutionPolicy conflict_resolution_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRemoteFileSyncService);
 };

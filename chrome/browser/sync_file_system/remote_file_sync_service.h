@@ -143,8 +143,10 @@ class RemoteFileSyncService {
   // REMOTE_SERVICE_TEMPORARY_UNAVAILABLE).
   virtual void SetSyncEnabled(bool enabled) = 0;
 
-  // Sets the conflict resolution policy.
-  virtual void SetConflictResolutionPolicy(
+  // Sets the conflict resolution policy. Returns SYNC_STATUS_OK on success,
+  // or returns an error code if the given policy is not supported or had
+  // an error.
+  virtual SyncStatusCode SetConflictResolutionPolicy(
       ConflictResolutionPolicy policy) = 0;
 
   // Gets the conflict resolution policy.

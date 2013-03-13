@@ -48,6 +48,10 @@ namespace syncFileSystem {
     local_to_remote, remote_to_local
   };
 
+  enum ConflictResolutionPolicy {
+    last_write_win, manual
+  };
+
   dictionary FileInfo {
     // <code>fileEntry</code> for the target file whose status has changed.
     // Contains name and path information of synchronized file.
@@ -55,18 +59,18 @@ namespace syncFileSystem {
     // <code>fileEntry</code> information will still be available
     // but file will no longer exist.
     [instanceOf=FileEntry] object fileEntry;
-    
+
     // Resulting file status after $ref:onFileStatusChanged event.
-    // The status value can be <code>'synced'</code>, 
+    // The status value can be <code>'synced'</code>,
     // <code>'pending'</code> or <code>'conflicting'</code>.
     FileStatus status;
-    
+
     // Sync action taken to fire $ref:onFileStatusChanged event.
     // The action value can be
     // <code>'added'</code>, <code>'updated'</code> or <code>'deleted'</code>.
     // Only applies if status is <code>'synced'</code>.
     SyncAction? action;
-    
+
     // Sync direction for the $ref:onFileStatusChanged event.
     // Sync direction value can be
     // <code>'local_to_remote'</code> or <code>'remote_to_local'</code>.
@@ -97,14 +101,37 @@ namespace syncFileSystem {
   // A callback type for getFileStatus.
   callback GetFileStatusCallback = void (FileStatus status);
 
+  // A callback type for getConflictResolutionPolicy.
+  callback GetConflictResolutionPolicyCallback =
+      void (ConflictResolutionPolicy policy);
+
+  // A generic result callback to indicate success or failure.
+  callback ResultCallback = void ();
+
   interface Functions {
-    // Returns a syncable filesystem backed by Google Drive. 
+    // Returns a syncable filesystem backed by Google Drive.
     // The returned <code>DOMFileSystem</code> instance can be operated on
     // in the same way as the Temporary and Persistant file systems (see
     // <a href="http://www.w3.org/TR/file-system-api/">http://www.w3.org/TR/file-system-api/</a>).
     // Calling this multiple times from
-    // the same app will return the same handle to the same file system. 
+    // the same app will return the same handle to the same file system.
     static void requestFileSystem(GetFileSystemCallback callback);
+
+    // Sets the default conflict resolution policy
+    // for the <code>'syncable'</code> file storage for the app.
+    // By default it is set to <code>'manual'</code>.
+    // When conflict resolution policy is set to <code>'last_write_win'</code>
+    // conflicts for existing files are automatically resolved next time
+    // the file is updated.
+    // |callback| can be optionally given to know if the request has
+    // succeeded or not.
+    static void setConflictResolutionPolicy(
+        ConflictResolutionPolicy policy,
+        optional ResultCallback callback);
+
+    // Gets the current conflict resolution policy.
+    static void getConflictResolutionPolicy(
+        GetConflictResolutionPolicyCallback callback);
 
     // Returns the current usage and quota in bytes
     // for the <code>'syncable'</code> file storage for the app.
@@ -118,6 +145,8 @@ namespace syncFileSystem {
     // Returns the $ref:FileStatus for the given <code>fileEntry</code>.
     // The status value can be <code>'synced'</code>,
     // <code>'pending'</code> or <code>'conflicting'</code>.
+    // Note that <code>'conflicting'</code> state only happens when
+    // the service's conflict resolution policy is set to <code>'manual'</code>.
     static void getFileStatus([instanceOf=FileEntry] object fileEntry,
                               GetFileStatusCallback callback);
   };

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
@@ -29,6 +30,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using sync_file_system::ConflictResolutionPolicy;
 using sync_file_system::SyncFileStatus;
 using sync_file_system::SyncFileSystemServiceFactory;
 using sync_file_system::SyncStatusCode;
@@ -44,6 +46,8 @@ const char* const kDriveCloudService =
 // Error messages.
 const char kFileError[] = "File error %d.";
 const char kQuotaError[] = "Quota error %d.";
+const char kUnsupportedConflictResolutionPolicy[] =
+    "Policy %s is not supported.";
 
 api::sync_file_system::FileStatus FileSyncStatusEnumToExtensionEnum(
     const SyncFileStatus state) {
@@ -59,6 +63,37 @@ api::sync_file_system::FileStatus FileSyncStatusEnumToExtensionEnum(
   }
   NOTREACHED();
   return api::sync_file_system::FILE_STATUS_NONE;
+}
+
+ConflictResolutionPolicy ExtensionEnumToConflictResolutionPolicy(
+    const std::string& policy_string) {
+  api::sync_file_system::ConflictResolutionPolicy policy =
+      api::sync_file_system::ParseConflictResolutionPolicy(policy_string);
+  switch (policy) {
+    case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE:
+      return sync_file_system::CONFLICT_RESOLUTION_UNKNOWN;
+    case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN:
+      return sync_file_system::CONFLICT_RESOLUTION_LAST_WRITE_WIN;
+    case api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL:
+      return sync_file_system::CONFLICT_RESOLUTION_MANUAL;
+  }
+  NOTREACHED();
+  return sync_file_system::CONFLICT_RESOLUTION_UNKNOWN;
+}
+
+api::sync_file_system::ConflictResolutionPolicy
+ConflictResolutionPolicyToExtensionEnum(
+    ConflictResolutionPolicy policy) {
+  switch (policy) {
+    case sync_file_system::CONFLICT_RESOLUTION_UNKNOWN:
+      return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
+    case sync_file_system::CONFLICT_RESOLUTION_LAST_WRITE_WIN:
+        return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN;
+    case sync_file_system::CONFLICT_RESOLUTION_MANUAL:
+      return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_MANUAL;
+  }
+  NOTREACHED();
+  return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
 }
 
 sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
@@ -296,6 +331,39 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   info.quota_bytes = quota;
   results_ = api::sync_file_system::GetUsageAndQuota::Results::Create(info);
   SendResponse(true);
+}
+
+bool SyncFileSystemSetConflictResolutionPolicyFunction::RunImpl() {
+  std::string policy_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &policy_string));
+  ConflictResolutionPolicy policy =
+      ExtensionEnumToConflictResolutionPolicy(policy_string);
+  if (policy == sync_file_system::CONFLICT_RESOLUTION_UNKNOWN) {
+    SetError(base::StringPrintf(kUnsupportedConflictResolutionPolicy,
+                                policy_string.c_str()));
+    return false;
+  }
+  sync_file_system::SyncFileSystemService* service = GetSyncFileSystemService(
+      profile());
+  DCHECK(service);
+  SyncStatusCode status = service->SetConflictResolutionPolicy(policy);
+  if (status != sync_file_system::SYNC_STATUS_OK) {
+    SetError(sync_file_system::SyncStatusCodeToString(status));
+    return false;
+  }
+  return true;
+}
+
+bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
+  sync_file_system::SyncFileSystemService* service = GetSyncFileSystemService(
+      profile());
+  DCHECK(service);
+  api::sync_file_system::ConflictResolutionPolicy policy =
+      ConflictResolutionPolicyToExtensionEnum(
+          service->GetConflictResolutionPolicy());
+  SetResult(Value::CreateStringValue(
+          api::sync_file_system::ToString(policy)));
+  return true;
 }
 
 }  // namespace extensions

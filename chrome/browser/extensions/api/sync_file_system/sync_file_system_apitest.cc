@@ -173,6 +173,11 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, ConflictResolutionPolicy) {
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/conflict_resolution_policy"))
+      << message_;
+}
+
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace chrome

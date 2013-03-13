@@ -7,6 +7,7 @@
 
 #include "base/platform_file.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "webkit/fileapi/syncable/sync_file_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_types.h"
@@ -85,6 +86,28 @@ class SyncFileSystemRequestFileSystemFunction
   void DidOpenFileSystem(base::PlatformFileError error,
                          const std::string& file_system_name,
                          const GURL& root_url);
+};
+
+class SyncFileSystemSetConflictResolutionPolicyFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.setConflictResolutionPolicy",
+                             SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY)
+
+ protected:
+  virtual ~SyncFileSystemSetConflictResolutionPolicyFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class SyncFileSystemGetConflictResolutionPolicyFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.getConflictResolutionPolicy",
+                             SYNCFILESYSTEM_GETCONFLICTRESOLUTIONPOLICY)
+
+ protected:
+  virtual ~SyncFileSystemGetConflictResolutionPolicyFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -58,6 +59,9 @@ class SyncFileSystemService
 
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
+
+  ConflictResolutionPolicy GetConflictResolutionPolicy() const;
+  SyncStatusCode SetConflictResolutionPolicy(ConflictResolutionPolicy policy);
 
  private:
   friend class SyncFileSystemServiceFactory;

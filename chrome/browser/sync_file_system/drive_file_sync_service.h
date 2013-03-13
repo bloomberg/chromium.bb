@@ -94,7 +94,7 @@ class DriveFileSyncService
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual const char* GetServiceName() const OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual void SetConflictResolutionPolicy(
+  virtual SyncStatusCode SetConflictResolutionPolicy(
       ConflictResolutionPolicy resolution) OVERRIDE;
   virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const OVERRIDE;
 

@@ -146,6 +146,16 @@ void SyncFileSystemService::RemoveSyncEventObserver(
   observers_.RemoveObserver(observer);
 }
 
+ConflictResolutionPolicy
+SyncFileSystemService::GetConflictResolutionPolicy() const {
+  return remote_file_service_->GetConflictResolutionPolicy();
+}
+
+SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
+    ConflictResolutionPolicy policy) {
+  return remote_file_service_->SetConflictResolutionPolicy(policy);
+}
+
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
     : profile_(profile),
       pending_local_changes_(0),
