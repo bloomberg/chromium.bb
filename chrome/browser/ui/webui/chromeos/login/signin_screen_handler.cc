@@ -605,18 +605,21 @@ void SigninScreenHandler::UpdateStateInternal(
   bool error_screen_should_overlay = !offline_login_active_ && IsGaiaLogin();
 
   // Reload frame if network is changed.
-  if (reason == ErrorScreenActor::kErrorReasonNetworkChanged &&
-      is_online && last_network_state_ != NetworkStateInformer::ONLINE &&
-      is_gaia_signin && !is_gaia_reloaded) {
-    // Schedules a immediate retry.
-    LOG(WARNING) << "Retry page load since network has been changed.";
-    ReloadGaiaScreen();
-    is_gaia_reloaded = true;
+  if (reason == ErrorScreenActor::kErrorReasonNetworkChanged) {
+    if (is_online &&
+        last_network_state_ != NetworkStateInformer::ONLINE &&
+        is_gaia_signin && !is_gaia_reloaded) {
+      // Schedules a immediate retry.
+      LOG(WARNING) << "Retry page load since network has been changed.";
+      ReloadGaiaScreen();
+      is_gaia_reloaded = true;
+    }
   }
   last_network_state_ = state;
 
   if (reason == ErrorScreenActor::kErrorReasonProxyConfigChanged &&
-      error_screen_should_overlay && is_gaia_signin && !is_gaia_reloaded) {
+      error_screen_should_overlay &&
+      is_gaia_signin && !is_gaia_reloaded) {
     // Schedules a immediate retry.
     LOG(WARNING) << "Retry page load since proxy settings has been changed.";
     ReloadGaiaScreen();
@@ -636,12 +639,11 @@ void SigninScreenHandler::UpdateStateInternal(
   if (is_online || !is_under_captive_portal)
     error_screen_actor_->HideCaptivePortal();
 
-  if ((!is_online || is_gaia_loading_timeout) && is_gaia_signin &&
-      !offline_login_active_) {
+  if (!is_online && is_gaia_signin && !offline_login_active_) {
     SetupAndShowOfflineMessage(state, service_path, connection_type, reason,
                                is_proxy_error, is_under_captive_portal,
                                is_gaia_loading_timeout);
-  } else if (is_online) {
+  } else {
     HideOfflineMessage(state, service_path, reason, is_gaia_signin,
                        is_gaia_reloaded);
   }
@@ -672,7 +674,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
     // check makes captive portal being shown only once: either when error
     // screen is shown for the first time or when switching from another
     // error screen (offline, proxy).
-    if (IsGaiaLogin() ||
+    if (!IsGaiaLogin() ||
         (error_screen_actor_->state() !=
          ErrorScreenActor::STATE_CAPTIVE_PORTAL_ERROR)) {
       error_screen_actor_->FixCaptivePortal();
@@ -722,12 +724,6 @@ void SigninScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,
 }
 
 void SigninScreenHandler::ReloadGaiaScreen() {
-  NetworkStateInformer::State state = network_state_informer_->state();
-  if (state != NetworkStateInformer::ONLINE) {
-    LOG(WARNING) << "Skipping reload of auth extension frame since "
-                 << "network state=" << state;
-    return;
-  }
   LOG(WARNING) << "Reload auth extension frame.";
   web_ui()->CallJavascriptFunction("login.GaiaSigninScreen.doReload");
 }
@@ -1606,11 +1602,15 @@ void SigninScreenHandler::HandleShowGaiaFrameError(
     return;
   LOG(WARNING) << "Gaia frame error: "  << error;
   std::string reason = base::StringPrintf("frame error:%d", error);
-  UpdateStateInternal(network_state_informer_->state(),
-                      network_state_informer_->last_network_service_path(),
-                      network_state_informer_->last_network_type(),
-                      reason,
-                      false);
+  if (network_state_informer_->state() != NetworkStateInformer::CONNECTING) {
+    // TODO (ygorshenin): this case should be handled as a generic
+    // network connectivity issue that leads to timeout.
+    UpdateStateInternal(NetworkStateInformer::CAPTIVE_PORTAL,
+                        network_state_informer_->last_network_service_path(),
+                        network_state_informer_->last_network_type(),
+                        reason,
+                        false);
+  }
 }
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError(

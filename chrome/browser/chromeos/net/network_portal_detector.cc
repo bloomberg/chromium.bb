@@ -33,13 +33,15 @@ const int kMaxRequestAttempts = 3;
 const int kMinTimeBetweenAttemptsSec = 3;
 
 // Timeout for a portal check.
-const int kRequestTimeoutSec = 5;
+const int kRequestTimeoutSec = 10;
 
 // Delay before portal detection caused by changes in proxy settings.
 const int kProxyChangeDelayMs = 1000;
 
 // Delay between consecutive portal checks for a network in lazy mode.
-const int kLazyCheckIntervalSec = 5;
+// TODO (ygorshenin@): use exponential backoff or normally distributed
+// random variable instead of this.
+const int kLazyCheckIntervalSec = 30;
 
 std::string CaptivePortalStatusString(
     NetworkPortalDetector::CaptivePortalStatus status) {
@@ -437,15 +439,14 @@ void NetworkPortalDetector::SetCaptivePortalState(
             << "status=" << CaptivePortalStatusString(state.status) << ", "
             << "response_code=" << state.response_code;
     portal_state_map_[network->service_path()] = state;
+    NotifyPortalStateChanged(network, state);
   }
-  NotifyPortalDetectionCompleted(network, state);
 }
 
-void NetworkPortalDetector::NotifyPortalDetectionCompleted(
+void NetworkPortalDetector::NotifyPortalStateChanged(
     const Network* network,
     const CaptivePortalState& state) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnPortalDetectionCompleted(network, state));
+  FOR_EACH_OBSERVER(Observer, observers_, OnPortalStateChanged(network, state));
 }
 
 base::TimeTicks NetworkPortalDetector::GetCurrentTimeTicks() const {
