@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -204,7 +205,7 @@ BurnManager::BurnManager()
       state_machine_(new StateMachine()),
       bytes_image_download_progress_last_reported_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
+  ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
   CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
   base::WeakPtr<BurnManager> weak_ptr(weak_ptr_factory_.GetWeakPtr());
   device_handler_.SetCallbacks(
@@ -217,7 +218,7 @@ BurnManager::~BurnManager() {
     file_util::Delete(image_dir_, true);
   }
   CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
-  CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
+  ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
 }
 
 // static
@@ -418,7 +419,7 @@ void BurnManager::BurnProgressUpdated(BurnLibrary* object,
       Observer, observers_, OnBurnProgressUpdated(event, status));
 }
 
-void BurnManager::OnNetworkManagerChanged(NetworkLibrary* obj) {
+void BurnManager::NetworkManagerChanged() {
   // TODO(hidehiko): Split this into a class to write tests.
   if (state_machine_->state() == StateMachine::INITIAL && IsNetworkConnected())
     FOR_EACH_OBSERVER(Observer, observers_, OnNetworkDetected());

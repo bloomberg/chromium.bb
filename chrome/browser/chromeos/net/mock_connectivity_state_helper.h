@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -23,9 +24,12 @@ class MockConnectivityStateHelper : public ConnectivityStateHelper {
   MOCK_METHOD1(NetworkNameForType, std::string(const std::string&));
   MOCK_METHOD0(DefaultNetworkName, std::string(void));
   MOCK_METHOD0(DefaultNetworkOnline, bool(void));
+  MOCK_CONST_METHOD0(RequestScan, void(void));
+  MOCK_METHOD1(AddNetworkManagerObserver,
+               void(ConnectivityStateHelperObserver*));
+  MOCK_METHOD1(RemoveNetworkManagerObserver,
+               void(ConnectivityStateHelperObserver*));
 };
-
-
 
 }  // namespace chromeos
 

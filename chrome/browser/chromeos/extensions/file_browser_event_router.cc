@@ -12,7 +12,6 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -272,14 +272,10 @@ void FileBrowserEventRouter::Shutdown() {
     system_service->drive_service()->RemoveObserver(this);
   }
 
-  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
-  if (cros_library) {
-    chromeos::NetworkLibrary* network_library =
-        cros_library->GetNetworkLibrary();
-    if (network_library)
-      network_library->RemoveNetworkManagerObserver(this);
+  if (chromeos::ConnectivityStateHelper::IsInitialized()) {
+    chromeos::ConnectivityStateHelper::Get()->
+        RemoveNetworkManagerObserver(this);
   }
-
   profile_ = NULL;
 }
 
@@ -305,14 +301,10 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     system_service->file_system()->AddObserver(this);
   }
 
-  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
-  if (cros_library) {
-    chromeos::NetworkLibrary* network_library =
-        cros_library->GetNetworkLibrary();
-    if (network_library)
-     network_library->AddNetworkManagerObserver(this);
+  if (chromeos::ConnectivityStateHelper::IsInitialized()) {
+    chromeos::ConnectivityStateHelper::Get()->
+        AddNetworkManagerObserver(this);
   }
-
   suspend_state_delegate_.reset(new SuspendStateDelegateImpl());
 
   pref_change_registrar_->Init(profile_->GetPrefs());
@@ -533,8 +525,7 @@ void FileBrowserEventRouter::OnFormatEvent(
   }
 }
 
-void FileBrowserEventRouter::OnNetworkManagerChanged(
-    chromeos::NetworkLibrary* network_library) {
+void FileBrowserEventRouter::NetworkManagerChanged() {
   if (!profile_ ||
       !extensions::ExtensionSystem::Get(profile_)->event_router()) {
     NOTREACHED();

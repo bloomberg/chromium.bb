@@ -16,8 +16,8 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/imageburner/burn_device_handler.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -180,7 +180,7 @@ class StateMachine {
 // BurnController and helper classes defined above.
 class BurnManager : public net::URLFetcherDelegate,
                     public BurnLibrary::Observer,
-                    public NetworkLibrary::NetworkManagerObserver {
+                    public ConnectivityStateHelperObserver {
  public:
 
   // Interface for classes that need to observe events for the burning image
@@ -293,13 +293,13 @@ class BurnManager : public net::URLFetcherDelegate,
                                           int64 current,
                                           int64 total) OVERRIDE;
 
-  // BurnLibrary::Observer orverrides.
+  // BurnLibrary::Observer overrides.
   virtual void BurnProgressUpdated(BurnLibrary* object,
                                    BurnEvent event,
                                    const ImageBurnStatus& status) OVERRIDE;
 
-  // NetworkLibrary::NetworkManagerObserver interface.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
+  // ConnectivityStateHelperObserver override.
+  virtual void NetworkManagerChanged() OVERRIDE;
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.
