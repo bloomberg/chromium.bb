@@ -78,7 +78,6 @@ class MockPersistentStore
   virtual void DeleteServerBoundCert(
       const DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
   virtual void SetForceKeepSessionState() OVERRIDE;
-  virtual void Flush(const base::Closure& completion_task) OVERRIDE;
 
  protected:
   virtual ~MockPersistentStore();
@@ -117,10 +116,6 @@ void MockPersistentStore::DeleteServerBoundCert(
 }
 
 void MockPersistentStore::SetForceKeepSessionState() {}
-
-void MockPersistentStore::Flush(const base::Closure& completion_task) {
-  NOTREACHED();
-}
 
 MockPersistentStore::~MockPersistentStore() {}
 

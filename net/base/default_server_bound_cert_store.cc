@@ -236,16 +236,6 @@ DefaultServerBoundCertStore::DefaultServerBoundCertStore(
       store_(store),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
-void DefaultServerBoundCertStore::FlushStore(
-    const base::Closure& completion_task) {
-  DCHECK(CalledOnValidThread());
-
-  if (initialized_ && store_)
-    store_->Flush(completion_task);
-  else if (!completion_task.is_null())
-    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
-}
-
 bool DefaultServerBoundCertStore::GetServerBoundCert(
     const std::string& server_identifier,
     SSLClientCertType* type,

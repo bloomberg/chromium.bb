@@ -42,13 +42,6 @@ class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
 
   virtual ~DefaultServerBoundCertStore();
 
-  // Flush the backing store (if any) to disk and post the given task when done.
-  // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
-  // It may be posted to the current thread, or it may run on the thread that
-  // actually does the flushing. Your Task should generally post a notification
-  // to the thread you actually want to be notified on.
-  void FlushStore(const base::Closure& completion_task);
-
   // ServerBoundCertStore implementation.
   virtual bool GetServerBoundCert(
       const std::string& server_identifier,
@@ -186,9 +179,6 @@ class NET_EXPORT DefaultServerBoundCertStore::PersistentStore
   // When invoked, instructs the store to keep session related data on
   // destruction.
   virtual void SetForceKeepSessionState() = 0;
-
-  // Flush the store and post the given Task when complete.
-  virtual void Flush(const base::Closure& completion_task) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<PersistentStore>;

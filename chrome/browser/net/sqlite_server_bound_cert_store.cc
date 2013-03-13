@@ -52,9 +52,6 @@ class SQLiteServerBoundCertStore::Backend
   void DeleteServerBoundCert(
       const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
 
-  // Commit pending operations as soon as possible.
-  void Flush(const base::Closure& completion_task);
-
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
   void Close();
@@ -486,19 +483,6 @@ void SQLiteServerBoundCertStore::Backend::Commit() {
   transaction.Commit();
 }
 
-void SQLiteServerBoundCertStore::Backend::Flush(
-    const base::Closure& completion_task) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE, base::Bind(&Backend::Commit, this));
-  if (!completion_task.is_null()) {
-    // We want the completion task to run immediately after Commit() returns.
-    // Posting it from here means there is less chance of another task getting
-    // onto the message queue first, than if we posted it from Commit() itself.
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, completion_task);
-  }
-}
-
 // Fire off a close message to the background thread. We could still have a
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
@@ -587,10 +571,6 @@ void SQLiteServerBoundCertStore::DeleteServerBoundCert(
 
 void SQLiteServerBoundCertStore::SetForceKeepSessionState() {
   backend_->SetForceKeepSessionState();
-}
-
-void SQLiteServerBoundCertStore::Flush(const base::Closure& completion_task) {
-  backend_->Flush(completion_task);
 }
 
 SQLiteServerBoundCertStore::~SQLiteServerBoundCertStore() {
