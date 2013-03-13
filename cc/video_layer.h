@@ -9,9 +9,7 @@
 #include "cc/cc_export.h"
 #include "cc/layer.h"
 
-namespace media {
-class VideoFrame;
-}
+namespace media { class VideoFrame; }
 
 namespace cc {
 
@@ -20,17 +18,19 @@ class VideoLayerImpl;
 
 // A Layer that contains a Video element.
 class CC_EXPORT VideoLayer : public Layer {
-public:
-    static scoped_refptr<VideoLayer> Create(VideoFrameProvider*);
+ public:
+  static scoped_refptr<VideoLayer> Create(VideoFrameProvider* provider);
 
-    virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
 
-private:
-    explicit VideoLayer(VideoFrameProvider*);
-    virtual ~VideoLayer();
+ private:
+  explicit VideoLayer(VideoFrameProvider* provider);
+  virtual ~VideoLayer();
 
-    // This pointer is only for passing to VideoLayerImpl's constructor. It should never be dereferenced by this class.
-    VideoFrameProvider* m_provider;
+  // This pointer is only for passing to VideoLayerImpl's constructor. It should
+  // never be dereferenced by this class.
+  VideoFrameProvider* provider_;
 };
 
 }  // namespace cc
