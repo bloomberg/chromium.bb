@@ -114,25 +114,25 @@ class MockZipFile(object):
     pass
 
 
-def MockUrlOpen(url_or_request, _data, has_return_value):
-  if (isinstance(url_or_request, basestring) and
-      url_or_request.endswith('/content/contains')):
+def MockUrlOpen(url, _data, has_return_value):
+  if '/content/contains' in url:
     return StringIO.StringIO(has_return_value)
   return StringIO.StringIO('{}')
 
 
-def MockUrlOpenHasZip(url_or_request, data=None):
-  return MockUrlOpen(url_or_request, data, has_return_value=chr(1))
+def MockUrlOpenHasZip(url, data=None):
+  return MockUrlOpen(url, data, has_return_value=chr(1))
 
 
-def MockUrlOpenNoZip(url_or_request, data=None):
-  return MockUrlOpen(url_or_request, data, has_return_value=chr(0))
+def MockUrlOpenNoZip(url, data=None, content_type=None):
+  assert content_type in (None, 'application/octet-stream')
+  return MockUrlOpen(url, data, has_return_value=chr(0))
 
 
 class ManifestTest(unittest.TestCase):
   def setUp(self):
     self.old_sleep = swarm_trigger_step.time.sleep
-    self.old_urlopen = swarm_trigger_step.urllib2.urlopen
+    self.old_url_open = swarm_trigger_step.run_isolated.url_open
     self.old_ZipFile = swarm_trigger_step.zipfile.ZipFile
 
     swarm_trigger_step.time.sleep = lambda x: None
@@ -140,7 +140,7 @@ class ManifestTest(unittest.TestCase):
 
   def tearDown(self):
     swarm_trigger_step.time.sleep = self.old_sleep
-    swarm_trigger_step.urllib2.urlopen = self.old_urlopen
+    swarm_trigger_step.run_isolated.url_open = self.old_url_open
     swarm_trigger_step.zipfile.ZipFile = self.old_ZipFile
 
   def test_basic_manifest(self):

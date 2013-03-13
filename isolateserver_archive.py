@@ -13,7 +13,6 @@ import os
 import cStringIO
 import sys
 import time
-import urllib2
 import zlib
 
 import run_isolated
@@ -81,15 +80,6 @@ def encode_multipart_formdata(fields, files,
   body = '\r\n'.join(body_list)
   content_type = 'multipart/form-data; boundary=%s' % boundary
   return content_type, body
-
-
-def gen_url_request(url, payload, content_type='application/octet-stream'):
-  """Returns a POST request."""
-  request = urllib2.Request(url, data=payload)
-  if payload is not None:
-    request.add_header('Content-Type', content_type)
-    request.add_header('Content-Length', len(payload))
-  return request
 
 
 def sha1_file(filepath):

@@ -19,7 +19,6 @@ import StringIO
 import sys
 import time
 import urllib
-import urllib2
 import zipfile
 
 import run_isolated
@@ -124,12 +123,9 @@ class Manifest(object):
     print 'Zip file not on server, starting uploading.'
 
     url = self.data_server_storage + self.zip_file_hash + '?priority=0'
-
-    request = urllib2.Request(url, data=zip_contents)
-    request.add_header('Content-Type', 'application/octet-stream')
-    request.add_header('Content-Length', len(zip_contents))
-
-    if run_isolated.url_open(request, data={}) is None:
+    response = run_isolated.url_open(
+        url, zip_contents, content_type='application/octet-stream')
+    if response is None:
       print 'Failed to upload the zip file'
       return False
 
