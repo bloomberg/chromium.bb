@@ -1267,9 +1267,12 @@ class UnitTestStage(BoardSpecificBuilderStage):
   option_name = 'tests'
   config_name = 'unittests'
 
-  # If the unit tests take longer than 60 minutes, abort. They usually take
+  # If the unit tests take longer than 70 minutes, abort. They usually take
   # ten minutes to run.
-  UNIT_TEST_TIMEOUT = 3600
+  #
+  # If the processes hang, parallel_emerge will print a status report after 60
+  # minutes, so we picked 70 minutes because it gives us a little buffer time.
+  UNIT_TEST_TIMEOUT = 70 * 60
 
   def _PerformStage(self):
     with cros_build_lib.SubCommandTimeout(self.UNIT_TEST_TIMEOUT):
