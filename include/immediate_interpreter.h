@@ -17,11 +17,14 @@
 
 namespace gestures {
 
+typedef set<short, kMaxGesturingFingers> FingerMap;
+
 // This interpreter keeps some memory of the past and, for each incoming
 // frame of hardware state, immediately determines the gestures to the best
 // of its abilities.
 
 class ImmediateInterpreter;
+class MultitouchMouseInterpreter;
 
 class TapRecord {
  public:
@@ -105,6 +108,126 @@ class ScrollEventBuffer {
   DISALLOW_COPY_AND_ASSIGN(ScrollEventBuffer);
 };
 
+// Circular buffer for storing a rolling backlog of events for analysis
+// as well as accessor functions for using the buffer's contents.
+class HardwareStateBuffer {
+ public:
+  explicit HardwareStateBuffer(size_t size);
+  ~HardwareStateBuffer();
+
+  size_t Size() const { return size_; }
+
+  void Reset(size_t max_finger_cnt);
+
+  // Does a deep copy of state into states_
+  void PushState(const HardwareState& state);
+
+  const HardwareState* Get(size_t idx) const {
+    return &states_[(idx + newest_index_) % size_];
+  }
+
+  HardwareState* Get(size_t idx) {
+    return const_cast<HardwareState*>(
+        const_cast<const HardwareStateBuffer*>(this)->Get(idx));
+  }
+
+ private:
+  scoped_array<HardwareState> states_;
+  size_t newest_index_;
+  size_t size_;
+  size_t max_finger_cnt_;
+  DISALLOW_COPY_AND_ASSIGN(HardwareStateBuffer);
+};
+
+// Helper class for compute scroll and fling.
+class ScrollManager {
+  FRIEND_TEST(ImmediateInterpreterTest, FlingDepthTest);
+  FRIEND_TEST(MultitouchMouseInterpreterTest, SimpleTest);
+
+ public:
+  explicit ScrollManager(PropRegistry* prop_reg);
+  ~ScrollManager() {}
+
+  // Looking at this finger and the previous ones within a small window
+  // and returns true iff the pressure is changing so quickly that we
+  // expect it's arriving on the pad or departing.
+  bool PressureChangingSignificantly(
+      const HardwareStateBuffer& state_buffer,
+      const FingerState& current) const;
+
+  // Compute a scroll result.  Return false when something goes wrong.
+  bool ComputeScroll(const HardwareStateBuffer& state_buffer,
+                     const FingerMap& prev_gs_fingers,
+                     const FingerMap& gs_fingers,
+                     GestureType prev_gesture_type,
+                     const Gesture& prev_result,
+                     Gesture* result,
+                     ScrollEventBuffer* scroll_buffer);
+
+  // Compute a ScrollEvent that can be turned directly into a fling.
+  void ComputeFling(const HardwareStateBuffer& state_buffer,
+                    const ScrollEventBuffer& scroll_buffer,
+                    Gesture* result) const;
+
+  // Update ScrollEventBuffer when the current gesture type is not scroll.
+  void UpdateScrollEventBuffer(GestureType gesture_type,
+                               ScrollEventBuffer* scroll_buffer) const;
+
+  // Set to true when a scroll is blocked b/c of high pressure change. Cleared
+  // when a normal scroll goes through.
+  bool prev_result_high_pressure_change_;
+
+ private:
+  // Returns the number of most recent event events in the scroll_buffer_ that
+  // should be considered for fling. If it returns 0, there should be no fling.
+  size_t ScrollEventsForFlingCount(const ScrollEventBuffer& scroll_buffer)
+    const;
+
+  // Returns a ScrollEvent that contains velocity estimates for x and y based
+  // on an N-point linear regression.
+  void RegressScrollVelocity(const ScrollEventBuffer& scroll_buffer,
+                             int count, ScrollEvent* out) const;
+
+  // A finger must change in pressure by less than this per second to trigger
+  // motion.
+  DoubleProperty max_pressure_change_;
+  // If a contact crosses max_pressure_change_, motion continues to be blocked
+  // until the pressure change per second goes below
+  // max_pressure_change_hysteresis_.
+  DoubleProperty max_pressure_change_hysteresis_;
+  // Try to look over a period up to this length of time when looking for large
+  // pressure change.
+  DoubleProperty max_pressure_change_duration_;
+
+  // y| V  /
+  //  |   /  D   _-
+  //  |  /    _-'
+  //  | /  _-'
+  //  |/_-'   H
+  //  |'____________x
+  // The above quadrant of a cartesian plane shows the angles where we snap
+  // scrolling to vertical or horizontal. Very Vertical or Horizontal scrolls
+  // are snapped, while Diagonal scrolls are not. The two properties below
+  // are the slopes for the two lines.
+  DoubleProperty vertical_scroll_snap_slope_;
+  DoubleProperty horizontal_scroll_snap_slope_;
+
+  // Depth of recent scroll event buffer used to compute Fling velocity.
+  // For most systems this will be 3.  However, for systems that use 2x
+  // interpolation, this should be 6, to ensure that the scroll events for 3
+  // actual hardware states are used.
+  IntProperty fling_buffer_depth_;
+  // Some platforms report fingers as perfectly stationary for a few frames
+  // before they report lift off. We don't include these non-movement
+  // frames in the scroll buffer, because that would suppress fling.
+  // Platforms with this property should set
+  // fling_buffer_suppress_zero_length_scrolls_ to non-zero.
+  BoolProperty fling_buffer_suppress_zero_length_scrolls_;
+  // When computing a fling, if the fling buffer has an average speed under
+  // this threshold, we do not perform a fling. Units are mm/sec.
+  DoubleProperty fling_buffer_min_avg_speed_;
+};
+
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest);
   FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest);
@@ -154,7 +277,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   ImmediateInterpreter(PropRegistry* prop_reg, FingerMetrics* finger_metrics,
                        Tracer* tracer);
-  virtual ~ImmediateInterpreter();
+  virtual ~ImmediateInterpreter() {}
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
@@ -205,14 +328,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Currently, it fetches the (up to) two fingers closest to the keyboard
   // that are not palms. There is one exception: for t5r2 pads with > 2
   // fingers present, we return all fingers.
-  set<short, kMaxGesturingFingers> GetGesturingFingers(
-      const HardwareState& hwstate) const;
+  FingerMap GetGesturingFingers(const HardwareState& hwstate) const;
 
   // Updates current_gesture_type_ based on passed-in hwstate and
   // considering the passed in fingers as gesturing.
-  void UpdateCurrentGestureType(
-      const HardwareState& hwstate,
-      const set<short, kMaxGesturingFingers>& gs_fingers);
+  void UpdateCurrentGestureType(const HardwareState& hwstate,
+                                const FingerMap& gs_fingers);
 
   // If the fingers are near each other in location and pressure and might
   // to be part of a 2-finger action, returns true.
@@ -243,13 +364,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
                           stime_t now);
 
   void UpdateTapGesture(const HardwareState* hwstate,
-                        const set<short, kMaxGesturingFingers>& gs_fingers,
+                        const FingerMap& gs_fingers,
                         const bool same_fingers,
                         stime_t now,
                         stime_t* timeout);
 
   void UpdateTapState(const HardwareState* hwstate,
-                      const set<short, kMaxGesturingFingers>& gs_fingers,
+                      const FingerMap& gs_fingers,
                       const bool same_fingers,
                       stime_t now,
                       unsigned* buttons_down,
@@ -259,9 +380,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Returns true iff the given finger is too close to any other finger to
   // realistically be doing a tap gesture.
   bool FingerTooCloseToTap(const HardwareState& hwstate, const FingerState& fs);
-
-  // Does a deep copy of hwstate into prev_state_
-  void SetPrevState(const HardwareState& hwstate);
 
   // Returns true iff finger is in the bottom, dampened zone of the pad
   bool FingerInDampenedZone(const FingerState& finger) const;
@@ -274,9 +392,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   void FillOriginInfo(const HardwareState& hwstate);
 
   // Called to detect if fingers have started moving.
-  void UpdateStartedMovingTime(
-      const HardwareState& hwstate,
-      const set<short, kMaxGesturingFingers>& gs_fingers);
+  void UpdateStartedMovingTime(const HardwareState& hwstate,
+                               const FingerMap& gs_fingers);
 
   // Updates the internal button state based on the passed in |hwstate|.
   // Can optionally request a timeout by setting *timeout.
@@ -294,48 +411,18 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   int EvaluateButtonType(const HardwareState& hwstate,
                          stime_t button_down_time);
 
-  // Looking at this finger and the previous ones within a small window
-  // and returns true iff the pressure is changing so quickly that we
-  // expect it's arriving on the pad or departing.
-  bool PressureChangingSignificantly(stime_t now,
-                                     const FingerState& current) const;
-
-  // Returns the number of most recent event events in the scroll_buffer_ that
-  // should be considered for fling. If it returns 0, there should be no fling.
-  size_t ScrollEventsForFlingCount() const;
-
-  // Returns a ScrollEvent that contains velocity estimates for x and y based
-  // on an N-point linear regression.
-  void RegressScrollVelocity(int count, ScrollEvent* out) const;
-
-  // Returns a ScrollEvent that can be turned directly into a fling.
-  void ComputeFling(ScrollEvent* out) const;
-
   // Precondition: current_mode_ is set to the mode based on |hwstate|.
   // Computes the resulting gesture, storing it in result_.
   void FillResultGesture(const HardwareState& hwstate,
-                         const set<short, kMaxGesturingFingers>& fingers);
+                         const FingerMap& fingers);
 
   virtual void IntWasWritten(IntProperty* prop);
-
-  // Circular buffer for storing a rolling backlog of events for analysis
-  // as well as accessor functions for using the buffer's contents.
-  HardwareState prev_states_[3];
-  size_t newest_prev_state_idx_;
-  const HardwareState* PrevState(size_t idx) const {
-    return &prev_states_[(idx + newest_prev_state_idx_) %
-                         arraysize(prev_states_)];
-  }
-  HardwareState* PrevState(size_t idx) {
-    return const_cast<HardwareState*>(
-        const_cast<const ImmediateInterpreter*>(this)->PrevState(idx));
-  }
 
   // Fingers which are prohibited from ever tapping.
   set<short, kMaxFingers> tap_dead_fingers_;
 
-  set<short, kMaxGesturingFingers> prev_gs_fingers_;
-  set<short, kMaxGesturingFingers> prev_tap_gs_fingers_;
+  FingerMap prev_gs_fingers_;
+  FingerMap prev_tap_gs_fingers_;
   HardwareProperties hw_props_;
   Gesture result_;
   Gesture prev_result_;
@@ -413,11 +500,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Cache for distance between fingers at start of pinch gesture
   float two_finger_start_distance_;
 
+  HardwareStateBuffer state_buffer_;
   ScrollEventBuffer scroll_buffer_;
-
-  // Set to true when a scroll is blocked b/c of high pressure change. Cleared
-  // when a normal scroll goes through.
-  bool prev_result_high_pressure_change_;
 
   FingerMetrics* finger_metrics_;
   scoped_ptr<FingerMetrics> test_finger_metrics_;
@@ -431,6 +515,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Keeps track of if there was a finger seen during a physical click
   bool finger_seen_since_button_down_;
+
+  ScrollManager scroll_manager_;
 
   // Properties
 
@@ -503,16 +589,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty three_finger_swipe_distance_thresh_;
   // If three-finger swipe should be enabled
   BoolProperty three_finger_swipe_enable_;
-  // A finger must change in pressure by less than this per second to trigger
-  // motion.
-  DoubleProperty max_pressure_change_;
-  // If a contact crosses max_pressure_change_, motion continues to be blocked
-  // until the pressure change per second goes below
-  // max_pressure_change_hysteresis_.
-  DoubleProperty max_pressure_change_hysteresis_;
-  // Try to look over a period up to this length of time when looking for large
-  // pressure change.
-  DoubleProperty max_pressure_change_duration_;
   // During a scroll one finger determines scroll speed and direction.
   // Maximum distance [mm] the other finger can move in opposite direction
   DoubleProperty scroll_stationary_finger_max_distance_;
@@ -544,19 +620,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // A finger must be at least this far from other fingers when it taps [mm].
   DoubleProperty tapping_finger_min_separation_;
 
-  // y| V  /
-  //  |   /  D   _-
-  //  |  /    _-'
-  //  | /  _-'
-  //  |/_-'   H
-  //  |'____________x
-  // The above quadrant of a cartesian plane shows the angles where we snap
-  // scrolling to vertical or horizontal. Very Vertical or Horizontal scrolls
-  // are snapped, while Diagonal scrolls are not. The two properties below
-  // are the slopes for the two lines.
-  DoubleProperty vertical_scroll_snap_slope_;
-  DoubleProperty horizontal_scroll_snap_slope_;
-
   // Ratio between finger movement that indicates not-a-pinch gesture
   DoubleProperty no_pinch_guess_ratio_;
   // Ratio between finger movement that certainly indicates not-a-pinch gesture
@@ -570,21 +633,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Temporary flag to turn pinch on/off while we tune it.
   BoolProperty pinch_enable_;
 
-  // Depth of recent scroll event buffer used to compute Fling velocity.
-  // For most systems this will be 3.  However, for systems that use 2x
-  // interpolation, this should be 6, to ensure that the scroll events for 3
-  // actual hardware states are used.
-  IntProperty fling_buffer_depth_;
-  // Some platforms report fingers as perfectly stationary for a few frames
-  // before they report lift off. We don't include these non-movement
-  // frames in the scroll buffer, because that would suppress fling.
-  // Platforms with this property should set
-  // fling_buffer_suppress_zero_length_scrolls_ to non-zero.
-  BoolProperty fling_buffer_suppress_zero_length_scrolls_;
-  // When computing a fling, if the fling buffer has an average speed under
-  // this threshold, we do not perform a fling. Units are mm/sec.
-  DoubleProperty fling_buffer_min_avg_speed_;
-
   // Short start time diff of fingers for a two-finger click that indicates
   // a right click
   DoubleProperty right_click_start_time_diff_;
@@ -592,6 +640,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // a right click
   DoubleProperty right_click_second_finger_age_;
 };
+
+bool AnyGesturingFingerLeft(const HardwareState& state,
+                            const FingerMap& prev_gs_fingers);
 
 }  // namespace gestures
 

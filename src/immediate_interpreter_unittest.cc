@@ -2050,14 +2050,14 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
         ii->tap_timeout_.val_ = 0.11;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {
-      same_fingers = ii->PrevState(0)->SameFingersAs(hwsgs_full[i].hws);
+      same_fingers = ii->state_buffer_.Get(1)->SameFingersAs(hwsgs_full[i].hws);
     }
 
+    if (hwstate)
+      ii->state_buffer_.PushState(*hwstate);
     ii->UpdateTapState(
         hwstate, hwsgs_full[i].gs, same_fingers, now, &bdown, &bup, &tm);
     ii->prev_gs_fingers_ = hwsgs_full[i].gs;
-    if (hwstate)
-      ii->SetPrevState(*hwstate);
     EXPECT_EQ(hwsgs_full[i].expected_down, bdown) << desc;
     EXPECT_EQ(hwsgs_full[i].expected_up, bup) << desc;
     if (hwsgs_full[i].timeout)
@@ -2347,7 +2347,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
         EXPECT_TRUE(ii->tap_enable_.val_);
       } else {
-        same_fingers = ii->PrevState(0)->SameFingersAs(hwsgs.hws);
+        same_fingers = ii->state_buffer_.Get(1)->SameFingersAs(hwsgs.hws);
       }
 
       // Disable tap in the middle of the gesture
@@ -2357,14 +2357,14 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
       if (hwstate && hwstate->timestamp == pause_time)
         ii->tap_paused_.val_ = true;
 
+      if (hwstate)
+        ii->state_buffer_.PushState(*hwstate);
       unsigned bdown = 0;
       unsigned bup = 0;
       stime_t tm = -1.0;
       ii->UpdateTapState(
           hwstate, hwsgs.gs, same_fingers, now, &bdown, &bup, &tm);
       ii->prev_gs_fingers_ = hwsgs.gs;
-      if (hwstate)
-        ii->SetPrevState(*hwstate);
 
       switch (iter) {
         case 0:  // tap should be enabled
@@ -3312,8 +3312,9 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
 
   ii.SetHardwareProperties(hwprops);
 
-  ii.fling_buffer_depth_.val_ = 6;
-  size_t fling_buffer_depth = (size_t)ii.fling_buffer_depth_.val_;
+  ii.scroll_manager_.fling_buffer_depth_.val_ = 6;
+  size_t fling_buffer_depth =
+    (size_t)ii.scroll_manager_.fling_buffer_depth_.val_;
 
   // The unittest is only meaningful if there are enough hwstates
   ASSERT_GT(arraysize(hardware_states) - 1, fling_buffer_depth)
@@ -3338,7 +3339,8 @@ TEST(ImmediateInterpreterTest, FlingDepthTest) {
       EXPECT_GT(dy, 0);
       EXPECT_GT(dt, 0);
       size_t expected_fling_events = std::min(idx, fling_buffer_depth);
-      EXPECT_EQ(ii.ScrollEventsForFlingCount(), expected_fling_events);
+      EXPECT_EQ(ii.scroll_manager_.ScrollEventsForFlingCount(ii.scroll_buffer_),
+                expected_fling_events);
     }
     prev_hs = hs;
   }
