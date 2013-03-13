@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -44,7 +45,6 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -719,12 +719,13 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
 // We use a special class for this so that it can be safely leaked if we
 // never connect. At shutdown the order is not well defined, and it's possible
 // for the infrastructure needed to unregister might be unstable and crash.
-class WarmingObserver : public ConnectivityStateHelperObserver,
+class WarmingObserver : public NetworkLibrary::NetworkManagerObserver,
                         public content::NotificationObserver {
  public:
   WarmingObserver()
       : url_request_context_getter_(NULL) {
-    ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
+    NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+    netlib->AddNetworkManagerObserver(this);
     // During tests, the browser_process may not be initialized yet causing
     // this to fail.
     if (g_browser_process) {
@@ -738,16 +739,15 @@ class WarmingObserver : public ConnectivityStateHelperObserver,
   virtual ~WarmingObserver() {}
 
   // If we're now connected, prewarm the auth url.
-  virtual void NetworkManagerChanged() OVERRIDE {
-    ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
-    if (csh->IsConnected()) {
+  virtual void OnNetworkManagerChanged(NetworkLibrary* netlib) OVERRIDE {
+    if (netlib->Connected()) {
       const int kConnectionsNeeded = 1;
       chrome_browser_net::PreconnectOnUIThread(
           GURL(GaiaUrls::GetInstance()->client_login_url()),
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
           kConnectionsNeeded,
           url_request_context_getter_);
-      csh->RemoveNetworkManagerObserver(this);
+      netlib->RemoveNetworkManagerObserver(this);
       delete this;
     }
   }

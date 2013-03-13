@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_CONNECTIVITY_STATE_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_NET_CONNECTIVITY_STATE_HELPER_H_
 
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
 
@@ -17,7 +16,7 @@ namespace chromeos {
 // appropriate source (e.g. NetworkStateHandler).
 class ConnectivityStateHelper {
  public:
-  virtual ~ConnectivityStateHelper();
+  virtual ~ConnectivityStateHelper() {}
 
   // Initializes the state helper singleton to use the default (network state
   // handler) implementation or the network library implementation based
@@ -27,9 +26,6 @@ class ConnectivityStateHelper {
   // Similar to initialize, but can be used to inject an alternative
   // (say,a MockConnectivityStateHelper) implementation.
   static void InitializeForTesting(ConnectivityStateHelper* csh);
-
-  // Returns true if the global instance has been initialized.
-  static bool IsInitialized();
 
   static void Shutdown();
   static ConnectivityStateHelper* Get();
@@ -53,18 +49,8 @@ class ConnectivityStateHelper {
   // Returns true if we have a default network and are in online state.
   virtual bool DefaultNetworkOnline() = 0;
 
-  // Request a network scan.
-  virtual void RequestScan() const = 0;
-
-  // Add/remove observers for listening to connection manager changes.
-  virtual void AddNetworkManagerObserver(
-      ConnectivityStateHelperObserver* observer);
-  virtual void RemoveNetworkManagerObserver(
-      ConnectivityStateHelperObserver* observer);
-
  protected:
-  ConnectivityStateHelper();
-  ObserverList<ConnectivityStateHelperObserver> network_manager_observers_;
+  ConnectivityStateHelper() {}
 };
 
 }  // namespace chromeos
