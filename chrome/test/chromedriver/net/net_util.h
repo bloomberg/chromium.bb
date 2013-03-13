@@ -16,4 +16,7 @@ bool FetchUrl(const GURL& url,
               URLRequestContextGetter* getter,
               std::string* response);
 
+// Finds an open port and returns true on success.
+bool FindOpenPort(int* port);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_NET_NET_UTIL_H_

@@ -292,6 +292,7 @@ Status ChromeImpl::Init() {
       break;
     if (status.code() != kChromeNotReachable)
       return status;
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   }
   if (status.IsError())
     return status;

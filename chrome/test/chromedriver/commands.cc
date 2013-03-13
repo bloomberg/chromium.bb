@@ -12,6 +12,7 @@
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome_desktop_impl.h"
+#include "chrome/test/chromedriver/net/net_util.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_map.h"
@@ -48,15 +49,17 @@ Status ExecuteNewSession(
     const std::string& session_id,
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id) {
-  scoped_ptr<Chrome> chrome;
-  Status status(kOk);
-  int port = 33081;
-  std::string android_package;
+  int port;
+  if (!FindOpenPort(&port))
+    return Status(kUnknownError, "failed to find an open port for Chrome");
 
   const base::DictionaryValue* desired_caps;
   if (!params.GetDictionary("desiredCapabilities", &desired_caps))
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
 
+  scoped_ptr<Chrome> chrome;
+  Status status(kOk);
+  std::string android_package;
   if (desired_caps->GetString("chromeOptions.android_package",
                               &android_package)) {
     scoped_ptr<ChromeAndroidImpl> chrome_android(new ChromeAndroidImpl(
