@@ -384,13 +384,14 @@ MetadataCache.prototype.clearRecursively = function(item, type) {
   var keys = Object.keys(this.cache_);
   var url = this.itemToUrl_(item);
 
-  for (var entryUrl in keys) {
+  for (var index = 0; index < keys.length; index++) {
+    var entryUrl = keys[index];
     if (entryUrl.substring(0, url.length) === url) {
       if (type === '*') {
         this.cache_[entryUrl].properties = {};
       } else {
-        for (var index = 0; index < types.length; index++) {
-          var type = types[index];
+        for (var j = 0; j < types.length; j++) {
+          var type = types[j];
           delete this.cache_[entryUrl].properties[type];
         }
       }
