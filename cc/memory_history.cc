@@ -7,12 +7,11 @@
 namespace cc {
 
 // static
-scoped_ptr<MemoryHistory> MemoryHistory::create() {
+scoped_ptr<MemoryHistory> MemoryHistory::Create() {
   return make_scoped_ptr(new MemoryHistory());
 }
 
-MemoryHistory::MemoryHistory() {
-}
+MemoryHistory::MemoryHistory() {}
 
 void MemoryHistory::SaveEntry(const MemoryHistory::Entry& entry) {
   ring_buffer_.SaveToBuffer(entry);
@@ -28,7 +27,7 @@ void MemoryHistory::GetMinAndMax(size_t* min, size_t* max) const {
     if (bytes_total < *min)
       *min = bytes_total;
     if (bytes_total > *max)
-        *max = bytes_total;
+      *max = bytes_total;
   }
 
   if (*min > *max)

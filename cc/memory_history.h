@@ -12,29 +12,27 @@
 
 namespace cc {
 
-// Maintains a history of memory for each frame
+// Maintains a history of memory for each frame.
 class MemoryHistory {
  public:
-  static scoped_ptr<MemoryHistory> create();
+  static scoped_ptr<MemoryHistory> Create();
 
   size_t HistorySize() const { return ring_buffer_.BufferSize(); }
 
   struct Entry {
-  Entry()
-      : total_budget_in_bytes(0),
-        bytes_allocated(0),
-        bytes_unreleasable(0),
-        bytes_over(0) { }
+    Entry()
+        : total_budget_in_bytes(0),
+          bytes_allocated(0),
+          bytes_unreleasable(0),
+          bytes_over(0) {}
 
-      size_t total_budget_in_bytes;
-      size_t bytes_allocated;
-      size_t bytes_unreleasable;
-      size_t bytes_over;
-      size_t bytes_total() const {
-          return bytes_allocated +
-              bytes_unreleasable +
-              bytes_over;
-      }
+    size_t total_budget_in_bytes;
+    size_t bytes_allocated;
+    size_t bytes_unreleasable;
+    size_t bytes_over;
+    size_t bytes_total() const {
+      return bytes_allocated + bytes_unreleasable + bytes_over;
+    }
   };
 
   void SaveEntry(const Entry& entry);

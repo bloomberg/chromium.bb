@@ -158,7 +158,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_pinchGestureActive(false)
     , m_fpsCounter(FrameRateCounter::create(m_proxy->HasImplThread()))
     , m_paintTimeCounter(PaintTimeCounter::create())
-    , m_memoryHistory(MemoryHistory::create())
+    , m_memoryHistory(MemoryHistory::Create())
     , m_debugRectHistory(DebugRectHistory::create())
     , m_numImplThreadScrolls(0)
     , m_numMainThreadScrolls(0)
