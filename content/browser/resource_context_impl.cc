@@ -9,6 +9,7 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/streams/stream_context.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +23,7 @@ namespace {
 // Key names on ResourceContext.
 const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 const char kHostZoomMapKeyName[] = "content_host_zoom_map";
+const char kStreamContextKeyName[] = "content_stream_context";
 const char kURLDataManagerBackendKeyName[] = "url_data_manager_backend";
 
 class NonOwningZoomData : public base::SupportsUserData::Data {
@@ -59,6 +61,13 @@ ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
       resource_context, kBlobStorageContextKeyName);
 }
 
+StreamContext* GetStreamContextForResourceContext(
+    ResourceContext* resource_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return UserDataAdapter<StreamContext>::Get(
+      resource_context, kStreamContextKeyName);
+}
+
 HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return static_cast<NonOwningZoomData*>(
@@ -84,6 +93,11 @@ void InitializeResourceContext(BrowserContext* browser_context) {
       kBlobStorageContextKeyName,
       new UserDataAdapter<ChromeBlobStorageContext>(
           ChromeBlobStorageContext::GetFor(browser_context)));
+
+  resource_context->SetUserData(
+      kStreamContextKeyName,
+      new UserDataAdapter<StreamContext>(
+          StreamContext::GetFor(browser_context)));
 
   // This object is owned by the BrowserContext and not ResourceContext, so
   // store a non-owning pointer here.
