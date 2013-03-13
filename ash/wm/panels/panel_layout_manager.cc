@@ -244,6 +244,8 @@ void PanelLayoutManager::StartDragging(aura::Window* panel) {
 }
 
 void PanelLayoutManager::FinishDragging() {
+  // Note, dragged panel may be null if the panel was just attached to the
+  // panel layout.
   dragged_panel_ = NULL;
   Relayout();
 }

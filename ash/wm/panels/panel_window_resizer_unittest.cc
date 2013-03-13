@@ -5,7 +5,6 @@
 #include "ash/wm/panels/panel_window_resizer.h"
 
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -13,12 +12,12 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
@@ -28,13 +27,12 @@ namespace internal {
 
 class PanelWindowResizerTest : public test::AshTestBase {
  public:
-  PanelWindowResizerTest() {}
+  PanelWindowResizerTest() : window_(NULL) {}
   virtual ~PanelWindowResizerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    test::ShellTestApi test_api(Shell::GetInstance());
-    model_ = test_api.launcher_model();
+    window_.reset(CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
 
     panel_layout_manager_ = static_cast<internal::PanelLayoutManager*>(
         GetPanelContainer()->layout_manager());
@@ -43,6 +41,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
+    window_.reset();
     AshTestBase::TearDown();
   }
 
@@ -85,8 +84,9 @@ class PanelWindowResizerTest : public test::AshTestBase {
         window, point_in_parent, window_component).release());
   }
 
-  void DragStart(aura::Window* window) {
-    resizer_.reset(CreatePanelWindowResizer(window, gfx::Point(), HTCAPTION));
+  void DragStart() {
+    resizer_.reset(CreatePanelWindowResizer(window_.get(), gfx::Point(),
+                                            HTCAPTION));
     ASSERT_TRUE(resizer_.get());
   }
 
@@ -102,89 +102,45 @@ class PanelWindowResizerTest : public test::AshTestBase {
   // Test dragging the panel slightly, then detaching, and then reattaching
   // dragging out by the vector (dx, dy).
   void DetachReattachTest(int dx, int dy) {
-    scoped_ptr<aura::Window> window(
-        CreatePanelWindow(gfx::Rect(0, 0, 201, 201)));
-    EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
-    DragStart(window.get());
-    gfx::Rect initial_bounds = window->bounds();
+    EXPECT_TRUE(window_->GetProperty(kPanelAttachedKey));
+    DragStart();
+    gfx::Rect initial_bounds = window_->bounds();
 
     // Drag the panel slightly. The window should still be snapped to the
     // launcher.
     DragMove(dx * 5, dy * 5);
-    EXPECT_EQ(initial_bounds.x(), window->bounds().x());
-    EXPECT_EQ(initial_bounds.y(), window->bounds().y());
+    EXPECT_EQ(initial_bounds.x(), window_->bounds().x());
+    EXPECT_EQ(initial_bounds.y(), window_->bounds().y());
 
     // Drag further out and the window should now move to the cursor.
     DragMove(dx * 100, dy * 100);
-    EXPECT_EQ(initial_bounds.x() + dx * 100, window->bounds().x());
-    EXPECT_EQ(initial_bounds.y() + dy * 100, window->bounds().y());
+    EXPECT_EQ(initial_bounds.x() + dx * 100, window_->bounds().x());
+    EXPECT_EQ(initial_bounds.y() + dy * 100, window_->bounds().y());
 
     // The panel should be detached when the drag completes.
     DragEnd();
-    EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
+    EXPECT_FALSE(window_->GetProperty(kPanelAttachedKey));
 
-    DragStart(window.get());
+    DragStart();
     // Drag the panel down.
     DragMove(dx * -95, dy * -95);
     // Release the mouse and the panel should be reattached.
     DragEnd();
 
     // The panel should be reattached and have snapped to the launcher.
-    EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
-    EXPECT_EQ(initial_bounds.x(), window->bounds().x());
-    EXPECT_EQ(initial_bounds.y(), window->bounds().y());
+    EXPECT_TRUE(window_->GetProperty(kPanelAttachedKey));
+    EXPECT_EQ(initial_bounds.x(), window_->bounds().x());
+    EXPECT_EQ(initial_bounds.y(), window_->bounds().y());
   }
 
-  void TestWindowOrder(const std::vector<aura::Window*>& window_order) {
-    Launcher* launcher = Launcher::ForPrimaryDisplay();
-    int panel_index = model_->FirstPanelIndex();
-    EXPECT_EQ((int)(panel_index + window_order.size()), model_->item_count());
-    for (std::vector<aura::Window*>::const_iterator iter =
-         window_order.begin(); iter != window_order.end();
-         ++iter, ++panel_index) {
-      LauncherID id = launcher->delegate()->GetIDByWindow(*iter);
-      EXPECT_EQ(id, model_->items()[panel_index].id);
-    }
-  }
-
-  // Test dragging panel window along the shelf and verify that panel icons
-  // are reordered appropriately.
-  void DragAlongShelfReorder(int dx, int dy) {
-    gfx::Rect bounds(0, 0, 201, 201);
-    scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
-    scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
-    std::vector<aura::Window*> window_order_original;
-    std::vector<aura::Window*> window_order_swapped;
-    window_order_original.push_back(w1.get());
-    window_order_original.push_back(w2.get());
-    window_order_swapped.push_back(w2.get());
-    window_order_swapped.push_back(w1.get());
-    TestWindowOrder(window_order_original);
-
-    // Drag window #2 to the beginning of the shelf.
-    DragStart(w2.get());
-    DragMove(400 * dx, 400 * dy);
-    DragEnd();
-
-    // Expect swapped window order.
-    TestWindowOrder(window_order_swapped);
-
-    // Drag window #2 back to the end.
-    DragStart(w2.get());
-    DragMove(-400 * dx, -400 * dy);
-    DragEnd();
-
-    // Expect original order.
-    TestWindowOrder(window_order_original);
-  }
-
- private:
+  aura::test::TestWindowDelegate delegate_;
+  scoped_ptr<aura::Window> window_;
   scoped_ptr<PanelWindowResizer> resizer_;
   aura::Window* panel_container_;
   internal::PanelLayoutManager* panel_layout_manager_;
   gfx::Rect launcher_bounds_;
-  LauncherModel* model_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
 };
 
@@ -219,16 +175,6 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(SHELF_ALIGNMENT_TOP, shell->GetPrimaryRootWindow());
   DetachReattachTest(0, 1);
-}
-
-TEST_F(PanelWindowResizerTest, DragReordersPanelsHorizontal) {
-  DragAlongShelfReorder(-1, 0);
-}
-
-TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(SHELF_ALIGNMENT_LEFT, shell->GetPrimaryRootWindow());
-  DragAlongShelfReorder(0, -1);
 }
 
 }  // namespace internal

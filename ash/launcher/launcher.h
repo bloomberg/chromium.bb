@@ -61,10 +61,6 @@ class ASH_EXPORT Launcher {
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
 
-  // Updates the icon position given the current window bounds. This is used
-  // when dragging panels to reposition them with respect to the other panels.
-  void UpdateIconPositionForWindow(aura::Window* window);
-
   // Activates the the launcher item specified by the index in the list
   // of launcher items.
   void ActivateLauncherItem(int index);

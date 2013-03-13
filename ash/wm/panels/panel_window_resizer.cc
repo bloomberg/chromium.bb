@@ -53,8 +53,6 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     did_move_or_resize_ = true;
     should_attach_ = AttachToLauncher(&bounds);
     details_.window->SetBounds(bounds);
-    if (should_attach_)
-      UpdateLauncherPosition();
   }
 }
 
@@ -149,11 +147,6 @@ void PanelWindowResizer::StartedDragging() {
 void PanelWindowResizer::FinishDragging() {
   if (was_attached_)
     panel_layout_manager_->FinishDragging();
-}
-
-void PanelWindowResizer::UpdateLauncherPosition() {
-  panel_layout_manager_->launcher()->UpdateIconPositionForWindow(
-      details_.window);
 }
 
 }  // namespace aura

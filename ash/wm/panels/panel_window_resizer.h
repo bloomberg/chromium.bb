@@ -63,9 +63,6 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   // of the drag start.
   void FinishDragging();
 
-  // Updates the dragged panel's index in the launcher.
-  void UpdateLauncherPosition();
-
   const Details details_;
 
   // Panel container window.
