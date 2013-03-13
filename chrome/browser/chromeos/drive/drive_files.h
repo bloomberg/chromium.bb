@@ -12,15 +12,11 @@
 
 namespace drive {
 
-class DriveDirectory;
-
 // Base class for representing files and directories in Drive virtual file
 // system.
 class DriveEntry {
  public:
   virtual ~DriveEntry();
-
-  virtual DriveDirectory* AsDriveDirectory();
 
   const DriveEntryProto& proto() const { return proto_; }
 
@@ -56,14 +52,21 @@ class DriveEntry {
     return proto_.parent_resource_id();
   }
 
+  bool is_directory() const { return proto_.file_info().is_directory(); }
+  void set_is_directory(bool is_directory) {
+    proto_.mutable_file_info()->set_is_directory(is_directory);
+  }
+
   // Sets |base_name_| based on the value of |title_| without name
   // de-duplication (see AddEntry() for details on de-duplication).
   virtual void SetBaseNameFromTitle();
 
+  // Returns the changestamp of this directory. See drive.proto for details.
+  int64 changestamp() const;
+  void set_changestamp(int64 changestamp);
+
  protected:
   friend class DriveResourceMetadata;  // For access to ctor.
-  // For access to set_parent_resource_id() from AddEntry.
-  friend class DriveDirectory;
 
   DriveEntry();
 
@@ -75,26 +78,6 @@ class DriveEntry {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveEntry);
-};
-
-// Represents "directory" in a drive virtual file system. Maps to drive
-// collection element.
-class DriveDirectory : public DriveEntry {
- public:
-  virtual ~DriveDirectory();
-
-  // Returns the changestamp of this directory. See drive.proto for details.
-  int64 changestamp() const;
-  void set_changestamp(int64 changestamp);
-
- private:
-  // TODO(satorux): Remove the friend statements. crbug.com/139649
-  friend class DriveResourceMetadata;
-
-  DriveDirectory();
-  virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };
 
 }  // namespace drive

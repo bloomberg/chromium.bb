@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/drive_files.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "net/base/escape.h"
@@ -16,10 +17,6 @@ DriveEntry::DriveEntry() {
 }
 
 DriveEntry::~DriveEntry() {
-}
-
-DriveDirectory* DriveEntry::AsDriveDirectory() {
-  return NULL;
 }
 
 void DriveEntry::set_parent_resource_id(const std::string& parent_resource_id) {
@@ -36,25 +33,14 @@ void DriveEntry::SetBaseNameFromTitle() {
   }
 }
 
-// DriveDirectory class implementation.
-
-DriveDirectory::DriveDirectory() {
-  proto_.mutable_file_info()->set_is_directory(true);
-}
-
-DriveDirectory::~DriveDirectory() {
-}
-
-int64 DriveDirectory::changestamp() const {
+int64 DriveEntry::changestamp() const {
+  DCHECK(proto_.file_info().is_directory());
   return proto_.directory_specific_info().changestamp();
 }
 
-void DriveDirectory::set_changestamp(int64 changestamp) {
+void DriveEntry::set_changestamp(int64 changestamp) {
+  DCHECK(proto_.file_info().is_directory());
   proto_.mutable_directory_specific_info()->set_changestamp(changestamp);
-}
-
-DriveDirectory* DriveDirectory::AsDriveDirectory() {
-  return this;
 }
 
 // Convert to/from proto.
