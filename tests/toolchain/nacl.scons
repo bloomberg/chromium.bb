@@ -314,3 +314,24 @@ if env.Bit('nacl_glibc'):
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests', 'small_tests'],
                          'run_byteswap64_test')
+
+# Test that using link-time optimization does not convert calls to
+# library functions that were never linked in.
+if env.Bit('bitcode'):
+  unopt_env = env.Clone()
+  unopt_env.Append(CFLAGS=['-O0'])
+  unopt_env.Append(CCFLAGS=['-O0'])
+  opt_env = env.Clone()
+  opt_env.Append(CFLAGS=['-O3'])
+  opt_env.Append(CCFLAGS=['-O3'])
+  opt_env.Append(LINKFLAGS=['-O3'])
+  obj = unopt_env.ComponentObject('printf_to_puts.c')
+  # PNaCl link -> optimize -> translate is currently broken.
+  # It currently does allow the optimizaton that converts printf -> puts,
+  # even though the pexe did not link in puts.
+  # https://code.google.com/p/nativeclient/issues/detail?id=3340
+  # nexe = opt_env.ComponentProgram('printf_to_puts', obj)
+  # node = env.CommandSelLdrTestNacl('printf_to_puts.out', nexe)
+  # env.AddNodeToTestSuite(node,
+  #                        ['toolchain_tests', 'small_tests'],
+  #                        'run_printf_to_puts_test')
