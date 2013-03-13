@@ -27,17 +27,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
-using base::android::AttachCurrentThread;
-using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetClass;
-using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
-
-namespace {
-const char kDownloadControllerClassPathName[] =
-    "org/chromium/content/browser/DownloadController";
-}  // namespace
 
 namespace content {
 
@@ -74,10 +65,10 @@ DownloadControllerAndroidImpl::DownloadControllerAndroidImpl()
 
 DownloadControllerAndroidImpl::~DownloadControllerAndroidImpl() {
   if (java_object_) {
-    JNIEnv* env = AttachCurrentThread();
+    JNIEnv* env = base::android::AttachCurrentThread();
     env->DeleteWeakGlobalRef(java_object_->obj);
     delete java_object_;
-    CheckException(env);
+    base::android::CheckException(env);
   }
 }
 
@@ -205,7 +196,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
     int render_process_id, int render_view_id,
     const DownloadInfoAndroid& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
 
   // Call newHttpGetDownload
   ScopedJavaLocalRef<jobject> view = GetContentView(render_process_id,
@@ -241,7 +232,7 @@ void DownloadControllerAndroidImpl::OnPostDownloadStarted(
   if (!download_item->GetWebContents())
     return;
 
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
 
   // Register for updates to the DownloadItem.
   download_item->AddObserver(this);
@@ -267,7 +258,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   item->RemoveObserver(this);
 
   // Call onHttpPostDownloadCompleted
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, item->GetURL().spec());
   ScopedJavaLocalRef<jstring> jcontent_disposition =
@@ -324,15 +315,8 @@ DownloadControllerAndroidImpl::JavaObject*
     // Initialize Java DownloadController by calling
     // DownloadController.getInstance(), which will call Init()
     // if Java DownloadController is not instantiated already.
-    JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jclass> clazz =
-        GetClass(env, kDownloadControllerClassPathName);
-    jmethodID get_instance = MethodID::Get<MethodID::TYPE_STATIC>(
-        env, clazz.obj(), "getInstance",
-        "()Lorg/chromium/content/browser/DownloadController;");
-    ScopedJavaLocalRef<jobject> jobj(env,
-        env->CallStaticObjectMethod(clazz.obj(), get_instance));
-    CheckException(env);
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_DownloadController_getInstance(env);
   }
 
   DCHECK(java_object_);

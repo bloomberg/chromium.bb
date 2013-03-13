@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.content.Context;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
@@ -19,6 +17,7 @@ class DownloadController {
     private static final String LOGTAG = "DownloadController";
     private static DownloadController sInstance;
 
+    @CalledByNative
     public static DownloadController getInstance() {
         if (sInstance == null) {
             sInstance = new DownloadController();
