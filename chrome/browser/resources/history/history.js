@@ -321,8 +321,8 @@ Visit.prototype.starClicked_ = function(event) {
 
 /**
  * Quote a string so it can be used in a regular expression.
- * @param {string} str The source string
- * @return {string} The escaped string
+ * @param {string} str The source string.
+ * @return {string} The escaped string.
  * @private
  */
 Visit.pregQuote_ = function(str) {
@@ -450,9 +450,9 @@ HistoryModel.prototype.getSize = function() {
 
 /**
  * Get a list of visits between specified index positions.
- * @param {number} start The start index
- * @param {number} end The end index
- * @return {Array.<Visit>} A list of visits
+ * @param {number} start The start index.
+ * @param {number} end The end index.
+ * @return {Array.<Visit>} A list of visits.
  */
 HistoryModel.prototype.getNumberedRange = function(start, end) {
   return this.visits_.slice(start, end);
@@ -697,8 +697,8 @@ function HistoryView(model) {
     self.setRangeInDays(parseInt(e.target.value, 10));
   });
 
-  $('display-filter-sites').addEventListener('click', function(e) {
-    self.setGroupByDomain($('display-filter-sites').checked);
+  $('group-by-domain').addEventListener('click', function(e) {
+    self.setGroupByDomain($('group-by-domain').checked);
   });
 
   $('range-previous').addEventListener('click', function(e) {
@@ -982,7 +982,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   var numberOfVisits = createElementWithClassName('span', 'number-visits');
   var domainElement = document.createElement('span');
 
-  numberOfVisits.textContent = loadTimeData.getStringF('numbervisits',
+  numberOfVisits.textContent = loadTimeData.getStringF('numberVisits',
                                                        domainVisits.length);
   siteDomain.appendChild(numberOfVisits);
 
@@ -1152,7 +1152,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
     // Add a header for the search results, if there isn't already one.
     if (!this.resultDiv_.querySelector('h3')) {
       var header = document.createElement('h3');
-      header.textContent = loadTimeData.getStringF('searchresultsfor',
+      header.textContent = loadTimeData.getStringF('searchResultsFor',
                                                    searchText);
       this.resultDiv_.appendChild(header);
     }
@@ -1160,7 +1160,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
     var searchResults = createElementWithClassName('ol', 'search-results');
     if (results.length == 0 && doneLoading) {
       var noSearchResults = document.createElement('div');
-      noSearchResults.textContent = loadTimeData.getString('nosearchresults');
+      noSearchResults.textContent = loadTimeData.getString('noSearchResults');
       searchResults.appendChild(noSearchResults);
     } else {
       for (var i = 0, visit; visit = results[i]; i++) {
@@ -1186,7 +1186,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
       // TODO(sergiu): Figure the best way to show this for the first day of
       // the month.
       timeFrame.appendChild(document.createTextNode(loadTimeData.getStringF(
-          'historyinterval',
+          'historyInterval',
           this.model_.queryStartTime,
           this.model_.queryEndTime)));
     }
@@ -1194,7 +1194,7 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
     if (results.length == 0 && doneLoading) {
       var noResults = resultsFragment.appendChild(
           document.createElement('div'));
-      noResults.textContent = loadTimeData.getString('noresults');
+      noResults.textContent = loadTimeData.getString('noResults');
       this.resultDiv_.appendChild(resultsFragment);
       this.updateNavBar_();
       return;
@@ -1324,7 +1324,7 @@ PageState.prototype.getHashData = function() {
 PageState.prototype.setUIState = function(term, page, grouped, range, offset) {
   // Make sure the form looks pretty.
   $('search-field').value = term;
-  $('display-filter-sites').checked = grouped;
+  $('group-by-domain').checked = grouped;
   var hash = this.getHashData();
   if (hash.q != term || hash.page != page || hash.grouped != grouped ||
       hash.range != range || hash.offset != offset) {
@@ -1487,11 +1487,11 @@ function updateHostStatus(statusElement, newStatus) {
     manualBehaviorDiv.textContent = '';
     break;
   case ManagedModeManualBehavior.ALLOW:
-    manualBehaviorDiv.textContent = loadTimeData.getString('filterallowed');
+    manualBehaviorDiv.textContent = loadTimeData.getString('filterAllowed');
     manualBehaviorDiv.classList.add('filter-allowed');
     break;
   case ManagedModeManualBehavior.BLOCK:
-    manualBehaviorDiv.textContent = loadTimeData.getString('filterblocked');
+    manualBehaviorDiv.textContent = loadTimeData.getString('filterBlocked');
     manualBehaviorDiv.classList.add('filter-blocked');
     break;
   }
@@ -1529,7 +1529,7 @@ function removeItems() {
     disabledItems.push(checkbox);
   }
 
-  if (checked.length && confirm(loadTimeData.getString('deletewarning'))) {
+  if (checked.length && confirm(loadTimeData.getString('deleteWarning'))) {
     historyModel.removeVisitsFromHistory(toBeRemoved, function() {
       historyView.reload();
     });
@@ -1689,7 +1689,7 @@ function toggleHandler(e) {
 function getManagedStatusDOM(manualBehavior, inContentPack) {
   var filterStatusDiv = createElementWithClassName('div', 'filter-status');
   var inContentPackDiv = createElementWithClassName('div', 'in-content-pack');
-  inContentPackDiv.textContent = loadTimeData.getString('incontentpack');
+  inContentPackDiv.textContent = loadTimeData.getString('inContentPack');
   var manualBehaviorDiv = createElementWithClassName('div', 'manual-behavior');
   filterStatusDiv.appendChild(inContentPackDiv);
   filterStatusDiv.appendChild(manualBehaviorDiv);

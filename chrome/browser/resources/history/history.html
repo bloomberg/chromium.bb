@@ -45,43 +45,43 @@
     <h1 i18n-content="history"></h1>
     <div id="search-form" class="search-field-container">
       <input type="search" id="search-field">
-      <input type="submit" id="search-button" i18n-values="value:searchbutton">
+      <input type="submit" id="search-button" i18n-values="value:searchButton">
     </div>
   </header>
 
   <div id="filter-controls" hidden>
-    <button id="range-today" i18n-content="rangetoday" disabled>
+    <button id="range-today" i18n-content="rangeToday" disabled>
     </button>
     <button id="range-previous" disabled>
       <img src="../disclosure_triangle_small.png"
-          i18n-values="alt:rangeprevious">
+          i18n-values="alt:rangePrevious">
     </button>
     <button id="range-next" disabled>
-      <img src="../disclosure_triangle_small.png" i18n-values="alt:rangenext">
+      <img src="../disclosure_triangle_small.png" i18n-values="alt:rangeNext">
     </button>
     <div id="display-filter-controls">
       <label>
-        <input type="checkbox" id="display-filter-sites" name="display-filter">
-        <span i18n-content="displayfiltersites"></span>
+        <input type="checkbox" id="group-by-domain" name="group-by-domain">
+        <span i18n-content="groupByDomainLabel"></span>
       </label>
       <label>
-        <span i18n-content="rangelabel"></span>
+        <span i18n-content="rangeLabel"></span>
         <select id="timeframe-filter">
-          <option i18n-content="rangealltime" value="0"></option>
-          <option i18n-content="rangeweek" value="1"></option>
-          <option i18n-content="rangemonth" value="2"></option>
+          <option i18n-content="rangeAllTime" value="0"></option>
+          <option i18n-content="rangeWeek" value="1"></option>
+          <option i18n-content="rangeMonth" value="2"></option>
         </select>
       </label>
     </div>
   </div>
   <div id="editing-controls">
-    <button id="clear-browsing-data" i18n-content="clearallhistory"></button>
+    <button id="clear-browsing-data" i18n-content="clearAllHistory"></button>
     <button id="remove-selected" disabled="disabled"
-        i18n-content="removeselected"></button>
-    <button id="allow-selected" i18n-content="allowitems" disabled="disabled"
+        i18n-content="removeSelected"></button>
+    <button id="allow-selected" i18n-content="allowItems" disabled="disabled"
         hidden>
     </button>
-    <button id="block-selected" i18n-content="blockitems" disabled="disabled"
+    <button id="block-selected" i18n-content="blockItems" disabled="disabled"
         hidden>
     </button>
     <button id="lock-unlock-button" i18n-content="unlockButton"></button>

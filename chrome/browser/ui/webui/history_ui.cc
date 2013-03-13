@@ -103,42 +103,39 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("newest", IDS_HISTORY_NEWEST);
   source->AddLocalizedString("newer", IDS_HISTORY_NEWER);
   source->AddLocalizedString("older", IDS_HISTORY_OLDER);
-  source->AddLocalizedString("searchresultsfor", IDS_HISTORY_SEARCHRESULTSFOR);
+  source->AddLocalizedString("searchResultsFor", IDS_HISTORY_SEARCHRESULTSFOR);
   source->AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
   source->AddLocalizedString("cont", IDS_HISTORY_CONTINUED);
-  source->AddLocalizedString("searchbutton", IDS_HISTORY_SEARCH_BUTTON);
-  source->AddLocalizedString("nosearchresults", IDS_HISTORY_NO_SEARCH_RESULTS);
-  source->AddLocalizedString("noresults", IDS_HISTORY_NO_RESULTS);
-  source->AddLocalizedString("historyinterval", IDS_HISTORY_INTERVAL);
-  source->AddLocalizedString("noitems", IDS_HISTORY_NO_ITEMS);
-  source->AddLocalizedString("edithistory", IDS_HISTORY_START_EDITING_HISTORY);
-  source->AddLocalizedString("doneediting", IDS_HISTORY_STOP_EDITING_HISTORY);
-  source->AddLocalizedString("removeselected",
+  source->AddLocalizedString("searchButton", IDS_HISTORY_SEARCH_BUTTON);
+  source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
+  source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
+  source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
+  source->AddLocalizedString("removeSelected",
                              IDS_HISTORY_REMOVE_SELECTED_ITEMS);
-  source->AddLocalizedString("clearallhistory",
+  source->AddLocalizedString("clearAllHistory",
                              IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
   source->AddString(
-      "deletewarning",
+      "deleteWarning",
       l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
                                  UTF8ToUTF16(kIncognitoModeShortcut)));
   source->AddLocalizedString("actionMenuDescription",
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
-  source->AddLocalizedString("displayfiltersites", IDS_GROUP_BY_DOMAIN_LABEL);
-  source->AddLocalizedString("rangelabel", IDS_HISTORY_RANGE_LABEL);
-  source->AddLocalizedString("rangealltime", IDS_HISTORY_RANGE_ALL_TIME);
-  source->AddLocalizedString("rangeweek", IDS_HISTORY_RANGE_WEEK);
-  source->AddLocalizedString("rangemonth", IDS_HISTORY_RANGE_MONTH);
-  source->AddLocalizedString("rangetoday", IDS_HISTORY_RANGE_TODAY);
-  source->AddLocalizedString("rangenext", IDS_HISTORY_RANGE_NEXT);
-  source->AddLocalizedString("rangeprevious", IDS_HISTORY_RANGE_PREVIOUS);
-  source->AddLocalizedString("numbervisits", IDS_HISTORY_NUMBER_VISITS);
-  source->AddLocalizedString("filterallowed", IDS_HISTORY_FILTER_ALLOWED);
-  source->AddLocalizedString("filterblocked", IDS_HISTORY_FILTER_BLOCKED);
-  source->AddLocalizedString("incontentpack", IDS_HISTORY_IN_CONTENT_PACK);
-  source->AddLocalizedString("allowitems", IDS_HISTORY_FILTER_ALLOW_ITEMS);
-  source->AddLocalizedString("blockitems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
+  source->AddLocalizedString("groupByDomainLabel", IDS_GROUP_BY_DOMAIN_LABEL);
+  source->AddLocalizedString("rangeLabel", IDS_HISTORY_RANGE_LABEL);
+  source->AddLocalizedString("rangeAllTime", IDS_HISTORY_RANGE_ALL_TIME);
+  source->AddLocalizedString("rangeWeek", IDS_HISTORY_RANGE_WEEK);
+  source->AddLocalizedString("rangeMonth", IDS_HISTORY_RANGE_MONTH);
+  source->AddLocalizedString("rangeToday", IDS_HISTORY_RANGE_TODAY);
+  source->AddLocalizedString("rangeNext", IDS_HISTORY_RANGE_NEXT);
+  source->AddLocalizedString("rangePrevious", IDS_HISTORY_RANGE_PREVIOUS);
+  source->AddLocalizedString("numberVisits", IDS_HISTORY_NUMBER_VISITS);
+  source->AddLocalizedString("filterAllowed", IDS_HISTORY_FILTER_ALLOWED);
+  source->AddLocalizedString("filterBlocked", IDS_HISTORY_FILTER_BLOCKED);
+  source->AddLocalizedString("inContentPack", IDS_HISTORY_IN_CONTENT_PACK);
+  source->AddLocalizedString("allowItems", IDS_HISTORY_FILTER_ALLOW_ITEMS);
+  source->AddLocalizedString("blockItems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
   source->AddLocalizedString("lockButton", IDS_HISTORY_LOCK_BUTTON);
   source->AddLocalizedString("unlockButton", IDS_HISTORY_UNLOCK_BUTTON);
   source->AddLocalizedString("hasSyncedResults",

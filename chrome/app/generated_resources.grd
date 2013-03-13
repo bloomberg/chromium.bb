@@ -374,12 +374,6 @@ are declared in build/common.gypi.
         Loading...
       </message>
 
-      <message name="IDS_HISTORY_START_EDITING_HISTORY" desc="Title of the link that allows the user to enable controls for deleting single history items">
-        Edit items...
-      </message>
-      <message name="IDS_HISTORY_STOP_EDITING_HISTORY" desc="Title of the link that allows the user to disable controls for deleting single history items">
-        Done removing items
-      </message>
       <message name="IDS_HISTORY_REMOVE_SELECTED_ITEMS" desc="Title of the button that allows the user to remove the selected history items">
         Remove selected items
       </message>
@@ -413,9 +407,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_HISTORY_NO_RESULTS" desc="Text shown when no history entries are found.">
         No history entries found.
-      </message>
-      <message name="IDS_HISTORY_NO_ITEMS" desc="Text shown when the user has no history">
-        All the pages you visit will appear here unless you open them in an incognito window. You can use the Search button on this page to search all the pages in your history.
       </message>
       <message name="IDS_HISTORY_SEARCH_BUTTON" desc="Title of the button in the history page that triggers a search">
         Search history
