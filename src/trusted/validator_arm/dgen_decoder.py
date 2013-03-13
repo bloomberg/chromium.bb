@@ -105,7 +105,7 @@ def DeclareDecoder(action, decoder_name, out):
   values = {'decoder_name': decoder_name}
   out.write(DECODER_CLASS_HEADER % values)
   for method in METHODS:
-    if _IsMethodDefined(action, method, allow_optional=True):
+    if _IsMethodDefined(action, method):
       DeclareMethodFcn(method)(out, values)
   out.write(DECODER_CLASS_FOOTER % values)
 
@@ -119,28 +119,21 @@ def DefineDecoder(action, decoder_name, out):
 
   values = {'decoder_name': decoder_name}
   for method in METHODS:
-    if _IsMethodDefined(action, method, allow_optional=True):
-      method_body = _FindMethodBody(action, method, allow_optional=True)
+    if _IsMethodDefined(action, method):
+      method_body = _FindMethodBody(action, method)
       values['neutral_rep'] = (
           '%s: %s' % (method, dgen_output.commented_string(
               repr(dgen_core.neutral_repr(method_body)), '  ')))
       DefineMethodFcn(method)(out, method_body, values)
 
-def _IsMethodDefined(action, field, allow_optional=False):
+def _IsMethodDefined(action, field):
   """Returns true if the field defines the corresponding method."""
-  defn = _FindMethodBody(action, field, allow_optional)
-  # Note: Safety may contain a string (in the deprecated form of
-  # action declarations).
-  # TODO(karl): Remove this problem by removing deprectated instances
-  #   in file armv7.table.
-  return (defn != None and
-          # Special case safety, which is optional and has a special form.
-          (allow_optional or field != 'safety' or
-           any(isinstance(s, dgen_core.SafetyAction) for s in defn)))
+  defn = _FindMethodBody(action, field)
+  return defn != None
 
-def _FindMethodBody(action, method, allow_optional=False):
+def _FindMethodBody(action, method):
   body = action.find(method)
-  if not body and allow_optional:
+  if not body:
     body = _OPTIONAL_METHODS_MAP.get(method)
   return body
 
@@ -385,19 +378,17 @@ def _DeclareSafety(out, values):
 def _TypeCheckSafety(safety):
   """Type checks a list of SafetyAction's."""
   for s in safety:
-    if isinstance(s, dgen_core.SafetyAction):
-      s.test().to_bool()
+    s.test().to_bool()
 
 def _DefineSafety(out, safety, values):
   # Use baseline to implement action if defined.
   _DefineMethod(out, DECODER_SAFETY_DEF_HEADER, values, '???')
   for s in safety:
-    if isinstance(s, dgen_core.SafetyAction):
-      values['neutral_rep'] = dgen_output.commented_string(
-          '%s' % s.neutral_repr(), '  ')
-      values['safety_test'] = s.test().to_bool()
-      values['safety_action'] = s.action()
-      out.write(DECODER_SAFETY_DEF_CHECK % values)
+    values['neutral_rep'] = dgen_output.commented_string(
+        '%s' % s.neutral_repr(), '  ')
+    values['safety_test'] = s.test().to_bool()
+    values['safety_action'] = s.action()
+    out.write(DECODER_SAFETY_DEF_CHECK % values)
   out.write(DECODER_SAFETY_DEF_FOOTER % values)
 
 _METHODS_MAP['safety'] = [_DeclareSafety, _DefineSafety]
