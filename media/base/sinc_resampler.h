@@ -73,8 +73,6 @@ class MEDIA_EXPORT SincResampler {
   // linearly interpolated using |kernel_interpolation_factor|.  On x86, the
   // underlying implementation is chosen at run time based on SSE support.  On
   // ARM, NEON support is chosen at compile time based on compilation flags.
-  static float Convolve(const float* input_ptr, const float* k1,
-                        const float* k2, double kernel_interpolation_factor);
   static float Convolve_C(const float* input_ptr, const float* k1,
                           const float* k2, double kernel_interpolation_factor);
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -107,6 +105,13 @@ class MEDIA_EXPORT SincResampler {
 
   // Data from the source is copied into this buffer for each processing pass.
   scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> input_buffer_;
+
+  // Stores the runtime selection of which Convolve function to use.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(__SSE__)
+  typedef float (*ConvolveProc)(const float*, const float*, const float*,
+                                double);
+  const ConvolveProc convolve_proc_;
+#endif
 
   // Pointers to the various regions inside |input_buffer_|.  See the diagram at
   // the top of the .cc file for more information.

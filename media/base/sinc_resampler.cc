@@ -57,6 +57,9 @@ SincResampler::SincResampler(double io_sample_rate_ratio, const ReadCB& read_cb)
           base::AlignedAlloc(sizeof(float) * kKernelStorageSize, 16))),
       input_buffer_(static_cast<float*>(
           base::AlignedAlloc(sizeof(float) * kBufferSize, 16))),
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(__SSE__)
+      convolve_proc_(base::CPU().has_sse() ? Convolve_SSE : Convolve_C),
+#endif
       // Setup various region pointers in the buffer (see diagram above).
       r0_(input_buffer_.get() + kKernelSize / 2),
       r1_(input_buffer_.get()),
@@ -136,6 +139,22 @@ void SincResampler::InitializeKernel() {
   }
 }
 
+// If we know the minimum architecture avoid function hopping for CPU detection.
+#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(__SSE__)
+#define CONVOLVE_FUNC Convolve_SSE
+#else
+// X86 CPU detection required.  |convolve_proc_| will be set upon construction.
+// TODO(dalecurtis): Once Chrome moves to a SSE baseline this can be removed.
+#define CONVOLVE_FUNC convolve_proc_
+#endif
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#define CONVOLVE_FUNC Convolve_NEON
+#else
+// Unknown architecture.
+#define CONVOLVE_FUNC Convolve_C
+#endif
+
 void SincResampler::Resample(float* destination, int frames) {
   int remaining_frames = frames;
 
@@ -161,12 +180,17 @@ void SincResampler::Resample(float* destination, int frames) {
       float* k1 = kernel_storage_.get() + offset_idx * kKernelSize;
       float* k2 = k1 + kKernelSize;
 
+      // Ensure |k1|, |k2| are 16-byte aligned for SIMD usage.  Should always be
+      // true so long as kKernelSize is a multiple of 16.
+      DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k1) & 0x0F);
+      DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
+
       // Initialize input pointer based on quantized |virtual_source_idx_|.
       float* input_ptr = r1_ + source_idx;
 
       // Figure out how much to weight each kernel's "convolution".
       double kernel_interpolation_factor = virtual_offset_idx - offset_idx;
-      *destination++ = Convolve(
+      *destination++ = CONVOLVE_FUNC(
           input_ptr, k1, k2, kernel_interpolation_factor);
 
       // Advance the virtual index.
@@ -190,6 +214,8 @@ void SincResampler::Resample(float* destination, int frames) {
   }
 }
 
+#undef CONVOLVE_FUNC
+
 int SincResampler::ChunkSize() const {
   return kBlockSize / io_sample_rate_ratio_;
 }
@@ -198,35 +224,6 @@ void SincResampler::Flush() {
   virtual_source_idx_ = 0;
   buffer_primed_ = false;
   memset(input_buffer_.get(), 0, sizeof(*input_buffer_.get()) * kBufferSize);
-}
-
-float SincResampler::Convolve(const float* input_ptr, const float* k1,
-                              const float* k2,
-                              double kernel_interpolation_factor) {
-  // Ensure |k1|, |k2| are 16-byte aligned for SSE usage.  Should always be true
-  // so long as kKernelSize is a multiple of 16.
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k1) & 0x0F);
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(k2) & 0x0F);
-
-  // Rely on function level static initialization to keep ConvolveProc selection
-  // thread safe.
-  typedef float (*ConvolveProc)(const float* src, const float* k1,
-                                const float* k2,
-                                double kernel_interpolation_factor);
-#if defined(ARCH_CPU_X86_FAMILY)
-#if defined(__SSE__)
-  static const ConvolveProc kConvolveProc = Convolve_SSE;
-#else
-  static const ConvolveProc kConvolveProc =
-      base::CPU().has_sse() ? Convolve_SSE : Convolve_C;
-#endif
-#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
-  static const ConvolveProc kConvolveProc = Convolve_NEON;
-#else
-  static const ConvolveProc kConvolveProc = Convolve_C;
-#endif
-
-  return kConvolveProc(input_ptr, k1, k2, kernel_interpolation_factor);
 }
 
 float SincResampler::Convolve_C(const float* input_ptr, const float* k1,
