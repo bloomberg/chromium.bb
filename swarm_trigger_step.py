@@ -203,10 +203,9 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
 
   # Send test requests off to swarm.
   print 'Sending test requests to swarm'
-  test_url = options.swarm_url + '/test'
+  test_url = options.swarm_url.rstrip('/') + '/test'
   manifest_text = manifest.to_json()
-  result = run_isolated.url_open(
-      test_url, manifest_text, content_type='application/json')
+  result = run_isolated.url_open(test_url, {'request': manifest_text})
   if not result:
     print >> sys.stderr, 'Failed to send test for %s\n%s' % (
         test_name, test_url)

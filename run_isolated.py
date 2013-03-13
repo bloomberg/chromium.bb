@@ -370,6 +370,7 @@ def url_open(url, data=None, retry_404=False, content_type=None):
 def url_open_request(make_request, retry_404=False):
   """Internal version of url_open() for users that need special handling.
   """
+  last_error = None
   for attempt in range(MAX_URL_OPEN_ATTEMPTS):
     extra = {COUNT_KEY: attempt} if attempt else {}
     request = make_request(extra)
@@ -381,17 +382,20 @@ def url_open_request(make_request, retry_404=False):
       if e.code < 500 and not (retry_404 and e.code == 404):
         # This HTTPError means we reached the server and there was a problem
         # with the request, so don't retry.
-        logging.exception('Able to connect to %s but an exception was '
-                          'thrown.\n%s', request.get_full_url(), e)
+        logging.error(
+            'Able to connect to %s but an exception was thrown.\n%s\n%s',
+            request.get_full_url(), e, e.read())
         return None
 
       # The HTTPError was due to a server error, so retry the attempt.
       logging.warning('Able to connect to %s on attempt %d.\nException: %s ',
                       request.get_full_url(), attempt, e)
+      last_error = e
 
     except (urllib2.URLError, httplib.HTTPException) as e:
       logging.warning('Unable to open url %s on attempt %d.\nException: %s',
                       request.get_full_url(), attempt, e)
+      last_error = e
 
     # Only sleep if we are going to try again.
     if attempt != MAX_URL_OPEN_ATTEMPTS - 1:
@@ -399,8 +403,8 @@ def url_open_request(make_request, retry_404=False):
       duration = min(10, max(0.1, duration))
       time.sleep(duration)
 
-  logging.error('Unable to open given url, %s, after %d attempts.',
-                request.get_full_url(), MAX_URL_OPEN_ATTEMPTS)
+  logging.error('Unable to open given url, %s, after %d attempts.\n%s',
+                request.get_full_url(), MAX_URL_OPEN_ATTEMPTS, last_error)
   return None
 
 

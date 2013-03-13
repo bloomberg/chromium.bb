@@ -203,7 +203,8 @@ class UrlHelperTest(unittest.TestCase):
     count = []
     def mock_url_open(request):
       count.append(request)
-      raise urllib2.HTTPError('url', 400, 'error message', None, None)
+      raise urllib2.HTTPError(
+          'url', 400, 'error message', None, StringIO.StringIO())
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {}}, None)
     self.assertEqual(1, len(count))
@@ -213,7 +214,8 @@ class UrlHelperTest(unittest.TestCase):
     def mock_url_open(request):
       if run_isolated.COUNT_KEY + '=1' in request.get_data():
         return StringIO.StringIO(response)
-      raise urllib2.HTTPError('url', 404, 'error message', None, None)
+      raise urllib2.HTTPError(
+          'url', 404, 'error message', None, StringIO.StringIO())
 
     self.replaceUrlOpenAndCall(mock_url_open, {'url': 'url', 'data': {},
                                                'retry_404': True},
@@ -224,7 +226,8 @@ class UrlHelperTest(unittest.TestCase):
 
     def mock_url_open(request):
       if run_isolated.COUNT_KEY + '=1' not in request.get_data():
-        raise urllib2.HTTPError('url', 500, 'error message', None, None)
+        raise urllib2.HTTPError(
+            'url', 500, 'error message', None, StringIO.StringIO())
 
       return StringIO.StringIO(response)
 
