@@ -88,6 +88,8 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
       LOG(ERROR) << "Error choosing pixel format.";
       return false;
     }
+    // The renderer might be switched after this, so ignore the saved ID.
+    share_group()->SetRendererID(-1);
   }
 
   CGLError res = CGLCreateContext(
@@ -123,10 +125,12 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   CGLGetVirtualScreen(static_cast<CGLContextObj>(context_), &screen);
 
   if (g_support_renderer_switching &&
+      !discrete_pixelformat_ && renderer_id != -1 &&
       (screen != screen_ || renderer_id != renderer_id_)) {
-    CGLPixelFormatObj format = GetPixelFormat();
     // Attempt to find a virtual screen that's using the requested renderer,
-    // and switch the context to use that screen.
+    // and switch the context to use that screen. Don't attempt to switch if
+    // the context requires the discrete GPU.
+    CGLPixelFormatObj format = GetPixelFormat();
     int virtual_screen_count;
     if (CGLDescribePixelFormat(format, 0, kCGLPFAVirtualScreenCount,
                                &virtual_screen_count) != kCGLNoError)
