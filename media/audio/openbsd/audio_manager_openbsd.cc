@@ -4,19 +4,23 @@
 
 #include "media/audio/openbsd/audio_manager_openbsd.h"
 
+#include <fcntl.h>
+
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/audio_util.h"
-#if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/pulse_output.h"
-#endif
+#include "media/audio/pulse/pulse_stubs.h"
 #include "media/base/channel_layout.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
-#include <fcntl.h>
+using media_audio_pulse::kModulePulse;
+using media_audio_pulse::InitializeStubs;
+using media_audio_pulse::StubPathMap;
 
 namespace media {
 
@@ -25,6 +29,9 @@ static const int kMaxOutputStreams = 50;
 
 // Default sample rate for input and output streams.
 static const int kDefaultSampleRate = 48000;
+
+static const base::FilePath::CharType kPulseLib[] =
+    FILE_PATH_LITERAL("libpulse.so.0");
 
 // Implementation of AudioManager.
 static bool HasAudioHardware() {
@@ -58,8 +65,19 @@ AudioParameters AudioManagerOpenBSD::GetInputStreamParameters(
       kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
-AudioManagerOpenBSD::AudioManagerOpenBSD() {
+AudioManagerOpenBSD::AudioManagerOpenBSD()
+    : pulse_library_is_initialized_(false) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
+  StubPathMap paths;
+
+  // Check if the pulse library is avialbale.
+  paths[kModulePulse].push_back(kPulseLib);
+  if (!InitializeStubs(paths)) {
+    DLOG(WARNING) << "Failed on loading the Pulse library and symbols";
+    return;
+  }
+
+  pulse_library_is_initialized_ = true;
 }
 
 AudioManagerOpenBSD::~AudioManagerOpenBSD() {
@@ -118,16 +136,11 @@ AudioParameters AudioManagerOpenBSD::GetPreferredOutputStreamParameters(
       sample_rate, bits_per_sample, buffer_size);
 }
 
-
 AudioOutputStream* AudioManagerOpenBSD::MakeOutputStream(
     const AudioParameters& params) {
-#if defined(USE_PULSEAUDIO)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUsePulseAudio)) {
+  if (pulse_library_is_initialized_)
     return new PulseAudioOutputStream(params, this);
-  }
-#endif
 
-  NOTIMPLEMENTED();
   return NULL;
 }
 

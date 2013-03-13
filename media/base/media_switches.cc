@@ -21,11 +21,6 @@ const char kAlsaInputDevice[] = "alsa-input-device";
 const char kUseCras[] = "use-cras";
 #endif
 
-#if defined(USE_PULSEAUDIO)
-// Use PulseAudio on platforms that support it.
-const char kUsePulseAudio[] = "use-pulseaudio";
-#endif
-
 #if defined(OS_WIN)
 // Use exclusive mode audio streaming for Windows Vista and higher.
 // Leads to lower latencies for audio streams which uses the
