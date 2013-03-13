@@ -25,7 +25,7 @@
 
 namespace history {
 
-// The maximum score any candidate result can achieve.
+// The maximum score any candidate match can achieve.
 const int kMaxTotalScore = 1425;
 
 // Score ranges used to get a 'base' score for each of the scoring factors
@@ -41,13 +41,14 @@ const int kScoreRank[] = { 1450, 1200, 900, 400 };
 bool ScoredHistoryMatch::initialized_ = false;
 bool ScoredHistoryMatch::use_new_scoring = false;
 bool ScoredHistoryMatch::also_do_hup_like_scoring = false;
+int ScoredHistoryMatch::max_assigned_score_for_non_inlineable_matches = -1;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : raw_score(0),
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
-    InitializeAlsoDoHUPLikeScoringField();
+    InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField();
     initialized_ = true;
   }
 }
@@ -64,7 +65,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
       can_inline(false) {
   if (!initialized_) {
     InitializeNewScoringField();
-    InitializeAlsoDoHUPLikeScoringField();
+    InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField();
     initialized_ = true;
   }
 
@@ -99,7 +100,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
   url_matches = SortAndDeoverlapMatches(url_matches);
   title_matches = SortAndDeoverlapMatches(title_matches);
 
-  // We can inline autocomplete a result if:
+  // We can inline autocomplete a match if:
   //  1) there is only one search term
   //  2) AND the match begins immediately after one of the prefixes in
   //     URLPrefix such as http://www and https:// (note that one of these
@@ -221,22 +222,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     raw_score = std::min(kMaxTotalScore, raw_score);
   }
 
-  // TODO(mpearson): Refactor this test to use a new member variable
-  // |max_assigned_score_for_non_inlineable_results|.
-  // When doing HUP-like scoring, don't allow a non-inlineable result
-  // to beat the score of good inlineable results.  This is a problem
-  // because if a non-inlineable result ends up with the highest score
-  // from HistoryQuick provider, all HistoryQuick results get demoted
-  // to non-inlineable scores (scores less than 1200).  This is a
-  // problem because there are good inlineable results and they should
-  // appear with their proper scores, not demoted scores.
-  if (also_do_hup_like_scoring && !can_inline &&
-      (raw_score >= HistoryURLProvider::kScoreForBestInlineableResult)) {
-    raw_score = HistoryURLProvider::kScoreForBestInlineableResult - 1;
-  }
-
   if (also_do_hup_like_scoring && can_inline) {
-    // HistoryURL-provider-like scoring gives any result that is
+    // HistoryURL-provider-like scoring gives any match that is
     // capable of being inlined a certain minimum score.  Some of these
     // are given a higher score that lets them be shown in inline.
     // This test here derives from the test in
@@ -261,9 +248,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     // create/promote host-only suggestions (even if they've never
     // been typed).  The code is complicated and we don't try to
     // duplicate the logic here.  Instead, we handle a simple case: in
-    // low-typed-count ranges, give host-only results (i.e.,
+    // low-typed-count ranges, give host-only matches (i.e.,
     // http://www.foo.com/ vs. http://www.foo.com/bar.html) a boost so
-    // that the host-only result outscores all the other results that
+    // that the host-only match outscores all the other matches that
     // would normally have the same base score.  This behavior is not
     // identical to what happens in HistoryURLProvider even in these
     // low typed count ranges--sometimes it will create/promote when
@@ -277,6 +264,13 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
     // Incorporate hup_like_score into raw_score.
     raw_score = std::max(raw_score, hup_like_score);
+  }
+
+  // If this match is not inlineable and there's a cap on the maximum
+  // score that can be given to non-inlineable matches, apply the cap.
+  if (!can_inline && (max_assigned_score_for_non_inlineable_matches != -1)) {
+    raw_score = std::min(max_assigned_score_for_non_inlineable_matches,
+                         raw_score);
   }
 }
 
@@ -729,10 +723,23 @@ void ScoredHistoryMatch::InitializeNewScoringField() {
       new_scoring_option, NUM_OPTIONS);
 }
 
-void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringField() {
+void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField() {
   also_do_hup_like_scoring =
       OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrial() &&
       OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup();
+  // When doing HUP-like scoring, don't allow a non-inlineable match
+  // to beat the score of good inlineable matches.  This is a problem
+  // because if a non-inlineable match ends up with the highest score
+  // from HistoryQuick provider, all HistoryQuick matches get demoted
+  // to non-inlineable scores (scores less than 1200).  Without
+  // HUP-like-scoring, these results would actually come from the HUP
+  // and not be demoted, thus outscoring the demoted HQP results.
+  // When the HQP provides these, we need to clamp the non-inlineable
+  // results to preserve this behavior.
+  if (also_do_hup_like_scoring) {
+    max_assigned_score_for_non_inlineable_matches =
+        HistoryURLProvider::kScoreForBestInlineableResult - 1;
+  }
 }
 
 }  // namespace history
