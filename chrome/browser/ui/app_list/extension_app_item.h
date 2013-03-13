@@ -34,8 +34,7 @@ class ExtensionAppItem : public ChromeAppListItem,
                    const std::string& extension_id,
                    AppListControllerDelegate* controller,
                    const std::string& extension_name,
-                   const gfx::ImageSkia& installing_icon,
-                   bool is_platform_app);
+                   const gfx::ImageSkia& installing_icon);
   virtual ~ExtensionAppItem();
 
   // Reload the title and icon from the underlying extension.
@@ -114,9 +113,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Icon for the extension if we can't access the installed extension.
   gfx::ImageSkia installing_icon_;
-
-  // Whether or not this app is a platform app.
-  bool is_platform_app_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };
