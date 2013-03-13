@@ -69,6 +69,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // isn't know.
   gfx::Rect GetIdealBoundsOfItemIcon(LauncherID id);
 
+  // Repositions the icon for the specified item by the midpoint of the window.
+  void UpdatePanelIconPosition(LauncherID id, const gfx::Point& midpoint);
+
   void AddIconObserver(LauncherIconObserver* observer);
   void RemoveIconObserver(LauncherIconObserver* observer);
 
