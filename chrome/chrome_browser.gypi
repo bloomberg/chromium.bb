@@ -1918,6 +1918,8 @@
         'browser/sync/glue/extension_data_type_controller.h',
         'browser/sync/glue/extension_setting_data_type_controller.cc',
         'browser/sync/glue/extension_setting_data_type_controller.h',
+        'browser/sync/glue/favicon_cache.cc',
+        'browser/sync/glue/favicon_cache.h',
         'browser/sync/glue/frontend_data_type_controller.cc',
         'browser/sync/glue/frontend_data_type_controller.h',
         'browser/sync/glue/generic_change_processor.cc',

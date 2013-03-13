@@ -377,12 +377,12 @@ void RecentTabsSubMenuModel::AddTabFavicon(int model_index,
   // switch is on; according to zea@, this flag is now automatically enabled for
   // iOS and android, and they're looking into enabling it for other platforms.
   browser_sync::SessionModelAssociator* associator = GetModelAssociator();
-  std::string favicon_png;
+  scoped_refptr<base::RefCountedMemory> favicon_png;
   if (associator &&
       associator->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
     gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
-        reinterpret_cast<const unsigned char*>(favicon_png.data()),
-        favicon_png.size());
+        favicon_png->front(),
+        favicon_png->size());
     SetIcon(index_in_menu, image);
     return;
   }

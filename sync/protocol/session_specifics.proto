@@ -69,6 +69,8 @@ message SessionTab {
   optional string extension_app_id = 6;
   // Tabs are navigated, and the navigation data is here.
   repeated TabNavigation navigation = 7;
+
+  // Fields 8 through 11 are deprecated.
   // The favicon for the current url the tab is displaying. Either empty
   // or a valid PNG encoded favicon.
   optional bytes favicon = 8;
@@ -120,4 +122,6 @@ message TabNavigation {
   optional int64 global_id = 15;
   // Search terms extracted from the URL.
   optional string search_terms = 16;
+  // The favicon url associated with this page.
+  optional string favicon_url = 17;
 }

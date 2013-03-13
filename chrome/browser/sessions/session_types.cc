@@ -12,6 +12,7 @@
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/ui/browser.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "sync/util/time.h"
@@ -54,6 +55,8 @@ TabNavigation TabNavigation::FromNavigationEntry(
   CHECK(entry.GetFrameToNavigate().empty());
   navigation.search_terms_ =
       chrome::search::GetSearchTermsFromNavigationEntry(&entry);
+  if (entry.GetFavicon().valid)
+    navigation.favicon_url_ = entry.GetFavicon().url;
 
   return navigation;
 }
@@ -140,6 +143,8 @@ TabNavigation TabNavigation::FromSyncData(
 
   navigation.timestamp_ = base::Time();
   navigation.search_terms_ = UTF8ToUTF16(sync_data.search_terms());
+  if (sync_data.has_favicon_url())
+    navigation.favicon_url_ = GURL(sync_data.favicon_url());
 
   return navigation;
 }
@@ -343,6 +348,11 @@ scoped_ptr<NavigationEntry> TabNavigation::ToNavigationEntry(
   entry->SetTimestamp(timestamp_);
   entry->SetExtraData(chrome::search::kInstantExtendedSearchTermsKey,
                       search_terms_);
+  if (favicon_url_.is_valid()) {
+    content::FaviconStatus& favicon_status = entry->GetFavicon();
+    favicon_status.valid = true;
+    favicon_status.url = favicon_url_;
+  }
 
   return entry.Pass();
 }
@@ -436,6 +446,9 @@ sync_pb::TabNavigation TabNavigation::ToSyncData() const {
   sync_data.set_global_id(timestamp_.ToInternalValue());
 
   sync_data.set_search_terms(UTF16ToUTF8(search_terms_));
+
+  if (favicon_url_.is_valid())
+    sync_data.set_favicon_url(favicon_url_.spec());
 
   return sync_data;
 }

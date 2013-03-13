@@ -15,6 +15,7 @@
 #include "chrome/browser/instant/search.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/session_types_test_helper.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
@@ -45,6 +46,7 @@ const GURL kOriginalRequestURL("http://www.original-request.com");
 const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
 const string16 kSearchTerms = ASCIIToUTF16("my search terms");
+const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 
 const int kPageID = 10;
 
@@ -64,6 +66,8 @@ scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   navigation_entry->SetTimestamp(kTimestamp);
   navigation_entry->SetExtraData(
       chrome::search::kInstantExtendedSearchTermsKey, kSearchTerms);
+  navigation_entry->GetFavicon().valid = true;
+  navigation_entry->GetFavicon().url = kFaviconURL;
   return navigation_entry.Pass();
 }
 
@@ -81,6 +85,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_redirect_type(sync_pb::SyncEnums::CLIENT_REDIRECT);
   sync_data.set_navigation_home_page(true);
   sync_data.set_search_terms(UTF16ToUTF8(kSearchTerms));
+  sync_data.set_favicon_url(kFaviconURL.spec());
   return sync_data;
 }
 
@@ -104,6 +109,7 @@ TEST(TabNavigationTest, DefaultInitializer) {
   EXPECT_FALSE(SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
   EXPECT_TRUE(SessionTypesTestHelper::GetTimestamp(navigation).is_null());
   EXPECT_TRUE(navigation.search_terms().empty());
+  EXPECT_FALSE(navigation.favicon_url().is_valid());
 }
 
 // Create a TabNavigation from a NavigationEntry.  All its fields
@@ -134,6 +140,7 @@ TEST(TabNavigationTest, FromNavigationEntry) {
   EXPECT_EQ(kIsOverridingUserAgent,
             SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
   EXPECT_EQ(kTimestamp, SessionTypesTestHelper::GetTimestamp(navigation));
+  EXPECT_EQ(kFaviconURL, navigation.favicon_url());
 }
 
 // Create a TabNavigation from a sync_pb::TabNavigation.  All its
@@ -162,6 +169,7 @@ TEST(TabNavigationTest, FromSyncData) {
   EXPECT_FALSE(SessionTypesTestHelper::GetIsOverridingUserAgent(navigation));
   EXPECT_TRUE(SessionTypesTestHelper::GetTimestamp(navigation).is_null());
   EXPECT_EQ(kSearchTerms, navigation.search_terms());
+  EXPECT_EQ(kFaviconURL, navigation.favicon_url());
 }
 
 // Create a TabNavigation, pickle it, then create another one by
@@ -232,6 +240,8 @@ TEST(TabNavigationTest, ToNavigationEntry) {
   EXPECT_EQ(kSearchTerms,
             chrome::search::GetSearchTermsFromNavigationEntry(
                 new_navigation_entry.get()));
+  EXPECT_TRUE(new_navigation_entry->GetFavicon().valid);
+  EXPECT_EQ(kFaviconURL, new_navigation_entry->GetFavicon().url);
 }
 
 // Create a NavigationEntry, convert it to a TabNavigation, then
@@ -256,6 +266,7 @@ TEST(TabNavigationTest, ToSyncData) {
   EXPECT_EQ(navigation_entry->GetUniqueID(), sync_data.unique_id());
   EXPECT_EQ(syncer::TimeToProtoTime(kTimestamp), sync_data.timestamp_msec());
   EXPECT_EQ(kTimestamp.ToInternalValue(), sync_data.global_id());
+  EXPECT_EQ(kFaviconURL.spec(), sync_data.favicon_url());
 }
 
 // Ensure all transition types and qualifiers are converted to/from the sync

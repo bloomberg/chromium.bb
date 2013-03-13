@@ -1106,6 +1106,7 @@
         'browser/sync/glue/fake_data_type_controller.h',
         'browser/sync/glue/fake_generic_change_processor.cc',
         'browser/sync/glue/fake_generic_change_processor.h',
+        'browser/sync/glue/favicon_cache_unittest.cc',
         'browser/sync/glue/frontend_data_type_controller_mock.cc',
         'browser/sync/glue/frontend_data_type_controller_mock.h',
         'browser/sync/glue/frontend_data_type_controller_unittest.cc',

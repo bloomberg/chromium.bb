@@ -174,6 +174,18 @@ void VerifySyncedSession(
   }
 }
 
+bool CompareMemoryToString(
+    const std::string& str,
+    const scoped_refptr<base::RefCountedMemory>& mem) {
+  if (mem->size() != str.size())
+    return false;
+  for (size_t i = 0; i <mem->size(); ++i) {
+    if (str[i] != *(mem->front() + i))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 class ProfileSyncServiceSessionTest
@@ -1183,7 +1195,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   sync_pb::SessionSpecifics tab;
   BuildTabSpecifics(tag, 0, tab_list[0], &tab);
   std::string url = tab.tab().navigation(0).virtual_url();
-  std::string favicon;
+  scoped_refptr<base::RefCountedMemory> favicon;
 
   // Update associator.
   model_associator_->AssociateForeignSpecifics(meta, base::Time());
@@ -1196,16 +1208,16 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   tab.mutable_tab()->set_favicon("data");
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
   ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
-  ASSERT_EQ("data", favicon);
+  ASSERT_TRUE(CompareMemoryToString("data", favicon));
 
-  // Simulate navigating away. The associator should delete the favicon.
+  // Simulate navigating away. The associator should not delete the favicon.
   tab.mutable_tab()->clear_navigation();
   tab.mutable_tab()->add_navigation()->set_virtual_url("http://new_url.com");
   tab.mutable_tab()->clear_favicon_source();
   tab.mutable_tab()->clear_favicon_type();
   tab.mutable_tab()->clear_favicon();
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  ASSERT_FALSE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
+  ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
 }
 
 TEST_F(ProfileSyncServiceSessionTest, CorruptedLocalHeader) {

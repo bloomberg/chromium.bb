@@ -17,15 +17,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/sync/glue/favicon_cache.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/tab_node_pool.h"
-#include "chrome/common/cancelable_task_tracker.h"
-#include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class PrefServiceSyncable;
@@ -56,6 +54,7 @@ class SyncedWindowDelegate;
 class SessionModelAssociator
     : public PerDataTypeAssociatorInterface<size_t, size_t>,
       public base::SupportsWeakPtr<SessionModelAssociator>,
+      public FaviconCacheObserver,
       public base::NonThreadSafe {
  public:
   // Does not take ownership of sync_service.
@@ -101,6 +100,10 @@ class SessionModelAssociator
 
   // Not used.
   virtual void Disassociate(int64 sync_id) OVERRIDE;
+
+  // FaviconCacheObserver interface.
+  virtual void OnFaviconUpdated(const GURL& page_url,
+                                const GURL& icon_url) OVERRIDE;
 
   // Resync local window information. Updates the local sessions header node
   // with the status of open windows and the order of tabs they contain. Should
@@ -220,10 +223,11 @@ class SessionModelAssociator
   // first.
   void BlockUntilLocalChangeForTest(base::TimeDelta timeout);
 
-  // If a valid favicon for the page at |url| is found, fills |png_favicon| with
+  // If a valid favicon for the page at |url| is found, fills |favicon_png| with
   // the png-encoded image and returns true. Else, returns false.
-  bool GetSyncedFaviconForPageURL(const std::string& url,
-                                  std::string* png_favicon) const;
+  bool GetSyncedFaviconForPageURL(
+      const std::string& pageurl,
+      scoped_refptr<base::RefCountedMemory>* favicon_png) const;
 
   void SetCurrentMachineTagForTesting(const std::string& machine_tag) {
     current_machine_tag_ = machine_tag;
@@ -256,21 +260,14 @@ class SessionModelAssociator
    public:
     TabLink(int64 sync_id, const SyncedTabDelegate* tab)
       : sync_id_(sync_id),
-        tab_(tab),
-        favicon_load_task_id_(CancelableTaskTracker::kBadTaskId) {}
+        tab_(tab) {}
 
     void set_tab(const SyncedTabDelegate* tab) { tab_ = tab; }
     void set_url(const GURL& url) { url_ = url; }
-    void set_favicon_load_task_id(CancelableTaskTracker::TaskId task_id) {
-      favicon_load_task_id_ = task_id;
-    }
 
     int64 sync_id() const { return sync_id_; }
     const SyncedTabDelegate* tab() const { return tab_; }
     const GURL& url() const { return url_; }
-    FaviconService::Handle favicon_load_task_id() const {
-      return favicon_load_task_id_;
-    }
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TabLink);
@@ -283,9 +280,6 @@ class SessionModelAssociator
 
     // The currently visible url of the tab (used for syncing favicons).
     GURL url_;
-
-    // Task ID for loading favicons.
-    CancelableTaskTracker::TaskId favicon_load_task_id_;
   };
 
   // Container for accessing local tab data by tab id.
@@ -319,27 +313,11 @@ class SessionModelAssociator
   bool WriteTabContentsToSyncModel(TabLink* tab_link,
                                    syncer::SyncError* error);
 
-  // Decrements the favicon usage counters for the favicon used by |page_url|.
-  // Deletes the favicon and associated pages from the favicon usage maps
-  // if no page is found to be referring to the favicon anymore.
-  void DecrementAndCleanFaviconForURL(const std::string& page_url);
-
   // Set |session_tab| from |tab_delegate| and |mtime|.
   static void SetSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
       SessionTab* session_tab);
-
-  // Load the favicon for the tab specified by |tab_link|. Will cancel any
-  // outstanding request for this tab. OnFaviconDataAvailable(..) will be called
-  // when the load completes.
-  void LoadFaviconForTab(TabLink* tab_link);
-
-  // Callback method to store a tab's favicon into its sync node once it becomes
-  // available. Does nothing if no favicon data was available.
-  void OnFaviconDataAvailable(
-      SessionID::id_type tab_id,
-      const history::FaviconBitmapResult& bitmap_result);
 
   // Used to populate a session header from the session specifics header
   // provided.
@@ -358,8 +336,7 @@ class SessionModelAssociator
       SyncedSessionTracker* tracker);
 
   // Helper method to load the favicon data from the tab specifics. If the
-  // favicon is valid, stores the favicon data and increments the usage counter
-  // in |synced_favicons_| and updates |synced_favicon_pages_| appropriately.
+  // favicon is valid, stores the favicon data into the favicon cache.
   void LoadForeignTabFavicon(const sync_pb::SessionTab& tab);
 
   // Returns true if this tab belongs to this profile and belongs to a window,
@@ -373,10 +350,8 @@ class SessionModelAssociator
   bool TabHasValidEntry(const SyncedTabDelegate& tab) const;
 
   // For testing only.
-  size_t NumFaviconsForTesting() const;
-
-  // For testing only.
   void QuitLoopForSubtleTesting();
+  FaviconCache* GetFaviconCacheForTesting();
 
   // Unique client tag.
   std::string current_machine_tag_;
@@ -416,34 +391,8 @@ class SessionModelAssociator
 
   DataTypeErrorHandler* error_handler_;
 
-  // Used for loading favicons.
-  CancelableTaskTracker cancelable_task_tracker_;
-
-  // Synced favicon storage and tracking.
-  // Map of favicon URL -> favicon info for favicons synced from other clients.
-  // TODO(zea): if this becomes expensive memory-wise, reconsider using the
-  // favicon service instead. For now, this is simpler due to the history
-  // backend not properly supporting expiration of synced favicons.
-  // See crbug.com/122890.
-  struct SyncedFaviconInfo {
-    SyncedFaviconInfo() : usage_count(0) {}
-    explicit SyncedFaviconInfo(const std::string& data)
-        : data(data),
-          usage_count(1) {}
-    SyncedFaviconInfo(const std::string& data, int usage_count)
-        : data(data),
-          usage_count(usage_count) {}
-    // The actual favicon data, stored in png encoded bytes.
-    std::string data;
-    // The number of foreign tabs using this favicon.
-    int usage_count;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SyncedFaviconInfo);
-  };
-  std::map<std::string, linked_ptr<SyncedFaviconInfo> > synced_favicons_;
-  // Map of page URL -> favicon url.
-  std::map<std::string, std::string> synced_favicon_pages_;
+  // Our favicon cache.
+  FaviconCache favicon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

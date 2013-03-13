@@ -44,13 +44,10 @@ bool SessionFaviconSource::HandleMissingResource(const IconRequest& request) {
   SessionModelAssociator* associator = sync_service ?
       sync_service->GetSessionModelAssociator() : NULL;
 
-  std::string favicon_data;
+  scoped_refptr<base::RefCountedMemory> response;
   if (associator &&
       associator->GetSyncedFaviconForPageURL(request.request_path,
-                                             &favicon_data)) {
-    scoped_refptr<base::RefCountedString> response =
-        new base::RefCountedString();
-    response->data() = favicon_data;
+                                             &response)) {
     request.callback.Run(response);
     return true;
   }
