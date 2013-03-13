@@ -710,6 +710,7 @@ const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
 const char kErrorDetailsProperty[] = "ErrorDetails";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kIPConfigProperty[] = "IPConfig";
+const char kOutOfCreditsProperty[] = "Cellular.OutOfCredits";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
 const char kStaticIPAddressProperty[] = "StaticIP.Address";
 const char kStaticIPGatewayProperty[] = "StaticIP.Gateway";
