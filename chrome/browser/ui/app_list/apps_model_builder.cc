@@ -99,14 +99,16 @@ void AppsModelBuilder::OnBeginExtensionInstall(
     const std::string& extension_id,
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
-    bool is_app) {
+    bool is_app,
+    bool is_platform_app) {
   if (!is_app)
     return;
   InsertApp(new ExtensionAppItem(profile_,
                                  extension_id,
                                  controller_,
                                  extension_name,
-                                 installing_icon));
+                                 installing_icon,
+                                 is_platform_app));
   SetHighlightedApp(extension_id);
 }
 
@@ -140,7 +142,8 @@ void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
                                            (*app)->id(),
                                            controller_,
                                            "",
-                                           gfx::ImageSkia()));
+                                           gfx::ImageSkia(),
+                                           (*app)->is_platform_app()));
   }
 }
 
@@ -285,7 +288,8 @@ void AppsModelBuilder::Observe(int type,
                                      extension->id(),
                                      controller_,
                                      "",
-                                     gfx::ImageSkia()));
+                                     gfx::ImageSkia(),
+                                     extension->is_platform_app()));
       UpdateHighlight();
       break;
     }

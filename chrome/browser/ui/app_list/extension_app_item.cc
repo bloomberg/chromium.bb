@@ -185,7 +185,8 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const std::string& extension_id,
                                    AppListControllerDelegate* controller,
                                    const std::string& extension_name,
-                                   const gfx::ImageSkia& installing_icon)
+                                   const gfx::ImageSkia& installing_icon,
+                                   bool is_platform_app)
     : ChromeAppListItem(TYPE_APP),
       profile_(profile),
       extension_id_(extension_id),
@@ -193,7 +194,8 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
       extension_name_(extension_name),
       installing_icon_(
           gfx::ImageSkiaOperations::CreateHSLShiftedImage(installing_icon,
-                                                          shift)) {
+                                                          shift)),
+      is_platform_app_(is_platform_app) {
   Reload();
   GetExtensionSorting(profile_)->EnsureValidOrdinals(extension_id_,
                                                      syncer::StringOrdinal());
@@ -206,10 +208,7 @@ bool ExtensionAppItem::HasOverlay() const {
 #if defined(OS_CHROMEOS)
   return false;
 #else
-  const Extension* extension = GetExtension();
-  return extension &&
-         !extension->is_platform_app() &&
-         extension->id() != extension_misc::kChromeAppId;
+  return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId;
 #endif
 }
 
@@ -277,7 +276,19 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 
 void ExtensionAppItem::UpdateIcon() {
   if (!GetExtension()) {
-    SetIcon(installing_icon_, false);
+    gfx::ImageSkia icon = installing_icon_;
+    if (HasOverlay()) {
+      // The tab overlay requires icons of a certain size.
+      gfx::Size small_size(extension_misc::EXTENSION_ICON_SMALL,
+                           extension_misc::EXTENSION_ICON_SMALL);
+      icon = gfx::ImageSkiaOperations::CreateResizedImage(
+          icon, skia::ImageOperations::RESIZE_GOOD, small_size);
+
+      gfx::Size size(extension_misc::EXTENSION_ICON_MEDIUM,
+                     extension_misc::EXTENSION_ICON_MEDIUM);
+      icon = gfx::ImageSkia(new TabOverlayImageSource(icon, size), size);
+    }
+    SetIcon(icon, !HasOverlay());
     return;
   }
   gfx::ImageSkia icon = icon_->image_skia();
@@ -543,7 +554,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
         profile_, this, context_menu_model_.get(),
         base::Bind(MenuItemHasLauncherContext)));
 
-    if (!extension->is_platform_app())
+    if (!is_platform_app_)
       context_menu_model_->AddItem(LAUNCH_NEW, string16());
 
     int index = 0;
@@ -564,7 +575,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
                                                IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
 
-    if (!extension->is_platform_app()) {
+    if (!is_platform_app_) {
       context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddCheckItemWithStringId(
           LAUNCH_TYPE_REGULAR_TAB,
@@ -589,7 +600,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     context_menu_model_->AddItemWithStringId(DETAILS,
                                              IDS_NEW_TAB_APP_DETAILS);
     context_menu_model_->AddItemWithStringId(UNINSTALL,
-                                             extension->is_platform_app() ?
+                                             is_platform_app_ ?
                                                  IDS_APP_LIST_UNINSTALL_ITEM :
                                                  IDS_EXTENSIONS_UNINSTALL);
   }
