@@ -10,6 +10,7 @@
 #include <pthread.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -161,10 +162,13 @@ int main(int argc, char **argv) {
 
   if (g_expect_crash) {
     NaClLog(LOG_FATAL, "Did not expect the guest code to exit\n");
-    return 1;
+    NaClExit(1);
   } else {
     fprintf(stderr, "No crashes, as intended.\n");
     fprintf(stderr, "** intended_exit_status=0\n");
-    return 0;
+    NaClExit(0);
   }
+
+  /* NOTREACHED */
+  return 2;
 }
