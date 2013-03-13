@@ -120,12 +120,13 @@ def MockUrlOpen(url, _data, has_return_value):
   return StringIO.StringIO('{}')
 
 
-def MockUrlOpenHasZip(url, data=None):
+def MockUrlOpenHasZip(url, data=None, content_type=None):
+  assert content_type in (None, 'application/json', 'application/octet-stream')
   return MockUrlOpen(url, data, has_return_value=chr(1))
 
 
 def MockUrlOpenNoZip(url, data=None, content_type=None):
-  assert content_type in (None, 'application/octet-stream')
+  assert content_type in (None, 'application/json', 'application/octet-stream')
   return MockUrlOpen(url, data, has_return_value=chr(0))
 
 
