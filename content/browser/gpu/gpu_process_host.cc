@@ -1014,7 +1014,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
-    switches::kCrashOnGpuHang,
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableBreakpad,
     switches::kDisableGLMultisampling,

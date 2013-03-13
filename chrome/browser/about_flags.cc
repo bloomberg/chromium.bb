@@ -1140,13 +1140,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePasswordGeneration)
   },
   {
-    "crash-on-gpu-hang",
-    IDS_FLAGS_CRASH_ON_GPU_HANG_NAME,
-    IDS_FLAGS_CRASH_ON_GPU_HANG_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kCrashOnGpuHang)
-  },
-  {
     "enable-deferred-image-decoding",
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,

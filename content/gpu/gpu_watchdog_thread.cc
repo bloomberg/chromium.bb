@@ -209,20 +209,8 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   LOG(ERROR) << "The GPU process hung. Terminating after "
              << timeout_.InMilliseconds() << " ms.";
 
-  bool should_crash =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kCrashOnGpuHang);
-
-#if defined(OS_WIN)
-  should_crash = true;
-#endif
-
-  if (should_crash) {
-    // Deliberately crash the process to create a crash dump.
-    *((volatile int*)0) = 0x1337;
-  } else {
-    base::Process current_process(base::GetCurrentProcessHandle());
-    current_process.Terminate(RESULT_CODE_HUNG);
-  }
+  // Deliberately crash the process to create a crash dump.
+  *((volatile int*)0) = 0x1337;
 
   terminated = true;
 }

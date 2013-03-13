@@ -6953,12 +6953,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PASSWORD_GENERATION_DESCRIPTION" desc="Description of flag to enable password generation.">
         Allow the user to have Chrome generate passwords when it detects account creation pages.
       </message>
-      <message name="IDS_FLAGS_CRASH_ON_GPU_HANG_NAME" desc="Name of the flag to enable crashing on gpu hang.">
-        Enable crashing on GPU hang.
-      </message>
-      <message name="IDS_FLAGS_CRASH_ON_GPU_HANG_DESCRIPTION" desc="Description of flag to enable crashing on GPU hang.">
-        Crash the GPU process whenever Chrome detects that it has hung.
-      </message>
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
         Enable performance monitoring
       </message>
