@@ -145,7 +145,7 @@ void PicturePileImpl::Raster(
           SkRegion::kDifference_Op);
       unclipped.Subtract(content_clip);
 
-      total_pixels_rasterized +=
+      *total_pixels_rasterized +=
           content_clip.width() * content_clip.height();
     }
   }
