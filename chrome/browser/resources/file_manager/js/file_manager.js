@@ -361,19 +361,18 @@ DialogType.isModal = function(type) {
 
     metrics.startInterval('Load.FileSystem');
 
-    var self = this;
     var downcount = 3;
     var viewOptions = {};
     var done = function() {
       if (--downcount == 0)
-        self.init_(viewOptions);
-    };
+        this.init_(viewOptions);
+    }.bind(this);
 
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       metrics.recordInterval('Load.FileSystem');
-      self.filesystem_ = filesystem;
+      this.filesystem_ = filesystem;
       done();
-    });
+    }.bind(this));
 
     // DRIVE preferences should be initialized before creating DirectoryModel
     // to tot rebuild the roots list.
@@ -392,6 +391,12 @@ DialogType.isModal = function(type) {
         }
       }
       done();
+    }.bind(this));
+
+    // Mount Drive if enabled.
+    this.getPreferences_(function() {
+      if (this.isDriveEnabled())
+        this.volumeManager_.mountDrive(function() {}, function() {});
     }.bind(this));
   };
 
@@ -3154,7 +3159,7 @@ DialogType.isModal = function(type) {
    * @private
    */
   FileManager.prototype.getPreferences_ = function(callback, opt_update) {
-    if (!opt_update && !this.preferences_ !== undefined) {
+    if (!opt_update && this.preferences_ !== undefined) {
       callback(this.preferences_);
       return;
     }
