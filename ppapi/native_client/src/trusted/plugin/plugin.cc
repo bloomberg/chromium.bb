@@ -1174,21 +1174,19 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   HistogramSizeKB("NaCl.Perf.Size.Manifest",
                   static_cast<int32_t>(manifest_json.length() / 1024));
   nacl::string program_url;
-  nacl::string cache_identity;
-  bool is_portable;
+  PnaclOptions pnacl_options;
   ErrorInfo error_info;
   if (!SetManifestObject(manifest_json, &error_info)) {
     ReportLoadError(error_info);
     return;
   }
 
-  if (manifest_->GetProgramURL(&program_url, &cache_identity,
-                               &error_info, &is_portable)) {
+  if (manifest_->GetProgramURL(&program_url, &pnacl_options, &error_info)) {
     is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
     set_nacl_ready_state(LOADING);
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(kProgressEventProgress);
-    if (is_portable) {
+    if (pnacl_options.translate()) {
       if (this->nacl_interface()->IsPnaclEnabled()) {
         pp::CompletionCallback translate_callback =
             callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
@@ -1196,7 +1194,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
         pnacl_coordinator_.reset(
             PnaclCoordinator::BitcodeToNative(this,
                                               program_url,
-                                              cache_identity,
+                                              pnacl_options,
                                               translate_callback));
         return;
       } else {

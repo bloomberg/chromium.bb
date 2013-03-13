@@ -1,0 +1,47 @@
+<html>
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<title>NaCl Load Test</title>
+<script type="text/javascript" src="nacltest.js"></script> 
+</head>
+<body>
+<h2>NaCl Load Test</h2>
+</body>
+<script>
+
+function report(msg) {
+  domAutomationController.setAutomationId(0);
+  // The automation controller seems to choke on Objects, so turn them into
+  // strings.
+  domAutomationController.send(JSON.stringify(msg));
+}
+
+function create(manifest_prefix, manifest_opt) {
+  var embed = document.createElement("embed");
+  var nmf_url = manifest_prefix + manifest_opt + ".nmf";
+
+  embed.src = nmf_url;
+  embed.type = "application/x-nacl";
+
+  embed.addEventListener("load", function(evt) {
+    report({type: "Shutdown", message: "1 test passed.", passed: true});
+  }, true);
+
+  embed.addEventListener("error", function(evt) {
+    report({type: "Log", message: "Load error: " + embed.lastError});
+    report({type: "Shutdown", message: "1 test failed.", passed: false});
+  }, true);
+
+  document.body.appendChild(embed);
+}
+
+var nmf_to_test = getTestArguments(
+  {'use_nmf' : 'Unknown NMF choice'})['use_nmf'];
+
+create("pnacl_", nmf_to_test);
+</script>
+</html>

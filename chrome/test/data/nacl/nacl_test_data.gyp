@@ -106,6 +106,27 @@
         'ppapi_test_lib',
       ],
     },
+    {
+      'target_name': 'pnacl_options_test',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'pnacl_options',
+        'build_pnacl_newlib': 1,
+        'sources': [
+          'simple.cc',
+        ],
+        'test_files': [
+          'pnacl_nmf_options/pnacl_options.html',
+          'pnacl_nmf_options/pnacl_o_0.nmf',
+          'pnacl_nmf_options/pnacl_o_2.nmf',
+          'pnacl_nmf_options/pnacl_o_large.nmf',
+          'pnacl_nmf_options/pnacl_time_passes.nmf',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ]
+    },
     # Legacy NaCl PPAPI interface tests being here.
     {
       'target_name': 'ppapi_ppb_core',

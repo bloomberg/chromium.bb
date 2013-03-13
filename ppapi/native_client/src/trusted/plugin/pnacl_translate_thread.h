@@ -29,6 +29,7 @@ class Manifest;
 class NaClSubprocess;
 class Plugin;
 class PnaclCoordinator;
+class PnaclOptions;
 class PnaclResources;
 class TempFile;
 
@@ -53,6 +54,7 @@ class PnaclTranslateThread {
                     TempFile* nexe_file,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
+                    PnaclOptions* pnacl_options,
                     PnaclCoordinator* coordinator,
                     Plugin* plugin);
 
@@ -124,6 +126,7 @@ class PnaclTranslateThread {
   TempFile* nexe_file_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
+  PnaclOptions* pnacl_options_;
   PnaclCoordinator* coordinator_;
   Plugin* plugin_;
  private:

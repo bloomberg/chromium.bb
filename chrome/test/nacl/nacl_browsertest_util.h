@@ -130,23 +130,22 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
   virtual bool GetDocumentRoot(base::FilePath* document_root) OVERRIDE;
 };
 
-#if defined(ARCH_CPU_ARM_FAMILY)
-
-// There is no support for Glibc on ARM NaCl.
-#define NACL_BROWSER_TEST_F(suite, name, body) \
-IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
-body
-
-#elif defined(ADDRESS_SANITIZER) || (defined(OS_WIN) && !defined(NDEBUG))
 // PNaCl's cache and PPB_FileIO currently trip up under ASAN:
 // https://code.google.com/p/chromium/issues/detail?id=171810
 // PNaCl tests take a long time on windows debug builds
 // and sometimes time out.  Disable until it is made faster:
 // https://code.google.com/p/chromium/issues/detail?id=177555
+#if defined(ADDRESS_SANITIZER) || (defined(OS_WIN) && !defined(NDEBUG))
+#define MAYBE_PNACL(test_name) DISABLED_##test_name
+#else
+#define MAYBE_PNACL(test_name) test_name
+#endif
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+
+// There is no support for Glibc on ARM NaCl.
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
-body \
-IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
 body
 
 #else
@@ -157,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \
 IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
 body \
-IN_PROC_BROWSER_TEST_F(suite##Pnacl, name) \
+IN_PROC_BROWSER_TEST_F(suite##Pnacl, MAYBE_PNACL(name)) \
 body
 
 #endif

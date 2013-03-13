@@ -39,6 +39,7 @@ void PnaclTranslateThread::RunTranslate(
     TempFile* nexe_file,
     ErrorInfo* error_info,
     PnaclResources* resources,
+    PnaclOptions* pnacl_options,
     PnaclCoordinator* coordinator,
     Plugin* plugin) {
   PLUGIN_PRINTF(("PnaclStreamingTranslateThread::RunTranslate)\n"));
@@ -48,6 +49,7 @@ void PnaclTranslateThread::RunTranslate(
   nexe_file_ = nexe_file;
   coordinator_error_info_ = error_info;
   resources_ = resources;
+  pnacl_options_ = pnacl_options;
   coordinator_ = coordinator;
   plugin_ = plugin;
 
@@ -153,10 +155,25 @@ void PnaclTranslateThread::DoTranslate() {
   }
 
   int64_t compile_start_time = NaClGetTimeOfDayMicroseconds();
-  if (!llc_subprocess_->InvokeSrpcMethod("StreamInit",
-                                         "h",
-                                         &params,
-                                         llc_out_file->desc())) {
+  bool init_success;
+  if (pnacl_options_->HasDefaultOpts()) {
+    PLUGIN_PRINTF(("PnaclCoordinator: StreamInit with default options\n"));
+    init_success = llc_subprocess_->InvokeSrpcMethod("StreamInit",
+                                                     "h",
+                                                     &params,
+                                                     llc_out_file->desc());
+  } else {
+    std::vector<char> options = pnacl_options_->GetOptCommandline();
+    init_success = llc_subprocess_->InvokeSrpcMethod(
+        "StreamInitWithOverrides",
+        "hC",
+        &params,
+        llc_out_file->desc(),
+        &options[0],
+        options.size());
+  }
+
+  if (!init_success) {
     if (llc_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {
       // The error message is only present if the error was returned from llc

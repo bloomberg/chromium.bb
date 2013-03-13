@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/plugin/local_temp_file.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/pnacl_options.h"
 #include "native_client/src/trusted/plugin/pnacl_resources.h"
 
 #include "ppapi/c/pp_file_info.h"
@@ -45,6 +46,7 @@ class TempFile;
 // (1) Invoke the factory method, e.g.,
 //     PnaclCoordinator* coord = BitcodeToNative(plugin,
 //                                               "http://foo.com/my.pexe",
+//                                               pnacl_options,
 //                                               TranslateNotifyCallback);
 // (2) TranslateNotifyCallback gets invoked when translation is complete.
 //     If the translation was successful, the pp_error argument is PP_OK.
@@ -101,7 +103,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   static PnaclCoordinator* BitcodeToNative(
       Plugin* plugin,
       const nacl::string& pexe_url,
-      const nacl::string& cache_identity,
+      const PnaclOptions& pnacl_options,
       const pp::CompletionCallback& translate_notify_callback);
 
   // Call this to take ownership of the FD of the translated nexe after
@@ -148,7 +150,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Therefore the constructor is private.
   PnaclCoordinator(Plugin* plugin,
                    const nacl::string& pexe_url,
-                   const nacl::string& cache_identity,
+                   const PnaclOptions& pnacl_options,
                    const pp::CompletionCallback& translate_notify_callback);
 
   // Callback for when llc and ld have been downloaded.
@@ -232,8 +234,9 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // The URL for the pexe file.
   nacl::string pexe_url_;
-  // Optional cache identity for translation caching.
-  nacl::string cache_identity_;
+  // Options for translation.
+  PnaclOptions pnacl_options_;
+
   // Object file, produced by the translator and consumed by the linker.
   nacl::scoped_ptr<TempFile> obj_file_;
   // Translated nexe file, produced by the linker.
@@ -248,6 +251,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
+
   // True if an error was already reported, and translate_notify_callback_
   // was already run/consumed.
   bool error_already_reported_;

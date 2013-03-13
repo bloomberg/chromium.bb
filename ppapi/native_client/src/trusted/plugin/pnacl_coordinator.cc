@@ -48,14 +48,12 @@ class PnaclManifest : public Manifest {
   virtual ~PnaclManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
-                             nacl::string* cache_identity,
-                             ErrorInfo* error_info,
-                             bool* pnacl_translate) const {
+                             PnaclOptions* pnacl_options,
+                             ErrorInfo* error_info) const {
     // Does not contain program urls.
     UNREFERENCED_PARAMETER(full_url);
-    UNREFERENCED_PARAMETER(cache_identity);
+    UNREFERENCED_PARAMETER(pnacl_options);
     UNREFERENCED_PARAMETER(error_info);
-    UNREFERENCED_PARAMETER(pnacl_translate);
     PLUGIN_PRINTF(("PnaclManifest does not contain a program\n"));
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
                           "pnacl manifest does not contain a program.");
@@ -81,13 +79,10 @@ class PnaclManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          nacl::string* cache_identity,
-                          ErrorInfo* error_info,
-                          bool* pnacl_translate) const {
+                          PnaclOptions* pnacl_options,
+                          ErrorInfo* error_info) const {
     // All of the extension files are native (do not require pnacl translate).
-    *pnacl_translate = false;
-    // Do not cache these entries.
-    *cache_identity = "";
+    pnacl_options->set_translate(false);
     // We can only resolve keys in the files/ namespace.
     const nacl::string kFilesPrefix = "files/";
     size_t files_prefix_pos = key.find(kFilesPrefix);
@@ -125,15 +120,14 @@ class PnaclLDManifest : public Manifest {
   virtual ~PnaclLDManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
-                             nacl::string* cache_identity,
-                             ErrorInfo* error_info,
-                             bool* pnacl_translate) const {
-    if (nexe_manifest_->GetProgramURL(full_url, cache_identity,
-                                      error_info, pnacl_translate)) {
+                             PnaclOptions* pnacl_options,
+                             ErrorInfo* error_info) const {
+    if (nexe_manifest_->GetProgramURL(full_url, pnacl_options, error_info)) {
       return true;
     }
-    return extension_manifest_->GetProgramURL(full_url, cache_identity,
-                                              error_info, pnacl_translate);
+    return extension_manifest_->GetProgramURL(full_url,
+                                              pnacl_options,
+                                              error_info);
   }
 
   virtual bool ResolveURL(const nacl::string& relative_url,
@@ -154,15 +148,14 @@ class PnaclLDManifest : public Manifest {
 
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          nacl::string* cache_identity,
-                          ErrorInfo* error_info,
-                          bool* pnacl_translate) const {
-    if (nexe_manifest_->ResolveKey(key, full_url, cache_identity,
-                                   error_info, pnacl_translate)) {
+                          PnaclOptions* pnacl_options,
+                          ErrorInfo* error_info) const {
+    if (nexe_manifest_->ResolveKey(key, full_url, pnacl_options, error_info)) {
       return true;
     }
-    return extension_manifest_->ResolveKey(key, full_url, cache_identity,
-                                           error_info, pnacl_translate);
+    return extension_manifest_->ResolveKey(key, full_url,
+                                           pnacl_options,
+                                           error_info);
   }
 
  private:
@@ -273,13 +266,14 @@ CallbackSource<FileStreamData>::~CallbackSource() {}
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
     const nacl::string& pexe_url,
-    const nacl::string& cache_identity,
+    const PnaclOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (plugin=%p, pexe=%s)\n",
                  static_cast<void*>(plugin), pexe_url.c_str()));
   PnaclCoordinator* coordinator =
       new PnaclCoordinator(plugin, pexe_url,
-                           cache_identity, translate_notify_callback);
+                           pnacl_options,
+                           translate_notify_callback);
   coordinator->pnacl_init_time_ = NaClGetTimeOfDayMicroseconds();
   coordinator->off_the_record_ =
       plugin->nacl_interface()->IsOffTheRecord();
@@ -331,7 +325,7 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
 PnaclCoordinator::PnaclCoordinator(
     Plugin* plugin,
     const nacl::string& pexe_url,
-    const nacl::string& cache_identity,
+    const PnaclOptions& pnacl_options,
     const pp::CompletionCallback& translate_notify_callback)
   : translate_finish_error_(PP_OK),
     plugin_(plugin),
@@ -341,7 +335,7 @@ PnaclCoordinator::PnaclCoordinator(
         plugin->url_util(),
         plugin::PnaclUrls::UsePnaclExtension(plugin))),
     pexe_url_(pexe_url),
-    cache_identity_(cache_identity),
+    pnacl_options_(pnacl_options),
     error_already_reported_(false),
     off_the_record_(false),
     pnacl_init_time_(0),
@@ -454,10 +448,10 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // pointer to be able to read it again from the beginning.
   temp_nexe_file_->Reset();
 
-  if (cache_identity_ != "" && cached_nexe_file_ != NULL) {
+  if (pnacl_options_.HasCacheKey() && cached_nexe_file_ != NULL) {
     // We are using a cache, but had a cache miss, which is why we did the
     // translation.  Reset cached_nexe_file_ to have a random name,
-    // for scratch purposes, before renaming to the final cache_identity_.
+    // for scratch purposes, before renaming to the final cache_identity.
     cached_nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
                                               nacl::string(kPnaclTempDir)));
     pp::CompletionCallback cb = callback_factory_.NewCallback(
@@ -608,7 +602,7 @@ void PnaclCoordinator::NexeWasCopiedToCache(int32_t pp_error) {
   // Rename the cached_nexe_file_ file to the cache id, to finalize.
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasRenamed);
-  cached_nexe_file_->Rename(cache_identity_, cb);
+  cached_nexe_file_->Rename(pnacl_options_.GetCacheKey(), cb);
 }
 
 void PnaclCoordinator::CorruptCacheFileWasDeleted(int32_t delete_pp_error,
@@ -809,10 +803,11 @@ void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
         "PNaCl translation cache directory creation/check failed.");
     return;
   }
-  if (cache_identity_ != "") {
-    cached_nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
-                                              nacl::string(kPnaclTempDir),
-                                              cache_identity_));
+  if (pnacl_options_.HasCacheKey()) {
+    cached_nexe_file_.reset(new LocalTempFile(
+        plugin_, file_system_.get(),
+        nacl::string(kPnaclTempDir),
+        pnacl_options_.GetCacheKey()));
     pp::CompletionCallback cb =
         callback_factory_.NewCallback(&PnaclCoordinator::CachedFileDidOpen);
     cached_nexe_file_->OpenRead(cb);
@@ -971,6 +966,7 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
                                   temp_nexe_file_.get(),
                                   &error_info_,
                                   resources_.get(),
+                                  &pnacl_options_,
                                   this,
                                   plugin_);
 }

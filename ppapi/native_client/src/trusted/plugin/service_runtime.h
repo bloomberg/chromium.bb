@@ -69,12 +69,10 @@ struct OpenManifestEntryResource {
       : url(target_url),
         out_desc(descp),
         error_info(infop),
-        pnacl_translate(false),
         op_complete_ptr(op_complete) {}
   std::string url;
   int32_t* out_desc;
   ErrorInfo* error_info;
-  bool pnacl_translate;
   bool* op_complete_ptr;
 };
 

@@ -24,6 +24,7 @@ class URLUtil_Dev;
 namespace plugin {
 
 class ErrorInfo;
+class PnaclOptions;
 
 class Manifest {
  public:
@@ -38,12 +39,11 @@ class Manifest {
   // a resource in the extension origin.
 
   // Gets the full program URL for the current sandbox ISA from the
-  // manifest file. Sets |pnacl_translate| to |true| if the program is
-  // requires pnacl translation.
+  // manifest file.  Fills in |pnacl_options| if the program requires
+  // PNaCl translation.
   virtual bool GetProgramURL(nacl::string* full_url,
-                             nacl::string* cache_identity,
-                             ErrorInfo* error_info,
-                             bool* pnacl_translate) const = 0;
+                             PnaclOptions* pnacl_options,
+                             ErrorInfo* error_info) const = 0;
 
   // Resolves a URL relative to the manifest base URL
   virtual bool ResolveURL(const nacl::string& relative_url,
@@ -58,14 +58,14 @@ class Manifest {
 
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the
-  // manifest's URL (via ResolveURL).  |pnacl_translate| tells
-  // the caller whether the resolution requires a pnacl translation step.
+  // manifest's URL (via ResolveURL).  Fills in |pnacl_options| if
+  // the resolved key requires a pnacl translation step to obtain
+  // the final requested resource.
   // If there was an error, details are reported via error_info.
   virtual bool ResolveKey(const nacl::string& key,
                           nacl::string* full_url,
-                          nacl::string* cache_identity,
-                          ErrorInfo* error_info,
-                          bool* pnacl_translate) const = 0;
+                          PnaclOptions* pnacl_options,
+                          ErrorInfo* error_info) const = 0;
 
  protected:
   NACL_DISALLOW_COPY_AND_ASSIGN(Manifest);

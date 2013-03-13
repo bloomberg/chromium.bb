@@ -74,4 +74,24 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CORSNoCookie) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors_no_cookie.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclNMFOptionsO0)) {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclNMFOptionsO2)) {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_2"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclNMFOptionsOlarge)) {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_large"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclNMFOptionsTimePasses)) {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=time_passes"));
+}
+
 }  // namespace anonymous
