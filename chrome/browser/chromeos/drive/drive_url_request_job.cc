@@ -15,13 +15,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/task_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -85,43 +83,40 @@ bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
   return resource_id->size();
 }
 
-// Helper function to get DriveSystemService from Profile.
-DriveSystemService* GetSystemService(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
-    return NULL;
-
-  return DriveSystemServiceFactory::FindForProfile(profile);
-}
-
-// Helper function to get DriveFileSystem from Profile on UI thread.
-DriveFileSystemInterface* GetFileSystemOnUIThread(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DriveSystemService* system_service = GetSystemService(profile_id);
-  return system_service ? system_service->file_system() : NULL;
-}
-
 // Helper function to cancel Drive download operation on UI thread.
 void CancelDriveDownloadOnUIThread(
-    void* profile_id, const base::FilePath& drive_file_path) {
+    const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
+    const base::FilePath& drive_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileSystemInterface* file_system = GetFileSystemOnUIThread(profile_id);
+  DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (file_system) {
     file_system->CancelGetFile(drive_file_path);
   }
 }
 
+// Cancels the Drive download operation. The actually task is run on UI thread
+// asynchronously, but this method itself is designed to be run on IO thread.
+void CancelDriveDownload(
+    const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
+    const base::FilePath& drive_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CancelDriveDownloadOnUIThread,
+                 file_system_getter, drive_file_path));
+}
+
 // Helper function to call DriveFileSystem::GetEntryInfoByResourceId.
 void GetEntryInfoByResourceIdOnUIThread(
-    void* profile_id,
+    const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
     const std::string& resource_id,
     const drive::GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileSystemInterface* file_system = GetFileSystemOnUIThread(profile_id);
+  DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
     callback.Run(DRIVE_FILE_ERROR_FAILED,
                  base::FilePath(),
@@ -131,15 +126,34 @@ void GetEntryInfoByResourceIdOnUIThread(
   file_system->GetEntryInfoByResourceId(resource_id, callback);
 }
 
+// Returns the entry info for the |resource_id| on DriveFileSystem returned by
+// |file_system_getter| via |callback|.
+// The main task will be done on UI thread, but this method itself is designed
+// to be run on IO thread. Also the |callback| will be run on IO thread, too.
+void GetEntryInfoByResourceId(
+    const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
+    const std::string& resource_id,
+    const drive::GetEntryInfoWithFilePathCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetEntryInfoByResourceIdOnUIThread,
+                 file_system_getter,
+                 resource_id,
+                 google_apis::CreateRelayCallback(callback)));
+}
+
 // Helper function to call DriveFileSystem::GetFileByResourceId.
 void GetFileByResourceIdOnUIThread(
-    void* profile_id,
+    const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
     const std::string& resource_id,
     const drive::GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileSystemInterface* file_system = GetFileSystemOnUIThread(profile_id);
+  DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
     get_file_callback.Run(DRIVE_FILE_ERROR_FAILED,
                           base::FilePath(),
@@ -153,13 +167,35 @@ void GetFileByResourceIdOnUIThread(
                                    get_content_callback);
 }
 
+// Returns the file metadata and content for the file with |resource_id| on
+// DriveFileSystem returned by |file_system_getter| via callbacks.
+// The main task will be done on UI thread, but this method itself is designed
+// to be run on IO thread. Also callbacks will be run on IO thread, too.
+void GetFileByResourceId(
+    const DriveURLRequestJob::DriveFileSystemGetter& file_system_getter,
+    const std::string& resource_id,
+    const drive::GetFileCallback& get_file_callback,
+    const google_apis::GetContentCallback& get_content_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetFileByResourceIdOnUIThread,
+                 file_system_getter,
+                 resource_id,
+                 google_apis::CreateRelayCallback(get_file_callback),
+                 google_apis::CreateRelayCallback(get_content_callback)));
+}
+
 }  // namespace
 
-DriveURLRequestJob::DriveURLRequestJob(void* profile_id,
-                                       net::URLRequest* request,
-                                       net::NetworkDelegate* network_delegate)
+DriveURLRequestJob::DriveURLRequestJob(
+    const DriveFileSystemGetter& file_system_getter,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
-      profile_id_(profile_id),
+      file_system_getter_(file_system_getter),
       error_(false),
       headers_set_(false),
       initial_file_size_(0),
@@ -234,16 +270,11 @@ void DriveURLRequestJob::Start() {
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetEntryInfoByResourceIdOnUIThread,
-                 profile_id_,
-                 resource_id,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&DriveURLRequestJob::OnGetEntryInfoByResourceId,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                resource_id))));
+  GetEntryInfoByResourceId(
+      file_system_getter_,
+      resource_id,
+      base::Bind(&DriveURLRequestJob::OnGetEntryInfoByResourceId,
+                 weak_ptr_factory_.GetWeakPtr(), resource_id));
 }
 
 void DriveURLRequestJob::Kill() {
@@ -266,12 +297,7 @@ void DriveURLRequestJob::Kill() {
   if (!drive_file_path_.empty() && local_file_path_.empty() &&
       remaining_bytes_ > 0) {
     DVLOG(1) << "Canceling download operation for " << drive_file_path_.value();
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&CancelDriveDownloadOnUIThread,
-                   profile_id_,
-                   drive_file_path_));
+    CancelDriveDownload(file_system_getter_, drive_file_path_);
   }
 
   net::URLRequestJob::Kill();
@@ -413,6 +439,8 @@ void DriveURLRequestJob::OnGetEntryInfoByResourceId(
     DriveFileError error,
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = DRIVE_FILE_ERROR_NOT_FOUND;
 
@@ -429,18 +457,13 @@ void DriveURLRequestJob::OnGetEntryInfoByResourceId(
   remaining_bytes_ = initial_file_size_;
 
   DVLOG(1) << "Getting file for resource id";
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetFileByResourceIdOnUIThread,
-                 profile_id_,
-                 resource_id,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&DriveURLRequestJob::OnGetFileByResourceId,
-                                weak_ptr_factory_.GetWeakPtr())),
-                 google_apis::CreateRelayCallback(
-                     base::Bind(&DriveURLRequestJob::OnUrlFetchDownloadData,
-                                weak_ptr_factory_.GetWeakPtr()))));
+  GetFileByResourceId(
+      file_system_getter_,
+      resource_id,
+      base::Bind(&DriveURLRequestJob::OnGetFileByResourceId,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&DriveURLRequestJob::OnUrlFetchDownloadData,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveURLRequestJob::OnUrlFetchDownloadData(

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -28,15 +29,25 @@ class URLRequest;
 namespace drive {
 
 class DriveEntryProto;
+class DriveFileSystemInterface;
 
 // DriveURLRequesetJob is the gateway between network-level drive://...
 // requests for drive resources and DriveFileSytem.  It exposes content URLs
 // formatted as drive://<resource-id>.
+// The methods should be run on IO thread.
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
-  DriveURLRequestJob(void* profile_id,
-                     net::URLRequest* request,
-                     net::NetworkDelegate* network_delegate);
+
+  // Callback to return the DriveFileSystemInterface instance. This is an
+  // injecting point for testing.
+  // Note that the callback will be copied between threads (IO and UI), and
+  // will be called on UI thread.
+  typedef base::Callback<DriveFileSystemInterface*()> DriveFileSystemGetter;
+
+  DriveURLRequestJob(
+      const DriveFileSystemGetter& file_system_getter,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob overrides:
   virtual void Start() OVERRIDE;
@@ -105,9 +116,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Helper method to close |stream_|.
   void CloseFileStream();
 
-  // The profile for processing Drive accesses. Should not be NULL and needs to
-  // be checked with ProfileManager::IsValidProfile before using it.
-  void* profile_id_;
+  DriveFileSystemGetter file_system_getter_;
 
   bool error_;  // True if we've encountered an error.
   bool headers_set_;  // True if headers have been set.
