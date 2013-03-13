@@ -1085,10 +1085,6 @@
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_dir_self_link",
-            "rel": "http://schemas.google.com/docs/2007#parent",
-            "type": "application/atom+xml"
-         }, {
             "href": "https://fake_server/fake_root",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"

@@ -388,8 +388,8 @@ void DriveResourceMetadata::RefreshEntry(
 
   // Update data.
   if (entry != root_.get()) {
-    DriveDirectory* old_parent = GetParent(entry->parent_resource_id());
-    DriveDirectory* new_parent = GetParent(entry_proto.parent_resource_id());
+    DriveDirectory* old_parent = GetDirectory(entry->parent_resource_id());
+    DriveDirectory* new_parent = GetDirectory(entry_proto.parent_resource_id());
 
     if (!old_parent || !new_parent) {
       PostGetEntryInfoWithFilePathCallbackError(
@@ -461,7 +461,7 @@ void DriveResourceMetadata::AddEntry(const DriveEntryProto& entry_proto,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DriveDirectory* parent = GetParent(entry_proto.parent_resource_id());
+  DriveDirectory* parent = GetDirectory(entry_proto.parent_resource_id());
   if (!parent) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
     return;
@@ -481,14 +481,12 @@ void DriveResourceMetadata::AddEntry(const DriveEntryProto& entry_proto,
       base::Bind(callback, DRIVE_FILE_OK, GetFilePath(added_entry->proto())));
 }
 
-DriveDirectory* DriveResourceMetadata::GetParent(
-    const std::string& parent_resource_id) {
+DriveDirectory* DriveResourceMetadata::GetDirectory(
+    const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!resource_id.empty());
 
-  if (parent_resource_id.empty())
-    return root_.get();
-
-  DriveEntry* entry = GetEntryByResourceId(parent_resource_id);
+  DriveEntry* entry = GetEntryByResourceId(resource_id);
   return entry ? entry->AsDriveDirectory() : NULL;
 }
 

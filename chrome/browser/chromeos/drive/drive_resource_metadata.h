@@ -365,11 +365,10 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // Searches for |file_path| synchronously.
   DriveEntry* FindEntryByPathSync(const base::FilePath& file_path);
 
-  // Helper function to get a parent directory given |parent_resource_id|.
-  // Returns root if |parent_resource_id| is empty. Returns NULL if
-  // |parent_resource_id| is not empty and the corresponding entry is not a
-  // directory.
-  DriveDirectory* GetParent(const std::string& parent_resource_id);
+  // Helper function to get a directory given |resource_id|. |resource_id| can
+  // not be empty. Returns NULL if it finds no corresponding entry, or the
+  // corresponding entry is not a directory.
+  DriveDirectory* GetDirectory(const std::string& resource_id);
 
   // Returns virtual file path of the entry.
   base::FilePath GetFilePath(const DriveEntryProto& entry);

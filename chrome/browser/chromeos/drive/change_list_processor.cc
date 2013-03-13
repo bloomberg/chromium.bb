@@ -352,6 +352,18 @@ void ChangeListProcessor::FeedToEntryProtoMap(
       if (entry_proto.resource_id().empty())
         continue;
 
+      // TODO(haruki): Apply mapping from an empty parent to special dummy
+      // directory here or in ConvertResourceEntryToDriveEntryProto. See
+      // http://crbug.com/174233 http://crbug.com/171207. Until we implement it,
+      // ChangeListProcessor ignores such "no parent" entries.
+      // Please note that this will cause a temporal issue when
+      // - The user unselect all the parent using drive.google.com UI.
+      // ChangeListProcessor just ignores the incoming changes and keeps stale
+      // metadata. We need to work on this ASAP to reduce confusion.
+      if (entry_proto.parent_resource_id().empty()) {
+        continue;
+      }
+
       // Count the number of files.
       if (uma_stats && !entry_proto.file_info().is_directory()) {
         uma_stats->IncrementNumFiles(

@@ -84,6 +84,10 @@
             "href": "https://xxx/edit/folder:1_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2010-11-07T05:03:54.719Z"
@@ -168,6 +172,10 @@
             "href": "https://fake_server/folder:1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2010-11-07T05:03:54.719Z"
@@ -246,6 +254,10 @@
             "type": "application/atom+xml"
          }, {
             "href": "https://fake_server/folder:1_folder_resource_id",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          } ],
@@ -340,6 +352,10 @@
             "href": "https://xxx/edit/file:1_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2011-12-14T00:40:47.330Z"
@@ -431,6 +447,10 @@
          }, {
             "href": "https://xxx/edit/file:2_file_resource_id",
             "rel": "edit",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          } ],
          "published": {
@@ -524,6 +544,10 @@
             "href": "https://xxx/edit/file:3_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2011-12-14T00:40:47.330Z"
@@ -616,6 +640,10 @@
             "href": "https://xxx/edit/file:4_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2011-12-14T00:40:47.330Z"
@@ -704,6 +732,10 @@
          }, {
             "href": "https://xxx/edit/file:5_file_resource_id",
             "rel": "edit",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          } ],
          "published": {

@@ -39,6 +39,9 @@ DriveEntryProto ConvertResourceEntryToDriveEntryProto(
   const google_apis::Link* parent_link =
       entry.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link) {
+    // TODO(haruki): Apply mapping from an empty parent to special dummy
+    // directory. See http://crbug.com/174233. Until we implement it,
+    // ChangeListProcessor ignores such "no parent" entries.
     entry_proto.set_parent_resource_id(
         util::ExtractResourceIdFromUrl(parent_link->href()));
   }

@@ -225,7 +225,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
   // Do some sanity check. There are 7 entries in the root directory.
-  EXPECT_EQ(7U, resource_list->entries().size());
+  EXPECT_EQ(8U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 

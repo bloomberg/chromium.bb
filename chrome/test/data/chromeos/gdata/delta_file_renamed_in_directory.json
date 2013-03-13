@@ -90,6 +90,10 @@
             "href": "https://dir_1_self_link/folder:1_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
+         }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2010-11-07T05:03:54.719Z"

@@ -79,7 +79,11 @@
          "href": "https://file_edit_media",
          "rel": "edit-media",
          "type": "audio/mpeg"
-      } ],
+      }, {
+            "href": "https://fake_server/fake_root",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
+         } ],
       "published": {
          "$t": "2012-01-02T00:11:22.330Z"
       },

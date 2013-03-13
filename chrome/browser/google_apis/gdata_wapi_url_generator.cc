@@ -78,6 +78,7 @@ const char GDataWapiUrlGenerator::kBaseUrlForProduction[] =
 GURL GDataWapiUrlGenerator::AddStandardUrlParams(const GURL& url) {
   GURL result = net::AppendOrReplaceQueryParameter(url, "v", "3");
   result = net::AppendOrReplaceQueryParameter(result, "alt", "json");
+  result = net::AppendOrReplaceQueryParameter(result, "showroot", "true");
   return result;
 }
 

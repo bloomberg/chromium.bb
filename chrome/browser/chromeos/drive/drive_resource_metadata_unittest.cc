@@ -930,18 +930,6 @@ TEST_F(DriveResourceMetadataTest, AddEntry) {
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
             drive_file_path);
 
-  // Adds to root when parent resource id is not specified.
-  DriveEntryProto file_entry_proto2 = CreateDriveEntryProto(
-      sequence_id++, false, "");
-
-  resource_metadata_->AddEntry(
-      file_entry_proto2,
-      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
-                 &error, &drive_file_path));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/file101"), drive_file_path);
-
   // Add a directory.
   DriveEntryProto dir_entry_proto = CreateDriveEntryProto(
       sequence_id++, true, "resource_id:dir1");
@@ -952,7 +940,7 @@ TEST_F(DriveResourceMetadataTest, AddEntry) {
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir102"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir101"),
             drive_file_path);
 
   // Add to an invalid parent.

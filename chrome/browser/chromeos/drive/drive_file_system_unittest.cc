@@ -733,7 +733,7 @@ TEST_F(DriveFileSystemTest, ReadDirectoryByPath_Root) {
       ReadDirectoryByPathSync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries.get());
-  EXPECT_EQ(9U, entries->size());
+  EXPECT_EQ(8U, entries->size());
 }
 
 TEST_F(DriveFileSystemTest, ReadDirectoryByPath_NonRootDirectory) {
@@ -1009,12 +1009,6 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   const base::FilePath remote_dest_file_path(
       FILE_PATH_LITERAL("drive/remote.txt"));
   EXPECT_FALSE(EntryExists(remote_dest_file_path));
-
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile(
-          "chromeos/gdata/document_to_download.json");
-  scoped_ptr<google_apis::ResourceEntry> resource_entry(
-      google_apis::ResourceEntry::ExtractAndParse(*value));
 
   // Transfer the local file to Drive.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
