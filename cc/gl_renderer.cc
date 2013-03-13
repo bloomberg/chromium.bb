@@ -606,12 +606,19 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
     // Copy the readback pixels from device to the background texture for the
     // surface.
     gfx::Transform device_to_framebuffer_transform;
-    device_to_framebuffer_transform.Translate(quad->rect.width() * 0.5f,
-                                              quad->rect.height() * 0.5f);
+    device_to_framebuffer_transform.Translate(
+        quad->rect.width() * 0.5f + quad->rect.x(),
+        quad->rect.height() * 0.5f + quad->rect.y());
     device_to_framebuffer_transform.Scale(quad->rect.width(),
                                           quad->rect.height());
     device_to_framebuffer_transform.PreconcatTransform(
         contents_device_transform_inverse);
+
+#ifndef NDEBUG
+    GLC(Context(), Context()->clearColor(0, 0, 1, 1));
+    Context()->clear(GL_COLOR_BUFFER_BIT);
+#endif
+
     CopyTextureToFramebuffer(frame,
                              filtered_device_background_texture_id,
                              device_rect,

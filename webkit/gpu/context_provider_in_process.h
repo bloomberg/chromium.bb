@@ -5,15 +5,18 @@
 #ifndef WEBKIT_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
 #define WEBKIT_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/context_provider.h"
+#include "webkit/gpu/webkit_gpu_export.h"
 
 namespace webkit {
 namespace gpu {
 class GrContextForWebGraphicsContext3D;
 
-class ContextProviderInProcess : public cc::ContextProvider {
+class WEBKIT_GPU_EXPORT ContextProviderInProcess
+    : NON_EXPORTED_BASE(public cc::ContextProvider) {
  public:
   enum InProcessType {
     IN_PROCESS,
