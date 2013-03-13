@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 #include "net/quic/test_tools/crypto_test_utils.h"
-/*
+
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
-#include "net/util/ipaddress.h"
 
 namespace net {
 namespace test {
@@ -64,7 +63,9 @@ void CryptoTestUtils::HandshakeWithFakeServer(
     PacketSavingConnection* client_conn,
     QuicCryptoStream* client) {
   QuicGuid guid(1);
-  SocketAddress addr(IPAddress::Loopback4(), 1);
+  IPAddressNumber ip;
+  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
+  IPEndPoint addr = IPEndPoint(ip, 1);
   PacketSavingConnection* server_conn =
       new PacketSavingConnection(guid, addr);
   TestSession server_session(server_conn, true);
@@ -81,7 +82,9 @@ void CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
     QuicCryptoStream* server) {
   QuicGuid guid(1);
-  SocketAddress addr(IPAddress::Loopback4(), 1);
+  IPAddressNumber ip;
+  CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
+  IPEndPoint addr = IPEndPoint(ip, 1);
   PacketSavingConnection* client_conn =
       new PacketSavingConnection(guid, addr);
   TestSession client_session(client_conn, true);
@@ -94,4 +97,3 @@ void CryptoTestUtils::HandshakeWithFakeClient(
 }
 }  // namespace test
 }  // namespace net
-*/
