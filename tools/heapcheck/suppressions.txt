@@ -77,6 +77,13 @@
   fun:IA__FcCharSetCreate
 }
 {
+   bug_186086 (Skia -- global singleton instance of SkFontConfigDirect)
+   Heapcheck:Leak
+   ...
+   fun:SkFontConfigInterfaceDirect::SkFontConfigInterfaceDirect
+   fun:SkFontConfigInterface::GetSingletonDirectInterface
+}
+{
    bug_51988_a
    Heapcheck:Leak
    ...
