@@ -502,8 +502,6 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
-  NOTREACHED() << "Deprecated. Use --composite-to-mailbox.";
-
   if (params.mailbox_name.empty())
     return;
 
