@@ -182,12 +182,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (cmd_line->HasSwitch("verbose")) {
+  if (!cmd_line->HasSwitch("silent")) {
     std::cout << "Started ChromeDriver" << std::endl
               << "port=" << port << std::endl
               << "version=" << std::string(kChromeDriverVersion) << std::endl
               << "log=" << log_path.value() << std::endl;
-  } else {
+  }
+  if (!cmd_line->HasSwitch("verbose")) {
     fclose(stdout);
     fclose(stderr);
   }
