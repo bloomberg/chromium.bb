@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -1080,7 +1081,7 @@ int BookmarkBarView::GetDragOperationsForView(View* sender,
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
-      return bookmark_utils::BookmarkDragOperation(
+      return chrome::GetBookmarkDragOperation(
           browser_->profile(), model_->bookmark_bar_node()->GetChild(i));
     }
   }
@@ -1507,8 +1508,8 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
     location->index = 0;
     int ops = data.GetFirstNode(profile) ? ui::DragDropTypes::DRAG_MOVE :
         ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
-    location->operation =
-        bookmark_utils::PreferredDropOperation(event.source_operations(), ops);
+    location->operation = chrome::GetPreferredBookmarkDropOperation(
+        event.source_operations(), ops);
     return;
   }
 
@@ -1568,16 +1569,15 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
     const BookmarkNode* parent = (location->button_type == DROP_OTHER_FOLDER) ?
         model_->other_node() :
         model_->bookmark_bar_node()->GetChild(location->index);
-    location->operation =
-        bookmark_utils::BookmarkDropOperation(profile, event, data, parent,
-                                              parent->child_count());
+    location->operation = chrome::GetBookmarkDropOperation(
+        profile, event, data, parent, parent->child_count());
     if (!location->operation && !data.has_single_url() &&
         data.GetFirstNode(profile) == parent) {
       // Don't open a menu if the node being dragged is the menu to open.
       location->on = false;
     }
   } else {
-    location->operation = bookmark_utils::BookmarkDropOperation(profile, event,
+    location->operation = chrome::GetBookmarkDropOperation(profile, event,
         data, model_->bookmark_bar_node(), location->index);
   }
 }

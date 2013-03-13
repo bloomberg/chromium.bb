@@ -21,7 +21,6 @@
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -115,55 +114,6 @@ const BookmarkNode* CreateNewNode(BookmarkModel* model,
 
 namespace bookmark_utils {
 
-int PreferredDropOperation(int source_operations, int operations) {
-  int common_ops = (source_operations & operations);
-  if (!common_ops)
-    return 0;
-  if (ui::DragDropTypes::DRAG_COPY & common_ops)
-    return ui::DragDropTypes::DRAG_COPY;
-  if (ui::DragDropTypes::DRAG_LINK & common_ops)
-    return ui::DragDropTypes::DRAG_LINK;
-  if (ui::DragDropTypes::DRAG_MOVE & common_ops)
-    return ui::DragDropTypes::DRAG_MOVE;
-  return ui::DragDropTypes::DRAG_NONE;
-}
-
-int BookmarkDragOperation(content::BrowserContext* browser_context,
-                          const BookmarkNode* node) {
-  PrefService* prefs = components::UserPrefs::Get(browser_context);
-
-  int move = ui::DragDropTypes::DRAG_MOVE;
-  if (!prefs->GetBoolean(prefs::kEditBookmarksEnabled))
-    move = 0;
-  if (node->is_url()) {
-    return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK | move;
-  }
-  return ui::DragDropTypes::DRAG_COPY | move;
-}
-
-#if defined(TOOLKIT_VIEWS)
-int BookmarkDropOperation(Profile* profile,
-                          const ui::DropTargetEvent& event,
-                          const BookmarkNodeData& data,
-                          const BookmarkNode* parent,
-                          int index) {
-  if (data.IsFromProfile(profile) && data.size() > 1)
-    // Currently only accept one dragged node at a time.
-    return ui::DragDropTypes::DRAG_NONE;
-
-  if (!bookmark_utils::IsValidDropLocation(profile, data, parent, index))
-    return ui::DragDropTypes::DRAG_NONE;
-
-  if (data.GetFirstNode(profile)) {
-    // User is dragging from this profile: move.
-    return ui::DragDropTypes::DRAG_MOVE;
-  }
-  // User is dragging from another app, copy.
-  return PreferredDropOperation(event.source_operations(),
-      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
-}
-#endif  // defined(TOOLKIT_VIEWS)
-
 int PerformBookmarkDrop(Profile* profile,
                         const BookmarkNodeData& data,
                         const BookmarkNode* parent_node,
@@ -183,41 +133,8 @@ int PerformBookmarkDrop(Profile* profile,
     return ui::DragDropTypes::DRAG_NONE;
   }
   // Dropping a folder from different profile. Always accept.
-  bookmark_utils::CloneBookmarkNode(model, data.elements, parent_node, index);
+  CloneBookmarkNode(model, data.elements, parent_node, index);
   return ui::DragDropTypes::DRAG_COPY;
-}
-
-bool IsValidDropLocation(Profile* profile,
-                         const BookmarkNodeData& data,
-                         const BookmarkNode* drop_parent,
-                         int index) {
-  if (!drop_parent->is_folder()) {
-    NOTREACHED();
-    return false;
-  }
-
-  if (!data.is_valid())
-    return false;
-
-  if (data.IsFromProfile(profile)) {
-    std::vector<const BookmarkNode*> nodes = data.GetNodes(profile);
-    for (size_t i = 0; i < nodes.size(); ++i) {
-      // Don't allow the drop if the user is attempting to drop on one of the
-      // nodes being dragged.
-      const BookmarkNode* node = nodes[i];
-      int node_index = (drop_parent == node->parent()) ?
-          drop_parent->GetIndexOf(nodes[i]) : -1;
-      if (node_index != -1 && (index == node_index || index == node_index + 1))
-        return false;
-
-      // drop_parent can't accept a child that is an ancestor.
-      if (drop_parent->HasAncestor(node))
-        return false;
-    }
-    return true;
-  }
-  // From the same profile, always accept.
-  return true;
 }
 
 void CloneBookmarkNode(BookmarkModel* model,
@@ -262,8 +179,7 @@ void PasteFromClipboard(BookmarkModel* model,
 
   if (index == -1)
     index = parent->child_count();
-  bookmark_utils::CloneBookmarkNode(
-      model, bookmark_data.elements, parent, index);
+  CloneBookmarkNode(model, bookmark_data.elements, parent, index);
 }
 
 bool CanPasteFromClipboard(const BookmarkNode* node) {

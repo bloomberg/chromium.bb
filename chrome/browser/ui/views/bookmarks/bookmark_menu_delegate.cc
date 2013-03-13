@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
@@ -227,8 +228,8 @@ int BookmarkMenuDelegate::GetDropOperation(
       break;
   }
   DCHECK(drop_parent);
-  return bookmark_utils::BookmarkDropOperation(
-      profile_, event, drop_data_, drop_parent, index_to_drop_at);
+  return chrome::GetBookmarkDropOperation(profile_, event, drop_data_,
+                                          drop_parent, index_to_drop_at);
 }
 
 int BookmarkMenuDelegate::OnPerformDrop(
@@ -315,7 +316,7 @@ void BookmarkMenuDelegate::WriteDragData(MenuItemView* sender,
 }
 
 int BookmarkMenuDelegate::GetDragOperations(MenuItemView* sender) {
-  return bookmark_utils::BookmarkDragOperation(
+  return chrome::GetBookmarkDragOperation(
       profile_, menu_id_to_node_map_[sender->GetCommand()]);
 }
 
