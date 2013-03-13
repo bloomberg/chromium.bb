@@ -24,7 +24,7 @@
 #include "ppapi/c/ppp_messaging.h"
 
 #if defined(__native_client__)
-#if defined(__CLANG__)
+#if defined(__pnacl__)
 #define TCNAME "pnacl"
 #elif defined(__GLIBC__)
 #define TCNAME "glibc"
