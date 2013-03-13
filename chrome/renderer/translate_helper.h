@@ -71,6 +71,8 @@ class TranslateHelper : public content::RenderViewObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, ResetInvalidLanguageCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
                            CLDDisagreeWithWrongLanguageCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
+                           InvalidLanguageMetaTagProviding);
 
   // Correct language code if it contains well-known mistakes.
   static void CorrectLanguageCodeTypo(std::string* code);

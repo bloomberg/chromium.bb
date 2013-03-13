@@ -271,11 +271,6 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
                              base::TimeTicks::Now() - begin_time);
   ConvertLanguageCodeSynonym(&cld_language);
   VLOG(9) << "CLD determined language code: " << cld_language;
-
-  // If |code| is empty, just use CLD result even though it might be
-  // chrome::kUnknownLanguageCode.
-  if (code.empty())
-    return cld_language;
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   // Correct well-known format errors.
@@ -290,6 +285,11 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   VLOG(9) << "Content-Language based language code: " << language;
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
+  // If |language| is empty, just use CLD result even though it might be
+  // chrome::kUnknownLanguageCode.
+  if (language.empty())
+    return cld_language;
+
   if (cld_language != chrome::kUnknownLanguageCode &&
       cld_language != language) {
     // Content-Language value might be wrong because CLD says that this page
