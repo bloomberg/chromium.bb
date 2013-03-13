@@ -26,9 +26,9 @@
 #include "content/public/common/content_switches.h"
 #include "crypto/hmac.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gl/gl_context.h"
@@ -964,6 +964,12 @@ void GpuChannel::MessageProcessed() {
         base::Bind(&SyncPointMessageFilter::MessageProcessed,
                    filter_, messages_processed_));
   }
+}
+
+void GpuChannel::CacheShader(const std::string& key,
+                             const std::string& shader) {
+  gpu_channel_manager_->Send(
+      new GpuHostMsg_CacheShader(client_id_, key, shader));
 }
 
 }  // namespace content

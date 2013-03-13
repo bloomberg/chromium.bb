@@ -467,6 +467,9 @@ void GpuCommandBufferStub::OnInitialize(
   decoder_->SetMsgCallback(
       base::Bind(&GpuCommandBufferStub::SendConsoleMessage,
                  base::Unretained(this)));
+  decoder_->SetShaderCacheCallback(
+      base::Bind(&GpuCommandBufferStub::SendCachedShader,
+                 base::Unretained(this)));
   decoder_->SetWaitSyncPointCallback(
       base::Bind(&GpuCommandBufferStub::OnWaitSyncPoint,
                  base::Unretained(this)));
@@ -822,6 +825,11 @@ void GpuCommandBufferStub::SendConsoleMessage(
       route_id_, console_message);
   msg->set_unblock(true);
   Send(msg);
+}
+
+void GpuCommandBufferStub::SendCachedShader(
+    const std::string& key, const std::string& shader) {
+  channel_->CacheShader(key, shader);
 }
 
 void GpuCommandBufferStub::AddDestructionObserver(

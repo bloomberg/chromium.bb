@@ -534,7 +534,8 @@ void ProgramManager::ForceCompileShader(const std::string* source,
 bool Program::Link(ShaderManager* manager,
                    ShaderTranslator* vertex_translator,
                    ShaderTranslator* fragment_translator,
-                   FeatureInfo* feature_info) {
+                   FeatureInfo* feature_info,
+                   const ShaderCacheCallback& shader_callback) {
   ClearLinkStatus();
   if (!CanLink()) {
     set_log_info("missing shaders");
@@ -605,7 +606,8 @@ bool Program::Link(ShaderManager* manager,
         cache->SaveLinkedProgram(service_id(),
                                  attached_shaders_[0],
                                  attached_shaders_[1],
-                                 &bind_attrib_location_map_);
+                                 &bind_attrib_location_map_,
+                                 shader_callback);
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",

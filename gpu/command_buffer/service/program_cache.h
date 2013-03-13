@@ -11,6 +11,8 @@
 #include "base/hash_tables.h"
 #include "base/sha1.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 
 namespace gpu {
 namespace gles2 {
@@ -45,6 +47,7 @@ class GPU_EXPORT ProgramCache {
   CompiledShaderStatus GetShaderCompilationStatus(
       const std::string& shader_src) const;
   void ShaderCompilationSucceeded(const std::string& shader_src);
+  void ShaderCompilationSucceededSha(const std::string& sha_string);
 
   LinkedProgramStatus GetLinkedProgramStatus(
       const std::string& untranslated_a,
@@ -65,7 +68,10 @@ class GPU_EXPORT ProgramCache {
       GLuint program,
       const Shader* shader_a,
       const Shader* shader_b,
-      const LocationMap* bind_attrib_location_map) = 0;
+      const LocationMap* bind_attrib_location_map,
+      const ShaderCacheCallback& shader_callback) = 0;
+
+  virtual void LoadProgram(const std::string& program) = 0;
 
   // clears the cache
   void Clear();

@@ -288,6 +288,16 @@
   'conditions': [
     ['component=="static_library"', {
       'targets': [
+         {
+          'target_name': 'disk_cache_proto',
+          'type': 'static_library',
+          'sources': [ 'command_buffer/service/disk_cache_proto.proto' ],
+          'variables': {
+            'proto_in_dir': 'command_buffer/service',
+            'proto_out_dir': 'gpu/command_buffer/service',
+          },
+          'includes': [ '../build/protoc.gypi' ],
+        },
         {
           'target_name': 'gpu',
           'type': 'none',
@@ -351,6 +361,7 @@
           ],
           'dependencies': [
             'command_buffer_common',
+            'disk_cache_proto',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
@@ -369,6 +380,16 @@
     },
     { # component != static_library
       'targets': [
+         {
+          'target_name': 'disk_cache_proto',
+          'type': 'static_library',
+          'sources': [ 'command_buffer/service/disk_cache_proto.proto' ],
+          'variables': {
+            'proto_in_dir': 'command_buffer/service',
+            'proto_out_dir': 'gpu/command_buffer/service',
+          },
+          'includes': [ '../build/protoc.gypi' ],
+        },
         {
           'target_name': 'gpu',
           'type': 'shared_library',
@@ -388,6 +409,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'command_buffer/command_buffer.gyp:gles2_utils',
+            'disk_cache_proto',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],

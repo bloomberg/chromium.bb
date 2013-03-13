@@ -119,6 +119,8 @@ class GpuCommandBufferStub
   // Sends a message to the console.
   void SendConsoleMessage(int32 id, const std::string& message);
 
+  void SendCachedShader(const std::string& key, const std::string& shader);
+
   gfx::GLSurface* surface() const { return surface_; }
 
   void AddDestructionObserver(DestructionObserver* observer);

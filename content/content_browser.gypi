@@ -492,6 +492,8 @@
     'browser/gpu/gpu_surface_tracker.h',
     'browser/gpu/gpu_util.cc',
     'browser/gpu/gpu_util.h',
+    'browser/gpu/shader_disk_cache.cc',
+    'browser/gpu/shader_disk_cache.h',
     'browser/histogram_controller.cc',
     'browser/histogram_controller.h',
     'browser/histogram_internals_request_job.cc',

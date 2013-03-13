@@ -4,16 +4,21 @@
 
 #include "gpu/command_buffer/service/memory_program_cache.h"
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
+#include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/service/disk_cache_proto.pb.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace {
+
 size_t GetCacheSizeBytes() {
   size_t size;
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -23,12 +28,47 @@ size_t GetCacheSizeBytes() {
           &size)) {
       return size * 1024;
   }
-  return gpu::gles2::MemoryProgramCache::kDefaultMaxProgramCacheMemoryBytes;
+  return gpu::kDefaultMaxProgramCacheMemoryBytes;
 }
+
 }  // anonymous namespace
 
 namespace gpu {
 namespace gles2 {
+
+namespace {
+
+enum ShaderMapType {
+  ATTRIB_MAP = 0,
+  UNIFORM_MAP
+};
+
+void StoreShaderInfo(ShaderMapType type, ShaderProto *proto,
+                     const ShaderTranslator::VariableMap& map) {
+  ShaderTranslator::VariableMap::const_iterator iter;
+  for (iter = map.begin(); iter != map.end(); iter++) {
+    ShaderInfoProto* info;
+    if (type == UNIFORM_MAP) {
+      info = proto->add_uniforms();
+    } else {
+      info = proto->add_attribs();
+    }
+
+    info->set_key(iter->first);
+    info->set_type(iter->second.type);
+    info->set_size(iter->second.size);
+    info->set_name(iter->second.name);
+  }
+}
+
+void RetrieveShaderInfo(const ShaderInfoProto& proto,
+                        ShaderTranslator::VariableMap* map) {
+  ShaderTranslator::VariableInfo info(proto.type(), proto.size(),
+                                      proto.name());
+  (*map)[proto.key()] = info;
+}
+
+}  // namespace
 
 MemoryProgramCache::MemoryProgramCache()
     : max_size_bytes_(GetCacheSizeBytes()),
@@ -88,7 +128,8 @@ void MemoryProgramCache::SaveLinkedProgram(
     GLuint program,
     const Shader* shader_a,
     const Shader* shader_b,
-    const LocationMap* bind_attrib_location_map) {
+    const LocationMap* bind_attrib_location_map,
+    const ShaderCacheCallback& shader_callback) {
   GLenum format;
   GLsizei length = 0;
   glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
@@ -136,6 +177,34 @@ void MemoryProgramCache::SaveLinkedProgram(
     store_.erase(found);
     eviction_helper_.PopKey();
   }
+
+  if (!shader_callback.is_null() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
+    std::string key;
+    base::Base64Encode(sha_string, &key);
+
+    GpuProgramProto* proto = GpuProgramProto::default_instance().New();
+    proto->set_sha(sha, kHashLength);
+    proto->set_format(format);
+    proto->set_program(binary.get(), length);
+
+    ShaderProto* vertex_shader = proto->mutable_vertex_shader();
+    vertex_shader->set_sha(a_sha, kHashLength);
+    StoreShaderInfo(ATTRIB_MAP, vertex_shader, shader_a->attrib_map());
+    StoreShaderInfo(UNIFORM_MAP, vertex_shader, shader_a->uniform_map());
+
+    ShaderProto* fragment_shader = proto->mutable_fragment_shader();
+    fragment_shader->set_sha(b_sha, kHashLength);
+    StoreShaderInfo(ATTRIB_MAP, fragment_shader, shader_b->attrib_map());
+    StoreShaderInfo(UNIFORM_MAP, fragment_shader, shader_b->uniform_map());
+
+    std::string shader;
+    proto->SerializeToString(&shader);
+
+    shader_callback.Run(key, shader);
+  }
+
   store_[sha_string] = new ProgramCacheValue(length,
                                              format,
                                              binary.release(),
@@ -154,6 +223,60 @@ void MemoryProgramCache::SaveLinkedProgram(
   LinkedProgramCacheSuccess(sha_string,
                             std::string(a_sha, kHashLength),
                             std::string(b_sha, kHashLength));
+}
+
+void MemoryProgramCache::LoadProgram(const std::string& program) {
+  GpuProgramProto* proto = GpuProgramProto::default_instance().New();
+  if (proto->ParseFromString(program)) {
+    ShaderTranslator::VariableMap vertex_attribs;
+    ShaderTranslator::VariableMap vertex_uniforms;
+
+    for (int i = 0; i < proto->vertex_shader().attribs_size(); i++) {
+      RetrieveShaderInfo(proto->vertex_shader().attribs(i), &vertex_attribs);
+    }
+
+    for (int i = 0; i < proto->vertex_shader().uniforms_size(); i++) {
+      RetrieveShaderInfo(proto->vertex_shader().uniforms(i), &vertex_uniforms);
+    }
+
+    ShaderTranslator::VariableMap fragment_attribs;
+    ShaderTranslator::VariableMap fragment_uniforms;
+
+    for (int i = 0; i < proto->fragment_shader().attribs_size(); i++) {
+      RetrieveShaderInfo(proto->fragment_shader().attribs(i),
+                         &fragment_attribs);
+    }
+
+    for (int i = 0; i < proto->fragment_shader().uniforms_size(); i++) {
+      RetrieveShaderInfo(proto->fragment_shader().uniforms(i),
+                         &fragment_uniforms);
+    }
+
+    scoped_array<char> binary(new char[proto->program().length()]);
+    memcpy(binary.get(), proto->program().c_str(), proto->program().length());
+
+    store_[proto->sha()] = new ProgramCacheValue(proto->program().length(),
+        proto->format(), binary.release(),
+        proto->vertex_shader().sha().c_str(), vertex_attribs, vertex_uniforms,
+        proto->fragment_shader().sha().c_str(), fragment_attribs,
+            fragment_uniforms);
+
+    ShaderCompilationSucceededSha(proto->sha());
+    ShaderCompilationSucceededSha(proto->vertex_shader().sha());
+    ShaderCompilationSucceededSha(proto->fragment_shader().sha());
+
+    curr_size_bytes_ += proto->program().length();
+    eviction_helper_.KeyUsed(proto->sha());
+
+    UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
+                         curr_size_bytes_ / 1024);
+
+    LinkedProgramCacheSuccess(proto->sha(),
+                              proto->vertex_shader().sha(),
+                              proto->fragment_shader().sha());
+  } else {
+    LOG(ERROR) << "Failed to parse proto file.";
+  }
 }
 
 MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(

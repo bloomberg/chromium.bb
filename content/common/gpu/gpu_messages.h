@@ -319,6 +319,20 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_Initialized,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
                      IPC::ChannelHandle /* channel_handle */)
 
+// Message from GPU to notify to destroy the channel.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyChannel,
+                     int32 /* client_id */)
+
+// Message to cache the given shader information.
+IPC_MESSAGE_CONTROL3(GpuHostMsg_CacheShader,
+                     int32 /* client_id */,
+                     std::string /* key */,
+                     std::string /* shader */)
+
+// Message to the GPU that a shader was loaded from disk.
+IPC_MESSAGE_CONTROL1(GpuMsg_LoadedShader,
+                     std::string /* encoded shader */)
+
 // Respond from GPU to a GpuMsg_CreateViewCommandBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,
                      int32 /* route_id */)

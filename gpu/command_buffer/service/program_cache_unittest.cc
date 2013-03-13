@@ -23,7 +23,10 @@ class NoBackendProgramCache : public ProgramCache {
       GLuint /* program */,
       const Shader* /* shader_a */,
       const Shader* /* shader_b */,
-      const LocationMap* /* bind_attrib_location_map */) OVERRIDE { }
+      const LocationMap* /* bind_attrib_location_map */,
+      const ShaderCacheCallback& /* callback */) OVERRIDE { }
+
+  virtual void LoadProgram(const std::string& /* program */) OVERRIDE {}
 
   virtual void ClearBackend() OVERRIDE {}
 

@@ -78,6 +78,9 @@ struct DisallowedFeatures {
   bool gpu_memory_manager;
 };
 
+typedef base::Callback<void(const std::string& key,
+                            const std::string& shader)> ShaderCacheCallback;
+
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
 class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
@@ -271,6 +274,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // A callback for messages from the decoder.
   virtual void SetMsgCallback(const MsgCallback& callback) = 0;
+  virtual void SetShaderCacheCallback(const ShaderCacheCallback& callback) = 0;
 
   // Sets the callback for waiting on a sync point. The callback returns the
   // scheduling status (i.e. true if the channel is still scheduled).

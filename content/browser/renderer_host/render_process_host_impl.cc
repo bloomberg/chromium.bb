@@ -53,6 +53,7 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/hyphenator/hyphenator_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
@@ -136,6 +137,17 @@ extern bool g_exited_main_message_loop;
 static const char* kSiteProcessMapKeyName = "content_site_process_map";
 
 namespace content {
+namespace {
+
+void CacheShaderInfo(int32 id, base::FilePath path) {
+  ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
+}
+
+void RemoveShaderInfo(int32 id) {
+  ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
+}
+
+}  // namespace
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -355,6 +367,13 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   g_all_hosts.Get().set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.
   mark_child_process_activity_time();
+
+  if (!GetBrowserContext()->IsOffTheRecord()) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&CacheShaderInfo, GetID(),
+                                       GetBrowserContext()->GetPath()));
+  }
+
   // Note: When we create the RenderProcessHostImpl, it's technically
   //       backgrounded, because it has no visible listeners.  But the process
   //       doesn't actually exist yet, so we'll Background it later, after
@@ -374,6 +393,9 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 
   ClearTransportDIBCache();
   UnregisterHost(GetID());
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&RemoveShaderInfo, GetID()));
 }
 
 void RenderProcessHostImpl::EnableSendQueue() {

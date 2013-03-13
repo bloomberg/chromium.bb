@@ -148,6 +148,8 @@ class GpuChannel : public IPC::Listener,
   }
 #endif
 
+  void CacheShader(const std::string& key, const std::string& shader);
+
  protected:
   virtual ~GpuChannel();
 

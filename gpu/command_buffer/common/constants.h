@@ -50,6 +50,9 @@ const int32 kInvalidSharedMemoryId = -1;
 // Common Command Buffer shared memory transfer buffer ID.
 const int32 kCommandBufferSharedMemoryId = 4;
 
+// The size to set for the program cache.
+const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_

@@ -4,6 +4,7 @@ include_rules = [
   "+third_party/amd",
   "+third_party/re2",
   "+third_party/smhasher",
+  "+third_party/protbuf",
   "+../../gpu_export.h",
   "+../command_buffer",
   "+../client",

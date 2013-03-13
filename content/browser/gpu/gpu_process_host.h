@@ -39,6 +39,7 @@ struct ChannelHandle;
 namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
+class ShaderDiskCache;
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
@@ -122,6 +123,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void ForceShutdown();
 
+  void LoadedShader(const std::string& key, const std::string& data);
+
  private:
   static bool ValidateHost(GpuProcessHost* host);
 
@@ -166,11 +169,18 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
 #endif
 
+  void CreateChannelCache(int32 client_id, size_t cache_size);
+  void OnDestroyChannel(int32 client_id);
+  void OnCacheShader(int32 client_id, const std::string& key,
+                     const std::string& shader);
+
   bool LaunchGpuProcess(const std::string& channel_id);
 
   void SendOutstandingReplies();
 
   void BlockLiveOffscreenContexts();
+
+  std::string GetShaderPrefixKey();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
@@ -238,6 +248,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Statics kept around to send to UMA histograms on GPU process lost.
   bool uma_memory_stats_received_;
   GPUMemoryUmaStats uma_memory_stats_;
+
+  typedef std::map<int32, scoped_refptr<ShaderDiskCache> >
+      ClientIdToShaderCacheMap;
+  ClientIdToShaderCacheMap client_id_to_shader_cache_;
+
+  std::string shader_prefix_key_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

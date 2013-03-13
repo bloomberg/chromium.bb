@@ -25,6 +25,7 @@ GPU_EXPORT extern const char kForceGLFinishWorkaround[];
 GPU_EXPORT extern const char kForceGpuMemAvailableMb[];
 GPU_EXPORT extern const char kGpuProgramCacheSizeKb[];
 GPU_EXPORT extern const char kTraceGL[];
+GPU_EXPORT extern const char kDisableGpuShaderDiskCache[];
 
 GPU_EXPORT extern const char* kGpuSwitches[];
 GPU_EXPORT extern const int kNumGpuSwitches;

@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 
 #include <deque>
+#include <string>
 #include <vector>
 
 #include "base/hash_tables.h"
@@ -121,6 +122,7 @@ class GpuChannelManager : public IPC::Listener,
   void DeleteImage(int32 client_id, int32 image_id);
   void OnDeleteImage(int32 client_id, int32 image_id, int32 sync_point);
   void OnDeleteImageSyncPointRetired(ImageOperation*);
+  void OnLoadedShader(std::string shader);
 
   void OnLoseAllContexts();
 

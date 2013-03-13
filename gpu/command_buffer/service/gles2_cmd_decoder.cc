@@ -632,6 +632,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
       const base::Callback<void(gfx::Size)>& callback) OVERRIDE;
 
   virtual void SetMsgCallback(const MsgCallback& callback) OVERRIDE;
+  virtual void SetShaderCacheCallback(
+      const ShaderCacheCallback& callback) OVERRIDE;
   virtual void SetWaitSyncPointCallback(
       const WaitSyncPointCallback& callback) OVERRIDE;
 
@@ -1719,6 +1721,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   MsgCallback msg_callback_;
   WaitSyncPointCallback wait_sync_point_callback_;
+
+  ShaderCacheCallback shader_cache_callback_;
 
   StreamTextureManager* stream_texture_manager_;
   scoped_ptr<gfx::AsyncPixelTransferDelegate> async_pixel_transfer_delegate_;
@@ -3102,6 +3106,11 @@ void GLES2DecoderImpl::SetResizeCallback(
 
 void GLES2DecoderImpl::SetMsgCallback(const MsgCallback& callback) {
   msg_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetShaderCacheCallback(
+    const ShaderCacheCallback& callback) {
+  shader_cache_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetWaitSyncPointCallback(
@@ -5149,7 +5158,8 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   if (program->Link(shader_manager(),
                  vertex_translator,
                  fragment_translator,
-                 feature_info_)) {
+                 feature_info_,
+                 shader_cache_callback_)) {
     if (program == state_.current_program.get()) {
       if (workarounds().use_current_program_after_successful_link) {
         glUseProgram(program->service_id());

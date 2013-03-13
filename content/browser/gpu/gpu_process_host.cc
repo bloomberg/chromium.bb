@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/gpu_process_host.h"
 
+#include "base/base64.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,11 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
+#include "base/sha1.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
@@ -28,8 +31,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
@@ -586,6 +591,11 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
 #endif
+    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel,
+                        OnDestroyChannel)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader,
+                        OnCacheShader)
+
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
 
@@ -618,6 +628,11 @@ void GpuProcessHost::EstablishGpuChannel(
     channel_requests_.push(callback);
   } else {
     callback.Run(IPC::ChannelHandle(), GPUInfo());
+  }
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuShaderDiskCache)) {
+    CreateChannelCache(client_id, gpu::kDefaultMaxProgramCacheMemoryBytes);
   }
 }
 
@@ -1089,6 +1104,58 @@ void GpuProcessHost::BlockLiveOffscreenContexts() {
     GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(
         *iter, GpuDataManagerImpl::DOMAIN_GUILT_UNKNOWN);
   }
+}
+
+std::string GpuProcessHost::GetShaderPrefixKey() {
+  if (shader_prefix_key_.empty()) {
+    GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+
+    std::string in_str = GetContentClient()->GetProduct() + "-" +
+        info.gl_vendor + "-" + info.gl_renderer + "-" +
+        info.driver_version + "-" + info.driver_vendor;
+
+    base::Base64Encode(base::SHA1HashString(in_str), &shader_prefix_key_);
+  }
+
+  return shader_prefix_key_;
+}
+
+void GpuProcessHost::LoadedShader(const std::string& key,
+                                  const std::string& data) {
+  std::string prefix = GetShaderPrefixKey();
+  if (!key.compare(0, prefix.length(), prefix))
+    Send(new GpuMsg_LoadedShader(data));
+}
+
+void GpuProcessHost::CreateChannelCache(int32 client_id, size_t cache_size) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::CreateChannelCache");
+
+  scoped_refptr<ShaderDiskCache> cache =
+      ShaderCacheFactory::GetInstance()->Get(client_id);
+  if (!cache)
+    return;
+
+  cache->set_max_cache_size(cache_size);
+  cache->set_host_id(host_id_);
+
+  client_id_to_shader_cache_[client_id] = cache;
+}
+
+void GpuProcessHost::OnDestroyChannel(int32 client_id) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyChannel");
+  client_id_to_shader_cache_.erase(client_id);
+}
+
+void GpuProcessHost::OnCacheShader(int32 client_id,
+                                   const std::string& key,
+                                   const std::string& shader) {
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnCacheShader");
+  ClientIdToShaderCacheMap::iterator iter =
+      client_id_to_shader_cache_.find(client_id);
+  // If the cache doesn't exist then this is an off the record profile.
+  if (iter == client_id_to_shader_cache_.end())
+    return;
+  iter->second->Cache(GetShaderPrefixKey() + ":" + key, shader);
 }
 
 }  // namespace content

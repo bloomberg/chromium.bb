@@ -20,6 +20,7 @@
     '../ui/ui.gyp:ui',
     '../third_party/angle/src/build_angle.gyp:translator_glsl',
     '../third_party/khronos/khronos.gyp:khronos_headers',
+    '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/smhasher/smhasher.gyp:cityhash',
     '../third_party/re2/re2.gyp:re2',
   ],

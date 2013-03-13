@@ -13,6 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -155,7 +157,8 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   bool Link(ShaderManager* manager,
             ShaderTranslator* vertex_translator,
             ShaderTranslator* fragment_shader,
-            FeatureInfo* feature_info);
+            FeatureInfo* feature_info,
+            const ShaderCacheCallback& shader_callback);
 
   // Performs glValidateProgram and related activities.
   void Validate();

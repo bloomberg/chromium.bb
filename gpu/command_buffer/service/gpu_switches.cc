@@ -53,6 +53,9 @@ const char kGpuProgramCacheSizeKb[]         = "gpu-program-cache-size-kb";
 
 const char kTraceGL[]       = "trace-gl";
 
+// Disables the GPU shader on disk cache.
+const char kDisableGpuShaderDiskCache[]     = "disable-gpu-shader-disk-cache";
+
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLErrorLimit,
@@ -68,6 +71,7 @@ const char* kGpuSwitches[] = {
   kForceGpuMemAvailableMb,
   kGpuProgramCacheSizeKb,
   kTraceGL,
+  kDisableGpuShaderDiskCache,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

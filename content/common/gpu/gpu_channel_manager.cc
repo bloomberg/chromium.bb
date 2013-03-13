@@ -69,6 +69,7 @@ gpu::gles2::ProgramCache* GpuChannelManager::program_cache() {
 }
 
 void GpuChannelManager::RemoveChannel(int client_id) {
+  Send(new GpuHostMsg_DestroyChannel(client_id));
   gpu_channels_.erase(client_id);
 }
 
@@ -103,6 +104,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_CreateImage, OnCreateImage)
     IPC_MESSAGE_HANDLER(GpuMsg_DeleteImage, OnDeleteImage)
+    IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -250,6 +252,11 @@ void GpuChannelManager::OnDeleteImageSyncPointRetired(
     delete image_operations_.front();
     image_operations_.pop_front();
   }
+}
+
+void GpuChannelManager::OnLoadedShader(std::string program_proto) {
+  if (program_cache())
+    program_cache()->LoadProgram(program_proto);
 }
 
 void GpuChannelManager::LoseAllContexts() {
