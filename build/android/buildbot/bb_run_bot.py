@@ -23,7 +23,8 @@ GLOBAL_SLAVE_PROPS = {}
 BotConfig = collections.namedtuple(
     'BotConfig', ['bot_id', 'bash_funs', 'test_obj', 'slave_props'])
 TestConfig = collections.namedtuple('Tests', ['tests', 'extra_args'])
-Command = collections.namedtuple('Command', ['step_name', 'command'])
+Command = collections.namedtuple(
+    'Command', ['step_name', 'command', 'testing_cmd'])
 
 
 def GetCommands(options, bot_config):
@@ -45,13 +46,20 @@ def GetCommands(options, bot_config):
       '--slave-properties=%s' % json.dumps(slave_props)]
 
   commands = []
-  if bot_config.bash_funs:
-    bash_base = [
+  def WrapWithBash(command):
+    """Wrap a bash command string with envsetup scripts."""
+    return ['bash', '-exc', '; '.join([
         '. build/android/buildbot/buildbot_functions.sh',
-        "bb_baseline_setup %s '%s'" %
-        (CHROME_SRC, "' '".join(property_args))]
-    commands.append(Command(
-        None, ['bash', '-exc', '; '.join(bash_base + bot_config.bash_funs)]))
+        'bb_baseline_setup %s %s' % (
+             CHROME_SRC,
+             ' '.join(map(pipes.quote, property_args))),
+        command])
+    ]
+
+  if bot_config.bash_funs:
+    # bash_funs command does not have a testing mode.
+    commands.append(
+        Command(None, WrapWithBash('; '.join(bot_config.bash_funs)), None))
 
   test_obj = bot_config.test_obj
   if test_obj:
@@ -61,7 +69,9 @@ def GetCommands(options, bot_config):
       run_test_cmd.extend(['-f', test])
     if test_obj.extra_args:
       run_test_cmd.extend(test_obj.extra_args)
-    commands.append(Command('Run tests', run_test_cmd))
+    commands.append(Command(
+        'Run tests',
+        WrapWithBash(' '.join(map(pipes.quote, run_test_cmd))), run_test_cmd))
 
   return commands
 
@@ -188,13 +198,14 @@ def main(argv):
     sys.stdout.flush()
     env = None
     if options.TESTING:
-      # The bash command doesn't yet support the testing option.
-      if command[0] == 'bash':
+      if not command_obj.testing_cmd:
         continue
-      env = dict(os.environ)
-      env['BUILDBOT_TESTING'] = '1'
-
-    return_code = subprocess.call(command, cwd=CHROME_SRC, env=env)
+      return_code = subprocess.call(
+          command_obj.testing_cmd,
+          cwd=CHROME_SRC,
+          env=dict(os.environ, BUILDBOT_TESTING='1'))
+    else:
+      return_code = subprocess.call(command, cwd=CHROME_SRC, env=env)
     if return_code != 0:
       return return_code
 

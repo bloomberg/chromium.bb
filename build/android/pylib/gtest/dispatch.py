@@ -33,28 +33,30 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
           '/tmp/chrome/src/out/Debug/content_unittests_apk/'
           'content_unittests-debug.apk')
   """
+  def GetQualifiedSuite(suite):
+    if suite.is_suite_exe:
+      relpath = suite.name
+    else:
+      # out/(Debug|Release)/$SUITE_apk/$SUITE-debug.apk
+      relpath = os.path.join(suite.name + '_apk', suite.name + '-debug.apk')
+    return suite.name, os.path.join(test_suite_dir, relpath)
+
   test_suite_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
   if option_test_suite:
-    all_test_suites = [option_test_suite]
+    all_test_suites = [gtest_config.Suite(exe, option_test_suite)]
   else:
     all_test_suites = gtest_config.STABLE_TEST_SUITES
 
-  if exe:
-    qualified_test_suites = [os.path.join(test_suite_dir, t)
-                             for t in all_test_suites]
-  else:
-    # out/(Debug|Release)/$SUITE_apk/$SUITE-debug.apk
-    qualified_test_suites = [os.path.join(test_suite_dir,
-                                          t + '_apk',
-                                          t + '-debug.apk')
-                             for t in all_test_suites]
-  for t, q in zip(all_test_suites, qualified_test_suites):
+  # List of tuples (suite_name, suite_path)
+  qualified_test_suites = map(GetQualifiedSuite, all_test_suites)
+
+  for t, q in qualified_test_suites:
     if not os.path.exists(q):
       raise Exception('Test suite %s not found in %s.\n'
                       'Supported test suites:\n %s\n'
                       'Ensure it has been built.\n' %
                       (t, q, gtest_config.STABLE_TEST_SUITES))
-  return zip(all_test_suites, qualified_test_suites)
+  return qualified_test_suites
 
 
 def GetTestsFromDevice(runner):

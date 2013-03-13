@@ -134,8 +134,11 @@ def RunTestSuites(options, suites):
   if options.asan:
     args.append('--tool=asan')
   for suite in suites:
-    buildbot_report.PrintNamedStep(suite)
-    RunCmd(['build/android/run_tests.py', '-s', suite] + args)
+    buildbot_report.PrintNamedStep(suite.name)
+    cmd = ['build/android/run_tests.py', '-s', suite.name] + args
+    if suite.is_suite_exe:
+      cmd.append('--exe')
+    RunCmd(cmd)
 
 def RunBrowserTestSuite(options):
   """Manages an invocation of run_browser_tests.py.
@@ -273,7 +276,10 @@ def MainTestWrapper(options):
     for test in INSTRUMENTATION_TESTS.itervalues():
       RunInstrumentationSuite(options, test)
   if 'webkit' in options.test_filter:
-    RunTestSuites(options, ['webkit_unit_tests', 'TestWebKitAPI'])
+    RunTestSuites(options, [
+        gtest_config.Apk('webkit_unit_tests'),
+        gtest_config.Apk('TestWebKitAPI'),
+    ])
     RunWebkitLint(options.target)
   if 'webkit_layout' in options.test_filter:
     RunWebkitLayoutTests(options)
