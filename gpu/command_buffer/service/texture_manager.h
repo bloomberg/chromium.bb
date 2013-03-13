@@ -448,6 +448,16 @@ class GPU_EXPORT TextureManager {
       GLenum type,
       bool cleared);
 
+  // Adapter to call above function.
+  void SetLevelInfoFromParams(Texture* texture,
+                              const gfx::AsyncTexImage2DParams& params) {
+    SetLevelInfo(
+        texture, params.target, params.level, params.internal_format,
+        params.width, params.height, 1 /* depth */,
+        params.border, params.format,
+        params.type, true /* cleared */ );
+  }
+
   // Save the texture definition and leave it undefined.
   TextureDefinition* Save(Texture* texture);
 
@@ -554,13 +564,6 @@ class GPU_EXPORT TextureManager {
       GLint level,
       std::string* signature) const;
 
-  // Transfers added will get their Texture updated at the same time
-  // the async transfer is bound to the real texture.
-  void AddPendingAsyncPixelTransfer(
-      base::WeakPtr<gfx::AsyncPixelTransferState> state, Texture* texture);
-  void BindFinishedAsyncPixelTransfers(bool* texture_dirty,
-                                       bool* framebuffer_dirty);
-
  private:
   friend class Texture;
 
@@ -604,14 +607,6 @@ class GPU_EXPORT TextureManager {
 
   // The default textures for each target (texture name = 0)
   scoped_refptr<Texture> default_textures_[kNumDefaultTextures];
-
-  // Async texture allocations which haven't been bound to their textures
-  // yet. This facilitates updating the Texture at the same time the
-  // real texture data is bound.
-  typedef std::pair<base::WeakPtr<gfx::AsyncPixelTransferState>,
-                    Texture*> PendingAsyncTransfer;
-  typedef std::list<PendingAsyncTransfer> PendingAsyncTransferList;
-  PendingAsyncTransferList pending_async_transfers_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

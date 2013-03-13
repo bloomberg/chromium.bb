@@ -38,6 +38,7 @@ using ::testing::Invoke;
 using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::SetArgPointee;
@@ -8000,20 +8001,21 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
                       GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
   WaitAsyncTexImage2DCHROMIUM wait_cmd;
   wait_cmd.Init(GL_TEXTURE_2D);
-  gfx::AsyncTexImage2DParams teximage_params =
-      {GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE};
 
   // No transfer state exists initially.
   EXPECT_FALSE(texture->GetAsyncTransferState());
 
+  base::Closure bind_callback;
+
   // AsyncTexImage2D
   {
     // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId))
+    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId, _))
         .WillOnce(Return(
             state = new StrictMock<gfx::MockAsyncPixelTransferState>))
         .RetiresOnSaturation();
-    EXPECT_CALL(*delegate, AsyncTexImage2D(state, _, _))
+    EXPECT_CALL(*delegate, AsyncTexImage2D(state, _, _, _))
+        .WillOnce(SaveArg<3>(&bind_callback))
         .RetiresOnSaturation();
     // Command succeeds.
     EXPECT_EQ(error::kNoError, ExecuteCmd(teximage_cmd));
@@ -8035,24 +8037,17 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_TRUE(texture->SafeToRenderFrom());
   }
 
-  // Lazy binding/defining of the async transfer
+  // Binding/defining of the async transfer
   {
-    // We the code should check that the transfer is done,
-    // call bind transfer on it, and update the texture texture.
-    InSequence scoped_in_sequence;
-    EXPECT_CALL(*state, TransferIsInProgress())
-        .WillOnce(Return(false))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*state, BindTransfer(_))
-        .WillOnce(SetArgPointee<0>(teximage_params))
-        .RetiresOnSaturation();
-    TextureManager* manager = decoder_->GetContextGroup()->texture_manager();
-    bool texture_dirty, framebuffer_dirty;
-    manager->BindFinishedAsyncPixelTransfers(&texture_dirty,
-                                             &framebuffer_dirty);
-    EXPECT_TRUE(texture_dirty);
-    EXPECT_FALSE(framebuffer_dirty);
-    // Texture is safe, and has the right size etc.
+    // TODO(epenner): We should check that the delegate gets the
+    // BindCompletedAsyncTransfers() call, which is required to
+    // guarantee the delegate calls the bind callback.
+
+    // Simulate the bind callback from the delegate.
+    bind_callback.Run();
+
+    // After the bind callback is run, the texture is safe,
+    // and has the right size etc.
     EXPECT_TRUE(texture->SafeToRenderFrom());
     GLsizei width, height;
     EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
@@ -8065,7 +8060,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   texture->SetImmutable(false);
   {
     // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId))
+    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId, _))
         .WillOnce(Return(
             state = new StrictMock<gfx::MockAsyncPixelTransferState>))
         .RetiresOnSaturation();
@@ -8119,11 +8114,11 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     texture->SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState>());
     texture->SetImmutable(false);
     // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId))
+    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId, _))
         .WillOnce(Return(
             state = new StrictMock<gfx::MockAsyncPixelTransferState>))
         .RetiresOnSaturation();
-    EXPECT_CALL(*delegate, AsyncTexImage2D(state, _, _))
+    EXPECT_CALL(*delegate, AsyncTexImage2D(state, _, _, _))
         .RetiresOnSaturation();
     // Start async transfer.
     EXPECT_EQ(error::kNoError, ExecuteCmd(teximage_cmd));
@@ -8132,11 +8127,8 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_TRUE(texture->IsImmutable());
     // Wait for completion.
     EXPECT_CALL(*delegate, WaitForTransferCompletion(state));
-    EXPECT_CALL(*state, TransferIsInProgress())
-        .WillOnce(Return(false))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*state, BindTransfer(_))
-        .WillOnce(SetArgPointee<0>(teximage_params))
+    EXPECT_CALL(*delegate, BindCompletedAsyncTransfers())
+        .WillOnce(Return(true))
         .RetiresOnSaturation();
     // State restoration after binding.
     EXPECT_CALL(*gl_, ActiveTexture(_));

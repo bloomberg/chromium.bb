@@ -2857,23 +2857,13 @@ void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   if (engine() && query_manager_.get())
     query_manager_->ProcessPendingTransferQueries();
 
-  // TODO(epenner): Is there a better place to do this? Transfers
-  // can complete any time we yield the main thread. So we *must*
-  // process transfers after any such yield, before resuming.
-  bool frame_buffer_dirty = false;
-  bool texture_dirty = false;
-  texture_manager()->BindFinishedAsyncPixelTransfers(
-      &texture_dirty, &frame_buffer_dirty);
-  // Texture unit zero might be stomped.
-  if (texture_dirty)
+  // TODO(epenner): Is there a better place to do this?
+  // This needs to occur before we execute any batch of commands
+  // from the client, as the client may have recieved an async
+  // completion while issuing those commands.
+  // "DidFlushStart" would be ideal if we had such a callback.
+  if (async_pixel_transfer_delegate_->BindCompletedAsyncTransfers())
     RestoreCurrentTexture2DBindings();
-  // A texture attached to frame-buffer might have changed size.
-  if (frame_buffer_dirty) {
-    clear_state_dirty_ = true;
-    // TODO(gman): If textures tracked which framebuffers they were attached to
-    // we could just mark those framebuffers as not complete.
-    framebuffer_manager()->IncFramebufferStateChangeCount();
-  }
 }
 
 void GLES2DecoderImpl::ReleaseCurrent() {
@@ -10197,6 +10187,15 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
     return error::kNoError;
   }
 
+  // Since we don't allow async redefinition, this is the only
+  // time the size of this texture can change while bound
+  // as a frame-buffer.
+  if (texture->IsAttachedToFramebuffer()) {
+    // TODO(gman): If textures tracked which framebuffers they were attached to
+    // we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
+  }
+
   if (!EnsureGPUMemoryAvailable(pixels_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY, "glAsyncTexImage2DCHROMIUM", "out of memory");
@@ -10211,16 +10210,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   uint32 shm_data_offset = c.pixels_shm_offset;
   uint32 shm_data_size = pixels_size;
 
-  // Set up the async state if needed, and make the texture
-  // immutable so the async state stays valid. The level texture
-  // is set up lazily when the transfer completes.
-  DCHECK(!texture->GetAsyncTransferState());
-  texture->SetAsyncTransferState(
-      async_pixel_transfer_delegate_->
-          CreatePixelTransferState(texture->service_id()));
-  texture->SetImmutable(true);
-
-  // Issue the async call and set up the texture.
+  // Setup the parameters.
   GLenum gl_internal_format =
       GetTexInternalFormat(internal_format, format, type);
   gfx::AsyncTexImage2DParams tex_params = {target, level, gl_internal_format,
@@ -10228,14 +10218,27 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
                                        shm_data_offset, shm_data_size};
 
-  // Add a pending transfer to the texture manager, which will bind the
-  // transfer data to the texture and set the level texture at the same time,
-  // after the the transfer is complete.
-  texture_manager()->AddPendingAsyncPixelTransfer(
-      texture->GetAsyncTransferState()->AsWeakPtr(), texture);
+  // Set up the async state if needed, and make the texture
+  // immutable so the async state stays valid. The level info
+  // is set up lazily when the transfer completes.
+  DCHECK(!texture->GetAsyncTransferState());
+  texture->SetAsyncTransferState(
+      async_pixel_transfer_delegate_->
+          CreatePixelTransferState(texture->service_id(),
+                                   tex_params));
+  texture->SetImmutable(true);
 
   async_pixel_transfer_delegate_->AsyncTexImage2D(
-      texture->GetAsyncTransferState(), tex_params, mem_params);
+      texture->GetAsyncTransferState(),
+      tex_params,
+      mem_params,
+      base::Bind(&TextureManager::SetLevelInfoFromParams,
+                 // The callback is only invoked if the transfer state
+                 // still exists, which implies through manager->info->state
+                 // ownership that both of these pointers are valid.
+                 base::Unretained(texture_manager()),
+                 base::Unretained(texture),
+                 tex_params));
   return error::kNoError;
 }
 
@@ -10298,19 +10301,30 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   uint32 shm_data_offset = c.data_shm_offset;
   uint32 shm_data_size = data_size;
 
-  if (!texture->GetAsyncTransferState()) {
-    // Set up the async state if needed, and make the texture
-    // immutable so the async state stays valid.
-    texture->SetAsyncTransferState(
-        async_pixel_transfer_delegate_->
-            CreatePixelTransferState(texture->service_id()));
-    texture->SetImmutable(true);
-  }
-
+  // Setup the parameters.
   gfx::AsyncTexSubImage2DParams tex_params = {target, level, xoffset, yoffset,
                                               width, height, format, type};
   gfx::AsyncMemoryParams mem_params = {shared_memory, shm_size,
                                        shm_data_offset, shm_data_size};
+  if (!texture->GetAsyncTransferState()) {
+    // TODO(epenner): We may want to enforce exclusive use
+    // of async APIs in which case this should become an error,
+    // (the texture should have been async defined).
+    gfx::AsyncTexImage2DParams define_params = {target, level,
+                                                0, 0, 0, 0, 0, 0};
+    texture->GetLevelSize(target, level, &define_params.width,
+                                         &define_params.height);
+    texture->GetLevelType(target, level, &define_params.type,
+                                         &define_params.internal_format);
+    // Set up the async state if needed, and make the texture
+    // immutable so the async state stays valid.
+    texture->SetAsyncTransferState(
+        async_pixel_transfer_delegate_->
+            CreatePixelTransferState(texture->service_id(),
+                                     define_params));
+    texture->SetImmutable(true);
+  }
+
   async_pixel_transfer_delegate_->AsyncTexSubImage2D(
       texture->GetAsyncTransferState(), tex_params, mem_params);
   return error::kNoError;

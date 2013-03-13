@@ -60,17 +60,9 @@ class GL_EXPORT AsyncPixelTransferState :
   // Returns true if there is a transfer in progress.
   virtual bool TransferIsInProgress() = 0;
 
-  // Perform any custom binding of the transfer (currently only
-  // needed for AsyncTexImage2D). The params used to define the texture
-  // are returned in level_params.
-  //
-  // The transfer must be complete to call this (!TransferIsInProgress).
-  virtual void BindTransfer(AsyncTexImage2DParams* level_params) = 0;
-
  protected:
   friend class base::RefCounted<AsyncPixelTransferState>;
   AsyncPixelTransferState() {}
-
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferState);
@@ -87,19 +79,26 @@ class GL_EXPORT AsyncPixelTransferDelegate {
   // This wouldn't work with MOCK_METHOD, so it routes through
   // a virtual protected version which returns a raw pointer.
   scoped_ptr<AsyncPixelTransferState>
-      CreatePixelTransferState(GLuint texture_id) {
-    return make_scoped_ptr(CreateRawPixelTransferState(texture_id));
+      CreatePixelTransferState(GLuint tex_id,
+          const AsyncTexImage2DParams& define_params) {
+    return make_scoped_ptr(CreateRawPixelTransferState(tex_id, define_params));
   }
+
+  // Returns true iff a texture was bound to texture-unit zero.
+  virtual bool BindCompletedAsyncTransfers() = 0;
 
   // There's no guarantee that callback will run on the caller thread.
   virtual void AsyncNotifyCompletion(
       const AsyncMemoryParams& mem_params,
       const CompletionCallback& callback) = 0;
 
+  // The callback occurs on the caller thread, once the texture is
+  // safe/ready to be used.
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) = 0;
+      const AsyncMemoryParams& mem_params,
+      const base::Closure& bind_callback) = 0;
 
   virtual void AsyncTexSubImage2D(
       AsyncPixelTransferState* state,
@@ -117,7 +116,8 @@ class GL_EXPORT AsyncPixelTransferDelegate {
   AsyncPixelTransferDelegate() {}
   // For testing, as returning scoped_ptr wouldn't work with MOCK_METHOD.
   virtual AsyncPixelTransferState*
-      CreateRawPixelTransferState(GLuint texture_id) = 0;
+      CreateRawPixelTransferState(GLuint tex_id,
+          const AsyncTexImage2DParams& define_params) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegate);

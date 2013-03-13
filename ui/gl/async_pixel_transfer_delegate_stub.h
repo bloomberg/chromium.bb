@@ -13,12 +13,9 @@ class AsyncTransferStateStub : public AsyncPixelTransferState {
  public:
   // implement AsyncPixelTransferState:
   virtual bool TransferIsInProgress() OVERRIDE;
-  virtual void BindTransfer(AsyncTexImage2DParams* bound_params) OVERRIDE;
 
  private:
   friend class AsyncPixelTransferDelegateStub;
-  bool needs_late_bind_;
-  AsyncTexImage2DParams late_bind_define_params_ ;
 
   explicit AsyncTransferStateStub(GLuint texture_id);
   virtual ~AsyncTransferStateStub();
@@ -36,13 +33,15 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
   virtual ~AsyncPixelTransferDelegateStub();
 
   // implement AsyncPixelTransferDelegate:
+  virtual bool BindCompletedAsyncTransfers() OVERRIDE;
   virtual void AsyncNotifyCompletion(
       const AsyncMemoryParams& mem_params,
       const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
-      AsyncPixelTransferState* transfer_state,
+      AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
-      const AsyncMemoryParams& mem_params) OVERRIDE;
+      const AsyncMemoryParams& mem_params,
+      const base::Closure& bind_callback) OVERRIDE;
   virtual void AsyncTexSubImage2D(
       AsyncPixelTransferState* transfer_state,
       const AsyncTexSubImage2DParams& tex_params,
@@ -54,7 +53,8 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
  private:
   // implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState*
-      CreateRawPixelTransferState(GLuint texture_id) OVERRIDE;
+      CreateRawPixelTransferState(GLuint texture_id,
+          const AsyncTexImage2DParams& define_params) OVERRIDE;
 
   int texture_upload_count_;
   base::TimeDelta total_texture_upload_time_;
