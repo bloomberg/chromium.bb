@@ -875,9 +875,12 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     unsigned char flags) {
   DCHECK(name);
 
+  if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
+    id ^= process_id_hash_;
+
 #if defined(OS_ANDROID)
-  SendToATrace(phase, GetCategoryName(category_enabled), name,
-               num_args, arg_names, arg_types, arg_values);
+  SendToATrace(phase, GetCategoryName(category_enabled), name, id,
+               num_args, arg_names, arg_types, arg_values, flags);
 #endif
 
   TimeTicks now = timestamp - time_offset_;
@@ -921,9 +924,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
         }
       }
     }
-
-    if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
-      id ^= process_id_hash_;
 
     logged_events_.push_back(
         TraceEvent(thread_id,
