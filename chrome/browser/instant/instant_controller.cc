@@ -621,6 +621,12 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     return false;
   }
 
+  // If the overlay is not showing at all, don't commit it.
+  if (!model_.mode().is_search_suggestions())
+    return false;
+
+  // If the overlay is showing at full height (with results), commit it.
+  // If it's showing at parial height, commit if it's navigating.
   if (!IsOverlayingSearchResults() && type != INSTANT_COMMIT_NAVIGATED)
     return false;
 
