@@ -62,7 +62,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     private final Observer mObserver;
 
-    private Context mContext;
+    private final Context mContext;
     private ConnectivityManagerDelegate mConnectivityManagerDelegate;
     private boolean mRegistered;
     private int mConnectionType;
@@ -76,7 +76,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     public NetworkChangeNotifierAutoDetect(Observer observer, Context context) {
         mObserver = observer;
-        mContext = context;
+        mContext = context.getApplicationContext();
         mConnectivityManagerDelegate = new ConnectivityManagerDelegate(context);
         mConnectionType = getCurrentConnectionType();
         ActivityStatus.registerStateListener(this);
@@ -165,12 +165,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     // ActivityStatus.StateListener
     @Override
     public void onActivityStateChange(int state) {
-        Context context = ActivityStatus.getActivity();
-        if (mContext != context && context != null) {
-            // Note that |context| can be null during testing. In this case |mContext| should not be
-            // overwritten.
-            mContext = context;
-        }
         if (state == ActivityStatus.RESUMED) {
             // Note that this also covers the case where the main activity is created. The CREATED
             // event is always followed by the RESUMED event. This is a temporary "hack" until
