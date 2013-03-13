@@ -254,6 +254,7 @@
     SET_MODRM_SCALE(0);
   }
   action modrm_pure_disp {
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
     SET_MODRM_BASE(NO_REG);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
@@ -290,7 +291,9 @@
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
-  action modrm_rip {
+  action modrm_pure_disp {
+    // Case where ModRM.mod = 00 and ModRM.r/m = 101.
+    // In 64-bit mode it corresponds to RIP-relative addressing.
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
@@ -316,7 +319,10 @@
 }%%
 
 %%{
-  machine modrm_parsing_common;
+  # Used for both decoders and for AMD64 validator.
+  # There are separate versions of modrm-related actions for 32-bit and for
+  # 64-bit cases.
+  machine modrm_parsing;
 
   operand_sib_base_index =
     (b_00_xxx_100 . (any - b_xx_xxx_101) @modrm_parse_sib) |
@@ -324,15 +330,12 @@
     (b_10_xxx_100 . any @modrm_parse_sib . disp32);
   operand_sib_pure_index =
     b_00_xxx_100 . b_xx_xxx_101 @modrm_pure_index . disp32;
-  operand_disp  =
+  operand_disp =
     ((b_01_xxx_xxx - b_xx_xxx_100) @modrm_base_disp . disp8) |
     ((b_10_xxx_xxx - b_xx_xxx_100) @modrm_base_disp . disp32);
+  operand_pure_disp = b_00_xxx_101 @modrm_pure_disp . disp32;
   single_register_memory =
     (b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101) @modrm_only_base;
-  modrm_memory =
-    operand_disp | operand_rip |
-    operand_sib_base_index | operand_sib_pure_index |
-    single_register_memory;
   modrm_registers = b_11_xxx_xxx;
 
   # Operations selected using opcode in ModR/M.
@@ -352,23 +355,8 @@
 }%%
 
 %%{
-  machine modrm_parsing_ia32;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 @modrm_pure_disp . disp32;
-  include modrm_parsing_common;
-}%%
-
-%%{
-  machine modrm_parsing_amd64;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 @modrm_rip . disp32;
-  include modrm_parsing_common;
-}%%
-
-%%{
-  machine modrm_parsing_common_noactions;
+  # For IA32 validator we do not need modrm-parsing actions.
+  machine modrm_parsing_ia32_validator;
 
   operand_sib_base_index =
     (b_00_xxx_100 . (any - b_xx_xxx_101)) |
@@ -376,15 +364,12 @@
     (b_10_xxx_100 . any . disp32);
   operand_sib_pure_index =
     b_00_xxx_100 . b_xx_xxx_101 . disp32;
-  operand_disp  =
+  operand_disp =
     ((b_01_xxx_xxx - b_xx_xxx_100) . disp8) |
     ((b_10_xxx_xxx - b_xx_xxx_100) . disp32);
+  operand_pure_disp = b_00_xxx_101 . disp32;
   single_register_memory =
     (b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101);
-  modrm_memory =
-    operand_disp | operand_rip |
-    operand_sib_base_index | operand_sib_pure_index |
-    single_register_memory;
   modrm_registers = b_11_xxx_xxx;
 
   # Operations selected using opcode in ModR/M.
@@ -401,22 +386,6 @@
   # This is used to move operand name detection after first byte of ModRM.
   opcode_m = (any - b_11_xxx_xxx);
   opcode_r = b_11_xxx_xxx;
-}%%
-
-%%{
-  machine modrm_parsing_ia32_noactions;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 . disp32;
-  include modrm_parsing_common_noactions;
-}%%
-
-%%{
-  machine modrm_parsing_amd64_noactions;
-
-  # It's pure disp32 in IA32 case, but offset(%rip) in x86-64 case.
-  operand_rip = b_00_xxx_101 . disp32;
-  include modrm_parsing_common_noactions;
 }%%
 
 %%{

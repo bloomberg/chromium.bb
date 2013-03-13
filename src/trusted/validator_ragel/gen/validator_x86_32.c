@@ -2595,21 +2595,13 @@ st36:
 case 36:
 	switch( (*( current_position)) ) {
 		case 4u: goto tr94;
-		case 5u: goto tr95;
 		case 12u: goto tr94;
-		case 13u: goto tr95;
 		case 20u: goto tr94;
-		case 21u: goto tr95;
 		case 28u: goto tr94;
-		case 29u: goto tr95;
 		case 36u: goto tr94;
-		case 37u: goto tr95;
 		case 44u: goto tr94;
-		case 45u: goto tr95;
 		case 52u: goto tr94;
-		case 53u: goto tr95;
 		case 60u: goto tr94;
-		case 61u: goto tr95;
 		case 68u: goto tr97;
 		case 76u: goto tr97;
 		case 84u: goto tr97;
@@ -2627,15 +2619,39 @@ case 36:
 		case 180u: goto tr98;
 		case 188u: goto tr98;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 63u )
+	if ( (*( current_position)) < 38u ) {
+		if ( (*( current_position)) < 14u ) {
+			if ( (*( current_position)) > 3u ) {
+				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
+					goto tr93;
+			} else
+				goto tr93;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( (*( current_position)) > 27u ) {
+				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
+					goto tr93;
+			} else if ( (*( current_position)) >= 22u )
+				goto tr93;
+		} else
 			goto tr93;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr95;
+	} else if ( (*( current_position)) > 43u ) {
+		if ( (*( current_position)) < 62u ) {
+			if ( (*( current_position)) > 51u ) {
+				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
+					goto tr93;
+			} else if ( (*( current_position)) >= 46u )
+				goto tr93;
+		} else if ( (*( current_position)) > 63u ) {
+			if ( (*( current_position)) > 127u ) {
+				if ( 192u <= (*( current_position)) )
+					goto tr16;
+			} else if ( (*( current_position)) >= 64u )
+				goto tr96;
+		} else
+			goto tr93;
 	} else
-		goto tr96;
-	goto tr16;
+		goto tr93;
+	goto tr95;
 st37:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof37;
@@ -7134,21 +7150,13 @@ st204:
 case 204:
 	switch( (*( current_position)) ) {
 		case 4u: goto tr431;
-		case 5u: goto tr432;
 		case 12u: goto tr431;
-		case 13u: goto tr432;
 		case 20u: goto tr431;
-		case 21u: goto tr432;
 		case 28u: goto tr431;
-		case 29u: goto tr432;
 		case 36u: goto tr431;
-		case 37u: goto tr432;
 		case 44u: goto tr431;
-		case 45u: goto tr432;
 		case 52u: goto tr431;
-		case 53u: goto tr432;
 		case 60u: goto tr431;
-		case 61u: goto tr432;
 		case 68u: goto tr434;
 		case 76u: goto tr434;
 		case 84u: goto tr434;
@@ -7166,15 +7174,39 @@ case 204:
 		case 180u: goto tr435;
 		case 188u: goto tr435;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 63u )
+	if ( (*( current_position)) < 38u ) {
+		if ( (*( current_position)) < 14u ) {
+			if ( (*( current_position)) > 3u ) {
+				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
+					goto tr255;
+			} else
+				goto tr255;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( (*( current_position)) > 27u ) {
+				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
+					goto tr255;
+			} else if ( (*( current_position)) >= 22u )
+				goto tr255;
+		} else
 			goto tr255;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto tr432;
+	} else if ( (*( current_position)) > 43u ) {
+		if ( (*( current_position)) < 62u ) {
+			if ( (*( current_position)) > 51u ) {
+				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
+					goto tr255;
+			} else if ( (*( current_position)) >= 46u )
+				goto tr255;
+		} else if ( (*( current_position)) > 63u ) {
+			if ( (*( current_position)) > 127u ) {
+				if ( 192u <= (*( current_position)) )
+					goto tr16;
+			} else if ( (*( current_position)) >= 64u )
+				goto tr433;
+		} else
+			goto tr255;
 	} else
-		goto tr433;
-	goto tr16;
+		goto tr255;
+	goto tr432;
 st205:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof205;

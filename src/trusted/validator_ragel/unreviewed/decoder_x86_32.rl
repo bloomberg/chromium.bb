@@ -63,7 +63,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_actions_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include modrm_parsing_ia32
+  include modrm_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include operand_actions_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

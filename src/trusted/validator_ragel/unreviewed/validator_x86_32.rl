@@ -48,7 +48,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include displacement_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include modrm_parsing_ia32_noactions
+  include modrm_parsing_ia32_validator
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include immediate_fields_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
@@ -96,7 +96,8 @@
   # Check if call is properly aligned
   #
   # For direct call we explicitly encode all variations.  For indirect call
-  # we accept all the special instructions which ends with indirect call.
+  # we accept all the special instructions which ends with register-addressed
+  # indirect call.
   call_alignment =
     ((one_instruction &
       # Direct call
@@ -105,7 +106,7 @@
      (special_instruction &
       # Indirect call
       (any* data16? 0xff ((opcode_2 | opcode_3) any* &
-                          (modrm_memory | modrm_registers)))))
+                          modrm_registers))))
     # Call instruction must aligned to the end of bundle.  Previously this was
     # strict requirement, today it's just warning to aid with debugging.
     @{

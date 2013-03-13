@@ -48,7 +48,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_actions_amd64
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include modrm_parsing_amd64
+  include modrm_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include operand_actions_amd64
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
@@ -552,7 +552,8 @@
   # Check if call is properly aligned.
   #
   # For direct call we explicitly encode all variations.  For indirect call
-  # we accept all the special instructions which ends with indirect call.
+  # we accept all the special instructions which ends with register-addressed
+  # indirect call.
   call_alignment =
     ((normal_instruction &
       # Direct call
@@ -562,7 +563,7 @@
      (special_instruction &
       # Indirect call
       (any* data16? REX_WRXB? 0xff ((opcode_2 | opcode_3) any* &
-                                    (modrm_memory | modrm_registers)))))
+                                    modrm_registers))))
     # Call instruction must aligned to the end of bundle.  Previously this was
     # strict requirement, today it's just warning to aid with debugging.
     @{

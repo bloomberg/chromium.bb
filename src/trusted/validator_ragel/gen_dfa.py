@@ -407,7 +407,7 @@ AddressMode = collections.namedtuple(
 
 ALL_ADDRESS_MODES = [
     AddressMode('operand_disp', False, True),
-    AddressMode('operand_rip', False, False),
+    AddressMode('operand_pure_disp', False, False),
     AddressMode('single_register_memory', False, True),
     AddressMode('operand_sib_pure_index', True, False),
     AddressMode('operand_sib_base_index', True, True)]
