@@ -171,8 +171,6 @@ Dispatcher* PluginProxyTestHarness::GetDispatcher() {
 void PluginProxyTestHarness::SetUpHarness() {
   // These must be first since the dispatcher set-up uses them.
   CreatePluginGlobals();
-  // Some of the methods called during set-up check that the lock is held.
-  ProxyAutoLock lock;
 
   resource_tracker().DidCreateInstance(pp_instance());
 
@@ -198,8 +196,6 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
     bool is_client) {
   // These must be first since the dispatcher set-up uses them.
   CreatePluginGlobals();
-  // Some of the methods called during set-up check that the lock is held.
-  ProxyAutoLock lock;
 
   resource_tracker().DidCreateInstance(pp_instance());
   plugin_delegate_mock_.Init(ipc_message_loop, shutdown_event);
@@ -218,15 +214,10 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
 }
 
 void PluginProxyTestHarness::TearDownHarness() {
-  {
-    // Some of the methods called during tear-down check that the lock is held.
-    ProxyAutoLock lock;
+  plugin_dispatcher_->DidDestroyInstance(pp_instance());
+  plugin_dispatcher_.reset();
 
-    plugin_dispatcher_->DidDestroyInstance(pp_instance());
-    plugin_dispatcher_.reset();
-
-    resource_tracker().DidDeleteInstance(pp_instance());
-  }
+  resource_tracker().DidDeleteInstance(pp_instance());
   plugin_globals_.reset();
 }
 

@@ -10,10 +10,10 @@
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
-#include "ppapi/proxy/locking_resource_releaser.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 
 namespace ppapi {
 namespace proxy {
@@ -163,10 +163,11 @@ TEST_F(PPP_Instance_ProxyTest, PPPInstance1_0) {
   data.clip_rect = expected_clip;
   data.device_scale = 1.0f;
   ResetReceived();
-  LockingResourceReleaser view_resource(
+  ScopedPPResource view_resource(
+      ScopedPPResource::PassRef(),
       (new PPB_View_Shared(OBJECT_IS_IMPL,
                            expected_instance, data))->GetReference());
-  ppp_instance->DidChangeView(expected_instance, view_resource.get());
+  ppp_instance->DidChangeView(expected_instance, view_resource);
   did_change_view_called.Wait();
   EXPECT_EQ(received_instance, expected_instance);
   EXPECT_EQ(received_position.point.x, expected_position.point.x);
