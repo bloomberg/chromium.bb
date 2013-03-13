@@ -574,8 +574,8 @@ TEST(SkBitmapOperationsTest, RotateImage) {
 
   for (int x=0; x < src_w; ++x) {
     for (int y=0; y < src_h; ++y) {
-      ASSERT_EQ(*src.getAddr32(x,y), *rotate90.getAddr32(y, src_w - (x+1)));
-      ASSERT_EQ(*src.getAddr32(x,y), *rotate270.getAddr32(src_h - (y+1),x));
+      ASSERT_EQ(*src.getAddr32(x,y), *rotate90.getAddr32(src_h - (y+1),x));
+      ASSERT_EQ(*src.getAddr32(x,y), *rotate270.getAddr32(y, src_w - (x+1)));
       ASSERT_EQ(*src.getAddr32(x,y),
                 *rotate180.getAddr32(src_w - (x+1), src_h - (y+1)));
     }

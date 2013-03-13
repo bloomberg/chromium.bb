@@ -431,9 +431,9 @@ void LauncherButton::UpdateState() {
     else
       bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
           shelf_layout_manager_->SelectValueForShelfAlignment(
-              SkBitmapOperations::ROTATION_270_CW,
-              SkBitmapOperations::ROTATION_270_CW,
               SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_270_CW,
               SkBitmapOperations::ROTATION_180_CW)));
     bar_->SetVisible(true);
   }

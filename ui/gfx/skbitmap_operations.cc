@@ -820,17 +820,17 @@ SkBitmap SkBitmapOperations::Rotate(const SkBitmap& source,
 
   switch (rotation) {
    case ROTATION_90_CW:
-     angle = SkFloatToScalar(-90.0f);
+     angle = SkFloatToScalar(90.0f);
      result.setConfig(
          SkBitmap::kARGB_8888_Config, source.height(), source.width());
      break;
    case ROTATION_180_CW:
-     angle = SkFloatToScalar(-180.0f);
+     angle = SkFloatToScalar(180.0f);
      result.setConfig(
          SkBitmap::kARGB_8888_Config, source.width(), source.height());
      break;
    case ROTATION_270_CW:
-     angle = SkFloatToScalar(-270.0f);
+     angle = SkFloatToScalar(270.0f);
      result.setConfig(
          SkBitmap::kARGB_8888_Config, source.height(), source.width());
      break;
