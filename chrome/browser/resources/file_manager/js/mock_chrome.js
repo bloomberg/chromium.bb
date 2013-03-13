@@ -97,7 +97,7 @@ chrome.fileBrowserPrivate = {
   /**
    * Select multiple files.
    */
-  selectFiles: function(selectedFiles, callback) {
+  selectFiles: function(selectedFiles, shouldReturnLocalPath, callback) {
     console.log('selectFiles called: ' + selectedFiles.length +
                 ' files selected');
     callback();
@@ -106,7 +106,8 @@ chrome.fileBrowserPrivate = {
   /**
    * Select a single file.
    */
-  selectFile: function(selectedFile, index, callback) {
+  selectFile: function(selectedFile, index, forOpening, shouldReturnLocalPath,
+                       callback) {
     console.log('selectFile called: ' + selectedFile + ', ' + index);
     callback();
   },

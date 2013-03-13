@@ -696,9 +696,10 @@ GURL GetFileBrowserUrlWithParams(
     arg_value.SetBoolean("includeAllFiles", file_types->include_all_files);
   }
 
-  // Disable showing Drive unless it's specifically supported.
-  arg_value.SetBoolean("disableDrive",
-      !file_types || !file_types->support_drive);
+  // If the caller cannot handle Drive path, the file chooser dialog need to
+  // return resolved local native paths to the selected files.
+  arg_value.SetBoolean("shouldReturnLocalPath",
+                       !file_types || !file_types->support_drive);
 
   std::string json_args;
   base::JSONWriter::Write(&arg_value, &json_args);

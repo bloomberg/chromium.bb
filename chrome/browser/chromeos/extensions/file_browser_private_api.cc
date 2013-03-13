@@ -1379,7 +1379,7 @@ void FileBrowserFunction::GetCacheFileByPathInternal(
 }
 
 bool SelectFileFunction::RunImpl() {
-  if (args_->GetSize() != 2) {
+  if (args_->GetSize() != 4) {
     return false;
   }
   std::string file_url;
@@ -1406,7 +1406,6 @@ void SelectFileFunction::GetSelectedFileInfoResponse(
   SelectFileDialogExtension::OnFileSelected(tab_id, files[0], index);
   SendResponse(true);
 }
-
 
 ViewFilesFunction::ViewFilesFunction() {
 }
@@ -1460,7 +1459,7 @@ SelectFilesFunction::~SelectFilesFunction() {
 }
 
 bool SelectFilesFunction::RunImpl() {
-  if (args_->GetSize() != 1) {
+  if (args_->GetSize() != 2) {
     return false;
   }
 

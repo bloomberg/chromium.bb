@@ -1801,7 +1801,9 @@ DialogType.isModal = function(type) {
   };
 
   FileManager.prototype.isDriveEnabled = function() {
-    return !this.params_.disableDrive &&
+    // TODO(kinaba): remove the "!shouldReturnLocalPath &&" condition once
+    // crbug.com/140425 is done.
+    return !this.params_.shouldReturnLocalPath &&
         (!('driveEnabled' in this.preferences_) ||
          this.preferences_.driveEnabled);
   };
@@ -2608,10 +2610,13 @@ DialogType.isModal = function(type) {
       window.close();
     }
     if (selection.multiple) {
-      chrome.fileBrowserPrivate.selectFiles(selection.urls, callback);
+      chrome.fileBrowserPrivate.selectFiles(
+          selection.urls, this.params_.shouldReturnLocalPath, callback);
     } else {
+      var forOpening = (this.dialogType != DialogType.SELECT_SAVEAS_FILE);
       chrome.fileBrowserPrivate.selectFile(
-          selection.urls[0], selection.filterIndex, callback);
+          selection.urls[0], selection.filterIndex, forOpening,
+          this.params_.shouldReturnLocalPath, callback);
     }
   };
 
