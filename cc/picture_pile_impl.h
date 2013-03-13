@@ -44,10 +44,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
-  void set_slow_down_raster_scale_factor(int factor) {
-    slow_down_raster_scale_factor_for_debug_ = factor;
-  }
-
   struct Analysis {
     Analysis();
 
@@ -69,8 +65,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   typedef std::vector<scoped_refptr<PicturePileImpl> > PicturePileVector;
   PicturePileVector clones_;
-
-  int slow_down_raster_scale_factor_for_debug_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };

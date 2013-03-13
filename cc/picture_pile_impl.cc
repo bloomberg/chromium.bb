@@ -20,9 +20,7 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl());
 }
 
-PicturePileImpl::PicturePileImpl()
-    : slow_down_raster_scale_factor_for_debug_(0) {
-}
+PicturePileImpl::PicturePileImpl() {}
 
 PicturePileImpl::~PicturePileImpl() {
 }
@@ -37,7 +35,16 @@ void PicturePileImpl::CloneForDrawing(int num_threads) {
   clones_.clear();
   for (int i = 0; i < num_threads; i++) {
     scoped_refptr<PicturePileImpl> clone = Create();
+
+    // PicturePileBase::pushPropertiesTo, minus picture_list_map_ (handled
+    // below) and recorded_region_ (an optimization; it's unneeded to raster).
     clone->tiling_ = tiling_;
+    clone->min_contents_scale_ = min_contents_scale_;
+    clone->tile_grid_info_ = tile_grid_info_;
+    clone->background_color_ = background_color_;
+    clone->slow_down_raster_scale_factor_for_debug_ =
+        slow_down_raster_scale_factor_for_debug_;
+
     for (PictureListMap::const_iterator map_iter = picture_list_map_.begin();
          map_iter != picture_list_map_.end(); ++map_iter) {
       const PictureList& this_pic_list = map_iter->second;
@@ -47,10 +54,6 @@ void PicturePileImpl::CloneForDrawing(int num_threads) {
         clone_pic_list.push_back((*pic_iter)->GetCloneForDrawingOnThread(i));
       }
     }
-    clone->min_contents_scale_ = min_contents_scale_;
-    clone->set_slow_down_raster_scale_factor(
-        slow_down_raster_scale_factor_for_debug_);
-
     clones_.push_back(clone);
   }
 }
@@ -189,6 +192,7 @@ void PicturePileImpl::GatherPixelRefs(
 }
 
 void PicturePileImpl::PushPropertiesTo(PicturePileImpl* other) {
+  // NOTE: If you push more values here, add them to CloneForDrawing too.
   PicturePileBase::PushPropertiesTo(other);
   other->clones_ = clones_;
 }

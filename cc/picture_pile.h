@@ -33,6 +33,10 @@ class CC_EXPORT PicturePile : public PicturePileBase {
     num_raster_threads_ = num_raster_threads;
   }
 
+  void set_slow_down_raster_scale_factor(int factor) {
+    slow_down_raster_scale_factor_for_debug_ = factor;
+  }
+
  private:
   virtual ~PicturePile();
   friend class PicturePileImpl;

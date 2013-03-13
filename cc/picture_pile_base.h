@@ -57,6 +57,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   float min_contents_scale_;
   SkTileGridPicture::TileGridInfo tile_grid_info_;
   SkColor background_color_;
+  int slow_down_raster_scale_factor_for_debug_;
 
  private:
   void SetBufferPixels(int buffer_pixels);

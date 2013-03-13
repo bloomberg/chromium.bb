@@ -18,8 +18,9 @@ const int kTileGridBorderPixels = 1;
 namespace cc {
 
 PicturePileBase::PicturePileBase()
-    : min_contents_scale_(0)
-    , background_color_(SkColorSetARGBInline(0, 0, 0, 0)) {
+    : min_contents_scale_(0),
+      background_color_(SkColorSetARGBInline(0, 0, 0, 0)),
+      slow_down_raster_scale_factor_for_debug_(0) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
   tile_grid_info_.fMargin.setEmpty();
@@ -102,12 +103,16 @@ void PicturePileBase::Clear() {
 }
 
 void PicturePileBase::PushPropertiesTo(PicturePileBase* other) {
+  // NOTE: If you push more values here, add them to
+  // PicturePileImpl::CloneForDrawing too.
   other->picture_list_map_ = picture_list_map_;
   other->tiling_ = tiling_;
   other->recorded_region_ = recorded_region_;
   other->min_contents_scale_ = min_contents_scale_;
   other->tile_grid_info_ = tile_grid_info_;
   other->background_color_ = background_color_;
+  other->slow_down_raster_scale_factor_for_debug_ =
+      slow_down_raster_scale_factor_for_debug_;
 }
 
 void PicturePileBase::UpdateRecordedRegion() {

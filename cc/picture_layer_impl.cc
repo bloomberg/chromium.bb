@@ -74,8 +74,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->TransferTilingSet(tilings_.Pass());
   layer_impl->pile_ = pile_;
   pile_ = PicturePileImpl::Create();
-  pile_->set_slow_down_raster_scale_factor(
-      layer_tree_impl()->debug_state().slowDownRasterScaleFactor);
 
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;
