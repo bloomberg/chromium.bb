@@ -4,7 +4,7 @@
   "name": "Image loader",
   "version": "0.1",
   "description": "Image loader",
-  "incognito" : "split",
+  "incognito" : "spanning",
   "manifest_version": 2,
   "permissions": [
     "fileBrowserHandler",
@@ -14,6 +14,7 @@
   ],
   "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com https://*.googleusercontent.com",
   "background": {
-    "scripts": ["image_loader.js" ]
+    "scripts": [ "image_loader.js" ],
+    "persistent": false
   }
 }

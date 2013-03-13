@@ -23,13 +23,6 @@ ImageLoader.EXTENSION_ID = 'pmfjbimdmchhbnneeidfognadeopoehp';
  */
 ImageLoader.Client = function() {
   /**
-   * @type {Port}
-   * @private
-   */
-  this.port_ = chrome.extension.connect(ImageLoader.EXTENSION_ID);
-  this.port_.onMessage.addListener(this.handleMessage_.bind(this));
-
-  /**
    * Hash array with active tasks.
    * @type {Object}
    * @private
@@ -136,18 +129,21 @@ ImageLoader.Client.prototype.load = function(
   // Not available in cache, performing a request to a remote extension.
   var request = opt_options;
   this.lastTaskId_++;
-  var task = { isValid: opt_isValid, accept: function(result) {
-    // Save to cache.
-    if (result.status == 'success' && opt_options.cache)
-      this.cache_.saveImage(cacheKey, result.data, opt_options.timestamp);
-    callback(result);
-  }.bind(this) };
+  var task = { isValid: opt_isValid };
   this.tasks_[this.lastTaskId_] = task;
 
   request.url = url;
   request.taskId = this.lastTaskId_;
 
-  this.port_.postMessage(request);
+  chrome.extension.sendMessage(
+      ImageLoader.EXTENSION_ID,
+      request,
+      function(result) {
+        // Save to cache.
+        if (result.status == 'success' && opt_options.cache)
+          this.cache_.saveImage(cacheKey, result.data, opt_options.timestamp);
+        callback(result);
+      }.bind(this));
   return request.taskId;
 };
 

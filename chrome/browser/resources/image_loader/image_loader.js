@@ -18,11 +18,11 @@ var ImageLoader = function() {
     // TODO(mtomasz): Handle.
   });
 
-  chrome.extension.onConnectExternal.addListener(function(port) {
-    if (ImageLoader.ALLOWED_CLIENTS.indexOf(port.sender.id) !== -1)
-      port.onMessage.addListener(function(request) {
-        this.onMessage_(port, request, port.postMessage.bind(port));
-      }.bind(this));
+  chrome.extension.onMessageExternal.addListener(function(request,
+                                                          sender,
+                                                          sendResponse) {
+    if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) !== -1)
+      return this.onMessage_(sender.id, request, sendResponse);
   }.bind(this));
 };
 
@@ -39,23 +39,27 @@ ImageLoader.ALLOWED_CLIENTS =
  * Handles a request. Depending on type of the request, starts or stops
  * an image task.
  *
- * @param {Port} port Connection port.
+ * @param {string} senderId Sender's extension id.
  * @param {Object} request Request message as a hash array.
  * @param {function} callback Callback to be called to return response.
+ * @return {boolean} True if the message channel should stay alive until the
+ *     callback is called.
  * @private
  */
-ImageLoader.prototype.onMessage_ = function(port, request, callback) {
-  var requestId = port.sender.id + ':' + request.taskId;
+ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
+  var requestId = senderId + ':' + request.taskId;
   if (request.cancel) {
     // Cancel a task.
     if (requestId in this.requests_) {
       this.requests_[requestId].cancel();
       delete this.requests_[requestId];
     }
+    return false;  // No callback calls.
   } else {
     // Start a task.
     this.requests_[requestId] =
         new ImageLoader.Request(request, callback);
+    return true;  // Request will call the callback.
   }
 };
 
