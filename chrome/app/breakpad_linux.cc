@@ -1431,6 +1431,17 @@ void InitCrashReporter() {
   if (parsed_command_line.HasSwitch(switches::kDisableBreakpad))
     return;
 
+  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
+  // location to write brekapad crash dumps can be set.
+  const char* alternate_minidump_location = getenv("BREAKPAD_DUMP_LOCATION");
+  if (alternate_minidump_location) {
+    base::FilePath alternate_minidump_location_path(
+        alternate_minidump_location);
+    PathService::Override(
+        chrome::DIR_CRASH_DUMPS,
+        base::FilePath(alternate_minidump_location));
+  }
+
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
