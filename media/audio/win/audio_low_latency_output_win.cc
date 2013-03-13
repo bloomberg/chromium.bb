@@ -85,7 +85,7 @@ static ChannelLayout ChannelConfigToChannelLayout(ChannelConfig config) {
     case KSAUDIO_SPEAKER_7POINT1_SURROUND:
       return CHANNEL_LAYOUT_7_1;
     default:
-      DVLOG(1) << "Unsupported channel layout: " << config;
+      VLOG(1) << "Unsupported channel layout: " << config;
       return CHANNEL_LAYOUT_UNSUPPORTED;
   }
 }
@@ -134,8 +134,8 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
       source_(NULL),
       audio_bus_(AudioBus::Create(params)) {
   DCHECK(manager_);
-  DVLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
-  DVLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
+  VLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
+  VLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
       << "Core Audio (WASAPI) EXCLUSIVE MODE is enabled.";
 
   if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
@@ -147,7 +147,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
         eRender, device_role, &preferred_params);
     audio_parmeters_are_valid_ = SUCCEEDED(hr) &&
         CompareAudioParametersNoBitDepth(params, preferred_params);
-    DLOG_IF(WARNING, !audio_parmeters_are_valid_)
+    LOG_IF(WARNING, !audio_parmeters_are_valid_)
         << "Input and preferred parameters are not identical.";
   }
 
@@ -179,10 +179,10 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   packet_size_frames_ = params.frames_per_buffer();
   packet_size_bytes_ = params.GetBytesPerBuffer();
   packet_size_ms_ = (1000.0 * packet_size_frames_) / params.sample_rate();
-  DVLOG(1) << "Number of bytes per audio frame  : " << format->nBlockAlign;
-  DVLOG(1) << "Number of audio frames per packet: " << packet_size_frames_;
-  DVLOG(1) << "Number of bytes per packet       : " << packet_size_bytes_;
-  DVLOG(1) << "Number of milliseconds per packet: " << packet_size_ms_;
+  VLOG(1) << "Number of bytes per audio frame  : " << format->nBlockAlign;
+  VLOG(1) << "Number of audio frames per packet: " << packet_size_frames_;
+  VLOG(1) << "Number of bytes per packet       : " << packet_size_bytes_;
+  VLOG(1) << "Number of milliseconds per packet: " << packet_size_ms_;
 
   // All events are auto-reset events and non-signaled initially.
 
@@ -199,7 +199,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
 WASAPIAudioOutputStream::~WASAPIAudioOutputStream() {}
 
 bool WASAPIAudioOutputStream::Open() {
-  DVLOG(1) << "WASAPIAudioOutputStream::Open()";
+  VLOG(1) << "WASAPIAudioOutputStream::Open()";
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
   if (opened_)
     return true;
@@ -258,7 +258,7 @@ bool WASAPIAudioOutputStream::Open() {
     // flexibility. We only allow a "perfect match" between the packet size set
     // by the user and the actual endpoint buffer size.
     if (endpoint_buffer_size_frames_ != packet_size_frames_) {
-      DLOG(ERROR) << "Bailing out due to non-perfect timing.";
+      LOG(ERROR) << "Bailing out due to non-perfect timing.";
       return false;
     }
   }
@@ -280,7 +280,7 @@ bool WASAPIAudioOutputStream::Open() {
 }
 
 void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
-  DVLOG(1) << "WASAPIAudioOutputStream::Start()";
+  VLOG(1) << "WASAPIAudioOutputStream::Start()";
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
   CHECK(callback);
   CHECK(opened_);
@@ -298,7 +298,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
       new base::DelegateSimpleThread(this, "wasapi_render_thread"));
   render_thread_->Start();
   if (!render_thread_->HasBeenStarted()) {
-    DLOG(ERROR) << "Failed to start WASAPI render thread.";
+    LOG(ERROR) << "Failed to start WASAPI render thread.";
     return;
   }
 
@@ -306,7 +306,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
     if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
         audio_client_, audio_render_client_)) {
-      DLOG(WARNING) << "Failed to prepare endpoint buffers with silence.";
+      LOG(WARNING) << "Failed to prepare endpoint buffers with silence.";
       return;
     }
   }
@@ -323,7 +323,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
 }
 
 void WASAPIAudioOutputStream::Stop() {
-  DVLOG(1) << "WASAPIAudioOutputStream::Stop()";
+  VLOG(1) << "WASAPIAudioOutputStream::Stop()";
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
   if (!render_thread_.get())
     return;
@@ -331,7 +331,7 @@ void WASAPIAudioOutputStream::Stop() {
   // Stop output audio streaming.
   HRESULT hr = audio_client_->Stop();
   if (FAILED(hr)) {
-    DLOG_IF(ERROR, hr != AUDCLNT_E_NOT_INITIALIZED)
+    LOG_IF(ERROR, hr != AUDCLNT_E_NOT_INITIALIZED)
         << "Failed to stop output streaming: " << std::hex << hr;
   }
 
@@ -350,7 +350,7 @@ void WASAPIAudioOutputStream::Stop() {
   // Flush all pending data and reset the audio clock stream position to 0.
   hr = audio_client_->Reset();
   if (FAILED(hr)) {
-    DLOG_IF(ERROR, hr != AUDCLNT_E_NOT_INITIALIZED)
+    LOG_IF(ERROR, hr != AUDCLNT_E_NOT_INITIALIZED)
         << "Failed to reset streaming: " << std::hex << hr;
   }
 
@@ -366,7 +366,7 @@ void WASAPIAudioOutputStream::Stop() {
 }
 
 void WASAPIAudioOutputStream::Close() {
-  DVLOG(1) << "WASAPIAudioOutputStream::Close()";
+  VLOG(1) << "WASAPIAudioOutputStream::Close()";
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
 
   // It is valid to call Close() before calling open or Start().
@@ -379,7 +379,7 @@ void WASAPIAudioOutputStream::Close() {
 }
 
 void WASAPIAudioOutputStream::SetVolume(double volume) {
-  DVLOG(1) << "SetVolume(volume=" << volume << ")";
+  VLOG(1) << "SetVolume(volume=" << volume << ")";
   float volume_float = static_cast<float>(volume);
   if (volume_float < 0.0f || volume_float > 1.0f) {
     return;
@@ -388,7 +388,7 @@ void WASAPIAudioOutputStream::SetVolume(double volume) {
 }
 
 void WASAPIAudioOutputStream::GetVolume(double* volume) {
-  DVLOG(1) << "GetVolume()";
+  VLOG(1) << "GetVolume()";
   *volume = static_cast<double>(volume_);
 }
 
@@ -535,7 +535,7 @@ void WASAPIAudioOutputStream::RenderAudioFromSource(
                                          &audio_data);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to use rendering audio buffer: "
-                  << std::hex << hr;
+                 << std::hex << hr;
       return;
     }
 
@@ -622,7 +622,7 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
                     event_handle != INVALID_HANDLE_VALUE);
   if (use_event)
     stream_flags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
-  DVLOG(2) << "stream_flags: 0x" << std::hex << stream_flags;
+  VLOG(2) << "stream_flags: 0x" << std::hex << stream_flags;
 
   // Initialize the audio stream between the client and the device.
   // For an exclusive-mode stream that uses event-driven buffering, the
@@ -645,7 +645,7 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
 
       UINT32 aligned_buffer_size = 0;
       client->GetBufferSize(&aligned_buffer_size);
-      DVLOG(1) << "Use aligned buffer size instead: " << aligned_buffer_size;
+      VLOG(1) << "Use aligned buffer size instead: " << aligned_buffer_size;
 
       // Calculate new aligned periodicity. Each unit of reference time
       // is 100 nanoseconds.
@@ -657,9 +657,9 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
       // at this stage but we bail out with an error code instead and
       // combine it with a log message which informs about the suggested
       // aligned buffer size which should be used instead.
-      DVLOG(1) << "aligned_buffer_duration: "
-                << static_cast<double>(aligned_buffer_duration / 10000.0)
-                << " [ms]";
+      VLOG(1) << "aligned_buffer_duration: "
+              << static_cast<double>(aligned_buffer_duration / 10000.0)
+              << " [ms]";
     } else if (hr == AUDCLNT_E_INVALID_DEVICE_PERIOD) {
       // We will get this error if we try to use a smaller buffer size than
       // the minimum supported size (usually ~3ms on Windows 7).
@@ -671,7 +671,7 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
   if (use_event) {
     hr = client->SetEventHandle(event_handle);
     if (FAILED(hr)) {
-      DVLOG(1) << "IAudioClient::SetEventHandle: " << std::hex << hr;
+      VLOG(1) << "IAudioClient::SetEventHandle: " << std::hex << hr;
       return hr;
     }
   }
@@ -679,12 +679,12 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
   UINT32 buffer_size_in_frames = 0;
   hr = client->GetBufferSize(&buffer_size_in_frames);
   if (FAILED(hr)) {
-    DVLOG(1) << "IAudioClient::GetBufferSize: " << std::hex << hr;
+    VLOG(1) << "IAudioClient::GetBufferSize: " << std::hex << hr;
     return hr;
   }
 
   *endpoint_buffer_size = buffer_size_in_frames;
-  DVLOG(2) << "endpoint buffer size: " << buffer_size_in_frames;
+  VLOG(2) << "endpoint buffer size: " << buffer_size_in_frames;
   return hr;
 }
 

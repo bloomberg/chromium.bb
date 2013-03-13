@@ -18,6 +18,19 @@ using base::win::ScopedCoMem;
 
 namespace media {
 
+static std::string FlowToString(EDataFlow flow) {
+  return (flow == eRender) ? "eRender" : "eConsole";
+}
+
+static std::string RoleToString(ERole role) {
+  switch (role) {
+    case eConsole: return "eConsole";
+    case eMultimedia: return "eMultimedia";
+    case eCommunications: return "eCommunications";
+    default: return "undefined";
+  }
+}
+
 AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
     : listener_cb_(listener_cb) {
   CHECK(CoreAudioUtil::IsSupported());
@@ -29,8 +42,8 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
 
   HRESULT hr = device_enumerator->RegisterEndpointNotificationCallback(this);
   if (FAILED(hr)) {
-    DLOG(ERROR)  << "RegisterEndpointNotificationCallback failed: "
-                 << std::hex << hr;
+    LOG(ERROR)  << "RegisterEndpointNotificationCallback failed: "
+                << std::hex << hr;
     return;
   }
 
@@ -41,14 +54,14 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
   if (!device) {
     // Most probable reason for ending up here is that all audio devices are
     // disabled or unplugged.
-    DVLOG(1)  << "CoreAudioUtil::CreateDefaultDevice failed. No device?";
+    VLOG(1)  << "CoreAudioUtil::CreateDefaultDevice failed. No device?";
     return;
   }
 
   AudioDeviceName device_name;
   hr = CoreAudioUtil::GetDeviceName(device, &device_name);
   if (FAILED(hr)) {
-    DVLOG(1)  << "Failed to retrieve the device id: " << std::hex << hr;
+    VLOG(1)  << "Failed to retrieve the device id: " << std::hex << hr;
     return;
   }
   default_render_device_id_ = device_name.unique_id;
@@ -59,8 +72,8 @@ AudioDeviceListenerWin::~AudioDeviceListenerWin() {
   if (device_enumerator_) {
     HRESULT hr =
         device_enumerator_->UnregisterEndpointNotificationCallback(this);
-    DLOG_IF(ERROR, FAILED(hr)) << "UnregisterEndpointNotificationCallback() "
-                               << "failed: " << std::hex << hr;
+    LOG_IF(ERROR, FAILED(hr)) << "UnregisterEndpointNotificationCallback() "
+                              << "failed: " << std::hex << hr;
   }
 }
 
@@ -117,6 +130,11 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // Only listen for output device changes right now...
   if (flow != eConsole && role != eRender)
     return S_OK;
+  VLOG(1) << "OnDefaultDeviceChanged() "
+          << "new_default_device: "
+          << CoreAudioUtil::GetFriendlyName(WideToUTF8(new_default_device_id))
+          << ", flow: " << FlowToString(flow)
+          << ", role: " << RoleToString(role);
 
   // If no device is now available, |new_default_device_id| will be NULL.
   std::string new_device_id = "";

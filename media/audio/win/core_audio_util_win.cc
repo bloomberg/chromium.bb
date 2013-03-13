@@ -167,8 +167,7 @@ ScopedComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
                                 CLSCTX_INPROC_SERVER,
                                 __uuidof(IMMDeviceEnumerator),
                                 device_enumerator.ReceiveVoid());
-  LOG_IF(ERROR, FAILED(hr)) << "IMMDeviceEnumerator::CreateDeviceEnumerator: "
-                            << std::hex << hr;
+  CHECK(SUCCEEDED(hr));
   return device_enumerator;
 }
 
