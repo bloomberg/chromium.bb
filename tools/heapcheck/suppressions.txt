@@ -1538,8 +1538,6 @@
    bug_159191
    Heapcheck:Leak
    ...
-   fun:FontConfigDirect::FontConfigDirect
-   fun:GetFcImpl
    fun:SkFontHost::CreateTypeface
    fun:SkTypeface::GetDefaultTypeface
    fun:SkScalerContext::MakeRec
@@ -1824,4 +1822,28 @@
    Heapcheck:Leak
    ...
    fun:base::WeakPtrTest_NonOwnerThreadCanCopyAndAssignWeakPtrBase_Test::TestBody
+}
+# * is for DeriveFont and InitWithNameAndSize.
+{
+   bug_189170
+   Heapcheck:Leak
+   ...
+   fun:SkFontHost::CreateTypeface
+   fun:SkTypeface::CreateFromName
+   fun:gfx::PlatformFontPango::*
+}
+{
+   bug_189194_a
+   Heapcheck:Leak
+   ...
+   fun:extensions::SettingsFrontend::Create
+   fun:ExtensionService::ExtensionService
+   fun:extensions::TestExtensionSystem::CreateExtensionService
+   fun:ProfileSigninConfirmationDialogTest::SetUp
+}
+{
+   bug_189194_b
+   Heapcheck:Leak
+   ...
+   fun:ProfileSigninConfirmationDialogTest_*_Test::TestBody
 }

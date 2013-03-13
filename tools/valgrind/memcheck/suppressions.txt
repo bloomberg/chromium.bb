@@ -6813,3 +6813,10 @@
    fun:_ZN7WebCore12EventHandler20handleMouseMoveEventERKNS_18PlatformMouseEventEPNS_13HitTestResultEb
    fun:_ZN7WebCore12EventHandler10mouseMovedERKNS_18PlatformMouseEventE
 }
+{
+   bug_189194
+   Memcheck:Leak
+   ...
+   fun:*ProfileSigninConfirmationDialogTest_*
+}
+
