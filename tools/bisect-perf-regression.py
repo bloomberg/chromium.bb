@@ -41,6 +41,7 @@ import optparse
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import threading
@@ -58,35 +59,43 @@ import bisect_utils
 # depends: A list of other repositories that are actually part of the same
 #   repository in svn.
 # svn: Needed for git workflow to resolve hashes to svn revisions.
-DEPOT_DEPS_NAME = { 'webkit' : {
-                      "src" : "src/third_party/WebKit",
-                      "recurse" : True,
-                      "depends" : None
-                    },
-                    'v8' : {
-                      "src" : "src/v8",
-                      "recurse" : True,
-                      "depends" : None
-                    },
-                    'skia/src' : {
-                      "src" : "src/third_party/skia/src",
-                      "recurse" : True,
-                      "svn" : "http://skia.googlecode.com/svn/trunk/src",
-                      "depends" : ['skia/include', 'skia/gyp']
-                    },
-                    'skia/include' : {
-                      "src" : "src/third_party/skia/include",
-                      "recurse" : False,
-                      "svn" : "http://skia.googlecode.com/svn/trunk/include",
-                      "depends" : None
-                    },
-                    'skia/gyp' : {
-                      "src" : "src/third_party/skia/gyp",
-                      "recurse" : False,
-                      "svn" : "http://skia.googlecode.com/svn/trunk/gyp",
-                      "depends" : None
-                    }
-                  }
+DEPOT_DEPS_NAME = {
+  'webkit' : {
+    "src" : "src/third_party/WebKit",
+    "recurse" : True,
+    "depends" : None
+  },
+  'v8' : {
+    "src" : "src/v8",
+    "recurse" : True,
+    "depends" : None,
+    "build_with": 'v8_bleeding_edge'
+  },
+  'v8_bleeding_edge' : {
+    "src" : "src/v8_bleeding_edge",
+    "recurse" : False,
+    "depends" : None,
+    "svn": "https://v8.googlecode.com/svn/branches/bleeding_edge"
+  },
+  'skia/src' : {
+    "src" : "src/third_party/skia/src",
+    "recurse" : True,
+    "svn" : "http://skia.googlecode.com/svn/trunk/src",
+    "depends" : ['skia/include', 'skia/gyp']
+  },
+  'skia/include' : {
+    "src" : "src/third_party/skia/include",
+    "recurse" : False,
+    "svn" : "http://skia.googlecode.com/svn/trunk/include",
+    "depends" : None
+  },
+  'skia/gyp' : {
+    "src" : "src/third_party/skia/gyp",
+    "recurse" : False,
+    "svn" : "http://skia.googlecode.com/svn/trunk/gyp",
+    "depends" : None
+  }
+}
 
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
@@ -323,8 +332,7 @@ class GitSourceControl(SourceControl):
       search_range = xrange(svn_revision, svn_revision + search, -1)
 
     for i in search_range:
-      svn_pattern = 'git-svn-id: %s@%d' %\
-                    (depot_svn, i)
+      svn_pattern = 'git-svn-id: %s@%d' % (depot_svn, i)
       cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern, 'origin/master']
 
       (log_output, return_code) = RunGit(cmd)
@@ -426,12 +434,22 @@ class BisectPerformanceMetrics(object):
     self.source_control = source_control
     self.src_cwd = os.getcwd()
     self.depot_cwd = {}
+    self.cleanup_commands = []
 
     for d in DEPOT_NAMES:
       # The working directory of each depot is just the path to the depot, but
       # since we're already in 'src', we can skip that part.
 
       self.depot_cwd[d] = self.src_cwd + DEPOT_DEPS_NAME[d]['src'][3:]
+
+  def PerformCleanup(self):
+    """Performs cleanup when script is finished."""
+    os.chdir(self.src_cwd)
+    for c in self.cleanup_commands:
+      if c[0] == 'mv':
+        shutil.move(c[1], c[2])
+      else:
+        assert False, 'Invalid cleanup command.'
 
   def GetRevisionList(self, bad_revision, good_revision):
     """Retrieves a list of all the commits between the bad revision and
@@ -640,6 +658,9 @@ class BisectPerformanceMetrics(object):
       cur_metric_values = self.ParseMetricValuesFromOutput(metric, output)
 
       for k, v in cur_metric_values.iteritems():
+        if not v:
+          return ('No values returned from performance test.', -1)
+
         if metric_values.has_key(k):
           metric_values[k].extend(v)
         else:
@@ -707,6 +728,18 @@ class BisectPerformanceMetrics(object):
 
     return revisions_to_sync
 
+  def PerformPreBuildCleanup(self):
+    """Performs necessary cleanup between runs."""
+    print 'Cleaning up between runs.'
+    print
+
+    # Having these pyc files around between runs can confuse the
+    # perf tests and cause them to crash.
+    cmd = ['find', '.', '-name', '*.pyc', '-exec', 'rm', '-f', '{}', ';']
+    (output, return_code) = RunProcess(cmd)
+
+    assert not output, "Cleaning *.pyc failed."
+
   def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric):
     """Performs a full sync/build/run of the specified revision.
 
@@ -734,15 +767,7 @@ class BisectPerformanceMetrics(object):
         self.ChangeToDepotWorkingDirectory(r[0])
 
         if use_gclient:
-          print 'Cleaning up between runs.'
-          print
-
-          # Having these pyc files around between runs can confuse the
-          # perf tests and cause them to crash.
-          cmd = ['find', '.', '-name', '*.pyc', '-exec', 'rm', '-f', '{}', ';']
-          (output, return_code) = RunProcess(cmd)
-
-          assert not output, "Cleaning *.pyc failed."
+          self.PerformPreBuildCleanup()
 
         if not self.source_control.SyncToRevision(r[1], use_gclient):
           success = False
@@ -836,6 +861,34 @@ class BisectPerformanceMetrics(object):
     # subsequent commands.
     old_cwd = os.getcwd()
     os.chdir(self.depot_cwd[current_depot])
+
+    # V8 (and possibly others) is merged in periodically. Bisecting
+    # this directory directly won't give much good info.
+    if DEPOT_DEPS_NAME[current_depot].has_key('build_with'):
+      new_depot = DEPOT_DEPS_NAME[current_depot]['build_with']
+
+      svn_start_revision = self.source_control.SVNFindRev(start_revision)
+      svn_end_revision = self.source_control.SVNFindRev(end_revision)
+      os.chdir(self.depot_cwd[new_depot])
+
+      start_revision = self.source_control.ResolveToRevision(
+          svn_start_revision, new_depot, -1000)
+      end_revision = self.source_control.ResolveToRevision(
+          svn_end_revision, new_depot, -1000)
+
+      old_name = DEPOT_DEPS_NAME[current_depot]['src'][4:]
+      new_name = DEPOT_DEPS_NAME[new_depot]['src'][4:]
+
+      os.chdir(self.src_cwd)
+
+      shutil.move(old_name, old_name + '.bak')
+      shutil.move(new_name, old_name)
+      os.chdir(self.depot_cwd[current_depot])
+
+      self.cleanup_commands.append(['mv', old_name, new_name])
+      self.cleanup_commands.append(['mv', old_name + '.bak', old_name])
+
+      os.chdir(self.depot_cwd[current_depot])
 
     depot_revision_list = self.GetRevisionList(end_revision, start_revision)
 
@@ -1384,13 +1437,17 @@ def main():
     return 1
 
   bisect_test = BisectPerformanceMetrics(source_control, opts)
-  bisect_results = bisect_test.Run(opts.command,
-                                   opts.bad_revision,
-                                   opts.good_revision,
-                                   metric_values)
+  try:
+    bisect_results = bisect_test.Run(opts.command,
+                                     opts.bad_revision,
+                                     opts.good_revision,
+                                     metric_values)
+    if not(bisect_results['error']):
+      bisect_test.FormatAndPrintResults(bisect_results)
+  finally:
+    bisect_test.PerformCleanup()
 
   if not(bisect_results['error']):
-    bisect_test.FormatAndPrintResults(bisect_results)
     return 0
   else:
     print 'Error: ' + bisect_results['error']

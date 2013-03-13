@@ -22,6 +22,7 @@ solutions = [
                               "chrome/data/page_cycler/.git",
       "src/tools/perf/data": "https://chrome-internal.googlesource.com/" +
                              "chrome/tools/perf/data/.git",
+      "src/v8_bleeding_edge": "git://github.com/v8/v8.git",
     },
     "safesync_url": "",
   },
