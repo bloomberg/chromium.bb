@@ -227,8 +227,14 @@ cr.define('options', function() {
 
         if (extension.userModifiable) {
           enable.addEventListener('click', function(e) {
+            // When e.target is the label instead of the checkbox, it doesn't
+            // have the checked property and the state of the checkbox is
+            // left unchanged.
+            var checked = e.target.checked;
+            if (checked == undefined)
+              checked = !e.currentTarget.querySelector('input').checked;
             chrome.send('extensionSettingsEnable',
-                        [extension.id, e.target.checked ? 'true' : 'false']);
+                        [extension.id, checked ? 'true' : 'false']);
 
             // This may seem counter-intuitive (to not set/clear the checkmark)
             // but this page will be updated asynchronously if the extension
