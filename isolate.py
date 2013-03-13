@@ -90,6 +90,10 @@ def cleanup_path(x):
   return x
 
 
+def is_url(path):
+  return bool(re.match(r'^https?://.+$', path))
+
+
 def default_blacklist(f):
   """Filters unimportant files normally ignored."""
   return (
@@ -1777,7 +1781,7 @@ def CMDhashtable(args):
       logging.info('Creating content addressed object store with %d item',
                    len(infiles))
 
-      if re.match(r'^https?://.+$', options.outdir):
+      if is_url(options.outdir):
         isolateserver_archive.upload_sha1_tree(
             base_url=options.outdir,
             indir=complete_state.root_dir,
@@ -1849,6 +1853,8 @@ def CMDremap(args):
     options.outdir = run_isolated.make_temp_dir(
         'isolate', complete_state.root_dir)
   else:
+    if is_url(options.outdir):
+      raise ExecutionError('Can\'t use url for --outdir with mode remap')
     if not os.path.isdir(options.outdir):
       os.makedirs(options.outdir)
   print('Remapping into %s' % options.outdir)
@@ -1902,7 +1908,7 @@ def CMDrun(args):
   """Runs the test executable in an isolated (temporary) directory.
 
   All the dependencies are mapped into the temporary directory and the
-  directory is cleaned up after the target exits. Warning: if -outdir is
+  directory is cleaned up after the target exits. Warning: if --outdir is
   specified, it is deleted upon exit.
 
   Argument processing stops at the first non-recognized argument and these
@@ -1916,6 +1922,9 @@ def CMDrun(args):
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run')
+  if options.outdir and is_url(options.outdir):
+    raise ExecutionError('Can\'t use url for --outdir with mode run')
+
   cmd = trace_inputs.fix_python_path(cmd)
   try:
     if not options.outdir:
@@ -2105,7 +2114,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
       options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
       options.isolate = trace_inputs.get_native_path_case(options.isolate)
 
-    if options.outdir and not re.match(r'^https?://.+$', options.outdir):
+    if options.outdir and not is_url(options.outdir):
       options.outdir = unicode(options.outdir).replace('/', os.path.sep)
       # outdir doesn't need native path case since tracing is never done from
       # there.
