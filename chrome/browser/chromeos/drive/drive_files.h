@@ -107,35 +107,9 @@ class DriveDirectory : public DriveEntry {
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class DriveResourceMetadata;
-  friend class DriveResourceMetadataTest;
-  friend class ChangeListProcessor;
 
   explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
   virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
-
-  // Adds child file to the directory and takes over the ownership of |file|
-  // object. The method will also do name de-duplication to ensure that the
-  // exposed presentation path does not have naming conflicts. Two files with
-  // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  // TODO(satorux): Remove this. crbug.com/139649
-  void AddEntry(DriveEntry* entry);
-
-  // Removes the entry from its children list and destroys the entry instance.
-  // TODO(satorux): Remove this. crbug.com/139649
-  void RemoveEntry(DriveEntry* entry);
-
-  // Find a child's resource_id by its name. Returns the empty string if not
-  // found. TODO(satorux): Remove this. crbug.com/139649
-  std::string FindChild(const base::FilePath::StringType& file_name) const;
-
-  // Removes the entry from its children without destroying the
-  // entry instance.
-  void RemoveChild(DriveEntry* entry);
-
-  // Removes child elements.
-  void RemoveChildren();
-  void RemoveChildFiles();
-  void RemoveChildDirectories();
 
   // Weak pointer to DriveResourceMetadata.
   DriveResourceMetadata* resource_metadata_;

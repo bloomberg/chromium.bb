@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/message_loop_proxy.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
@@ -104,7 +105,7 @@ void DriveResourceMetadata::ClearRoot() {
 
   // Note that children have a reference to root_,
   // so we need to delete them here.
-  root_->RemoveChildren();
+  RemoveDirectoryChildren(root_.get());
   RemoveEntryFromResourceMap(root_->resource_id());
   DCHECK(resource_map_.empty());
   // The resource_map_ should be empty here, but to make sure for non-Debug
@@ -154,9 +155,9 @@ void DriveResourceMetadata::MoveEntryToDirectory(
         entry->parent_resource_id().empty() ? NULL :
         GetEntryByResourceId(entry->parent_resource_id())->AsDriveDirectory();
     if (parent)
-      parent->RemoveChild(entry);
+      DetachEntryFromDirectory(parent, entry);
 
-    destination->AsDriveDirectory()->AddEntry(entry);
+    AddEntryToDirectory(destination->AsDriveDirectory(), entry);
     moved_file_path = GetFilePath(entry->proto());
     error = DRIVE_FILE_OK;
   }
@@ -200,9 +201,8 @@ void DriveResourceMetadata::RenameEntry(
   MoveEntryToDirectory(file_path, GetFilePath(parent->proto()), callback);
 }
 
-void DriveResourceMetadata::RemoveEntryFromParent(
-    const std::string& resource_id,
-    const FileMoveCallback& callback) {
+void DriveResourceMetadata::RemoveEntry(const std::string& resource_id,
+                                        const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -222,8 +222,7 @@ void DriveResourceMetadata::RemoveEntryFromParent(
       GetEntryByResourceId(entry->parent_resource_id())->AsDriveDirectory();
   DCHECK(parent);
 
-  DVLOG(1) << "RemoveEntryFromParent " << GetFilePath(entry->proto()).value();
-  parent->RemoveEntry(entry);
+  RemoveDirectoryChild(parent, entry);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, DRIVE_FILE_OK, GetFilePath(parent->proto())));
@@ -256,7 +255,7 @@ DriveEntry* DriveResourceMetadata::FindEntryByPathSync(
   DriveDirectory* current_dir = root_.get();
 
   for (size_t i = 1; i < components.size() && current_dir; ++i) {
-    std::string resource_id = current_dir->FindChild(components[i]);
+    std::string resource_id = FindDirectoryChild(current_dir, components[i]);
     if (resource_id.empty())
       return NULL;
 
@@ -402,11 +401,11 @@ void DriveResourceMetadata::RefreshEntry(
     // "(2)" from entries with duplicate names. If FromProto() is first
     // called, RemoveChild() won't work correctly because of the missing
     // suffix.
-    old_parent->RemoveChild(entry);
+    DetachEntryFromDirectory(old_parent, entry);
     // Note that it's safe to update the directory entry with
     // DriveEntry::FromProto() as it won't clear children.
     entry->FromProto(entry_proto);
-    new_parent->AddEntry(entry);  // Transfers ownership.
+    AddEntryToDirectory(new_parent, entry);  // Transfers ownership.
   } else {
     // root has no parent.
     entry->FromProto(entry_proto);
@@ -461,13 +460,14 @@ void DriveResourceMetadata::RefreshDirectory(
       DCHECK(old_parent);
       // See the comment in RefreshEntry() for why the existing entry is
       // updated in this way.
-      old_parent->RemoveChild(existing_entry);
+      DetachEntryFromDirectory(old_parent, existing_entry);
       existing_entry->FromProto(entry_proto);
-      directory->AddEntry(existing_entry);
+      AddEntryToDirectory(directory, existing_entry);
     } else {  // New entry.
       // A new directory will have changestamp of zero, so the directory will
       // be "fast-fetched". See crbug.com/178348 for details.
-      directory->AddEntry(CreateDriveEntryFromProto(entry_proto).release());
+      AddEntryToDirectory(directory,
+                          CreateDriveEntryFromProto(entry_proto).release());
     }
   }
 
@@ -478,7 +478,7 @@ void DriveResourceMetadata::RefreshDirectory(
     const DriveEntryProto& entry_proto = entries->at(i);
     if (entry_proto_map.count(entry_proto.resource_id()) == 0) {
       DriveEntry* entry = GetEntryByResourceId(entry_proto.resource_id());
-      directory->RemoveEntry(entry);
+      RemoveDirectoryChild(directory, entry);
     }
   }
 
@@ -505,7 +505,7 @@ void DriveResourceMetadata::AddEntry(const DriveEntryProto& entry_proto,
   }
 
   DriveEntry* added_entry = new_entry.release();
-  parent->AddEntry(added_entry);  // Transfers ownership.
+  AddEntryToDirectory(parent, added_entry);  // Transfers ownership.
   DVLOG(1) << "AddEntry "  << GetFilePath(added_entry->proto()).value();
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
@@ -565,7 +565,7 @@ void DriveResourceMetadata::GetDescendantDirectoryPaths(
 }
 
 void DriveResourceMetadata::RemoveAll(const base::Closure& callback) {
-  root_->RemoveChildren();
+  RemoveDirectoryChildren(root_.get());
   base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -672,6 +672,128 @@ void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetSecond(
   result->second.proto = entry_proto.Pass();
 
   callback.Run(result.Pass());
+}
+
+void DriveResourceMetadata::AddEntryToDirectory(DriveDirectory* directory,
+                                                DriveEntry* entry) {
+  DCHECK(entry->parent_resource_id().empty() ||
+         entry->parent_resource_id() == directory->resource_id());
+
+  // Try to add the entry to resource map.
+  if (!AddEntryToResourceMap(entry)) {
+    LOG(WARNING) << "Duplicate resource=" << entry->resource_id()
+                 << ", title=" << entry->title();
+    return;
+  }
+
+  // The entry name may have been changed due to prior name de-duplication.
+  // We need to first restore the file name based on the title before going
+  // through name de-duplication again when it is added to another directory.
+  entry->SetBaseNameFromTitle();
+
+  // Do file name de-duplication - find files with the same name and
+  // append a name modifier to the name.
+  int modifier = 1;
+  base::FilePath full_file_name(entry->base_name());
+  const std::string extension = full_file_name.Extension();
+  const std::string file_name = full_file_name.RemoveExtension().value();
+  while (!FindDirectoryChild(directory, full_file_name.value()).empty()) {
+    if (!extension.empty()) {
+      full_file_name = base::FilePath(base::StringPrintf("%s (%d)%s",
+                                                         file_name.c_str(),
+                                                         ++modifier,
+                                                         extension.c_str()));
+    } else {
+      full_file_name = base::FilePath(base::StringPrintf("%s (%d)",
+                                                         file_name.c_str(),
+                                                         ++modifier));
+    }
+  }
+  entry->set_base_name(full_file_name.value());
+
+  // Setup child and parent links.
+  child_maps_[directory->resource_id()].insert(
+      std::make_pair(entry->base_name(), entry->resource_id()));
+  entry->set_parent_resource_id(directory->resource_id());
+}
+
+void DriveResourceMetadata::RemoveDirectoryChild(DriveDirectory* directory,
+                                                 DriveEntry* entry) {
+  DetachEntryFromDirectory(directory, entry);
+  if (entry->AsDriveDirectory())
+    RemoveDirectoryChildren(entry->AsDriveDirectory());
+  delete entry;
+}
+
+std::string DriveResourceMetadata::FindDirectoryChild(
+    DriveDirectory* directory,
+    const base::FilePath::StringType& file_name) {
+  const ChildMap& children = child_maps_[directory->resource_id()];
+  DriveResourceMetadata::ChildMap::const_iterator iter =
+      children.find(file_name);
+  if (iter != children.end())
+    return iter->second;
+  return std::string();
+}
+
+void DriveResourceMetadata::DetachEntryFromDirectory(DriveDirectory* directory,
+                                                     DriveEntry* entry) {
+  DCHECK(entry);
+
+  const std::string& base_name(entry->base_name());
+  // entry must be present in this directory.
+  DCHECK_EQ(entry->resource_id(), FindDirectoryChild(directory, base_name));
+  // Remove entry from resource map first.
+  RemoveEntryFromResourceMap(entry->resource_id());
+
+  // Then delete it from tree.
+  child_maps_[directory->resource_id()].erase(base_name);
+
+  entry->set_parent_resource_id(std::string());
+}
+
+void DriveResourceMetadata::RemoveDirectoryChildren(DriveDirectory* directory) {
+  RemoveDirectoryChildFiles(directory);
+  RemoveDirectoryChildDirectories(directory);
+  DCHECK(child_maps_[directory->resource_id()].empty());
+  child_maps_.erase(directory->resource_id());
+}
+
+void DriveResourceMetadata::RemoveDirectoryChildFiles(
+    DriveDirectory* directory) {
+  DVLOG(1) << "RemoveChildFiles " << directory->resource_id();
+  DriveResourceMetadata::ChildMap* children =
+      &child_maps_[directory->resource_id()];
+  for (DriveResourceMetadata::ChildMap::iterator iter = children->begin(),
+           iter_next = iter; iter != children->end(); iter = iter_next) {
+    ++iter_next;
+    DriveEntry* child = GetEntryByResourceId(iter->second);
+    DCHECK(child);
+    if (!child->proto().file_info().is_directory()) {
+      RemoveEntryFromResourceMap(iter->second);
+      delete child;
+      children->erase(iter);
+    }
+  }
+}
+
+void DriveResourceMetadata::RemoveDirectoryChildDirectories(
+    DriveDirectory* directory) {
+  DriveResourceMetadata::ChildMap* children =
+      &child_maps_[directory->resource_id()];
+  for (DriveResourceMetadata::ChildMap::iterator iter = children->begin(),
+           iter_next = iter; iter != children->end(); iter = iter_next) {
+    ++iter_next;
+    DriveDirectory* dir =
+        GetEntryByResourceId(iter->second)->AsDriveDirectory();
+    if (dir) {
+      // Remove directories recursively.
+      RemoveDirectoryChildren(dir);
+      RemoveEntryFromResourceMap(iter->second);
+      delete dir;
+      children->erase(iter);
+    }
+  }
 }
 
 }  // namespace drive

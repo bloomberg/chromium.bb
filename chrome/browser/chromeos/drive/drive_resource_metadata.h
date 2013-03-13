@@ -166,8 +166,8 @@ class DriveResourceMetadataInterface {
 
   // Removes entry with |resource_id| from its parent. Calls |callback| with the
   // path of the parent directory. |callback| must not be null.
-  virtual void RemoveEntryFromParent(const std::string& resource_id,
-                                     const FileMoveCallback& callback) = 0;
+  virtual void RemoveEntry(const std::string& resource_id,
+                           const FileMoveCallback& callback) = 0;
 
   // Finds an entry (a file or a directory) by |resource_id|.
   // |callback| must not be null.
@@ -259,8 +259,8 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   virtual void RenameEntry(const base::FilePath& file_path,
                            const base::FilePath::StringType& new_name,
                            const FileMoveCallback& callback) OVERRIDE;
-  virtual void RemoveEntryFromParent(const std::string& resource_id,
-                                     const FileMoveCallback& callback) OVERRIDE;
+  virtual void RemoveEntry(const std::string& resource_id,
+                           const FileMoveCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
@@ -331,10 +331,6 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   const ChildMap& child_map(const std::string& resource_id) {
     return child_maps_[resource_id];
   }
-  ChildMap* mutable_child_map(const std::string& resource_id) {
-    return &child_maps_[resource_id];
-  }
-  ChildMaps* mutable_child_maps() { return &child_maps_; }
 
   // Clears root_ and the resource map.
   void ClearRoot();
@@ -376,6 +372,29 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // Recursively extracts the paths set of all sub-directories.
   void GetDescendantDirectoryPaths(const DriveDirectory& directory,
                                    std::set<base::FilePath>* child_directories);
+
+  // Adds child file to the directory and takes over the ownership of |entry|
+  // object. The method will also do name de-duplication to ensure that the
+  // exposed presentation path does not have naming conflicts. Two files with
+  // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
+  void AddEntryToDirectory(DriveDirectory* directory, DriveEntry* entry);
+
+  // Removes the entry from its children list and destroys the entry instance.
+  void RemoveDirectoryChild(DriveDirectory* directory, DriveEntry* entry);
+
+  // Find a child's resource_id by its name. Returns the empty string if not
+  // found.
+  std::string FindDirectoryChild(DriveDirectory* directory,
+                                 const base::FilePath::StringType& file_name);
+
+  // Removes the entry from its children without destroying the
+  // entry instance.
+  void DetachEntryFromDirectory(DriveDirectory* directory, DriveEntry* entry);
+
+  // Removes child elements of directory.
+  void RemoveDirectoryChildren(DriveDirectory* directory);
+  void RemoveDirectoryChildFiles(DriveDirectory* directory);
+  void RemoveDirectoryChildDirectories(DriveDirectory* directory);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

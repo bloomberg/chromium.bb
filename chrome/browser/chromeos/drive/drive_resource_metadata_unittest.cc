@@ -448,7 +448,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
   ASSERT_FALSE(pair_result->second.proto.get());
 }
 
-TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
+TEST_F(DriveResourceMetadataTest, RemoveEntry) {
   // Make sure file9 is found.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
@@ -465,8 +465,8 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file9", entry_proto->base_name());
 
-  // Remove file9 using RemoveEntryFromParent.
-  resource_metadata_->RemoveEntryFromParent(
+  // Remove file9 using RemoveEntry.
+  resource_metadata_->RemoveEntry(
       file9_resource_id,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -495,8 +495,8 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("dir3", entry_proto->base_name());
 
-  // Remove dir3 using RemoveEntryFromParent.
-  resource_metadata_->RemoveEntryFromParent(
+  // Remove dir3 using RemoveEntry.
+  resource_metadata_->RemoveEntry(
       dir3_resource_id,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -513,8 +513,8 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 
-  // Remove unknown resource_id using RemoveEntryFromParent.
-  resource_metadata_->RemoveEntryFromParent(
+  // Remove unknown resource_id using RemoveEntry.
+  resource_metadata_->RemoveEntry(
       "foo",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));
@@ -522,7 +522,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   // Try removing root. This should fail.
-  resource_metadata_->RemoveEntryFromParent(
+  resource_metadata_->RemoveEntry(
       kTestRootResourceId,
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
           &error, &drive_file_path));

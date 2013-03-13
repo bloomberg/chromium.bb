@@ -245,7 +245,7 @@ void ChangeListProcessor::OnGetChildrenForRemove(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_path.empty());
 
-  resource_metadata_->RemoveEntryFromParent(
+  resource_metadata_->RemoveEntry(
       entry_proto.resource_id(),
       base::Bind(&ChangeListProcessor::NotifyForRemoveEntryFromParent,
                  weak_ptr_factory_.GetWeakPtr(),

@@ -89,11 +89,10 @@ void RemoveOperation::RemoveResourceLocally(
     return;
   }
 
-  metadata_->RemoveEntryFromParent(
-      resource_id,
-      base::Bind(&RemoveOperation::NotifyDirectoryChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  metadata_->RemoveEntry(resource_id,
+                         base::Bind(&RemoveOperation::NotifyDirectoryChanged,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    callback));
 
   cache_->Remove(resource_id, base::Bind(&EmptyFileOperationCallback));
 }
