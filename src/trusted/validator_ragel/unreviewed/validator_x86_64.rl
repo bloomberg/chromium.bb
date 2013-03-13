@@ -32,9 +32,7 @@
 
   include byte_machine "byte_machines.rl";
 
-  include prefix_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include prefixes_parsing_noaction
+  include prefixes_parsing_validator
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include rex_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
@@ -379,7 +377,7 @@
       @CPUFeature_EMMX modrm_registers;
   # maskmovdqu %xmmX, %xmmY
   maskmovdqu =
-      0x66 REX_WRXB? (0x0f 0xf7) @not_data16_prefix
+      0x66 REX_WRXB? (0x0f 0xf7)
       @CPUFeature_SSE2 modrm_registers;
   # vmaskmovdqu %xmmX, %xmmY
   vmaskmovdqu =

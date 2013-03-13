@@ -16,7 +16,7 @@
  */
 
 %%{
-  machine prefix_actions;
+  machine prefixes_parsing_decoder;
 
   action branch_not_taken {
     SET_BRANCH_NOT_TAKEN(TRUE);
@@ -39,9 +39,6 @@
   action repnz_prefix {
     SET_REPNZ_PREFIX(TRUE);
   }
-  action not_data16_prefix {
-    SET_DATA16_PREFIX(FALSE);
-  }
 
   # LOCK prefix can be used to address CR8-CR15 registers. In such cases
   # we do not treat it as LOCK.
@@ -54,25 +51,18 @@
     SET_LOCK_PREFIX(FALSE);
   }
 
+  # When we discover postfactum that prefixes are not used in their usual sense
+  # and serve as opcode extension (for instance, data16 sometimes distinguishes
+  # MMX operands from XMM ones).
+  action not_data16_prefix {
+    SET_DATA16_PREFIX(FALSE);
+  }
   action not_repnz_prefix {
     SET_REPNZ_PREFIX(FALSE);
   }
   action not_repz_prefix {
     SET_REPZ_PREFIX(FALSE);
   }
-}%%
-
-%%{
-  machine set_spurious_prefixes;
-
-  action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
-  action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
-  action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
-  action set_spurious_rex_w         { SET_SPURIOUS_REX_W();                }
-}%%
-
-%%{
-  machine prefixes_parsing;
 
   data16 = 0x66 @data16_prefix;
   branch_hint = 0x2e @branch_not_taken | 0x3e @branch_taken;
@@ -84,7 +74,7 @@
 }%%
 
 %%{
-  machine prefixes_parsing_noaction;
+  machine prefixes_parsing_validator;
 
   data16 = 0x66;
   branch_hint = 0x2e | 0x3e;
@@ -93,6 +83,15 @@
   rep = 0xf3;
   repnz = 0xf2;
   repz = 0xf3;
+}%%
+
+%%{
+  machine set_spurious_prefixes;
+
+  action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
+  action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
+  action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
+  action set_spurious_rex_w         { SET_SPURIOUS_REX_W();                }
 }%%
 
 %%{
@@ -831,7 +830,7 @@
 
   # rel16 actions are used in relative jumps with 16-bit offset.
   # Such instructions should not be included in the validator's DFA, but we can
-  # not just exlude them because they are refenced in relative_fields_parsing
+  # not just exclude them because they are refenced in relative_fields_parsing
   # ragel machine.  Ensure compilations error in case of accidental usage.
   action rel16_operand {
     #error rel16_operand should never be used in nacl

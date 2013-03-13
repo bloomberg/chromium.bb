@@ -38,9 +38,7 @@
 
   include byte_machine "byte_machines.rl";
 
-  include prefix_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include prefixes_parsing_noaction
+  include prefixes_parsing_validator
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include vex_actions_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

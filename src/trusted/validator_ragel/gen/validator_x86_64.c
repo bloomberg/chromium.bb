@@ -1780,8 +1780,8 @@ _again:
 		case 1477: goto tr653;
 		case 804: goto st804;
 		case 263: goto st263;
-		case 1478: goto tr654;
 		case 1558: goto tr734;
+		case 1478: goto tr654;
 		case 2295: goto tr1471;
 		case 264: goto st264;
 		case 2390: goto tr1566;
@@ -2072,8 +2072,8 @@ _again:
 		case 1806: goto tr982;
 		case 814: goto st814;
 		case 433: goto st433;
-		case 1807: goto tr983;
 		case 1814: goto tr990;
+		case 1807: goto tr983;
 		case 2041: goto tr1217;
 		case 434: goto st434;
 		case 2432: goto tr1608;
@@ -20878,14 +20878,11 @@ case 263:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
+tr734:
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	goto st264;
 tr654:
 	{ SET_CPU_FEATURE(CPUFeature_EMMX);      }
-	goto st264;
-tr734:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st264;
 tr1471:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
@@ -23948,14 +23945,11 @@ case 433:
 		( current_state) = jump_table[(*( current_position))];
 		goto _again;
 	}
+tr990:
+	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
+	goto st434;
 tr983:
 	{ SET_CPU_FEATURE(CPUFeature_EMMX);      }
-	goto st434;
-tr990:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{ SET_CPU_FEATURE(CPUFeature_SSE2);      }
 	goto st434;
 tr1217:
 	{ SET_CPU_FEATURE(CPUFeature_AVX);       }
