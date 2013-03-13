@@ -136,11 +136,6 @@ void AutocheckoutManager::OnLoadedPageMetaData(
   } else if (!page_meta_data_->IsInAutofillableFlow()) {
     // Missing Autocheckout meta data in the Autofill server results.
     in_autocheckout_flow_ = false;
-  } else if (!page_meta_data_->proceed_element_descriptor &&
-             !page_meta_data_->IsEndOfAutofillableFlow()) {
-    // Missing Autocheckout proceed data in meta data in the Autofill server
-    // results.
-    in_autocheckout_flow_ = false;
   } else if (page_meta_data_->current_page_number <=
                  old_meta_data->current_page_number) {
     // Not possible unless Autocheckout failed to proceed.
@@ -248,6 +243,13 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
       (1.0 + page_meta_data_->current_page_number) /
           page_meta_data_->total_pages);
   FillForms();
+
+  // If the current page is the last page in the flow, close the dialog.
+  if (page_meta_data_->IsEndOfAutofillableFlow()) {
+    // TODO(ahutter): SendAutocheckoutStatus of SUCCESS.
+    autofill_manager_->delegate()->HideRequestAutocompleteDialog();
+    in_autocheckout_flow_ = false;
+  }
 }
 
 void AutocheckoutManager::SetValue(const AutofillField& field,

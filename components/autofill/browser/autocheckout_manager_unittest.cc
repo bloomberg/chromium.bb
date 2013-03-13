@@ -152,6 +152,15 @@ scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData() {
   return end_of_flow.Pass();
 }
 
+scoped_ptr<AutocheckoutPageMetaData> CreateOnePageFlowMetaData() {
+  scoped_ptr<AutocheckoutPageMetaData> one_page_flow(
+      new AutocheckoutPageMetaData());
+  one_page_flow->current_page_number = 0;
+  one_page_flow->total_pages = 1;
+  one_page_flow->proceed_element_descriptor = CreateProceedElement().Pass();
+  return one_page_flow.Pass();
+}
+
 scoped_ptr<AutocheckoutPageMetaData> CreateMissingProceedMetaData() {
   scoped_ptr<AutocheckoutPageMetaData> missing_proceed(
       new AutocheckoutPageMetaData());
@@ -490,14 +499,6 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
   EXPECT_EQ(0U, process()->sink().message_count());
   HideRequestAutocompleteDialog();
 
-  // A missing proceed element when not at the end of a flow is an error.
-  OpenRequestAutocompleteDialog();
-  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
-  autocheckout_manager_->OnLoadedPageMetaData(CreateMissingProceedMetaData());
-  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_EQ(0U, process()->sink().message_count());
-  HideRequestAutocompleteDialog();
-
   // Repeating a page is an error.
   OpenRequestAutocompleteDialog();
   // Go to second page.
@@ -531,6 +532,27 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataTest) {
   // Go to third page.
   EXPECT_CALL(*autofill_manager_delegate_, UpdateProgressBar(1)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
+  CheckFillFormsAndClickIpc();
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+}
+
+TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
+  // Test one page flow.
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  EXPECT_FALSE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
+  autocheckout_manager_->OnLoadedPageMetaData(CreateOnePageFlowMetaData());
+  // Simulate the user submitting some data via the requestAutocomplete UI.
+  autofill_manager_delegate_->SetUserSuppliedData(
+      FakeUserSubmittedFormStructure());
+  GURL frame_url;
+  content::SSLStatus ssl_status;
+  EXPECT_CALL(*autofill_manager_delegate_,
+              UpdateProgressBar(testing::DoubleEq(1))).Times(1);
+  autocheckout_manager_->MaybeShowAutocheckoutDialog(frame_url,
+                                                     ssl_status,
+                                                     true);
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
