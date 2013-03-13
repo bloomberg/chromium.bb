@@ -75,7 +75,7 @@ class NetworkStateInformer
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
 
   // NetworkPortalDetector::Observer implementation:
-  virtual void OnPortalStateChanged(
+  virtual void OnPortalDetectionCompleted(
       const Network* network,
       const NetworkPortalDetector::CaptivePortalState& state) OVERRIDE;
 
@@ -127,9 +127,7 @@ class NetworkStateInformer
   void SendStateToObservers(const std::string& reason);
 
   State GetNetworkState(const Network* network);
-  bool IsRestrictedPool(const Network* network);
   bool IsProxyConfigured(const Network* network);
-  bool ProxyAuthRequired(const Network* network);
 
   content::NotificationRegistrar registrar_;
   State state_;

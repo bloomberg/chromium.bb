@@ -60,9 +60,10 @@ class NetworkPortalDetector
 
   class Observer {
    public:
-    // Called when portal state is changed for |network|.
-    virtual void OnPortalStateChanged(const Network* network,
-                                      const CaptivePortalState& state) = 0;
+    // Called when portal detection is completed for |network|.
+    virtual void OnPortalDetectionCompleted(
+        const Network* network,
+        const CaptivePortalState& state) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -155,9 +156,9 @@ class NetworkPortalDetector
   void SetCaptivePortalState(const Network* network,
                              const CaptivePortalState& results);
 
-  // Notifies observers that portal state is changed for a |network|.
-  void NotifyPortalStateChanged(const Network* network,
-                                const CaptivePortalState& state);
+  // Notifies observers that portal detection is completed for a |network|.
+  void NotifyPortalDetectionCompleted(const Network* network,
+                                      const CaptivePortalState& state);
 
   // Returns the current TimeTicks.
   base::TimeTicks GetCurrentTimeTicks() const;
