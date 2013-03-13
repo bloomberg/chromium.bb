@@ -3385,6 +3385,13 @@
               ['exclude', '(^|/)android/']
             ],
           }],
+          # Settings for building host targets on mac.
+          ['_toolset=="host" and host_os=="mac"', {
+            'ldflags!': [
+              '-Wl,-z,now',
+              '-Wl,-z,relro',
+            ],
+          }],
         ],
       },
     }],
