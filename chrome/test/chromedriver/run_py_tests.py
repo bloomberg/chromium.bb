@@ -24,13 +24,14 @@ _TEST_DATA_DIR = os.path.join(_THIS_DIR, os.pardir, 'data', 'chromedriver')
 
 from common import chrome_paths
 from common import unittest_util
+from common import util
 
-
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
-                                'build', 'android'))
-from pylib import android_commands
-from pylib import forwarder
-from pylib import valgrind_tools
+if util.IsLinux():
+  sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
+                                  'build', 'android'))
+  from pylib import android_commands
+  from pylib import forwarder
+  from pylib import valgrind_tools
 
 
 def Skip(func):
