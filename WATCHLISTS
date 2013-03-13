@@ -257,10 +257,6 @@
     'ipc': {
       'filepath': 'ipc/ipc',
     },
-    'labs': {
-      'filepath': 'chrome/browser/labs' \
-                  '|chrome/browser/dom_ui/labs'
-    },
     'layout_tests': {
       'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/',
     },
@@ -617,7 +613,6 @@
                 'dominich@chromium.org', 'samarth+watch@chromium.org',
                 'melevin@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
-    'labs': ['thakis@chromium.org'],
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
