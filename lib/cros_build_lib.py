@@ -1450,6 +1450,36 @@ def LoadKeyValueFile(input, ignore_missing=False):
   return d
 
 
+def MemoizedSingleCall(functor):
+  """Decorator for simple functor targets, caching the results
+
+  The functor must accept no arguments beyond either a class or self (depending
+  on if this is used in a classmethod/instancemethod context).  Results of the
+  wrapped method will be written to the class/instance namespace in a specially
+  named cached value.  All future invocations will just reuse that value.
+
+  Note that this cache is per-process, so sibling and parent processes won't
+  notice updates to the cache.
+  """
+  # TODO(build): Should we rebase to snakeoil.klass.cached* functionality?
+  def f(obj):
+    # pylint: disable=W0212
+    key = f._cache_key
+    val = getattr(obj, key, None)
+    if val is None:
+      val = functor(obj)
+      setattr(obj, key, val)
+    return val
+
+  # Dummy up our wrapper to make it look like what we're wrapping,
+  # and expose the underlying docstrings.
+  f.__name__ = functor.__name__
+  f.__module__ = functor.__module__
+  f.__doc__ = functor.__doc__
+  f._cache_key = '_%s_cached' % (functor.__name__.lstrip('_'),)
+  return f
+
+
 def SafeRun(functors, combine_exceptions=False):
   """Executes a list of functors, continuing on exceptions.
 

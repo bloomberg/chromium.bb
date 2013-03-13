@@ -58,34 +58,6 @@ def _FileContains(filename, strings):
   return all(s in contents for s in strings)
 
 
-def MemoizedSingleCall(functor):
-  """Decorator for simple functor targets, caching the results
-
-  The functor must accept no arguments beyond either a class or self (depending
-  on if this is used in a classmethod/instancemethod context).  Results of the
-  wrapped method will be written to the class/instance namespace in a specially
-  named cached value.  All future invocations will just reuse that value."""
-  # TODO(ferringb): rebase to snakeoil.klass.cached* functionality if/when
-  # snakeoil occurs.
-  def f(obj):
-    # Silence idiotic complaint from pylint.
-    # pylint: disable=W0212
-    key = f._cache_key
-    val = getattr(obj, key, None)
-    if val is None:
-      val = functor(obj)
-      setattr(obj, key, val)
-    return val
-
-  # Dummy up our wrapper to make it look like what we're wrapping,
-  # and expose the underlying docstrings.
-  f.__name__ = functor.__name__
-  f.__module__ = functor.__module__
-  f.__doc__ = functor.__doc__
-  f._cache_key = '_%s_cached' % (functor.__name__.lstrip('_'),)
-  return f
-
-
 def EnsureInitialized(functor):
   """Decorator for Cgroup methods to ensure the method is ran only if inited"""
 
@@ -136,7 +108,7 @@ class Cgroup(object):
   _SUPPORTS_AUTOINHERIT = False
 
   @classmethod
-  @MemoizedSingleCall
+  @cros_build_lib.MemoizedSingleCall
   def InitSystem(cls):
     """If cgroups are supported, initialize the system state"""
     if not cls.IsSupported():
@@ -170,7 +142,7 @@ class Cgroup(object):
         _EnsureMounted(cls.CGROUP_ROOT, cgroup_root_args)
 
   @classmethod
-  @MemoizedSingleCall
+  @cros_build_lib.MemoizedSingleCall
   def IsUsable(cls):
     """Function to sanity check if everything is setup to use cgroups"""
     if not cls.InitSystem():
@@ -180,7 +152,7 @@ class Cgroup(object):
     return True
 
   @classmethod
-  @MemoizedSingleCall
+  @cros_build_lib.MemoizedSingleCall
   def IsSupported(cls):
     """Sanity check as to whether or not cgroups are supported."""
     # Is the cgroup subsystem even enabled?
@@ -313,7 +285,7 @@ class Cgroup(object):
     return list(walk(self.nested_groups))
 
   @property
-  @MemoizedSingleCall
+  @cros_build_lib.MemoizedSingleCall
   def pid_owner(self):
     # Ensure it's in cros namespace- if it is outside of the cros namespace,
     # we shouldn't make assumptions about the naming convention used.
@@ -374,7 +346,7 @@ class Cgroup(object):
     return node._AddSingleGroup(chunks[-1], parent=node,
                                 autoclean=autoclean, **kwds)
 
-  @MemoizedSingleCall
+  @cros_build_lib.MemoizedSingleCall
   def Instantiate(self):
     """Ensure this group exists on disk in the cgroup hierarchy"""
 
