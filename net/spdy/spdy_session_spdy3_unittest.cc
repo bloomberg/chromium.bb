@@ -2310,14 +2310,6 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
-namespace {
-
-void ExpectOK(int status) {
-  EXPECT_EQ(OK, status);
-}
-
-}  // namespace
-
 // Send data back and forth; the send and receive windows should
 // change appropriately.
 TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
@@ -2398,10 +2390,9 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
 
   scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(msg_data_size));
   memcpy(buf->data(), msg_data.data(), msg_data_size);
-  scoped_ptr<test::TestSpdyStreamDelegate> delegate(
-      new test::TestSpdyStreamDelegate(
-          stream.get(), NULL, buf.get(), base::Bind(&ExpectOK)));
-  stream->SetDelegate(delegate.get());
+  test::StreamDelegateSendImmediate delegate(
+      stream.get(), scoped_ptr<SpdyHeaderBlock>(), buf.get());
+  stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
   (*headers)[":method"] = "GET";
@@ -2463,6 +2454,8 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 
   stream->Close();
+
+  EXPECT_EQ(OK, delegate.WaitForClose());
 }
 
 }  // namespace net
