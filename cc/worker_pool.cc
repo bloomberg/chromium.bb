@@ -29,9 +29,12 @@ class WorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
   virtual bool IsCheap() OVERRIDE { return false; }
 
-  virtual void WillRunOnThread(unsigned thread_index) OVERRIDE {}
-
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
+    task_.Run(rendering_stats);
+  }
+
+  virtual void RunOnThread(
+      RenderingStats* rendering_stats, unsigned thread_index) OVERRIDE {
     task_.Run(rendering_stats);
   }
 
@@ -412,8 +415,7 @@ void WorkerPool::Inner::Run() {
       {
         base::AutoUnlock unlock(lock_);
 
-        task->WillRunOnThread(thread_index);
-        task->Run(rendering_stats.get());
+        task->RunOnThread(rendering_stats.get(), thread_index);
       }
 
       completed_tasks_.push_back(task.Pass());

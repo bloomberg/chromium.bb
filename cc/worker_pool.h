@@ -25,10 +25,10 @@ class WorkerPoolTask {
 
   virtual bool IsCheap() = 0;
 
-  // Called before running the task on a thread that isn't the origin thread.
-  virtual void WillRunOnThread(unsigned thread_index) = 0;
-
   virtual void Run(RenderingStats* rendering_stats) = 0;
+
+  virtual void RunOnThread(
+      RenderingStats* rendering_stats, unsigned thread_index) = 0;
 
   void DidComplete();
 

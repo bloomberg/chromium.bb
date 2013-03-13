@@ -25,12 +25,14 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
   virtual bool IsCheap() OVERRIDE { return is_cheap_; }
 
-  virtual void WillRunOnThread(unsigned thread_index) OVERRIDE {
-    picture_pile_ = picture_pile_->GetCloneForDrawingOnThread(thread_index);
-  }
-
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(picture_pile_.get(), rendering_stats);
+  }
+
+  virtual void RunOnThread(
+      RenderingStats* rendering_stats, unsigned thread_index) OVERRIDE {
+    task_.Run(picture_pile_->GetCloneForDrawingOnThread(thread_index),
+              rendering_stats);
   }
 
  private:
