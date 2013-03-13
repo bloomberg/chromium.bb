@@ -16,6 +16,7 @@ namespace extensions {
 V8SchemaRegistry::V8SchemaRegistry() {}
 
 V8SchemaRegistry::~V8SchemaRegistry() {
+  v8::HandleScope handle_scope;
   for (SchemaCache::iterator i = schema_cache_.begin();
        i != schema_cache_.end(); ++i) {
     i->second.Dispose(i->second->CreationContext()->GetIsolate());
@@ -24,6 +25,7 @@ V8SchemaRegistry::~V8SchemaRegistry() {
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
     const std::set<std::string>& apis) {
+  v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(GetOrCreateContext());
   v8::Handle<v8::Array> v8_apis(v8::Array::New(apis.size()));
   size_t api_index = 0;
@@ -35,6 +37,7 @@ v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
 }
 
 v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
+  v8::HandleScope handle_scope;
   SchemaCache::iterator maybe_schema = schema_cache_.find(api);
   if (maybe_schema != schema_cache_.end())
     return maybe_schema->second;
