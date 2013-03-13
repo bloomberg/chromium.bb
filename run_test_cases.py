@@ -680,10 +680,13 @@ class Runner(object):
     cmd = self.cmd + ['--gtest_filter=%s' % ':'.join(test_cases)]
     if '--gtest_print_time' not in cmd:
       cmd.append('--gtest_print_time')
+
+    # TODO(maruel): Use a distribution model.
+    timeout = self.timeout * len(test_cases)
     start = time.time()
     output, returncode = call_with_timeout(
         cmd,
-        self.timeout,
+        timeout,
         cwd=self.cwd_dir,
         stderr=subprocess.STDOUT,
         env=self.env)
