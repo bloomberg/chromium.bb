@@ -964,8 +964,6 @@ void BrowserPluginGuest::OnUpdateRect(
       void* embedder_memory = damage_buffer_->memory();
       size_t size = std::min(guest_damage_buffer_size,
                              embedder_damage_buffer_size);
-      if (size > dib->size())
-        return;
       memcpy(embedder_memory, guest_memory, size);
     }
   }
