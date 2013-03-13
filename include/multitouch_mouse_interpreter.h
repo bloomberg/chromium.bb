@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>  // For FRIEND_TEST
 
 #include "gestures/include/gestures.h"
+#include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/tracer.h"
@@ -18,7 +19,7 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(MultitouchMouseInterpreterTest, SimpleTest);
  public:
   MultitouchMouseInterpreter(PropRegistry* prop_reg, Tracer* tracer);
-  virtual ~MultitouchMouseInterpreter();
+  virtual ~MultitouchMouseInterpreter() {}
 
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
@@ -28,19 +29,21 @@ class MultitouchMouseInterpreter : public Interpreter, public PropertyDelegate {
  private:
   void InterpretMultitouchEvent(Gesture* result);
 
-  // states_ is a circular buffer of HardwareState that is index relative to
-  // the current HardwareState; that is, the current one is at index 0, the
-  // previous one is at index -1, and so on.
-  HardwareState states_[2];
-  int current_state_pos_;
-  void PushState(const HardwareState& state);
-  void ResetStates(size_t max_finger_cnt);
-  // Index 0 is the current HardwareState, -1 is the previous HardwareState,
-  // and so on.
-  const HardwareState& State(int index) const;
+  HardwareStateBuffer state_buffer_;
+  ScrollEventBuffer scroll_buffer_;
 
   HardwareProperties hw_props_;
+
+  FingerMap prev_gs_fingers_;
+  FingerMap gs_fingers_;
+
+  GestureType prev_gesture_type_;
+  GestureType current_gesture_type_;
+
+  Gesture prev_result_;
   Gesture result_;
+
+  ScrollManager scroll_manager_;
 };
 
 }  // namespace gestures

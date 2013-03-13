@@ -43,6 +43,10 @@ TEST(MultitouchMouseInterpreterTest, SimpleTest) {
     { 240000, 0, 2, 2, fs_1, 0, 0, 0, 0 },
   };
 
+  // Make snap impossible
+  mi.scroll_manager_.horizontal_scroll_snap_slope_.val_ = 0;
+  mi.scroll_manager_.vertical_scroll_snap_slope_.val_ = 100;
+
   gs = mi.SyncInterpret(&hwstates[0], NULL);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
 
