@@ -237,7 +237,7 @@ class ChromotingHostTest : public testing::Test {
         ((connection_index == 0) ? owned_connection1_ : owned_connection2_).
         PassAs<protocol::ConnectionToClient>();
     protocol::ConnectionToClient* connection_ptr = connection.get();
-    scoped_refptr<ClientSession> client = new ClientSession(
+    scoped_ptr<ClientSession> client(new ClientSession(
         host_.get(),
         ui_task_runner_,  // Audio
         ui_task_runner_,  // Input
@@ -247,31 +247,33 @@ class ChromotingHostTest : public testing::Test {
         ui_task_runner_,  // UI
         connection.Pass(),
         desktop_environment_factory_.get(),
-        base::TimeDelta());
-    connection_ptr->set_host_stub(client);
+        base::TimeDelta()));
+
+    ClientSession* client_raw = client.get();
+    connection_ptr->set_host_stub(client_raw);
 
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
-                              host_, client));
+                              host_, base::Passed(&client)));
 
     if (authenticate) {
       ui_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
-                                client, connection_ptr));
+                                base::Unretained(client_raw), connection_ptr));
       if (!reject) {
         ui_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&ClientSession::OnConnectionChannelsConnected,
-                       client, connection_ptr));
+                       base::Unretained(client_raw), connection_ptr));
       }
     } else {
       ui_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionClosed,
-                                client, connection_ptr,
+                                base::Unretained(client_raw), connection_ptr,
                                 protocol::AUTHENTICATION_FAILED));
     }
 
-    get_client(connection_index) = client;
+    get_client(connection_index) = client_raw;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -360,8 +362,9 @@ class ChromotingHostTest : public testing::Test {
   }
 
   static void AddClientToHost(scoped_refptr<ChromotingHost> host,
-                              ClientSession* session) {
-    host->clients_.push_back(session);
+                              scoped_ptr<ClientSession> client) {
+    // |host| is responsible for deleting |client| from now on.
+    host->clients_.push_back(client.release());
   }
 
   void ShutdownHost() {

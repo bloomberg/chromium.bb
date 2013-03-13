@@ -4,6 +4,8 @@
 
 #include "remoting/host/chromoting_host.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -184,18 +186,17 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 
   login_backoff_.Reset();
 
-  // Disconnect all other clients.
-  // Iterate over a copy of the list of clients, to avoid mutating the list
-  // while iterating over it.
-  ClientList clients_copy(clients_);
-  for (ClientList::const_iterator other_client = clients_copy.begin();
-       other_client != clients_copy.end(); ++other_client) {
-    if (other_client->get() != client) {
-      (*other_client)->Disconnect();
-    }
+  // Disconnect all other clients. |it| should be advanced before Disconnect()
+  // is called to avoid it becoming invalid when the client is removed from
+  // the list.
+  ClientList::iterator it = clients_.begin();
+  while (it != clients_.end()) {
+    ClientSession* other_client = *it++;
+    if (other_client != client)
+      other_client->Disconnect();
   }
 
-  // Disconnects above must have destroyed all other clients and |recorder_|.
+  // Disconnects above must have destroyed all other clients.
   DCHECK_EQ(clients_.size(), 1U);
 
   // Notify observers that there is at least one authenticated client.
@@ -232,12 +233,7 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
-  ClientList::iterator it = clients_.begin();
-  for (; it != clients_.end(); ++it) {
-    if (it->get() == client) {
-      break;
-    }
-  }
+  ClientList::iterator it = std::find(clients_.begin(), clients_.end(), client);
   CHECK(it != clients_.end());
 
   if (client->is_authenticated()) {
@@ -245,8 +241,8 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
                       OnClientDisconnected(client->client_jid()));
   }
 
-  client->Stop();
   clients_.erase(it);
+  delete client;
 
   if (state_ == kStopping && clients_.empty())
     ShutdownFinish();
@@ -311,7 +307,7 @@ void ChromotingHost::OnIncomingSession(
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(
       new protocol::ConnectionToClient(session));
-  scoped_refptr<ClientSession> client = new ClientSession(
+  ClientSession* client = new ClientSession(
       this,
       audio_task_runner_,
       input_task_runner_,

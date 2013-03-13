@@ -5,8 +5,8 @@
 #ifndef REMOTING_HOST_CHROMOTING_HOST_H_
 #define REMOTING_HOST_CHROMOTING_HOST_H_
 
+#include <list>
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -157,7 +157,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
 
-  typedef std::vector<scoped_refptr<ClientSession> > ClientList;
+  typedef std::list<ClientSession*> ClientList;
 
   enum State {
     kInitial,

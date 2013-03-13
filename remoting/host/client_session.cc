@@ -89,6 +89,16 @@ ClientSession::ClientSession(
 #endif  // defined(OS_WIN)
 }
 
+ClientSession::~ClientSession() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!audio_scheduler_);
+  DCHECK(!event_executor_);
+  DCHECK(!session_controller_);
+  DCHECK(!video_scheduler_);
+
+  connection_.reset();
+}
+
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   if (resolution.has_dips_width() && resolution.has_dips_height()) {
@@ -267,16 +277,6 @@ void ClientSession::Disconnect() {
   connection_->Disconnect();
 }
 
-void ClientSession::Stop() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!audio_scheduler_);
-  DCHECK(!event_executor_);
-  DCHECK(!session_controller_);
-  DCHECK(!video_scheduler_);
-
-  connection_.reset();
-}
-
 void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {
   DCHECK(CalledOnValidThread());
   remote_input_filter_.LocalMouseMoved(mouse_pos);
@@ -290,14 +290,6 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 
   disable_input_filter_.set_enabled(!disable_inputs);
   disable_clipboard_filter_.set_enabled(!disable_inputs);
-}
-
-ClientSession::~ClientSession() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!audio_scheduler_);
-  DCHECK(!event_executor_);
-  DCHECK(!session_controller_);
-  DCHECK(!video_scheduler_);
 }
 
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
@@ -340,11 +332,6 @@ scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
 
   NOTIMPLEMENTED();
   return scoped_ptr<AudioEncoder>(NULL);
-}
-
-// static
-void ClientSessionTraits::Destruct(const ClientSession* client) {
-  client->network_task_runner_->DeleteSoon(FROM_HERE, client);
 }
 
 }  // namespace remoting

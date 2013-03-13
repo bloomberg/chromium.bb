@@ -34,7 +34,6 @@ namespace remoting {
 
 class AudioEncoder;
 class AudioScheduler;
-struct ClientSessionTraits;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class EventExecutor;
@@ -45,8 +44,7 @@ class VideoScheduler;
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
 class ClientSession
-    : public base::RefCountedThreadSafe<ClientSession, ClientSessionTraits>,
-      public protocol::HostStub,
+    : public protocol::HostStub,
       public protocol::ConnectionToClient::EventHandler,
       public base::NonThreadSafe {
  public:
@@ -96,6 +94,7 @@ class ClientSession
       scoped_ptr<protocol::ConnectionToClient> connection,
       DesktopEnvironmentFactory* desktop_environment_factory,
       const base::TimeDelta& max_duration);
+  virtual ~ClientSession();
 
   // protocol::HostStub interface.
   virtual void NotifyClientResolution(
@@ -124,10 +123,6 @@ class ClientSession
   // method returns.
   void Disconnect();
 
-  // Stops the ClientSession. The caller can safely release its reference to
-  // the client session once Stop() returns.
-  void Stop();
-
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
   }
@@ -146,10 +141,6 @@ class ClientSession
   void SetDisableInputs(bool disable_inputs);
 
  private:
-  friend class base::DeleteHelper<ClientSession>;
-  friend struct ClientSessionTraits;
-  virtual ~ClientSession();
-
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
@@ -228,11 +219,6 @@ class ClientSession
   scoped_ptr<SessionController> session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
-};
-
-// Destroys |ClienSession| instances on the network thread.
-struct ClientSessionTraits {
-  static void Destruct(const ClientSession* client);
 };
 
 }  // namespace remoting

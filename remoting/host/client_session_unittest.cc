@@ -100,7 +100,7 @@ class ClientSessionTest : public testing::Test {
   MessageLoop message_loop_;
 
   // ClientSession instance under test.
-  scoped_refptr<ClientSession> client_session_;
+  scoped_ptr<ClientSession> client_session_;
 
   // ClientSession::EventHandler mock for use in tests.
   MockClientSessionEventHandler session_event_handler_;
@@ -160,7 +160,7 @@ void ClientSessionTest::SetUp() {
   EXPECT_CALL(*connection, Disconnect());
   connection_ = connection.get();
 
-  client_session_ = new ClientSession(
+  client_session_.reset(new ClientSession(
       &session_event_handler_,
       ui_task_runner, // Audio thread.
       ui_task_runner, // Input thread.
@@ -170,12 +170,12 @@ void ClientSessionTest::SetUp() {
       ui_task_runner, // UI thread.
       connection.PassAs<protocol::ConnectionToClient>(),
       desktop_environment_factory_.get(),
-      base::TimeDelta());
+      base::TimeDelta()));
 }
 
 void ClientSessionTest::TearDown() {
   // Verify that the client session has been stopped.
-  EXPECT_TRUE(client_session_.get() == NULL);
+  EXPECT_TRUE(!client_session_);
 }
 
 void ClientSessionTest::DisconnectClientSession() {
@@ -186,9 +186,7 @@ void ClientSessionTest::DisconnectClientSession() {
 }
 
 void ClientSessionTest::StopClientSession() {
-  // MockClientSessionEventHandler won't trigger Stop, so fake it.
-  client_session_->Stop();
-  client_session_ = NULL;
+  client_session_.reset();
 
   desktop_environment_factory_.reset();
 }
