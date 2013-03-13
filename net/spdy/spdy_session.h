@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -47,6 +48,9 @@ const int kMaxConcurrentPushedStreams = 1000;
 // Specifies the number of bytes read synchronously (without yielding) if the
 // data is available.
 const int kMaxReadBytes = 32 * 1024;
+
+// The initial receive window size for both streams and sessions.
+const int32 kDefaultInitialRecvWindowSize = 10 * 1024 * 1024;  // 10MB
 
 class BoundNetLog;
 struct LoadTimingInfo;

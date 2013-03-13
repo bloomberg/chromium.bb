@@ -200,7 +200,6 @@ const size_t kInitialMaxConcurrentStreams = 100;
 // The maximum number of concurrent streams we will ever create.  Even if
 // the server permits more, we will never exceed this limit.
 const size_t kMaxConcurrentStreamLimit = 256;
-const size_t kDefaultInitialRecvWindowSize = 10 * 1024 * 1024;  // 10MB
 
 }  // namespace
 
@@ -444,6 +443,18 @@ net::Error SpdySession::InitializeWithSocket(
   buffered_spdy_framer_->set_visitor(this);
   SendInitialSettings();
   UMA_HISTOGRAM_ENUMERATION("Net.SpdyVersion", protocol, kProtoMaximumVersion);
+
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+    // Bump up the receive window size to the real initial value. This
+    // has to go here since the WINDOW_UPDATE frame sent by
+    // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
+    DCHECK_GT(kDefaultInitialRecvWindowSize, session_recv_window_size_);
+    // This condition implies that |kDefaultInitialRecvWindowSize| -
+    // |session_recv_window_size_| doesn't overflow.
+    DCHECK_GT(session_recv_window_size_, 0);
+    IncreaseRecvWindowSize(
+        kDefaultInitialRecvWindowSize - session_recv_window_size_);
+  }
 
   // Write out any data that we might have to send, such as the settings frame.
   WriteSocketLater();

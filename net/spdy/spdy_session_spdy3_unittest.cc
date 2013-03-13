@@ -2150,7 +2150,7 @@ TEST_F(SpdySessionSpdy3Test, ProtocolNegotiation31) {
             session->flow_control_state());
   EXPECT_EQ(kSpdyVersion3, session->buffered_spdy_framer_->protocol_version());
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
@@ -2195,14 +2195,19 @@ TEST_F(SpdySessionSpdy3Test, AdjustRecvWindowSize31) {
 
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
-    MockRead(ASYNC, 0, 1)  // EOF
+    MockRead(ASYNC, 0, 2)  // EOF
   };
+  scoped_ptr<SpdyFrame> initial_window_update(
+      ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> window_update(
       ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId,
           kSpdySessionInitialWindowSize + delta_window_size));
   MockWrite writes[] = {
-    CreateMockWrite(*window_update, 0),
+    CreateMockWrite(*initial_window_update, 0),
+    CreateMockWrite(*window_update, 1),
   };
   DeterministicSocketData data(reads, arraysize(reads),
                                writes, arraysize(writes));
@@ -2219,24 +2224,26 @@ TEST_F(SpdySessionSpdy3Test, AdjustRecvWindowSize31) {
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
 
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   session->IncreaseRecvWindowSize(delta_window_size);
-  EXPECT_EQ(kSpdySessionInitialWindowSize + delta_window_size,
+  EXPECT_EQ(kDefaultInitialRecvWindowSize + delta_window_size,
             session->session_recv_window_size_);
   EXPECT_EQ(delta_window_size, session->session_unacked_recv_window_bytes_);
 
   // Should trigger sending a WINDOW_UPDATE frame.
   session->IncreaseRecvWindowSize(kSpdySessionInitialWindowSize);
-  EXPECT_EQ(2 * kSpdySessionInitialWindowSize + delta_window_size,
+  EXPECT_EQ(kDefaultInitialRecvWindowSize + delta_window_size +
+            kSpdySessionInitialWindowSize,
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(2);
 
   session->DecreaseRecvWindowSize(
-      2 * kSpdySessionInitialWindowSize + delta_window_size);
+      kDefaultInitialRecvWindowSize + delta_window_size +
+      kSpdySessionInitialWindowSize);
   EXPECT_EQ(0, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
@@ -2284,10 +2291,18 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   scoped_ptr<SpdyFrame> resp(ConstructSpdyBodyFrame(1, false));
   MockRead reads[] = {
-    CreateMockRead(*resp, 0),
-    MockRead(ASYNC, 0, 1)  // EOF
+    CreateMockRead(*resp, 1),
+    MockRead(ASYNC, 0, 2)  // EOF
   };
-  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<SpdyFrame> initial_window_update(
+      ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+  MockWrite writes[] = {
+    CreateMockWrite(*initial_window_update, 0)
+  };
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
   data.set_connect_data(connect_data);
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
@@ -2301,12 +2316,12 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlInactiveStream31) {
   EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
             session->flow_control_state());
 
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  data.RunFor(2);
+  data.RunFor(3);
 
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }
 
@@ -2345,14 +2360,19 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
     ":version",
     "HTTP/1.1",
   };
+  scoped_ptr<SpdyFrame> initial_window_update(
+      ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
       ConstructSpdyPacket(
           kSynStartHeader, NULL, 0, kGetHeaders, arraysize(kGetHeaders) / 2));
   scoped_ptr<SpdyFrame> msg(
       ConstructSpdyBodyFrame(1, msg_data.data(), msg_data_size, false));
   MockWrite writes[] = {
-    CreateMockWrite(*req, 0),
-    CreateMockWrite(*msg, 2),
+    CreateMockWrite(*initial_window_update, 0),
+    CreateMockWrite(*req, 1),
+    CreateMockWrite(*msg, 3),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -2362,10 +2382,10 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
       ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId, msg_data_size));
   MockRead reads[] = {
-    CreateMockRead(*resp, 1),
-    CreateMockRead(*echo, 3),
-    CreateMockRead(*window_update, 4),
-    MockRead(ASYNC, 0, 5)  // EOF
+    CreateMockRead(*resp, 2),
+    CreateMockRead(*echo, 4),
+    CreateMockRead(*window_update, 5),
+    MockRead(ASYNC, 0, 6)  // EOF
   };
 
   // Create SpdySession and SpdyStream and send the request.
@@ -2406,41 +2426,41 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(true));
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  data.RunFor(1);
+  data.RunFor(2);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
             session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
+  EXPECT_EQ(kDefaultInitialRecvWindowSize - msg_data_size,
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_send_window_size_);
-  EXPECT_EQ(kSpdySessionInitialWindowSize - msg_data_size,
+  EXPECT_EQ(kDefaultInitialRecvWindowSize - msg_data_size,
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
@@ -2450,7 +2470,7 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   // Normally done by the delegate, but not by our test delegate.
   session->IncreaseRecvWindowSize(msg_data_size);
 
-  EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialRecvWindowSize, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 
   stream->Close();
