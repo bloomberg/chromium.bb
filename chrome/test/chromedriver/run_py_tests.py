@@ -288,6 +288,8 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     div.Click()
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  # TODO(chrisgao): https://code.google.com/p/chromedriver/issues/detail?id=213.
+  @Skip
   def testClickElementInSubFrame(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/frame_test.html'))
     frame = self._driver.FindElement('tag name', 'iframe')

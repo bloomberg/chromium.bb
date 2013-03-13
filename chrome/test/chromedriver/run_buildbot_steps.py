@@ -84,7 +84,7 @@ def MaybeRelease(revision):
   bitness = '32'
   if sys.maxint > 2**32:
     bitness = '64'
-  zip_name = 'experimental_chromedriver2_%s%s_%s.zip' % (
+  zip_name = 'chromedriver2_%s%s_%s.zip' % (
       util.GetPlatformName(), bitness, version)
 
   site = 'https://code.google.com/p/chromedriver/downloads/list'
