@@ -802,7 +802,7 @@ std::string AboutSandbox() {
                      status & content::kSandboxLinuxPIDNS &&
                      status & content::kSandboxLinuxNetNS;
   // A second-layer sandbox is also required to be adequately sandboxed.
-  bool good_layer2 = status & content::kSandboxLinuxSeccompLegacy;
+  bool good_layer2 = status & content::kSandboxLinuxSeccompBpf;
   bool good = good_layer1 && good_layer2;
 
   if (good) {
