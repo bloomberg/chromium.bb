@@ -7,8 +7,11 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,17 +40,39 @@ class SearchMetadataTest : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_->LoadResourceListForWapi(
+        "chromeos/gdata/root_feed.json");
+    fake_drive_service_->LoadAccountMetadataForWapi(
+        "chromeos/gdata/account_metadata.json");
+    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
+
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
+
+    drive_cache_ = new DriveCache(
+        DriveCache::GetCacheRootPath(profile_.get()),
+        blocking_task_runner_,
+        fake_free_disk_space_getter_.get());
+
+    drive_webapps_registry_.reset(new DriveWebAppsRegistry);
+
     file_system_.reset(new DriveFileSystem(profile_.get(),
-                                           NULL,  // cache
+                                           drive_cache_,
                                            fake_drive_service_.get(),
                                            NULL,  // uploader
-                                           NULL,  // webapps registry
+                                           drive_webapps_registry_.get(),
                                            blocking_task_runner_));
     file_system_->Initialize();
-    ASSERT_TRUE(test_util::LoadChangeFeed("chromeos/gdata/root_feed.json",
-                                          file_system_->change_list_loader(),
-                                          false,
-                                          1));
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    file_system_->change_list_loader()->LoadFromServerIfNeeded(
+        DirectoryFetchInfo(),
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                   &error));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_EQ(DRIVE_FILE_OK, error);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    test_util::DeleteDriveCache(drive_cache_);
   }
 
  protected:
@@ -56,6 +81,9 @@ class SearchMetadataTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  DriveCache* drive_cache_;
+  scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<DriveFileSystem> file_system_;
 };
 
