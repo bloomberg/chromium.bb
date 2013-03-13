@@ -465,11 +465,7 @@ public class AwContents {
 
         mContentViewCore.loadUrl(params);
 
-        if (mInterceptNavigationDelegate != null) {
-            // getUrl returns a sanitized address in the same format that will be used for
-            // callbacks, so it's safe to use string comparison as an equality check later on.
-            mInterceptNavigationDelegate.onUrlLoadRequested(mContentViewCore.getUrl());
-        }
+        suppressInterceptionForThisNavigation();
 
         // The behavior of WebViewClassic uses the populateVisitedLinks callback in WebKit.
         // Chromium does not use this use code path and the best emulation of this behavior to call
@@ -477,6 +473,14 @@ public class AwContents {
         if (!mHasRequestedVisitedHistoryFromClient) {
           mHasRequestedVisitedHistoryFromClient = true;
           requestVisitedHistoryFromClient();
+        }
+    }
+
+    private void suppressInterceptionForThisNavigation() {
+        if (mInterceptNavigationDelegate != null) {
+            // getUrl returns a sanitized address in the same format that will be used for
+            // callbacks, so it's safe to use string comparison as an equality check later on.
+            mInterceptNavigationDelegate.onUrlLoadRequested(mContentViewCore.getUrl());
         }
     }
 
@@ -620,6 +624,8 @@ public class AwContents {
      */
     public void goBack() {
         mContentViewCore.goBack();
+
+        suppressInterceptionForThisNavigation();
     }
 
     /**
@@ -634,6 +640,8 @@ public class AwContents {
      */
     public void goForward() {
         mContentViewCore.goForward();
+
+        suppressInterceptionForThisNavigation();
     }
 
     /**
@@ -648,6 +656,8 @@ public class AwContents {
      */
     public void goBackOrForward(int steps) {
         mContentViewCore.goToOffset(steps);
+
+        suppressInterceptionForThisNavigation();
     }
 
     /**

@@ -203,6 +203,71 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
     }
 
+    private void waitForNavigationRunnableAndAssertTitleChanged(AwContents awContents,
+            CallbackHelper onPageFinishedHelper,
+            Runnable navigationRunnable) throws Exception {
+        final int callCount = onPageFinishedHelper.getCallCount();
+        final String oldTitle = getTitleOnUiThread(awContents);
+        getInstrumentation().runOnMainSync(navigationRunnable);
+        onPageFinishedHelper.waitForCallback(callCount);
+        assertFalse(oldTitle.equals(getTitleOnUiThread(awContents)));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
+    public void testNotCalledOnBackForwardNavigation() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
+            contentsClient.getShouldIgnoreNavigationHelper();
+        final String[] pageTitles = new String[] { "page1", "page2", "page3" };
+
+        for (String title: pageTitles) {
+            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                    CommonResources.makeHtmlPageFrom("<title>" + title + "</title>", ""),
+                    "text/html", false);
+        }
+        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+
+        waitForNavigationRunnableAndAssertTitleChanged(awContents,
+                contentsClient.getOnPageFinishedHelper(), new Runnable() {
+            @Override
+            public void run() {
+                awContents.goBack();
+            }
+        });
+        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+
+        waitForNavigationRunnableAndAssertTitleChanged(awContents,
+                contentsClient.getOnPageFinishedHelper(), new Runnable() {
+            @Override
+            public void run() {
+                awContents.goForward();
+            }
+        });
+        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+
+        waitForNavigationRunnableAndAssertTitleChanged(awContents,
+                contentsClient.getOnPageFinishedHelper(), new Runnable() {
+            @Override
+            public void run() {
+                awContents.goBackOrForward(-2);
+            }
+        });
+        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+
+        waitForNavigationRunnableAndAssertTitleChanged(awContents,
+                contentsClient.getOnPageFinishedHelper(), new Runnable() {
+            @Override
+            public void run() {
+                awContents.goBackOrForward(1);
+            }
+        });
+        assertEquals(0, shouldIgnoreNavigationHelper.getCallCount());
+    }
+
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
     public void testCantBlockLoads() throws Throwable {
