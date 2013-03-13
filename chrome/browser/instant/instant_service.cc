@@ -9,7 +9,9 @@
 #include "chrome/browser/instant/instant_io_context.h"
 #include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -59,7 +61,13 @@ InstantService::InstantService(Profile* profile)
                    profile->GetResourceContext(), instant_io_context_));
   }
 
+  // Set up the data sources that Instant uses on the NTP.
+#if defined(ENABLE_THEMES)
+  content::URLDataSource::Add(profile, new ThemeSource(profile));
+#endif
   content::URLDataSource::Add(profile, new ThumbnailSource(profile));
+  content::URLDataSource::Add(profile, new FaviconSource(
+      profile, FaviconSource::FAVICON));
 }
 
 InstantService::~InstantService() {
