@@ -74,6 +74,7 @@ ResourceProvider::Resource::Resource()
       exported(false),
       marked_for_deletion(false),
       pending_set_pixels(false),
+      set_pixels_completion_forced(false),
       allocated(false),
       enable_read_lock_fences(false),
       read_lock_fence(NULL),
@@ -97,6 +98,7 @@ ResourceProvider::Resource::Resource(
       exported(false),
       marked_for_deletion(false),
       pending_set_pixels(false),
+      set_pixels_completion_forced(false),
       allocated(false),
       enable_read_lock_fences(false),
       read_lock_fence(NULL),
@@ -118,6 +120,7 @@ ResourceProvider::Resource::Resource(
       exported(false),
       marked_for_deletion(false),
       pending_set_pixels(false),
+      set_pixels_completion_forced(false),
       allocated(false),
       enable_read_lock_fences(false),
       read_lock_fence(NULL),
@@ -438,7 +441,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
-  DCHECK(!resource->locked_for_write);
+  DCHECK(!resource->locked_for_write || resource->set_pixels_completion_forced);
   DCHECK(!resource->exported);
   // Uninitialized! Call SetPixels or LockForWrite first.
   DCHECK(resource->allocated);
@@ -1016,7 +1019,7 @@ void ResourceProvider::BindForSampling(ResourceProvider::ResourceId resource_id,
   DCHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(resource->lock_for_read_count);
-  DCHECK(!resource->locked_for_write);
+  DCHECK(!resource->locked_for_write || resource->set_pixels_completion_forced);
 
   GLC(context3d, context3d->bindTexture(target, resource->gl_id));
   if (filter != resource->filter) {
@@ -1085,6 +1088,26 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
     SetPixelsFromBuffer(id);
 
   resource->pending_set_pixels = true;
+  resource->set_pixels_completion_forced = false;
+}
+
+void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ResourceMap::iterator it = resources_.find(id);
+  CHECK(it != resources_.end());
+  Resource* resource = &it->second;
+  DCHECK(resource->locked_for_write);
+  DCHECK(resource->pending_set_pixels);
+  DCHECK(!resource->set_pixels_completion_forced);
+
+  if (resource->gl_id) {
+    WebGraphicsContext3D* context3d = output_surface_->context3d();
+    GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->gl_id));
+    GLC(context3d, context3d->waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D));
+    GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, 0));
+  }
+
+  resource->set_pixels_completion_forced = true;
 }
 
 bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {

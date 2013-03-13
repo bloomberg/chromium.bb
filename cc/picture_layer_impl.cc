@@ -507,6 +507,13 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
   float min_acceptable_scale =
       std::min(raster_contents_scale, ideal_contents_scale_);
 
+  TreePriority tree_priority =
+      layer_tree_impl()->tile_manager()->GlobalState().tree_priority;
+  bool should_force_uploads =
+      tree_priority != SMOOTHNESS_TAKES_PRIORITY &&
+      layer_tree_impl()->animationRegistrar()->
+          active_animation_controllers().empty();
+
   if (PictureLayerImpl* twin = ActiveTwin()) {
     float twin_raster_contents_scale =
         twin->raster_page_scale_ *
@@ -531,6 +538,8 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
                                            PictureLayerTiling::LayerDeviceAlignmentUnknown);
          iter;
          ++iter) {
+      if (should_force_uploads && iter)
+        layer_tree_impl()->tile_manager()->ForceTileUploadToComplete(*iter);
       // A null tile (i.e. no recording) is considered "ready".
       if (!*iter || iter->drawing_info().IsReadyToDraw())
         missing_region.Subtract(iter.geometry_rect());

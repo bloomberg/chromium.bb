@@ -879,6 +879,7 @@ public:
     MOCK_METHOD9(asyncTexSubImage2DCHROMIUM, void(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset,
                                                   WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format,
                                                   WGC3Denum type, const void* pixels));
+    MOCK_METHOD1(waitAsyncTexImage2DCHROMIUM, void(WGC3Denum target));
 };
 
 TEST_P(ResourceProviderTest, TextureAllocation)
@@ -945,6 +946,68 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     resourceProvider->BeginSetPixels(id);
     resourceProvider->ReleasePixelBuffer(id);
     resourceProvider->DeleteResource(id);
+    Mock::VerifyAndClearExpectations(context);
+}
+
+TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete)
+{
+    // Only for GL textures.
+    if (GetParam() != ResourceProvider::GLTexture)
+        return;
+    scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
+        static_cast<WebKit::WebGraphicsContext3D*>(new NiceMock<AllocationTrackingContext3D>));
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(mock_context.Pass()));
+
+    gfx::Size size(2, 2);
+    WGC3Denum format = GL_RGBA;
+    ResourceProvider::ResourceId id = 0;
+    int textureId = 123;
+
+    AllocationTrackingContext3D* context = static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
+
+    EXPECT_CALL(*context, createTexture()).WillOnce(Return(textureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId)).Times(3);
+    EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_,_,_,2,2,_,_,_,_)).Times(1);
+    EXPECT_CALL(*context, waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D)).Times(1);
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
+    id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->AcquirePixelBuffer(id);
+    resourceProvider->BeginSetPixels(id);
+    resourceProvider->ForceSetPixelsToComplete(id);
+    resourceProvider->ReleasePixelBuffer(id);
+    Mock::VerifyAndClearExpectations(context);
+}
+
+TEST_P(ResourceProviderTest, AbortForcedAsyncUpload)
+{
+    // Only for GL textures.
+    if (GetParam() != ResourceProvider::GLTexture)
+        return;
+    scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
+        static_cast<WebKit::WebGraphicsContext3D*>(new NiceMock<AllocationTrackingContext3D>));
+    scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(mock_context.Pass()));
+
+    gfx::Size size(2, 2);
+    WGC3Denum format = GL_RGBA;
+    ResourceProvider::ResourceId id = 0;
+    int textureId = 123;
+
+    AllocationTrackingContext3D* context = static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::Create(outputSurface.get()));
+
+    EXPECT_CALL(*context, createTexture()).WillRepeatedly(Return(textureId));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, textureId)).Times(4);
+    EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_,_,_,2,2,_,_,_,_)).Times(1);
+    EXPECT_CALL(*context, waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D)).Times(1);
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
+    EXPECT_CALL(*context, deleteTexture(_)).Times(1);
+    id = resourceProvider->CreateResource(size, format, ResourceProvider::TextureUsageAny);
+    resourceProvider->AcquirePixelBuffer(id);
+    resourceProvider->BeginSetPixels(id);
+    resourceProvider->ForceSetPixelsToComplete(id);
+    resourceProvider->AbortSetPixels(id);
+    resourceProvider->ReleasePixelBuffer(id);
     Mock::VerifyAndClearExpectations(context);
 }
 

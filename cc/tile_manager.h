@@ -61,7 +61,8 @@ enum TileRasterState {
   WAITING_FOR_RASTER_STATE = 1,
   RASTER_STATE = 2,
   UPLOAD_STATE = 3,
-  NUM_STATES = 4
+  FORCED_UPLOAD_COMPLETION_STATE = 4,
+  NUM_STATES = 5
 };
 scoped_ptr<base::Value> TileRasterStateAsValue(
     TileRasterState bin);
@@ -88,6 +89,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
   void ManageTiles();
   void CheckForCompletedTileUploads();
   void AbortPendingTileUploads();
+  void ForceTileUploadToComplete(Tile* tile);
   void DidCompleteFrame();
 
   scoped_ptr<base::Value> BasicStateAsValue() const;

@@ -280,6 +280,7 @@ class CC_EXPORT ResourceProvider {
 
   // Asynchronously update pixels from acquired pixel buffer.
   void BeginSetPixels(ResourceId id);
+  void ForceSetPixelsToComplete(ResourceId id);
   bool DidSetPixelsComplete(ResourceId id);
   void AbortSetPixels(ResourceId id);
 
@@ -328,6 +329,7 @@ class CC_EXPORT ResourceProvider {
     bool exported;
     bool marked_for_deletion;
     bool pending_set_pixels;
+    bool set_pixels_completion_forced;
     bool allocated;
     bool enable_read_lock_fences;
     scoped_refptr<Fence> read_lock_fence;

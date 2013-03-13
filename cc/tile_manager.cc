@@ -137,6 +137,9 @@ scoped_ptr<base::Value> TileRasterStateAsValue(
   case UPLOAD_STATE:
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "UPLOAD_STATE"));
+  case FORCED_UPLOAD_COMPLETION_STATE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "FORCED_UPLOAD_COMPLETION_STATE"));
   default:
       DCHECK(false) << "Unrecognized TileRasterState value";
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
@@ -428,6 +431,18 @@ void TileManager::DidCompleteFrame() {
   did_schedule_cheap_tasks_ = false;
 }
 
+void TileManager::ForceTileUploadToComplete(Tile* tile) {
+  ManagedTileState& managed_tile_state = tile->managed_state();
+  if (managed_tile_state.raster_state == UPLOAD_STATE) {
+    Resource* resource = tile->drawing_info().resource_.get();
+    DCHECK(resource);
+    resource_pool_->resource_provider()->
+        ForceSetPixelsToComplete(resource->id());
+    tile->drawing_info().resource_is_being_initialized_ = false;
+    DidTileRasterStateChange(tile, FORCED_UPLOAD_COMPLETION_STATE);
+  }
+}
+
 void TileManager::GetMemoryStats(
     size_t* memoryRequiredBytes,
     size_t* memoryNiceToHaveBytes,
@@ -513,6 +528,7 @@ bool TileManager::HasPendingWorkScheduled(WhichTree tree) const {
       case WAITING_FOR_RASTER_STATE:
       case RASTER_STATE:
       case UPLOAD_STATE:
+      case FORCED_UPLOAD_COMPLETION_STATE:
         for (int j = 0; j < NEVER_BIN; ++j) {
           if (raster_state_count_[i][tree][j])
             return true;
