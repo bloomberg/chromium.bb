@@ -32,7 +32,8 @@ class SDKFetcher(object):
   SDK_VERSION_ENV = '%SDK_VERSION'
   SDK_BOARD_ENV = '%SDK_BOARD'
 
-  SDKContext = collections.namedtuple('SDKContext', ['version', 'key_map'])
+  SDKContext = collections.namedtuple(
+      'SDKContext', ['version', 'metadata', 'key_map'])
 
   TARBALL_CACHE = 'tarballs'
   MISC_CACHE = 'misc'
@@ -155,6 +156,7 @@ class SDKFetcher(object):
       object are:
 
       version: The version that was prepared.
+      metadata: A dictionary containing the build metadata for the SDK version.
       key_map: Dictionary that contains CacheReference objects for the SDK
         artifacts, indexed by cache key.
     """
@@ -166,9 +168,9 @@ class SDKFetcher(object):
     fetch_urls = {}
     version_base = os.path.join(self.gs_base, version)
 
+    metadata = self._GetMetadata(version)
     # Fetch toolchains from separate location.
     if self.TARGET_TOOLCHAIN_KEY in components:
-      metadata = self._GetMetadata(version)
       tc_tuple = metadata['toolchain-tuple'][0]
       fetch_urls[self.TARGET_TOOLCHAIN_KEY] = os.path.join(
           'gs://', constants.SDK_GS_BUCKET,
@@ -189,7 +191,7 @@ class SDKFetcher(object):
           # i.e.,DiskCache.ParallelSetDefault().
           self._UpdateTarball(url, ref)
 
-      yield self.SDKContext(version, key_map)
+      yield self.SDKContext(version, metadata, key_map)
     finally:
       # TODO(rcui): Move to using cros_build_lib.ContextManagerStack()
       cros_build_lib.SafeRun([ref.Release for ref in key_map.itervalues()])
@@ -226,6 +228,16 @@ class ChromeSDKCommand(cros.CrosCommand):
         '--bashrc', default=constants.CHROME_SDK_BASHRC,
         help='A bashrc file used to set up the SDK shell environment. '
              'Defaults to %s.' % constants.CHROME_SDK_BASHRC)
+    parser.add_argument(
+        '--clang', action='store_true', default=False,
+        help='Sets up the environment for building with clang.  Due to a bug '
+             'with ninja, requires --make to be set.')
+    parser.add_argument(
+        '--make', action='store_true', default=False,
+        help='If set, gyp_chromium will generate Make files instead of Ninja '
+             'files.  Note: Make files are spread out through the source tree, '
+             'and not concentrated in the out_<board> directory, so you can '
+             'only have one Make config running at a time.')
     parser.add_argument(
         '--update', action='store_true', default=False,
         help='Force download of latest SDK version for the board.')
@@ -274,39 +286,65 @@ class ChromeSDKCommand(cros.CrosCommand):
     gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
     return '%s -B%s' % (cmd, gold_path)
 
-  def _SetupEnvironment(self, board, version, key_map):
+  def _SetupTCEnvironment(self, sdk_ctx, options, env):
+    """Sets up toolchain-related environment variables."""
+    target_tc = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
+    tc_bin = os.path.join(target_tc, 'bin')
+    env['PATH'] = '%s:%s' % (tc_bin, os.environ['PATH'])
+
+    for var in ('CXX', 'CC', 'LD'):
+      env[var] = self._FixGoldPath(env[var], target_tc)
+
+    if options.clang:
+      # clang++ requires C++ header paths to be explicitly specified.
+      # See discussion on crbug.com/86037.
+      tc_tuple = sdk_ctx.metadata['toolchain-tuple'][0]
+      gcc_path = os.path.join(tc_bin, '%s-gcc' % tc_tuple)
+      gcc_version = cros_build_lib.DebugRunCommand(
+          [gcc_path, '-dumpversion'], redirect_stdout=True).output.strip()
+      gcc_lib = 'usr/lib/gcc/%(tuple)s/%(ver)s/include/g++-v%(major_ver)s' % {
+          'tuple': tc_tuple,
+          'ver': gcc_version,
+          'major_ver': gcc_version[0],
+      }
+      tc_gcc_lib = os.path.join(target_tc, gcc_lib)
+      includes = []
+      for p in ('',  tc_tuple, 'backward'):
+        includes.append('-isystem %s' % os.path.join(tc_gcc_lib, p))
+      env['CC'] = 'clang'
+      env['CXX'] = 'clang++ %s' % ' '.join(includes)
+
+    env['CXX_host'] = 'g++'
+    env['CC_host'] = 'gcc'
+
+  def _SetupEnvironment(self, board, sdk_ctx, options):
     """Sets environment variables to export to the SDK shell."""
-    sysroot = key_map[constants.CHROME_SYSROOT_TAR].path
-    environment = os.path.join(key_map[constants.CHROME_ENV_TAR].path,
+    sysroot = sdk_ctx.key_map[constants.CHROME_SYSROOT_TAR].path
+    environment = os.path.join(sdk_ctx.key_map[constants.CHROME_ENV_TAR].path,
                                'environment')
-    target_tc = key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
-
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
+    self._SetupTCEnvironment(sdk_ctx, options, env)
 
-    os.environ[self.sdk.SDK_VERSION_ENV] = version
+    os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
     os.environ[self.sdk.SDK_BOARD_ENV] = board
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
     gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
     gyp_dict['sysroot'] = sysroot
     gyp_dict.pop('order_text_section', None)
+    if options.clang:
+      gyp_dict['clang'] = 1
+      gyp_dict['werror'] = ''
+      gyp_dict['clang_use_chrome_plugins'] = 0
+      gyp_dict['linux_use_tcmalloc'] = 0
     env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
 
-    for tc_path in (target_tc,):
-      env['PATH'] = '%s:%s' % (os.path.join(tc_path, 'bin'), os.environ['PATH'])
-
-    for var in ('CXX', 'CC', 'LD'):
-      env[var] = self._FixGoldPath(env[var], target_tc)
-
-    env['CXX_host'] = 'g++'
-    env['CC_host'] = 'gcc'
-
     # PS1 sets the command line prompt and xterm window caption.
-    env['PS1'] = self._CreatePS1(self.board, version)
+    env['PS1'] = self._CreatePS1(self.board, sdk_ctx.version)
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
-    env['GYP_GENERATORS'] = 'ninja'
+    env['GYP_GENERATORS'] = 'make' if options.make else 'ninja'
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
     return env
 
@@ -366,6 +404,9 @@ class ChromeSDKCommand(cros.CrosCommand):
     if os.environ.get(SDKFetcher.SDK_VERSION_ENV) is not None:
       cros_build_lib.Die('Already in an SDK shell.')
 
+    if self.options.clang and not self.options.make:
+      cros_build_lib.Die('--clang requires --make to be set.')
+
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
     self.sdk = SDKFetcher(self.options.cache_dir, self.options.board)
@@ -377,7 +418,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     components = (self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_SYSROOT_TAR,
                   constants.CHROME_ENV_TAR)
     with self.sdk.Prepare(components, version=prepare_version) as ctx:
-      env = self._SetupEnvironment(self.options.board, ctx.version, ctx.key_map)
+      env = self._SetupEnvironment(self.options.board, ctx, self.options)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
         bash_header = ['/bin/bash', '--noprofile', '--rcfile', rcfile]
 
