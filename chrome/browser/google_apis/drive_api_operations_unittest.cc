@@ -11,6 +11,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
@@ -37,16 +38,6 @@ const char kTestChildrenResponse[] =
 
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
-
-void CopyResultsFromGetAboutResourceCallbackAndQuit(
-    GDataErrorCode* error_out,
-    scoped_ptr<AboutResource>* about_resource_out,
-    const GDataErrorCode error_in,
-    scoped_ptr<AboutResource> about_resource_in) {
-  *error_out = error_in;
-  *about_resource_out = about_resource_in.Pass();
-  MessageLoop::current()->Quit();
-}
 
 void CopyResultsFromFileResourceCallbackAndQuit(
     GDataErrorCode* error_out,
@@ -339,8 +330,9 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_ValidFeed) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&CopyResultsFromGetAboutResourceCallbackAndQuit,
-                 &error, &feed_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&error, &feed_data)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -371,8 +363,9 @@ TEST_F(DriveApiOperationsTest, GetAboutOperation_InvalidFeed) {
       &operation_registry_,
       request_context_getter_.get(),
       *url_generator_,
-      base::Bind(&CopyResultsFromGetAboutResourceCallbackAndQuit,
-                 &error, &feed_data));
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&error, &feed_data)));
   operation->Start(kTestDriveApiAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();

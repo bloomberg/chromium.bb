@@ -85,6 +85,11 @@ void RunBlockingPoolTask() {
   }
 }
 
+void RunAndQuit(const base::Closure& closure) {
+  closure.Run();
+  MessageLoop::current()->Quit();
+}
+
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   base::FilePath path = GetTestFilePath(relative_path);
 
