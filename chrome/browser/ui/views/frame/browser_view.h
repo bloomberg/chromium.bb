@@ -54,7 +54,6 @@ class SearchViewController;
 class TabStrip;
 class TabStripModel;
 class ToolbarView;
-class TopContainerView;
 
 #if defined(OS_WIN)
 class JumpList;
@@ -102,6 +101,10 @@ class BrowserView : public BrowserWindow,
  public:
   // The browser view's class name.
   static const char kViewClassName[];
+  // Initial child indices for well-known views.
+  static const int kTabstripIndex;
+  static const int kInfoBarIndex;
+  static const int kToolbarIndex;
 
   explicit BrowserView(Browser* browser);
   virtual ~BrowserView();
@@ -149,9 +152,6 @@ class BrowserView : public BrowserWindow,
   // background image over that view.
   gfx::Point OffsetPointForToolbarBackgroundImage(
       const gfx::Point& point) const;
-
-  // Container for the tabstrip, toolbar, etc.
-  TopContainerView* top_container() { return top_container_; }
 
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }
@@ -604,45 +604,40 @@ class BrowserView : public BrowserWindow,
   // BrowserView layout (LTR one is pictured here).
   //
   // --------------------------------------------------------------------
-  // | TopContainerView (top_container_)                                |
-  // |  --------------------------------------------------------------  |
-  // |  | Tabs (tabstrip_)                                           |  |
-  // |  |------------------------------------------------------------|  |
-  // |  | Navigation buttons, address bar, menu (toolbar_)           |  |
-  // |  --------------------------------------------------------------  |
+  // | Tabs (tabstrip_) [1]                                             |
   // |------------------------------------------------------------------|
-  // | All infobars (infobar_container_) [1]                            |
+  // | Navigation buttons, menus and the address bar (toolbar_) [1]     |
   // |------------------------------------------------------------------|
-  // | Bookmarks (bookmark_bar_view_) [1]                               |
+  // | All infobars (infobar_container_) [2]                            |
+  // |------------------------------------------------------------------|
+  // | Bookmarks (bookmark_bar_view_) [2]                               |
   // |------------------------------------------------------------------|
   // | Debugger splitter (contents_split_)                              |
-  // |  --------------------------------------------------------------  |
+  // |  +------------------------------------------------------------+  |
   // |  | Page content (contents_)                                   |  |
-  // |  |  --------------------------------------------------------  |  |
+  // |  |  +------------------------------------------------------+  |  |
   // |  |  | contents_container_ and/or                           |  |  |
   // |  |  | overlay_controller_->overlay_container_              |  |  |
   // |  |  |                                                      |  |  |
   // |  |  |                                                      |  |  |
-  // |  |  --------------------------------------------------------  |  |
-  // |  --------------------------------------------------------------  |
-  // |  --------------------------------------------------------------  |
+  // |  |  +------------------------------------------------------+  |  |
+  // |  +------------------------------------------------------------+  |
+  // |  +------------------------------------------------------------+  |
   // |  | Debugger (devtools_container_)                             |  |
   // |  |                                                            |  |
-  // |  --------------------------------------------------------------  |
+  // |  +------------------------------------------------------------+  |
   // |------------------------------------------------------------------|
   // | Active downloads (download_shelf_)                               |
   // --------------------------------------------------------------------
   //
-  // [1] The bookmark bar and info bar are swapped when on the new tab page.
+  // [1] During an immersive mode reveal the tab strip and toolbar may be
+  //     reparented to a temporary view and may not be direct children of
+  //     this view.
+  // [2] The bookmark bar and info bar are swapped when on the new tab page.
   //     Additionally contents_ is positioned on top of the bookmark bar when
   //     the bookmark bar is detached. This is done to allow the
   //     overlay_controller_->overlay_container_ to appear over the bookmark
   //     bar.
-
-  // The view that manages the tab strip, toolbar, and sometimes the bookmark
-  // bar. Stacked in the top of the view hiearachy so it can be used to
-  // slide out the top views in immersive fullscreen.
-  TopContainerView* top_container_;
 
   // Tool/Info bars that we are currently showing. Used for layout.
   // active_bookmark_bar_ is either NULL, if the bookmark bar isn't showing,

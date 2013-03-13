@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,6 +50,11 @@ class ImmersiveModeController : public ui::EventHandler,
   // True when the controller is temporarily showing the top views.
   bool IsRevealed() const { return enabled_ && revealed_; }
 
+  // Returns the view that contains the top UI components (tabstrip, toolbar
+  // etc.) during an immersive mode reveal. Can return NULL when not in a
+  // revealing state.
+  views::View* reveal_view();
+
   // If the controller is temporarily revealing the top views ensures that
   // the reveal view's layer is on top and hence visible over web contents.
   void MaybeStackViewAtTop();
@@ -65,9 +70,6 @@ class ImmersiveModeController : public ui::EventHandler,
   // with |reveal| false. Immersive mode must be enabled.
   void RevealAndLock(bool reveal);
 
-  // Called when the reveal view's children lose focus, may end the reveal.
-  void OnRevealViewLostFocus();
-
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
@@ -76,10 +78,13 @@ class ImmersiveModeController : public ui::EventHandler,
 
   // Testing interface.
   void SetHideTabIndicatorsForTest(bool hide);
+  void SetEnabledForTest(bool enabled);
   void StartRevealForTest();
   void OnRevealViewLostMouseForTest();
 
  private:
+  class RevealView;
+
   enum Animate {
     ANIMATE_NO,
     ANIMATE_SLOW,
@@ -103,6 +108,9 @@ class ImmersiveModeController : public ui::EventHandler,
 
   // Called when the mouse exits the reveal view area, may end the reveal.
   void OnRevealViewLostMouse();
+
+  // Called when the reveal view's children lose focus, may end the reveal.
+  void OnRevealViewLostFocus();
 
   // Hides the top-of-window views. Optionally animates. Optionally updates
   // the |browser_view_| layout when the reveal finishes.
@@ -133,18 +141,16 @@ class ImmersiveModeController : public ui::EventHandler,
   // top view.
   bool reveal_locked_;
 
-  // True if browser view needs Layout() after the hide animation completes.
-  Layout layout_after_hide_animation_;
-
   // True if the miniature "tab indicators" should be hidden in the main browser
   // view when immersive mode is enabled.
   bool hide_tab_indicators_;
 
+  // View holding the tabstrip and toolbar during a reveal. Exists for a short
+  // time after |revealed_| is set false to allow layer animation to finish.
+  scoped_ptr<RevealView> reveal_view_;
+
   // Timer to track cursor being held at the top.
   base::OneShotTimer<ImmersiveModeController> top_timer_;
-
-  // Mouse is hovering over the revealed view.
-  bool reveal_hovered_;
 
   // Native window for the browser, needed to clean up observers.
   gfx::NativeWindow native_window_;
