@@ -27,6 +27,7 @@ import sys
 import tempfile
 import threading
 import time
+import traceback
 import urllib
 import urllib2
 import urlparse
@@ -502,6 +503,7 @@ class ThreadPool(object):
       except Exception as e:
         logging.warning('Caught exception: %s', e)
         exc_info = sys.exc_info()
+        logging.info(''.join(traceback.format_tb(exc_info[2])))
         self._outputs_exceptions_cond.acquire()
         try:
           self._exceptions.append(exc_info)
@@ -563,7 +565,7 @@ class ThreadPool(object):
     """Enables 'with' statement."""
     return self
 
-  def __exit__(self, exc_type, exc_value, traceback):
+  def __exit__(self, _exc_type, _exc_value, _traceback):
     """Enables 'with' statement."""
     self.close()
 
