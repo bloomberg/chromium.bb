@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/filter_collection.h"
@@ -668,6 +669,44 @@ void WebMediaPlayerImpl::putCurrentFrame(
     UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
   }
   delete web_video_frame;
+}
+
+bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
+    WebKit::WebGraphicsContext3D* web_graphics_context,
+    unsigned int texture,
+    unsigned int level,
+    unsigned int internal_format,
+    bool premultiply_alpha,
+    bool flip_y) {
+  scoped_refptr<media::VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(lock_);
+    video_frame = current_frame_;
+  }
+  if (video_frame &&
+      video_frame->format() == media::VideoFrame::NATIVE_TEXTURE &&
+      video_frame->texture_target() == GL_TEXTURE_2D) {
+    uint32 source_texture = video_frame->texture_id();
+    // The video is stored in a unmultiplied format, so premultiply
+    // if necessary.
+    web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+        premultiply_alpha);
+    // Application itself needs to take care of setting the right flip_y
+    // value down to get the expected result.
+    // flip_y==true means to reverse the video orientation while
+    // flip_y==false means to keep the intrinsic orientation.
+    web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
+    web_graphics_context->copyTextureCHROMIUM(GL_TEXTURE_2D,
+        source_texture, texture, level, internal_format);
+    web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
+    web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
+        false);
+    // The flush() operation is not necessary here. It is kept since the
+    // performance will be better when it is added than not.
+    web_graphics_context->flush();
+    return true;
+  }
+  return false;
 }
 
 // Helper enum for reporting generateKeyRequest/addKey histograms.

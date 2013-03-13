@@ -32,6 +32,7 @@
 #include "media/base/pipeline.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
@@ -142,6 +143,14 @@ class WebMediaPlayerImpl
 
   virtual WebKit::WebVideoFrame* getCurrentFrame();
   virtual void putCurrentFrame(WebKit::WebVideoFrame* web_video_frame);
+
+  virtual bool copyVideoTextureToPlatformTexture(
+      WebKit::WebGraphicsContext3D* web_graphics_context,
+      unsigned int texture,
+      unsigned int level,
+      unsigned int internal_format,
+      bool premultiply_alpha,
+      bool flip_y);
 
   virtual WebKit::WebAudioSourceProvider* audioSourceProvider();
 
