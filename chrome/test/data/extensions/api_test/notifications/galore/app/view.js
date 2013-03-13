@@ -18,7 +18,7 @@ Galore.view = {
       frame: 'none',
       defaultWidth: 440, minWidth: 440, maxWidth: 440,
       defaultHeight: 640, minHeight: 640, maxHeight: 640,
-      hidden: false  // Change to true when http://crbug.com/177706 is fixed.
+      hidden: true
     }, function(appWindow) {
       view.window = appWindow;
       view.addListener_(appWindow.contentWindow, 'load', 'onLoad_');
@@ -61,7 +61,7 @@ Galore.view = {
   /** @private */
   onLoad_: function() {
     this.dataset = this.window.contentWindow.document.body.dataset;
-    this.dataset.priority = this.settings.priority;
+    this.dataset.priority = this.settings.priority || '0';
     this.addListener_('body', 'mousedown', 'onBodyMouseDown_');
     this.addListener_('body', 'mouseup', 'onBodyMouseUp_');
     this.addListener_('#shadow', 'mousemove', 'onButtonMouseMove_');
@@ -157,7 +157,7 @@ Galore.view = {
 
   /** @private */
   changePriority_: function(event) {
-    this.settings.priority = event.currentTarget.dataset.priority || 0;
+    this.settings.priority = event.currentTarget.dataset.priority || '0';
     this.dataset.priority = this.settings.priority;
     if (this.onsettings)
       this.onsettings.call(this, this.settings);
