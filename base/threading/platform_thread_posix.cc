@@ -161,7 +161,12 @@ bool CreateThread(size_t stack_size, bool joinable,
   params->joinable = joinable;
   params->priority = priority;
 
-  success = !pthread_create(thread_handle, &attributes, ThreadFunc, params);
+  int err = pthread_create(thread_handle, &attributes, ThreadFunc, params);
+  success = !err;
+  if (!success) {
+    errno = err;
+    PLOG(ERROR) << "pthread_create";
+  }
 
   pthread_attr_destroy(&attributes);
   if (!success)
