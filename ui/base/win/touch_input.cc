@@ -12,7 +12,7 @@ UI_EXPORT BOOL GetTouchInputInfoWrapper(HTOUCHINPUT handle,
                                         int size) {
   typedef BOOL(WINAPI *GetTouchInputInfoPtr)(HTOUCHINPUT, UINT,
                                              PTOUCHINPUT, int);
-  GetTouchInputInfoPtr get_touch_input_info_func =
+  static GetTouchInputInfoPtr get_touch_input_info_func =
       reinterpret_cast<GetTouchInputInfoPtr>(
           GetProcAddress(GetModuleHandleA("user32.dll"), "GetTouchInputInfo"));
   if (get_touch_input_info_func)
