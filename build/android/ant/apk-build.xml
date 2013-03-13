@@ -17,28 +17,6 @@
 
 <project name="android_rules" default="debug">
 
-    <!--
-        This build file is imported by the project build file. It contains
-        all the targets and tasks necessary to build Android projects, be they
-        regular projects, library projects, or test projects.
-
-        At the beginning of the file is a list of properties that can be overridden
-        by adding them to your ant.properties (properties are immutable, so their
-        first definition sticks and is never changed).
-
-        Follows:
-        - custom task definitions,
-        - more properties (do not override those unless the whole build system is modified).
-        - macros used throughout the build,
-        - base build targets,
-        - debug-specific build targets,
-        - release-specific build targets,
-        - instrument-specific build targets,
-        - test project-specific build targets,
-        - install targets,
-        - help target
-    -->
-
     <property-location name="out.dir" location="${OUT_DIR}" check-exists="false" />
 
     <path id="javac.srcdirs.additional">
@@ -85,6 +63,10 @@
       <filelist files="${INPUT_JARS_PATHS}"/>
     </path>
 
+    <!--
+      TODO(cjhopman): This is wrong for proguard builds. In that case, it should be just the
+      obfuscated jar.
+    -->
     <path id="out.dex.jar.input.ref">
       <path refid="javac.custom.classpath"/>
     </path>
@@ -314,19 +296,6 @@
                  something else this has no effect -->
             <property name="out.dex.input.absolute.dir" value="${out.classes.absolute.dir}" />
 
-            <!-- set the secondary dx input: the project (and library) jar files
-                 If a pre-dex task sets it to something else this has no effect -->
-            <if>
-                <condition>
-                    <isreference refid="out.dex.jar.input.ref" />
-                </condition>
-                <else>
-                    <path id="out.dex.jar.input.ref">
-                        <path refid="project.all.jars.path" />
-                    </path>
-                </else>
-            </if>
-
             <dex executable="${dx}"
                     output="${intermediate.dex.file}"
                     dexedlibs="${out.dexed.absolute.dir}"
@@ -364,9 +333,7 @@
                     buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
                 <dex path="${intermediate.dex.file}"/>
                 <sourcefolder path="${source.absolute.dir}"/>
-                <jarfile refid="project.all.jars.path" />
                 <nativefolder path="${native.libs.absolute.dir}" />
-                <nativefolder refid="project.library.native.folder.path" />
                 <extra-jars/>
             </apkbuilder>
         </sequential>
@@ -426,11 +393,6 @@
         <checkenv />
     </target>
 
-    <!-- target to disable building dependencies -->
-    <target name="nodeps">
-        <property name="dont.do.deps" value="true" />
-    </target>
-
     <!-- generic setup -->
     <target name="-setup" depends="-check-env">
         <echo level="info">Project Name: ${ant.project.name}</echo>
@@ -482,29 +444,6 @@
             </then>
         </if>
 
-        <!-- get all the libraries -->
-        <if>
-            <condition><not><isset property="dont.do.deps" /></not></condition>
-            <then>
-                <getlibpath libraryFolderPathOut="project.library.folder.path" />
-                <if>
-                    <condition>
-                        <isreference refid="project.library.folder.path" />
-                    </condition>
-                    <then>
-                        <!-- clean the libraries with nodeps since we already
-                             know about all the libraries even the indirect one -->
-                        <subant
-                                buildpathref="project.library.folder.path"
-                                antfile="build.xml"
-                                failonerror="true">
-                            <target name="nodeps" />
-                            <target name="clean" />
-                        </subant>
-                    </then>
-                </if>
-            </then>
-        </if>
     </target>
 
     <!-- Pre build setup -->
@@ -580,24 +519,6 @@
             <mkdir dir="${out.classes.absolute.dir}" />
             <mkdir dir="${out.dexed.absolute.dir}" />
         </do-only-if-manifest-hasCode>
-
-        <echo level="info">----------</echo>
-        <echo level="info">Resolving Dependencies for ${ant.project.name}...</echo>
-        <dependency
-                libraryFolderPathOut="project.library.folder.path"
-                libraryPackagesOut="project.library.packages"
-                libraryManifestFilePathOut="project.library.manifest.file.path"
-                libraryResFolderPathOut="project.library.res.folder.path"
-                libraryBinAidlFolderPathOut="project.library.bin.aidl.folder.path"
-                libraryRFilePathOut="project.library.bin.r.file.path"
-                libraryNativeFolderPathOut="project.library.native.folder.path"
-                jarLibraryPathOut="project.all.jars.path"
-                targetApi="${project.target.apilevel}"
-                verbose="${verbose}" />
-
-        <!-- no tested project, make an empty Path object so that javac doesn't
-             complain -->
-        <path id="tested.project.classpath" />
     </target>
 
     <!-- empty default pre-build target. Create a similar target in
@@ -611,7 +532,6 @@
                 appManifest="${manifest.abs.file}"
                 outManifest="${out.manifest.abs.file}"
                 enabled="${manifestmerger.enabled}">
-            <library refid="project.library.manifest.file.path" />
         </mergemanifest>
 
         <do-only-if-manifest-hasCode
@@ -784,7 +704,6 @@
                files. -->
           <path id="project.all.classes.path">
             <pathelement location="${preobfuscate.jar.file}"/>
-            <path refid="project.all.jars.path"/>
             <!-- Pass javac.custom.classpath for apks. -->
             <path refid="javac.custom.classpath"/>
           </path>
