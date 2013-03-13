@@ -642,6 +642,10 @@ void PanelView::MinimizePanelBySystem() {
   window_->Minimize();
 }
 
+bool PanelView::IsPanelMinimizedBySystem() const {
+  return window_->IsMinimized();
+}
+
 void PanelView::AttachWebContents(content::WebContents* contents) {
   web_view_->SetWebContents(contents);
 }

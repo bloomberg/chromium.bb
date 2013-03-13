@@ -63,6 +63,7 @@ class PanelCocoa : public NativePanel {
   virtual int TitleOnlyHeight() const OVERRIDE;
 
   virtual void MinimizePanelBySystem() OVERRIDE;
+  virtual bool IsPanelMinimizedBySystem() const OVERRIDE;
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   Panel* panel() const;

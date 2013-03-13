@@ -128,6 +128,10 @@ void PanelStackView::Minimize() {
   window_->Minimize();
 }
 
+bool PanelStackView::IsMinimized() const {
+  return window_->IsMinimized();
+}
+
 void PanelStackView::DrawSystemAttention(bool draw_attention) {
   // The underlying call of FlashFrame, FlashWindowEx, seems not to work
   // correctly if it is called more than once consecutively.

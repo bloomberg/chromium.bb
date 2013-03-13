@@ -82,6 +82,7 @@ class PanelGtk : public NativePanel,
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
   virtual void SetWindowCornerStyle(panel::CornerStyle corner_style) OVERRIDE;
   virtual void MinimizePanelBySystem() OVERRIDE;
+  virtual bool IsPanelMinimizedBySystem() const OVERRIDE;
 
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
