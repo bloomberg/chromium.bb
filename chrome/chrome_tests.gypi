@@ -1236,6 +1236,7 @@
         'browser/extensions/content_script_apitest.cc',
         'browser/extensions/content_security_policy_apitest.cc',
         'browser/extensions/convert_web_app_browsertest.cc',
+        'browser/extensions/crazy_extension_browsertest.cc',
         'browser/extensions/cross_origin_xhr_apitest.cc',
         'browser/extensions/crx_installer_browsertest.cc',
         'browser/extensions/docs/examples/apps/calculator_browsertest.cc',
