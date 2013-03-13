@@ -153,7 +153,7 @@ bool EncodingMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void EncodingMenuModel::ExecuteCommand(int command_id) {
+void EncodingMenuModel::ExecuteCommand(int command_id, int event_flags) {
   chrome::ExecuteCommand(browser_, command_id);
 }
 
@@ -343,7 +343,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
   return false;
 }
 
-void WrenchMenuModel::ExecuteCommand(int command_id) {
+void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
   GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
       browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error) {

@@ -449,7 +449,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
     // Danger Will Robinson! : This call can release the infobar (e.g. invoking
     // "About Translate" can open a new tab).
     // Do not access member variables after this line!
-    optionsMenuModel_->ExecuteCommand(cmd);
+    optionsMenuModel_->ExecuteCommand(cmd, 0);
   } else {
     NOTREACHED();
   }

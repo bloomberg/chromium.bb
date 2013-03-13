@@ -30,7 +30,7 @@ class UI_EXPORT ButtonMenuItemModel {
     virtual string16 GetLabelForCommandId(int command_id) const;
 
     // Performs the action associated with the specified command id.
-    virtual void ExecuteCommand(int command_id) = 0;
+    virtual void ExecuteCommand(int command_id, int event_flags) = 0;
     virtual bool IsCommandIdEnabled(int command_id) const;
     virtual bool DoesCommandIdDismissMenu(int command_id) const;
 

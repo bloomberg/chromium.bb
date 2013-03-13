@@ -28,7 +28,7 @@ class MenuModelTest {
     virtual bool GetAcceleratorForCommandId(
         int command_id,
         ui::Accelerator* accelerator) OVERRIDE;
-    virtual void ExecuteCommand(int command_id) OVERRIDE;
+    virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
     int execute_count_;
     mutable int enable_count_;

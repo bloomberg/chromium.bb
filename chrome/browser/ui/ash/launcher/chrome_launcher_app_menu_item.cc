@@ -24,5 +24,5 @@ bool ChromeLauncherAppMenuItem::IsEnabled() const {
   return false;
 }
 
-void ChromeLauncherAppMenuItem::Execute() {
+void ChromeLauncherAppMenuItem::Execute(int event_flags) {
 }

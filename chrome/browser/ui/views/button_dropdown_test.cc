@@ -57,7 +57,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
     return false;
   }
 
-  virtual void ExecuteCommand(int id) OVERRIDE {
+  virtual void ExecuteCommand(int id, int event_flags) OVERRIDE {
   }
 
   virtual void MenuWillShow(ui::SimpleMenuModel* /*source*/) OVERRIDE {

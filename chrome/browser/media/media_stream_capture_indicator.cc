@@ -215,7 +215,8 @@ bool MediaStreamCaptureIndicator::GetAcceleratorForCommandId(
   return false;
 }
 
-void MediaStreamCaptureIndicator::ExecuteCommand(int command_id) {
+void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
+                                                 int event_flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const int index =

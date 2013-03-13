@@ -53,7 +53,7 @@ bool LauncherAlignmentMenu::GetAcceleratorForCommandId(
   return false;
 }
 
-void LauncherAlignmentMenu::ExecuteCommand(int command_id) {
+void LauncherAlignmentMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
       Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,

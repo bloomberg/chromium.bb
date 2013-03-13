@@ -295,7 +295,7 @@ class TaskManagerGtk::ContextMenuController
     return false;
   }
 
-  virtual void ExecuteCommand(int command_id) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
     if (!task_manager_)
       return;
 

@@ -697,7 +697,7 @@ int NativeTextfieldViews::GetTextfieldBaseline() const {
 }
 
 void NativeTextfieldViews::ExecuteTextCommand(int command_id) {
-  ExecuteCommand(command_id);
+  ExecuteCommand(command_id, 0);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -743,7 +743,7 @@ string16 NativeTextfieldViews::GetLabelForCommandId(int command_id) const {
   return controller ? controller->GetLabelForCommandId(command_id) : string16();
 }
 
-void NativeTextfieldViews::ExecuteCommand(int command_id) {
+void NativeTextfieldViews::ExecuteCommand(int command_id, int event_flags) {
   touch_selection_controller_.reset();
   if (!IsCommandIdEnabled(command_id))
     return;
@@ -752,7 +752,7 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
   OnBeforeUserAction();
   TextfieldController* controller = textfield_->GetController();
   if (controller && controller->HandlesCommand(command_id)) {
-    controller->ExecuteCommand(command_id);
+    controller->ExecuteCommand(command_id, 0);
   } else {
     switch (command_id) {
       case IDS_APP_CUT:
@@ -771,7 +771,7 @@ void NativeTextfieldViews::ExecuteCommand(int command_id) {
         SelectAll(false);
         break;
       default:
-        controller->ExecuteCommand(command_id);
+        controller->ExecuteCommand(command_id, 0);
         break;
     }
   }

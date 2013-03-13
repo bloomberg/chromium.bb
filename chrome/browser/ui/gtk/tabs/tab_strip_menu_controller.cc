@@ -55,7 +55,7 @@ bool TabStripMenuController::GetAcceleratorForCommandId(
   return true;
 }
 
-void TabStripMenuController::ExecuteCommand(int command_id) {
+void TabStripMenuController::ExecuteCommand(int command_id, int event_flags) {
   // Checking if the tab still exists since it is possible that the tab
   // corresponding to this context menu has been closed.
   if (!tab_)

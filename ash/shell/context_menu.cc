@@ -50,7 +50,7 @@ bool ContextMenu::GetAcceleratorForCommandId(
   return false;
 }
 
-void ContextMenu::ExecuteCommand(int command_id) {
+void ContextMenu::ExecuteCommand(int command_id, int event_flags) {
   Shell* shell = Shell::GetInstance();
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_AUTO_HIDE:

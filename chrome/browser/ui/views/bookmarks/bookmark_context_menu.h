@@ -57,7 +57,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   void SetPageNavigator(content::PageNavigator* navigator);
 
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual bool IsItemChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
   virtual bool ShouldCloseAllMenusOnExecute(int id) OVERRIDE;

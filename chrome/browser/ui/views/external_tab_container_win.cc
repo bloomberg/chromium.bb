@@ -402,7 +402,7 @@ bool ExternalTabContainerWin::ExecuteContextMenuCommand(int command) {
     }
   }
 
-  external_context_menu_->ExecuteCommand(command);
+  external_context_menu_->ExecuteCommand(command, 0);
   return true;
 }
 

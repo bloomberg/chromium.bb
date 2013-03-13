@@ -69,10 +69,10 @@ TEST_F(AccountChooserModelTest, RespectsUserChoice) {
       prefs::kAutofillDialogPayWithoutWallet, false);
   EXPECT_TRUE(model()->WalletIsSelected());
 
-  model()->ExecuteCommand(1);
+  model()->ExecuteCommand(1, 0);
   EXPECT_FALSE(model()->WalletIsSelected());
 
-  model()->ExecuteCommand(0);
+  model()->ExecuteCommand(0, 0);
   EXPECT_TRUE(model()->WalletIsSelected());
 }
 

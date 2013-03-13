@@ -81,7 +81,9 @@ bool BackgroundModeManager::BackgroundModeData::GetAcceleratorForCommandId(
   return false;
 }
 
-void BackgroundModeManager::BackgroundModeData::ExecuteCommand(int item) {
+void BackgroundModeManager::BackgroundModeData::ExecuteCommand(
+    int item,
+    int event_flags) {
   switch (item) {
     case IDC_MinimumLabelValue:
       // Do nothing. This is just a label.
@@ -487,7 +489,7 @@ bool BackgroundModeManager::GetAcceleratorForCommandId(
   return false;
 }
 
-void BackgroundModeManager::ExecuteCommand(int command_id) {
+void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
   // When a browser window is necessary, we use the first profile. The windows
   // opened for these commands are not profile-specific, so any profile would
   // work and the first is convenient.
@@ -517,7 +519,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id) {
       break;
     }
     default:
-      bmd->ExecuteCommand(command_id);
+      bmd->ExecuteCommand(command_id, event_flags);
       break;
   }
 }

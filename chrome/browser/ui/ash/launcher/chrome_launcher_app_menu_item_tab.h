@@ -28,7 +28,7 @@ class ChromeLauncherAppMenuItemTab
                                bool has_leading_separator);
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
-  virtual void Execute() OVERRIDE;
+  virtual void Execute(int event_flags) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherAppMenuItemTab);

@@ -155,7 +155,7 @@ class BookmarkEditorGtk::ContextMenuController
     return false;
   }
 
-  virtual void ExecuteCommand(int command_id) OVERRIDE {
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
     if (!editor_)
       return;
 

@@ -101,7 +101,7 @@ bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
   return false;
 }
 
-void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
+void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (!download_item_)
     return;
 

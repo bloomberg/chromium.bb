@@ -46,7 +46,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   // Overridden from TouchEditingMenuController.
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual void OpenContextMenu() OVERRIDE;
   virtual void OnMenuClosed(TouchEditingMenuView* menu) OVERRIDE;
 

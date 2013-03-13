@@ -379,7 +379,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
 }
 
 #if !defined(OS_MACOSX)
-void WindowTypeLauncher::ExecuteCommand(int id) {
+void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
   switch (id) {
     case COMMAND_NEW_WINDOW:
       InitWindowTypeLauncher();

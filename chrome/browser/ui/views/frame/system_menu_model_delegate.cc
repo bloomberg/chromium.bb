@@ -54,6 +54,6 @@ string16 SystemMenuModelDelegate::GetLabelForCommandId(int command_id) const {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-void SystemMenuModelDelegate::ExecuteCommand(int command_id) {
+void SystemMenuModelDelegate::ExecuteCommand(int command_id, int event_flags) {
   chrome::ExecuteCommand(browser_, command_id);
 }

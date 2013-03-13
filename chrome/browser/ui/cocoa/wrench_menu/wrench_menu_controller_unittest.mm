@@ -39,7 +39,7 @@ class MockWrenchMenuModel : public WrenchMenuModel {
     // short-circuits the parent destructor to avoid this crash.
     tab_strip_model_ = NULL;
   }
-  MOCK_METHOD1(ExecuteCommand, void(int command_id));
+  MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };
 
 class WrenchMenuControllerTest : public CocoaProfileTest {
@@ -77,7 +77,7 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
   [button setTag:IDC_ZOOM_PLUS];
 
   // Set fake model to test dispatching.
-  EXPECT_CALL(*fake_model_, ExecuteCommand(IDC_ZOOM_PLUS));
+  EXPECT_CALL(*fake_model_, ExecuteCommand(IDC_ZOOM_PLUS, 0));
   [controller() setModel:fake_model_.get()];
 
   [controller() dispatchWrenchMenuCommand:button.get()];

@@ -66,7 +66,7 @@ bool PermissionMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void PermissionMenuModel::ExecuteCommand(int command_id) {
+void PermissionMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (delegate_)
     delegate_->ExecuteCommand(command_id);
 }

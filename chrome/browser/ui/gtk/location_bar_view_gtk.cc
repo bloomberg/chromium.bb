@@ -1021,7 +1021,7 @@ void LocationBarViewGtk::TestPageActionPressed(size_t index) {
 
 void LocationBarViewGtk::TestActionBoxMenuItemSelected(int command_id) {
   action_box_button_->action_box_button_controller()->
-      ExecuteCommand(command_id);
+      ExecuteCommand(command_id, 0);
 }
 
 bool LocationBarViewGtk::GetBookmarkStarVisibility() {

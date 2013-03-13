@@ -43,6 +43,6 @@ void ContextMenuNotificationObserver::Observe(
 
 void ContextMenuNotificationObserver::ExecuteCommand(
     RenderViewContextMenu* context_menu) {
-  context_menu->ExecuteCommand(command_to_execute_);
+  context_menu->ExecuteCommand(command_to_execute_, 0);
   context_menu->Cancel();
 }

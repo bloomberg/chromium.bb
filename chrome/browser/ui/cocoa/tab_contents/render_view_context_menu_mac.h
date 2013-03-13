@@ -23,7 +23,6 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   virtual ~RenderViewContextMenuMac();
 
   // SimpleMenuModel::Delegate implementation.
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;

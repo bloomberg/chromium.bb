@@ -183,10 +183,6 @@ string16 RecentTabsSubMenuModel::GetLabelForCommandId(int command_id) const {
   return l10n_util::GetStringUTF16(string_id);
 }
 
-void RecentTabsSubMenuModel::ExecuteCommand(int command_id) {
-  ExecuteCommand(command_id, 0);
-}
-
 void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == IDC_RESTORE_TAB) {
     chrome::ExecuteCommandWithDisposition(browser_, command_id,

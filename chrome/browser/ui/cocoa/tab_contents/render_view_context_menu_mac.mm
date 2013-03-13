@@ -108,7 +108,7 @@ void RenderViewContextMenuMac::PlatformCancel() {
   [menu_controller_ cancel];
 }
 
-void RenderViewContextMenuMac::ExecuteCommand(int id) {
+void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
   // Auxiliary windows that do not have address bars (Panels for example)
   // may not have Instant support.
   NSWindow* parent_window = [parent_view_ window];
@@ -116,10 +116,6 @@ void RenderViewContextMenuMac::ExecuteCommand(int id) {
       [BrowserWindowController browserWindowControllerForWindow:parent_window];
   [controller commitInstant];  // It's ok if controller is nil.
 
-  ExecuteCommand(id, 0);
-}
-
-void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
       LookUpInDictionary();

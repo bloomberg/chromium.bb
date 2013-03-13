@@ -57,7 +57,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 
 #if !defined(OS_MACOSX)
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual void ExecuteCommand(int id, int event_flags) OVERRIDE;
 
   // Override from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,

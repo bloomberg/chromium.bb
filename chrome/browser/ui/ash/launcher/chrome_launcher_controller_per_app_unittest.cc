@@ -678,3 +678,47 @@ TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuExecution) {
   // Now the active tab should be the second item.
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 }
+
+// Checks that the generated menu list properly deletes items.
+TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuDeletionExecution) {
+  chrome::NewTab(browser());
+  BrowserList::SetLastActive(browser());
+
+  ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
+  launcher_controller.Init();
+
+  // Add |extension3_| to the launcher and add two items.
+  GURL gmail = GURL("https://mail.google.com/mail/u");
+  ash::LauncherID gmail_id = model_.next_id();
+  extension_service_->AddExtension(extension3_.get());
+  launcher_controller.SetRefocusURLPatternForTest(gmail_id, GURL(gmail_url));
+  string16 title1 = ASCIIToUTF16("Test1");
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title1);
+  chrome::NewTab(browser());
+  string16 title2 = ASCIIToUTF16("Test2");
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title2);
+
+  // Check that the menu is properly set.
+  ash::LauncherItem item_gmail;
+  item_gmail.type = ash::TYPE_APP_SHORTCUT;
+  item_gmail.id = gmail_id;
+  string16 two_menu_items[] = {title1, title2};
+  CheckMenuCreation(&launcher_controller, item_gmail, 2, two_menu_items, false);
+
+  int tabs = browser()->tab_strip_model()->count();
+  // Activate the proper tab through the menu item.
+  {
+    ChromeLauncherAppMenuItems items =
+        launcher_controller.GetApplicationList(item_gmail);
+    items[1]->Execute(0);
+    EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
+  }
+
+  // Delete one tab through the menu item.
+  {
+    ChromeLauncherAppMenuItems items =
+        launcher_controller.GetApplicationList(item_gmail);
+    items[1]->Execute(ui::EF_SHIFT_DOWN);
+    EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
+  }
+}

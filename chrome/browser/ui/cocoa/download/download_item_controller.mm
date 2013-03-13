@@ -231,7 +231,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   NSEvent* event = [NSApp currentEvent];
   if ([event modifierFlags] & NSCommandKeyMask) {
     // Let cmd-click show the file in Finder, like e.g. in Safari and Spotlight.
-    menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER);
+    menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER, 0);
   } else {
     DownloadItem* download = bridge_->download_model()->download();
     download->OpenDownload();
@@ -352,20 +352,20 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (IBAction)handleOpen:(id)sender {
   menuBridge_->ExecuteCommand(
-      DownloadShelfContextMenuMac::OPEN_WHEN_COMPLETE);
+      DownloadShelfContextMenuMac::OPEN_WHEN_COMPLETE, 0);
 }
 
 - (IBAction)handleAlwaysOpen:(id)sender {
   menuBridge_->ExecuteCommand(
-      DownloadShelfContextMenuMac::ALWAYS_OPEN_TYPE);
+      DownloadShelfContextMenuMac::ALWAYS_OPEN_TYPE, 0);
 }
 
 - (IBAction)handleReveal:(id)sender {
-  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER);
+  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER, 0);
 }
 
 - (IBAction)handleCancel:(id)sender {
-  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::CANCEL);
+  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::CANCEL, 0);
 }
 
 - (IBAction)handleTogglePause:(id)sender {
@@ -376,7 +376,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     [sender setTitle:l10n_util::GetNSStringWithFixup(
         IDS_DOWNLOAD_MENU_RESUME_ITEM)];
   }
-  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE);
+  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE, 0);
 }
 
 @end

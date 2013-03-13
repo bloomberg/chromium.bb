@@ -50,7 +50,8 @@ bool ContentSettingMediaMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void ContentSettingMediaMenuModel::ExecuteCommand(int command_id) {
+void ContentSettingMediaMenuModel::ExecuteCommand(int command_id,
+                                                  int event_flags) {
   CommandMap::const_iterator it = commands_.find(command_id);
   DCHECK(it != commands_.end());
   media_bubble_model_->OnMediaMenuClicked(type_, it->second.id);

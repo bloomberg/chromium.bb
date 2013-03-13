@@ -238,6 +238,6 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
   ExtensionTestMessageListener onclick_listener("clicked", false);
   int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
-  menu->ExecuteCommand(command_id);
+  menu->ExecuteCommand(command_id, 0);
   EXPECT_TRUE(onclick_listener.WaitUntilSatisfied());
 }

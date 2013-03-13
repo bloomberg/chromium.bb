@@ -91,7 +91,7 @@ const extensions::Extension* ActionBoxMenuModel::GetExtensionAt(int index) {
 }
 
 void ActionBoxMenuModel::ExecuteCommand(int command_id) {
-  delegate()->ExecuteCommand(command_id);
+  delegate()->ExecuteCommand(command_id, 0);
 }
 
 int ActionBoxMenuModel::GetFirstExtensionIndex() {

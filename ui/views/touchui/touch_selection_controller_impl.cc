@@ -290,9 +290,10 @@ bool TouchSelectionControllerImpl::IsCommandIdEnabled(int command_id) const {
   return client_view_->IsCommandIdEnabled(command_id);
 }
 
-void TouchSelectionControllerImpl::ExecuteCommand(int command_id) {
+void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
+                                                  int event_flags) {
   HideContextMenu();
-  client_view_->ExecuteCommand(command_id);
+  client_view_->ExecuteCommand(command_id, event_flags);
 }
 
 void TouchSelectionControllerImpl::OpenContextMenu() {

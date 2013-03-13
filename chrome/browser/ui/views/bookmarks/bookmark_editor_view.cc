@@ -193,7 +193,7 @@ bool BookmarkEditorView::GetAcceleratorForCommandId(
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
-void BookmarkEditorView::ExecuteCommand(int command_id) {
+void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
   DCHECK(tree_view_->GetSelectedNode());
   if (command_id == IDS_EDIT) {
     tree_view_->StartEditing(tree_view_->GetSelectedNode());

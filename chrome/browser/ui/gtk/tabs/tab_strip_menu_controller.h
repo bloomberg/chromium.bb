@@ -40,7 +40,7 @@ class TabStripMenuController : public ui::SimpleMenuModel::Delegate,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // Overridden from MenuGtk::Delegate:
   virtual GtkWidget* GetImageForCommandId(int command_id) const OVERRIDE;

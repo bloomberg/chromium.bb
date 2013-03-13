@@ -425,7 +425,7 @@ int NativeTextfieldWin::GetTextfieldBaseline() const {
 }
 
 void NativeTextfieldWin::ExecuteTextCommand(int command_id) {
-  ExecuteCommand(command_id);
+  ExecuteCommand(command_id, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -466,7 +466,7 @@ bool NativeTextfieldWin::GetAcceleratorForCommandId(int command_id,
   return container_view_->GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
-void NativeTextfieldWin::ExecuteCommand(int command_id) {
+void NativeTextfieldWin::ExecuteCommand(int command_id, int event_flags) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
   switch (command_id) {

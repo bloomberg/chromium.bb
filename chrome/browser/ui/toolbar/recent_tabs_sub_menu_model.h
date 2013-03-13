@@ -50,7 +50,6 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   int GetMaxWidthForItemAtIndex(int item_index) const;

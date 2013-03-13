@@ -203,10 +203,6 @@ bool ReloadButton::GetAcceleratorForCommandId(int command_id,
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
-void ReloadButton::ExecuteCommand(int command_id) {
-  ExecuteCommand(command_id, 0);
-}
-
 void ReloadButton::ExecuteCommand(int command_id, int event_flags) {
   int browser_command = 0;
   switch (command_id) {

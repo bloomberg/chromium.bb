@@ -1975,7 +1975,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       context_menu_params);
   menu.Init();
-  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
   waiter_context_menu->WaitForFinished();
   EXPECT_EQ(
       1u, waiter_context_menu->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -2054,7 +2054,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   context_menu_params.page_url = jpeg_url;
   TestRenderViewContextMenu menu(web_contents, context_menu_params);
   menu.Init();
-  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
   waiter_context_menu->WaitForFinished();
   EXPECT_EQ(
       1u, waiter_context_menu->NumDownloadsSeenInState(DownloadItem::COMPLETE));

@@ -56,7 +56,7 @@ class LanguageSwitchMenu : public views::MenuButtonListener,
                                    const gfx::Point& point) OVERRIDE;
 
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // The menu.
   views::MenuItemView* menu_;

@@ -1225,7 +1225,7 @@ string16 OmniboxViewWin::GetLabelForCommandId(int command_id) const {
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
 
-void OmniboxViewWin::ExecuteCommand(int command_id) {
+void OmniboxViewWin::ExecuteCommand(int command_id, int event_flags) {
   ScopedFreeze freeze(this, GetTextObjectModel());
   if (command_id == IDS_PASTE_AND_GO) {
     // This case is separate from the switch() below since we don't want to wrap

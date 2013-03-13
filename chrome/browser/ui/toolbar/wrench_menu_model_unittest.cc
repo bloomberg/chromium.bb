@@ -114,7 +114,9 @@ class TestWrenchMenuModel : public WrenchMenuModel {
     return true;
   }
 
-  virtual void ExecuteCommand(int command_id) OVERRIDE { ++execute_count_; }
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+    ++execute_count_;
+  }
 
   int execute_count_;
   mutable int checked_count_;

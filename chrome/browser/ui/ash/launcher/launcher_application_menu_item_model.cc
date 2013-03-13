@@ -39,9 +39,10 @@ bool LauncherApplicationMenuItemModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void LauncherApplicationMenuItemModel::ExecuteCommand(int command_id) {
+void LauncherApplicationMenuItemModel::ExecuteCommand(int command_id,
+                                                      int event_flags) {
   DCHECK(command_id < static_cast<int>(launcher_items_.size()));
-  launcher_items_[command_id]->Execute();
+  launcher_items_[command_id]->Execute(event_flags);
 }
 
 void LauncherApplicationMenuItemModel::Build() {

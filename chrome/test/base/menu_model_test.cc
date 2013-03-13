@@ -21,7 +21,7 @@ bool MenuModelTest::Delegate::GetAcceleratorForCommandId(
   return false;
 }
 
-void MenuModelTest::Delegate::ExecuteCommand(int command_id) {
+void MenuModelTest::Delegate::ExecuteCommand(int command_id, int event_flags) {
   ++execute_count_;
 }
 

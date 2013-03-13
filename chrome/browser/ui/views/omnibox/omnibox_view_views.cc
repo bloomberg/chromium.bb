@@ -751,7 +751,7 @@ bool OmniboxViewViews::HandlesCommand(int command_id) const {
   return command_id == IDS_APP_PASTE;
 }
 
-void OmniboxViewViews::ExecuteCommand(int command_id) {
+void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDS_APP_PASTE:
       OnPaste();

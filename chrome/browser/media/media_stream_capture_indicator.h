@@ -39,7 +39,7 @@ class MediaStreamCaptureIndicator
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // Called on IO thread when MediaStream opens new capture devices.
   void CaptureDevicesOpened(int render_process_id,

@@ -40,7 +40,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   }
 
   // Performs the action associated with the specified command id.
-  virtual void ExecuteCommand(int command_id) {
+  virtual void ExecuteCommand(int command_id, int event_flags) {
   }
 };
 

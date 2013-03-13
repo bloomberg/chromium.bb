@@ -95,7 +95,7 @@ void TouchEditingMenuView::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
   if (controller_) {
     if (sender->tag() != kEllipsesButtonTag)
-      controller_->ExecuteCommand(sender->tag());
+      controller_->ExecuteCommand(sender->tag(), event.flags());
     else
       controller_->OpenContextMenu();
   }

@@ -84,7 +84,8 @@ bool ActionBoxButtonController::GetAcceleratorForCommandId(
   return false;
 }
 
-void ActionBoxButtonController::ExecuteCommand(int command_id) {
+void ActionBoxButtonController::ExecuteCommand(int command_id,
+                                               int event_flags) {
   // If the command id belongs to an extension, dispatch an onClicked event
   // to its pageLauncher.
   ExtensionIdCommandMap::const_iterator it =

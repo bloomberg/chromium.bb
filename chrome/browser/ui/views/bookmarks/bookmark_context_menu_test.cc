@@ -118,7 +118,7 @@ TEST_F(BookmarkContextMenuTest, DeleteURL) {
   GURL url = model_->bookmark_bar_node()->GetChild(0)->url();
   ASSERT_TRUE(controller.IsCommandEnabled(IDC_BOOKMARK_BAR_REMOVE));
   // Delete the URL.
-  controller.ExecuteCommand(IDC_BOOKMARK_BAR_REMOVE);
+  controller.ExecuteCommand(IDC_BOOKMARK_BAR_REMOVE, 0);
   // Model shouldn't have URL anymore.
   ASSERT_FALSE(model_->IsBookmarked(url));
 }
@@ -305,12 +305,12 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   EXPECT_TRUE(controller->IsCommandEnabled(IDC_CUT));
 
   // Copy the URL.
-  controller->ExecuteCommand(IDC_COPY);
+  controller->ExecuteCommand(IDC_COPY, 0);
 
   controller.reset(new BookmarkContextMenu(
       NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes, false));
   int old_count = bb_node->child_count();
-  controller->ExecuteCommand(IDC_PASTE);
+  controller->ExecuteCommand(IDC_PASTE, 0);
 
   ASSERT_TRUE(bb_node->GetChild(1)->is_url());
   ASSERT_EQ(old_count + 1, bb_node->child_count());
@@ -319,7 +319,7 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   controller.reset(new BookmarkContextMenu(
       NULL, NULL, profile_.get(), NULL, nodes[0]->parent(), nodes, false));
   // Cut the URL.
-  controller->ExecuteCommand(IDC_CUT);
+  controller->ExecuteCommand(IDC_CUT, 0);
   ASSERT_TRUE(bb_node->GetChild(0)->is_url());
   ASSERT_TRUE(bb_node->GetChild(1)->is_folder());
   ASSERT_EQ(old_count, bb_node->child_count());

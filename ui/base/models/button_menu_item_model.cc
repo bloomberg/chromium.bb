@@ -108,7 +108,7 @@ bool ButtonMenuItemModel::PartOfGroup(int index) const {
 
 void ButtonMenuItemModel::ActivatedCommand(int command_id) {
   if (delegate_)
-    delegate_->ExecuteCommand(command_id);
+    delegate_->ExecuteCommand(command_id, 0);
 }
 
 bool ButtonMenuItemModel::IsEnabledAt(int index) const {

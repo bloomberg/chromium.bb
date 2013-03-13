@@ -197,7 +197,7 @@ class MenuModel : public ui::SimpleMenuModel,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
   message_center::NotificationChangeObserver* observer_;  // Weak reference.
@@ -249,7 +249,7 @@ bool MenuModel::GetAcceleratorForCommandId(int command_id,
   return false;
 }
 
-void MenuModel::ExecuteCommand(int command_id) {
+void MenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case kToggleExtensionCommand:
       observer_->OnDisableNotificationsByExtension(notification_id_);

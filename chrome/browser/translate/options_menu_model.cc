@@ -96,7 +96,7 @@ bool OptionsMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void OptionsMenuModel::ExecuteCommand(int command_id) {
+void OptionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
       UMA_HISTOGRAM_COUNTS("Translate.NeverTranslateLang", 1);

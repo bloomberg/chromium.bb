@@ -211,37 +211,6 @@ class LauncherButtonFocusBorder : public views::FocusBorder {
   DISALLOW_COPY_AND_ASSIGN(LauncherButtonFocusBorder);
 };
 
-// ui::SimpleMenuModel::Delegate implementation that remembers the id of the
-// menu that was activated.
-class MenuDelegateImpl : public ui::SimpleMenuModel::Delegate {
- public:
-  MenuDelegateImpl() : activated_command_id_(-1) {}
-
-  int activated_command_id() const { return activated_command_id_; }
-
-  // ui::SimpleMenuModel::Delegate overrides:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
-    return false;
-  }
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
-    return true;
-  }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
-    return false;
-  }
-  virtual void ExecuteCommand(int command_id) OVERRIDE {
-    activated_command_id_ = command_id;
-  }
-
- private:
-  // ID of the command passed to ExecuteCommand.
-  int activated_command_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuDelegateImpl);
-};
-
 // AnimationDelegate that deletes a view when done. This is used when a launcher
 // item is removed, which triggers a remove animation. When the animation is
 // done we delete the view.

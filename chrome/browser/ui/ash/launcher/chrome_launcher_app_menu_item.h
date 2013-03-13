@@ -35,7 +35,9 @@ class ChromeLauncherAppMenuItem {
   virtual bool IsEnabled() const;
 
   // Executes the option.
-  virtual void Execute();
+  // |event_flags| are the flags from the event which issued this command.
+  // It can be used to check additional keyboard modifiers.
+  virtual void Execute(int event_flags);
 
  private:
   const string16 title_;

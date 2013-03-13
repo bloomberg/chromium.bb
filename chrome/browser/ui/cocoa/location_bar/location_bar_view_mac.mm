@@ -473,7 +473,8 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
 }
 
 void LocationBarViewMac::TestActionBoxMenuItemSelected(int command_id) {
-  plus_decoration_->action_box_button_controller()->ExecuteCommand(command_id);
+  plus_decoration_->action_box_button_controller()->ExecuteCommand(
+      command_id, 0);
 }
 
 bool LocationBarViewMac::GetBookmarkStarVisibility() {

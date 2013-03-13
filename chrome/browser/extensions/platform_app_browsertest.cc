@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   // Execute the menu item
   ExtensionTestMessageListener onclicked_listener("onClicked fired for id1",
                                                   false);
-  menu->ExecuteCommand(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST);
+  menu->ExecuteCommand(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, 0);
 
   ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
 }

@@ -482,7 +482,7 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   scoped_ptr<TestRenderViewContextMenu> menu(
       TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
 
   // To test that bug #49018 if fixed, make sure we deal correctly with errors.
   // Simulate a failure to fetch the translate script.
@@ -514,7 +514,7 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   SimulateNavigation(GURL("http://www.google.com"), "und", true);
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   RenderViewHostTester::TestOnMessageReceived(
       rvh(),
       ChromeViewHostMsg_PageTranslated(
@@ -530,7 +530,7 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   SimulateNavigation(GURL("http://www.google.com"), "und", true);
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   RenderViewHostTester::TestOnMessageReceived(
       rvh(),
       ChromeViewHostMsg_PageTranslated(
@@ -1233,7 +1233,7 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
   // Use the menu to translate the page.
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
 
   // That should have triggered a translation.
   // The "translating..." infobar should be showing.
@@ -1277,7 +1277,7 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 
@@ -1296,7 +1296,7 @@ TEST_F(TranslateManagerTest, ContextMenu) {
       rvh(),
       ChromeViewHostMsg_PageTranslated(
           0, 0, "de", "en", TranslateErrors::NONE));
-  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
 

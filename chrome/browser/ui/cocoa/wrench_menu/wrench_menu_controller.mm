@@ -227,7 +227,7 @@ class ZoomLevelObserver {
 
 // Used to perform the actual dispatch on the outermost runloop.
 - (void)performCommandDispatch:(NSNumber*)tag {
-  [self wrenchMenuModel]->ExecuteCommand([tag intValue]);
+  [self wrenchMenuModel]->ExecuteCommand([tag intValue], 0);
 }
 
 - (WrenchMenuModel*)wrenchMenuModel {

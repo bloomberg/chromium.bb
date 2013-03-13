@@ -247,7 +247,7 @@ class TaskManagerView : public views::ButtonListener,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual void ExecuteCommand(int id, int event_flags) OVERRIDE;
 
  private:
   // Creates the child controls.
@@ -688,7 +688,7 @@ bool TaskManagerView::GetAcceleratorForCommandId(
   return false;
 }
 
-void TaskManagerView::ExecuteCommand(int id) {
+void TaskManagerView::ExecuteCommand(int id, int event_flags) {
   tab_table_->SetColumnVisibility(id, !tab_table_->IsColumnVisible(id));
 }
 

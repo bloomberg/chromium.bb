@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
 
   TestRenderViewContextMenu menu(tab, params);
   menu.Init();
-  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

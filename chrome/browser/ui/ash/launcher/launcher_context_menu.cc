@@ -232,7 +232,7 @@ bool LauncherContextMenu::GetAcceleratorForCommandId(
   return false;
 }
 
-void LauncherContextMenu::ExecuteCommand(int command_id) {
+void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN_NEW:
       controller_->Launch(item_.id, ui::EF_NONE);

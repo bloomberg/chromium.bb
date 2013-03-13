@@ -107,7 +107,7 @@ bool CornerSelectionMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
+void CornerSelectionMenuModel::ExecuteCommand(int command_id, int event_flags) {
   // TODO(dimich): MessageCenter does not use this preference (yet?)
   if (NotificationUIManager::DelegatesToMessageCenter())
     return;
@@ -235,7 +235,8 @@ bool NotificationOptionsMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
+void NotificationOptionsMenuModel::ExecuteCommand(int command_id,
+                                                  int event_flags) {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(balloon_->profile());
   ExtensionService* extension_service =

@@ -90,7 +90,7 @@ class VIEWS_EXPORT TextfieldController {
   virtual bool HandlesCommand(int command_id) const;
 
   // Execute context menu command specified by |command_id|.
-  virtual void ExecuteCommand(int command_id) {}
+  virtual void ExecuteCommand(int command_id, int event_flag) {}
 
  protected:
   virtual ~TextfieldController() {}

@@ -50,7 +50,7 @@ void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
 
 void SimpleMenuModel::Delegate::ExecuteCommand(
     int command_id, int event_flags) {
-  ExecuteCommand(command_id);
+  ExecuteCommand(command_id, event_flags);
 }
 
 void SimpleMenuModel::Delegate::MenuWillShow(SimpleMenuModel* /*source*/) {
@@ -323,7 +323,7 @@ void SimpleMenuModel::HighlightChangedTo(int index) {
 
 void SimpleMenuModel::ActivatedAt(int index) {
   if (delegate_)
-    delegate_->ExecuteCommand(GetCommandIdAt(index));
+    delegate_->ExecuteCommand(GetCommandIdAt(index), 0);
 }
 
 void SimpleMenuModel::ActivatedAt(int index, int event_flags) {

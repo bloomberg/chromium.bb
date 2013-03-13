@@ -192,7 +192,7 @@ void LanguageSwitchMenu::OnMenuButtonClicked(views::View* source,
 ////////////////////////////////////////////////////////////////////////////////
 // views::MenuDelegate implementation.
 
-void LanguageSwitchMenu::ExecuteCommand(int command_id) {
+void LanguageSwitchMenu::ExecuteCommand(int command_id, int event_flags) {
   const std::string locale = language_list_->GetLocaleFromIndex(command_id);
   // Here, we should enable keyboard layouts associated with the locale so
   // that users can use those keyboard layouts on the login screen.

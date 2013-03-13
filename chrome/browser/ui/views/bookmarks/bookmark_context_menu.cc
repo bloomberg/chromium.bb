@@ -66,7 +66,7 @@ void BookmarkContextMenu::SetPageNavigator(PageNavigator* navigator) {
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, views::MenuDelegate implementation:
 
-void BookmarkContextMenu::ExecuteCommand(int command_id) {
+void BookmarkContextMenu::ExecuteCommand(int command_id, int event_flags) {
   controller_->ExecuteCommand(command_id);
 }
 

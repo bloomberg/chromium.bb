@@ -149,7 +149,7 @@ bool TreeViewExample::GetAcceleratorForCommandId(
   return false;
 }
 
-void TreeViewExample::ExecuteCommand(int command_id) {
+void TreeViewExample::ExecuteCommand(int command_id, int event_flags) {
   NodeType* selected_node =
       static_cast<NodeType*>(tree_view_->GetSelectedNode());
   switch (command_id) {

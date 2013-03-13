@@ -32,7 +32,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
   enum GroupID {
@@ -124,7 +124,7 @@ bool ExampleMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void ExampleMenuModel::ExecuteCommand(int command_id) {
+void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case COMMAND_DO_SOMETHING: {
       LOG(INFO) << "Done something";

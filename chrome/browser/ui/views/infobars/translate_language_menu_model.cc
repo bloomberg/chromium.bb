@@ -44,7 +44,8 @@ bool TranslateLanguageMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void TranslateLanguageMenuModel::ExecuteCommand(int command_id) {
+void TranslateLanguageMenuModel::ExecuteCommand(int command_id,
+                                                int event_flags) {
   size_t command_id_size_t = static_cast<size_t>(command_id);
   if (language_type_ == ORIGINAL) {
     UMA_HISTOGRAM_COUNTS("Translate.ModifyOriginalLang", 1);

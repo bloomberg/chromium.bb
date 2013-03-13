@@ -109,7 +109,7 @@ void BookmarkContextMenuController::AddCheckboxItem(int id,
   menu_model_->AddCheckItemWithStringId(id, localization_id);
 }
 
-void BookmarkContextMenuController::ExecuteCommand(int id) {
+void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
   if (delegate_)
     delegate_->WillExecuteCommand();
 

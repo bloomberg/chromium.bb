@@ -1436,7 +1436,7 @@ void LocationBarView::TestPageActionPressed(size_t index) {
 
 void LocationBarView::TestActionBoxMenuItemSelected(int command_id) {
   action_box_button_view_->action_box_button_controller()->
-      ExecuteCommand(command_id);
+      ExecuteCommand(command_id, 0);
 }
 
 bool LocationBarView::GetBookmarkStarVisibility() {

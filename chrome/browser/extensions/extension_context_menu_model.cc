@@ -97,7 +97,8 @@ bool ExtensionContextMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
+void ExtensionContextMenuModel::ExecuteCommand(int command_id,
+                                               int event_flags) {
   const Extension* extension = GetExtension();
   if (!extension)
     return;

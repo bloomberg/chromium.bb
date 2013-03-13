@@ -76,7 +76,7 @@ bool SuggestionsMenuModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void SuggestionsMenuModel::ExecuteCommand(int command_id) {
+void SuggestionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   checked_item_ = command_id;
   delegate_->SuggestionItemSelected(*this);
 }
@@ -131,7 +131,7 @@ bool AccountChooserModel::GetAcceleratorForCommandId(
   return false;
 }
 
-void AccountChooserModel::ExecuteCommand(int command_id) {
+void AccountChooserModel::ExecuteCommand(int command_id, int event_flags) {
   if (checked_item_ == command_id)
     return;
 

@@ -474,7 +474,7 @@ bool ExtensionAppItem::GetAcceleratorForCommandId(
   return false;
 }
 
-void ExtensionAppItem::ExecuteCommand(int command_id) {
+void ExtensionAppItem::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == LAUNCH_NEW) {
     Launch(ui::EF_NONE);
   } else if (command_id == TOGGLE_PIN && controller_->CanPin()) {

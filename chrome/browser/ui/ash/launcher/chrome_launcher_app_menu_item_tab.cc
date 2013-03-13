@@ -31,7 +31,7 @@ bool ChromeLauncherAppMenuItemTab::IsEnabled() const {
   return true;
 }
 
-void ChromeLauncherAppMenuItemTab::Execute() {
+void ChromeLauncherAppMenuItemTab::Execute(int event_flags) {
   if (!web_contents())
     return;
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
@@ -39,10 +39,14 @@ void ChromeLauncherAppMenuItemTab::Execute() {
     return;
   TabStripModel* tab_strip = browser->tab_strip_model();
   int index = tab_strip->GetIndexOfWebContents(web_contents());
-  DCHECK(index != TabStripModel::kNoTab);
-  tab_strip->ActivateTabAt(index, false);
-  browser->window()->Show();
-  // Need this check to prevent unit tests from crashing.
-  if (browser->window()->GetNativeWindow())
-    ash::wm::ActivateWindow(browser->window()->GetNativeWindow());
+  DCHECK_NE(index, TabStripModel::kNoTab);
+  if (event_flags & (ui::EF_SHIFT_DOWN | ui::EF_MIDDLE_MOUSE_BUTTON)) {
+    tab_strip->CloseWebContentsAt(index, TabStripModel::CLOSE_USER_GESTURE);
+  } else {
+    tab_strip->ActivateTabAt(index, false);
+    browser->window()->Show();
+    // Need this check to prevent unit tests from crashing.
+    if (browser->window()->GetNativeWindow())
+      ash::wm::ActivateWindow(browser->window()->GetNativeWindow());
+  }
 }

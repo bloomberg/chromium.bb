@@ -807,7 +807,7 @@ bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(
   return false;
 }
 
-void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
+void BrowserActionsToolbarGtk::ExecuteCommand(int command_id, int event_flags) {
   const Extension* extension = model_->toolbar_items()[command_id];
   GURL popup_url;
 

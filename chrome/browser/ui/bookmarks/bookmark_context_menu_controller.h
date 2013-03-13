@@ -67,7 +67,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
   // Adds a IDC_* style command to the menu with a localized string.

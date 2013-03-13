@@ -24,7 +24,7 @@ class VIEWS_EXPORT TouchEditingMenuController {
   virtual bool IsCommandIdEnabled(int command_id) const = 0;
 
   // Send a context menu command to the controller.
-  virtual void ExecuteCommand(int command_id) = 0;
+  virtual void ExecuteCommand(int command_id, int event_flags) = 0;
 
   // Tell the controller that user has selected the context menu button.
   virtual void OpenContextMenu() = 0;

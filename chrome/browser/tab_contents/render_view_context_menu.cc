@@ -1323,10 +1323,6 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   return false;
 }
 
-void RenderViewContextMenu::ExecuteCommand(int id) {
-  ExecuteCommand(id, 0);
-}
-
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   // If this command is is added by one of our observers, we dispatch it to the
   // observer.

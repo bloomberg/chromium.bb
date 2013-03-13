@@ -50,11 +50,10 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
     // visually highlighted within the menu.
     virtual void CommandIdHighlighted(int command_id);
 
-    // Performs the action associated with the specified command id.
-    virtual void ExecuteCommand(int command_id) = 0;
-    // Performs the action associates with the specified command id
-    // with |event_flags|.
-    virtual void ExecuteCommand(int command_id, int event_flags);
+    // Performs the action associates with the specified command id.
+    // The passed |event_flags| are the flags from the event which issued this
+    // command and they can be examined to find modifier keys.
+    virtual void ExecuteCommand(int command_id, int event_flags) = 0;
 
     // Notifies the delegate that the menu is about to show.
     virtual void MenuWillShow(SimpleMenuModel* source);

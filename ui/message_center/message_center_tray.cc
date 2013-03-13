@@ -142,7 +142,7 @@ bool MessageCenterTray::GetAcceleratorForCommandId(
   return false;
 }
 
-void MessageCenterTray::ExecuteCommand(int command_id) {
+void MessageCenterTray::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kToggleQuietMode) {
     bool in_quiet_mode = message_center()->quiet_mode();
     message_center()->notification_list()->SetQuietMode(!in_quiet_mode);

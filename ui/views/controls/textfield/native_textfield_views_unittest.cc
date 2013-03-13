@@ -598,8 +598,8 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   SetClipboardText("foo");
   SendKeyEvent(ui::VKEY_C, false, true);
   SendKeyEvent(ui::VKEY_X, false, true);
-  ExecuteCommand(IDS_APP_COPY);
-  ExecuteCommand(IDS_APP_CUT);
+  ExecuteCommand(IDS_APP_COPY, 0);
+  ExecuteCommand(IDS_APP_CUT, 0);
   EXPECT_STR_EQ("foo", string16(GetClipboardText()));
   EXPECT_STR_EQ("my password", textfield_->text());
 }

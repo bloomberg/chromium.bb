@@ -228,7 +228,7 @@ bool ReloadButtonGtk::GetAcceleratorForCommandId(
   return false;
 }
 
-void ReloadButtonGtk::ExecuteCommand(int command_id) {
+void ReloadButtonGtk::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
       DoReload(IDC_RELOAD);

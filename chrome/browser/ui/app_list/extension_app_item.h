@@ -93,7 +93,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* acclelrator) OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
   // Overridden from ChromeAppListItem:
   virtual void Activate(int event_flags) OVERRIDE;

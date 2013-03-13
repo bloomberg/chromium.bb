@@ -954,7 +954,7 @@ bool BrowserTitlebar::IsCommandIdChecked(int command_id) const {
   return false;
 }
 
-void BrowserTitlebar::ExecuteCommand(int command_id) {
+void BrowserTitlebar::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kShowWindowDecorationsCommand) {
     PrefService* prefs = browser_window_->browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kUseCustomChromeFrame,

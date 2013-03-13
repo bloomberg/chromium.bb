@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkFromIncognito) {
       browser_incognito->tab_strip_model()->GetActiveWebContents(),
       context_menu_params);
   menu.Init();
-  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKLOCATION);
+  menu.ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKLOCATION, 0);
 
   // Check the clipboard.
   string16 content;

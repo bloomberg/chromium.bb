@@ -40,10 +40,6 @@ bool RenderViewContextMenuWin::IsCommandIdVisible(int command_id) const {
   return RenderViewContextMenu::IsCommandIdVisible(command_id);
 }
 
-void RenderViewContextMenuWin::ExecuteCommand(int command_id) {
-  ExecuteCommand(command_id, 0);
-}
-
 void RenderViewContextMenuWin::ExecuteCommand(int command_id,
                                               int event_flags) {
   if (win8::IsSingleWindowMetroMode() &&
