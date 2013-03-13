@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
+#include <cstdio>
+#include <iostream>
 #include <string>
 #include <vector>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
+#include "chrome/test/chromedriver/version.h"
 #include "third_party/mongoose/mongoose.h"
 
 namespace {
@@ -69,12 +73,13 @@ void* ProcessHttpRequest(mg_event event_raised,
     ReadRequestBody(request_info, connection, &body);
 
   HttpRequest request(method, request_info->uri, body);
-  printf("Handling request: %s %s\n", request_info->uri, body.c_str());
+  LOG(INFO) << "Handling request: "
+            << std::string(request_info->uri) << " " << body;
 
   HttpResponse response;
   user_data->handler->Handle(request, &response);
-  printf("Done handling request: %d %s\n", response.status(),
-         response.body().c_str());
+  LOG(INFO) << "Done handling request: "
+            << response.status() << " " << response.body();
 
   // Don't allow HTTP keep alive.
   response.AddHeader("connection", "close");
@@ -109,6 +114,7 @@ int main(int argc, char *argv[]) {
   std::string port = "9515";
   std::string url_base;
   int http_threads = 4;
+  base::FilePath log_path;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   if (cmd_line->HasSwitch("url-base"))
@@ -124,6 +130,35 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
+  if (cmd_line->HasSwitch("log-path")) {
+    log_path = cmd_line->GetSwitchValuePath("log-path");
+  } else {
+    base::FilePath::StringType log_name(FILE_PATH_LITERAL("chromedriver.log"));
+    log_path = base::FilePath(log_name);
+    file_util::ScopedFILE file(file_util::OpenFile(log_path, "w"));
+    base::FilePath temp_dir;
+    if (!file.get() && file_util::GetTempDir(&temp_dir))
+      log_path = temp_dir.Append(log_name);
+  }
+
+  if (!log_path.IsAbsolute()) {
+    base::FilePath cwd;
+    if (file_util::GetCurrentDirectory(&cwd))
+      log_path = cwd.Append(log_path);
+  }
+  bool success = InitLogging(
+      log_path.value().c_str(),
+      logging::LOG_ONLY_TO_FILE,
+      logging::DONT_LOCK_LOG_FILE,
+      logging::DELETE_OLD_LOG_FILE,
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  if (!success) {
+    PLOG(ERROR) << "Unable to initialize logging";
+  }
+  logging::SetLogItems(false,  // enable_process_id
+                       false,  // enable_thread_id
+                       true,   // enable_timestamp
+                       false); // enable_tickcount
 
   scoped_ptr<CommandExecutor> executor(new CommandExecutorImpl());
   HttpHandler handler(executor.Pass(), HttpHandler::CreateCommandMap(),
@@ -147,8 +182,15 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (!cmd_line->HasSwitch("silent"))
-    printf("ChromeDriver (port=%s)\n", port.c_str());
+  if (cmd_line->HasSwitch("verbose")) {
+    std::cout << "Started ChromeDriver" << std::endl
+              << "port=" << port << std::endl
+              << "version=" << std::string(kChromeDriverVersion) << std::endl
+              << "log=" << log_path.value() << std::endl;
+  } else {
+    fclose(stdout);
+    fclose(stderr);
+  }
 
   // Run until we receive command to shutdown.
   shutdown_event.Wait();
