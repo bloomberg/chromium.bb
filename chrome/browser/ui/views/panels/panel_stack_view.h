@@ -32,7 +32,6 @@ class PanelStackView : public NativePanelStack,
   virtual void OnPanelAddedOrRemoved(Panel* panel) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void Minimize() OVERRIDE;
-  virtual bool IsMinimized() const OVERRIDE;
   virtual void DrawSystemAttention(bool draw_attention) OVERRIDE;
 
  private:

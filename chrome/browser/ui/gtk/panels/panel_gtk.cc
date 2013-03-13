@@ -321,11 +321,6 @@ void PanelGtk::MinimizePanelBySystem() {
   NOTIMPLEMENTED();
 }
 
-bool PanelGtk::IsPanelMinimizedBySystem() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void PanelGtk::UpdateWindowShape() {
   int width = configure_size_.width();
   int height = configure_size_.height();

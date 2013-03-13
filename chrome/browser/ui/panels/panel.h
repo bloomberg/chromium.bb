@@ -304,10 +304,8 @@ class Panel : public BaseWindow,
   // Applies |corner_style| to the panel window.
   void SetWindowCornerStyle(panel::CornerStyle corner_style);
 
-  // Performs the system minimize for the panel, i.e. becoming iconic.
+  // Performs the system minimize for the panel, i.e. hide the panel.
   void MinimizeBySystem();
-
-  bool IsMinimizedBySystem() const;
 
  protected:
   // Panel can only be created using PanelManager::CreatePanel() or subclass.
