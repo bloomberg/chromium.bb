@@ -32,7 +32,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -181,29 +180,13 @@ bool HandleDataRequestCallback(
 
   scoped_ptr<ListValue> rvh_list(new ListValue());
 
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
-       !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
-    DCHECK(render_process_host);
+  std::vector<RenderViewHost*> rvh_vector =
+      DevToolsAgentHost::GetValidRenderViewHosts();
 
-    // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!render_process_host->HasConnection())
-      continue;
-
-    RenderProcessHost::RenderWidgetHostsIterator rwit(
-        render_process_host->GetRenderWidgetHostsIterator());
-    for (; !rwit.IsAtEnd(); rwit.Advance()) {
-      const RenderWidgetHost* widget = rwit.GetCurrentValue();
-      DCHECK(widget);
-      if (!widget || !widget->IsRenderView())
-        continue;
-
-      RenderViewHost* rvh =
-          RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
-
-      bool is_tab = tab_rvhs.find(rvh) != tab_rvhs.end();
-      rvh_list->Append(BuildTargetDescriptor(rvh, is_tab));
-    }
+  for (std::vector<RenderViewHost*>::iterator it(rvh_vector.begin());
+       it != rvh_vector.end(); it++) {
+    bool is_tab = tab_rvhs.find(*it) != tab_rvhs.end();
+    rvh_list->Append(BuildTargetDescriptor(*it, is_tab));
   }
 
   BrowserThread::PostTask(
