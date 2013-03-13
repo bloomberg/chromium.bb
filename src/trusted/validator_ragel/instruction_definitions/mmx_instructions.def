@@ -34,7 +34,7 @@ fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 CPUFeature_FXSR
 fxsave Msx, 0x0f 0xae /0, norexw CPUFeature_FXSR
 fxsave64 Msx, rexw 0x0f 0xae /0, amd64 CPUFeature_FXSR
 ######## MASKMOVQ ##############################################################
-maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMX nacl-amd64-forbidden
+maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMXSSE nacl-amd64-forbidden
 ######## MOVD ##################################################################
 # Textbook definition of "movd" as per AMD/Intel manuals looks like this:
 #  movd Ey Py, 0x0f 0x6e, CPUFeature_MMX

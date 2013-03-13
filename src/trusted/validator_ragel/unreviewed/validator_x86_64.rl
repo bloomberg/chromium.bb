@@ -370,20 +370,18 @@
                                           data, valid_targets);
     };
 
-  # EMMS/SSE2/AVX instructions which have implicit %ds:(%rsi) operand
-  # maskmovq %mmX,%mmY
-  maskmovq =
-      REX_WRXB? (0x0f 0xf7)
-      @CPUFeature_EMMX modrm_registers;
-  # maskmovdqu %xmmX, %xmmY
-  maskmovdqu =
-      0x66 REX_WRXB? (0x0f 0xf7)
-      @CPUFeature_SSE2 modrm_registers;
-  # vmaskmovdqu %xmmX, %xmmY
-  vmaskmovdqu =
-      ((0xc4 (VEX_RB & VEX_map00001) 0x79 @vex_prefix3) |
-      (0xc5 (0x79 | 0xf9) @vex_prefix_short)) 0xf7
-      @CPUFeature_AVX modrm_registers;
+  # EMMX/SSE/SSE2/AVX instructions which have implicit %ds:(%rsi) operand
+
+  # maskmovq %mmX,%mmY (EMMX or SSE)
+  maskmovq = REX_WRXB? 0x0f 0xf7 @CPUFeature_EMMXSSE modrm_registers;
+
+  # maskmovdqu %xmmX, %xmmY (SSE2)
+  maskmovdqu = 0x66 REX_WRXB? 0x0f 0xf7 @CPUFeature_SSE2 modrm_registers;
+
+  # vmaskmovdqu %xmmX, %xmmY (AVX)
+  vmaskmovdqu = ((0xc4 (VEX_RB & VEX_map00001) b_0_1111_0_01) |
+                 (0xc5 b_X_1111_0_01)) 0xf7 @CPUFeature_AVX modrm_registers;
+
   mmx_sse_rdi_instruction = maskmovq | maskmovdqu | vmaskmovdqu;
 
   # Temporary fix: for string instructions combination of data16 and rep(ne)
