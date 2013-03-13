@@ -29,6 +29,16 @@ scoped_ptr<AutofillWebDataService> AutofillWebDataService::FromBrowserContext(
   }
 }
 
+// static
+scoped_refptr<WebDataService> WebDataService::FromBrowserContext(
+    content::BrowserContext* context) {
+  // For this service, the implicit/explicit distinction doesn't
+  // really matter; it's just used for a DCHECK.  So we currently
+  // cheat and always say EXPLICIT_ACCESS.
+  return WebDataServiceFactory::GetForProfile(
+      static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
+}
+
 WebDataServiceFactory::WebDataServiceFactory()
     : RefcountedProfileKeyedServiceFactory(
           "WebDataService",
@@ -50,14 +60,6 @@ scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfile(
 }
 
 // static
-scoped_refptr<WebDataService> WebDataServiceFactory::GetForProfileIfExists(
-    Profile* profile, Profile::ServiceAccessType access_type) {
-  DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
-  return static_cast<WebDataService*>(
-      GetInstance()->GetServiceForProfile(profile, false).get());
-}
-
-// static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
   return Singleton<WebDataServiceFactory>::get();
 }
@@ -69,13 +71,8 @@ bool WebDataServiceFactory::ServiceRedirectedInIncognito() const {
 scoped_refptr<RefcountedProfileKeyedService>
 WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
   DCHECK(profile);
-
-  base::FilePath path = profile->GetPath();
-  path = path.Append(chrome::kWebDataFilename);
-  WebDatabaseService* wdbs = WebDatabaseServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
-
-  scoped_refptr<WebDataService> wds(new WebDataService(wdbs));
+  scoped_refptr<WebDataService> wds(new WebDataService(
+      WebDatabaseService::FromBrowserContext(profile)));
   wds->Init();
   return wds.get();
 }

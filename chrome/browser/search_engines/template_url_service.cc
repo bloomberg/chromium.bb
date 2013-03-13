@@ -32,7 +32,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/util.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -687,8 +687,7 @@ void TemplateURLService::Load() {
     return;
 
   if (!service_.get()) {
-    service_ = WebDataServiceFactory::GetForProfile(profile_,
-                                                    Profile::EXPLICIT_ACCESS);
+    service_ = WebDataService::FromBrowserContext(profile_);
   }
 
   if (service_.get()) {

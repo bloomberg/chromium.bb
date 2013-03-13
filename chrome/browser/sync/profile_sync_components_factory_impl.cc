@@ -57,7 +57,6 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -99,8 +98,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       command_line_(command_line),
       extension_system_(
           extensions::ExtensionSystemFactory::GetForProfile(profile)),
-      web_data_service_(WebDataServiceFactory::GetForProfile(
-          profile_, Profile::IMPLICIT_ACCESS)) {
+      web_data_service_(WebDataService::FromBrowserContext(profile_)) {
 }
 
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {

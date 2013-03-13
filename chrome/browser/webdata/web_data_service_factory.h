@@ -20,11 +20,6 @@ class WebDataServiceFactory : public RefcountedProfileKeyedServiceFactory {
   static scoped_refptr<WebDataService> GetForProfile(
       Profile* profile, Profile::ServiceAccessType access_type);
 
-  // Similar to GetForProfile(), but won't create the web data service if it
-  // doesn't already exist.
-  static scoped_refptr<WebDataService> GetForProfileIfExists(
-      Profile* profile, Profile::ServiceAccessType access_type);
-
   static WebDataServiceFactory* GetInstance();
 
  private:

@@ -439,8 +439,7 @@ static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
     Profile* profile) {
 
   WebDataService* web_data_service =
-      new WebDataService(WebDatabaseServiceFactory::GetForProfile(
-          profile, Profile::EXPLICIT_ACCESS));
+      new WebDataService(WebDatabaseService::FromBrowserContext(profile));
   if (web_data_service)
     web_data_service->Init();
   return web_data_service;

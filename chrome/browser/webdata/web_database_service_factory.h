@@ -20,8 +20,6 @@ namespace content {
 // Profiles.
 class WebDatabaseServiceFactory : public ProfileKeyedServiceFactory {
  public:
-  static WebDatabaseService* FromBrowserContext(
-    content::BrowserContext* context);
   // Returns the |WebDatabaseService| associated with the |profile|.
   // |access_type| is either EXPLICIT_ACCESS or IMPLICIT_ACCESS
   // (see its definition).

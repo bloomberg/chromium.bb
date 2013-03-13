@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"
@@ -454,8 +453,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   profile_pointers.push_back(&profile2);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS);
+  scoped_refptr<WebDataService> wds =
+      WebDataService::FromBrowserContext(profile_.get());
   ASSERT_TRUE(wds.get());
   wds->AddAutofillProfile(profile2);
 

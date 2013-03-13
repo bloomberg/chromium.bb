@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database_service_factory.h"
 #include "chrome/browser/webdata/web_database_service_impl.h"
 #include "chrome/common/chrome_constants.h"
@@ -200,8 +200,7 @@ void TemplateURLServiceTestUtil::ChangeModelToLoadState() {
   model()->ChangeToLoadedState();
   // Initialize the web data service so that the database gets updated with
   // any changes made.
-  model()->service_ = WebDataServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS);
+  model()->service_ = WebDataService::FromBrowserContext(profile_.get());
   BlockTillServiceProcessesRequests();
 }
 

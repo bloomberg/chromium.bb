@@ -25,7 +25,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 
@@ -100,8 +100,7 @@ void ProfileWriter::AddPasswordForm(const content::PasswordForm& form) {
 
 #if defined(OS_WIN)
 void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
-  WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS)->AddIE7Login(info);
+  WebDataService::FromBrowserContext(profile_)->AddIE7Login(info);
 }
 #endif
 

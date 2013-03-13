@@ -17,7 +17,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/webdata/web_database_service.h"
-#include "chrome/browser/webdata/web_database_service_factory.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -118,8 +117,7 @@ void MemoryPurger::PurgeBrowser() {
 
     // Unload all web databases (freeing memory used to cache sqlite).
     WebDatabaseService* web_database_service =
-        WebDatabaseServiceFactory::GetForProfileIfExists(
-            profiles[i], Profile::EXPLICIT_ACCESS);
+        WebDatabaseService::FromBrowserContext(profiles[i]);
     if (web_database_service)
       web_database_service->UnloadDatabase();
 

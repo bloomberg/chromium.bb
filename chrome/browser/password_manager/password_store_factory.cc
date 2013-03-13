@@ -113,7 +113,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
 #if defined(OS_WIN)
   ps = new PasswordStoreWin(
       login_db, profile,
-      WebDataServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS));
+      WebDataService::FromBrowserContext(profile));
 #elif defined(OS_MACOSX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
     ps = new PasswordStoreMac(new crypto::MockAppleKeychain(), login_db);

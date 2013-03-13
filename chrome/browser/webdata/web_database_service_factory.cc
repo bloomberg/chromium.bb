@@ -20,10 +20,13 @@ WebDatabaseServiceFactory::WebDatabaseServiceFactory()
 WebDatabaseServiceFactory::~WebDatabaseServiceFactory() {}
 
 // static
-WebDatabaseService* WebDatabaseServiceFactory::FromBrowserContext(
+WebDatabaseService* WebDatabaseService::FromBrowserContext(
     content::BrowserContext* context) {
+  // For this service, the implicit/explicit distinction doesn't
+  // really matter; it's just used for a DCHECK.  So we currently
+  // cheat and always say EXPLICIT_ACCESS.
   return WebDatabaseServiceFactory::GetForProfile(
-          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
+      static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
 }
 
 // static

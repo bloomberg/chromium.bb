@@ -49,6 +49,10 @@ namespace base {
 class Thread;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace webkit_glue {
 struct WebIntentServiceData;
 }
@@ -104,6 +108,10 @@ class WebDataService
       public AutofillWebData,
       public RefcountedProfileKeyedService {
  public:
+  // Retrieve a WebDataService for the given context.
+  static scoped_refptr<WebDataService> FromBrowserContext(
+      content::BrowserContext* context);
+
   explicit WebDataService(WebDatabaseService* wdbs);
 
   // WebDataServiceBase implementation.

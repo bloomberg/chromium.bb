@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
@@ -66,8 +65,7 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
 
-  web_data_service_ = WebDataServiceFactory::GetForProfile(
-      profile(), Profile::IMPLICIT_ACCESS);
+  web_data_service_ = WebDataService::FromBrowserContext(profile());
   if (web_data_service_->IsDatabaseLoaded()) {
     return true;
   } else {

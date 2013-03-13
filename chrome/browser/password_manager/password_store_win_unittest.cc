@@ -21,7 +21,6 @@
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -118,8 +117,7 @@ class PasswordStoreWinTest : public testing::Test {
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
 
-    wds_ = WebDataServiceFactory::GetForProfile(
-        profile_.get(), Profile::EXPLICIT_ACCESS);
+    wds_ = WebDataService::FromBrowserContext(profile_.get());
   }
 
   virtual void TearDown() {

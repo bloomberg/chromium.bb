@@ -15,6 +15,10 @@
 #include "chrome/browser/api/webdata/web_data_service_base.h"
 #include "chrome/browser/webdata/web_database.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace tracked_objects {
 class Location;
 }
@@ -36,6 +40,12 @@ class WebDatabaseService {
   typedef base::Callback<scoped_ptr<WDTypedResult>(WebDatabase*)> ReadTask;
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
   typedef base::Callback<void(sql::InitStatus)> InitCallback;
+
+  // Retrieve a WebDatabaseService for the given context.
+  //
+  // Can return NULL in some contexts.
+  static WebDatabaseService* FromBrowserContext(
+      content::BrowserContext* context);
 
   virtual ~WebDatabaseService() {}
 

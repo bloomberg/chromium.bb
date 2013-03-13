@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -106,8 +106,7 @@ void TokenServiceTestHarness::TearDown() {
 
 void TokenServiceTestHarness::WaitForDBLoadCompletion() {
   // Force the loading of the WebDataService.
-  WebDataServiceFactory::GetForProfile(profile_.get(),
-                                       Profile::IMPLICIT_ACCESS);
+  WebDataService::FromBrowserContext(profile_.get());
 
   // The WebDB does all work on the DB thread. This will add an event
   // to the end of the DB thread, so when we reach this task, all DB
