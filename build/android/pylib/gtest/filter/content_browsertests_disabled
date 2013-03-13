@@ -34,6 +34,9 @@ FileSystemBrowserTestWithLowQuota.QuotaTest
 BlobLayoutTest.*
 ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
 
+# Failure, see crbug/189186
+GpuPixelTestBrowserPlugin.MANUAL_BrowserPluginBlueBox
+
 # Crashes
 WorkerXHRHttpLayoutTest.Tests
 GpuCrashTest.MANUAL_Kill
