@@ -6,7 +6,6 @@
 #define REMOTING_HOST_WIN_HOST_SERVICE_H_
 
 #include <windows.h>
-#include <winternl.h>
 
 #include <list>
 
@@ -19,7 +18,6 @@
 class CommandLine;
 
 namespace base {
-class ScopedNativeLibrary;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -48,21 +46,6 @@ class HostService : public WtsTerminalMonitor {
  private:
   HostService();
   ~HostService();
-
-  // Sets |*endpoint| to the endpoint of the client attached to |session_id|.
-  // If |session_id| is attached to the physical console net::IPEndPoint() is
-  // used. Returns false if the endpoint cannot be queried (if there is no
-  // client attached to |session_id| for instance).
-  bool GetEndpointForSessionId(uint32 session_id, net::IPEndPoint* endpoint);
-
-  // Returns id of the session that |client_endpoint| is attached.
-  // |kInvalidSessionId| is returned if none of the sessions is currently
-  // attahced to |client_endpoint|.
-  uint32 GetSessionIdForEndpoint(const net::IPEndPoint& client_endpoint);
-
-  // Gets the pointer to winsta!WinStationQueryInformationW(). Returns false if
-  // en error occurs.
-  bool LoadWinStationLibrary();
 
   // Notifies the service of changes in session state.
   void OnSessionChange(uint32 event, uint32 session_id);
@@ -117,12 +100,6 @@ class HostService : public WtsTerminalMonitor {
 
   // The list of observers receiving session notifications.
   std::list<RegisteredObserver> observers_;
-
-  // Handle of dynamically loaded winsta.dll.
-  scoped_ptr<base::ScopedNativeLibrary> winsta_;
-
-  // Points to winsta!WinStationQueryInformationW().
-  PWINSTATIONQUERYINFORMATIONW win_station_query_information_;
 
   scoped_ptr<Stoppable> child_;
 

@@ -5,18 +5,22 @@
 #ifndef REMOTING_HOST_WIN_WTS_TERMINAL_MONITOR_H_
 #define REMOTING_HOST_WIN_WTS_TERMINAL_MONITOR_H_
 
-#include <windows.h>
-
 #include "base/basictypes.h"
-#include "net/base/ip_endpoint.h"
+
+namespace net {
+class IPEndPoint;
+}  // namespace net
 
 namespace remoting {
 
 class WtsTerminalObserver;
 
+// Session id that does not represent any session.
+extern const uint32 kInvalidSessionId;
+
 class WtsTerminalMonitor {
  public:
-  virtual ~WtsTerminalMonitor() {}
+  virtual ~WtsTerminalMonitor();
 
   // Registers an observer to receive notifications about a particular WTS
   // terminal. To speficy the physical console the caller should pass
@@ -31,8 +35,20 @@ class WtsTerminalMonitor {
   // Unregisters a previously registered observer.
   virtual void RemoveWtsTerminalObserver(WtsTerminalObserver* observer) = 0;
 
+  // Sets |*endpoint| to the endpoint of the client attached to |session_id|.
+  // If |session_id| is attached to the physical console net::IPEndPoint() is
+  // used. Returns false if the endpoint cannot be queried (if there is no
+  // client attached to |session_id| for instance).
+  static bool GetEndpointForSessionId(uint32 session_id,
+                                      net::IPEndPoint* endpoint);
+
+  // Returns id of the session that |client_endpoint| is attached.
+  // |kInvalidSessionId| is returned if none of the sessions is currently
+  // attahced to |client_endpoint|.
+  static uint32 GetSessionIdForEndpoint(const net::IPEndPoint& client_endpoint);
+
  protected:
-  WtsTerminalMonitor() {}
+  WtsTerminalMonitor();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WtsTerminalMonitor);

@@ -7,12 +7,15 @@
 #include <atlhost.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/win/scoped_com_initializer.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/win/rdp_client.h"
+#include "remoting/host/win/wts_terminal_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,6 +82,9 @@ class RdpClientTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Caaled when an RDP connection is established.
+  void OnRdpConnected(const net::IPEndPoint& endpoint);
+
   // Tears down |rdp_client_|.
   void CloseRdpClient();
 
@@ -119,6 +125,18 @@ void RdpClientTest::TearDown() {
   module_.reset();
 }
 
+void RdpClientTest::OnRdpConnected(const net::IPEndPoint& endpoint) {
+  uint32 session_id = WtsTerminalMonitor::GetSessionIdForEndpoint(endpoint);
+
+  net::IPEndPoint session_endpoint;
+  EXPECT_TRUE(WtsTerminalMonitor::GetEndpointForSessionId(session_id,
+                                                          &session_endpoint));
+  EXPECT_EQ(endpoint, session_endpoint);
+
+  message_loop_.PostTask(FROM_HERE, base::Bind(&RdpClientTest::CloseRdpClient,
+                                               base::Unretained(this)));
+}
+
 void RdpClientTest::CloseRdpClient() {
   EXPECT_TRUE(rdp_client_);
 
@@ -132,7 +150,7 @@ TEST_F(RdpClientTest, Basic) {
   // and a connection error as a successful outcome.
   EXPECT_CALL(event_handler_, OnRdpConnected(_))
       .Times(AtMost(1))
-      .WillOnce(InvokeWithoutArgs(this, &RdpClientTest::CloseRdpClient));
+      .WillOnce(Invoke(this, &RdpClientTest::OnRdpConnected));
   EXPECT_CALL(event_handler_, OnRdpClosed())
       .Times(AtMost(1))
       .WillOnce(InvokeWithoutArgs(this, &RdpClientTest::CloseRdpClient));

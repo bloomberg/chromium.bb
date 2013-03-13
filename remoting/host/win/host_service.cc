@@ -18,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -46,13 +45,6 @@
 namespace remoting {
 
 namespace {
-
-// Used to query the endpoint of an attached RDP client.
-const WINSTATIONINFOCLASS kWinStationRemoteAddress =
-    static_cast<WINSTATIONINFOCLASS>(29);
-
-// Session id that does not represent any session.
-const uint32 kInvalidSessionId = 0xffffffffu;
 
 const char kIoThreadName[] = "I/O thread";
 
@@ -213,140 +205,12 @@ void HostService::RemoveWtsTerminalObserver(WtsTerminalObserver* observer) {
 }
 
 HostService::HostService() :
-  win_station_query_information_(NULL),
   run_routine_(&HostService::RunAsService),
   service_status_handle_(0),
   stopped_event_(true, false) {
 }
 
 HostService::~HostService() {
-}
-
-bool HostService::GetEndpointForSessionId(uint32 session_id,
-                                          net::IPEndPoint* endpoint) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // Fast path for the case when |session_id| is currently attached to
-  // the physical console.
-  if (session_id == WTSGetActiveConsoleSessionId()) {
-    *endpoint = net::IPEndPoint();
-    return true;
-  }
-
-  // Get the pointer to winsta!WinStationQueryInformationW().
-  if (!LoadWinStationLibrary())
-    return false;
-
-  // WinStationRemoteAddress information class returns the following structure.
-  // Note that its layout is different from sockaddr_in/sockaddr_in6. For
-  // instance both |ipv4| and |ipv6| structures are 4 byte aligned so there is
-  // additional 2 byte padding after |sin_family|.
-  struct RemoteAddress {
-    unsigned short sin_family;
-    union {
-      struct {
-        USHORT sin_port;
-        ULONG in_addr;
-        UCHAR sin_zero[8];
-      } ipv4;
-      struct {
-        USHORT sin6_port;
-        ULONG sin6_flowinfo;
-        USHORT sin6_addr[8];
-        ULONG sin6_scope_id;
-      } ipv6;
-    };
-  };
-
-  RemoteAddress address;
-  ULONG length;
-  if (!win_station_query_information_(WTS_CURRENT_SERVER_HANDLE,
-                                      session_id,
-                                      kWinStationRemoteAddress,
-                                      &address,
-                                      sizeof(address),
-                                      &length)) {
-    // WinStationQueryInformationW() fails if no RDP client is attached to
-    // |session_id|.
-    return false;
-  }
-
-  // Convert the RemoteAddress structure into sockaddr_in/sockaddr_in6.
-  switch (address.sin_family) {
-    case AF_INET: {
-      sockaddr_in ipv4 = { 0 };
-      ipv4.sin_family = AF_INET;
-      ipv4.sin_port = address.ipv4.sin_port;
-      ipv4.sin_addr.S_un.S_addr = address.ipv4.in_addr;
-      return endpoint->FromSockAddr(
-          reinterpret_cast<struct sockaddr*>(&ipv4), sizeof(ipv4));
-    }
-
-    case AF_INET6: {
-      sockaddr_in6 ipv6 = { 0 };
-      ipv6.sin6_family = AF_INET6;
-      ipv6.sin6_port = address.ipv6.sin6_port;
-      ipv6.sin6_flowinfo = address.ipv6.sin6_flowinfo;
-      memcpy(&ipv6.sin6_addr, address.ipv6.sin6_addr, sizeof(ipv6.sin6_addr));
-      ipv6.sin6_scope_id = address.ipv6.sin6_scope_id;
-      return endpoint->FromSockAddr(
-          reinterpret_cast<struct sockaddr*>(&ipv6), sizeof(ipv6));
-    }
-
-    default:
-      return false;
-  }
-}
-
-uint32 HostService::GetSessionIdForEndpoint(
-    const net::IPEndPoint& client_endpoint) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // Use the fast path if the caller wants to get id of the session attached to
-  // the physical console.
-  if (client_endpoint == net::IPEndPoint())
-    return WTSGetActiveConsoleSessionId();
-
-  // Get the pointer to winsta!WinStationQueryInformationW().
-  if (!LoadWinStationLibrary())
-    return kInvalidSessionId;
-
-  // Enumerate all sessions and try to match the client endpoint.
-  WTS_SESSION_INFO* session_info;
-  DWORD session_info_count;
-  if (!WTSEnumerateSessions(WTS_CURRENT_SERVER_HANDLE, 0, 1, &session_info,
-                            &session_info_count)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to enumerate all sessions";
-    return kInvalidSessionId;
-  }
-  for (DWORD i = 0; i < session_info_count; ++i) {
-    net::IPEndPoint endpoint;
-    if (GetEndpointForSessionId(session_info[i].SessionId, &endpoint) &&
-        endpoint == client_endpoint) {
-      WTSFreeMemory(session_info);
-      return session_info[i].SessionId;
-    }
-  }
-
-  // |client_endpoint| is not associated with any session.
-  WTSFreeMemory(session_info);
-  return kInvalidSessionId;
-}
-
-bool HostService::LoadWinStationLibrary() {
-  if (!winsta_) {
-    base::FilePath winsta_path(base::GetNativeLibraryName(
-        UTF8ToUTF16("winsta")));
-    winsta_.reset(new base::ScopedNativeLibrary(winsta_path));
-
-    if (winsta_->is_valid()) {
-      win_station_query_information_ =
-          static_cast<PWINSTATIONQUERYINFORMATIONW>(
-              winsta_->GetFunctionPointer("WinStationQueryInformationW"));
-    }
-  }
-
-  return win_station_query_information_ != NULL;
 }
 
 void HostService::OnSessionChange(uint32 event, uint32 session_id) {

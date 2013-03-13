@@ -461,6 +461,9 @@
             'host/win/session_event_executor.h',
             'host/win/window_station_and_desktop.cc',
             'host/win/window_station_and_desktop.h',
+            'host/win/wts_terminal_monitor.cc',
+            'host/win/wts_terminal_monitor.h',
+            'host/win/wts_terminal_observer.h',
           ],
           'conditions': [
             ['toolkit_uses_gtk==1', {
@@ -1421,8 +1424,6 @@
             'host/win/wts_console_session_process_driver.h',
             'host/win/wts_session_process_delegate.cc',
             'host/win/wts_session_process_delegate.h',
-            'host/win/wts_terminal_monitor.h',
-            'host/win/wts_terminal_observer.h',
             'host/worker_process_ipc_delegate.h',
           ],
           'msvs_settings': {
@@ -2599,6 +2600,7 @@
           'link_settings': {
             'libraries': [
               '-lrpcrt4.lib',
+              '-lwtsapi32.lib',
             ],
           },
         }],
