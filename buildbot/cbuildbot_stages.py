@@ -471,7 +471,27 @@ class SyncStage(bs.BuilderStage):
 
   def _PerformStage(self):
     self.Initialize()
-    self.ManifestCheckout(self.GetNextManifest())
+    with osutils.TempDirContextManager() as tempdir:
+      # Save off the last manifest.
+      fresh_sync = True
+      if os.path.exists(self.repo.directory) and not self._options.clobber:
+        old_filename = os.path.join(tempdir, 'old.xml')
+        try:
+          old_contents = self.repo.ExportManifest()
+        except cros_build_lib.RunCommandError as e:
+          cros_build_lib.Warning(str(e))
+        else:
+          osutils.WriteFile(old_filename, old_contents)
+          fresh_sync = False
+
+      # Sync.
+      self.ManifestCheckout(self.GetNextManifest())
+
+      # Print the blamelist.
+      if fresh_sync:
+        cros_build_lib.PrintBuildbotStepText('(From scratch)')
+      elif self._options.buildbot:
+        lkgm_manager.GenerateBlameList(self.repo, old_filename)
 
   def HandleSkip(self):
     super(SyncStage, self).HandleSkip()

@@ -458,55 +458,67 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       logging.info('Not generating blamelist for lkgm as it is not appropriate '
                    'for this build type.')
       return
-
-    handler = git.Manifest(self.lkgm_path)
-    reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
-    author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
-    committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')
-    for project in handler.projects.keys():
-      rel_src_path = handler.projects[project].get('path')
-
-      # If it's not part of our source tree, it doesn't affect our build.
-      if not rel_src_path:
-        continue
-
-      # Additional case in case the repo has been removed from the manifest.
-      src_path = self.cros_source.GetRelativePath(rel_src_path)
-      if not os.path.exists(src_path):
-        cros_build_lib.Info('Detected repo removed from manifest %s' % project)
-        continue
-
-      revision = handler.projects[project]['revision']
-      result = cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
-                                          '%s..HEAD' % revision],
-                                         print_cmd=False, redirect_stdout=True,
-                                         cwd=src_path)
-      current_author = None
-      current_committer = None
-      for line in result.output.splitlines():
-        author_match = author_re.match(line)
-        if author_match:
-          current_author = author_match.group(1)
-
-        committer_match = committer_re.match(line)
-        if committer_match:
-          current_committer = committer_match.group(1)
-
-        review_match = reviewed_on_re.match(line)
-        if review_match:
-          review = review_match.group(1)
-          _, _, change_number = review.rpartition('/')
-          if current_committer != 'chrome-bot':
-            cros_build_lib.PrintBuildbotLink(
-                'CHUMP %s:%s' % (current_author, change_number),
-                review)
-          elif self.build_type != constants.PALADIN_TYPE:
-            # Suppress re-printing changes we tried ourselves on paladin
-            # builders since they are redundant.
-            cros_build_lib.PrintBuildbotLink(
-                '%s:%s' % (current_author, change_number),
-                review)
+    # Suppress re-printing changes we tried ourselves on paladin
+    # builders since they are redundant.
+    only_print_chumps = self.build_type == constants.PALADIN_TYPE
+    GenerateBlameList(self.cros_source, self.lkgm_path,
+                      only_print_chumps=only_print_chumps)
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
     raise NotImplementedError()
+
+
+def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
+  """Generate the blamelist since the specified manifest.
+
+  Arguments:
+    source_repo: Repository object for the source code.
+    lkgm_path: Path to LKGM manifest.
+    only_print_chumps: If True, only print changes that were chumped.
+  """
+  handler = git.Manifest(lkgm_path)
+  reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
+  author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
+  committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')
+  for project in handler.projects.keys():
+    rel_src_path = handler.projects[project].get('path')
+
+    # If it's not part of our source tree, it doesn't affect our build.
+    if not rel_src_path:
+      continue
+
+    # Additional case in case the repo has been removed from the manifest.
+    src_path = source_repo.GetRelativePath(rel_src_path)
+    if not os.path.exists(src_path):
+      cros_build_lib.Info('Detected repo removed from manifest %s' % project)
+      continue
+
+    revision = handler.projects[project]['revision']
+    result = cros_build_lib.RunCommand(['git', 'log', '--pretty=full',
+                                        '%s..HEAD' % revision],
+                                       print_cmd=False, redirect_stdout=True,
+                                       cwd=src_path)
+    current_author = None
+    current_committer = None
+    for line in result.output.splitlines():
+      author_match = author_re.match(line)
+      if author_match:
+        current_author = author_match.group(1)
+
+      committer_match = committer_re.match(line)
+      if committer_match:
+        current_committer = committer_match.group(1)
+
+      review_match = reviewed_on_re.match(line)
+      if review_match:
+        review = review_match.group(1)
+        _, _, change_number = review.rpartition('/')
+        if current_committer != 'chrome-bot':
+          cros_build_lib.PrintBuildbotLink(
+              'CHUMP %s:%s' % (current_author, change_number),
+              review)
+        elif not only_print_chumps:
+          cros_build_lib.PrintBuildbotLink(
+              '%s:%s' % (current_author, change_number),
+              review)
