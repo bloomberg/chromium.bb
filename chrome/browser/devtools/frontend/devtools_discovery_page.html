@@ -120,7 +120,7 @@ function appendItem(item_object) {
 
   var text = document.createElement("div");
   text.className = "text";
-  text.innerText = item_object.title;
+  text.innerText = item_object.description || item_object.title;
   text.style.cssText = "background-image:url(" +
                        item_object.faviconUrl + ")";
   frontend_ref.appendChild(text);

@@ -5,6 +5,9 @@
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 
 #include "base/path_service.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -109,6 +112,23 @@ BrowserListTabContentsProvider::GetTargetType(content::RenderViewHost* rvh) {
 }
 
 std::string BrowserListTabContentsProvider::GetViewDescription(
-    content::RenderViewHost*) {
-  return "";
+    content::RenderViewHost* rvh) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return "";
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return "";
+
+  extensions::ExtensionHost* extension_host =
+      extensions::ExtensionSystem::Get(profile)->process_manager()->
+          GetBackgroundHostForExtension(web_contents->GetURL().host());
+
+  if (!extension_host || extension_host->host_contents() != web_contents)
+    return "";
+
+  return extension_host->extension()->name();
 }
