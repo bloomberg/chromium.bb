@@ -40,13 +40,16 @@ void AssertLockHeld() {
 EnterBase::EnterBase()
     : resource_(NULL),
       retval_(PP_OK) {
-  // TODO(dmichael) validate that threads have an associated message loop.
 }
 
 EnterBase::EnterBase(PP_Resource resource)
     : resource_(GetResource(resource)),
       retval_(PP_OK) {
-  // TODO(dmichael) validate that threads have an associated message loop.
+}
+
+EnterBase::EnterBase(PP_Instance instance, SingletonResourceID resource_id)
+    : resource_(GetSingletonResource(instance, resource_id)),
+      retval_(PP_OK) {
 }
 
 EnterBase::EnterBase(PP_Resource resource,
@@ -54,8 +57,14 @@ EnterBase::EnterBase(PP_Resource resource,
     : resource_(GetResource(resource)),
       retval_(PP_OK) {
   callback_ = new TrackedCallback(resource_, callback);
+}
 
-  // TODO(dmichael) validate that threads have an associated message loop.
+EnterBase::EnterBase(PP_Instance instance, SingletonResourceID resource_id,
+                     const PP_CompletionCallback& callback)
+    : resource_(GetSingletonResource(instance, resource_id)),
+      retval_(PP_OK) {
+  DCHECK(resource_);
+  callback_ = new TrackedCallback(resource_, callback);
 }
 
 EnterBase::~EnterBase() {
@@ -103,6 +112,17 @@ int32_t EnterBase::SetResult(int32_t result) {
 // static
 Resource* EnterBase::GetResource(PP_Resource resource) {
   return PpapiGlobals::Get()->GetResourceTracker()->GetResource(resource);
+}
+
+// static
+Resource* EnterBase::GetSingletonResource(PP_Instance instance,
+                                          SingletonResourceID resource_id) {
+  PPB_Instance_API* ppb_instance =
+      PpapiGlobals::Get()->GetInstanceAPI(instance);
+  if (!ppb_instance)
+    return NULL;
+
+  return ppb_instance->GetSingletonResource(instance, resource_id);
 }
 
 void EnterBase::SetStateForCallbackError(bool report_error) {

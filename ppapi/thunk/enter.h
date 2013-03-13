@@ -88,7 +88,10 @@ class PPAPI_THUNK_EXPORT EnterBase {
  public:
   EnterBase();
   explicit EnterBase(PP_Resource resource);
+  EnterBase(PP_Instance instance, SingletonResourceID resource_id);
   EnterBase(PP_Resource resource, const PP_CompletionCallback& callback);
+  EnterBase(PP_Instance instance, SingletonResourceID resource_id,
+            const PP_CompletionCallback& callback);
   virtual ~EnterBase();
 
   // Sets the result for calls that use a completion callback. It handles making
@@ -117,6 +120,11 @@ class PPAPI_THUNK_EXPORT EnterBase {
   // code be in the non-templatized base keeps us from having to instantiate
   // it in every template.
   static Resource* GetResource(PP_Resource resource);
+
+  // Helper function to return a Resource from a PP_Instance and singleton
+  // resource identifier.
+  static Resource* GetSingletonResource(PP_Instance instance,
+                                        SingletonResourceID resource_id);
 
   void ClearCallback();
 
@@ -258,17 +266,18 @@ class EnterInstanceAPI
       public subtle::EnterBase {
  public:
   explicit EnterInstanceAPI(PP_Instance instance)
-      : EnterBase(),
+      : EnterBase(instance, ApiT::kSingletonResourceID),
         functions_(NULL) {
-    PPB_Instance_API* ppb_instance =
-        PpapiGlobals::Get()->GetInstanceAPI(instance);
-    if (ppb_instance) {
-      Resource* resource =
-          ppb_instance->GetSingletonResource(instance,
-                                             ApiT::kSingletonResourceID);
-      if (resource)
-        functions_ = resource->GetAs<ApiT>();
-    }
+    if (resource_)
+      functions_ = resource_->GetAs<ApiT>();
+    SetStateForFunctionError(instance, functions_, true);
+  }
+  EnterInstanceAPI(PP_Instance instance,
+                   const PP_CompletionCallback& callback)
+      : EnterBase(instance, ApiT::kSingletonResourceID, callback),
+        functions_(NULL) {
+    if (resource_)
+      functions_ = resource_->GetAs<ApiT>();
     SetStateForFunctionError(instance, functions_, true);
   }
   ~EnterInstanceAPI() {}
