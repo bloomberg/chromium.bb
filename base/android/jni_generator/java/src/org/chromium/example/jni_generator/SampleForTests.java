@@ -6,6 +6,18 @@ package org.chromium.example.jni_generator;
 
 import android.graphics.Rect;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.chromium.base.AccessedByNative;
+import org.chromium.base.CalledByNative;
+import org.chromium.base.CalledByNativeUnchecked;
+import org.chromium.base.JNINamespace;
+import org.chromium.base.NativeClassQualifiedName;
+
+
 // This class serves as a reference test for the bindings generator, and as example documentation
 // for how to use the jni generator.
 // The C++ counter-part is sample_for_tests.cc.
@@ -15,6 +27,52 @@ import android.graphics.Rect;
 //   * link a native executable to prove the generated header + cc file are self-contained.
 // All comments are informational only, and are ignored by the jni generator.
 //
+// Binding C/C++ with Java is not trivial, specially when ownership and object lifetime
+// semantics needs to be managed across boundaries.
+// Following a few guidelines will make the code simpler and less buggy:
+//
+// - Never write any JNI "by hand". Rely on the bindings generator to have a thin
+// layer of type-safety.
+//
+// - Treat the types from the other side as "opaque" as possible. Do not inspect any
+// object directly, but rather, rely on well-defined getters / setters.
+//
+// - Minimize the surface API between the two sides, and rather than calling multiple
+// functions across boundaries, call only one (and then, internally in the other side,
+// call as many little functions as required).
+//
+// - If a Java object "owns" a native object, stash the pointer in a "int mNativeClassName".
+// Note that it needs to have a "destruction path", i.e., it must eventually call a method
+// to delete the native object (for example, the java object has a "close()" method that
+// in turn deletes the native object). Avoid relying on finalizers: those run in a different
+// thread and makes the native lifetime management more difficult.
+//
+// - For native object "owning" java objects:
+//   - If there's a strong 1:1 to relationship between native and java, the best way is to
+//   stash the java object into a base::android::ScopedJavaGlobalRef. This will ensure the
+//   java object can be GC'd once the native object is destroyed but note that this global strong
+//   ref implies a new GC root, so be sure it will not leak and it must never rely on being
+//   triggered (transitively) from a java side GC.
+//   - In all other cases, the native side should keep a JavaObjectWeakGlobalRef, and check whether
+//   that reference is still valid before de-referencing it. Note that you will need another
+//   java-side object to be holding a strong reference to this java object while it is in use, to
+//   avoid unpredictable GC of the object before native side has finished with it.
+//
+// - The best way to pass "compound" datatypes across in either direction is to create an inner
+// class with PODs and a factory function. If possible, make it immutable (i.e., mark all the
+// fields as "final"). See examples with "InnerStructB" below.
+//
+// - It's simpler to create thin wrappers with a well defined JNI interface than to
+// expose a lot of internal details. This is specially significant for system classes where it's
+// simpler to wrap factory methods and a few getters / setters than expose the entire class.
+//
+// - Use static factory functions annotated with @CalledByNative rather than calling the
+// constructors directly.
+//
+// - Iterate over containers where they are originally owned, then create inner structs or
+// directly call methods on the other side. It's much simpler than trying to amalgamate
+// java and stl containers.
+//
 // This JNINamespace annotation indicates that all native methods should be
 // generated inside this namespace, including the native class that this
 // object binds to.
@@ -22,7 +80,7 @@ import android.graphics.Rect;
 class SampleForTests {
   // Classes can store their C++ pointer counter part as an int that is normally initialized by
   // calling out a nativeInit() function.
-  int nativePtr;
+  int mNativeCPPObject;
 
   // You can define methods and attributes on the java class just like any other.
   // Methods without the @CalledByNative annotation won't be exposed to JNI.
@@ -31,7 +89,7 @@ class SampleForTests {
 
   public void startExample() {
       // Calls native code and holds a pointer to the C++ class.
-      nativePtr = nativeInit("myParam");
+      mNativeCPPObject = nativeInit("myParam");
   }
 
   public void doStuff() {
@@ -39,12 +97,12 @@ class SampleForTests {
       // done to:
       // * avoid leaks.
       // * using finalizers are not allowed to destroy the cpp class.
-      nativeMethod(nativePtr);
+      nativeMethod(mNativeCPPObject);
   }
 
   public void finishExample() {
       // We're done, so let's destroy nativePtr object.
-      nativeDestroy(nativePtr);
+      nativeDestroy(mNativeCPPObject);
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -112,7 +170,7 @@ class SampleForTests {
   // The caller of this method should store it, and supply it as a the nativeCPPClass param to
   // subsequent native method calls (see the methods below that take an "int native..." as first
   // param).
-  private native int nativeInit();
+  private native int nativeInit(String param);
 
   // This defines a function binding to the associated C++ class member function. The name is
   // derived from |nativeDestroy| and |nativeCPPClass| to arrive at CPPClass::Destroy() (i.e. native
@@ -151,21 +209,80 @@ class SampleForTests {
   @NativeClassQualifiedName("CPPClass::InnerClass")
   private native double nativeMethodOtherP0(int nativePtr);
 
-  // An inner class has some special attributes for annotation.
-  class InnerClass {
-    @CalledByNative("InnerClass")
-    public float JavaInnerMethod() {
-    }
+  // This "struct" will be created by the native side using |createInnerStructA|,
+  // and used by the java-side somehow.
+  // Note that |@CalledByNative| has to contain the inner class name.
+  static class InnerStructA {
+      private final long mLong;
+      private final int mInt;
+      private final String mString;
 
-    @CalledByNative("InnerClass")
-    public static void javaInnerFunction() {
-    }
+      private InnerStructA(long l, int i, String s) {
+          mLong = l;
+          mInt = i;
+          mString = s;
+      }
 
-    @NativeCall("InnerClass")
-    private static native int nativeInnerFunction();
-
-    @NativeCall("InnerClass")
-    private static native String nativeInnerMethod(int nativeCPPClass);
-
+      @CalledByNative("InnerStructA")
+      private static InnerStructA create(long l, int i, String s) {
+          return new InnerStructA(l, i, s);
+      }
   }
+
+  private List<InnerStructA> mListInnerStructA = new ArrayList<InnerStructA>();
+
+  @CalledByNative
+  private void addStructA(InnerStructA a) {
+      // Called by the native side to append another element.
+      mListInnerStructA.add(a);
+  }
+
+  @CalledByNative
+  private void iterateAndDoSomething() {
+      Iterator<InnerStructA> it = mListInnerStructA.iterator();
+      while (it.hasNext()) {
+          InnerStructA element = it.next();
+          // Now, do something with element.
+      }
+      // Done, clear the list.
+      mListInnerStructA.clear();
+  }
+
+  // This "struct" will be created by the java side passed to native, which
+  // will use its getters.
+  // Note that |@CalledByNative| has to contain the inner class name.
+  static class InnerStructB {
+      private final long mKey;
+      private final String mValue;
+
+      private InnerStructB(long k, String v) {
+          mKey = k;
+          mValue = v;
+      }
+
+      @CalledByNative("InnerStructB")
+      private long getKey() {
+          return mKey;
+      }
+
+      @CalledByNative("InnerStructB")
+      private String getValue() {
+          return mValue;
+      }
+  }
+
+  List<InnerStructB> mListInnerStructB = new ArrayList<InnerStructB>();
+
+  void iterateAndDoSomethingWithMap() {
+      Iterator<InnerStructB> it = mListInnerStructB.iterator();
+      while (it.hasNext()) {
+          InnerStructB element = it.next();
+          // Now, do something with element.
+          nativeAddStructB(mNativeCPPObject, element);
+      }
+      nativeIterateAndDoSomethingWithStructB(mNativeCPPObject);
+  }
+
+  native void nativeAddStructB(int nativeCPPClass, InnerStructB b);
+  native void nativeIterateAndDoSomethingWithStructB(int nativeCPPClass);
 }

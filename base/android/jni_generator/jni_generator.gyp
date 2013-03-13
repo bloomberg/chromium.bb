@@ -13,7 +13,7 @@
           'inputs': [
             'jni_generator.py',
             'jni_generator_tests.py',
-            'SampleForTests.java',
+            'java/src/org/chromium/example/jni_generator/SampleForTests.java',
             'golden_sample_for_tests_jni.h',
           ],
           'outputs': [
@@ -29,12 +29,23 @@
       'target_name': 'jni_sample_header',
       'type': 'none',
       'sources': [
-        'SampleForTests.java',
+        'java/src/org/chromium/example/jni_generator/SampleForTests.java',
       ],
       'variables': {
-        'jni_gen_package': 'base',
+        'jni_gen_package': 'example',
       },
       'includes': [ '../../../build/jni_generator.gypi' ],
+    },
+    {
+      'target_name': 'jni_sample_java',
+      'type': 'none',
+      'variables': {
+        'java_in_dir': '../../../base/android/jni_generator/java',
+      },
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base_java',
+      ],
+      'includes': [ '../../../build/java.gypi' ],
     },
     {
       'target_name': 'jni_generator_tests',
@@ -43,9 +54,10 @@
         '../../base.gyp:test_support_base',
         'jni_generator_py_tests',
         'jni_sample_header',
+        'jni_sample_java',
       ],
       'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/base',
+        '<(SHARED_INTERMEDIATE_DIR)/example',
       ],
       'sources': [
         'sample_for_tests.cc',

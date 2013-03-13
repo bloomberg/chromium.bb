@@ -1836,7 +1836,9 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 
   def testJniSelfDocumentingExample(self):
     script_dir = os.path.dirname(sys.argv[0])
-    content = file(os.path.join(script_dir, 'SampleForTests.java')).read()
+    content = file(os.path.join(script_dir,
+        'java/src/org/chromium/example/jni_generator/SampleForTests.java')
+        ).read()
     golden_content = file(os.path.join(script_dir,
                                        'golden_sample_for_tests_jni.h')).read()
     jni_from_java = jni_generator.JNIFromJavaSource(
