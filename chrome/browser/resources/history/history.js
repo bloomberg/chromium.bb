@@ -434,7 +434,7 @@ HistoryModel.prototype.addResults = function(info, results) {
       this.view_.showNotification(loadTimeData.getString('hasSyncedResults'));
     } else {
       this.view_.showNotification(
-          loadTimeData.getString('noResponseFromServer'), true);
+          loadTimeData.getString('noResponseFromServer'));
     }
   }
 
