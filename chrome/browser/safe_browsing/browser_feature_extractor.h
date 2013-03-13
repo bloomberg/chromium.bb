@@ -18,7 +18,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
@@ -35,16 +34,13 @@ class WebContents;
 }
 
 namespace safe_browsing {
-class ClientMalwareRequest;
 class ClientPhishingRequest;
 class ClientSideDetectionService;
 
-typedef std::map<std::string, std::set<std::string> > IPHostMap;
-
 struct BrowseInfo {
   // List of IPv4 and IPv6 addresses from which content was requested
-  // together with the hosts on it, while browsing to the |url|.
-  IPHostMap ips;
+  // while browsing to the |url|.
+  std::set<std::string> ips;
 
   // If a SafeBrowsing interstitial was shown for the current URL
   // this will contain the UnsafeResource struct for that URL.
@@ -72,7 +68,6 @@ class BrowserFeatureExtractor {
   // phishing request which was modified by the feature extractor.  The
   // DoneCallback takes ownership of the request object.
   typedef base::Callback<void(bool, ClientPhishingRequest*)> DoneCallback;
-  typedef base::Callback<void(bool, ClientMalwareRequest*)> MalwareDoneCallback;
 
   // The caller keeps ownership of the tab and service objects and is
   // responsible for ensuring that they stay valid for the entire
@@ -92,11 +87,6 @@ class BrowserFeatureExtractor {
   virtual void ExtractFeatures(const BrowseInfo* info,
                                ClientPhishingRequest* request,
                                const DoneCallback& callback);
-
-  // Extract the malware related features. The request object is owned by the
-  // caller.
-  virtual void ExtractMalwareFeatures(const BrowseInfo* info,
-                                      ClientMalwareRequest* request);
 
  private:
   friend class base::DeleteHelper<BrowserFeatureExtractor>;

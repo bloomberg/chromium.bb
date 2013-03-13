@@ -52,7 +52,6 @@ typedef std::vector<std::string> ResponseCookies;
 }  // namespace net
 
 namespace safe_browsing {
-class ClientMalwareRequest;
 class ClientPhishingRequest;
 class ClientPhishingResponse;
 class ClientSideModel;
@@ -62,7 +61,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
  public:
   // void(GURL phishing_url, bool is_phishing).
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
-  typedef base::Callback<void(GURL, bool)> ClientReportMalwareRequestCallback;
 
   virtual ~ClientSideDetectionService();
 
@@ -105,11 +103,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   virtual void SendClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
       const ClientReportPhishingRequestCallback& callback);
-
-  // Similar to above one, instead send ClientMalwareRequest
-  virtual void SendClientReportMalwareRequest(
-      ClientMalwareRequest* verdict,
-      const ClientReportMalwareRequestCallback& callback);
 
   // Returns true if the given IP address string falls within a private
   // (unroutable) network block.  Pages which are hosted on these IP addresses
@@ -197,7 +190,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   typedef std::map<std::string /* subnet mask */,
                    std::set<std::string /* hashed subnet */> > BadSubnetMap;
 
-  static const char kClientReportMalwareUrl[];
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
   static const size_t kMaxModelSizeBytes;
@@ -213,10 +205,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   void StartClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
       const ClientReportPhishingRequestCallback& callback);
-
-  void StartClientReportMalwareRequest(
-      ClientMalwareRequest* verdict,
-      const ClientReportMalwareRequestCallback& callback);
 
   // Called by OnURLFetchComplete to handle the response from fetching the
   // model.
@@ -235,15 +223,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
                              int response_code,
                              const net::ResponseCookies& cookies,
                              const std::string& data);
-
-  // Called by OnURLFetchComplete to handle the server response from
-  // sending the client-side malware request.
-  void HandleMalwareVerdict(const net::URLFetcher* source,
-                            const GURL& url,
-                            const net::URLRequestStatus& status,
-                            int response_code,
-                            const net::ResponseCookies& cookies,
-                            const std::string& data);
 
   // Invalidate cache results which are no longer useful.
   void UpdateCache();
@@ -273,7 +252,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   static bool ModelHasValidHashIds(const ClientSideModel& model);
 
   // Returns the URL that will be used for phishing requests.
-  static std::string GetClientReportUrl(const std::string& report_url);
+  static std::string GetClientReportPhishingUrl();
 
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
@@ -289,8 +268,6 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   struct ClientReportInfo;
   std::map<const net::URLFetcher*, ClientReportInfo*>
       client_phishing_reports_;
-  std::map<const net::URLFetcher*, ClientReportInfo*>
-      client_malware_reports_;
 
   // Cache of completed requests. Used to satisfy requests for the same urls
   // as long as the next request falls within our caching window (which is
