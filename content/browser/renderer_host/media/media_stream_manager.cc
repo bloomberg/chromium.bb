@@ -855,10 +855,9 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
         const media::AudioParameters parameters =
             audio_manager_->GetDefaultOutputStreamParameters();
         int sample_rate = parameters.sample_rate();
-        // If we weren't able to get the native sampling rate, it most likely
-        // means the system did not have an output device, but for mirroring we
-        // still want to startup the audio engine, so set reasonable defaults.
-        if (sample_rate == 0)
+        // If we weren't able to get the native sampling rate or the sample_rate
+        // is outside the valid range for input devices set reasonable defaults.
+        if (sample_rate <= 0 || sample_rate > 96000)
           sample_rate = 44100;
 
         device_info.device.sample_rate = sample_rate;
