@@ -44,15 +44,11 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include vex_parsing_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include displacement_fields_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include displacement_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_parsing_ia32_validator
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_parsing_ia32
+  include immediate_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include relative_fields_validator_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

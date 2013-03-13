@@ -666,7 +666,7 @@
 }%%
 
 %%{
-  machine displacement_fields_actions;
+  machine displacement_fields_parsing;
 
   action disp8_operand {
     SET_DISP_TYPE(DISP8);
@@ -680,10 +680,6 @@
     SET_DISP_TYPE(DISP64);
     SET_DISP_PTR(current_position - 7);
   }
-}%%
-
-%%{
-  machine displacement_fields_parsing;
 
   # This action is used to mark transitions corresponding to immediates,
   # displacements and relative jump targets - stuff that we don't have to
@@ -697,7 +693,7 @@
 }%%
 
 %%{
-  machine immediate_fields_actions;
+  machine immediate_fields_parsing;
 
   action imm2_operand {
     SET_IMM_TYPE(IMM2);
@@ -735,10 +731,6 @@
     SET_IMM2_TYPE(IMM64);
     SET_IMM2_PTR(current_position - 7);
   }
-}%%
-
-%%{
-  machine immediate_fields_parsing_common;
 
   imm8 = any @imm8_operand $any_byte;
   imm16 = any{2} @imm16_operand $any_byte;
@@ -746,20 +738,6 @@
   imm64 = any{8} @imm64_operand $any_byte;
   imm8n2 = any @imm8_second_operand $any_byte;
   imm16n2 = any{2} @imm16_second_operand $any_byte;
-}%%
-
-%%{
-  machine immediate_fields_parsing_ia32;
-
-  include immediate_fields_parsing_common;
-  imm2 = b_0xxx_00xx @imm2_operand;
-}%%
-
-%%{
-  machine immediate_fields_parsing_amd64;
-
-  include immediate_fields_parsing_common;
-  imm2 = b_xxxx_00xx @imm2_operand;
 }%%
 
 %%{

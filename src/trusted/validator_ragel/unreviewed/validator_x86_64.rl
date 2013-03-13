@@ -42,8 +42,6 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include vex_parsing_amd64
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include displacement_fields_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include displacement_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_actions_amd64
@@ -52,9 +50,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include operand_actions_amd64
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_parsing_amd64
+  include immediate_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include relative_fields_validator_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";

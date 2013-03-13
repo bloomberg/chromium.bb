@@ -57,8 +57,6 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include set_spurious_prefixes
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include displacement_fields_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include displacement_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_actions_ia32
@@ -67,9 +65,7 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include operand_actions_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_actions
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_parsing_ia32
+  include immediate_fields_parsing
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include relative_fields_decoder_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
