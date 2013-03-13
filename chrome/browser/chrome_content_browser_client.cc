@@ -1789,6 +1789,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       static_cast<float>(prefs->GetDouble(prefs::kWebKitFontScaleFactor));
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(prefs::kWebKitForceEnableZoom);
+#if defined(GOOGLE_TV)
+  web_prefs->user_gesture_required_for_media_playback = false;
+#endif
 #endif
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
 
