@@ -13,7 +13,7 @@ namespace cc {
 class FakeContentLayer : public ContentLayer {
  public:
   static scoped_refptr<FakeContentLayer> Create(ContentLayerClient* client) {
-    return make_scoped_refptr(new FakeContentLayer(client)); 
+    return make_scoped_refptr(new FakeContentLayer(client));
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)

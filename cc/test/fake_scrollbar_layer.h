@@ -11,9 +11,10 @@
 namespace cc {
 
 class FakeScrollbarLayer : public ScrollbarLayer {
-public:
-  static scoped_refptr<FakeScrollbarLayer> Create(
-      bool paint_during_update, bool has_thumb, int scrolling_layer_id) {
+ public:
+  static scoped_refptr<FakeScrollbarLayer> Create(bool paint_during_update,
+                                                  bool has_thumb,
+                                                  int scrolling_layer_id) {
     return make_scoped_refptr(new FakeScrollbarLayer(
         paint_during_update, has_thumb, scrolling_layer_id));
   }
@@ -27,14 +28,14 @@ public:
     return last_update_partial_upload_size_;
   }
 
-  virtual void Update(
-      ResourceUpdateQueue* queue,
-      const OcclusionTracker* occlusion,
-      RenderingStats* stats) OVERRIDE;
+  virtual void Update(ResourceUpdateQueue* queue,
+                      const OcclusionTracker* occlusion,
+                      RenderingStats* stats) OVERRIDE;
 
-private:
-  FakeScrollbarLayer(
-      bool paint_during_update, bool has_thumb, int scrolling_layer_id);
+ private:
+  FakeScrollbarLayer(bool paint_during_update,
+                     bool has_thumb,
+                     int scrolling_layer_id);
   virtual ~FakeScrollbarLayer();
 
   int update_count_;

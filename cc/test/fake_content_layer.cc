@@ -12,7 +12,7 @@ namespace cc {
 FakeContentLayer::FakeContentLayer(ContentLayerClient* client)
     : ContentLayer(client),
       update_count_(0) {
-  SetAnchorPoint(gfx::PointF(0, 0));
+  SetAnchorPoint(gfx::PointF(0.f, 0.f));
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
@@ -24,10 +24,9 @@ scoped_ptr<LayerImpl> FakeContentLayer::CreateLayerImpl(
   return FakeContentLayerImpl::Create(tree_impl, layer_id_).PassAs<LayerImpl>();
 }
 
-void FakeContentLayer::Update(
-    ResourceUpdateQueue* queue,
-    const OcclusionTracker* occlusion,
-    RenderingStats* stats) {
+void FakeContentLayer::Update(ResourceUpdateQueue* queue,
+                              const OcclusionTracker* occlusion,
+                              RenderingStats* stats) {
   ContentLayer::Update(queue, occlusion, stats);
   update_count_++;
 }
