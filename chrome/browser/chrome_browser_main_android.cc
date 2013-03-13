@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "cc/switches.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,6 +61,9 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   DCHECK(!main_message_loop_.get());
   main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   MessageLoopForUI::current()->Start();
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      cc::switches::kCompositeToMailbox);
 
   ChromeBrowserMainParts::PreEarlyInitialization();
 }
